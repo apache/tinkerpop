@@ -29,11 +29,11 @@ public class AbstractGeneratorTest extends AbstractGremlinTest {
 
     private boolean sameInVertices(final Vertex v, final List<Vertex> inVertices) {
         return inVertices.stream()
-                .allMatch(inVertex -> v.in().filter(hv -> hv.get().value("oid") == inVertex.value("oid")).hasNext());
+                .allMatch(inVertex -> v.in().filter(hv -> hv.get().value("oid").equals(inVertex.value("oid"))).hasNext());
     }
 
     private boolean sameOutVertices(final Vertex v, final List<Vertex> outVertices) {
         return outVertices.stream()
-                .allMatch(outVertex -> v.out().filter(hv -> hv.get().value("oid") == outVertex.value("oid")).hasNext());
+                .allMatch(outVertex -> v.out().filter(hv -> hv.get().value("oid").equals(outVertex.value("oid"))).hasNext());
     }
 }
