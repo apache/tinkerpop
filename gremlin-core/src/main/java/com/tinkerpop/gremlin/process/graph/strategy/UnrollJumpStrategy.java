@@ -14,18 +14,18 @@ import java.util.List;
 public class UnrollJumpStrategy implements TraversalStrategy.FinalTraversalStrategy {
 
     public void apply(final Traversal traversal) {
-        for (final JumpStep toStep : TraversalHelper.getStepsOfClass(JumpStep.class, traversal)) {
-            if (toStep.unRollable()) {
-                final Step fromStep = TraversalHelper.getAs(toStep.jumpAs, traversal);
-                final List<Step> steps = TraversalHelper.isolateSteps(fromStep, toStep);
-                for (int i = 0; i < toStep.loops - 1; i++) {
-                    for (int j = steps.size() - 1; j >= 0; j--) {
-                        final Step clonedStep = TraversalHelper.cloneStep(steps.get(j));
-                        TraversalHelper.insertStep(clonedStep, traversal.getSteps().indexOf(fromStep) + 1, traversal);
+        TraversalHelper.getStepsOfClass(JumpStep.class, traversal).stream()
+                .filter(JumpStep::unRollable)
+                .forEach(toStep -> {
+                    final Step fromStep = TraversalHelper.getAs(toStep.jumpAs, traversal);
+                    final List<Step> stepsToClone = TraversalHelper.isolateSteps(fromStep, toStep);
+                    for (int i = 0; i < toStep.loops - 1; i++) {
+                        for (int j = stepsToClone.size() - 1; j >= 0; j--) {
+                            final Step clonedStep = TraversalHelper.cloneStep(stepsToClone.get(j));
+                            TraversalHelper.insertStep(clonedStep, traversal.getSteps().indexOf(fromStep) + 1, traversal);
+                        }
                     }
-                }
-                TraversalHelper.removeStep(toStep, traversal);
-            }
-        }
+                    TraversalHelper.removeStep(toStep, traversal);
+                });
     }
 }

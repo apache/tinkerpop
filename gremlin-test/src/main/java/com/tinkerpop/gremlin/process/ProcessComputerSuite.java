@@ -86,7 +86,6 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             UnionTest.JavaComputerUnionTest.class,
             ValuesTest.JavaComputerValuesTest.class,
 
-
             // sideEffect
             // TODO: REMOVE?  AddEdgeTest.JavaAddEdgeTest.class,
             AggregateTest.JavaComputerAggregateTest.class,

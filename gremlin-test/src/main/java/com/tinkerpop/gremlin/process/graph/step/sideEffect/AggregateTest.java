@@ -58,7 +58,7 @@ public abstract class AggregateTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    public void g_V_aggregateXa_nameX_iterate_getXaX() {
+    public void g_V_aggregateXnameX() {
         Traversal<Vertex, List<String>> step = get_g_V_aggregateXnameX();
         System.out.println("Testing: " + step);
         final List<String> names = step.next();
