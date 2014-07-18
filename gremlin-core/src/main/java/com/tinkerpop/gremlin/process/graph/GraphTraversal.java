@@ -28,6 +28,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.ElementValuesStep;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.FoldStep;
 import com.tinkerpop.gremlin.process.graph.step.map.IdStep;
+import com.tinkerpop.gremlin.process.graph.step.map.IfThenElseStep;
 import com.tinkerpop.gremlin.process.graph.step.map.IntersectStep;
 import com.tinkerpop.gremlin.process.graph.step.map.JumpStep;
 import com.tinkerpop.gremlin.process.graph.step.map.LabelStep;
@@ -89,7 +90,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public static GraphTraversal of() {
         final GraphTraversal traversal = new DefaultGraphTraversal<>();
-        traversal.addStep(new IdentityStep(traversal));
+        traversal.addStep(new StartStep<>(traversal));
         return traversal;
     }
 
@@ -292,6 +293,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default <E2> GraphTraversal<S, E2> fold(final E2 seed, final SBiFunction<E2, E, E2> foldFunction) {
         return (GraphTraversal) this.addStep(new FoldStep<>(this, seed, foldFunction));
+    }
+
+    public default <E2> GraphTraversal<S, E2> ifThenElse(final SPredicate<Traverser<S>> ifPredicate, final Traversal thenTraversal, final Traversal elseTraversal) {
+        return (GraphTraversal) this.addStep(new IfThenElseStep(this, ifPredicate, thenTraversal, elseTraversal));
     }
 
     ///////////////////// FILTER STEPS /////////////////////
@@ -504,19 +509,19 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> jump(final String as, final SPredicate<Traverser<E>> ifPredicate) {
-        return this.jump(as, ifPredicate, null);
+        return (GraphTraversal) this.addStep(new JumpStep<>(this, as, ifPredicate));
     }
 
     public default GraphTraversal<S, E> jump(final String as, final int loops, final SPredicate<Traverser<E>> emitPredicate) {
         return (GraphTraversal) this.addStep(new JumpStep<>(this, as, loops, emitPredicate));
     }
 
-    public default GraphTraversal<S, E> jump(final String as) {
-        return this.jump(as, t -> true, null);
+    public default GraphTraversal<S, E> jump(final String as, final int loops) {
+        return (GraphTraversal) this.addStep(new JumpStep<>(this, as, loops));
     }
 
-    public default GraphTraversal<S, E> jump(final String as, final int loops) {
-        return this.jump(as, loops, null);
+    public default GraphTraversal<S, E> jump(final String as) {
+        return (GraphTraversal) this.addStep(new JumpStep<>(this, as));
     }
 
     ///////////////////// UTILITY STEPS /////////////////////

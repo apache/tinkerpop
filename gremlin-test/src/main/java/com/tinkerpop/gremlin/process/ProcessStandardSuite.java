@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
-import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.ExceptTest;
@@ -15,6 +14,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.RetainTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.BackTest;
 import com.tinkerpop.gremlin.process.graph.step.map.FoldTest;
+import com.tinkerpop.gremlin.process.graph.step.map.IfThenElseTest;
 import com.tinkerpop.gremlin.process.graph.step.map.JumpTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderTest;
@@ -81,6 +81,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             // map
             BackTest.JavaBackTest.class,
             FoldTest.JavaFoldTest.class,
+            IfThenElseTest.JavaIfThenElseTest.class,
             JumpTest.JavaJumpTest.class,
             MapTest.JavaMapTest.class,
             OrderTest.JavaOrderTest.class,
@@ -130,6 +131,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             // map
             BackTest.class,
             FoldTest.class,
+            IfThenElseTest.class,
             JumpTest.class,
             MapTest.class,
             OrderTest.class,

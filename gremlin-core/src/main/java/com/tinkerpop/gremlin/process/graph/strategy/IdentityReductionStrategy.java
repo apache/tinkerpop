@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.strategy;
 
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.step.filter.IdentityStep;
@@ -14,6 +15,6 @@ public class IdentityReductionStrategy implements TraversalStrategy.FinalTravers
         TraversalHelper.getStepsOfClass(IdentityStep.class, traversal)
                 .stream()
                 .filter(step -> !TraversalHelper.isLabeled(step))
-                .forEach(step -> TraversalHelper.removeStep(step, traversal));
+                .forEach(step -> TraversalHelper.removeStep((Step) step, traversal));
     }
 }
