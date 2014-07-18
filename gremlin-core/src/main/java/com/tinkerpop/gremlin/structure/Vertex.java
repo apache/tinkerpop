@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.step.map.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.util.function.SBiPredicate;
 import com.tinkerpop.gremlin.util.function.SConsumer;
@@ -207,6 +208,10 @@ public interface Vertex extends Element {
 
     public default GraphTraversal<Vertex, Vertex> sideEffect(final SConsumer<Traverser<Vertex>> consumer) {
         return this.start().sideEffect(consumer);
+    }
+
+    public default <E2> GraphTraversal<Vertex, E2> choose(final SFunction<Traverser<Vertex>, Integer> chooseFunction, final Traversal... choices) {
+        return  this.start().choose(chooseFunction, choices);
     }
 
     public default GraphTraversal<Vertex, Vertex> with(final Object... variableValues) {

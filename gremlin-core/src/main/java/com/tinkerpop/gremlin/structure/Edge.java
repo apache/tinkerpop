@@ -148,6 +148,10 @@ public interface Edge extends Element {
         return this.start().sideEffect(consumer);
     }
 
+    public default <E2> GraphTraversal<Edge, E2> choose(final SFunction<Traverser<Edge>, Integer> chooseFunction, final Traversal... choices) {
+        return  this.start().choose(chooseFunction, choices);
+    }
+
     public default GraphTraversal<Edge, Edge> with(final Object... variableValues) {
         return this.start().with(variableValues);
     }

@@ -21,6 +21,8 @@ public abstract class ChooseTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name();
 
+    public abstract Traversal<Vertex, String> get_g_v1_chooseX0XoutX_name(Object v1Id);
+
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_chooseXname_length_5XoutXinX_name() {
@@ -43,10 +45,33 @@ public abstract class ChooseTest extends AbstractGremlinTest {
 
     }
 
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_v1_chooseX0XoutX_name() {
+        final Traversal<Vertex, String> traversal = get_g_v1_chooseX0XoutX_name(convertToVertexId("marko"));
+        System.out.println("Testing: " + traversal);
+        Map<String, Long> counts = new HashMap<>();
+        int counter = 0;
+        while (traversal.hasNext()) {
+            MapHelper.incr(counts, traversal.next(), 1l);
+            counter++;
+        }
+        assertFalse(traversal.hasNext());
+        assertEquals(3, counter);
+        assertEquals(3, counts.size());
+        assertEquals(Long.valueOf(1), counts.get("vadas"));
+        assertEquals(Long.valueOf(1), counts.get("josh"));
+        assertEquals(Long.valueOf(1), counts.get("lop"));
+    }
+
     public static class JavaChooseTest extends ChooseTest {
 
         public Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name() {
             return g.V().choose(t -> t.get().<String>value("name").length() == 5 ? 0 : 1, g.of().out(), g.of().in()).value("name");
+        }
+
+        public Traversal<Vertex, String> get_g_v1_chooseX0XoutX_name(Object v1Id) {
+            return g.v(v1Id).choose(t -> 0, g.of().out()).value("name");
         }
     }
 
