@@ -60,16 +60,4 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements Reversible, 
                 super.toString() :
                 TraversalHelper.makeStepString(this, this.variable);
     }
-
-    @Override
-    public <A, B> void rehydrateStep(final Traversal<A, B> traversal) {
-        super.rehydrateStep(traversal);
-        this.aggregate = this.traversal.memory().getOrCreate(this.variable, ArrayList::new);
-    }
-
-    @Override
-    public void dehydrateStep() {
-        super.dehydrateStep();
-        this.aggregate = null;
-    }
 }

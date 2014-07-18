@@ -14,6 +14,7 @@ import java.util.List;
 public class UnrollJumpStrategy implements TraversalStrategy.FinalTraversalStrategy {
 
     public void apply(final Traversal traversal) {
+
         TraversalHelper.getStepsOfClass(JumpStep.class, traversal).stream()
                 .filter(JumpStep::unRollable)
                 .forEach(toStep -> {
@@ -22,8 +23,12 @@ public class UnrollJumpStrategy implements TraversalStrategy.FinalTraversalStrat
                     stepsToClone.forEach(stepToClone -> TraversalHelper.removeStep(stepToClone, traversal));
                     for (int i = 0; i < toStep.loops; i++) {
                         for (int j = stepsToClone.size() - 1; j >= 0; j--) {
-                            final Step clonedStep = TraversalHelper.cloneStep(stepsToClone.get(j), traversal);
-                            TraversalHelper.insertStep(clonedStep, traversal.getSteps().indexOf(fromStep) + 1, traversal);
+                            try {
+                                final Step clonedStep = (Step) stepsToClone.get(j).clone();
+                                TraversalHelper.insertStep(clonedStep, traversal.getSteps().indexOf(fromStep) + 1, traversal);
+                            } catch (CloneNotSupportedException e) {
+                                throw new IllegalStateException(e.getMessage(), e);
+                            }
                         }
                     }
                     if (TraversalHelper.isLabeled(toStep))

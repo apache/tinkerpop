@@ -42,17 +42,4 @@ public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapabl
                 super.toString() :
                 TraversalHelper.makeStepString(this, this.variable);
     }
-
-    @Override
-    public <A, B> void rehydrateStep(final Traversal<A, B> traversal) {
-        super.rehydrateStep(traversal);
-        this.groupCountMap = this.traversal.memory().getOrCreate(this.variable, HashMap<Object, Long>::new);
-    }
-
-    @Override
-    public void dehydrateStep() {
-        super.dehydrateStep();
-        this.groupCountMap = null;
-    }
-
 }

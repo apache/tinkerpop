@@ -40,12 +40,8 @@ public class EmptyStep<S, E> implements Step<S, E> {
         return EmptyTraversal.instance();
     }
 
-    public void dehydrateStep() {
-
-    }
-
-    public <A, B> void rehydrateStep(Traversal<A, B> traversal) {
-
+    public Object clone() throws CloneNotSupportedException {
+        return instance();
     }
 
     public String getAs() {
