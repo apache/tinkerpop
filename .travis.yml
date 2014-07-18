@@ -6,7 +6,13 @@ notifications:
     - josh@fortytwo.net
     - daniel@thinkaurelius.com
   hipchat:
-      rooms:
-        secure: vMWqDialSquOmrly5TOk/cHKgUrkYYwj9RKF7SNyZnk5RVAIMUmmZFHYjKsO5uCoGDm2bD3Lbe0Ov7qodCRSj8QNKoMnuJ4ze91TSjCUyedAsk/OiNHGXxq4JYgH0aYgRWAYlzM6H4Kg2Mf+oyY+20a9/bTIgtSPi4eLvYW0y18=
+    secure: "vMWqDialSquOmrly5TOk/cHKgUrkYYwj9RKF7SNyZnk5RVAIMUmmZFHYjKsO5uCoGDm2bD3Lbe0Ov7qodCRSj8QNKoMnuJ4ze91TSjCUyedAsk/OiNHGXxq4JYgH0aYgRWAYlzM6H4Kg2Mf+oyY+20a9/bTIgtSPi4eLvYW0y18="
 jdk:
   - oraclejdk8
+
+env:
+  global:
+    - secure: "BiSlH/eLH3R6lrUQeX6T1merzNCQtALmxr0iMlPCBeBakiBxwVEb2eyRx8HsYUBopeMKSuOjQmwd3x3U7/99ylHC9KbmmgtrTpdQErUHJeWr/XLE4YPbFPfU2dJMPkz0PZQLzM57ATei847ik7FMuCKPu/h2/Z7bAmLfjYRQA2Q="
+
+after_success:
+  - mvn clean cobertura:cobertura org.eluder.coveralls:coveralls-maven-plugin:cobertura
