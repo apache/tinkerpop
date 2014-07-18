@@ -165,6 +165,15 @@ public class TraversalHelper {
         return steps;
     }
 
+    public static <S extends Step> List<S> getStepsOfClass(final Class<S> stepClass, final Traversal traversal) {
+        final List<S> steps = new ArrayList<>();
+        for (final Step step : (List<Step>) traversal.getSteps()) {
+            if (step.getClass().equals(stepClass))
+                steps.add((S) step);
+        }
+        return steps;
+    }
+
     public static Step cloneStep(final Step step) {
         try {
             step.dehydrateStep();
