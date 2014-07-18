@@ -44,17 +44,4 @@ public class StoreStep<S> extends FilterStep<S> implements Reversible, Bulkable,
                 super.toString() :
                 TraversalHelper.makeStepString(this, this.variable);
     }
-
-    @Override
-    public <A, B> void rehydrateStep(final Traversal<A, B> traversal) {
-        super.rehydrateStep(traversal);
-        this.collection = this.traversal.memory().getOrCreate(this.variable, ArrayList::new);
-    }
-
-    @Override
-    public void dehydrateStep() {
-        super.dehydrateStep();
-        this.collection = null;
-    }
-
 }

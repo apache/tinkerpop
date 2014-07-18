@@ -74,16 +74,4 @@ public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffect
                 super.toString() :
                 TraversalHelper.makeStepString(this, this.variable);
     }
-
-    @Override
-    public <A, B> void rehydrateStep(final Traversal<A, B> traversal) {
-        super.rehydrateStep(traversal);
-        this.groupByMap = this.traversal.memory().getOrCreate(this.variable, HashMap<K, Collection<V>>::new);
-    }
-
-    @Override
-    public void dehydrateStep() {
-        super.dehydrateStep();
-        this.groupByMap = null;
-    }
 }

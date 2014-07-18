@@ -15,7 +15,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     private static final String UNDERSCORE = "_";
     protected String as;
     protected Traversal traversal;
-    protected ExpandableStepIterator<S> starts;
+    public ExpandableStepIterator<S> starts;
     protected Traverser<E> nextEnd;
     protected boolean available;
 
@@ -87,22 +87,19 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         return this.traversal;
     }
 
-    public void dehydrateStep() {
-        this.traversal = EmptyTraversal.instance();
-        this.setPreviousStep(EmptyStep.instance());
-        this.setNextStep(EmptyStep.instance());
-        this.starts.clear();
-        this.available = false;
-        this.nextEnd = null;
-    }
-
-    public <A,B> void rehydrateStep(final Traversal<A,B> traversal) {
-        this.traversal = traversal;
-    }
-
     protected abstract Traverser<E> processNextStart() throws NoSuchElementException;
 
     public String toString() {
         return TraversalHelper.makeStepString(this);
+    }
+
+    public Object clone() throws CloneNotSupportedException {
+        final AbstractStep step = (AbstractStep) super.clone();
+        step.starts = new ExpandableStepIterator<S>(step);
+        step.previousStep = EmptyStep.instance();
+        step.nextStep = EmptyStep.instance();
+        step.available = false;
+        step.nextEnd = null;
+        return step;
     }
 }

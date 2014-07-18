@@ -50,17 +50,4 @@ public class TreeStep<S> extends FilterStep<S> implements Reversible, PathConsum
                 super.toString() :
                 TraversalHelper.makeStepString(this, this.variable);
     }
-
-    @Override
-    public <A, B> void rehydrateStep(final Traversal<A, B> traversal) {
-        super.rehydrateStep(traversal);
-        this.tree = this.traversal.memory().getOrCreate(this.variable, Tree::new);
-    }
-
-    @Override
-    public void dehydrateStep() {
-        super.dehydrateStep();
-        this.tree = null;
-    }
-
 }

@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process;
 import java.io.Serializable;
 import java.util.Iterator;
 
-public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable {
+public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable, Cloneable {
 
     public static final NoObject NO_OBJECT = new NoObject();
 
@@ -19,9 +19,7 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable {
 
     public <A, B> Traversal<A, B> getTraversal();
 
-    public void dehydrateStep();
-
-    public <A,B> void rehydrateStep(final Traversal<A,B> traversal);
+    public Object clone() throws CloneNotSupportedException;
 
     public String getAs();
 

@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.process.util;
 
+import com.esotericsoftware.kryo.Kryo;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.util.Serializer;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class TraversalHelper {
+
+    private static final Kryo kryo = new Kryo();
 
     private static final String UNDERSCORE = "_";
 
@@ -172,16 +174,5 @@ public class TraversalHelper {
                 steps.add((S) step);
         }
         return steps;
-    }
-
-    public static Step cloneStep(final Step step, final Traversal traversal) {
-        try {
-            step.dehydrateStep();
-            final Step clonedStep = (Step) Serializer.deserializeObject(Serializer.serializeObject(step));
-            clonedStep.rehydrateStep(traversal);
-            return clonedStep;
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
     }
 }
