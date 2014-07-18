@@ -40,5 +40,4 @@ public class SideEffectReplacementStrategy implements TraversalStrategy.FinalTra
         TraversalHelper.getStepsOfClass(SideEffectCapStep.class, traversal)
                 .forEach(step -> TraversalHelper.replaceStep(step, new GiraphSideEffectCapStep(traversal, step), traversal));
     }
-
 }

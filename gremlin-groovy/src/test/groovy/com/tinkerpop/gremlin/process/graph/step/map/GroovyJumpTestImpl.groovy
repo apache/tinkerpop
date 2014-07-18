@@ -29,6 +29,10 @@ class GroovyJumpTestImpl extends JumpTest {
         g.V().as("x").out().jump('x') { it.loops < 2 }.as("y").in().jump("y") { it.loops < 2 }.name;
     }
 
+    public Traversal<Vertex, String> get_g_V_asXxX_out_jumpXx_2X_asXyX_in_jumpXy_2X_name() {
+        g.V().as('x').out.jump('x', 2).as('y').in().jump('y', 2).value('name')
+    }
+
     public Traversal<Vertex, Vertex> get_g_V_asXxX_out_jumpXx_2X() {
         return g.V.as('x').out().jump('x', 2);
     }
@@ -37,7 +41,8 @@ class GroovyJumpTestImpl extends JumpTest {
         return g.V.as('x').out.jump('x', 2) { true };
     }
 
-    public Traversal<Vertex, Path> get_g_v1_out_jumpXx_t_out_hasNextX_in_jumpXyX_asXxX_out_asXyX_path(final Object v1Id) {
+    public Traversal<Vertex, Path> get_g_v1_out_jumpXx_t_out_hasNextX_in_jumpXyX_asXxX_out_asXyX_path(
+            final Object v1Id) {
         return g.v(v1Id).out.jump('x') { it.get().out.hasNext() }.in.jump("y").as("x").out.as('y').path;
     }
 

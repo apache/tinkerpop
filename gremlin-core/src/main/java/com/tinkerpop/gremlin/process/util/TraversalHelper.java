@@ -174,10 +174,12 @@ public class TraversalHelper {
         return steps;
     }
 
-    public static Step cloneStep(final Step step) {
+    public static Step cloneStep(final Step step, final Traversal traversal) {
         try {
             step.dehydrateStep();
-            return (Step) Serializer.deserializeObject(Serializer.serializeObject(step));
+            final Step clonedStep = (Step) Serializer.deserializeObject(Serializer.serializeObject(step));
+            clonedStep.rehydrateStep(traversal);
+            return clonedStep;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }

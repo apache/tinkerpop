@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
-import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.function.SPredicate;
@@ -66,6 +65,6 @@ public class JumpStep<S> extends AbstractStep<S, S> {
     }
 
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.jumpAs);
+        return this.loops != -1 ? TraversalHelper.makeStepString(this, this.jumpAs, this.loops) : TraversalHelper.makeStepString(this, this.jumpAs);
     }
 }

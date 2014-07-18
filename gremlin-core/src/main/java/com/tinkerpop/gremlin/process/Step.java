@@ -17,9 +17,11 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable {
 
     public Step<E, ?> getNextStep();
 
-    public <S, E> Traversal<S, E> getTraversal();
+    public <A, B> Traversal<A, B> getTraversal();
 
     public void dehydrateStep();
+
+    public <A,B> void rehydrateStep(final Traversal<A,B> traversal);
 
     public String getAs();
 

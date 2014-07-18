@@ -26,6 +26,8 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX();
 
+    public abstract Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_2X_pathXit__name__langX();
+
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_valueXnameX_path() {
@@ -59,8 +61,25 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    public void g_V_asXxX_out_loopXx_loops_lt_3X_pathXit__name__langX() {
+    public void g_V_asXxX_out_loopXx_loops_lt_2X_pathXit__name__langX() {
         final Iterator<Path> step = get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX();
+        System.out.println("Testing: " + step);
+        int counter = 0;
+        while (step.hasNext()) {
+            counter++;
+            final Path path = step.next();
+            assertEquals(3, path.size());
+            assertEquals("marko", ((Vertex) path.get(0)).<String>value("name"));
+            assertEquals("josh", path.<String>get(1));
+            assertEquals("java", path.<String>get(2));
+        }
+        assertEquals(2, counter);
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_asXxX_out_loopXx_2X_pathXit__name__langX() {
+        final Iterator<Path> step = get_g_V_asXxX_out_jumpXx_2X_pathXit__name__langX();
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -92,6 +111,12 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
                     .jump("x", o -> o.getLoops() < 2)
                     .path(v -> v, v -> ((Vertex) v).value("name"), v -> ((Vertex) v).value("lang"));
         }
+
+        public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_2X_pathXit__name__langX() {
+            return g.V().as("x").out()
+                    .jump("x", 2)
+                    .path(v -> v, v -> ((Vertex) v).value("name"), v -> ((Vertex) v).value("lang"));
+        }
     }
 
     public static class JavaComputerPathTest extends PathTest {
@@ -113,6 +138,13 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
             return g.V().as("x").out()
                     .jump("x", t -> t.getLoops() < 2)
                     .path(v -> v, v -> ((Vertex) v).value("name"), v -> ((Vertex) v).value("lang")); // .submit(g.compute());
+        }
+
+        public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_2X_pathXit__name__langX() {
+            // TODO: Detached elements do not store properties (attach)
+            return g.V().as("x").out()
+                    .jump("x", 2)
+                    .path(v -> v, v -> ((Vertex) v).value("name"), v -> ((Vertex) v).value("lang"));
         }
     }
 }

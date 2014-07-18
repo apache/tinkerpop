@@ -25,7 +25,7 @@ public class StoreStep<S> extends FilterStep<S> implements Reversible, Bulkable,
         super(traversal);
         this.variable = variable;
         this.functionRing = new FunctionRing(storeFunctions);
-        this.collection = this.traversal.memory().getOrCreate(this.variable, () -> new ArrayList());
+        this.collection = this.traversal.memory().getOrCreate(this.variable, ArrayList::new);
         this.setPredicate(traverser -> {
             final Object storeObject = this.functionRing.next().apply(traverser.get());
             for (int i = 0; i < this.bulkCount; i++) {
@@ -43,6 +43,18 @@ public class StoreStep<S> extends FilterStep<S> implements Reversible, Bulkable,
         return this.variable.equals(SideEffectCapable.CAP_KEY) ?
                 super.toString() :
                 TraversalHelper.makeStepString(this, this.variable);
+    }
+
+    @Override
+    public <A, B> void rehydrateStep(final Traversal<A, B> traversal) {
+        super.rehydrateStep(traversal);
+        this.collection = this.traversal.memory().getOrCreate(this.variable, ArrayList::new);
+    }
+
+    @Override
+    public void dehydrateStep() {
+        super.dehydrateStep();
+        this.collection = null;
     }
 
 }

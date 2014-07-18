@@ -16,7 +16,7 @@ import com.tinkerpop.gremlin.util.function.SFunction;
  */
 public class TreeStep<S> extends FilterStep<S> implements Reversible, PathConsumer, SideEffectCapable, Bulkable {
 
-    public final Tree tree;
+    public Tree tree;
     public FunctionRing functionRing;
     public String variable;
 
@@ -49,6 +49,18 @@ public class TreeStep<S> extends FilterStep<S> implements Reversible, PathConsum
         return this.variable.equals(SideEffectCapable.CAP_KEY) ?
                 super.toString() :
                 TraversalHelper.makeStepString(this, this.variable);
+    }
+
+    @Override
+    public <A, B> void rehydrateStep(final Traversal<A, B> traversal) {
+        super.rehydrateStep(traversal);
+        this.tree = this.traversal.memory().getOrCreate(this.variable, Tree::new);
+    }
+
+    @Override
+    public void dehydrateStep() {
+        super.dehydrateStep();
+        this.tree = null;
     }
 
 }

@@ -16,4 +16,8 @@ class GroovySimplePathTestImpl extends SimplePathTest {
     public Traversal<Vertex, Path> get_g_V_asXxX_both_simplePath_jumpXx_loops_lt_3X_path() {
         return g.V.as("x").both.simplePath.jump('x') { it.loops < 3 }.path()
     }
+
+    public Traversal<Vertex, Path> get_g_V_asXxX_both_simplePath_jumpXx_3X_path() {
+        return g.V.as("x").both.simplePath.jump('x', 3).path
+    }
 }

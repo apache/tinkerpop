@@ -20,4 +20,8 @@ class GroovyPathTestImpl extends PathTest {
     public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX() {
         g.V.as('x').out.jump('x') { it.loops < 2 }.path { it } { it.value('name') } { it.value('lang') }
     }
+
+    public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_2X_pathXit__name__langX() {
+        g.V.as('x').out.jump('x', 2).path { it } { it.value('name') } { it.value('lang') }
+    }
 }

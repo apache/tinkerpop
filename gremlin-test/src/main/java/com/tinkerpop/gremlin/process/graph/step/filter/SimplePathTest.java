@@ -19,6 +19,8 @@ public abstract class SimplePathTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, Path> get_g_V_asXxX_both_simplePath_jumpXx_loops_lt_3X_path();
 
+    public abstract Traversal<Vertex, Path> get_g_V_asXxX_both_simplePath_jumpXx_3X_path();
+
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXcreatedX_inXcreatedX_simplePath() {
@@ -48,6 +50,20 @@ public abstract class SimplePathTest extends AbstractGremlinTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_asXxX_both_simplePath_jumpXx_3X_path() {
+        final Traversal<Vertex, Path> traversal = get_g_V_asXxX_both_simplePath_jumpXx_3X_path();
+        System.out.println("Testing: " + traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            assertTrue(traversal.next().isSimple());
+        }
+        assertEquals(18, counter);
+        assertFalse(traversal.hasNext());
+    }
+
     public static class JavaSimplePathTest extends SimplePathTest {
 
         public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_simplePath(final Object v1Id) {
@@ -56,6 +72,10 @@ public abstract class SimplePathTest extends AbstractGremlinTest {
 
         public Traversal<Vertex, Path> get_g_V_asXxX_both_simplePath_jumpXx_loops_lt_3X_path() {
             return g.V().as("x").both().simplePath().jump("x", t -> t.getLoops() < 3).path();
+        }
+
+        public Traversal<Vertex, Path> get_g_V_asXxX_both_simplePath_jumpXx_3X_path() {
+            return g.V().as("x").both().simplePath().jump("x", 3).path();
         }
     }
 
@@ -67,6 +87,10 @@ public abstract class SimplePathTest extends AbstractGremlinTest {
 
         public Traversal<Vertex, Path> get_g_V_asXxX_both_simplePath_jumpXx_loops_lt_3X_path() {
             return g.V().as("x").both().simplePath().jump("x", t -> t.getLoops() < 3).path().submit(g.compute());
+        }
+
+        public Traversal<Vertex, Path> get_g_V_asXxX_both_simplePath_jumpXx_3X_path() {
+            return g.V().as("x").both().simplePath().jump("x", 3).path().submit(g.compute());
         }
     }
 }

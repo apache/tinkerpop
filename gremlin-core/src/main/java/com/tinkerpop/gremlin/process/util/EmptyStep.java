@@ -36,11 +36,15 @@ public class EmptyStep<S, E> implements Step<S, E> {
         return instance();
     }
 
-    public <S, E> Traversal<S, E> getTraversal() {
+    public <A, B> Traversal<A, B> getTraversal() {
         return EmptyTraversal.instance();
     }
 
     public void dehydrateStep() {
+
+    }
+
+    public <A, B> void rehydrateStep(Traversal<A, B> traversal) {
 
     }
 

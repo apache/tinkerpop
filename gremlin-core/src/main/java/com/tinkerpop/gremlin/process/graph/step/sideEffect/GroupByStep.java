@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffectCapable, Reversible {
 
-    public final Map<K, Collection<V>> groupMap;
+    public Map<K, Collection<V>> groupByMap;
     public final Map<K, R> reduceMap;
     public final SFunction<S, K> keyFunction;
     public final SFunction<S, V> valueFunction;
@@ -27,15 +27,15 @@ public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffect
     public GroupByStep(final Traversal traversal, final String variable, final SFunction<S, K> keyFunction, final SFunction<S, V> valueFunction, final SFunction<Collection<V>, R> reduceFunction) {
         super(traversal);
         this.variable = variable;
-        this.groupMap = this.traversal.memory().getOrCreate(this.variable, HashMap<K, Collection<V>>::new);
+        this.groupByMap = this.traversal.memory().getOrCreate(this.variable, HashMap<K, Collection<V>>::new);
         this.reduceMap = new HashMap<>();
         this.keyFunction = keyFunction;
         this.valueFunction = valueFunction == null ? s -> (V) s : valueFunction;
         this.reduceFunction = reduceFunction;
         this.setPredicate(traverser -> {
-            doGroup(traverser.get(), this.groupMap, this.keyFunction, this.valueFunction);
+            doGroup(traverser.get(), this.groupByMap, this.keyFunction, this.valueFunction);
             if (null != reduceFunction && !this.getPreviousStep().hasNext()) {
-                doReduce(this.groupMap, this.reduceMap, this.reduceFunction);
+                doReduce(this.groupByMap, this.reduceMap, this.reduceFunction);
                 this.traversal.memory().set(this.variable, this.reduceMap);
             }
             return true;
@@ -73,5 +73,17 @@ public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffect
         return this.variable.equals(SideEffectCapable.CAP_KEY) ?
                 super.toString() :
                 TraversalHelper.makeStepString(this, this.variable);
+    }
+
+    @Override
+    public <A, B> void rehydrateStep(final Traversal<A, B> traversal) {
+        super.rehydrateStep(traversal);
+        this.groupByMap = this.traversal.memory().getOrCreate(this.variable, HashMap<K, Collection<V>>::new);
+    }
+
+    @Override
+    public void dehydrateStep() {
+        super.dehydrateStep();
+        this.groupByMap = null;
     }
 }

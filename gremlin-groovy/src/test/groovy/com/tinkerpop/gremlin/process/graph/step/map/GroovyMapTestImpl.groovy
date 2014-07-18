@@ -20,7 +20,7 @@ class GroovyMapTestImpl extends MapTest {
     }
 
     @Override
-    public Traversal<Vertex, Integer> get_g_v1_out_mapXnameX_transformXlengthX(final Object v1Id) {
+    public Traversal<Vertex, Integer> get_g_v1_out_mapXnameX_mapXlengthX(final Object v1Id) {
         return g.v(v1Id).out().map { v -> v.get().value("name") }.map { n -> n.get().toString().length() };
     }
 

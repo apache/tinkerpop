@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapable, Reversible, Bulkable {
 
-    public final Map<Object, Long> groupCountMap;
+    public Map<Object, Long> groupCountMap;
     public FunctionRing<S, ?> functionRing;
     public final String variable;
     private long bulkCount = 1l;
@@ -41,6 +41,18 @@ public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapabl
         return this.variable.equals(SideEffectCapable.CAP_KEY) ?
                 super.toString() :
                 TraversalHelper.makeStepString(this, this.variable);
+    }
+
+    @Override
+    public <A, B> void rehydrateStep(final Traversal<A, B> traversal) {
+        super.rehydrateStep(traversal);
+        this.groupCountMap = this.traversal.memory().getOrCreate(this.variable, HashMap<Object, Long>::new);
+    }
+
+    @Override
+    public void dehydrateStep() {
+        super.dehydrateStep();
+        this.groupCountMap = null;
     }
 
 }

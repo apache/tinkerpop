@@ -83,7 +83,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         }
     }
 
-    public <S, E> Traversal<S, E> getTraversal() {
+    public <A, B> Traversal<A, B> getTraversal() {
         return this.traversal;
     }
 
@@ -93,6 +93,11 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         this.setNextStep(EmptyStep.instance());
         this.starts.clear();
         this.available = false;
+        this.nextEnd = null;
+    }
+
+    public <A,B> void rehydrateStep(final Traversal<A,B> traversal) {
+        this.traversal = traversal;
     }
 
     protected abstract Traverser<E> processNextStart() throws NoSuchElementException;

@@ -21,7 +21,7 @@ import java.util.Queue;
 public class AggregateStep<S> extends AbstractStep<S, S> implements Reversible, Bulkable, SideEffectCapable {
 
     public final FunctionRing<S, ?> functionRing;
-    final Collection aggregate;
+    Collection aggregate;
     final Queue<Traverser<S>> aggregateTraversers = new LinkedList<>();
     private long bulkCount = 1l;
     public String variable;
@@ -59,5 +59,17 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements Reversible, 
         return this.variable.equals(SideEffectCapable.CAP_KEY) ?
                 super.toString() :
                 TraversalHelper.makeStepString(this, this.variable);
+    }
+
+    @Override
+    public <A, B> void rehydrateStep(final Traversal<A, B> traversal) {
+        super.rehydrateStep(traversal);
+        this.aggregate = this.traversal.memory().getOrCreate(this.variable, ArrayList::new);
+    }
+
+    @Override
+    public void dehydrateStep() {
+        super.dehydrateStep();
+        this.aggregate = null;
     }
 }

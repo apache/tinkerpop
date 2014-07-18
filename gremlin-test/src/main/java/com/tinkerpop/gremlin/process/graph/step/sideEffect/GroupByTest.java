@@ -54,7 +54,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    public void g_V_hasXlangX_groupByXa_lang_1_countX() {
+    public void g_V_hasXlangX_groupByXlang_1_sizeX() {
         final Traversal<Vertex, Map<String, Integer>> traversal = get_g_V_hasXlangX_groupByXlang_1_sizeX();
         System.out.println("Testing: " + traversal);
         final Map<String, Integer> map = traversal.next();
