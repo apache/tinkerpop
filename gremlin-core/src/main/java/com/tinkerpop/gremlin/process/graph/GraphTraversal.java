@@ -20,6 +20,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.RangeStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathStep;
 import com.tinkerpop.gremlin.process.graph.step.map.BackStep;
+import com.tinkerpop.gremlin.process.graph.step.map.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeOtherVertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ElementPropertyStep;
@@ -28,7 +29,6 @@ import com.tinkerpop.gremlin.process.graph.step.map.ElementValuesStep;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.FoldStep;
 import com.tinkerpop.gremlin.process.graph.step.map.IdStep;
-import com.tinkerpop.gremlin.process.graph.step.map.IfThenElseStep;
 import com.tinkerpop.gremlin.process.graph.step.map.IntersectStep;
 import com.tinkerpop.gremlin.process.graph.step.map.JumpStep;
 import com.tinkerpop.gremlin.process.graph.step.map.LabelStep;
@@ -295,8 +295,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new FoldStep<>(this, seed, foldFunction));
     }
 
-    public default <E2> GraphTraversal<S, E2> ifThenElse(final SPredicate<Traverser<S>> ifPredicate, final Traversal thenTraversal, final Traversal elseTraversal) {
-        return (GraphTraversal) this.addStep(new IfThenElseStep(this, ifPredicate, thenTraversal, elseTraversal));
+    public default <E2> GraphTraversal<S, E2> choose(final SFunction<Traverser<S>, Integer> chooseFunction, final Traversal... choices) {
+        return (GraphTraversal) this.addStep(new ChooseStep(this, chooseFunction, choices));
     }
 
     ///////////////////// FILTER STEPS /////////////////////

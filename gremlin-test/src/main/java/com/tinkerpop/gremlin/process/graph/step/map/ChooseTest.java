@@ -17,14 +17,14 @@ import static org.junit.Assert.assertFalse;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class IfThenElseTest extends AbstractGremlinTest {
+public abstract class ChooseTest extends AbstractGremlinTest {
 
-    public abstract Traversal<Vertex, String> get_g_V_ifThenElseXname_length_5Xout_nameXin_nameX();
+    public abstract Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name();
 
     @Test
     @LoadGraphWith(CLASSIC)
-    public void g_V_mapXoutEX_unfold() {
-        final Traversal<Vertex, String> traversal = get_g_V_ifThenElseXname_length_5Xout_nameXin_nameX();
+    public void g_V_chooseXname_length_5XoutXinX_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_chooseXname_length_5XoutXinX_name();
         System.out.println("Testing: " + traversal);
         Map<String, Long> counts = new HashMap<>();
         int counter = 0;
@@ -43,16 +43,16 @@ public abstract class IfThenElseTest extends AbstractGremlinTest {
 
     }
 
-    public static class JavaIfThenElseTest extends IfThenElseTest {
+    public static class JavaChooseTest extends ChooseTest {
 
-        public Traversal<Vertex, String> get_g_V_ifThenElseXname_length_5Xout_nameXin_nameX() {
-            return g.V().ifThenElse(t -> t.get().<String>value("name").length() == 5, g.of().out(), g.of().in()).value("name");
+        public Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name() {
+            return g.V().choose(t -> t.get().<String>value("name").length() == 5 ? 0 : 1, g.of().out(), g.of().in()).value("name");
         }
     }
 
     /*public static class JavaComputerIfThenElseTest extends IfThenElseTest {
 
-        public Traversal<Vertex, String> get_g_V_ifThenElseXname_length_5Xout_nameXin_nameX() {
+        public Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name() {
             return (Traversal) g.V().map(t -> t.get().outE()).unfold().submit(g.compute());
         }
     }*/
