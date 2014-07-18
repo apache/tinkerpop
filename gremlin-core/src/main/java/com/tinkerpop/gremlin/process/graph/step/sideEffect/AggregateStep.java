@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
-import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.function.SFunction;
 
@@ -20,17 +19,21 @@ import java.util.Queue;
  */
 public class AggregateStep<S> extends AbstractStep<S, S> implements Reversible, Bulkable, SideEffectCapable {
 
-    public final FunctionRing<S, ?> functionRing;
+    public final SFunction<S, ?> preAggregateFunction;
     Collection aggregate;
     final Queue<Traverser<S>> aggregateTraversers = new LinkedList<>();
     private long bulkCount = 1l;
     public String variable;
 
-    public AggregateStep(final Traversal traversal, final String variable, final SFunction<S, ?>... preAggregateFunctions) {
+    public AggregateStep(final Traversal traversal, final String variable, final SFunction<S, ?> preAggregateFunction) {
         super(traversal);
         this.variable = variable;
-        this.functionRing = new FunctionRing<>(preAggregateFunctions);
+        this.preAggregateFunction = preAggregateFunction;
         this.aggregate = this.traversal.memory().getOrCreate(this.variable, ArrayList::new);
+    }
+
+    public AggregateStep(final Traversal traversal, final String variable) {
+        this(traversal, variable, null);
     }
 
     public void setCurrentBulkCount(final long bulkCount) {
@@ -42,7 +45,9 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements Reversible, 
             if (this.starts.hasNext()) {
                 this.starts.forEachRemaining(traverser -> {
                     for (int i = 0; i < this.bulkCount; i++) {
-                        this.aggregate.add(this.functionRing.next().apply(traverser.get()));
+                        this.aggregate.add(null == this.preAggregateFunction ?
+                                traverser.get() :
+                                this.preAggregateFunction.apply(traverser.get()));
                         this.aggregateTraversers.add(traverser.makeSibling());
                     }
                 });

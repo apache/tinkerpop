@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
-import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.function.SFunction;
@@ -18,19 +17,25 @@ import java.util.Map;
 public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapable, Reversible, Bulkable {
 
     public Map<Object, Long> groupCountMap;
-    public FunctionRing<S, ?> functionRing;
+    public SFunction<S, ?> preGroupFunction;
     public final String variable;
     private long bulkCount = 1l;
 
-    public GroupCountStep(final Traversal traversal, final String variable, final SFunction<S, ?>... preGroupFunctions) {
+    public GroupCountStep(final Traversal traversal, final String variable, final SFunction<S, ?> preGroupFunction) {
         super(traversal);
-        this.functionRing = new FunctionRing<>(preGroupFunctions);
+        this.preGroupFunction = preGroupFunction;
         this.variable = variable;
         this.groupCountMap = this.traversal.memory().getOrCreate(variable, HashMap<Object, Long>::new);
         this.setPredicate(traverser -> {
-            MapHelper.incr(this.groupCountMap, this.functionRing.next().apply(traverser.get()), this.bulkCount);
+            MapHelper.incr(this.groupCountMap,
+                    null == this.preGroupFunction ? traverser.get() : this.preGroupFunction.apply(traverser.get()),
+                    this.bulkCount);
             return true;
         });
+    }
+
+    public GroupCountStep(final Traversal traversal, final String variable) {
+        this(traversal, variable, null);
     }
 
     public void setCurrentBulkCount(final long bulkCount) {

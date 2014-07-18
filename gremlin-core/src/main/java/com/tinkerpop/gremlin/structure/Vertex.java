@@ -113,8 +113,36 @@ public interface Vertex extends Element {
      * The following steps are general to element but repeated here for the sake of ensuring property type casting.
      */
 
-    public default GraphTraversal<Vertex, Vertex> aggregate(final String variable, final SFunction... preAggregateFunctions) {
-        return this.start().aggregate(variable, preAggregateFunctions);
+    public default GraphTraversal<Vertex, Vertex> aggregate(final String variable, final SFunction<Vertex, ?> preAggregateFunction) {
+        return this.start().aggregate(variable, preAggregateFunction);
+    }
+
+    public default GraphTraversal<Vertex, Vertex> aggregate(final SFunction<Vertex, ?> preAggregateFunction) {
+        return this.start().aggregate(preAggregateFunction);
+    }
+
+    public default GraphTraversal<Vertex, Vertex> aggregate(final String variable) {
+        return this.start().aggregate(variable);
+    }
+
+    public default GraphTraversal<Vertex, Vertex> aggregate() {
+        return this.start().aggregate();
+    }
+
+    public default GraphTraversal<Vertex, Vertex> store(final String variable, final SFunction<Vertex, ?> preStoreFunction) {
+        return this.start().store(variable, preStoreFunction);
+    }
+
+    public default GraphTraversal<Vertex, Vertex> store(final String variable) {
+        return this.start().store(variable);
+    }
+
+    public default GraphTraversal<Vertex, Vertex> store(final SFunction<Vertex, ?> preStoreFunction) {
+        return this.start().store(preStoreFunction);
+    }
+
+    public default GraphTraversal<Vertex, Vertex> store() {
+        return this.start().store();
     }
 
     public default GraphTraversal<Vertex, Vertex> as(final String as) {
