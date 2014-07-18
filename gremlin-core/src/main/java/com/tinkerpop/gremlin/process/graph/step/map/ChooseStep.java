@@ -16,7 +16,7 @@ public class ChooseStep<S, E> extends FlatMapStep<S, E> {
     public final SFunction<Traverser<S>, Integer> chooseFunction;
     public final List<Traversal<S, E>> choices;
 
-    public ChooseStep(final Traversal traversal, final SFunction<Traverser<S>, Integer> chooseFunction, final Traversal<S, E>... choices) {
+    public ChooseStep(final Traversal traversal, final SFunction<Traverser<S>, Integer> chooseFunction, final Traversal... choices) {
         super(traversal);
         this.chooseFunction = chooseFunction;
         this.choices = Arrays.asList(choices);

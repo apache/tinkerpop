@@ -23,7 +23,7 @@ public class CountStep<S> extends MapStep<S, Long> implements Bulkable {
         super(traversal);
         this.setFunction(traverser -> {
             this.counter.set(this.counter.get() + this.bulkCount);
-            this.getPreviousStep().forEachRemaining(previousTraverser -> this.counter.set(this.counter.get() + this.bulkCount));
+            this.starts.forEachRemaining(previousTraverser -> this.counter.set(this.counter.get() + this.bulkCount));
             return this.counter.get();
         });
     }

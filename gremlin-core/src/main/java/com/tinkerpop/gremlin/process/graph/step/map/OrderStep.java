@@ -25,7 +25,7 @@ public class OrderStep<S> extends FlatMapStep<S, S> implements Reversible {
         this.setFunction(traverser -> {
             final List<Traverser<S>> list = new ArrayList<>();
             list.add(traverser);
-            list.addAll(StreamFactory.stream(getPreviousStep()).collect(Collectors.<Traverser<S>>toList()));
+            this.starts.forEachRemaining(list::add);
             Collections.sort(list, this.comparator);
             return new UnTraverserIterator<>(list.iterator());
         });

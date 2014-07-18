@@ -34,7 +34,7 @@ public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffect
         this.reduceFunction = reduceFunction;
         this.setPredicate(traverser -> {
             doGroup(traverser.get(), this.groupByMap, this.keyFunction, this.valueFunction);
-            if (null != reduceFunction && !this.getPreviousStep().hasNext()) {
+            if (null != reduceFunction && !this.starts.hasNext()) {
                 doReduce(this.groupByMap, this.reduceMap, this.reduceFunction);
                 this.traversal.memory().set(this.variable, this.reduceMap);
             }

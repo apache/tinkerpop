@@ -22,7 +22,7 @@ public class FoldStep<S, E> extends MapStep<S, E> {
             final List<S> list = new ArrayList<>();
             final S s = traverser.get();
             list.add(s);
-            this.getPreviousStep().forEachRemaining(t -> list.add(t.get()));
+            this.starts.forEachRemaining(t -> list.add(t.get()));
             return (E) list;
         });
     }
@@ -33,7 +33,7 @@ public class FoldStep<S, E> extends MapStep<S, E> {
         this.foldFunction = foldFunction;
         this.setFunction(traverser -> {
             this.seed.set(this.foldFunction.apply(this.seed.get(), traverser.get()));
-            this.getPreviousStep().forEachRemaining(previousTraverser -> this.seed.set(this.foldFunction.apply(this.seed.get(), previousTraverser.get())));
+            this.starts.forEachRemaining(previousTraverser -> this.seed.set(this.foldFunction.apply(this.seed.get(), previousTraverser.get())));
             return (E) this.seed.get();
         });
     }
