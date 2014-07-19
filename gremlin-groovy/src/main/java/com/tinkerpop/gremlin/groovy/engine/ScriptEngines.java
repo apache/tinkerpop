@@ -97,6 +97,8 @@ public class ScriptEngines implements AutoCloseable {
             final ScriptEngine scriptEngine = createScriptEngine(language, imports, staticImports, config)
                     .orElseThrow(() -> new IllegalArgumentException("Language [%s] not supported"));
             scriptEngines.put(language, scriptEngine);
+
+            logger.info("Loaded {} ScriptEngine", language);
         } finally {
             controlOperationExecuting = false;
         }
