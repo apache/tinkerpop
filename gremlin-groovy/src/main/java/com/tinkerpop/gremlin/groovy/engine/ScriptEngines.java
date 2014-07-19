@@ -56,7 +56,7 @@ public class ScriptEngines implements AutoCloseable {
      */
     public Object eval(final String script, final Bindings bindings, final String language) throws ScriptException {
         if (!scriptEngines.containsKey(language))
-            throw new IllegalArgumentException("Language [%s] not supported");
+            throw new IllegalArgumentException(String.format("Language [%s] not supported", language));
 
         try {
             awaitControlOp();
