@@ -7,9 +7,12 @@ notifications:
     - daniel@thinkaurelius.com
   hipchat:
     secure: "KL0XyQjycrXTUjXSXmvjDTs5fdcAi2Gl2PbuYMWslT8BjxduhVHBZ4OpHSUEkcFLS66blS2SMZNDYfXu3lHWWSxLSoPXubf+BvTOmvBm/wOTudxmKj17UnPUvSbH+KW08mOJBhsJ/0Sok6pcfmjSKLvlau8muttGQ7Yexd0pIOs="
-jdk:
-  - oraclejdk8
-
+jdk: oraclejdk8
+before_install: "git clone git@github.com:spmallette/travis-maven-deploy.git target/travis"
+script: "mvn deploy --settings target/travis/settings.xml"
 env:
   global:
-    - secure: "BiSlH/eLH3R6lrUQeX6T1merzNCQtALmxr0iMlPCBeBakiBxwVEb2eyRx8HsYUBopeMKSuOjQmwd3x3U7/99ylHC9KbmmgtrTpdQErUHJeWr/XLE4YPbFPfU2dJMPkz0PZQLzM57ATei847ik7FMuCKPu/h2/Z7bAmLfjYRQA2Q="
+    # CI_DEPLOY_USERNAME
+    - secure: "eA1+rkLXveAg81H7s0nUpbwi/aqmEQxHrOi1mmxd/vPpLc+lZlJ853VeRn0Y3Qqv0WdptC4EKeEeL9H6N0fRj4uzs97Yj1s4bkih60OWGYN2Oli03b6kE2I6CTCDlI36zoqrsV0MfrRb+0neCwZhnlHu44CH7Ja7JvGidLOAhpk="
+    # CI_DEPLOY_PASSWORD
+    - secure: "G8GXr6T2qdWry13EGz0JHKOPT+9AA4RIrB3WgW119Jda6WyUHnjdSuDQhpCQFKDq7NEFEx47rVmRslEEplaMIElHTOCDTOSRLGCf+/WcR7CMZh+LQxygfpLAsYzItC+F713tWRMRxc/EQC2Vs/pBe6js7fiBtGp8pHt2IdojDO8="
