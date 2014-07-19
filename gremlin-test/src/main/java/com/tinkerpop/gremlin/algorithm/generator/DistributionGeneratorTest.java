@@ -127,7 +127,7 @@ public class DistributionGeneratorTest {
             final Distribution dist = new NormalDistribution(2);
             final DistributionGenerator generator = DistributionGenerator.create(g)
                     .label("knows")
-                    .edgeProcessor(e -> e.property("data", "test"))
+                    .edgeProcessor(e -> e.<String>property("data", "test"))
                     .outDistribution(dist)
                     .inDistribution(dist)
                     .expectedNumEdges(100).build();

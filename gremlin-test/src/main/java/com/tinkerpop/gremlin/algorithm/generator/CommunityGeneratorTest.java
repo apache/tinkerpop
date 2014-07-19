@@ -145,7 +145,7 @@ public class CommunityGeneratorTest {
             final Distribution dist = new NormalDistribution(2);
             final CommunityGenerator generator = CommunityGenerator.create(g)
                     .label("knows")
-                    .edgeProcessor(e -> e.property("data", "test"))
+                    .edgeProcessor(e -> e.<String>property("data", "test"))
                     .vertexProcessor((v, m) -> {
                         m.forEach(v::property);
                         v.property("test", "data");
