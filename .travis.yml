@@ -8,7 +8,7 @@ notifications:
   hipchat:
     secure: "KL0XyQjycrXTUjXSXmvjDTs5fdcAi2Gl2PbuYMWslT8BjxduhVHBZ4OpHSUEkcFLS66blS2SMZNDYfXu3lHWWSxLSoPXubf+BvTOmvBm/wOTudxmKj17UnPUvSbH+KW08mOJBhsJ/0Sok6pcfmjSKLvlau8muttGQ7Yexd0pIOs="
 jdk: oraclejdk8
-before_install: "git clone git@github.com:spmallette/travis-maven-deploy.git target/travis"
+before_install: "git clone https://github.com/spmallette/travis-maven-deploy.git target/travis"
 script: "mvn deploy --settings target/travis/settings.xml"
 env:
   global:
