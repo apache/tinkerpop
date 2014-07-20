@@ -12,11 +12,14 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import org.neo4j.graphdb.DynamicLabel;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.index.AutoIndexer;
+import org.neo4j.graphdb.index.RelationshipAutoIndexer;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -25,6 +28,7 @@ import java.util.stream.Stream;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Pieter Martin
  */
 public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
@@ -42,7 +46,6 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
             this.starts.add(new TraverserIterator(this, Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
         else
             this.starts.add(new TraverserIterator(Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
-
     }
 
     public void clear() {
@@ -51,7 +54,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
     private Iterator<? extends Edge> edges() {
         this.graph.tx().readWrite();
-        final HasContainer indexedContainer = getIndexKey(Edge.class);
+        final HasContainer indexedContainer = getEdgeIndexKey();
         final Stream<? extends Edge> edgeStream = (null == indexedContainer) ?
                 getEdges() :
                 getEdgesUsingIndex(indexedContainer);
@@ -60,10 +63,29 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
     private Iterator<? extends Vertex> vertices() {
         this.graph.tx().readWrite();
-        final HasContainer indexedContainer = getIndexKey(Vertex.class);
-        final Stream<? extends Vertex> vertexStream = (null == indexedContainer) ?
-                getVertices() :
-                getVerticesUsingIndex(indexedContainer);
+        Stream<? extends Vertex> vertexStream;
+        if (this.hasContainers.size() > 1 && this.hasContainers.get(0).key.equals(Element.LABEL) && this.hasContainers.get(1).predicate.equals(Compare.EQUAL)) {
+            //Scenario 1, using labeled index via 2 HasContainer
+            HasContainer hasContainer1 = this.hasContainers.get(0);
+            HasContainer hasContainer2 = this.hasContainers.get(1);
+            //In this case neo4j will work out if there is an index or not
+            this.hasContainers.remove(hasContainer1);
+            this.hasContainers.remove(hasContainer2);
+            vertexStream = getVerticesUsingLabeledIndex((String) hasContainer1.value, hasContainer2.key, hasContainer2.value);
+        } else if (this.hasContainers.size() > 0 && this.hasContainers.get(0).key.equals(Element.LABEL)) {
+            //Scenario 2, using label only for search
+            HasContainer hasContainer1 = this.hasContainers.get(0);
+            vertexStream = getVerticesUsingLabel((String) hasContainer1.value);
+            this.hasContainers.remove(hasContainer1);
+        } else  {
+            HasContainer hasContainer1 = getVertexIndexKey();
+            if (hasContainer1 != null) {
+                vertexStream = getVerticesUsingLegacyIndex(hasContainer1.key, hasContainer1.value);
+                this.hasContainers.remove(hasContainer1);
+            } else {
+                vertexStream = getVertices();
+            }
+        }
         return vertexStream.filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers)).iterator();
     }
 
@@ -77,11 +99,20 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
                 .map(e -> new Neo4jEdge(e, this.graph));
     }
 
-    private Stream<Neo4jVertex> getVerticesUsingIndex(final HasContainer indexedContainer) {
-        this.graph.tx().readWrite();
+    private Stream<Vertex> getVerticesUsingLabeledIndex(final String label, String key, Object value) {
+        ResourceIterator<Node> iterator = graph.getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(label), key, value).iterator();
+        return StreamFactory.stream(iterator).map(n -> new Neo4jVertex(n, this.graph));
+    }
+
+    private Stream<Vertex> getVerticesUsingLabel(final String label) {
+        ResourceIterator<Node> iterator = GlobalGraphOperations.at(graph.getBaseGraph()).getAllNodesWithLabel(DynamicLabel.label(label)).iterator();
+        return StreamFactory.stream(iterator).map(n -> new Neo4jVertex(n, this.graph));
+    }
+
+    private Stream<Vertex> getVerticesUsingLegacyIndex(String key, Object value) {
         final AutoIndexer indexer = this.graph.getBaseGraph().index().getNodeAutoIndexer();
-        if (indexer.isEnabled() && indexer.getAutoIndexedProperties().contains(indexedContainer.key))
-            return StreamFactory.stream(this.graph.getBaseGraph().index().getNodeAutoIndexer().getAutoIndex().get(indexedContainer.key, indexedContainer.value).iterator())
+        if (indexer.isEnabled() && indexer.getAutoIndexedProperties().contains(key))
+            return StreamFactory.stream(this.graph.getBaseGraph().index().getNodeAutoIndexer().getAutoIndex().get(key, value).iterator())
                     .map(n -> new Neo4jVertex(n, this.graph));
         else
             throw new IllegalStateException("Index not here"); // todo: unecessary check/throw?
@@ -89,29 +120,28 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
     private Stream<Neo4jEdge> getEdgesUsingIndex(final HasContainer indexedContainer) {
         this.graph.tx().readWrite();
-        final AutoIndexer indexer = this.graph.getBaseGraph().index().getNodeAutoIndexer();
-        if (indexer.isEnabled() && indexer.getAutoIndexedProperties().contains(indexedContainer.key))
-            return StreamFactory.stream(this.graph.getBaseGraph().index().getRelationshipAutoIndexer().getAutoIndex().get(indexedContainer.key, indexedContainer.value).iterator())
-                    .map(e -> new Neo4jEdge(e, this.graph));
-        else
-            throw new IllegalStateException("Index not here"); // todo: unecessary check/throw?
+        final RelationshipAutoIndexer indexer = this.graph.getBaseGraph().index().getRelationshipAutoIndexer();
+        return StreamFactory.stream(indexer.getAutoIndex().get(indexedContainer.key, indexedContainer.value).iterator())
+                .map(e -> new Neo4jEdge(e, this.graph));
     }
 
-    private HasContainer getIndexKey(final Class<? extends Element> indexedClass) {
-        this.graph.tx().readWrite();
-        // todo: review this stuff in comparison to tinkergraph
-        final Set<String> indexedKeys;
-        if (indexedClass.isAssignableFrom(Vertex.class))
-            indexedKeys = new HashSet<>(Arrays.asList(this.graph.getBaseGraph().index().nodeIndexNames()));
-        else if (indexedClass.isAssignableFrom(Edge.class))
-            indexedKeys = new HashSet<>(Arrays.asList(this.graph.getBaseGraph().index().relationshipIndexNames()));
-        else
-            throw new RuntimeException("Indexes must be related to a Vertex or an Edge");
-
-        return this.hasContainers.stream()
-                .filter(c -> indexedKeys.contains(c.key) && c.predicate.equals(Compare.EQUAL))
+    private HasContainer getVertexIndexKey() {
+        final Set<String> indexedKeys = this.graph.getBaseGraph().index().getNodeAutoIndexer().getAutoIndexedProperties();
+        HasContainer indexedHasContainer = this.hasContainers.stream()
+                .filter(c -> (indexedKeys.contains(c.key) && c.predicate.equals(Compare.EQUAL)))
                 .findFirst()
                 .orElseGet(() -> null);
+        return indexedHasContainer;
     }
+
+    private HasContainer getEdgeIndexKey() {
+        final Set<String> indexedKeys = this.graph.getBaseGraph().index().getRelationshipAutoIndexer().getAutoIndexedProperties();
+        HasContainer indexedHasContainer = this.hasContainers.stream()
+                .filter(c -> (indexedKeys.contains(c.key) && c.predicate.equals(Compare.EQUAL)))
+                .findFirst()
+                .orElseGet(() -> null);
+        return indexedHasContainer;
+    }
+
 
 }
