@@ -5,6 +5,8 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
 import io.netty.util.concurrent.EventExecutorGroup;
 
+import java.util.concurrent.ScheduledExecutorService;
+
 /**
  * An interface that makes it possible to plugin different Netty pipleines to Gremlin Server, enabling the use of
  * different protocols, custom security and other such functions.  A {@code Channelizer} implementation can be
@@ -21,5 +23,5 @@ public interface Channelizer extends ChannelHandler {
      */
     public void init(final Settings settings, final GremlinExecutor gremlinExecutor,
                      final EventExecutorGroup gremlinGroup,
-                     final Graphs graphs);
+                     final Graphs graphs, final ScheduledExecutorService scheduledExecutorService);
 }

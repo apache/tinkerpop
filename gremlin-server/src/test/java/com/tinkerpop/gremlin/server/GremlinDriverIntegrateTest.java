@@ -279,4 +279,22 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             cluster.close();
         }
     }
+
+    @Test
+    public void shouldExecuteScriptInSession() throws Exception {
+        final Cluster cluster = Cluster.create().useSessionId("my-session-id").build();
+        final Client client = cluster.connect();
+
+        final ResultSet results1 = client.submit("x = [1,2,3,4,5,6,7,8,9]");
+        final AtomicInteger counter = new AtomicInteger(0);
+        results1.stream().map(i -> i.get(Integer.class) * 2).forEach(i -> assertEquals(counter.incrementAndGet() * 2, Integer.parseInt(i.toString())));
+
+        final ResultSet results2 = client.submit("x[0]+1");
+        assertEquals(2, results2.all().get().get(0).getInt());
+
+        final ResultSet results3 = client.submit("x[1]+2");
+        assertEquals(4, results3.all().get().get(0).getInt());
+
+        cluster.close();
+    }
 }

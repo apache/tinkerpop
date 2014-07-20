@@ -14,6 +14,8 @@ import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ScheduledExecutorService;
+
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -22,20 +24,23 @@ public class OpExecutorHandler extends SimpleChannelInboundHandler<Pair<RequestM
 
     private final Settings settings;
     private final Graphs graphs;
-
+    private final ScheduledExecutorService scheduledExecutorService;
     private final GremlinExecutor gremlinExecutor;
 
-    public OpExecutorHandler(final Settings settings, final Graphs graphs, final GremlinExecutor gremlinExecutor) {
+    public OpExecutorHandler(final Settings settings, final Graphs graphs, final GremlinExecutor gremlinExecutor,
+                             final ScheduledExecutorService scheduledExecutorService) {
         this.settings = settings;
         this.graphs = graphs;
         this.gremlinExecutor = gremlinExecutor;
+        this.scheduledExecutorService = scheduledExecutorService;
     }
 
     @Override
     protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final Pair<RequestMessage, ThrowingConsumer<Context>> objects) throws Exception {
         final RequestMessage msg = objects.getValue0();
         final ThrowingConsumer<Context> op = objects.getValue1();
-        final Context gremlinServerContext = new Context(msg, channelHandlerContext, settings, graphs, gremlinExecutor);
+        final Context gremlinServerContext = new Context(msg, channelHandlerContext,
+                settings, graphs, gremlinExecutor, scheduledExecutorService);
 
         try {
             op.accept(gremlinServerContext);

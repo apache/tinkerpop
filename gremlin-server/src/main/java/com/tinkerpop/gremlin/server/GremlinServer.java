@@ -63,7 +63,7 @@ public class GremlinServer {
 
             final GremlinExecutor gremlinExecutor = initializeGremlinExecutor(gremlinGroup, workerGroup);
             final Channelizer channelizer = createChannelizer(settings);
-            channelizer.init(settings, gremlinExecutor, gremlinGroup, graphs.get());
+            channelizer.init(settings, gremlinExecutor, gremlinGroup, graphs.get(), workerGroup);
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(channelizer);

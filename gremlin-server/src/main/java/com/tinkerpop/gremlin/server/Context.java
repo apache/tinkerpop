@@ -4,6 +4,10 @@ import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import io.netty.channel.ChannelHandlerContext;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+
 /**
  * The context of Gremlin Server within which a particular request is made.
  *
@@ -15,17 +19,22 @@ public class Context {
     private final Settings settings;
     private final Graphs graphs;
     private final GremlinExecutor gremlinExecutor;
+    private final ScheduledExecutorService scheduledExecutorService;
 
     public Context(final RequestMessage requestMessage, final ChannelHandlerContext ctx,
                    final Settings settings, final Graphs graphs,
-                   final GremlinExecutor gremlinExecutor) {
+                   final GremlinExecutor gremlinExecutor, final ScheduledExecutorService scheduledExecutorService) {
         this.requestMessage = requestMessage;
         this.channelHandlerContext = ctx;
         this.settings = settings;
         this.graphs = graphs;
         this.gremlinExecutor = gremlinExecutor;
+        this.scheduledExecutorService = scheduledExecutorService;
     }
 
+    public ScheduledExecutorService getScheduledExecutorService() {
+        return scheduledExecutorService;
+    }
 
     /**
      * Gets the current request to Gremlin Server.

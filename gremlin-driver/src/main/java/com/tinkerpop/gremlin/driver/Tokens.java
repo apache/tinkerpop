@@ -24,7 +24,7 @@ public class Tokens {
     public static final String ARGS_INFO_TYPE = "infoType";
     public static final String ARGS_LANGUAGE = "language";
     public static final String ARGS_BATCH_SIZE = "batchSize";
-    public static final String ARGS_VERBOSE = "verbose";
+    public static final String ARGS_SESSION = "session";
 
     public static final String ARGS_COORDINATES_GROUP = "group";
     public static final String ARGS_COORDINATES_ARTIFACT = "artifact";
