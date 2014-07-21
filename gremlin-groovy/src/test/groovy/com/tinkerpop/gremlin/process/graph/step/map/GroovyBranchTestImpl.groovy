@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 class GroovyBranchTestImpl extends BranchTest {
 
     public Traversal<Vertex, String> get_g_V_branchXname_length_5XoutXinX_name() {
-        return g.V().branch({ it.get().value("name").length() == 5 },
+        return g.V().branch({ it.get().value('name').length() == 5 },
                 g.of().out(),
                 g.of().in()).name;
     }
@@ -19,10 +19,11 @@ class GroovyBranchTestImpl extends BranchTest {
         return g.v(v1Id).branch({ 0 }, [0: g.of().out().value("name")]);
     }
 
-    public Traversal<Vertex, String> get_g_V_hasXageX_branchXname_lengthX5_in_4_outX_name() {
-        return g.V().has("age").branch({ it.get().value("name").length() },
-                [4: g.of().out(),
-                 5: g.of().in()]).name;
+    public Traversal<Vertex, String> get_g_V_hasXageX_branchXname_lengthX5_in_4_out_3_bothX_name() {
+        return g.V().has('age').branch({ it.get().value('name').length() },
+                [5: g.of().in(),
+                 4: g.of().out(),
+                 3: g.of().both()]).name;
     }
 
     public Traversal<Vertex, Integer> get_g_V_valueXageX_branchXnullX27_identity_29_minus2X() {

@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process.util;
 
-import com.esotericsoftware.kryo.Kryo;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
@@ -17,8 +16,6 @@ import java.util.stream.Collectors;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class TraversalHelper {
-
-    private static final Kryo kryo = new Kryo();
 
     private static final String UNDERSCORE = "_";
 

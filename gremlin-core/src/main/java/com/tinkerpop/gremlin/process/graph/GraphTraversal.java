@@ -302,22 +302,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ///////////////////// EXPERIMENTAL STEPS /////////////////////
 
-    /*public default <E2> GraphTraversal<S, E2> branch(final Traversal<S, E2> trueBranch, final Traversal<S, E2> falseBranch) {
-        return (GraphTraversal) this.addStep(new BranchStep<>(this, null, trueBranch, falseBranch));
-    }*/
-
-    /*
-      public default <E2> GraphTraversal<S, E2> branch(final Map<S, Traversal<S, E2>> choices) {
-        return (GraphTraversal) this.addStep(new BranchStep<>(this, null, choices));
-      }
-     */
-
     public default <E2> GraphTraversal<S, E2> branch(final SPredicate<Traverser<S>> ifPredicate, final Traversal trueBranch, final Traversal falseBranch) {
         return (GraphTraversal) this.addStep(new BranchStep(this, ifPredicate, trueBranch, falseBranch));
     }
 
     public default <E2, M> GraphTraversal<S, E2> branch(final SFunction<Traverser<S>, M> mapFunction, final Map<M, Traversal<S, E2>> choices) {
-        return (GraphTraversal) this.addStep(new BranchStep<S, E2, M>(this, mapFunction, choices));
+        return (GraphTraversal) this.addStep(new BranchStep<>(this, mapFunction, choices));
     }
 
     ///////////////////// FILTER STEPS /////////////////////
