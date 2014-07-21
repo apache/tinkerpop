@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Joshua Shinavier (http://fortytwo.net)
  */
 class GroovyBranchTestImpl extends BranchTest {
 
@@ -24,4 +25,13 @@ class GroovyBranchTestImpl extends BranchTest {
                  5: g.of().in()]).name;
     }
 
+    public Traversal<Vertex, Integer> get_g_V_valueXageX_branchXnullX27_identity_29_minus2X() {
+        return g.V.age.branch(null, [27:g.of().identity, 29:g.of().map{it.get() - 2}])
+    }
+
+    public Traversal<Vertex, Object> get_g_V_branchXout_count_nextX2L_valueXnameX_3L_valuesX() {
+        return g.V.branch({it.get().out().count().next();},[
+            2L:g.of().value("name"),
+            3L:g.of().values()])
+    }
 }
