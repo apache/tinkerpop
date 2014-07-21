@@ -9,13 +9,18 @@ notifications:
     secure: "KL0XyQjycrXTUjXSXmvjDTs5fdcAi2Gl2PbuYMWslT8BjxduhVHBZ4OpHSUEkcFLS66blS2SMZNDYfXu3lHWWSxLSoPXubf+BvTOmvBm/wOTudxmKj17UnPUvSbH+KW08mOJBhsJ/0Sok6pcfmjSKLvlau8muttGQ7Yexd0pIOs="
 jdk: oraclejdk8
 before_install:
-  - if [[ "$TRAVIS_BRANCH" == "master" && "$TRAVIS_PULL_REQUEST" == "false" ]]; then git clone https://github.com/spmallette/travis-maven-deploy.git target/travis; fi
+  - if [[ ("$TRAVIS_BRANCH" == "master" || "$TRAVIS_BRANCH" == "publish-docs") && "$TRAVIS_PULL_REQUEST" == "false" ]]; then git clone https://github.com/spmallette/travis-maven-deploy.git target/travis; fi
 script:
-  - if [[ "$TRAVIS_BRANCH" != "master" || "$TRAVIS_PULL_REQUEST" == "true" ]]; then mvn test; fi
   - if [[ "$TRAVIS_BRANCH" == "master" && "$TRAVIS_PULL_REQUEST" == "false" ]]; then mvn deploy --settings target/travis/settings.xml; fi
+  - if [[ "$TRAVIS_BRANCH" == "publish-docs" || "$TRAVIS_PULL_REQUEST" == "false" ]]; then mvn deploy --settings target/travis/settings.xml -Dasciidoc -Djavadoc
+  - mvn test
 env:
   global:
     # CI_DEPLOY_USERNAME
     - secure: "eA1+rkLXveAg81H7s0nUpbwi/aqmEQxHrOi1mmxd/vPpLc+lZlJ853VeRn0Y3Qqv0WdptC4EKeEeL9H6N0fRj4uzs97Yj1s4bkih60OWGYN2Oli03b6kE2I6CTCDlI36zoqrsV0MfrRb+0neCwZhnlHu44CH7Ja7JvGidLOAhpk="
     # CI_DEPLOY_PASSWORD
     - secure: "G8GXr6T2qdWry13EGz0JHKOPT+9AA4RIrB3WgW119Jda6WyUHnjdSuDQhpCQFKDq7NEFEx47rVmRslEEplaMIElHTOCDTOSRLGCf+/WcR7CMZh+LQxygfpLAsYzItC+F713tWRMRxc/EQC2Vs/pBe6js7fiBtGp8pHt2IdojDO8="
+    # S3_DEPLOY_USERNAME
+    - secure: "ASgksQmzF5MHwycIfmo6otcw9er90rNwJBVTK9IeA23Qkg6zki0MTVCXWBKNxxc5h4pkgxv5egfZgJxIk7fjvxvZZoHGURtGa/HJzO9O4+PS4T19RzSrQU/gu55iRYQMs12Zt0KJhJV5p0rWklrrkc83NAl+NLGs0hq4m7hnhoE="
+    # S3_DEPLOY_PASSWORD
+    - secure: "ph+XbOiCrVY9tUYj2f2RnL9vxR4a6oBvL54HAh050TGE4H7t0O2R9Lu9br7QaIdi4XGjKnq27NxhSG6TEbJDgEt3LeTmXNzt+WsGxxgiL4u00JFI7RHeJHlzKVTD5YR07CNVCKEIAZYZWOwdVoQ5DG+t+rcwCT9p9jnHOQBeObM="
