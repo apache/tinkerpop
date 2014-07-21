@@ -80,6 +80,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
 
             // map
             BackTest.JavaBackTest.class,
+            ChooseTest.JavaChooseTest.class,
             FoldTest.JavaFoldTest.class,
             ChooseTest.JavaChooseTest.class,
             JumpTest.JavaJumpTest.class,
@@ -130,6 +131,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
 
             // map
             BackTest.class,
+            ChooseTest.class,
             FoldTest.class,
             ChooseTest.class,
             JumpTest.class,

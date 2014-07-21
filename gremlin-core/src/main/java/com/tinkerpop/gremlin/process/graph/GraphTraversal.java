@@ -20,7 +20,6 @@ import com.tinkerpop.gremlin.process.graph.step.filter.RangeStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathStep;
 import com.tinkerpop.gremlin.process.graph.step.map.BackStep;
-import com.tinkerpop.gremlin.process.graph.step.map.BranchStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeOtherVertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
@@ -296,26 +295,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new FoldStep<>(this, seed, foldFunction));
     }
 
-    public default <E2> GraphTraversal<S, E2> choose(final SFunction<Traverser<S>, Integer> chooseFunction, final Traversal... choices) {
-        return (GraphTraversal) this.addStep(new ChooseStep(this, chooseFunction, choices));
-    }
-
     ///////////////////// EXPERIMENTAL STEPS /////////////////////
 
-    public default <E2> GraphTraversal<S, E2> branch(final Traversal<S, E2> trueBranch, final Traversal<S, E2> falseBranch) {
-        return (GraphTraversal) this.addStep(new BranchStep<S, E2>(this, null, trueBranch, falseBranch));
+    public default <E2> GraphTraversal<S, E2> choose(final SPredicate<Traverser<S>> choosePredicate, final Traversal trueChoice, final Traversal falseChoice) {
+        return (GraphTraversal) this.addStep(new ChooseStep(this, choosePredicate, trueChoice, falseChoice));
     }
 
-    public default <E2> GraphTraversal<S, E2> branch(final SFunction<Traverser<S>, Boolean> mapFunction, final Traversal<S, E2> trueBranch, final Traversal<S, E2> falseBranch) {
-        return (GraphTraversal) this.addStep(new BranchStep<S, E2>(this, mapFunction, trueBranch, falseBranch));
-    }
-
-    public default <E2> GraphTraversal<S, E2> branch(final Map<S, Traversal<S, E2>> choices) {
-        return (GraphTraversal) this.addStep(new BranchStep<S, E2>(this, null, choices));
-    }
-
-    public default <E2> GraphTraversal<S, E2> branch(final SFunction<Traverser<S>, S> mapFunction, final Map<S, Traversal<S, E2>> choices) {
-        return (GraphTraversal) this.addStep(new BranchStep<S, E2>(this, mapFunction, choices));
+    public default <E2, M> GraphTraversal<S, E2> choose(final SFunction<Traverser<S>, M> mapFunction, final Map<M, Traversal<S, E2>> choices) {
+        return (GraphTraversal) this.addStep(new ChooseStep<>(this, mapFunction, choices));
     }
 
     ///////////////////// FILTER STEPS /////////////////////

@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SPredicate;
 
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * An {@link Edge} links two {@link Vertex} objects. Along with its {@link Property} objects, an {@link Edge} has both
@@ -148,8 +149,12 @@ public interface Edge extends Element {
         return this.start().sideEffect(consumer);
     }
 
-    public default <E2> GraphTraversal<Edge, E2> choose(final SFunction<Traverser<Edge>, Integer> chooseFunction, final Traversal... choices) {
-        return  this.start().choose(chooseFunction, choices);
+    public default <E2> GraphTraversal<Edge, E2> choose(final SPredicate<Traverser<Edge>> choosePredicate, final Traversal trueChoice, final Traversal falseChoice) {
+        return this.start().choose(choosePredicate, trueChoice, falseChoice);
+    }
+
+    public default <E2, M> GraphTraversal<Edge, E2> choose(final SFunction<Traverser<Edge>, M> mapFunction, final Map<M, Traversal<Edge, E2>> choices) {
+        return this.start().choose(mapFunction, choices);
     }
 
     public default GraphTraversal<Edge, Edge> with(final Object... variableValues) {

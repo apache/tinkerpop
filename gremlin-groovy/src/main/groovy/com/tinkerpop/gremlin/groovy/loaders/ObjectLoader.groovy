@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.groovy.loaders
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+
 class ObjectLoader {
 
     public static void load() {
@@ -26,5 +27,4 @@ class ObjectLoader {
             return tempMap;
         }
     }
-
 }

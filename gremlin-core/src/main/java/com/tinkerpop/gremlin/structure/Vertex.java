@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.step.map.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.util.function.SBiPredicate;
 import com.tinkerpop.gremlin.util.function.SConsumer;
@@ -13,6 +12,7 @@ import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SPredicate;
 
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * A {@link Vertex} maintains pointers to both a set of incoming and outgoing {@link Edge} objects. The outgoing edges
@@ -210,8 +210,12 @@ public interface Vertex extends Element {
         return this.start().sideEffect(consumer);
     }
 
-    public default <E2> GraphTraversal<Vertex, E2> choose(final SFunction<Traverser<Vertex>, Integer> chooseFunction, final Traversal... choices) {
-        return  this.start().choose(chooseFunction, choices);
+    public default <E2> GraphTraversal<Vertex, E2> choose(final SPredicate<Traverser<Vertex>> choosePredicate, final Traversal trueChoice, final Traversal falseChoice) {
+        return this.start().choose(choosePredicate, trueChoice, falseChoice);
+    }
+
+    public default <E2, M> GraphTraversal<Vertex, E2> choose(final SFunction<Traverser<Vertex>, M> mapFunction, final Map<M, Traversal<Vertex, E2>> choices) {
+        return this.start().choose(mapFunction, choices);
     }
 
     public default GraphTraversal<Vertex, Vertex> with(final Object... variableValues) {
