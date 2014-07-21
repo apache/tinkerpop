@@ -210,16 +210,12 @@ public interface Vertex extends Element {
         return this.start().sideEffect(consumer);
     }
 
-    public default <E2> GraphTraversal<Vertex, E2> choose(final SFunction<Traverser<Vertex>, Integer> chooseFunction, final Traversal... choices) {
-        return this.start().choose(chooseFunction, choices);
+    public default <E2> GraphTraversal<Vertex, E2> choose(final SPredicate<Traverser<Vertex>> choosePredicate, final Traversal trueChoice, final Traversal falseChoice) {
+        return this.start().choose(choosePredicate, trueChoice, falseChoice);
     }
 
-    public default <E2> GraphTraversal<Vertex, E2> branch(final SPredicate<Traverser<Vertex>> mapFunction, final Traversal trueBranch, final Traversal falseBranch) {
-        return this.start().branch(mapFunction, trueBranch, falseBranch);
-    }
-
-    public default <E2, M> GraphTraversal<Vertex, E2> branch(final SFunction<Traverser<Vertex>, M> mapFunction, final Map<M, Traversal<Vertex, E2>> choices) {
-        return this.start().branch(mapFunction, choices);
+    public default <E2, M> GraphTraversal<Vertex, E2> choose(final SFunction<Traverser<Vertex>, M> mapFunction, final Map<M, Traversal<Vertex, E2>> choices) {
+        return this.start().choose(mapFunction, choices);
     }
 
     public default GraphTraversal<Vertex, Vertex> with(final Object... variableValues) {

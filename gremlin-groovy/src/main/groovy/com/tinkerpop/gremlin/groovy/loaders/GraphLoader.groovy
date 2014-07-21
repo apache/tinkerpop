@@ -1,10 +1,11 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
-import com.tinkerpop.gremlin.process.Traverser
 import com.tinkerpop.gremlin.structure.Graph
 import com.tinkerpop.gremlin.structure.Vertex
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter
+import com.tinkerpop.gremlin.structure.io.kryo.KryoReader
+import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -49,6 +50,21 @@ class GraphLoader {
 
         Graph.metaClass.saveGraphML = { final def fileObject ->
             final GraphMLWriter writer = GraphMLWriter.create().build();
+            writer.writeGraph(new FileOutputStream(fileObject), (Graph) delegate)
+        }
+
+        // Kryo loading and saving
+        Graph.metaClass.loadKryo = { final def fileObject ->
+            final KryoReader reader = KryoReader.create().build();
+            try {
+                reader.readGraph(new URL(fileObject).openStream(), (Graph) delegate);
+            } catch (final MalformedURLException e) {
+                reader.readGraph(new FileInputStream(fileObject), (Graph) delegate)
+            }
+        }
+
+        Graph.metaClass.saveKryo = { final def fileObject ->
+            final KryoWriter writer = KryoWriter.create().build();
             writer.writeGraph(new FileOutputStream(fileObject), (Graph) delegate)
         }
 

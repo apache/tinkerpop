@@ -87,7 +87,6 @@ TinkerPop3 is the third incarnation of the TinkerPop graph computing framework. 
   ** `GraphTraversal`: a traversal that is oriented towards the semantics of the raw graph (i.e. vertices, edges, etc.).
  * `VertexProgram`: code executed at all vertices in a logically parallel fashion migrating the movement of messages. 
 
-
 IMPORTANT: TinkerPop3 is licensed under the popular link:http://www.apache.org/licenses/LICENSE-2.0.html[Apache2] free software license. However, note that the underlying graph engine used with TinkerPop3 may have a difference license and thus, be sure to respect the license caveats of the vendor product.
 
 image:tinkerpop-enabled.png[width=135,float=left] When a graph vendor implements the TinkerPop3 structure and process link:http://en.wikipedia.org/wiki/Application_programming_interface[APIs], their technology is considered _TinkerPop3-enabled_ and becomes nearly indistinguishable from any other TinkerPop-enabled graph system save for their respective time and space complexity. The purpose of this documentation is to describe the structure/process dichotomy at length and in doing so, explain how to leverage TinkerPop3 for the sole purpose of vendor-agnostic graph computing. Before deep-diving into the various structure/process APIs, a short introductory review of both is provided.
@@ -258,7 +257,7 @@ When a traversal is executed, the source of the traversal is on the left of the 
 
 image::traversal-mechanics.png[width=500]
 
-In TinkerPop3, the objects propagating through the traversal are wrapped in a `Traverser<T>`. The traverser concept is new to TinkerPop3 and provides the means by which steps remain stateless. A traverser maintains all the metadata about the traversal -- e.g., how many times the traverser has gone through a loop, the path history of the traverser, the current object being traversed, etc. Traverser metadata can be accessed by a step. A classic example is the `path()`-step.
+In TinkerPop3, the objects propagating through the traversal are wrapped in a `Traverser<T>`. The traverser concept is new to TinkerPop3 and provides the means by which steps remain stateless. A traverser maintains all the metadata about the traversal -- e.g., how many times the traverser has gone through a loop, the path history of the traverser, the current object being traversed, etc. Traverser metadata may be accessed by a step. A classic example is the `path()`-step.
 
 [source,groovy]
 marko.out('knows').name.path
