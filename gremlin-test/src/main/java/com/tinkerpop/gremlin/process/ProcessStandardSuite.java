@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.RangeTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.BackTest;
+import com.tinkerpop.gremlin.process.graph.step.map.BranchTest;
 import com.tinkerpop.gremlin.process.graph.step.map.ChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.map.FoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.JumpTest;
@@ -80,6 +81,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
 
             // map
             BackTest.JavaBackTest.class,
+            BranchTest.JavaBranchTest.class,
             FoldTest.JavaFoldTest.class,
             ChooseTest.JavaChooseTest.class,
             JumpTest.JavaJumpTest.class,
@@ -130,6 +132,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
 
             // map
             BackTest.class,
+            BranchTest.class,
             FoldTest.class,
             ChooseTest.class,
             JumpTest.class,
