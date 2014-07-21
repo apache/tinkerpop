@@ -66,8 +66,6 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
             this.baseGraph = ha ?
                     new HighlyAvailableGraphDatabaseFactory().newHighlyAvailableDatabaseBuilder(directory).setConfig(neo4jSpecificConfig).newGraphDatabase() :
                     new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(directory).
-                            setConfig(GraphDatabaseSettings.node_auto_indexing, "true").
-                            setConfig(GraphDatabaseSettings.relationship_auto_indexing, "true").
                             setConfig(neo4jSpecificConfig).newGraphDatabase();
             transactionManager = ((GraphDatabaseAPI) baseGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
             cypher = new ExecutionEngine(baseGraph);
