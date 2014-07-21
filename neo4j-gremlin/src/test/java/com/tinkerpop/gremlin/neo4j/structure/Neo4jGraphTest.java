@@ -9,12 +9,16 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.neo4j.graphdb.ConstraintViolationException;
+import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import org.neo4j.graphdb.schema.IndexDefinition;
 
 import javax.script.Bindings;
 import javax.script.ScriptException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -34,9 +38,20 @@ public class Neo4jGraphTest {
     private final Neo4jGraphProvider graphProvider = new Neo4jGraphProvider();
     private Neo4jGraph g;
 
+    @Rule
+    public TestName name = new TestName();
+
     @Before
     public void before() throws Exception {
-        this.conf = this.graphProvider.newGraphConfiguration("standard");
+        // tests that involve legacy indices need legacy indices turned on at startup of the graph.
+        if (name.getMethodName().contains("Legacy")) {
+            final Map<String,Object> neo4jSettings = new HashMap<>();
+            neo4jSettings.put("gremlin.neo4j.conf.node_auto_indexing", "true");
+            neo4jSettings.put("gremlin.neo4j.conf.relationship_auto_indexing", "true");
+            this.conf = this.graphProvider.newGraphConfiguration("standard", neo4jSettings);
+        } else
+            this.conf = this.graphProvider.newGraphConfiguration("standard");
+
         this.graphProvider.clear(this.conf);
         this.g = Neo4jGraph.open(this.conf);
     }
