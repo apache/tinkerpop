@@ -11,7 +11,7 @@ jdk: oraclejdk8
 before_install:
   - if [[ "$TRAVIS_BRANCH" == "master" && "$TRAVIS_PULL_REQUEST" == "false" ]]; then git clone https://github.com/spmallette/travis-maven-deploy.git target/travis; fi
 script:
-  - if [[ "$TRAVIS_BRANCH" != "master" && "$TRAVIS_PULL_REQUEST" == "true" ]]; then mvn test; fi
+  - if [[ "$TRAVIS_BRANCH" != "master" || "$TRAVIS_PULL_REQUEST" == "true" ]]; then mvn test; fi
   - if [[ "$TRAVIS_BRANCH" == "master" && "$TRAVIS_PULL_REQUEST" == "false" ]]; then mvn deploy --settings target/travis/settings.xml; fi
 env:
   global:
