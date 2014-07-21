@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.util.function.SPredicate;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -20,6 +21,7 @@ public class JumpComputerStep<S> extends AbstractStep<S, S> {
     public Queue<Traverser<S>> queue = new LinkedList<>();
     public SPredicate<Traverser<S>> ifPredicate;
     public SPredicate<Traverser<S>> emitPredicate;
+    private AtomicBoolean jumpBack = null;
 
     public JumpComputerStep(final Traversal traversal, final JumpStep<S> jumpStep) {
         super(traversal);
@@ -33,24 +35,26 @@ public class JumpComputerStep<S> extends AbstractStep<S, S> {
     // TODO: Add loop checking
     protected Traverser<S> processNextStart() {
         final String loopFuture = TraversalHelper.getAs(this.jumpAs, this.traversal).getNextStep().getAs();
+        if (null == this.jumpBack)
+            this.jumpBack = new AtomicBoolean(this.traversal.getSteps().indexOf(this) > this.traversal.getSteps().indexOf(TraversalHelper.getAs(this.jumpAs, this.traversal).getNextStep()));
         while (true) {
             if (!this.queue.isEmpty()) {
                 return this.queue.remove();
             } else {
                 final Traverser<S> traverser = this.starts.next();
-                traverser.incrLoops();
+                if (this.jumpBack.get()) traverser.incrLoops();
                 if (this.ifPredicate.test(traverser)) {
                     traverser.setFuture(loopFuture);
                     this.queue.add(traverser);
                     if (null != this.emitPredicate && this.emitPredicate.test(traverser)) {
                         final Traverser<S> emitTraverser = traverser.makeSibling();
-                        emitTraverser.resetLoops();
+                        if (this.jumpBack.get()) emitTraverser.resetLoops();
                         emitTraverser.setFuture(this.nextStep.getAs());
                         this.queue.add(emitTraverser);
                     }
                 } else {
                     traverser.setFuture(this.nextStep.getAs());
-                    traverser.resetLoops();
+                    if (this.jumpBack.get()) traverser.resetLoops();
                     this.queue.add(traverser);
                 }
             }

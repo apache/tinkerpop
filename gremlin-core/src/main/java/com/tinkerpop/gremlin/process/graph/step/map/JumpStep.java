@@ -8,6 +8,8 @@ import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.function.SPredicate;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -18,6 +20,7 @@ public class JumpStep<S> extends AbstractStep<S, S> {
     public final SPredicate<Traverser<S>> ifPredicate;
     public final SPredicate<Traverser<S>> emitPredicate;
     public final int loops;
+    private final boolean jumpBack;
 
     public JumpStep(final Traversal traversal, final String jumpAs, final SPredicate<Traverser<S>> ifPredicate, final SPredicate<Traverser<S>> emitPredicate) {
         super(traversal);
@@ -26,6 +29,7 @@ public class JumpStep<S> extends AbstractStep<S, S> {
         this.ifPredicate = ifPredicate;
         this.emitPredicate = emitPredicate;
         this.jumpToStep = TraversalHelper.asExists(this.jumpAs, this.traversal) ? TraversalHelper.getAs(this.jumpAs, this.traversal).getNextStep() : null;
+        this.jumpBack = null != this.jumpToStep;
     }
 
     public JumpStep(final Traversal traversal, final String jumpAs, final SPredicate<Traverser<S>> ifPredicate) {
@@ -39,6 +43,7 @@ public class JumpStep<S> extends AbstractStep<S, S> {
         this.ifPredicate = t -> t.getLoops() < this.loops;
         this.emitPredicate = emitPredicate;
         this.jumpToStep = TraversalHelper.asExists(this.jumpAs, this.traversal) ? TraversalHelper.getAs(this.jumpAs, this.traversal).getNextStep() : null;
+        this.jumpBack = null != this.jumpToStep;
     }
 
     public JumpStep(final Traversal traversal, final String jumpAs, final int loops) {
@@ -54,17 +59,17 @@ public class JumpStep<S> extends AbstractStep<S, S> {
             this.jumpToStep = TraversalHelper.getAs(this.jumpAs, this.traversal).getNextStep();
         while (true) {
             final Traverser<S> traverser = this.starts.next();
-            traverser.incrLoops();
+            if (this.jumpBack) traverser.incrLoops();
             if ((this.loops != -1 && traverser.getLoops() < this.loops) || this.ifPredicate.test(traverser)) {
                 traverser.setFuture(this.jumpAs);
                 this.jumpToStep.addStarts(new SingleIterator(traverser));
                 if (this.emitPredicate != null && this.emitPredicate.test(traverser)) {
                     final Traverser<S> emitTraverser = traverser.makeSibling();
-                    emitTraverser.resetLoops();
+                    if (this.jumpBack) emitTraverser.resetLoops();
                     return emitTraverser;
                 }
             } else {
-                traverser.resetLoops();
+                if (this.jumpBack) traverser.resetLoops();
                 return traverser;
             }
         }

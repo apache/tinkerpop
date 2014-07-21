@@ -49,18 +49,24 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_jumpXxX_out_out_asXxX();
 
+    public abstract Traversal<Vertex, String> get_g_v1_asXaX_jumpXb_loops_gt_1X_out_jumpXaX_asXbX_name(final Object v1Id);
+
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX() {
-        final Iterator<String> step = get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(convertToVertexId("marko"));
-        System.out.println("Testing: " + step);
-        List<String> names = new ArrayList<>();
-        while (step.hasNext()) {
-            names.add(step.next());
-        }
-        assertEquals(2, names.size());
-        assertTrue(names.contains("ripple"));
-        assertTrue(names.contains("lop"));
+        final List<Traversal<Vertex, String>> traversals = new ArrayList<>();
+        traversals.add(get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(convertToVertexId("marko")));
+        traversals.add(get_g_v1_asXaX_jumpXb_loops_gt_1X_out_jumpXaX_asXbX_name(convertToVertexId("marko")));
+        traversals.forEach(traversal -> {
+            System.out.println("Testing: " + traversal);
+            List<String> names = new ArrayList<>();
+            while (traversal.hasNext()) {
+                names.add(traversal.next());
+            }
+            assertEquals(2, names.size());
+            assertTrue(names.contains("ripple"));
+            assertTrue(names.contains("lop"));
+        });
     }
 
     @Test
@@ -224,6 +230,10 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Vertex> get_g_V_jumpXxX_out_out_asXxX() {
             return g.V().jump("x").out().out().as("x");
         }
+
+        public Traversal<Vertex, String> get_g_v1_asXaX_jumpXb_loops_gt_1X_out_jumpXaX_asXbX_name(final Object v1Id) {
+            return g.v(v1Id).as("a").jump("b", t -> t.getLoops() > 1).sideEffect(t -> System.out.println(t.get() + "!!!" + t.getLoops())).out().jump("a").as("b").value("name");
+        }
     }
 
     public static class JavaComputerJumpTest extends JumpTest {
@@ -273,6 +283,10 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex, Vertex> get_g_V_jumpXxX_out_out_asXxX() {
             return g.V().jump("x").out().out().as("x").submit(g.compute());
+        }
+
+        public Traversal<Vertex, String> get_g_v1_asXaX_jumpXb_loops_gt_1X_out_jumpXaX_asXbX_name(final Object v1Id) {
+            return g.v(v1Id).as("a").jump("b", t -> t.getLoops() > 1).out().jump("a").as("b").<String>value("name").submit(g.compute());
         }
     }
 }

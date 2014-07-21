@@ -54,4 +54,8 @@ class GroovyJumpTestImpl extends JumpTest {
         return g.V().jump("x").out.out.as("x");
     }
 
+    public Traversal<Vertex, String> get_g_v1_asXaX_jumpXb_loops_gt_1X_out_jumpXaX_asXbX_name(final Object v1Id) {
+        g.v(v1Id).as('a').jump('b'){it.loops > 1}.out.jump('a').as('b').name
+    }
+
 }
