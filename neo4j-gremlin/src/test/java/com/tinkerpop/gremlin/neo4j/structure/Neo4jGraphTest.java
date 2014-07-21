@@ -13,8 +13,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.neo4j.graphdb.ConstraintViolationException;
+import org.neo4j.graphdb.DynamicLabel;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
+import org.neo4j.graphdb.index.AutoIndexer;
+import org.neo4j.graphdb.schema.ConstraintDefinition;
 import org.neo4j.graphdb.schema.IndexDefinition;
+import org.neo4j.graphdb.schema.Schema;
 
 import javax.script.Bindings;
 import javax.script.ScriptException;
@@ -88,20 +94,10 @@ public class Neo4jGraphTest {
 
     @Test
     public void testLabeledIndexOnVertexWithHasHas() {
-        this.g.createLabeledIndex("Person", "name");
+        this.g.tx().readWrite();
+        final Schema schema = this.g.getBaseGraph().schema();
+        schema.indexFor(DynamicLabel.label("Person")).on("name").create();
         this.g.tx().commit();
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-        this.g.tx().commit();
-        assertEquals(2, this.g.V().has(Element.LABEL, "Person").has("name", "marko").count().next(), 0);
-        assertEquals(2, this.g.V().has("name", "marko").count().next(), 0);
-    }
-
-    @Test
-    public void testLabeledIndexWithTimeoutOnVertexWithHasHas() {
-        IndexDefinition index = this.g.createLabeledIndex("Person", "name");
-        this.g.tx().commit();
-        this.g.awaitIndexOnline(index,  10, TimeUnit.SECONDS);
         this.g.addVertex(Element.LABEL, "Person", "name", "marko");
         this.g.addVertex(Element.LABEL, "Person", "name", "marko");
         this.g.tx().commit();
@@ -111,7 +107,9 @@ public class Neo4jGraphTest {
 
     @Test
     public void testColonedKeyIsTreatedAsNormalKey() {
-        this.g.createLabeledIndex("Person", "name");
+        this.g.tx().readWrite();
+        final Schema schema = this.g.getBaseGraph().schema();
+        schema.indexFor(DynamicLabel.label("Person")).on("name").create();
         this.g.tx().commit();
         this.g.addVertex(Element.LABEL, "Person", "name", "marko");
         this.g.addVertex(Element.LABEL, "Person", "name", "marko");
@@ -123,7 +121,9 @@ public class Neo4jGraphTest {
 
     @Test
     public void testLabeledIndexOnVertexWithHasHasHas() {
-        this.g.createLabeledIndex("Person", "name");
+        this.g.tx().readWrite();
+        final Schema schema = this.g.getBaseGraph().schema();
+        schema.indexFor(DynamicLabel.label("Person")).on("name").create();
         this.g.tx().commit();
         this.g.addVertex(Element.LABEL, "Person", "name", "marko", "color", "blue");
         this.g.addVertex(Element.LABEL, "Person", "name", "marko", "color", "green");
@@ -144,7 +144,9 @@ public class Neo4jGraphTest {
 
     @Test
     public void testLabeledIndexOnVertexWithColonFails() {
-        this.g.createLabeledIndex("Person", "name");
+        this.g.tx().readWrite();
+        final Schema schema = this.g.getBaseGraph().schema();
+        schema.indexFor(DynamicLabel.label("Person")).on("name").create();
         this.g.tx().commit();
         this.g.addVertex(Element.LABEL, "Person", "name", "marko");
         this.g.addVertex(Element.LABEL, "Person", "name", "marko");
@@ -155,8 +157,11 @@ public class Neo4jGraphTest {
 
     @Test
     public void testLegacyIndexOnVertex() {
-        this.g.createLegacyIndex(Vertex.class, "name");
+        g.tx().readWrite();
+        final AutoIndexer<Node> nodeAutoIndexer = this.g.getBaseGraph().index().getNodeAutoIndexer();
+        nodeAutoIndexer.startAutoIndexingProperty("name");
         this.g.tx().commit();
+
         this.g.addVertex(Element.LABEL, "Person", "name", "marko");
         this.g.addVertex(Element.LABEL, "Person", "name", "marko");
         this.g.tx().commit();
@@ -166,8 +171,11 @@ public class Neo4jGraphTest {
 
     @Test
     public void testLegacyIndexOnEdge() {
-        this.g.createLegacyIndex(Edge.class, "weight");
+        g.tx().readWrite();
+        final AutoIndexer<Relationship> relAutoIndexer = this.g.getBaseGraph().index().getRelationshipAutoIndexer();
+        relAutoIndexer.startAutoIndexingProperty("weight");
         this.g.tx().commit();
+
         Vertex marko = this.g.addVertex(Element.LABEL, "Person", "name", "marko");
         Vertex john = this.g.addVertex(Element.LABEL, "Person", "name", "john");
         Vertex pete = this.g.addVertex(Element.LABEL, "Person", "name", "pete");
@@ -179,7 +187,9 @@ public class Neo4jGraphTest {
 
     @Test
     public void testUniqueConstraintPass() {
-        this.g.createUniqueConstraint("Person", "name");
+        this.g.tx().readWrite();
+        final Schema schema = this.g.getBaseGraph().schema();
+        schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("name").create();
         this.g.tx().commit();
         this.g.addVertex(Element.LABEL, "Person", "name", "marko");
         this.g.tx().commit();
@@ -188,8 +198,10 @@ public class Neo4jGraphTest {
 
     @Test
     public void testMultipleUniqueConstraintPass() {
-        this.g.createUniqueConstraint("Person", "name");
-        this.g.createUniqueConstraint("Person", "surname");
+        this.g.tx().readWrite();
+        final Schema schema = this.g.getBaseGraph().schema();
+        schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("name").create();
+        schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("surname").create();
         this.g.tx().commit();
         this.g.addVertex(Element.LABEL, "Person", "name", "marko");
         this.g.addVertex(Element.LABEL, "Person", "surname", "aaaa");
@@ -213,9 +225,12 @@ public class Neo4jGraphTest {
 
     @Test
     public void testDropMultipleUniqueConstraintPass() {
-        this.g.createUniqueConstraint("Person", "name");
-        this.g.createUniqueConstraint("Person", "surname");
+        this.g.tx().readWrite();
+        final Schema schema = this.g.getBaseGraph().schema();
+        schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("name").create();
+        schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("surname").create();
         this.g.tx().commit();
+
         this.g.addVertex(Element.LABEL, "Person", "name", "marko");
         this.g.addVertex(Element.LABEL, "Person", "surname", "aaaa");
         this.g.tx().commit();
@@ -234,7 +249,12 @@ public class Neo4jGraphTest {
         }
         assertTrue(failName);
         this.g.tx().commit();
-        this.g.dropConstraint("Person");
+
+        this.g.tx().readWrite();
+        for (ConstraintDefinition cd : schema.getConstraints(DynamicLabel.label("Person"))) {
+            cd.drop();
+        }
+
         this.g.tx().commit();
         assertEquals(1, this.g.V().has(Element.LABEL, "Person").<Vertex>has("name", "marko").count().next(), 0);
         assertEquals(1, this.g.V().has(Element.LABEL, "Person").<Vertex>has("surname", "aaaa").count().next(), 0);
@@ -247,43 +267,14 @@ public class Neo4jGraphTest {
 
     @Test(expected = ConstraintViolationException.class)
     public void testUniqueConstraintFail() {
-        this.g.createUniqueConstraint("Person", "name");
+        this.g.tx().readWrite();
+        final Schema schema = this.g.getBaseGraph().schema();
+        schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("name").create();
         this.g.tx().commit();
         this.g.addVertex(Element.LABEL, "Person", "name", "marko");
         this.g.tx().commit();
         assertEquals("marko", g.V().<Vertex>has(Element.LABEL, "Person").<Vertex>has("name", "marko").next().value("name"));
         this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-    }
-
-    @Test
-    public void testDropLabeledIndex() {
-        this.g.createLabeledIndex("Person", "name");
-        this.g.tx().commit();
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-        this.g.tx().commit();
-        assertEquals(2, this.g.V().has(Element.LABEL, "Person").has("name", "marko").count().next(), 0);
-        this.g.dropLabeledIndex("Person");
-        this.g.tx().commit();
-        assertEquals(0, this.g.V().has("Person:name", "marko").count().next(), 0);
-        assertEquals(2, this.g.V().has(Element.LABEL, "Person").has("name", "marko").count().next(), 0);
-        assertEquals(2, this.g.V().has("name", "marko").count().next(), 0);
-    }
-
-    @Test
-    public void testDropLegacyIndex() {
-        this.g.createLegacyIndex(Vertex.class, "name");
-        this.g.tx().commit();
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-        this.g.tx().commit();
-        assertEquals(0, this.g.V().has("Person:name", "marko").count().next(), 0);
-        assertEquals(2, this.g.V().has("name", "marko").count().next(), 0);
-        this.g.dropLegacyIndex(Vertex.class, "name");
-        this.g.tx().commit();
-        assertEquals(0, this.g.V().has("Person:name", "marko").count().next(), 0);
-        assertEquals(2, this.g.V().has(Element.LABEL, "Person").has("name", "marko").count().next(), 0);
-        assertEquals(2, this.g.V().has("name", "marko").count().next(), 0);
     }
 
     @Test
@@ -343,8 +334,12 @@ public class Neo4jGraphTest {
 
     @Test
     public void testLabelAndIndexSearch() {
-        this.g.createLabeledIndex("Person", "name");
+        g.tx().readWrite();
+
+        final Schema schema = g.getBaseGraph().schema();
+        schema.indexFor(DynamicLabel.label("Person")).on("name").create();
         this.g.tx().commit();
+
         this.g.addVertex(Element.LABEL, "Person", "name", "marko");
         this.g.addVertex(Element.LABEL, "Person", "name", "john");
         this.g.addVertex(Element.LABEL, "Person", "name", "pete");
@@ -356,8 +351,14 @@ public class Neo4jGraphTest {
 
     @Test
     public void testLabelAndLegacyIndexSearch() {
-        this.g.createLabeledIndex("Person", "name");
-        this.g.createLegacyIndex(Vertex.class, "name");
+        g.tx().readWrite();
+
+        final Schema schema = g.getBaseGraph().schema();
+        schema.indexFor(DynamicLabel.label("Person")).on("name").create();
+
+        final AutoIndexer<Node> nodeAutoIndexer = this.g.getBaseGraph().index().getNodeAutoIndexer();
+        nodeAutoIndexer.startAutoIndexingProperty("name");
+
         this.g.tx().commit();
         this.g.addVertex(Element.LABEL, "Person", "name", "marko");
         this.g.addVertex(Element.LABEL, "Person", "name", "john");
@@ -371,9 +372,13 @@ public class Neo4jGraphTest {
 
     @Test
     public void testLabelsNameSpaceBehavior() {
-        this.g.createLabeledIndex("Person", "name");
-        this.g.createLabeledIndex("Product", "name");
-        this.g.createLabeledIndex("Corporate", "name");
+        g.tx().readWrite();
+
+        final Schema schema = g.getBaseGraph().schema();
+        schema.indexFor(DynamicLabel.label("Person")).on("name").create();
+        schema.indexFor(DynamicLabel.label("Product")).on("name").create();
+        schema.indexFor(DynamicLabel.label("Corporate")).on("name").create();
+
         this.g.tx().commit();
         this.g.addVertex(Element.LABEL, "Person", "name", "marko");
         this.g.addVertex(Element.LABEL, "Person", "name", "john");
@@ -392,34 +397,4 @@ public class Neo4jGraphTest {
         assertEquals(0, this.g.V().has(Element.LABEL, "Product").has("name", "marko").has(Element.LABEL, "Person").count().next(), 0);
         assertEquals(0, this.g.V().has(Element.LABEL, "Corporate").has("name", "marko").has(Element.LABEL, "Person").count().next(), 0);
     }
-
-    @Test
-    public void testGetIndexes() {
-        this.g.createLabeledIndex("Person", "name");
-        this.g.createLabeledIndex("Product", "name");
-        this.g.createLabeledIndex("Corporate", "name");
-        this.g.tx().commit();
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-        this.g.addVertex(Element.LABEL, "Product", "name", "car");
-        this.g.addVertex(Element.LABEL, "Corporate", "name", "google");
-        this.g.tx().commit();
-        assertEquals(3, StreamSupport.stream(this.g.getLabeledIndexes().spliterator(), false).count());
-    }
-
-    @Test
-    public void getLegacyIndexKeys()  {
-        this.g.createLegacyIndex(Vertex.class, "name1");
-        this.g.createLegacyIndex(Vertex.class, "name2");
-        this.g.createLegacyIndex(Vertex.class, "name3");
-        this.g.tx().commit();
-        this.g.addVertex(Element.LABEL, "Person", "name1", "marko");
-        this.g.addVertex(Element.LABEL, "Person", "name2", "john");
-        this.g.addVertex(Element.LABEL, "Person", "name3", "pete");
-        this.g.tx().commit();
-        assertEquals(3, this.g.getIndexedKeys(Vertex.class).size());
-        assertTrue(this.g.getIndexedKeys(Vertex.class).contains("name1"));
-        assertTrue(this.g.getIndexedKeys(Vertex.class).contains("name2"));
-        assertTrue(this.g.getIndexedKeys(Vertex.class).contains("name3"));
-    }
-
 }
