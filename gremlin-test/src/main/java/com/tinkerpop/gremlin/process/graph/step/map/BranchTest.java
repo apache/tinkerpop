@@ -23,7 +23,7 @@ public abstract class BranchTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, String> get_g_v1_branchX0XoutX_name(Object v1Id);
 
-    public abstract Traversal<Vertex, String> get_g_V_hasXageX_branchXname_lengthX5_in_4_outX_name();
+    public abstract Traversal<Vertex, String> get_g_V_hasXageX_branchXname_lengthX5_in_4_out_3_bothX_name();
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -69,7 +69,7 @@ public abstract class BranchTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_hasXageX_branchXname_lengthX5_in_4_outX_name() {
-        final Traversal<Vertex, String> traversal = get_g_V_hasXageX_branchXname_lengthX5_in_4_outX_name();
+        final Traversal<Vertex, String> traversal = get_g_V_hasXageX_branchXname_lengthX5_in_4_out_3_bothX_name();
         System.out.println("Testing: " + traversal);
         Map<String, Long> counts = new HashMap<>();
         int counter = 0;
@@ -99,10 +99,11 @@ public abstract class BranchTest extends AbstractGremlinTest {
             }});
         }
 
-        public Traversal<Vertex, String> get_g_V_hasXageX_branchXname_lengthX5_in_4_outX_name() {
+        public Traversal<Vertex, String> get_g_V_hasXageX_branchXname_lengthX5_in_4_out_3_bothX_name() {
             return g.V().has("age").branch(t -> t.get().<String>value("name").length(), new HashMap() {{
-                put(4, g.of().out());
                 put(5, g.of().in());
+                put(4, g.of().out());
+                put(3, g.of().both());
             }}).value("name");
         }
     }
