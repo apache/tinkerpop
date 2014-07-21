@@ -32,6 +32,8 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 /**
+ * A GraphStrategy which creates a logical subgraph to selectively include vertices and edges of a Graph according to provided criteria
+ *
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

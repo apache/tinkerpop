@@ -303,18 +303,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new ChooseStep(this, chooseFunction, choices));
     }
 
-
-
-
-
-
-    /*
-    public default <E2> GraphTraversal<S, E2> apply() {
-        return (GraphTraversal) this.addStep(new ApplyStep<S, E2>(this));
-    }
-    */
-
-    //////////
+    ///////////////////// EXPERIMENTAL STEPS /////////////////////
 
     public default <E2> GraphTraversal<S, E2> branch(final Traversal<S, E2> trueBranch, final Traversal<S, E2> falseBranch) {
         return (GraphTraversal) this.addStep(new BranchStep<S, E2>(this, null, trueBranch, falseBranch));
@@ -331,37 +320,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default <E2> GraphTraversal<S, E2> branch(final SFunction<Traverser<S>, S> mapFunction, final Map<S, Traversal<S, E2>> choices) {
         return (GraphTraversal) this.addStep(new BranchStep<S, E2>(this, mapFunction, choices));
     }
-
-    /*
-    public default <E2> GraphTraversal<S, E2> branch(final SFunction<Traverser<S>, S> mapFunction, final Map<S, SFunction<Traverser<S>, E2>> choices) {
-        return (GraphTraversal) this.addStep(new BranchStep<S, E2>(this, mapFunction, choices));
-    }
-    */
-
-    /*
-    public default <E2> GraphTraversal<S, E2> branchCond(final SFunction<Traverser<S>, S> mapFunction, final Map<SFunction<S, Boolean>, Traversal<S, E2>> choices) {
-        return (GraphTraversal) this.addStep(new BranchStep<S, E2>(this, mapFunction, choices, false));
-    }
-    */
-
-    //////////
-
-    /*
-    public default <E2> GraphTraversal<S, E2> ifelse(final SFunction<Traverser<S>, Boolean> chooseFunction, final Traversal<S, E2> trueBranch, Traversal<S, E2> falseBranch) {
-        return (GraphTraversal) this.addStep(new IfElseStep<S, E2>(this, chooseFunction, trueBranch, falseBranch));
-    }
-
-    public default <E2> GraphTraversal<S, E2> replace(final Map<S, E2> replaceMap) {
-        return (GraphTraversal) this.addStep(new ReplaceStep<S, E2>(this, replaceMap));
-    }
-    */
-
-    // - SwitchStep
-
-
-
-
-
 
     ///////////////////// FILTER STEPS /////////////////////
 

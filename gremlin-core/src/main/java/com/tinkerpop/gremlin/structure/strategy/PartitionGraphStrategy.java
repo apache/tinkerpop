@@ -16,6 +16,8 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
+ * A GraphStrategy which enables support for logical graph partitioning where the Graph can be blinded to different parts of the total Graph
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Joshua Shinavier (http://fortytwo.net)
  */
