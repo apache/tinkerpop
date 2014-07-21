@@ -19,7 +19,9 @@ import com.tinkerpop.gremlin.process.graph.step.filter.RandomStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RangeStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathStep;
+import com.tinkerpop.gremlin.process.graph.step.map.ApplyStep;
 import com.tinkerpop.gremlin.process.graph.step.map.BackStep;
+import com.tinkerpop.gremlin.process.graph.step.map.BranchStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeOtherVertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
@@ -29,6 +31,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.ElementValuesStep;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.FoldStep;
 import com.tinkerpop.gremlin.process.graph.step.map.IdStep;
+import com.tinkerpop.gremlin.process.graph.step.map.IfElseStep;
 import com.tinkerpop.gremlin.process.graph.step.map.IntersectStep;
 import com.tinkerpop.gremlin.process.graph.step.map.JumpStep;
 import com.tinkerpop.gremlin.process.graph.step.map.LabelStep;
@@ -37,6 +40,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.MatchStep;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PathStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertyValueStep;
+import com.tinkerpop.gremlin.process.graph.step.map.ReplaceStep;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ShuffleStep;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
@@ -298,6 +302,66 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default <E2> GraphTraversal<S, E2> choose(final SFunction<Traverser<S>, Integer> chooseFunction, final Traversal... choices) {
         return (GraphTraversal) this.addStep(new ChooseStep(this, chooseFunction, choices));
     }
+
+
+
+
+
+
+    /*
+    public default <E2> GraphTraversal<S, E2> apply() {
+        return (GraphTraversal) this.addStep(new ApplyStep<S, E2>(this));
+    }
+    */
+
+    //////////
+
+    public default <E2> GraphTraversal<S, E2> branch(final Traversal<S, E2> trueBranch, final Traversal<S, E2> falseBranch) {
+        return (GraphTraversal) this.addStep(new BranchStep<S, E2>(this, null, trueBranch, falseBranch));
+    }
+
+    public default <E2> GraphTraversal<S, E2> branch(final SFunction<Traverser<S>, Boolean> mapFunction, final Traversal<S, E2> trueBranch, final Traversal<S, E2> falseBranch) {
+        return (GraphTraversal) this.addStep(new BranchStep<S, E2>(this, mapFunction, trueBranch, falseBranch));
+    }
+
+    public default <E2> GraphTraversal<S, E2> branch(final Map<S, Traversal<S, E2>> choices) {
+        return (GraphTraversal) this.addStep(new BranchStep<S, E2>(this, null, choices));
+    }
+
+    public default <E2> GraphTraversal<S, E2> branch(final SFunction<Traverser<S>, S> mapFunction, final Map<S, Traversal<S, E2>> choices) {
+        return (GraphTraversal) this.addStep(new BranchStep<S, E2>(this, mapFunction, choices));
+    }
+
+    /*
+    public default <E2> GraphTraversal<S, E2> branch(final SFunction<Traverser<S>, S> mapFunction, final Map<S, SFunction<Traverser<S>, E2>> choices) {
+        return (GraphTraversal) this.addStep(new BranchStep<S, E2>(this, mapFunction, choices));
+    }
+    */
+
+    /*
+    public default <E2> GraphTraversal<S, E2> branchCond(final SFunction<Traverser<S>, S> mapFunction, final Map<SFunction<S, Boolean>, Traversal<S, E2>> choices) {
+        return (GraphTraversal) this.addStep(new BranchStep<S, E2>(this, mapFunction, choices, false));
+    }
+    */
+
+    //////////
+
+    /*
+    public default <E2> GraphTraversal<S, E2> ifelse(final SFunction<Traverser<S>, Boolean> chooseFunction, final Traversal<S, E2> trueBranch, Traversal<S, E2> falseBranch) {
+        return (GraphTraversal) this.addStep(new IfElseStep<S, E2>(this, chooseFunction, trueBranch, falseBranch));
+    }
+
+    public default <E2> GraphTraversal<S, E2> replace(final Map<S, E2> replaceMap) {
+        return (GraphTraversal) this.addStep(new ReplaceStep<S, E2>(this, replaceMap));
+    }
+    */
+
+    // - SwitchStep
+
+
+
+
+
 
     ///////////////////// FILTER STEPS /////////////////////
 
