@@ -89,11 +89,18 @@ public class Client {
 
     public CompletableFuture<ResultSet> submitAsync(final String graph, final SFunction<Graph, Traversal> traversal) {
         try {
-            byte[] bytes = Serializer.serializeObject(traversal);
+            final Optional<String> sessionId = cluster.connectionPoolSettings().optionalSessionId();
+            final byte[] bytes = Serializer.serializeObject(traversal);
             final RequestMessage.Builder request = RequestMessage.create(Tokens.OPS_TRAVERSE)
+                    .processor(sessionId.isPresent() ? "session" : "")
                     .add(Tokens.ARGS_GREMLIN, bytes)
                     .add(Tokens.ARGS_GRAPH_NAME, graph)
                     .add(Tokens.ARGS_BATCH_SIZE, cluster.connectionPoolSettings().resultIterationBatchSize);
+
+            if (sessionId.isPresent()) {
+                request.addArg(Tokens.ARGS_SESSION, sessionId.get());
+            }
+
             return submitAsync(request.build());
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -106,9 +113,16 @@ public class Client {
     }
 
     public CompletableFuture<ResultSet> submitAsync(final String gremlin, final Map<String, Object> parameters) {
+        final Optional<String> sessionId = cluster.connectionPoolSettings().optionalSessionId();
         final RequestMessage.Builder request = RequestMessage.create(Tokens.OPS_EVAL)
+                .processor(sessionId.isPresent() ? "session" : "")
                 .add(Tokens.ARGS_GREMLIN, gremlin)
                 .add(Tokens.ARGS_BATCH_SIZE, cluster.connectionPoolSettings().resultIterationBatchSize);
+
+        if (sessionId.isPresent()) {
+            request.addArg(Tokens.ARGS_SESSION, sessionId.get());
+        }
+
         Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
         return submitAsync(request.build());
     }

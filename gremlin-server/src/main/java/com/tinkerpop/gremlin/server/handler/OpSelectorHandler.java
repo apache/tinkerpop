@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -35,16 +36,21 @@ public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
     private final Graphs graphs;
 
     private final GremlinExecutor gremlinExecutor;
+    private final ScheduledExecutorService scheduledExecutorService;
 
-    public OpSelectorHandler(final Settings settings, final Graphs graphs, final GremlinExecutor gremlinExecutor) {
+    public OpSelectorHandler(final Settings settings, final Graphs graphs, final GremlinExecutor gremlinExecutor,
+                             final ScheduledExecutorService scheduledExecutorService) {
         this.settings = settings;
         this.graphs = graphs;
         this.gremlinExecutor = gremlinExecutor;
+        this.scheduledExecutorService = scheduledExecutorService;
     }
 
     @Override
-    protected void decode(final ChannelHandlerContext channelHandlerContext, final RequestMessage msg, final List<Object> objects) throws Exception {
-        final Context gremlinServerContext = new Context(msg, channelHandlerContext, settings, graphs, gremlinExecutor);
+    protected void decode(final ChannelHandlerContext channelHandlerContext, final RequestMessage msg,
+                          final List<Object> objects) throws Exception {
+        final Context gremlinServerContext = new Context(msg, channelHandlerContext, settings,
+                graphs, gremlinExecutor, this.scheduledExecutorService);
         try {
             // choose a processor to do the work based on the request message.
             final Optional<OpProcessor> processor = OpLoader.getProcessor(msg.getProcessor());

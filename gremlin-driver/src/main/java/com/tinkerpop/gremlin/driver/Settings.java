@@ -60,6 +60,11 @@ class Settings {
         public int reconnectInterval = Connection.RECONNECT_INTERVAL;
         public int reconnectInitialDelay = Connection.RECONNECT_INITIAL_DELAY;
         public int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
+        public String sessionId = null;
+
+        public Optional<String> optionalSessionId() {
+            return Optional.ofNullable(sessionId);
+        }
     }
 
     public static class SerializerSettings {

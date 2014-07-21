@@ -16,6 +16,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -147,6 +148,7 @@ public class Cluster {
         private int reconnectInterval = Connection.RECONNECT_INTERVAL;
         private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
         private boolean enableSsl = false;
+        private Optional<String> sessionId = Optional.empty();
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
 
         private Builder() {
@@ -160,7 +162,7 @@ public class Cluster {
         /**
          * Size of the pool for handling request/response operations.  Defaults to the number of available processors.
          */
-        public Builder nioPoolSize(int nioPoolSize) {
+        public Builder nioPoolSize(final int nioPoolSize) {
             if (nioPoolSize < 1) throw new IllegalArgumentException("The workerPoolSize must be greater than zero");
             this.nioPoolSize = nioPoolSize;
             return this;
@@ -170,9 +172,14 @@ public class Cluster {
          * Size of the pool for handling background work.  Defaults to the number of available processors multiplied
          * by 2
          */
-        public Builder workerPoolSize(int workerPoolSize) {
+        public Builder workerPoolSize(final int workerPoolSize) {
             if (workerPoolSize < 1) throw new IllegalArgumentException("The workerPoolSize must be greater than zero");
             this.workerPoolSize = workerPoolSize;
+            return this;
+        }
+
+        public Builder useSessionId(final String sessionId) {
+            this.sessionId = Optional.ofNullable(sessionId);
             return this;
         }
 
@@ -311,6 +318,7 @@ public class Cluster {
             connectionPoolSettings.reconnectInterval = this.reconnectInterval;
             connectionPoolSettings.resultIterationBatchSize = this.resultIterationBatchSize;
             connectionPoolSettings.enableSsl = this.enableSsl;
+            connectionPoolSettings.sessionId = sessionId.orElse(null);
             return new Cluster(getContactPoints(), serializer, this.nioPoolSize, this.workerPoolSize,
                     connectionPoolSettings, loadBalancingStrategy);
         }
