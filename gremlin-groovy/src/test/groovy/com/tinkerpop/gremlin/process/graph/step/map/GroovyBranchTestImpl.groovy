@@ -26,10 +26,6 @@ class GroovyBranchTestImpl extends BranchTest {
                  3: g.of().both()]).name;
     }
 
-    public Traversal<Vertex, Integer> get_g_V_valueXageX_branchXnullX27_identity_29_minus2X() {
-        return g.V.age.branch(null, [27:g.of().identity, 29:g.of().map{it.get() - 2}])
-    }
-
     public Traversal<Vertex, Object> get_g_V_branchXout_count_nextX2L_valueXnameX_3L_valuesX() {
         return g.V.branch({it.get().out().count().next();},[
             2L:g.of().value("name"),

@@ -26,8 +26,6 @@ public abstract class BranchTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, String> get_g_V_hasXageX_branchXname_lengthX5_in_4_out_3_bothX_name();
 
-    public abstract Traversal<Vertex, Integer> get_g_V_valueXageX_branchXnullX27_identity_29_minus2X();
-
     public abstract Traversal<Vertex, Object> get_g_V_branchXout_count_nextX2L_valueXnameX_3L_valuesX();
 
     @Test
@@ -92,23 +90,6 @@ public abstract class BranchTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    public void g_V_valueXageX_branchXnullX27_identity_29_minus2X() {
-        final Traversal<Vertex, Integer> traversal = get_g_V_valueXageX_branchXnullX27_identity_29_minus2X();
-        System.out.println("Testing: " + traversal);
-        Map<Integer, Long> counts = new HashMap<>();
-        int counter = 0;
-        while (traversal.hasNext()) {
-            MapHelper.incr(counts, traversal.next(), 1l);
-            counter++;
-        }
-        assertFalse(traversal.hasNext());
-        assertEquals(2, counter);
-        assertEquals(1, counts.size());
-        assertEquals(Long.valueOf(2), counts.get(27));
-    }
-
-    @Test
-    @LoadGraphWith(CLASSIC)
     public void g_V_branchXout_count_nextX2L_valueXnameX_3L_valuesX() {
         final Traversal<Vertex, Object> traversal = get_g_V_branchXout_count_nextX2L_valueXnameX_3L_valuesX();
         System.out.println("Testing: " + traversal);
@@ -145,13 +126,6 @@ public abstract class BranchTest extends AbstractGremlinTest {
                 put(4, g.of().out());
                 put(3, g.of().both());
             }}).value("name");
-        }
-
-        public Traversal<Vertex, Integer> get_g_V_valueXageX_branchXnullX27_identity_29_minus2X() {
-            return g.V().value("age").branch(null, new HashMap() {{
-                put(27, g.of().identity());
-                put(29, g.of().map(t -> (Integer) t.get() - 2));
-            }});
         }
 
         public Traversal<Vertex, Object> get_g_V_branchXout_count_nextX2L_valueXnameX_3L_valuesX() {
