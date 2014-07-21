@@ -210,6 +210,10 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         return this.baseGraph;
     }
 
+    public Schema getSchema() {
+        return this.baseGraph.schema();
+    }
+
     public Iterator<Map<String, Object>> query(final String query, final Map<String, Object> params) {
         this.tx().readWrite();
         return cypher.execute(query, null == params ? Collections.<String, Object>emptyMap() : params).iterator();
