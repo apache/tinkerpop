@@ -69,6 +69,7 @@ class Console {
         }
 
         GremlinLoader.load()
+        loadStartScript();
 
         // if plugins were added via :use command (or manually copied to the path) then this will try to find
         // plugins and load them
@@ -82,7 +83,6 @@ class Console {
 
         // start iterating results to show as output
         groovy.setResultHook(handleResultIterate)
-
         if (initScriptFile != null) initializeShellWithScript(initScriptFile)
 
         try {
@@ -203,6 +203,20 @@ class Console {
         } catch (FileNotFoundException ignored) {
             io.err.println(String.format("Gremlin initialization file not found at [%s].", initScriptFile))
             System.exit(1)
+        } catch (IOException ignored) {
+            io.err.println(String.format("Bad line in Gremlin initialization file at [%s].", line))
+            System.exit(1)
+        }
+    }
+
+    private void loadStartScript() {
+        String line = ""
+        try {
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(Console.class.getResourceAsStream("ConsoleStartScript.groovy")))
+            while ((line = reader.readLine()) != null) {
+                groovy.execute(line)
+            }
+            reader.close()
         } catch (IOException ignored) {
             io.err.println(String.format("Bad line in Gremlin initialization file at [%s].", line))
             System.exit(1)

@@ -1,9 +1,6 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
-import com.tinkerpop.gremlin.groovy.loaders.GraphLoader
-import com.tinkerpop.gremlin.groovy.loaders.ObjectLoader
-import com.tinkerpop.gremlin.groovy.loaders.StepLoader
 import com.tinkerpop.gremlin.process.Step
 import com.tinkerpop.gremlin.process.graph.GraphTraversal
 import com.tinkerpop.gremlin.structure.Edge
