@@ -18,9 +18,9 @@ public class BranchStep<S, E, M> extends FlatMapStep<S, E> {
     public BranchStep(final Traversal traversal, final SPredicate<Traverser<S>> ifPredicate, final Traversal<S, E> trueBranch, final Traversal<S, E> falseBranch) {
         super(traversal);
         this.setFunction(traverser -> {
-            final Traversal<S, E> t = ifPredicate.test(traverser) ? trueBranch : falseBranch;
-            t.addStarts(new SingleIterator<>(traverser));
-            return t;
+            final Traversal<S, E> branch = ifPredicate.test(traverser) ? trueBranch : falseBranch;
+            branch.addStarts(new SingleIterator<>(traverser));
+            return branch;
         });
     }
 
