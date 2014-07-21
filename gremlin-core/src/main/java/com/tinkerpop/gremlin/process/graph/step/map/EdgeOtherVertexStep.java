@@ -10,7 +10,6 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-//TODO: Does this implement reversible?
 public class EdgeOtherVertexStep extends MapStep<Edge, Vertex> implements PathConsumer {
 
     public EdgeOtherVertexStep(final Traversal traversal) {

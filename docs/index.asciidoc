@@ -283,7 +283,7 @@ image::gremlin-standing.png[width=125]
 Features
 --------
 
-Features are the means by which vendors can expose nuance difference between their data stores. 
+Features are the means by which vendors can expose nuanced difference between their data stores. 
 
  . *Graph Features*
  . *Vertex Features*
@@ -438,7 +438,7 @@ At the most general level there is `Traversal<S,E>` which implements `Iterator<E
   
  . `Step<S,E>`: a individual function applied to `S` to yield `E`.
  . `TraversalStrategy`: interceptor methods to alter the execution of the traversal.
- . `Traversal.Variables`: key/value pairs that can be used to store global information about the traversal.
+ . `Traversal.Memory`: key/value pairs that can be used to store global information about the traversal.
  . `Traverser<T>`: the object propagating through the `Traversal` currently representing an object of type `T`. 
 
 The classic notion of a graph traversal is provided by `GraphTraversal<S,E>` which extends `Traversal<S,E>`.
@@ -458,10 +458,10 @@ TinkerPop3 introduces the `jump()`-step. This step allows the propagating traver
 gremlin> g.v(1).as('a').out.jump('a'){it.loops<2}.name <1>
 ==>ripple
 ==>lop
-gremlin> g.v(1).as('a').jump('b'){it.loops>1}.out.jump('a').name.as('b') <2>
+gremlin> g.v(1).as('a').jump('b'){it.loops>1}.out.jump('a').as('b').name <2>
 ==>ripple
 ==>lop
-gremlin> g.v(1).jump('a').out.out.out.name.as('a') <3>
+gremlin> g.v(1).jump('a').out.out.out.as('a').name <3>
 ==>marko
 
 <1> do-while semantics as found in the classic `loop()`-step in TinkerPop2.
@@ -483,6 +483,47 @@ image::jump-step-example.png[width=500]
 The first time through the jump-sequence, the vertices lop, vadas, and josh are seen. Given that the loops==0, then traverser jumps back to step `a`. However, because the emit-predicate is declared true, those vertices are emitted from jump-sequence. At step 2 (loops==1), the vertices touched are ripple and lop (Josh's created projects). Thus, they are emitted. Therefore, the solution the traversal is all vertices touched: lop, vadas, josh, ripple, and lop.
 
 The jump()-step highlights one of the major benefits of `Traverser<T>` in TinkerPop3: the ability to arbitrarily take a traverser and place it anywhere in the Traversal step-sequence. Because a traverser maintains all the metadata associated with its particular walk, and no step maintains state information about a traverser, traverses can be moved between traversal steps as necessary without ill-effects.
+
+[[choose-step]]
+Choose Step
+~~~~~~~~~~~
+
+The `choose()`-step allows for the current `Traverser<T>` to select which traversal branch to take. With `choose()`, it is possible to implement if/else-based semantics.
+
+[source,groovy]
+gremlin> g.V.has('age').name.map{[it.get(), it.get().length()]}
+==>[marko, 5]
+==>[vadas, 5]
+==>[josh, 4]
+==>[peter, 5]
+gremlin> g.V.has('age').filter{it.get().value('name').length() == 5}.in.name
+==>marko
+gremlin> g.V.has('age').filter{it.get().value('name').length() == 4}.out.name
+==>ripple
+==>lop
+
+Given that statistics above, the following `choose()` examples are made clear.
+
+image::choose-step-example.png[width=700]
+
+[source,groovy]
+gremlin> g.V.has('age').choose({it.get().value('name').length() == 5}, 
+  g.of().in,
+  g.of().out).name <1>
+==>marko
+==>ripple
+==>lop
+gremlin> g.V.has('age').choose({it.get().value('name').length()},
+  [5:g.of().in,
+   4:g.of().out]).name <2>
+==>marko
+==>ripple
+==>lop
+
+<1> If the predicate is true, then do `in`, else do `out`.
+<2> Use the result of the function as a key to the map of traversal choices.
+
+NOTE: In Java8, there is no elegant syntax to create a `Map`. Thus, the last traversal above would look as follows in Java8: `g.V.choose({it.get().value('name').length()}, new HashMap() {{ put(5,g.of().in); put(4,g.of().out); }})`
 
 [[subgraph-step]]
 Subgraph Step
