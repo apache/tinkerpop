@@ -40,6 +40,8 @@ public interface GraphComputer {
 
     public GraphComputer program(final Configuration configuration);
 
+    public Graph getGraph();
+
     public Future<Pair<Graph, Globals>> submit();
 
     public static void mergeComputedView(final Graph original, final Graph computed, Map<String, String> keyMapping) {

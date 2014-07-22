@@ -10,9 +10,12 @@ import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.SideEffectCapComputerStep;
+import com.tinkerpop.gremlin.process.computer.traversal.step.util.TraversalResultMapReduce;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.step.map.GraphStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -49,7 +52,8 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     private SSupplier<Traversal> traversalSupplier;
     private boolean trackPaths = false;
 
-    public List<MapReduce> mapReduces = new ArrayList<>();
+    public List<MapReduce> mapReducers = new ArrayList<>();
+    public String resultVariable;
 
     public Map<String, KeyType> computeKeys = new HashMap<String, KeyType>() {{
         put(TRAVERSER_TRACKER, KeyType.CONSTANT);
@@ -69,14 +73,22 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                         (Class) Class.forName(configuration.getProperty(TRAVERSAL_SUPPLIER_CLASS).toString());
                 this.traversalSupplier = traversalSupplierClass.getConstructor().newInstance();
             }
-            this.trackPaths = TraversalHelper.trackPaths(this.traversalSupplier.get());
-            final Traversal temp = this.traversalSupplier.get();
-            temp.strategies().applyFinalStrategies();
-            temp.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
+
+            final Traversal traversal = this.traversalSupplier.get();
+            traversal.strategies().applyFinalStrategies();
+            this.trackPaths = TraversalHelper.trackPaths(traversal);
+            traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
                 final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
-                this.mapReduces.add(mapReduce);
+                this.mapReducers.add(mapReduce);
                 this.computeKeys.put(Graph.Key.hidden(mapReduce.getGlobalVariable()), KeyType.CONSTANT);
             });
+
+            if (TraversalHelper.getEnd(traversal) instanceof SideEffectCapComputerStep) {
+                this.resultVariable = ((SideEffectCapComputerStep) TraversalHelper.getEnd(traversal)).getVariable();
+            } else {
+                this.mapReducers.add(new TraversalResultMapReduce());
+                this.resultVariable = TraversalResultMapReduce.TRAVERSERS;
+            }
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -162,7 +174,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     @Override
     public List<MapReduce> getMapReducers() {
-        return this.mapReduces;
+        return this.mapReducers;
     }
 
     @Override
@@ -170,6 +182,10 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         final Set<String> keys = new HashSet<>();
         keys.add(VOTE_TO_HALT);
         return keys;
+    }
+
+    public String getResultVariable() {
+        return this.resultVariable;
     }
 
 

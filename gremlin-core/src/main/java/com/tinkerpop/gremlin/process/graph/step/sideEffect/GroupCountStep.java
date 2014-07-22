@@ -47,4 +47,8 @@ public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapabl
                 super.toString() :
                 TraversalHelper.makeStepString(this, this.variable);
     }
+
+    public String getVariable() {
+        return this.variable;
+    }
 }

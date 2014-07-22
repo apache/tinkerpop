@@ -9,4 +9,6 @@ public interface SideEffectCapable {
 
     public static final String CAP_KEY = Graph.Key.hidden("cap");
 
+    public String getVariable();
+
 }

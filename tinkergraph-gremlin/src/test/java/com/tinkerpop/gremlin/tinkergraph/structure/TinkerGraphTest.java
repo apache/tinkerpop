@@ -92,10 +92,13 @@ public class TinkerGraphTest implements Serializable {
     @Test
     public void testPlay() throws Exception {
         final TinkerGraph g = TinkerFactory.createClassic();
-        Traversal traversal = g.V().both().value("name").groupCount("a").path();
+        /*Traversal traversal = g.V().both().value("name").groupCount("a").path();
         TinkerHelper.prepareTraversalForComputer(traversal);
         Pair<Graph,GraphComputer.Globals> result = g.compute().program(TraversalVertexProgram.create().traversal(() -> traversal).getConfiguration()).submit().get();
-        System.out.println("" + result.getValue1().get("a"));
+        System.out.println("" + result.getValue1().get("a"));*/
+
+        Traversal traversal = g.V().out().out().submit(g.compute()).in().value("name");
+        traversal.forEachRemaining(System.out::println);
     }
 
     /**

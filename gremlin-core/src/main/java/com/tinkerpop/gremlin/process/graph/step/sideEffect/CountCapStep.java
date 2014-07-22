@@ -26,4 +26,8 @@ public class CountCapStep<S> extends FilterStep<S> implements Bulkable, SideEffe
     public void setCurrentBulkCount(final long bulkCount) {
         this.bulkCount = bulkCount;
     }
+
+    public String getVariable() {
+        return CAP_KEY;
+    }
 }

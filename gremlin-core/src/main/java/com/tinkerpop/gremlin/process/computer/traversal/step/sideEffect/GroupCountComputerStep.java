@@ -91,4 +91,8 @@ public class GroupCountComputerStep<S> extends FilterStep<S> implements SideEffe
                 super.toString() :
                 TraversalHelper.makeStepString(this, this.variable);
     }
+
+    public String getVariable() {
+        return this.variable;
+    }
 }

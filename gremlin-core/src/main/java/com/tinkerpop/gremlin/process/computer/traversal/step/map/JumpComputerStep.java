@@ -23,7 +23,7 @@ public class JumpComputerStep<S> extends AbstractStep<S, S> {
     public SPredicate<Traverser<S>> emitPredicate;
     private AtomicBoolean jumpBack = null;
 
-    public JumpComputerStep(final Traversal traversal, final JumpStep<S> jumpStep) {
+    public JumpComputerStep(final Traversal traversal, final JumpStep jumpStep) {
         super(traversal);
         this.jumpAs = jumpStep.jumpAs;
         this.ifPredicate = jumpStep.ifPredicate;

@@ -74,4 +74,8 @@ public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffect
                 super.toString() :
                 TraversalHelper.makeStepString(this, this.variable);
     }
+
+    public String getVariable() {
+        return this.variable;
+    }
 }

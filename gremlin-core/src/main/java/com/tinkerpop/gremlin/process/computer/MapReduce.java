@@ -14,9 +14,14 @@ public interface MapReduce<K, V, OK, OV, R> {
 
     public boolean doReduce();
 
+    // TODO: public boolean doMap();
+    // TODO: public boolean doCombine();
+    // TODO: public default void combine(final K key, final Iterator<V> values, final ReduceEmitter<OK, OV> emitter) { }
+
     public void map(final Vertex vertex, final MapEmitter<K, V> emitter);
 
-    public void reduce(final K key, final Iterator<V> values, final ReduceEmitter<OK, OV> emitter);
+    public default void reduce(final K key, final Iterator<V> values, final ReduceEmitter<OK, OV> emitter) {
+    }
 
     public R getResult(final Iterator<Pair<OK, OV>> keyValues);
 
