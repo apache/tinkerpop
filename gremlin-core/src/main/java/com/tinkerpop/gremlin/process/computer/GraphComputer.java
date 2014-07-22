@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process.computer;
 
-import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
@@ -20,7 +19,7 @@ import java.util.stream.Collectors;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-public interface GraphComputer extends TraversalEngine {
+public interface GraphComputer {
 
     public static String VERTEX_PROGRAM = "gremlin.vertexProgram";
 

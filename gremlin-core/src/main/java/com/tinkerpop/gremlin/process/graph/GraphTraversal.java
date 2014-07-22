@@ -4,9 +4,10 @@ import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankStep;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.ExceptStep;
@@ -55,6 +56,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
+import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -88,16 +90,15 @@ import java.util.function.Supplier;
  */
 public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
-    public static GraphTraversal of() {
-        final GraphTraversal traversal = new DefaultGraphTraversal<>();
-        traversal.addStep(new StartStep<>(traversal));
-        return traversal;
-    }
-
-    public default GraphTraversal<S, E> submit(final TraversalEngine engine) {
-        final GraphTraversal<S, E> traversal = new DefaultGraphTraversal<>();
-        traversal.addStep(new StartStep<>(traversal, engine.execute(this)));
-        return traversal;
+    public default GraphTraversal<S, E> submit(final GraphComputer computer) {
+        try {
+            final Pair<Graph, GraphComputer.Globals> result = computer.program(TraversalVertexProgram.create().traversal(() -> this).getConfiguration()).submit().get();
+            final GraphTraversal traversal = new DefaultGraphTraversal<>();
+            traversal.addStarts(new SingleIterator(result.getValue1()));
+            return traversal;
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     public default GraphTraversal<S, E> trackPaths() {
@@ -579,7 +580,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new PageRankStep(this));
     }
 
-    public default GraphTraversal<S, Pair<Vertex, Double>> pageRank(final SSupplier<Traversal<Vertex, Edge>> incidentTraversal) {
-        return (GraphTraversal) this.addStep(new PageRankStep(this, incidentTraversal));
+    public default GraphTraversal<S, Pair<Vertex, Double>> pageRank(final SSupplier<Traversal> incidentTraversal) {
+        return (GraphTraversal) this.addStep(new PageRankStep(this, (SSupplier) incidentTraversal));
     }
 }

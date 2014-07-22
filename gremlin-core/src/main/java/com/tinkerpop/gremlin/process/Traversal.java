@@ -1,13 +1,17 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.filter.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
-import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
+import com.tinkerpop.gremlin.process.util.SingleIterator;
+import com.tinkerpop.gremlin.structure.Graph;
+import org.javatuples.Pair;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -36,17 +40,16 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public List<Step> getSteps();
 
-    public default Traversal<S, E> submit(final TraversalEngine engine) {
-        final Traversal<S, E> traversal = new DefaultTraversal<>();
-        traversal.addStep(new StartStep<>(traversal, engine.execute(this)));
-        return traversal;
+    public default Traversal<S, E> submit(final GraphComputer computer) {
+        try {
+            final Pair<Graph, GraphComputer.Globals> result = computer.program(TraversalVertexProgram.create().traversal(() -> this).getConfiguration()).submit().get();
+            final Traversal traversal = new DefaultTraversal<>();
+            traversal.addStarts(new SingleIterator(result.getValue1()));
+            return traversal;
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
-
-    /*public static Traversal of() {
-        Traversal traversal = new DefaultTraversal<>();
-        traversal.addStep(new IdentityStep(traversal));
-        return traversal;
-    }*/
 
     public interface Memory extends Serializable {
 
