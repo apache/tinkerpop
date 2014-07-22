@@ -6,10 +6,12 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
+import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.step.map.GraphStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -20,7 +22,10 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -44,6 +49,11 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     private SSupplier<Traversal> traversalSupplier;
     private boolean trackPaths = false;
 
+    public List<MapReduce> mapReduces = new ArrayList<>();
+
+    public Map<String, KeyType> computeKeys = new HashMap<String, KeyType>() {{
+        put(TRAVERSER_TRACKER, KeyType.CONSTANT);
+    }};
 
     public TraversalVertexProgram() {
     }
@@ -60,6 +70,13 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                 this.traversalSupplier = traversalSupplierClass.getConstructor().newInstance();
             }
             this.trackPaths = TraversalHelper.trackPaths(this.traversalSupplier.get());
+            final Traversal temp = this.traversalSupplier.get();
+            temp.strategies().applyFinalStrategies();
+            temp.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
+                final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
+                this.mapReduces.add(mapReduce);
+                this.computeKeys.put(Graph.Key.hidden(mapReduce.getGlobalVariable()), KeyType.CONSTANT);
+            });
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -139,7 +156,13 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     @Override
     public Map<String, KeyType> getComputeKeys() {
-        return VertexProgram.ofComputeKeys(TRAVERSER_TRACKER, KeyType.CONSTANT);
+        // return VertexProgram.ofComputeKeys(TRAVERSER_TRACKER, KeyType.CONSTANT);
+        return this.computeKeys;
+    }
+
+    @Override
+    public List<MapReduce> getMapReducers() {
+        return this.mapReduces;
     }
 
     @Override

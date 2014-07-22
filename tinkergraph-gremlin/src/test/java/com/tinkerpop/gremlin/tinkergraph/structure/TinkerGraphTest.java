@@ -1,6 +1,10 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.IoTest;
@@ -11,6 +15,7 @@ import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import org.javatuples.Pair;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -85,13 +90,12 @@ public class TinkerGraphTest implements Serializable {
     }
 
     @Test
-    public void testPlay() {
-        /*final TinkerGraph g = TinkerFactory.createClassic();
-        Traversal traversal = g.V().as("x").outE().inV().jump("x", 2);
-        System.out.println(traversal);
-        traversal.strategies().applyFinalStrategies();
-        System.out.println(traversal);
-        traversal.forEachRemaining(System.out::println);*/
+    public void testPlay() throws Exception {
+        final TinkerGraph g = TinkerFactory.createClassic();
+        Traversal traversal = g.V().both().value("name").groupCount("a").path();
+        TinkerHelper.prepareTraversalForComputer(traversal);
+        Pair<Graph,GraphComputer.Globals> result = g.compute().program(TraversalVertexProgram.create().traversal(() -> traversal).getConfiguration()).submit().get();
+        System.out.println("" + result.getValue1().get("a"));
     }
 
     /**

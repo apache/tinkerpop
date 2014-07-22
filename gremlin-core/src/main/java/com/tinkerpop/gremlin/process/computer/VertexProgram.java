@@ -4,7 +4,9 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -61,6 +63,10 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
 
     public default Optional<MessageCombiner<M>> getMessageCombiner() {
         return Optional.empty();
+    }
+
+    public default List<MapReduce> getMapReducers() {
+        return Collections.emptyList();
     }
 
     public static Map<String, KeyType> ofComputeKeys(final Object... computeKeys) {
