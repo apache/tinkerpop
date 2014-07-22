@@ -31,7 +31,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class TraversalVertexProgram<M extends TraversalMessage> implements VertexProgram<M> {
 
-    private MessageType.Global global = MessageType.Global.of();
     // TODO: if not an adjacent traversal, use Local message types
     // TODO: a dual messaging system
 

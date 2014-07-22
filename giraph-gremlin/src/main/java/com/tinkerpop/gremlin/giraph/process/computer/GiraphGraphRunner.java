@@ -66,7 +66,6 @@ public class GiraphGraphRunner extends Configured implements Tool {
             // do extra map reduce jobs if necessary
             if (null != this.giraphConfiguration.get(GiraphGraphComputer.GREMLIN_EXTRA_JOBS_CALCULATOR, null)) {
                 final Class<ExtraJobsCalculator> calculator = (Class) this.giraphConfiguration.getClass(GiraphGraphComputer.GREMLIN_EXTRA_JOBS_CALCULATOR, ExtraJobsCalculator.class);
-
                 final List<Job> extendedJobs = calculator.getConstructor().newInstance().deriveExtraJobs(this.giraphConfiguration);
                 for (final Job extendedJob : extendedJobs) {
                     LOGGER.info(extendedJob.getJobName());

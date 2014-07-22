@@ -1,11 +1,13 @@
 package com.tinkerpop.gremlin.giraph.process;
 
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
+import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +26,7 @@ public class TraversalExtraJobsCalculator implements ExtraJobsCalculator {
         final VertexProgram program = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(configuration));
         if (program instanceof TraversalVertexProgram) {
             final Traversal traversal = (Traversal) ((TraversalVertexProgram) program).getTraversalSupplier().get();
+            GiraphComputerHelper.prepareTraversalForComputer(traversal);
             traversal.strategies().applyFinalStrategies();
             traversal.getSteps().forEach(step -> {
                 if (step instanceof JobCreator) {

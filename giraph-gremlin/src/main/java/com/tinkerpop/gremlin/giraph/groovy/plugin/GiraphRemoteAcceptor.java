@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.giraph.hdfs.HDFSTools;
 import com.tinkerpop.gremlin.giraph.hdfs.HiddenFileFilter;
 import com.tinkerpop.gremlin.giraph.hdfs.TextFileLineIterator;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
+import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.groovy.engine.function.GremlinGroovySSupplier;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
@@ -32,7 +33,12 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
 
     private static final String PREFIX_SCRIPT =
             "import " + GiraphGraph.class.getPackage().getName() + ".*\n" +
-                    "g = GiraphGraph.open()\n";
+                    "import " + GiraphComputerHelper.class.getPackage().getName() + ".*\n" +
+                    "g = GiraphGraph.open()\n" +
+                    "traversal = ";
+
+    private static final String POSTFIX_SCRIPT = "\nGiraphComputerHelper.prepareTraversalForComputer(traversal)\n" +
+            "traversal\n";
 
     //TODO: might not always be 'g' cause of the variable bindings
 
@@ -84,7 +90,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     public Object submit(final List<String> args) {
         try {
             //VertexProgramHelper.serializeSupplier(new GremlinGroovySSupplier<>(PREFIX_SCRIPT + args.get(0)), this.graph.variables().getConfiguration(), TraversalVertexProgram.TRAVERSAL_SUPPLIER);
-            final TraversalVertexProgramIterator iterator = new TraversalVertexProgramIterator(this.giraphGraph, new GremlinGroovySSupplier<>(PREFIX_SCRIPT + args.get(0)));
+            final TraversalVertexProgramIterator iterator = new TraversalVertexProgramIterator(this.giraphGraph, new GremlinGroovySSupplier<>(PREFIX_SCRIPT + args.get(0) + POSTFIX_SCRIPT));
             this.shell.getInterp().getContext().setProperty("g", iterator.getResultantGraph());
             return iterator;
             /*final Pair<Graph, GraphComputer.Globals> result = this.graph.compute().program(this.graph.variables().getConfiguration()).submit().get();
