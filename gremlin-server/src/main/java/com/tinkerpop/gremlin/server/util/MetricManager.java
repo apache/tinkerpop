@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.server.util;
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.CsvReporter;
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Meter;
@@ -366,6 +367,14 @@ public enum MetricManager {
 
     public Counter getCounter(final String prefix, final String... names) {
         return getRegistry().counter(MetricRegistry.name(prefix, names));
+    }
+
+    public <T> Gauge<T> getGuage(final Gauge<T> gauge, final String name) {
+        return getRegistry().register(name, gauge);
+    }
+
+    public <T> Gauge<T> getGuage(final Gauge<T> gauge, final String prefix, final String... names) {
+        return getRegistry().register(MetricRegistry.name(prefix, names), gauge);
     }
 
     public Meter getMeter(final String name) {

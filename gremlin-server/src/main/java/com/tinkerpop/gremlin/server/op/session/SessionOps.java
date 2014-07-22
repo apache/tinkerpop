@@ -38,13 +38,18 @@ import static com.codahale.metrics.MetricRegistry.name;
  */
 final class SessionOps {
     private static final Logger logger = LoggerFactory.getLogger(SessionOps.class);
-    private static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
-    private static final Timer traverseOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "traverse"));
 
     /**
      * Script engines are evaluated in a per session context where imports/scripts are isolated per session.
      */
     private static Map<String, Session> sessions = new ConcurrentHashMap<>();
+
+    private static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
+    private static final Timer traverseOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "traverse"));
+
+    static {
+        MetricManager.INSTANCE.getGuage(sessions::size, name(GremlinServer.class, "sessions"));
+    }
 
     public static void evalOp(final Context context) throws OpProcessorException {
         final Timer.Context timerContext = evalOpTimer.time();
