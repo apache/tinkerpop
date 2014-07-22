@@ -5,8 +5,6 @@ import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
 import org.codehaus.groovy.tools.shell.IO;
 
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 /**
@@ -25,7 +23,7 @@ public class UtilitiesGremlinPlugin extends AbstractGremlinPlugin {
 
         String line;
         try {
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream("ConsoleStartScript.groovy")));
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream("UtilitiesGremlinPluginScript.groovy")));
             while ((line = reader.readLine()) != null) {
                 pluginAcceptor.eval(line);
             }
