@@ -620,7 +620,7 @@ A `TraversalStrategy` can analyze a `Traversal` and mutate the traversal as it d
 A simple TraversalStrategy is the `IdentityOptimizerTraversalStrategy` and it is a type-1 strategy defined as follows:
 
 [source,java]
-public class IdentityOptimizerTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
+public class IdentityReductionStrategy implements TraversalStrategy.FinalTraversalStrategy {
     public void apply(final Traversal traversal) {
         ((List<Step>) traversal.getSteps()).stream()
                 .filter(step -> step instanceof IdentityStep
@@ -638,7 +638,7 @@ g.V().has("name","marko")
 The expression above can be executed in a `O(|V|)` or `O(log(|V|)` fashion in <<tinkergraph-gremlin,TinkerGraph>> depending on whether there is or is not an index defined for "name."
 
 [source,java]
-TinkerGraphStepTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
+TinkerGraphStepStrategy implements TraversalStrategy.FinalTraversalStrategy {
     public void apply(final Traversal traversal) {
         if (traversal.getSteps().get(0) instanceof TinkerGraphStep) {
             final TinkerGraphStep tinkerGraphStep = (TinkerGraphStep) traversal.getSteps().get(0);
@@ -1798,8 +1798,6 @@ $ hadoop jar target/giraph-gremlin-3.0.0-SNAPSHOT-job.jar com.tinkerpop.gremlin.
 14/06/24 08:16:43 INFO mapred.JobClient:   File Output Format Counters
 14/06/24 08:16:43 INFO mapred.JobClient:     Bytes Written=0
 
-IMPORTANT: The only way to currently execute a Giraph-Gremlin job is via the terminal (as demonstrated above) or programmatically via Java or Groovy. Direct Gremlin-Groovy support via `:remote` should be coming soon.
-
 Understanding the Output
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1842,7 +1840,7 @@ Looking particularly at the lop-vertex:
  "label":"vertex",
  "type":"vertex",
  "hiddens":{
-  "gremlin.traversalVertexProgram.traversalTracker": {
+  "gremlin.traversalVertexProgram.traverserTracker": {
     "previousObjectTracks":{"lop":1},
     "graphTracks":{},
     "objectTracks":{},
@@ -1855,7 +1853,7 @@ Looking particularly at the lop-vertex:
   "lang":"java"
 }
 
-In the hidden properties of the vertex is a property called `gremlin.traversalVertexProgram.traversalTracker`. The `doneObjectTracks`-key states that there is a single counter on the `String` "lop". An analogous result is found on "ripple." This is the correct result of the computation as:
+In the hidden properties of the vertex is a property called `gremlin.traversalVertexProgram.traverserTracker`. The `doneObjectTracks`-key states that there is a single counter on the `String` "lop". An analogous result is found on "ripple." This is the correct result of the computation as:
 
 [source,groovy]
 gremlin> g = TinkerFactory.createClassic()
@@ -1886,7 +1884,11 @@ $ bin/gremlin.sh
          \,,,/
          (o o)
 ─────oOOo-(3)-oOOo─────
-loaded: giraph
+plugin loaded: giraph
+gremlin> hdfs.copyFromLocal('../../../data/tinkerpop-classic-vertices.ldjson', 'tinkerpop-classic-vertices.ldjson')
+==>null
+gremlin> hdfs.ls()
+==>rw-r--r-- marko supergroup 2356 tinkerpop-classic-vertices.ldjson
 gremlin> :remote connect giraph ../giraph-gremlin/conf/giraph-graphson.properties
 ==>giraphgraph[graphsonvertexinputformat->graphsonvertexoutputformat]
 gremlin> :> g.V.groupBy{it.value('name')[1]}{it.value('name')}

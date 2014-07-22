@@ -7,11 +7,8 @@ import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.groovy.engine.function.GremlinGroovySSupplier;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgramIterator;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
-import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.FileConfiguration;
@@ -19,7 +16,6 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.codehaus.groovy.tools.shell.Groovysh;
-import org.javatuples.Pair;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +36,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
 
     //TODO: might not always be 'g' cause of the variable bindings
 
-    private GiraphGraph graph;
+    private GiraphGraph giraphGraph;
     private Groovysh shell;
 
     public GiraphRemoteAcceptor(final Groovysh shell) {
@@ -50,15 +46,15 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object connect(final List<String> args) {
         if (args.size() == 0) {
-            this.graph = GiraphGraph.open(new BaseConfiguration());
-            this.shell.getInterp().getContext().setProperty("g", this.graph);
+            this.giraphGraph = GiraphGraph.open(new BaseConfiguration());
+            this.shell.getInterp().getContext().setProperty("g", this.giraphGraph);
         }
         if (args.size() == 1) {
             try {
                 final FileConfiguration configuration = new PropertiesConfiguration();
                 configuration.load(new File(args.get(0)));
-                this.graph = GiraphGraph.open(configuration);
-                this.shell.getInterp().getContext().setProperty("g", this.graph);
+                this.giraphGraph = GiraphGraph.open(configuration);
+                this.shell.getInterp().getContext().setProperty("g", this.giraphGraph);
             } catch (final Exception e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
@@ -66,35 +62,38 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
             try {
                 final FileConfiguration configuration = new PropertiesConfiguration();
                 configuration.load(new File(args.get(0)));
-                this.graph = GiraphGraph.open(configuration);
-                this.shell.getInterp().getContext().setProperty(args.get(1), this.graph);
+                this.giraphGraph = GiraphGraph.open(configuration);
+                this.shell.getInterp().getContext().setProperty(args.get(1), this.giraphGraph);
             } catch (final Exception e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
         }
 
-        return this.graph;
+        return this.giraphGraph;
     }
 
     @Override
     public Object configure(final List<String> args) {
         for (int i = 0; i < args.size(); i = i + 2) {
-            this.graph.variables().<Configuration>get(GiraphGraph.CONFIGURATION).setProperty(args.get(i), args.get(i + 1));
+            this.giraphGraph.variables().<Configuration>get(GiraphGraph.CONFIGURATION).setProperty(args.get(i), args.get(i + 1));
         }
-        return this.graph;
+        return this.giraphGraph;
     }
 
     @Override
     public Object submit(final List<String> args) {
         try {
-            VertexProgramHelper.serializeSupplier(new GremlinGroovySSupplier<>(PREFIX_SCRIPT + args.get(0)), this.graph.variables().getConfiguration(), TraversalVertexProgram.TRAVERSAL_SUPPLIER);
-            final Pair<Graph, GraphComputer.Globals> result = this.graph.compute().program(this.graph.variables().getConfiguration()).submit().get();
+            //VertexProgramHelper.serializeSupplier(new GremlinGroovySSupplier<>(PREFIX_SCRIPT + args.get(0)), this.graph.variables().getConfiguration(), TraversalVertexProgram.TRAVERSAL_SUPPLIER);
+            final TraversalVertexProgramIterator iterator = new TraversalVertexProgramIterator(this.giraphGraph, new GremlinGroovySSupplier<>(PREFIX_SCRIPT + args.get(0)));
+            this.shell.getInterp().getContext().setProperty("g", iterator.getResultantGraph());
+            return iterator;
+            /*final Pair<Graph, GraphComputer.Globals> result = this.graph.compute().program(this.graph.variables().getConfiguration()).submit().get();
             final Optional<Iterator<String>> capResult = GiraphRemoteAcceptor.getCapIterator(this.graph.variables().getConfiguration());
             this.shell.getInterp().getContext().setProperty("g", result.getValue0());
             if (capResult.isPresent())
                 return capResult.get();
             else
-                return result.getValue0();
+                return new TraverserRes result.getValue0();*/
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -102,7 +101,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
 
     @Override
     public void close() throws IOException {
-        this.graph.close();
+        this.giraphGraph.close();
     }
 
     private static Optional<Iterator<String>> getCapIterator(final Configuration configuration) {
@@ -129,10 +128,10 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     }
 
     public GiraphGraph getGraph() {
-        return this.graph;
+        return this.giraphGraph;
     }
 
     public String toString() {
-        return "GiraphRemoteAcceptor[" + this.graph + "]";
+        return "GiraphRemoteAcceptor[" + this.giraphGraph + "]";
     }
 }

@@ -232,7 +232,7 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
         }
 
         public Traversal<Vertex, String> get_g_v1_asXaX_jumpXb_loops_gt_1X_out_jumpXaX_asXbX_name(final Object v1Id) {
-            return g.v(v1Id).as("a").jump("b", t -> t.getLoops() > 1).sideEffect(t -> System.out.println(t.get() + "!!!" + t.getLoops())).out().jump("a").as("b").value("name");
+            return g.v(v1Id).as("a").jump("b", t -> t.getLoops() > 1).out().jump("a").as("b").value("name");
         }
     }
 

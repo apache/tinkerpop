@@ -48,6 +48,7 @@ public class GiraphGremlinPlugin extends AbstractGremlinPlugin {
 
     @Override
     public void pluginTo(final PluginAcceptor pluginAcceptor) {
+        super.pluginTo(pluginAcceptor);
         pluginAcceptor.addImports(IMPORTS);
         try {
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", JobClient.class.getName()));

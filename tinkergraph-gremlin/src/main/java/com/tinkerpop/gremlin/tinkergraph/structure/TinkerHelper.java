@@ -13,7 +13,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerGraphStepTraversalStrategy;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerGraphStepStrategy;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -147,7 +147,7 @@ public class TinkerHelper {
         if (traversal.getSteps().get(0) instanceof TinkerGraphStep)
             ((TinkerGraphStep) traversal.getSteps().get(0)).graph = null;
         traversal.memory().remove(Graph.Key.hidden("g"));
-        traversal.strategies().unregister(TinkerGraphStepTraversalStrategy.class);
+        traversal.strategies().unregister(TinkerGraphStepStrategy.class);
         traversal.strategies().unregister(TraverserSourceStrategy.class);
         traversal.strategies().register(new ComputerCountStrategy());
         traversal.strategies().register(new ComputerJumpStrategy());

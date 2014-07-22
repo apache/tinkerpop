@@ -73,6 +73,10 @@ public class TraversalVertexProgramIterator<T> implements Iterator<T> {
         return this.traversalSupplier.get().toString();
     }
 
+    public Graph getResultantGraph() {
+        return this.resultantGraph;
+    }
+
     protected void buildIterator() {
         if (TraversalHelper.trackPaths(this.traversalSupplier.get())) {
             this.itty = StreamFactory.stream((Iterator<Vertex>) this.originalGraph.V()).flatMap(vertex -> {
