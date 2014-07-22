@@ -28,7 +28,7 @@ public class GiraphGraphShellComputerGlobals implements GraphComputer.Globals {
     final Map<String, Object> globals = new HashMap<>();
 
     public GiraphGraphShellComputerGlobals(final Configuration configuration) {
-        try {
+        /*try {
             final String globalLocation = configuration.get(GiraphGraph.GREMLIN_OUTPUT_LOCATION, null);
             if (null != globalLocation) {
                 for (final String line : this.readLines(new Path(globalLocation + "/" + GiraphGraphComputer.GLOBALS), configuration)) {
@@ -37,7 +37,7 @@ public class GiraphGraphShellComputerGlobals implements GraphComputer.Globals {
             }
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
-        }
+        }*/
     }
 
     public Set<String> keys() {
@@ -49,7 +49,8 @@ public class GiraphGraphShellComputerGlobals implements GraphComputer.Globals {
     }
 
     public void set(final String key, Object value) {
-        throw new IllegalStateException(COMPLETE_AND_IMMUTABLE);
+       // throw new IllegalStateException(COMPLETE_AND_IMMUTABLE);
+        this.globals.put(key,value);
     }
 
     public int getIteration() {

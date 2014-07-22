@@ -3,12 +3,21 @@ package com.tinkerpop.gremlin.process.computer;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.javatuples.Pair;
 
+import java.io.Serializable;
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface MapReduce<K, V, OK, OV, R> {
+
+    public static class NullObject implements Serializable {
+        private static final NullObject INSTANCE = new NullObject();
+
+        public static NullObject get() {
+            return INSTANCE;
+        }
+    }
 
     public String getGlobalVariable();
 
