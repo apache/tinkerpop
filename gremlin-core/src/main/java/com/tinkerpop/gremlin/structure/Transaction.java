@@ -316,7 +316,7 @@ public interface Transaction extends Closeable {
                     if (ix > 0)
                         try {
                             Thread.sleep(delay.apply(ix));
-                        } catch (InterruptedException ie) {
+                        } catch (InterruptedException ignored) {
                         }
 
                     try {

@@ -143,7 +143,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
             while (this.hasNext()) {
                 collection.add(this.next());
             }
-        } catch (final NoSuchElementException e) {
+        } catch (final NoSuchElementException ignored) {
         }
         return collection;
     }
@@ -153,7 +153,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
             while (this.hasNext()) {
                 this.next();
             }
-        } catch (final NoSuchElementException e) {
+        } catch (final NoSuchElementException ignored) {
         }
         return this;
     }
@@ -167,7 +167,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
             while (this.hasNext()) {
                 consumer.accept(this.next());
             }
-        } catch (final NoSuchElementException e) {
+        } catch (final NoSuchElementException ignored) {
 
         }
     }

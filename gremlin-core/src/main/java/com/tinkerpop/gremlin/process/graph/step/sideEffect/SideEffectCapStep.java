@@ -29,7 +29,7 @@ public class SideEffectCapStep<S, E> extends AbstractStep<S, E> {
                 while (true) {
                     traverser = (Traverser<E>) this.starts.next();
                 }
-            } catch (final NoSuchElementException e) {
+            } catch (final NoSuchElementException ignored) {
             }
             this.done = true;
             return traverser.makeChild(this.getAs(), this.traversal.memory().get(this.variable));

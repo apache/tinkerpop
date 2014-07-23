@@ -564,7 +564,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                     throw new IllegalStateException("The following object does not have a remove() method: " + object);
                 }
             }
-        } catch (final NoSuchElementException e) {
+        } catch (final NoSuchElementException ignored) {
 
         }
     }
