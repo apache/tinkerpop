@@ -65,7 +65,7 @@ public class LongIDVertexCache implements VertexCache {
          * {@link Vertex#id()}. Otherwise, do nothing.
          */
         @Override
-        public void apply(long l) {
+        public void apply(final long l) {
             final Object o = map.get(l);
             assert null != o;
             if (o instanceof Vertex) {
