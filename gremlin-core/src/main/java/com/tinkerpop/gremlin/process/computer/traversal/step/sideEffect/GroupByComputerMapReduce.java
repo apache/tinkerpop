@@ -61,8 +61,8 @@ public class GroupByComputerMapReduce implements MapReduce<Object, Collection, O
     }
 
     @Override
-    public boolean doReduce() {
-        return true;
+    public boolean doStage(final Stage stage) {
+        return !stage.equals(Stage.COMBINE);
     }
 
     @Override

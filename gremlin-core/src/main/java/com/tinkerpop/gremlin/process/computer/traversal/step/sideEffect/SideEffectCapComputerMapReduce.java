@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
-import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SSupplier;
 import org.apache.commons.configuration.Configuration;
 
@@ -55,18 +54,8 @@ public class SideEffectCapComputerMapReduce implements MapReduce {
     }
 
     @Override
-    public boolean doReduce() {
+    public boolean doStage(final Stage stage) {
         return false;
-    }
-
-    @Override
-    public boolean doMap() {
-        return false;
-    }
-
-    @Override
-    public void map(final Vertex vertex, final MapEmitter emitter) {
-
     }
 
     @Override

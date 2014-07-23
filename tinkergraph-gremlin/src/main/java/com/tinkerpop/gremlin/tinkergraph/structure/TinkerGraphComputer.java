@@ -75,10 +75,10 @@ public class TinkerGraphComputer implements GraphComputer {
             }
 
             for (final MapReduce mapReduce : (Iterable<MapReduce>) vertexProgram.getMapReducers()) {
-                if (mapReduce.doMap()) {
-                    final TinkerMapEmitter mapEmitter = new TinkerMapEmitter(mapReduce.doReduce());
+                if (mapReduce.doStage(MapReduce.Stage.MAP)) {
+                    final TinkerMapEmitter mapEmitter = new TinkerMapEmitter(mapReduce.doStage(MapReduce.Stage.REDUCE));
                     StreamFactory.stream(g.V()).forEach(vertex -> mapReduce.map(vertex, mapEmitter));
-                    if (mapReduce.doReduce()) {
+                    if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
                         final TinkerReduceEmitter reduceEmitter = new TinkerReduceEmitter();
                         mapEmitter.reduceMap.forEach((k, v) -> mapReduce.reduce(k, ((List) v).iterator(), reduceEmitter));
                         this.globals.set(mapReduce.getResultVariable(), mapReduce.getResult(reduceEmitter.resultList.iterator()));

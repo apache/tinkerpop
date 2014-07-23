@@ -38,7 +38,7 @@ public class MapReduceHelper {
         final org.apache.commons.configuration.Configuration apacheConfiguration = new BaseConfiguration();
         mapReduce.stageConfiguration(apacheConfiguration);
         ConfUtil.mergeApacheIntoHadoopConfiguration(apacheConfiguration, newConfiguration);
-        if (!mapReduce.doMap()) {
+        if (!mapReduce.doStage(MapReduce.Stage.MAP)) {
             final Path sideEffectPath = new Path(configuration.get(GiraphGraph.GREMLIN_OUTPUT_LOCATION) + "/" + KeyHelper.makeDirectory(mapReduce.getResultVariable()));
             storeSideEffectResults(mapReduce, globals, sideEffectPath, configuration);
         } else {
@@ -46,8 +46,9 @@ public class MapReduceHelper {
             final Job job = new Job(newConfiguration, mapReduce.toString());
             job.setJarByClass(GiraphGraph.class);
             job.setMapperClass(GiraphMap.class);
-            //extraJob.setCombinerClass(Combiner.class);
-            if (mapReduce.doReduce())
+            if (mapReduce.doStage(MapReduce.Stage.COMBINE))
+                job.setCombinerClass(GiraphReduce.class);
+            if (mapReduce.doStage(MapReduce.Stage.REDUCE))
                 job.setReducerClass(GiraphReduce.class);
             else
                 job.setNumReduceTasks(0);

@@ -12,13 +12,28 @@ import java.util.Iterator;
  */
 public interface MapReduce<K, V, OK, OV, R> {
 
-    public static class NullObject implements Serializable {
+    public static class NullObject implements Comparable<NullObject>, Serializable {
         private static final NullObject INSTANCE = new NullObject();
 
         public static NullObject get() {
             return INSTANCE;
         }
+
+        public int hashCode() {
+            return 666666666;
+        }
+
+        public boolean equals(final Object object) {
+            return object instanceof NullObject;
+        }
+
+        public int compareTo(final NullObject nullObject) {
+            return 0;
+        }
     }
+
+    public static enum Stage {MAP, COMBINE, REDUCE}
+
 
     public default void stageConfiguration(final Configuration configuration) {
 
@@ -30,16 +45,13 @@ public interface MapReduce<K, V, OK, OV, R> {
 
     public String getResultVariable();
 
-    public boolean doReduce();
+    public boolean doStage(final Stage stage);
 
-    public default boolean doMap() {
-        return true;
+    public default void map(final Vertex vertex, final MapEmitter<K, V> emitter) {
     }
 
-    // TODO: public boolean doCombine();
-    // TODO: public default void combine(final K key, final Iterator<V> values, final ReduceEmitter<OK, OV> emitter) { }
-
-    public void map(final Vertex vertex, final MapEmitter<K, V> emitter);
+    public default void combine(final K key, final Iterator<V> values, final ReduceEmitter<OK, OV> emitter) {
+    }
 
     public default void reduce(final K key, final Iterator<V> values, final ReduceEmitter<OK, OV> emitter) {
     }
