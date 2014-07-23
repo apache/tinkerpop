@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.process.computer.traversal.TraverserCountTracker;
 import com.tinkerpop.gremlin.process.computer.traversal.TraverserPathTracker;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Pair;
 
 import java.util.Iterator;
@@ -15,11 +14,11 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalResultMapReduce implements MapReduce<Object, Object, Object, Object, Iterator<Object>> {
+public class TraversalResultMapReduce implements MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Iterator<Object>> {
 
-    public static final String TRAVERSERS = "traversers";
+    public static final String TRAVERSERS = "gremlin.traversers";
 
-    public String getGlobalVariable() {
+    public String getResultVariable() {
         return TRAVERSERS;
     }
 
@@ -27,7 +26,7 @@ public class TraversalResultMapReduce implements MapReduce<Object, Object, Objec
         return false;
     }
 
-    public void map(final Vertex vertex, final MapEmitter<Object, Object> emitter) {
+    public void map(final Vertex vertex, final MapEmitter<MapReduce.NullObject, Object> emitter) {
         final Property mapProperty = vertex.property(TraversalVertexProgram.TRAVERSER_TRACKER);
         if (mapProperty.isPresent()) {
             if (mapProperty.value() instanceof TraverserCountTracker) {
@@ -59,7 +58,15 @@ public class TraversalResultMapReduce implements MapReduce<Object, Object, Objec
 
     }
 
-    public Iterator<Object> getResult(final Iterator<Pair<Object, Object>> keyValues) {
-        return StreamFactory.stream(keyValues).map(Pair::getValue1).iterator();
+    public Iterator<Object> getResult(final Iterator<Pair<MapReduce.NullObject, Object>> keyValues) {
+        return new Iterator<Object>() {
+            public boolean hasNext() {
+                return keyValues.hasNext();
+            }
+
+            public Object next() {
+                return keyValues.next().getValue1();
+            }
+        };
     }
 }

@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgramIterator;
+import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.SideEffectCapComputerMapReduce;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -82,20 +83,22 @@ public class TinkerGraphComputer implements GraphComputer {
             }
 
             for (final MapReduce mapReduce : (Iterable<MapReduce>) vertexProgram.getMapReducers()) {
-                final TinkerMapEmitter mapEmitter = new TinkerMapEmitter(mapReduce.doReduce());
-                StreamFactory.stream(g.V()).forEach(vertex -> mapReduce.map(vertex, mapEmitter));
-                if (mapReduce.doReduce()) {
-                    final TinkerReduceEmitter reduceEmitter = new TinkerReduceEmitter();
-                    mapEmitter.reduceMap.forEach((k, v) -> mapReduce.reduce(k, ((List) v).iterator(), reduceEmitter));
-                    this.globals.set(mapReduce.getGlobalVariable(), mapReduce.getResult(reduceEmitter.resultList.iterator()));
-                } else {
-                    this.globals.set(mapReduce.getGlobalVariable(), mapReduce.getResult(mapEmitter.mapList.iterator()));
+                if (!(mapReduce instanceof SideEffectCapComputerMapReduce)) {
+                    final TinkerMapEmitter mapEmitter = new TinkerMapEmitter(mapReduce.doReduce());
+                    StreamFactory.stream(g.V()).forEach(vertex -> mapReduce.map(vertex, mapEmitter));
+                    if (mapReduce.doReduce()) {
+                        final TinkerReduceEmitter reduceEmitter = new TinkerReduceEmitter();
+                        mapEmitter.reduceMap.forEach((k, v) -> mapReduce.reduce(k, ((List) v).iterator(), reduceEmitter));
+                        this.globals.set(mapReduce.getResultVariable(), mapReduce.getResult(reduceEmitter.resultList.iterator()));
+                    } else {
+                        this.globals.set(mapReduce.getResultVariable(), mapReduce.getResult(mapEmitter.mapList.iterator()));
+                    }
                 }
             }
 
             // update runtime and return the newly computed graph
             this.globals.setRuntime(System.currentTimeMillis() - time);
-            return new Pair<Graph, Globals>(this.graph, this.globals);
+            return new Pair<>(this.graph, this.globals);
         });
     }
 

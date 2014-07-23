@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class TinkerGraphComputerGlobals implements GraphComputer.Globals.Administrative {
 
-    private final Map<String, Object> globals;
+    public final Map<String, Object> globals;
     private final AtomicInteger iteration = new AtomicInteger(0);
     private final AtomicLong runtime = new AtomicLong(0l);
 

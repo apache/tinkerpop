@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.computer;
 
 import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
 import java.io.Serializable;
@@ -19,7 +20,15 @@ public interface MapReduce<K, V, OK, OV, R> {
         }
     }
 
-    public String getGlobalVariable();
+    public default void stageConfiguration(final Configuration configuration) {
+
+    }
+
+    public default void setup(final Configuration configuration) {
+
+    }
+
+    public String getResultVariable();
 
     public boolean doReduce();
 

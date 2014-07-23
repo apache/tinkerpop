@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
+import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
+import com.tinkerpop.gremlin.giraph.process.computer.util.MapReduceHelper;
 import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.hadoop.io.NullWritable;
@@ -21,7 +23,8 @@ public class GiraphMap extends Mapper<NullWritable, GiraphInternalVertex, KryoWr
     @Override
     public void setup(final Mapper<NullWritable, GiraphInternalVertex, KryoWritable, KryoWritable>.Context context) {
         try {
-            this.mapReduce = context.getConfiguration().getClass("MapReduce", MapReduce.class, MapReduce.class).getConstructor().newInstance();
+            this.mapReduce = context.getConfiguration().getClass(MapReduceHelper.MAP_REDUCE_CLASS, MapReduce.class, MapReduce.class).getConstructor().newInstance();
+            this.mapReduce.setup(ConfUtil.makeApacheConfiguration(context.getConfiguration()));
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -32,4 +35,24 @@ public class GiraphMap extends Mapper<NullWritable, GiraphInternalVertex, KryoWr
         this.mapReduce.map(value.getTinkerVertex(), new GiraphMapEmitter<>(context));
     }
 
+    public static class GiraphMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {
+
+        final Mapper<NullWritable, GiraphInternalVertex, KryoWritable, KryoWritable>.Context context;
+        final KryoWritable<K> keyWritable = new KryoWritable<>();
+        final KryoWritable<V> valueWritable = new KryoWritable<>();
+
+        public GiraphMapEmitter(final Mapper<NullWritable, GiraphInternalVertex, KryoWritable, KryoWritable>.Context context) {
+            this.context = context;
+        }
+
+        public void emit(final K key, final V value) {
+            this.keyWritable.set(key);
+            this.valueWritable.set(value);
+            try {
+                this.context.write(this.keyWritable, this.valueWritable);
+            } catch (Exception e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        }
+    }
 }

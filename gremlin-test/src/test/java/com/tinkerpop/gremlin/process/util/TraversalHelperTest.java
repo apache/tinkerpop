@@ -33,7 +33,7 @@ public class TraversalHelperTest {
         assertTrue(TraversalHelper.isReversible(new DefaultGraphTraversal().outE().has("since").inV()));
         assertTrue(TraversalHelper.isReversible(new DefaultGraphTraversal().outE().as("x")));
 
-        assertFalse(TraversalHelper.isReversible(new DefaultGraphTraversal().as("a").outE().back("a")));
+        assertFalse(TraversalHelper.isReversible(new DefaultGraphTraversal().identity().as("a").outE().back("a")));
 
     }
 

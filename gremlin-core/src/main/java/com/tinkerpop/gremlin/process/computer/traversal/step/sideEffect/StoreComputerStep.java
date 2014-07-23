@@ -11,15 +11,11 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SFunction;
-import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -31,7 +27,7 @@ public class StoreComputerStep<S> extends FilterStep<S> implements SideEffectCap
     protected Collection collection;
     protected long bulkCount = 1l;
 
-    public StoreComputerStep(final Traversal traversal, final SFunction<S,?> preStoreFunction, final String variable) {
+    public StoreComputerStep(final Traversal traversal, final SFunction<S, ?> preStoreFunction, final String variable) {
         super(traversal);
         this.preStoreFunction = preStoreFunction;
         this.variable = variable;
@@ -61,28 +57,7 @@ public class StoreComputerStep<S> extends FilterStep<S> implements SideEffectCap
     }
 
     public MapReduce getMapReduce() {
-        return new MapReduce<Object, Object, Object, Object, List<Object>>() {
-
-            public String getGlobalVariable() {
-                return variable;
-            }
-
-            public boolean doReduce() {
-                return false;
-            }
-
-            public void map(final Vertex vertex, final MapEmitter<Object, Object> emitter) {
-                final Property<Collection> mapProperty = vertex.property(Graph.Key.hidden(variable));
-                if (mapProperty.isPresent())
-                    mapProperty.value().forEach(object -> emitter.emit(null, object));
-            }
-
-            public List<Object> getResult(final Iterator<Pair<Object, Object>> keyValues) {
-                final List<Object> result = new ArrayList<>();
-                keyValues.forEachRemaining(pair -> result.add(pair.getValue1()));
-                return result;
-            }
-        };
+        return new StoreComputerMapReduce(this);
     }
 
 

@@ -51,7 +51,6 @@ public class GiraphGraph implements Graph, Serializable {
         final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>() {
             public GraphTraversal<Vertex, Vertex> submit(final GraphComputer computer) {
                 GiraphComputerHelper.prepareTraversalForComputer(this);
-                //this.strategies().register(new ValidateStepsStrategy());
                 return super.submit(computer);
             }
         };
@@ -64,7 +63,6 @@ public class GiraphGraph implements Graph, Serializable {
         final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<Edge, Edge>() {
             public GraphTraversal<Edge, Edge> submit(final GraphComputer computer) {
                 GiraphComputerHelper.prepareTraversalForComputer(this);
-                //this.strategies().register(new ValidateStepsStrategy());
                 return super.submit(computer);
             }
         };

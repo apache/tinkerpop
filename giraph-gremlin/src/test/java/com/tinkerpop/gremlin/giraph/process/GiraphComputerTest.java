@@ -3,6 +3,8 @@ package com.tinkerpop.gremlin.giraph.process;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.io.GiraphGremlinInputFormat;
 import com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoInputFormat;
+import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.SideEffectCapComputerMapReduce;
+import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.SideEffectCapComputerStep;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Ignore;
@@ -45,10 +47,8 @@ public class GiraphComputerTest {
     }
 
     /*@Test
-    public void shouldWork2() {
-        final GiraphGraph g = GiraphGraph.open(baseConfiguration);
-        Iterator<Vertex> vertices = new VertexIterator(new KryoVertexInputFormat(), ConfUtil.makeHadoopConfiguration(baseConfiguration));
-        vertices.forEachRemaining(System.out::println);
+    public void shouldWork2() throws Exception {
+        SideEffectCapComputerMapReduce.class.getConstructor().newInstance();
     }*/
 
 }

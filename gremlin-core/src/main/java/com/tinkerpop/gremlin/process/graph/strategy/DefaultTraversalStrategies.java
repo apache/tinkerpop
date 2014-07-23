@@ -41,5 +41,9 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
                 .forEach(o -> ((TraversalStrategy.FinalTraversalStrategy) o).apply(this.traversal));
     }
 
+    public void clear() {
+        this.traversalStrategies.clear();
+    }
+
 
 }

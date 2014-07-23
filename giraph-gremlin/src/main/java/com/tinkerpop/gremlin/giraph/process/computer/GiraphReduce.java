@@ -1,7 +1,10 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
+import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
+import com.tinkerpop.gremlin.giraph.process.computer.util.MapReduceHelper;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -20,7 +23,8 @@ public class GiraphReduce extends Reducer<KryoWritable, KryoWritable, KryoWritab
     @Override
     public void setup(final Reducer<KryoWritable, KryoWritable, KryoWritable, KryoWritable>.Context context) {
         try {
-            this.mapReduce = context.getConfiguration().getClass("MapReduce", MapReduce.class, MapReduce.class).getConstructor().newInstance();
+            this.mapReduce = context.getConfiguration().getClass(MapReduceHelper.MAP_REDUCE_CLASS, MapReduce.class, MapReduce.class).getConstructor().newInstance();
+            this.mapReduce.setup(ConfUtil.makeApacheConfiguration(context.getConfiguration()));
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -42,4 +46,25 @@ public class GiraphReduce extends Reducer<KryoWritable, KryoWritable, KryoWritab
         }, new GiraphReduceEmitter<>(context));
     }
 
+
+    public static class GiraphReduceEmitter<OK, OV> implements MapReduce.ReduceEmitter<OK, OV> {
+
+        final Reducer<KryoWritable, KryoWritable, KryoWritable, KryoWritable>.Context context;
+        final KryoWritable<OK> keyWritable = new KryoWritable<>();
+        final KryoWritable<OV> valueWritable = new KryoWritable<>();
+
+        public GiraphReduceEmitter(final Reducer<KryoWritable, KryoWritable, KryoWritable, KryoWritable>.Context context) {
+            this.context = context;
+        }
+
+        public void emit(final OK key, final OV value) {
+            this.keyWritable.set(key);
+            this.valueWritable.set(value);
+            try {
+                this.context.write(this.keyWritable, this.valueWritable);
+            } catch (Exception e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        }
+    }
 }

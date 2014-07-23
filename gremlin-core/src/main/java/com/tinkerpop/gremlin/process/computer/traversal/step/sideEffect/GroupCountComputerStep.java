@@ -12,13 +12,10 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SFunction;
-import org.javatuples.Pair;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -54,36 +51,7 @@ public class GroupCountComputerStep<S> extends FilterStep<S> implements SideEffe
     }
 
     public MapReduce getMapReduce() {
-        return new MapReduce<Object, Long, Object, Long, Map<Object, Long>>() {
-
-            public String getGlobalVariable() {
-                return variable;
-            }
-
-            public boolean doReduce() {
-                return true;
-            }
-
-            public void map(final Vertex vertex, final MapEmitter<Object, Long> emitter) {
-                final Property<Map<Object, Long>> mapProperty = vertex.property(Graph.Key.hidden(variable));
-                if (mapProperty.isPresent())
-                    mapProperty.value().forEach((k, v) -> emitter.emit(k, v));
-            }
-
-            public void reduce(final Object key, final Iterator<Long> values, final ReduceEmitter<Object, Long> emitter) {
-                long counter = 0;
-                while (values.hasNext()) {
-                    counter = counter + values.next();
-                }
-                emitter.emit(key, counter);
-            }
-
-            public Map<Object, Long> getResult(final Iterator<Pair<Object, Long>> keyValues) {
-                final Map<Object, Long> result = new HashMap<>();
-                keyValues.forEachRemaining(pair -> result.put(pair.getValue0(), pair.getValue1()));
-                return result;
-            }
-        };
+        return new GroupCountComputerMapReduce(this);
     }
 
     public String toString() {

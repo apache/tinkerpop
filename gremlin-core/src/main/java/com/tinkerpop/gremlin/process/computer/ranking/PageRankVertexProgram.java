@@ -50,7 +50,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
         try {
             if (configuration.containsKey(INCIDENT_TRAVERSAL)) {
-                final SSupplier<Traversal> traversalSupplier = VertexProgramHelper.deserializeSupplier(configuration, INCIDENT_TRAVERSAL);
+                final SSupplier<Traversal> traversalSupplier = VertexProgramHelper.deserialize(configuration, INCIDENT_TRAVERSAL);
                 VertexProgramHelper.verifyReversibility(traversalSupplier.get());
                 this.messageType = MessageType.Local.of((SSupplier) traversalSupplier);
             }
@@ -127,7 +127,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
         public Builder incidentTraversal(final SSupplier<Traversal<Vertex, Edge>> incidentTraversal) throws IOException {
             try {
-                VertexProgramHelper.serializeSupplier(incidentTraversal, this.configuration, INCIDENT_TRAVERSAL);
+                VertexProgramHelper.serialize(incidentTraversal, this.configuration, INCIDENT_TRAVERSAL);
             } catch (final IOException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }

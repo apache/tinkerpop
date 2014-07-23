@@ -9,10 +9,6 @@ import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.Vertex;
-
-import java.util.Iterator;
-import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -31,38 +27,7 @@ public class SideEffectCapComputerStep<S> extends FilterStep<S> implements Rever
     }
 
     public MapReduce getMapReduce() {
-        Optional<MapReducer> mapReducerOptional = this.traversal.getSteps()
-                .stream()
-                .filter(step -> step != this)
-                .filter(step -> step instanceof MapReducer)
-                .filter(step -> step instanceof SideEffectCapable)
-                .filter(step -> ((SideEffectCapable) step).getVariable().equals(this.variable))
-                .findFirst();
-        if (mapReducerOptional.isPresent()) {
-            return mapReducerOptional.get().getMapReduce();
-        } else {
-            return new MapReduce() {
-                @Override
-                public String getGlobalVariable() {
-                    return variable;
-                }
-
-                @Override
-                public boolean doReduce() {
-                    return false;
-                }
-
-                @Override
-                public void map(Vertex vertex, MapEmitter emitter) {
-
-                }
-
-                @Override
-                public Object getResult(Iterator keyValues) {
-                    return traversal.memory().get(variable);
-                }
-            };
-        }
+        return new SideEffectCapComputerMapReduce(this);
     }
 
     public String toString() {
