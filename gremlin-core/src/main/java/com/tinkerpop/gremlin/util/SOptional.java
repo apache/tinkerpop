@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.util.function.SSupplier;
 import java.io.Serializable;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 /**

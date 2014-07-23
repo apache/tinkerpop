@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.structure.io.util;
 
-import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 

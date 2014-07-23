@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process.computer.ranking;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;

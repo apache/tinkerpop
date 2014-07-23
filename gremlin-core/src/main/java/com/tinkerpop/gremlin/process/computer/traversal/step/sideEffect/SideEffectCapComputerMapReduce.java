@@ -12,7 +12,6 @@ import com.tinkerpop.gremlin.util.function.SSupplier;
 import org.apache.commons.configuration.Configuration;
 
 import java.util.Iterator;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**

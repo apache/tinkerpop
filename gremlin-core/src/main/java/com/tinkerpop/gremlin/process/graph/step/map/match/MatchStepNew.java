@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.map.match;
 
 import com.tinkerpop.gremlin.process.SimpleTraverser;
-import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
