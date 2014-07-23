@@ -54,7 +54,13 @@ public class SideEffectCapComputerMapReduce implements MapReduce {
         return variable;
     }
 
+    @Override
     public boolean doReduce() {
+        return false;
+    }
+
+    @Override
+    public boolean doMap() {
         return false;
     }
 
@@ -65,7 +71,7 @@ public class SideEffectCapComputerMapReduce implements MapReduce {
 
     @Override
     public Object getResult(final Iterator keyValues) {
-        return ((MapReducer) ((Stream<Step>) this.traversal.getSteps().stream())
+        final Object result = ((MapReducer) ((Stream<Step>) this.traversal.getSteps().stream())
                 .filter(step -> step instanceof MapReducer)
                 .filter(step -> !(step instanceof SideEffectCapComputerStep))
                 .filter(step -> step instanceof SideEffectCapable)
@@ -73,5 +79,6 @@ public class SideEffectCapComputerMapReduce implements MapReduce {
                 .findFirst().get())
                 .getMapReduce()
                 .getResult(keyValues);
+        return result;
     }
 }

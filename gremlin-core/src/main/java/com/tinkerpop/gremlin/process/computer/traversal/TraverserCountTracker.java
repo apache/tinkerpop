@@ -47,7 +47,6 @@ public class TraverserCountTracker implements Serializable {
         this.objectTracks.clear();
         this.graphTracks.clear();
     }
-
 }
 
 

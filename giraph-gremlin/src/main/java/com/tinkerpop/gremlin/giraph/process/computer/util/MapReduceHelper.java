@@ -9,7 +9,6 @@ import com.tinkerpop.gremlin.giraph.process.computer.KryoWritable;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.SideEffectCapComputerMapReduce;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.hadoop.conf.Configuration;
@@ -39,7 +38,7 @@ public class MapReduceHelper {
         final org.apache.commons.configuration.Configuration apacheConfiguration = new BaseConfiguration();
         mapReduce.stageConfiguration(apacheConfiguration);
         ConfUtil.mergeApacheIntoHadoopConfiguration(apacheConfiguration, newConfiguration);
-        if (mapReduce instanceof SideEffectCapComputerMapReduce) {
+        if (!mapReduce.doMap()) {
             final Path sideEffectPath = new Path(configuration.get(GiraphGraph.GREMLIN_OUTPUT_LOCATION) + "/" + KeyHelper.makeDirectory(mapReduce.getResultVariable()));
             storeSideEffectResults(mapReduce, globals, sideEffectPath, configuration);
         } else {

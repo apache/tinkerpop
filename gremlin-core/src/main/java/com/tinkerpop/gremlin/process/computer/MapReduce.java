@@ -32,7 +32,10 @@ public interface MapReduce<K, V, OK, OV, R> {
 
     public boolean doReduce();
 
-    // TODO: public boolean doMap();
+    public default boolean doMap() {
+        return true;
+    }
+
     // TODO: public boolean doCombine();
     // TODO: public default void combine(final K key, final Iterator<V> values, final ReduceEmitter<OK, OV> emitter) { }
 
