@@ -37,7 +37,7 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     public static UnaryOperator<GraphTraversal> convertToUnaryOperator(final GraphStrategy s) {
-        return (traversal) -> s.applyStrategyToTraversal(traversal);
+        return s::applyStrategyToTraversal;
     }
 
     @Override
