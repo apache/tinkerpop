@@ -66,7 +66,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
         return object instanceof Iterator && TraversalHelper.areEqual(this, (Iterator) object);
     }
 
-    private final void doFinalOptimization() {
+    private void doFinalOptimization() {
         if (this.firstNext) {
             this.strategies().applyFinalStrategies();
             this.firstNext = false;
