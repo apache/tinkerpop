@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.driver.Client;
 import com.tinkerpop.gremlin.driver.Cluster;
 import com.tinkerpop.gremlin.driver.ResultSet;
 import com.tinkerpop.gremlin.driver.Tokens;
+import com.tinkerpop.gremlin.driver.exception.ResponseException;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.ser.Serializers;
@@ -12,6 +13,7 @@ import com.tinkerpop.gremlin.driver.simple.SimpleClient;
 import com.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.server.channel.NioChannelizer;
+import com.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,6 +63,15 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 break;
             case "shouldWorkOverNioTransport":
                 settings.channelizer = NioChannelizer.class.getName();
+                break;
+            case "shouldHaveTheSessionTimeout":
+                settings.processors.clear();
+                final Settings.ProcessorSettings processorSettings = new Settings.ProcessorSettings();
+                processorSettings.className = SessionOpProcessor.class.getCanonicalName();
+                processorSettings.config = new HashMap<>();
+                processorSettings.config.put(SessionOpProcessor.CONFIG_SESSION_TIMEOUT, 3000l);
+                settings.processors.add(processorSettings);
+                break;
         }
 
         return settings;
@@ -246,5 +257,32 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         } finally {
             cluster.close();
         }
+    }
+
+    @Test
+    public void shouldHaveTheSessionTimeout() throws Exception {
+        final Cluster cluster = Cluster.create().useSessionId(name.getMethodName()).build();
+        final Client client = cluster.connect();
+
+        final ResultSet results1 = client.submit("x = [1,2,3,4,5,6,7,8,9]");
+        final AtomicInteger counter = new AtomicInteger(0);
+        results1.stream().map(i -> i.get(Integer.class) * 2).forEach(i -> assertEquals(counter.incrementAndGet() * 2, Integer.parseInt(i.toString())));
+
+        final ResultSet results2 = client.submit("x[0]+1");
+        assertEquals(2, results2.all().get().get(0).getInt());
+
+        // session times out in 3 seconds
+        Thread.sleep(3500);
+
+        try {
+            client.submit("x[1]+2").all().get();
+            fail("Session should be dead");
+        } catch (Exception ex) {
+            final Exception cause = (Exception) ex.getCause().getCause();
+            assertTrue(cause instanceof ResponseException);
+            assertEquals(ResultCode.SERVER_ERROR_SCRIPT_EVALUATION, ((ResponseException) cause).getResultCode());
+        }
+
+        cluster.close();
     }
 }
