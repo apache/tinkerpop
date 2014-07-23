@@ -80,6 +80,7 @@ public abstract interface Property<V> {
                 return StringFactory.propertyString(this);
             }
 
+            @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
             @Override
             public boolean equals(final Object object) {
                 return ElementHelper.areEqual(this, object);

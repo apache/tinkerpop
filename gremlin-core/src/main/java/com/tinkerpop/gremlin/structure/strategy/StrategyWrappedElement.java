@@ -140,6 +140,7 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
         return this.id().hashCode();
     }
 
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     @Override
     public boolean equals(final Object object) {
         return ElementHelper.areEqual(this, object);

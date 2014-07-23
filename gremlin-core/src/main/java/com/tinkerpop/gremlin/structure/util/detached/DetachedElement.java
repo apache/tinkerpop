@@ -113,10 +113,13 @@ public abstract class DetachedElement implements Element {
         throw new UnsupportedOperationException("Detached elements are readonly: " + this);
     }
 
+    @Override
     public int hashCode() {
         return this.id.hashCode();
     }
 
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+    @Override
     public boolean equals(final Object object) {
         return ElementHelper.areEqual(this, object);
     }
