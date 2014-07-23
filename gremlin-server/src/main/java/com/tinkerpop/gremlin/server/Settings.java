@@ -164,6 +164,11 @@ public class Settings {
     public List<List<String>> use;
 
     /**
+     * Custom settings for {@link com.tinkerpop.gremlin.server.OpProcessor} implementations.
+     */
+    public List<ProcessorSettings> processors = new ArrayList<>();
+
+    /**
      * Settings must be instantiated from {@link #read(String)} or {@link #read(java.io.InputStream)} methods.
      */
     private Settings() {
@@ -203,6 +208,7 @@ public class Settings {
         settingsDescription.putMapPropertyType("scriptEngines", String.class, ScriptEngineSettings.class);
         settingsDescription.putListPropertyType("serializers", SerializerSettings.class);
         settingsDescription.putListPropertyType("use", List.class);
+        settingsDescription.putListPropertyType("processors", ProcessorSettings.class);
         constructor.addTypeDescription(settingsDescription);
 
         final TypeDescription serializerSettingsDescription = new TypeDescription(SerializerSettings.class);
@@ -242,6 +248,11 @@ public class Settings {
 
         final Yaml yaml = new Yaml(constructor);
         return yaml.loadAs(stream, Settings.class);
+    }
+
+    public static class ProcessorSettings {
+        public String className;
+        public Map<String, Object> config;
     }
 
     /**

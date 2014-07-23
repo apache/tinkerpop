@@ -7,11 +7,13 @@ import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.server.Context;
 import com.tinkerpop.gremlin.server.Graphs;
 import com.tinkerpop.gremlin.server.OpProcessor;
+import com.tinkerpop.gremlin.server.Settings;
 import com.tinkerpop.gremlin.server.op.OpProcessorException;
 import com.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,6 +27,22 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SessionOpProcessor implements OpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(SessionOpProcessor.class);
     public static final String OP_PROCESSOR_NAME = "session";
+
+    public static final String CONFIG_SESSION_TIMEOUT = "sessionTimeout";
+
+    /**
+     * Default timeout for a session is eight hours.
+     */
+    public static final long DEFAULT_SESSION_TIMEOUT = 28800000l;
+
+    static final Settings.ProcessorSettings DEFAULT_SETTINGS = new Settings.ProcessorSettings();
+
+    static {
+        DEFAULT_SETTINGS.className = SessionOpProcessor.class.getCanonicalName();
+        DEFAULT_SETTINGS.config = new HashMap<String,Object>() {{
+            put(CONFIG_SESSION_TIMEOUT, DEFAULT_SESSION_TIMEOUT);
+        }};
+    }
 
     @Override
     public String getName() {

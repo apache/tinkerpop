@@ -42,7 +42,7 @@ final class SessionOps {
     /**
      * Script engines are evaluated in a per session context where imports/scripts are isolated per session.
      */
-    private static Map<String, Session> sessions = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<>();
 
     private static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
     private static final Timer traverseOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "traverse"));
@@ -56,6 +56,7 @@ final class SessionOps {
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
 
+        // todo: validate session perhaps
         final Session session = getSession(context, msg);
 
         final String script = (String) msg.getArgs().get(Tokens.ARGS_GREMLIN);
@@ -114,7 +115,9 @@ final class SessionOps {
 
     private static Session getSession(final Context context, final RequestMessage msg) {
         final String sessionId = (String) msg.getArgs().get(Tokens.ARGS_SESSION);
-        return sessions.computeIfAbsent(sessionId, k -> new Session(k, context));
+        final Session session = sessions.computeIfAbsent(sessionId, k -> new Session(k, context, sessions));
+        session.touch();
+        return session;
     }
 
     private static Iterator convertToIterator(final Object o) {
