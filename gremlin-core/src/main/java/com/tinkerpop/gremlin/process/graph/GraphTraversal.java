@@ -97,10 +97,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         try {
             final Configuration configuration = TraversalVertexProgram.create().traversal(() -> this).getConfiguration();
             final TraversalVertexProgram program = VertexProgram.createVertexProgram(configuration);
+            final Traversal programTraversal = (Traversal) program.getTraversalSupplier().get();
+            programTraversal.strategies().applyFinalStrategies();
             final Pair<Graph, GraphComputer.Globals> result = computer.program(configuration).submit().get();
             final GraphTraversal traversal = new DefaultGraphTraversal<>();
             if (program.getResultVariable().equals(TraversalResultMapReduce.TRAVERSERS))
-                traversal.addStep(new ComputerResultStartStep<>(traversal, computer.getGraph(), result.getValue1().get(program.getResultVariable())));
+                traversal.addStep(new ComputerResultStartStep<>(traversal, computer.getGraph(), result.getValue1().get(program.getResultVariable()), programTraversal));
             else
                 traversal.addStep(new StartStep<>(traversal, result.getValue1().get(program.getResultVariable())));
             return traversal;

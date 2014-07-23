@@ -31,7 +31,6 @@ public class GiraphGraphComputer implements GraphComputer {
     private static final String DOT_JAR = ".jar";
     private static final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputer.class);
 
-    public static final String GREMLIN_EXTRA_JOBS_CALCULATOR = "gremlin.extraJobsCalculator";
     public static final String GREMLIN_DERIVE_GLOBALS = "gremlin.deriveGlobals";
 
     protected final GiraphGraph giraphGraph;
@@ -101,21 +100,4 @@ public class GiraphGraphComputer implements GraphComputer {
             return new Pair<Graph, Globals>(this.giraphGraph.getOutputGraph(), runner.getGlobals());
         });
     }
-
-    /*public <E> Iterator<E> execute(final Traversal<?, E> traversal) {
-        if (TraversalHelper.getEnd(traversal) instanceof SideEffectCapable ||
-                TraversalHelper.getEnd(traversal) instanceof CountStep ||
-                TraversalHelper.getEnd(traversal) instanceof SideEffectCapStep) {
-            this.program(TraversalVertexProgram.create().traversal(() -> traversal).getConfiguration());
-            try {
-                this.submit().get().getValue0();
-            } catch (Exception e) {
-                throw new RuntimeException(e.getMessage(), e);
-            }
-            traversal.strategies().applyFinalStrategies();
-            return (Iterator) Arrays.asList(((GiraphSideEffectStep) TraversalHelper.getEnd(traversal)).getSideEffect(this.hadoopConfiguration)).iterator();
-        } else {
-            return new TraversalVertexProgramIterator(this.giraphGraph, () -> traversal);
-        }
-    }*/
 }

@@ -1,11 +1,8 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgramIterator;
-import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.SideEffectCapComputerMapReduce;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -16,7 +13,6 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -36,10 +32,6 @@ public class TinkerGraphComputer implements GraphComputer {
 
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;
-    }
-
-    public <E> Iterator<E> execute(final Traversal<?, E> traversal) {
-        return new TraversalVertexProgramIterator<>(this.graph, () -> traversal);
     }
 
     public GraphComputer isolation(final Isolation isolation) {
@@ -83,7 +75,7 @@ public class TinkerGraphComputer implements GraphComputer {
             }
 
             for (final MapReduce mapReduce : (Iterable<MapReduce>) vertexProgram.getMapReducers()) {
-                if (!(mapReduce instanceof SideEffectCapComputerMapReduce)) {
+                if (mapReduce.doMap()) {
                     final TinkerMapEmitter mapEmitter = new TinkerMapEmitter(mapReduce.doReduce());
                     StreamFactory.stream(g.V()).forEach(vertex -> mapReduce.map(vertex, mapEmitter));
                     if (mapReduce.doReduce()) {
