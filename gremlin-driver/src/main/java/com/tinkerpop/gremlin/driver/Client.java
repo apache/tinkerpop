@@ -10,6 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -22,18 +25,41 @@ import java.util.stream.Collectors;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Client {
+public abstract class Client {
 
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
 
-    private final Cluster cluster;
-    private volatile boolean initialized;
-
-    private ConcurrentMap<Host, ConnectionPool> hostConnectionPools = new ConcurrentHashMap<>();
+    protected final Cluster cluster;
+    protected volatile boolean initialized;
 
     Client(final Cluster cluster) {
         this.cluster = cluster;
     }
+
+    /**
+     * Makes any final changes to the builder and returns the constructed {@link RequestMessage}.  Implementers
+     * may choose to override this message to append data to the request before sending.  By default, this method
+     * will simply call the {@link com.tinkerpop.gremlin.driver.message.RequestMessage.Builder#build()} and return
+     * the {@link RequestMessage}.
+     */
+    public RequestMessage buildMessage(final RequestMessage.Builder builder) {
+        return builder.build();
+    }
+
+    /**
+     * Called in the {@link #init} method.
+     */
+    protected abstract void initializeImplementation();
+
+    /**
+     * Chooses a {@link Connection} to write the message to.
+     */
+    protected abstract Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException;
+
+    /**
+     * Asyncronous close of the {@code Client}.
+     */
+    public abstract CompletableFuture<Void> closeAsync();
 
     public synchronized Client init() {
         if (initialized)
@@ -42,18 +68,7 @@ public class Client {
         if (logger.isDebugEnabled()) logger.debug("Initializing client on cluster [{}]", cluster);
 
         cluster.init();
-        cluster.getClusterInfo().allHosts().forEach(host -> {
-            try {
-                // hosts that don't initialize connection pools will come up as a dead host
-                hostConnectionPools.put(host, new ConnectionPool(host, cluster));
-
-                // added a new host to the cluster so let the load-balancer know
-                this.cluster.loadBalancingStrategy().onNew(host);
-            } catch (Exception ex) {
-                // catch connection errors and prevent them from failing the creation
-                logger.warn("Could not initialize connection pool for {}", host);
-            }
-        });
+        initializeImplementation();
 
         initialized = true;
         return this;
@@ -89,19 +104,13 @@ public class Client {
 
     public CompletableFuture<ResultSet> submitAsync(final String graph, final SFunction<Graph, Traversal> traversal) {
         try {
-            final Optional<String> sessionId = cluster.connectionPoolSettings().optionalSessionId();
             final byte[] bytes = Serializer.serializeObject(traversal);
-            final RequestMessage.Builder request = RequestMessage.create(Tokens.OPS_TRAVERSE)
-                    .processor(sessionId.isPresent() ? "session" : "")
+            final RequestMessage request = buildMessage(RequestMessage.create(Tokens.OPS_TRAVERSE)
                     .add(Tokens.ARGS_GREMLIN, bytes)
                     .add(Tokens.ARGS_GRAPH_NAME, graph)
-                    .add(Tokens.ARGS_BATCH_SIZE, cluster.connectionPoolSettings().resultIterationBatchSize);
+                    .add(Tokens.ARGS_BATCH_SIZE, cluster.connectionPoolSettings().resultIterationBatchSize));
 
-            if (sessionId.isPresent()) {
-                request.addArg(Tokens.ARGS_SESSION, sessionId.get());
-            }
-
-            return submitAsync(request.build());
+            return submitAsync(request);
         } catch (IOException ioe) {
             ioe.printStackTrace();
             throw new RuntimeException(ioe);
@@ -113,18 +122,12 @@ public class Client {
     }
 
     public CompletableFuture<ResultSet> submitAsync(final String gremlin, final Map<String, Object> parameters) {
-        final Optional<String> sessionId = cluster.connectionPoolSettings().optionalSessionId();
         final RequestMessage.Builder request = RequestMessage.create(Tokens.OPS_EVAL)
-                .processor(sessionId.isPresent() ? "session" : "")
                 .add(Tokens.ARGS_GREMLIN, gremlin)
                 .add(Tokens.ARGS_BATCH_SIZE, cluster.connectionPoolSettings().resultIterationBatchSize);
 
-        if (sessionId.isPresent()) {
-            request.addArg(Tokens.ARGS_SESSION, sessionId.get());
-        }
-
         Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
-        return submitAsync(request.build());
+        return submitAsync(buildMessage(request));
     }
 
     public CompletableFuture<ResultSet> submitAsync(final RequestMessage msg) {
@@ -132,13 +135,11 @@ public class Client {
             init();
 
         final CompletableFuture<ResultSet> future = new CompletableFuture<>();
-
-        final Host bestHost = this.cluster.loadBalancingStrategy().select(msg).next();
-        final ConnectionPool pool = hostConnectionPools.get(bestHost);
+        Connection connection = null;
         try {
             // the connection is returned to the pool once the response has been completed...see Connection.write()
             // the connection may be returned to the pool with the host being marked as "unavailable"
-            final Connection connection = pool.borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
+            connection = chooseConnection(msg);
             connection.write(msg, future);
             return future;
         } catch (TimeoutException toe) {
@@ -149,7 +150,8 @@ public class Client {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         } finally {
-            if (logger.isDebugEnabled()) logger.debug("Submitted {} to - {}", msg, pool);
+            if (logger.isDebugEnabled()) logger.debug("Submitted {} to - {}", msg,
+                    null == connection ? "connection not initialized" : connection.toString());
         }
     }
 
@@ -157,9 +159,90 @@ public class Client {
         closeAsync().join();
     }
 
-    public CompletableFuture<Void> closeAsync() {
-        final CompletableFuture[] poolCloseFutures = new CompletableFuture[hostConnectionPools.size()];
-        hostConnectionPools.values().stream().map(ConnectionPool::closeAsync).collect(Collectors.toList()).toArray(poolCloseFutures);
-        return CompletableFuture.allOf(poolCloseFutures);
+    /**
+     * A {@code Client} implementation that does not operate in a session.  Requests are sent to multiple servers
+     * given a {@link com.tinkerpop.gremlin.driver.LoadBalancingStrategy}.  Transactions are automatically committed
+     * (or rolled-back on error) after each request.
+     */
+    public static class ClusteredClient extends Client {
+
+        private ConcurrentMap<Host, ConnectionPool> hostConnectionPools = new ConcurrentHashMap<>();
+
+        ClusteredClient(final Cluster cluster) {
+            super(cluster);
+        }
+
+        @Override
+        protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
+            final Host bestHost = this.cluster.loadBalancingStrategy().select(msg).next();
+            final ConnectionPool pool = hostConnectionPools.get(bestHost);
+            return pool.borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
+        }
+
+        @Override
+        protected void initializeImplementation() {
+            cluster.getClusterInfo().allHosts().forEach(host -> {
+                try {
+                    // hosts that don't initialize connection pools will come up as a dead host
+                    hostConnectionPools.put(host, new ConnectionPool(host, cluster));
+
+                    // added a new host to the cluster so let the load-balancer know
+                    this.cluster.loadBalancingStrategy().onNew(host);
+                } catch (Exception ex) {
+                    // catch connection errors and prevent them from failing the creation
+                    logger.warn("Could not initialize connection pool for {}", host);
+                }
+            });
+        }
+
+        @Override
+        public CompletableFuture<Void> closeAsync() {
+            final CompletableFuture[] poolCloseFutures = new CompletableFuture[hostConnectionPools.size()];
+            hostConnectionPools.values().stream().map(ConnectionPool::closeAsync).collect(Collectors.toList()).toArray(poolCloseFutures);
+            return CompletableFuture.allOf(poolCloseFutures);
+        }
+    }
+
+    /**
+     * A {@code Client} implementation that operates in the context of a session.  Requests are sent to a single
+     * server, where each request is bound to the same thread with the same set of bindings across requests.
+     * Transaction are not automatically committed. It is up the client to issue commit/rollback commands.
+     */
+    public static class SessionedClient extends Client {
+        private final String sessionId;
+
+        private ConnectionPool connectionPool;
+
+        SessionedClient(final Cluster cluster, final String sessionId) {
+            super(cluster);
+            this.sessionId = sessionId;
+        }
+
+        @Override
+        public RequestMessage buildMessage(final RequestMessage.Builder builder) {
+            builder.processor("session");
+            builder.addArg(Tokens.ARGS_SESSION, sessionId);
+            return builder.build();
+        }
+
+        @Override
+        protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
+            return connectionPool.borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
+        }
+
+        @Override
+        protected void initializeImplementation() {
+            // chooses an available host at random
+            final List<Host> hosts = cluster.getClusterInfo().allHosts()
+                    .stream().filter(Host::isAvailable).collect(Collectors.toList());
+            Collections.shuffle(hosts);
+            final Host host = hosts.get(0);
+            connectionPool = new ConnectionPool(host, cluster);
+        }
+
+        @Override
+        public CompletableFuture<Void> closeAsync() {
+            return connectionPool.closeAsync();
+        }
     }
 }

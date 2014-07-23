@@ -186,6 +186,7 @@ class Connection {
 
     @Override
     public String toString() {
-        return String.format("Connection{isDead=%s, inFlight=%s, pending=%s}", isDead, inFlight, pending.size());
+        return String.format("Connection{host=%s, isDead=%s, inFlight=%s, pending=%s}",
+                pool.host, isDead, inFlight, pending.size());
     }
 }

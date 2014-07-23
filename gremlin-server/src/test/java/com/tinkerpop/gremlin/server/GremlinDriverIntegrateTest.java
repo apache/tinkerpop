@@ -282,8 +282,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldExecuteScriptInSession() throws Exception {
-        final Cluster cluster = Cluster.create().useSessionId(name.getMethodName()).build();
-        final Client client = cluster.connect();
+        final Cluster cluster = Cluster.create().build();
+        final Client client = cluster.connect(name.getMethodName());
 
         final ResultSet results1 = client.submit("x = [1,2,3,4,5,6,7,8,9]");
         final AtomicInteger counter = new AtomicInteger(0);

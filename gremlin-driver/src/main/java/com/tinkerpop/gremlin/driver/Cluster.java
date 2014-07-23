@@ -16,7 +16,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -43,8 +42,26 @@ public class Cluster {
             manager.init();
     }
 
+    /**
+     * Creates a {@link Client.ClusteredClient} instance to this {@code Cluster}, meaning requests will be routed to
+     * one or more servers (depending on the cluster configuration), where each request represents the entirety of a
+     * transaction.  A commit or rollback (in case of error) is automatically executed at the end of the request.
+     */
     public Client connect() {
-        return new Client(this);
+        return new Client.ClusteredClient(this);
+    }
+
+    /**
+     * Creates a {@link Client.SessionedClient} instance to this {@code Cluster}, meaning requests will be routed to
+     * a single server (randomly selected from the cluster), where the same bindings will be available on each request.
+     * Requests are bound to the same thread on the server and thus transactions may extend beyond the bounds of a
+     * single request.  The transactions are managed by the user and must be committed or rolledback manually.
+     *
+     * @param sessionId user supplied id for the session which should be unique (a UUID is ideal).
+     */
+    public Client connect(final String sessionId) {
+        if (null == sessionId || sessionId.isEmpty()) throw new IllegalArgumentException("sessionId cannot be null or empty");
+        return new Client.SessionedClient(this, sessionId);
     }
 
     @Override
@@ -148,7 +165,6 @@ public class Cluster {
         private int reconnectInterval = Connection.RECONNECT_INTERVAL;
         private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
         private boolean enableSsl = false;
-        private Optional<String> sessionId = Optional.empty();
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
 
         private Builder() {
@@ -175,11 +191,6 @@ public class Cluster {
         public Builder workerPoolSize(final int workerPoolSize) {
             if (workerPoolSize < 1) throw new IllegalArgumentException("The workerPoolSize must be greater than zero");
             this.workerPoolSize = workerPoolSize;
-            return this;
-        }
-
-        public Builder useSessionId(final String sessionId) {
-            this.sessionId = Optional.ofNullable(sessionId);
             return this;
         }
 
@@ -318,7 +329,6 @@ public class Cluster {
             connectionPoolSettings.reconnectInterval = this.reconnectInterval;
             connectionPoolSettings.resultIterationBatchSize = this.resultIterationBatchSize;
             connectionPoolSettings.enableSsl = this.enableSsl;
-            connectionPoolSettings.sessionId = sessionId.orElse(null);
             return new Cluster(getContactPoints(), serializer, this.nioPoolSize, this.workerPoolSize,
                     connectionPoolSettings, loadBalancingStrategy);
         }

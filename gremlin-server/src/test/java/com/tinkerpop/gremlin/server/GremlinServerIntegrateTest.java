@@ -14,7 +14,6 @@ import com.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.server.channel.NioChannelizer;
 import com.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -23,7 +22,6 @@ import java.nio.channels.ClosedChannelException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -79,8 +77,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldBatchResultsByTwos() throws Exception {
-        final SimpleClient client = new WebSocketClient();
-        try {
+        try (SimpleClient client = new WebSocketClient()) {
             final RequestMessage request = RequestMessage.create(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]").build();
             final AtomicInteger counter = new AtomicInteger(0);
@@ -95,15 +92,12 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
             // will return 6 because of the terminator
             assertEquals(6, counter.get());
-        } finally {
-            client.close();
         }
     }
 
     @Test
     public void shouldBatchResultsByOnesByOverridingFromClientSide() throws Exception {
-        final SimpleClient client = new WebSocketClient();
-        try {
+        try (SimpleClient client = new WebSocketClient()) {
             final RequestMessage request = RequestMessage.create(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]")
                     .addArg(Tokens.ARGS_BATCH_SIZE, 1).build();
@@ -119,15 +113,12 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
             // will return 11 because of the terminator
             assertEquals(11, counter.get());
-        } finally {
-            client.close();
         }
     }
 
     @Test
     public void shouldWorkOverNioTransport() throws Exception {
-        final SimpleClient client = new NioClient();
-        try {
+        try (SimpleClient client = new NioClient()) {
             final RequestMessage request = RequestMessage.create(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]").build();
             final AtomicInteger counter = new AtomicInteger(0);
@@ -142,8 +133,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
             // will return 2 because of the terminator
             assertEquals(2, counter.get());
-        } finally {
-            client.close();
         }
     }
 
@@ -194,7 +183,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try {
             client.submit("multiply(2,2)").all().join().get(0).getInt();
             fail("Should throw an exception since reference is phantom.");
-        } catch (RuntimeException re) {
+        } catch (RuntimeException ignored) {
 
         } finally {
             cluster.close();
@@ -261,8 +250,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldHaveTheSessionTimeout() throws Exception {
-        final Cluster cluster = Cluster.create().useSessionId(name.getMethodName()).build();
-        final Client client = cluster.connect();
+        final Cluster cluster = Cluster.create().build();
+        final Client client = cluster.connect(name.getMethodName());
 
         final ResultSet results1 = client.submit("x = [1,2,3,4,5,6,7,8,9]");
         final AtomicInteger counter = new AtomicInteger(0);
