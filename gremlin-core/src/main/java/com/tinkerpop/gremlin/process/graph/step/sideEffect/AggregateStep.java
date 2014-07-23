@@ -2,11 +2,17 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
+import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.AggregateMapReduce;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.ArrayList;
@@ -17,7 +23,7 @@ import java.util.Queue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AggregateStep<S> extends AbstractStep<S, S> implements Reversible, Bulkable, SideEffectCapable {
+public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCapable, Reversible, Bulkable, VertexCentric, MapReducer {
 
     public final SFunction<S, ?> preAggregateFunction;
     Collection aggregate;
@@ -40,6 +46,17 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements Reversible, 
         this.bulkCount = bulkCount;
     }
 
+    public void setCurrentVertex(final Vertex vertex) {
+        this.aggregate = vertex.<Collection>property(Graph.Key.hidden(this.variable)).orElse(new ArrayList());
+        if (!vertex.property(Graph.Key.hidden(this.variable)).isPresent())
+            vertex.property(Graph.Key.hidden(this.variable), this.aggregate);
+    }
+
+    public MapReduce getMapReduce() {
+        return new AggregateMapReduce(this);
+    }
+
+    // TODO: Make work for vertex centric computations
     protected Traverser<S> processNextStart() {
         while (true) {
             if (this.starts.hasNext()) {

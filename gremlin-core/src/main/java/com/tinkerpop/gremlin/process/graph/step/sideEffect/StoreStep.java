@@ -1,10 +1,16 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
+import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.StoreMapReduce;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.ArrayList;
@@ -13,7 +19,7 @@ import java.util.Collection;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StoreStep<S> extends FilterStep<S> implements Reversible, Bulkable, SideEffectCapable {
+public class StoreStep<S> extends FilterStep<S> implements SideEffectCapable, Reversible, Bulkable, VertexCentric, MapReducer {
 
     public String variable;
     public Collection store;
@@ -38,8 +44,18 @@ public class StoreStep<S> extends FilterStep<S> implements Reversible, Bulkable,
         this(traversal, variable, null);
     }
 
-    public void setCurrentBulkCount(final long count) {
-        this.bulkCount = count;
+    public void setCurrentBulkCount(final long bulkCount) {
+        this.bulkCount = bulkCount;
+    }
+
+    public void setCurrentVertex(final Vertex vertex) {
+        this.store = vertex.<Collection>property(Graph.Key.hidden(this.variable)).orElse(new ArrayList());
+        if (!vertex.property(Graph.Key.hidden(this.variable)).isPresent())
+            vertex.property(Graph.Key.hidden(this.variable), this.store);
+    }
+
+    public MapReduce getMapReduce() {
+        return new StoreMapReduce(this);
     }
 
     public String toString() {

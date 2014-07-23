@@ -58,7 +58,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
             // filter
-            CyclicPathTest.JavaComputerCyclicPathTest.class,
+            /*CyclicPathTest.JavaComputerCyclicPathTest.class,
             // TODO: REMOVE? DedupTest.JavaComputerDedupTest.class
             // TODO: Aggregate isn't accessible // ExceptTest.JavaComputerExceptTest.class,
             FilterTest.JavaComputerFilterTest.class,
@@ -85,7 +85,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
 
             // sideEffect
             // TODO: REMOVE?  AddEdgeTest.JavaAddEdgeTest.class,
-            AggregateTest.JavaComputerAggregateTest.class,
+            AggregateTest.JavaComputerAggregateTest.class,*/
             CountTest.JavaComputerCountTest.class,
             GroupByTest.JavaComputerGroupByTest.class,
             GroupCountTest.JavaComputerGroupCountTest.class,

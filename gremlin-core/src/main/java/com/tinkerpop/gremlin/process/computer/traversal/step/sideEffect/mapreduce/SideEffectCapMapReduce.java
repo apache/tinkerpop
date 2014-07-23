@@ -1,11 +1,13 @@
-package com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect;
+package com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.SideEffectCapComputerStep;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.util.function.SSupplier;
 import org.apache.commons.configuration.Configuration;
@@ -16,18 +18,23 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SideEffectCapComputerMapReduce implements MapReduce {
+public class SideEffectCapMapReduce implements MapReduce {
 
     public static final String SIDE_EFFECT_CAP_STEP_VARIABLE = "gremlin.sideEffectCapStep.variable";
 
     private String variable;
     private Traversal traversal;
 
-    public SideEffectCapComputerMapReduce() {
+    public SideEffectCapMapReduce() {
 
     }
 
-    public SideEffectCapComputerMapReduce(final SideEffectCapComputerStep step) {
+    public SideEffectCapMapReduce(final SideEffectCapComputerStep step) {
+        this.variable = step.getVariable();
+        this.traversal = step.getTraversal();
+    }
+
+    public SideEffectCapMapReduce(final SideEffectCapStep step) {
         this.variable = step.getVariable();
         this.traversal = step.getTraversal();
     }

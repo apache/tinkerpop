@@ -1,6 +1,7 @@
-package com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect;
+package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -15,27 +16,27 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StoreComputerMapReduce implements MapReduce<Object, Object, Object, Object, List<Object>> {
+public class AggregateMapReduce implements MapReduce<Object, Object, Object, Object, List<Object>> {
 
-    public static final String STORE_STEP_VARIABLE = "gremlin.storeStep.variable";
+    public static final String AGGREGATE_STEP_VARIABLE = "gremlin.aggregateStep.variable";
 
     private String variable;
 
-    public StoreComputerMapReduce() {
+    public AggregateMapReduce() {
 
     }
 
-    public StoreComputerMapReduce(final StoreComputerStep step) {
+    public AggregateMapReduce(final AggregateStep step) {
         this.variable = step.getVariable();
     }
 
     @Override
     public void stageConfiguration(final Configuration configuration) {
-        configuration.setProperty(STORE_STEP_VARIABLE, this.variable);
+        configuration.setProperty(AGGREGATE_STEP_VARIABLE, this.variable);
     }
 
     public void setup(final Configuration configuration) {
-        this.variable = configuration.getString(STORE_STEP_VARIABLE);
+        this.variable = configuration.getString(AGGREGATE_STEP_VARIABLE);
     }
 
     public String getResultVariable() {

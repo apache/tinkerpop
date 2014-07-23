@@ -1,6 +1,7 @@
-package com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect;
+package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -14,17 +15,17 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroupCountComputerMapReduce implements MapReduce<Object, Long, Object, Long, Map<Object, Long>> {
+public class GroupCountMapReduce implements MapReduce<Object, Long, Object, Long, Map<Object, Long>> {
 
     public static final String GROUP_COUNT_STEP_VARIABLE = "gremlin.groupCountStep.variable";
 
     private String variable;
 
-    public GroupCountComputerMapReduce() {
+    public GroupCountMapReduce() {
 
     }
 
-    public GroupCountComputerMapReduce(final GroupCountComputerStep step) {
+    public GroupCountMapReduce(final GroupCountStep step) {
         this.variable = step.getVariable();
     }
 
