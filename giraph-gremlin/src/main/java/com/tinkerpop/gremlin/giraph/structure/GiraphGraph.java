@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
 import com.tinkerpop.gremlin.giraph.process.graph.step.map.GiraphGraphStep;
-import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
@@ -50,12 +49,9 @@ public class GiraphGraph implements Graph, Serializable {
 
     public GraphTraversal<Vertex, Vertex> V() {
         final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>() {
-            public GraphTraversal<Vertex, Vertex> submit(final TraversalEngine engine) {
-                if (engine instanceof GraphComputer) {
-                    GiraphComputerHelper.prepareTraversalForComputer(this);
-                    //this.strategies().register(new ValidateStepsStrategy());
-                }
-                return super.submit(engine);
+            public GraphTraversal<Vertex, Vertex> submit(final GraphComputer computer) {
+                GiraphComputerHelper.prepareTraversalForComputer(this);
+                return super.submit(computer);
             }
         };
         traversal.addStep(new GiraphGraphStep(traversal, Vertex.class, this));
@@ -65,12 +61,9 @@ public class GiraphGraph implements Graph, Serializable {
 
     public GraphTraversal<Edge, Edge> E() {
         final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<Edge, Edge>() {
-            public GraphTraversal<Edge, Edge> submit(final TraversalEngine engine) {
-                if (engine instanceof GraphComputer) {
-                    GiraphComputerHelper.prepareTraversalForComputer(this);
-                    //this.strategies().register(new ValidateStepsStrategy());
-                }
-                return super.submit(engine);
+            public GraphTraversal<Edge, Edge> submit(final GraphComputer computer) {
+                GiraphComputerHelper.prepareTraversalForComputer(this);
+                return super.submit(computer);
             }
         };
         traversal.addStep(new GiraphGraphStep(traversal, Edge.class, this));

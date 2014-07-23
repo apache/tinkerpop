@@ -1,15 +1,7 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
-import com.tinkerpop.gremlin.giraph.process.graph.marker.GiraphSideEffectStep;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgramIterator;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
@@ -22,7 +14,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -66,8 +57,13 @@ public class GiraphGraphComputer implements GraphComputer {
         throw new UnsupportedOperationException("GiraphGraphComputer does not support merge computed view as this does not make sense in a Hadoop environment");
     }
 
+    public Graph getGraph() {
+        return this.giraphGraph;
+    }
+
     public Future<Pair<Graph, Globals>> submit() {
         return CompletableFuture.<Pair<Graph, Globals>>supplyAsync(() -> {
+            final GiraphGraphRunner runner;
             try {
                 final String bspDirectory = "_bsp"; //"temp-" + UUID.randomUUID().toString();
                 final FileSystem fs = FileSystem.get(this.hadoopConfiguration);
@@ -93,18 +89,20 @@ public class GiraphGraphComputer implements GraphComputer {
                 } else {
                     LOGGER.warn("No jars loaded from $GIRAPH_GREMLIN_HOME as there is no /lib directory. Attempting to proceed regardless.");
                 }
-                ToolRunner.run(new GiraphGraphRunner(this.hadoopConfiguration), new String[]{});
+                runner = new GiraphGraphRunner(this.hadoopConfiguration);
+                ToolRunner.run(runner, new String[]{});
                 fs.delete(new Path(bspDirectory), true);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new IllegalStateException(e.getMessage(), e);
             }
             // LOGGER.info(new GiraphGraphShellComputerGlobals(this.hadoopConfiguration).asMap().toString());
-            return new Pair<Graph, Globals>(this.giraphGraph.getOutputGraph(), new GiraphGraphShellComputerGlobals(this.hadoopConfiguration));
+            //return new Pair<Graph, Globals>(this.giraphGraph.getOutputGraph(), new GiraphGraphShellComputerGlobals(this.hadoopConfiguration));
+            return new Pair<Graph, Globals>(this.giraphGraph.getOutputGraph(), runner.getGlobals());
         });
     }
 
-    public <E> Iterator<E> execute(final Traversal<?, E> traversal) {
+    /*public <E> Iterator<E> execute(final Traversal<?, E> traversal) {
         if (TraversalHelper.getEnd(traversal) instanceof SideEffectCapable ||
                 TraversalHelper.getEnd(traversal) instanceof CountStep ||
                 TraversalHelper.getEnd(traversal) instanceof SideEffectCapStep) {
@@ -119,5 +117,5 @@ public class GiraphGraphComputer implements GraphComputer {
         } else {
             return new TraversalVertexProgramIterator(this.giraphGraph, () -> traversal);
         }
-    }
+    }*/
 }

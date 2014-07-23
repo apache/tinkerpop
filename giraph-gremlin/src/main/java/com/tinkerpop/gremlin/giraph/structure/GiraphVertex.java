@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.giraph.structure;
 import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
 import com.tinkerpop.gremlin.giraph.process.graph.step.map.GiraphGraphStep;
 import com.tinkerpop.gremlin.process.Step;
-import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
@@ -49,20 +48,20 @@ public class GiraphVertex extends GiraphElement implements Vertex, Serializable,
 
     public GraphTraversal<Vertex, Vertex> start() {
         final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>() {
-            public GraphTraversal<Vertex, Vertex> submit(final TraversalEngine engine) {
-                if (engine instanceof GraphComputer) {
-                    GiraphComputerHelper.prepareTraversalForComputer(this);
-                    final String label = this.getSteps().get(0).getAs();
-                    TraversalHelper.removeStep(0, this);
-                    final Step identityStep = new IdentityStep(this);
-                    if (TraversalHelper.isLabeled(label))
-                        identityStep.setAs(label);
+            public GraphTraversal<Vertex, Vertex> submit(final GraphComputer computer) {
 
-                    TraversalHelper.insertStep(identityStep, 0, this);
-                    TraversalHelper.insertStep(new HasStep(this, new HasContainer(Element.ID, Compare.EQUAL, element.id())), 0, this);
-                    TraversalHelper.insertStep(new GiraphGraphStep<>(this, Vertex.class, graph), 0, this);
-                }
-                return super.submit(engine);
+                GiraphComputerHelper.prepareTraversalForComputer(this);
+                final String label = this.getSteps().get(0).getAs();
+                TraversalHelper.removeStep(0, this);
+                final Step identityStep = new IdentityStep(this);
+                if (TraversalHelper.isLabeled(label))
+                    identityStep.setAs(label);
+
+                TraversalHelper.insertStep(identityStep, 0, this);
+                TraversalHelper.insertStep(new HasStep(this, new HasContainer(Element.ID, Compare.EQUAL, element.id())), 0, this);
+                TraversalHelper.insertStep(new GiraphGraphStep<>(this, Vertex.class, graph), 0, this);
+
+                return super.submit(computer);
             }
         };
         return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));

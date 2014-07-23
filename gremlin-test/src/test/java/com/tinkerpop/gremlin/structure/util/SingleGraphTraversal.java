@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.structure.util;
 
-import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.TraversalStrategies;
+import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 
@@ -49,7 +49,7 @@ public class SingleGraphTraversal<S> implements GraphTraversal<S, S> {
     }
 
     @Override
-    public GraphTraversal<S, S> submit(TraversalEngine engine) {
+    public GraphTraversal<S, S> submit(GraphComputer computer) {
         return null;
     }
 

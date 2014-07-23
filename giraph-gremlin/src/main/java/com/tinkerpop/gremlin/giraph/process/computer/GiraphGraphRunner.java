@@ -1,11 +1,12 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
-import com.tinkerpop.gremlin.giraph.process.ExtraJobsCalculator;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
+import com.tinkerpop.gremlin.giraph.process.computer.util.MapReduceHelper;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
-import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
+import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.commons.configuration.FileConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -33,6 +34,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
 
     private final GiraphConfiguration giraphConfiguration;
     private static final Logger LOGGER = Logger.getLogger(GiraphGraphRunner.class);
+    private GraphComputer.Globals globals;
 
     public GiraphGraphRunner(final org.apache.hadoop.conf.Configuration hadoopConfiguration) {
         this.giraphConfiguration = new GiraphConfiguration();
@@ -46,6 +48,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
 
     public int run(final String[] args) {
         try {
+            this.globals = new GiraphGraphShellComputerGlobals(this.giraphConfiguration);
             final VertexProgram vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.giraphConfiguration));
             final GiraphJob job = new GiraphJob(this.giraphConfiguration, GiraphGraphComputer.GIRAPH_GREMLIN_JOB_PREFIX + vertexProgram);
             //job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
@@ -64,19 +67,19 @@ public class GiraphGraphRunner extends Configured implements Tool {
                 globalDerivationJob.waitForCompletion(true);
             }
             // do extra map reduce jobs if necessary
-            if (null != this.giraphConfiguration.get(GiraphGraphComputer.GREMLIN_EXTRA_JOBS_CALCULATOR, null)) {
-                final Class<ExtraJobsCalculator> calculator = (Class) this.giraphConfiguration.getClass(GiraphGraphComputer.GREMLIN_EXTRA_JOBS_CALCULATOR, ExtraJobsCalculator.class);
-                final List<Job> extendedJobs = calculator.getConstructor().newInstance().deriveExtraJobs(this.giraphConfiguration);
-                for (final Job extendedJob : extendedJobs) {
-                    LOGGER.info(extendedJob.getJobName());
-                    extendedJob.waitForCompletion(true);
-                }
+            for (final MapReduce mapReduce : (List<MapReduce>) vertexProgram.getMapReducers()) {
+                MapReduceHelper.executeMapReduceJob(mapReduce, this.globals, this.giraphConfiguration);
             }
+
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage(), e);
         }
         return 0;
+    }
+
+    public GraphComputer.Globals getGlobals() {
+        return this.globals;
     }
 
     public static void main(final String[] args) throws Exception {
@@ -90,4 +93,6 @@ public class GiraphGraphRunner extends Configured implements Tool {
             throw e;
         }
     }
+
+
 }

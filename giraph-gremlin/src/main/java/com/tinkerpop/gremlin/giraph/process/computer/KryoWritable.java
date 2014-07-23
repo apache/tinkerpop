@@ -5,7 +5,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.process.PathTraverser;
 import com.tinkerpop.gremlin.process.SimpleTraverser;
-import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -15,7 +15,7 @@ import java.io.DataOutput;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class KryoWritable<T> implements Writable {
+public class KryoWritable<T> implements WritableComparable<KryoWritable> {
 
     public final Kryo KRYO = new Kryo();
 
@@ -71,5 +71,9 @@ public class KryoWritable<T> implements Writable {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
+    }
+
+    public int compareTo(final KryoWritable kryoWritable) {
+        return this.t instanceof Comparable ? ((Comparable) this.t).compareTo(kryoWritable.get()) : 1;
     }
 }

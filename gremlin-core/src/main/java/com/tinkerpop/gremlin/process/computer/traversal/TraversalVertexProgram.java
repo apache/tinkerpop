@@ -6,10 +6,14 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.SideEffectCapComputerStep;
+import com.tinkerpop.gremlin.process.computer.traversal.step.util.TraversalResultMapReduce;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
+import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.step.map.GraphStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -20,7 +24,10 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -44,6 +51,12 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     private SSupplier<Traversal> traversalSupplier;
     private boolean trackPaths = false;
 
+    public List<MapReduce> mapReducers = new ArrayList<>();
+    public String resultVariable;
+
+    public Map<String, KeyType> computeKeys = new HashMap<String, KeyType>() {{
+        put(TRAVERSER_TRACKER, KeyType.CONSTANT);
+    }};
 
     public TraversalVertexProgram() {
     }
@@ -53,13 +66,29 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         try {
             this.trackPaths = configuration.getBoolean(TRACK_PATHS, false);
             if (configuration.containsKey(TRAVERSAL_SUPPLIER)) {
-                this.traversalSupplier = VertexProgramHelper.deserializeSupplier(configuration, TRAVERSAL_SUPPLIER);
+                this.traversalSupplier = VertexProgramHelper.deserialize(configuration, TRAVERSAL_SUPPLIER);
             } else {
                 final Class<SSupplier<Traversal>> traversalSupplierClass =
                         (Class) Class.forName(configuration.getProperty(TRAVERSAL_SUPPLIER_CLASS).toString());
                 this.traversalSupplier = traversalSupplierClass.getConstructor().newInstance();
             }
-            this.trackPaths = TraversalHelper.trackPaths(this.traversalSupplier.get());
+
+            final Traversal traversal = this.traversalSupplier.get();
+            traversal.strategies().applyFinalStrategies();
+            this.trackPaths = TraversalHelper.trackPaths(traversal);
+            traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
+                final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
+                this.mapReducers.add(mapReduce);
+                this.computeKeys.put(Graph.Key.hidden(mapReduce.getResultVariable()), KeyType.CONSTANT);
+            });
+
+            // TODO: System.out.println("!!!!!!!!" + traversal);
+            if (TraversalHelper.getEnd(traversal) instanceof SideEffectCapComputerStep) {
+                this.resultVariable = ((SideEffectCapComputerStep) TraversalHelper.getEnd(traversal)).getVariable();
+            } else {
+                this.mapReducers.add(new TraversalResultMapReduce());
+                this.resultVariable = TraversalResultMapReduce.TRAVERSERS;
+            }
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -139,7 +168,13 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     @Override
     public Map<String, KeyType> getComputeKeys() {
-        return VertexProgram.ofComputeKeys(TRAVERSER_TRACKER, KeyType.CONSTANT);
+        // return VertexProgram.ofComputeKeys(TRAVERSER_TRACKER, KeyType.CONSTANT);
+        return this.computeKeys;
+    }
+
+    @Override
+    public List<MapReduce> getMapReducers() {
+        return this.mapReducers;
     }
 
     @Override
@@ -147,6 +182,10 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         final Set<String> keys = new HashSet<>();
         keys.add(VOTE_TO_HALT);
         return keys;
+    }
+
+    public String getResultVariable() {
+        return this.resultVariable;
     }
 
 
@@ -187,7 +226,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
         public Builder traversal(final SSupplier<Traversal> traversalSupplier) {
             try {
-                VertexProgramHelper.serializeSupplier(traversalSupplier, this.configuration, TRAVERSAL_SUPPLIER);
+                VertexProgramHelper.serialize(traversalSupplier, this.configuration, TRAVERSAL_SUPPLIER);
             } catch (final IOException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }

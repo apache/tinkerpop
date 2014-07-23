@@ -22,8 +22,6 @@ import static org.junit.Assert.*;
  */
 public abstract class AggregateTest extends AbstractGremlinTest {
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX(final Object v1Id);
-
     public abstract Traversal<Vertex, List<String>> get_g_V_valueXnameX_aggregate();
 
     public abstract Traversal<Vertex, List<String>> get_g_V_aggregateXnameX();
@@ -31,20 +29,6 @@ public abstract class AggregateTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path();
 
     //public abstract Traversal<Vertex, Path> get_g_v1_asXxX_bothE_asXeX_valueXweightX_exceptXwX_aggregateXwX_backXeX_otherV_jumpXx_true_trueX_path(final Object v1Id);
-
-    @Test
-    @LoadGraphWith(CLASSIC)
-    public void g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX() {
-        final Iterator<Vertex> step = get_g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX(convertToVertexId("marko"));
-        System.out.println("Testing: " + step);
-        int counter = 0;
-        while (step.hasNext()) {
-            counter++;
-            Vertex vertex = step.next();
-            assertTrue(vertex.value("name").equals("peter") || vertex.value("name").equals("josh"));
-        }
-        assertEquals(2, counter);
-    }
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -119,10 +103,6 @@ public abstract class AggregateTest extends AbstractGremlinTest {
 
     public static class JavaAggregateTest extends AggregateTest {
 
-        public Traversal<Vertex, Vertex> get_g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX(final Object v1Id) {
-            return g.v(v1Id).aggregate("a").out("created").in("created").except("a");
-        }
-
         public Traversal<Vertex, List<String>> get_g_V_valueXnameX_aggregate() {
             return (Traversal) g.V().value("name").aggregate();
         }
@@ -141,10 +121,6 @@ public abstract class AggregateTest extends AbstractGremlinTest {
     }
 
     public static class JavaComputerAggregateTest extends AggregateTest {
-
-        public Traversal<Vertex, Vertex> get_g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX(final Object v1Id) {
-            return g.v(v1Id).aggregate("a").out("created").in("created").except("a").submit(g.compute());
-        }
 
         public Traversal<Vertex, List<String>> get_g_V_valueXnameX_aggregate() {
             return (Traversal) g.V().value("name").aggregate().submit(g.compute());

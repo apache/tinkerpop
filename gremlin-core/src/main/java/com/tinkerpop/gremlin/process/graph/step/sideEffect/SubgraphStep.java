@@ -76,4 +76,8 @@ public class SubgraphStep<S> extends FilterStep<S> implements SideEffectCapable,
         else
             return propertyStream.toArray();
     }
+
+    public String getVariable() {
+        return CAP_KEY;
+    }
 }

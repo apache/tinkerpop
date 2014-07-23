@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.computer.ranking;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -19,7 +20,7 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
     private boolean firstNext = true;
     private Graph resultantGraph;
     public double alpha;
-    public SSupplier<Traversal<Vertex, Edge>> incidentTraversal = () -> GraphTraversal.of().outE();
+    public SSupplier<Traversal<Vertex, Edge>> incidentTraversal = () -> new DefaultGraphTraversal().outE();
 
     public PageRankStep(final Traversal traversal, final double alpha) {
         super(traversal);

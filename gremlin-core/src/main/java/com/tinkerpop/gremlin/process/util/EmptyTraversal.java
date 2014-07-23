@@ -2,9 +2,9 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.strategy.DefaultTraversalStrategies;
 
 import java.util.Collections;
@@ -52,7 +52,7 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
         return Collections.EMPTY_LIST;
     }
 
-    public Traversal<S, E> submit(final TraversalEngine engine) {
+    public Traversal<S, E> submit(final GraphComputer computer) {
         return new EmptyTraversal<>();
     }
 }

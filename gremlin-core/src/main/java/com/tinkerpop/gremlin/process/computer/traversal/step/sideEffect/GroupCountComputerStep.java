@@ -1,11 +1,18 @@
-package com.tinkerpop.gremlin.process.graph.step.sideEffect;
+package com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
+import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.HashMap;
@@ -14,18 +21,17 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapable, Reversible, Bulkable {
+public class GroupCountComputerStep<S> extends FilterStep<S> implements SideEffectCapable, Reversible, Bulkable, VertexCentric, MapReducer {
 
     public Map<Object, Long> groupCountMap;
     public SFunction<S, ?> preGroupFunction;
     public final String variable;
     private long bulkCount = 1l;
 
-    public GroupCountStep(final Traversal traversal, final String variable, final SFunction<S, ?> preGroupFunction) {
+    public GroupCountComputerStep(final Traversal traversal, final GroupCountStep groupCountStep) {
         super(traversal);
-        this.preGroupFunction = preGroupFunction;
-        this.variable = variable;
-        this.groupCountMap = this.traversal.memory().getOrCreate(variable, HashMap<Object, Long>::new);
+        this.preGroupFunction = groupCountStep.preGroupFunction;
+        this.variable = groupCountStep.variable;
         this.setPredicate(traverser -> {
             MapHelper.incr(this.groupCountMap,
                     null == this.preGroupFunction ? traverser.get() : this.preGroupFunction.apply(traverser.get()),
@@ -34,12 +40,18 @@ public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapabl
         });
     }
 
-    public GroupCountStep(final Traversal traversal, final String variable) {
-        this(traversal, variable, null);
-    }
-
     public void setCurrentBulkCount(final long bulkCount) {
         this.bulkCount = bulkCount;
+    }
+
+    public void setCurrentVertex(final Vertex vertex) {
+        this.groupCountMap = vertex.<java.util.Map<Object, Long>>property(Graph.Key.hidden(this.variable)).orElse(new HashMap<>());
+        if (!vertex.property(Graph.Key.hidden(this.variable)).isPresent())
+            vertex.property(Graph.Key.hidden(this.variable), this.groupCountMap);
+    }
+
+    public MapReduce getMapReduce() {
+        return new GroupCountComputerMapReduce(this);
     }
 
     public String toString() {

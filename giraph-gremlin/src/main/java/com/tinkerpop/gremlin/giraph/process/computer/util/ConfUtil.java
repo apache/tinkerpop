@@ -26,6 +26,13 @@ public class ConfUtil {
         return hadoopConfiguration;
     }
 
+    public static void mergeApacheIntoHadoopConfiguration(final org.apache.commons.configuration.Configuration apacheConfiguration, final Configuration hadoopConfiguration) {
+        apacheConfiguration.getKeys().forEachRemaining(key -> {
+            final Object object = apacheConfiguration.getProperty(key);
+            hadoopConfiguration.set(key, object.toString());
+        });
+    }
+
     public static Class<InputFormat> getInputFormatFromVertexInputFormat(final Class<VertexInputFormat> vertexInputFormatClass) {
         try {
             if (GiraphGremlinInputFormat.class.isAssignableFrom(vertexInputFormatClass))

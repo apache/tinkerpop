@@ -1,20 +1,23 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgramIterator;
+import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.SideEffectCapComputerMapReduce;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
+import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerMapEmitter;
+import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerReduceEmitter;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -22,7 +25,7 @@ import java.util.concurrent.Future;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
+public class TinkerGraphComputer implements GraphComputer {
 
     private Isolation isolation = Isolation.BSP;
     private Configuration configuration = new BaseConfiguration();
@@ -47,6 +50,10 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
     public GraphComputer program(final Configuration configuration) {
         configuration.getKeys().forEachRemaining(key -> this.configuration.setProperty(key, configuration.getProperty(key)));
         return this;
+    }
+
+    public Graph getGraph() {
+        return this.graph;
     }
 
     public Future<Pair<Graph, Globals>> submit() {
@@ -75,9 +82,23 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
                 if (vertexProgram.terminate(this.globals)) break;
             }
 
+            for (final MapReduce mapReduce : (Iterable<MapReduce>) vertexProgram.getMapReducers()) {
+                if (!(mapReduce instanceof SideEffectCapComputerMapReduce)) {
+                    final TinkerMapEmitter mapEmitter = new TinkerMapEmitter(mapReduce.doReduce());
+                    StreamFactory.stream(g.V()).forEach(vertex -> mapReduce.map(vertex, mapEmitter));
+                    if (mapReduce.doReduce()) {
+                        final TinkerReduceEmitter reduceEmitter = new TinkerReduceEmitter();
+                        mapEmitter.reduceMap.forEach((k, v) -> mapReduce.reduce(k, ((List) v).iterator(), reduceEmitter));
+                        this.globals.set(mapReduce.getResultVariable(), mapReduce.getResult(reduceEmitter.resultList.iterator()));
+                    } else {
+                        this.globals.set(mapReduce.getResultVariable(), mapReduce.getResult(mapEmitter.mapList.iterator()));
+                    }
+                }
+            }
+
             // update runtime and return the newly computed graph
             this.globals.setRuntime(System.currentTimeMillis() - time);
-            return new Pair<Graph, Globals>(this.graph, this.globals);
+            return new Pair<>(this.graph, this.globals);
         });
     }
 

@@ -65,4 +65,8 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements Reversible, 
                 super.toString() :
                 TraversalHelper.makeStepString(this, this.variable);
     }
+
+    public String getVariable() {
+        return this.variable;
+    }
 }

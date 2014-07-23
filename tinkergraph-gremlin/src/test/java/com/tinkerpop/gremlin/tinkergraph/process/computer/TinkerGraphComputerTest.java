@@ -44,13 +44,13 @@ public class TinkerGraphComputerTest {
     @Ignore
     public void testOLAPWriteBack() throws Exception {
         Graph g = TinkerFactory.createClassic();
-        g.V().pageRank(() -> GraphTraversal.of().out("knows").inE("knows")).forEachRemaining(System.out::println);
+        g.V().pageRank(() -> g.of().out("knows").inE("knows")).forEachRemaining(System.out::println);
 
 
         g.V().as("a").out("knows").in("knows").addInE("knows2", "a").iterate();
         g.E().has(Element.LABEL, Compare.NOT_EQUAL, "knows2").remove();
         g.E().forEach(System.out::println);
-        g.V().pageRank(() -> GraphTraversal.of().outE()).forEachRemaining(System.out::println);
+        g.V().pageRank(() -> g.of().outE()).forEachRemaining(System.out::println);
     }
 
     @Test

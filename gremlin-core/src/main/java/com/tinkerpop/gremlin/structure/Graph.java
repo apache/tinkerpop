@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
@@ -94,7 +95,7 @@ public interface Graph extends AutoCloseable {
     }
 
     public default <S, E> GraphTraversal<S, E> of() {
-        return GraphTraversal.of();
+        return new DefaultGraphTraversal<>();
     }
 
     public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass);
