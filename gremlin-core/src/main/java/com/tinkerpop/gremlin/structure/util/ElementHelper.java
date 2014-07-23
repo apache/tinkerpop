@@ -141,7 +141,7 @@ public class ElementHelper {
         final List list = Arrays.asList(keyValues);
         return IntStream.range(1, list.size())
                 .filter(i -> i % 2 != 0)
-                .mapToObj(i -> Pair.<String, Object>with(list.get(i - 1).toString(), list.get(i)))
+                .mapToObj(i -> Pair.with(list.get(i - 1).toString(), list.get(i)))
                 .collect(Collectors.toList());
     }
 

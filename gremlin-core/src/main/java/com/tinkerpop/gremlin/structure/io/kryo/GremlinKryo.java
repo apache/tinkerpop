@@ -267,7 +267,7 @@ public final class GremlinKryo {
         public Builder addCustom(final Pair<Class, Serializer>... custom) {
             if (custom != null && custom.length > 0) {
                 serializationList.addAll(Arrays.asList(custom).stream()
-                        .map(c -> Triplet.<Class, Serializer, Integer>with(c.getValue0(), c.getValue1(), currentSerializationId.getAndIncrement()))
+                        .map(c -> Triplet.with(c.getValue0(), c.getValue1(), currentSerializationId.getAndIncrement()))
                         .collect(Collectors.<Triplet<Class, Serializer, Integer>>toList()));
             }
 
