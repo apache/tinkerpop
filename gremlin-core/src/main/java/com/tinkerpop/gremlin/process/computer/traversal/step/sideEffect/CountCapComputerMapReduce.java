@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
@@ -42,7 +41,7 @@ public class CountCapComputerMapReduce implements MapReduce<MapReduce.NullObject
     }
 
     @Override
-    public boolean doReduce() {
+    public boolean doStage(final Stage stage) {
         return true;
     }
 
@@ -62,11 +61,12 @@ public class CountCapComputerMapReduce implements MapReduce<MapReduce.NullObject
     }
 
     @Override
+    public void combine(final NullObject key, final Iterator<Long> values, final ReduceEmitter<NullObject, Long> emitter) {
+        this.reduce(key, values, emitter);
+    }
+
+    @Override
     public Long getResult(Iterator<Pair<NullObject, Long>> keyValues) {
-        long count = 0l;
-        while (keyValues.hasNext()) {
-            count = count + keyValues.next().getValue1();
-        }
-       return count;
+        return keyValues.next().getValue1();
     }
 }

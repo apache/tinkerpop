@@ -42,8 +42,8 @@ public class StoreComputerMapReduce implements MapReduce<Object, Object, Object,
         return variable;
     }
 
-    public boolean doReduce() {
-        return false;
+    public boolean doStage(final Stage stage) {
+        return stage.equals(Stage.MAP);
     }
 
     public void map(final Vertex vertex, final MapEmitter<Object, Object> emitter) {

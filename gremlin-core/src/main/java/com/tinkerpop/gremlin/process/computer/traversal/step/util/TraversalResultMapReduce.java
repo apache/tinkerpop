@@ -22,8 +22,8 @@ public class TraversalResultMapReduce implements MapReduce<MapReduce.NullObject,
         return TRAVERSERS;
     }
 
-    public boolean doReduce() {
-        return false;
+    public boolean doStage(final Stage stage) {
+        return stage.equals(Stage.MAP);
     }
 
     public void map(final Vertex vertex, final MapEmitter<MapReduce.NullObject, Object> emitter) {

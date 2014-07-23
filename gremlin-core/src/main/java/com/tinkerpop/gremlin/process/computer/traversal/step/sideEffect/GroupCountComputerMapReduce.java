@@ -41,7 +41,8 @@ public class GroupCountComputerMapReduce implements MapReduce<Object, Long, Obje
         return variable;
     }
 
-    public boolean doReduce() {
+    @Override
+    public boolean doStage(final Stage stage) {
         return true;
     }
 
@@ -57,6 +58,10 @@ public class GroupCountComputerMapReduce implements MapReduce<Object, Long, Obje
             counter = counter + values.next();
         }
         emitter.emit(key, counter);
+    }
+
+    public void combine(final Object key, final Iterator<Long> values, final ReduceEmitter<Object, Long> emitter) {
+        reduce(key, values, emitter);
     }
 
     public Map<Object, Long> getResult(final Iterator<Pair<Object, Long>> keyValues) {
