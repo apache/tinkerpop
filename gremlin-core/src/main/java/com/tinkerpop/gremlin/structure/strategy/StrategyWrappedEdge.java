@@ -13,12 +13,10 @@ import java.util.Iterator;
  */
 public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge, StrategyWrapped, WrappedEdge<Edge> {
     private final Edge baseEdge;
-    private final Strategy.Context<StrategyWrappedEdge> strategyContext;
 
     public StrategyWrappedEdge(final Edge baseEdge, final StrategyWrappedGraph strategyWrappedGraph) {
         super(baseEdge, strategyWrappedGraph);
         this.baseEdge = baseEdge;
-        strategyContext = new Strategy.Context<>(this.strategyWrappedGraph.getBaseGraph(), this);
     }
 
     public Edge getBaseEdge() {

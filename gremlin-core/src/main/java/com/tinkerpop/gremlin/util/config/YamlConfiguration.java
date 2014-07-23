@@ -27,7 +27,6 @@ public class YamlConfiguration extends AbstractHierarchicalFileConfiguration {
     public final static int DEFAULT_IDENT = 4;
     private final DumperOptions yamlOptions = new DumperOptions();
     private final Yaml yaml = new Yaml(yamlOptions);
-    private int ident = DEFAULT_IDENT;
     private boolean xmlCompatibility = true;
 
     public YamlConfiguration() {
@@ -56,7 +55,7 @@ public class YamlConfiguration extends AbstractHierarchicalFileConfiguration {
     }
 
     private void initialize() {
-        yamlOptions.setIndent(this.ident);
+        yamlOptions.setIndent(DEFAULT_IDENT);
         yamlOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
     }
 
