@@ -149,7 +149,6 @@ public class ElementHelper {
      * Gets the list of keys from the key values.
      *
      * @param keyValues a list of key/values pairs
-     * @return
      */
     public static Set<String> getKeys(final Object... keyValues) {
         final Set<String> keys = new HashSet<>();
