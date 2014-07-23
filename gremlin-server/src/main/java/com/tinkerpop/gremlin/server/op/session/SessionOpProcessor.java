@@ -28,6 +28,9 @@ public class SessionOpProcessor implements OpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(SessionOpProcessor.class);
     public static final String OP_PROCESSOR_NAME = "session";
 
+    /**
+     * Configuration setting for how long a session will be available before it timesout.
+     */
     public static final String CONFIG_SESSION_TIMEOUT = "sessionTimeout";
 
     /**
