@@ -57,7 +57,6 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore
     public void g_V_filterXfalseX_groupCount() {
         final Traversal<Vertex, Map<Object, Long>> traversal = get_g_V_filterXfalseX_groupCount();
         System.out.println("Testing: " + traversal);
