@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Apache Commons Configuration object for YAML.  Adapted from code originally found here:
@@ -115,12 +116,7 @@ public class YamlConfiguration extends AbstractHierarchicalFileConfiguration {
             return parentNode.getValue();
 
         if (parentNode.getChildrenCount("item") == parentNode.getChildrenCount()) {
-            final List<Object> list = new ArrayList<>();
-            for (ConfigurationNode childNode : parentNode.getChildren()) {
-                list.add(saveHierarchy(childNode));
-            }
-
-            return list;
+            return parentNode.getChildren().stream().map(this::saveHierarchy).collect(Collectors.toList());
         } else {
             final Map<String, Object> map = new LinkedHashMap<>();
             for (ConfigurationNode childNode : parentNode.getChildren()) {
