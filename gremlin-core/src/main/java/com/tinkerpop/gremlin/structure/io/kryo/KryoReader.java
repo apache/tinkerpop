@@ -390,10 +390,11 @@ public class KryoReader implements GraphReader {
         });
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void deleteTempFileSilently() {
         try {
             tempFile.delete();
-        } catch (Exception ex) {
+        } catch (Exception ignored) {
         }
     }
 
