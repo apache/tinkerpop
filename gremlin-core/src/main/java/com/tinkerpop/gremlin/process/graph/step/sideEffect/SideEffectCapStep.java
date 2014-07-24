@@ -43,4 +43,8 @@ public class SideEffectCapStep<S, E> extends AbstractStep<S, E> {
                 super.toString() :
                 TraversalHelper.makeStepString(this, this.variable);
     }
+
+    public String getVariable() {
+        return this.variable;
+    }
 }

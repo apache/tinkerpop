@@ -17,8 +17,10 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.javatuples.Pair;
 
@@ -40,7 +42,8 @@ public class MapReduceHelper {
         ConfUtil.mergeApacheIntoHadoopConfiguration(apacheConfiguration, newConfiguration);
         if (!mapReduce.doStage(MapReduce.Stage.MAP)) {
             final Path sideEffectPath = new Path(configuration.get(GiraphGraph.GREMLIN_OUTPUT_LOCATION) + "/" + KeyHelper.makeDirectory(mapReduce.getResultVariable()));
-            storeSideEffectResults(mapReduce, globals, sideEffectPath, configuration);
+            if (newConfiguration.getClass(GiraphGraphComputer.GREMLIN_SIDE_EFFECT_OUTPUT_FORMAT_CLASS, NullOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
+                storeSideEffectResults(mapReduce, globals, sideEffectPath, configuration);
         } else {
             newConfiguration.setClass(MAP_REDUCE_CLASS, mapReduce.getClass(), MapReduce.class);
             final Job job = new Job(newConfiguration, mapReduce.toString());
@@ -57,13 +60,16 @@ public class MapReduceHelper {
             job.setOutputKeyClass(KryoWritable.class);
             job.setOutputValueClass(KryoWritable.class);
             job.setInputFormatClass(ConfUtil.getInputFormatFromVertexInputFormat((Class) newConfiguration.getClass(GiraphGraph.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class)));
-            job.setOutputFormatClass(SequenceFileOutputFormat.class); // TODO: Make this configurable
+            job.setOutputFormatClass(newConfiguration.getClass(GiraphGraphComputer.GREMLIN_SIDE_EFFECT_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class, OutputFormat.class)); // TODO: Make this configurable
             final Path graphPath = new Path(newConfiguration.get(GiraphGraph.GREMLIN_OUTPUT_LOCATION) + "/" + GiraphGraphComputer.G);
             final Path sideEffectPath = new Path(newConfiguration.get(GiraphGraph.GREMLIN_OUTPUT_LOCATION) + "/" + KeyHelper.makeDirectory(mapReduce.getResultVariable()));
             FileInputFormat.setInputPaths(job, graphPath);
             FileOutputFormat.setOutputPath(job, sideEffectPath);
             job.waitForCompletion(true);
-            storeSideEffectResults(mapReduce, globals, sideEffectPath, configuration);
+            // if its not a SequenceFile there is no certain way to convert to necessary Java objects.
+            // to get results you have to look through HDFS directory structure. Oh the horror.
+            if (newConfiguration.getClass(GiraphGraphComputer.GREMLIN_SIDE_EFFECT_OUTPUT_FORMAT_CLASS, NullOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
+                storeSideEffectResults(mapReduce, globals, sideEffectPath, configuration);
         }
     }
 

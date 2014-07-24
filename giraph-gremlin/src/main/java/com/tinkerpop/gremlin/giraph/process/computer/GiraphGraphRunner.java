@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
+import com.tinkerpop.gremlin.giraph.process.computer.util.GlobalsMapReduce;
 import com.tinkerpop.gremlin.giraph.process.computer.util.MapReduceHelper;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
@@ -16,13 +17,13 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -56,18 +57,18 @@ public class GiraphGraphRunner extends Configured implements Tool {
             FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(GiraphGraph.GREMLIN_OUTPUT_LOCATION) + "/" + GiraphGraphComputer.G));
             LOGGER.info(GiraphGraphComputer.GIRAPH_GREMLIN_JOB_PREFIX + vertexProgram);
             job.run(true);
+            final List<MapReduce> mapReduces = new ArrayList<MapReduce>(vertexProgram.getMapReducers());
+
             // calculate global variables
             if (this.giraphConfiguration.getBoolean(GiraphGraphComputer.GREMLIN_DERIVE_GLOBALS, false)) {
                 final Set<String> globalKeys = new HashSet<String>(vertexProgram.getGlobalKeys());
                 globalKeys.add(GlobalsMapReduce.RUNTIME);
                 globalKeys.add(GlobalsMapReduce.ITERATION);
                 this.giraphConfiguration.setStrings(GlobalsMapReduce.GREMLIN_GLOBAL_KEYS, (String[]) globalKeys.toArray(new String[globalKeys.size()]));
-                final Job globalDerivationJob = new GlobalsMapReduce().createJob(this.giraphConfiguration);
-                LOGGER.info(globalDerivationJob.getJobName());
-                globalDerivationJob.waitForCompletion(true);
+                mapReduces.add(new GlobalsMapReduce(globalKeys));
             }
             // do extra map reduce jobs if necessary
-            for (final MapReduce mapReduce : (List<MapReduce>) vertexProgram.getMapReducers()) {
+            for (final MapReduce mapReduce : mapReduces) {
                 MapReduceHelper.executeMapReduceJob(mapReduce, this.globals, this.giraphConfiguration);
             }
 

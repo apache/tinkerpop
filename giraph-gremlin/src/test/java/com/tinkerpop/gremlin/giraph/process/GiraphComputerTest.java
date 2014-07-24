@@ -3,8 +3,6 @@ package com.tinkerpop.gremlin.giraph.process;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.io.GiraphGremlinInputFormat;
 import com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoInputFormat;
-import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.SideEffectCapComputerMapReduce;
-import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.SideEffectCapComputerStep;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Ignore;

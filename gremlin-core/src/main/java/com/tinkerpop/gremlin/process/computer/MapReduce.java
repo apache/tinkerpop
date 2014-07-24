@@ -10,7 +10,41 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface MapReduce<K, V, OK, OV, R> {
+public interface MapReduce<MK, MV, RK, RV, R> {
+
+    public static enum Stage {MAP, COMBINE, REDUCE}
+
+
+    public default void stageConfiguration(final Configuration configuration) {
+
+    }
+
+    public default void setup(final Configuration configuration) {
+
+    }
+
+    public String getResultVariable();
+
+    public boolean doStage(final Stage stage);
+
+    public default void map(final Vertex vertex, final MapEmitter<MK, MV> emitter) {
+    }
+
+    public default void combine(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter) {
+    }
+
+    public default void reduce(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter) {
+    }
+
+    public R getResult(final Iterator<Pair<RK, RV>> keyValues);
+
+    public interface MapEmitter<K, V> {
+        public void emit(final K key, final V value);
+    }
+
+    public interface ReduceEmitter<OK, OV> {
+        public void emit(final OK key, OV value);
+    }
 
     public static class NullObject implements Comparable<NullObject>, Serializable {
         private static final NullObject INSTANCE = new NullObject();
@@ -30,39 +64,5 @@ public interface MapReduce<K, V, OK, OV, R> {
         public int compareTo(final NullObject nullObject) {
             return 0;
         }
-    }
-
-    public static enum Stage {MAP, COMBINE, REDUCE}
-
-
-    public default void stageConfiguration(final Configuration configuration) {
-
-    }
-
-    public default void setup(final Configuration configuration) {
-
-    }
-
-    public String getResultVariable();
-
-    public boolean doStage(final Stage stage);
-
-    public default void map(final Vertex vertex, final MapEmitter<K, V> emitter) {
-    }
-
-    public default void combine(final K key, final Iterator<V> values, final ReduceEmitter<OK, OV> emitter) {
-    }
-
-    public default void reduce(final K key, final Iterator<V> values, final ReduceEmitter<OK, OV> emitter) {
-    }
-
-    public R getResult(final Iterator<Pair<OK, OV>> keyValues);
-
-    public interface MapEmitter<K, V> {
-        public void emit(final K key, final V value);
-    }
-
-    public interface ReduceEmitter<OK, OV> {
-        public void emit(final OK key, OV value);
     }
 }

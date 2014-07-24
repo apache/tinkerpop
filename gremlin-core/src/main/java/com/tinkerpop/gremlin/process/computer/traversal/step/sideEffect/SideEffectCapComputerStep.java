@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.SideEffectCapMapReduce;
 import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
@@ -27,7 +28,7 @@ public class SideEffectCapComputerStep<S> extends FilterStep<S> implements Rever
     }
 
     public MapReduce getMapReduce() {
-        return new SideEffectCapComputerMapReduce(this);
+        return new SideEffectCapMapReduce(this);
     }
 
     public String toString() {

@@ -1,6 +1,7 @@
-package com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect;
+package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountCapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
@@ -12,17 +13,17 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CountCapComputerMapReduce implements MapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
+public class CountCapMapReduce implements MapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
 
     public static final String COUNT_VARIABLE = "gremlin.countStep.variable";
 
     private String variable;
 
-    public CountCapComputerMapReduce() {
+    public CountCapMapReduce() {
 
     }
 
-    public CountCapComputerMapReduce(final CountCapComputerStep step) {
+    public CountCapMapReduce(final CountCapStep step) {
         this.variable = step.getVariable();
     }
 

@@ -32,6 +32,7 @@ public class GiraphGraphComputer implements GraphComputer {
     private static final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputer.class);
 
     public static final String GREMLIN_DERIVE_GLOBALS = "gremlin.deriveGlobals";
+    public static final String GREMLIN_SIDE_EFFECT_OUTPUT_FORMAT_CLASS = "gremlin.sideEffectOutputFormatClass";
 
     protected final GiraphGraph giraphGraph;
     protected org.apache.hadoop.conf.Configuration hadoopConfiguration = new org.apache.hadoop.conf.Configuration();
