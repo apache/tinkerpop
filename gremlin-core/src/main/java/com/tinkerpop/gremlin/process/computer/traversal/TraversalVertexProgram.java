@@ -16,7 +16,7 @@ import com.tinkerpop.gremlin.process.computer.traversal.step.util.TraversalResul
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.step.map.GraphStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
+import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;

@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.SideEffe
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
+import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.util.function.SSupplier;
 import org.apache.commons.configuration.Configuration;
 

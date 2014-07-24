@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.graph.step.sideEffect;
+package com.tinkerpop.gremlin.process.graph.marker;
 
 import com.tinkerpop.gremlin.structure.Graph;
 
