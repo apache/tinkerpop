@@ -32,9 +32,9 @@ class GremlinServerSimulation extends Simulation {
     }
   )
 
-  val fixedRequests = scenario("Fixed Requests").repeat(5, {
+  val fixedRequests = scenario("Fixed Requests").repeat(5) {
     exec(addition)
-  })
+  }
 
   setUp(
     fixedRequests.inject(
