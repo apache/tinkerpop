@@ -23,7 +23,7 @@ class GremlinServerSimulation extends Simulation {
     def build(next: ActorRef) = system.actorOf(Props(new GremlinServerAction(next, cluster, "1+1")))
   }
 
-  val scn = scenario("Gremlin Server Test").randomSwitch(
+  val randomNumberedRequests = scenario("Random Numbered Requests").randomSwitch(
     50 -> repeat(100) {
       exec(addition)
     },
@@ -32,13 +32,17 @@ class GremlinServerSimulation extends Simulation {
     }
   )
 
+  val fixedRequests = scenario("Fixed Requests").repeat(5, {
+    exec(addition)
+  })
+
   setUp(
-    scn.inject(
+    fixedRequests.inject(
       constantRate(1000 userPerSec) during(120 seconds),
       nothingFor(5 seconds),
-      split(1000 users).into(ramp(100 users) over (25 seconds)).separatedBy(1 seconds),
-      nothingFor(5 seconds),
-      ramp(5000 users) over (360 seconds))
+      ramp(5000 users) over (360 seconds)),
+    randomNumberedRequests.inject(
+      split(1000 users).into(ramp(100 users) over (25 seconds)).separatedBy(1 seconds))
   ).assertions(global.responseTime.max.lessThan(250), global.successfulRequests.percent.greaterThan(95))
 }
 
