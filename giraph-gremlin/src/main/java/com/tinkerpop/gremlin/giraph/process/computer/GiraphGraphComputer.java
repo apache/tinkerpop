@@ -25,7 +25,7 @@ import java.util.concurrent.Future;
  */
 public class GiraphGraphComputer implements GraphComputer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputer.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputer.class);
 
     protected final GiraphGraph giraphGraph;
     protected org.apache.hadoop.conf.Configuration hadoopConfiguration = new org.apache.hadoop.conf.Configuration();

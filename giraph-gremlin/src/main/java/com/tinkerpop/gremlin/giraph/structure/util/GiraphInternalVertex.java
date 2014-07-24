@@ -57,7 +57,7 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
             final TinkerEdge tinkerEdge = (TinkerEdge) otherVertex.addEdge(edge.label(), vertex, Element.ID, edge.id());
             edge.properties().forEach((k, v) -> tinkerEdge.property(k, v.value()));
         });
-        this.initialize(new LongWritable(Long.valueOf(this.tinkerVertex.id().toString())), this.deflateGiraphVertex(), EmptyOutEdges.instance());
+        this.initialize(new LongWritable(Long.valueOf(this.tinkerVertex.id().toString())), this.deflateTinkerVertex(), EmptyOutEdges.instance());
         // TODO? this.tinkerVertex = vertex;
     }
 
@@ -72,9 +72,10 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
         return this.tinkerVertex;
     }
 
+    @Override
     public void compute(final Iterable<KryoWritable> messages) {
         if (null == this.tinkerVertex)
-            inflateGiraphVertex();
+            inflateTinkerVertex();
         this.vertexProgram.execute(this.tinkerVertex, new GiraphMessenger(this, messages), this.sideEffects);
         if (this.getConf().getBoolean(Constants.GREMLIN_DERIVE_MAIN_SIDE_EFFECTS, false)) {
             this.sideEffects.keys().forEach(key -> {
@@ -87,7 +88,7 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
 
     ///////////////////////////////////////////////
 
-    private Text deflateGiraphVertex() {
+    private Text deflateTinkerVertex() {
         try {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
             final KryoWriter writer = KryoWriter.create().build();
@@ -100,7 +101,7 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
         }
     }
 
-    private void inflateGiraphVertex() {
+    private void inflateTinkerVertex() {
         try {
             final ByteArrayInputStream bis = new ByteArrayInputStream(this.getValue().getBytes());
             final KryoReader reader = KryoReader.create().build();

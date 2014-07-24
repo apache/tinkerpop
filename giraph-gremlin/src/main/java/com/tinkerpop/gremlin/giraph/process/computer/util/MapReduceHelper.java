@@ -3,12 +3,14 @@ package com.tinkerpop.gremlin.giraph.process.computer.util;
 import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.hdfs.HiddenFileFilter;
 import com.tinkerpop.gremlin.giraph.hdfs.KeyHelper;
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphMap;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphReduce;
 import com.tinkerpop.gremlin.giraph.process.computer.KryoWritable;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
+import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.hadoop.conf.Configuration;
@@ -20,18 +22,22 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.javatuples.Pair;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class MapReduceHelper {
+
+    private static final String SEQUENCE_WARNING = "The " + Constants.GREMLIN_SIDE_EFFECT_OUTPUT_FORMAT_CLASS
+            + " is not " + SequenceFileOutputFormat.class.getCanonicalName()
+            + " and thus, sideEffects can not be converted to Java objects";
 
     public static void executeMapReduceJob(final MapReduce mapReduce, final SideEffects sideEffects, final Configuration configuration) throws IOException, ClassNotFoundException, InterruptedException {
         final Configuration newConfiguration = new Configuration(configuration);
@@ -40,8 +46,10 @@ public class MapReduceHelper {
         ConfUtil.mergeApacheIntoHadoopConfiguration(apacheConfiguration, newConfiguration);
         if (!mapReduce.doStage(MapReduce.Stage.MAP)) {
             final Path sideEffectPath = new Path(configuration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + KeyHelper.makeDirectory(mapReduce.getSideEffectKey()));
-            if (newConfiguration.getClass(Constants.GREMLIN_SIDE_EFFECT_OUTPUT_FORMAT_CLASS, NullOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
-                storeSideEffectResults(mapReduce, sideEffects, sideEffectPath, configuration);
+            if (newConfiguration.getClass(Constants.GREMLIN_SIDE_EFFECT_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
+                mapReduce.addToSideEffects(sideEffects, new SequenceFilesKeyValueIterator(configuration, sideEffectPath));
+            else
+                GiraphGraphComputer.LOGGER.warn(SEQUENCE_WARNING);
         } else {
             newConfiguration.setClass(Constants.MAP_REDUCE_CLASS, mapReduce.getClass(), MapReduce.class);
             final Job job = new Job(newConfiguration, mapReduce.toString());
@@ -66,24 +74,65 @@ public class MapReduceHelper {
             job.waitForCompletion(true);
             // if its not a SequenceFile there is no certain way to convert to necessary Java objects.
             // to get results you have to look through HDFS directory structure. Oh the horror.
-            if (newConfiguration.getClass(Constants.GREMLIN_SIDE_EFFECT_OUTPUT_FORMAT_CLASS, NullOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
-                storeSideEffectResults(mapReduce, sideEffects, sideEffectPath, configuration);
+            if (newConfiguration.getClass(Constants.GREMLIN_SIDE_EFFECT_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
+                mapReduce.addToSideEffects(sideEffects, new SequenceFilesKeyValueIterator(configuration, sideEffectPath));
+            else
+                GiraphGraphComputer.LOGGER.warn(SEQUENCE_WARNING);
         }
     }
 
-    public static void storeSideEffectResults(final MapReduce mapReduce, final SideEffects sideEffects, final Path sideEffectPath, final Configuration configuration) throws IOException {
-        final FileSystem fs = FileSystem.get(configuration);
-        final List list = new ArrayList();
-        final KryoWritable key = new KryoWritable();
-        final KryoWritable value = new KryoWritable();
-        for (final FileStatus status : fs.listStatus(sideEffectPath, new HiddenFileFilter())) {
-            final SequenceFile.Reader reader = new SequenceFile.Reader(fs, status.getPath(), configuration);
-            while (reader.next(key, value)) {
-                list.add(new Pair<>(key.get(), value.get()));
+    private static class SequenceFilesKeyValueIterator implements Iterator<Pair> {
+
+        private final KryoWritable key = new KryoWritable();
+        private final KryoWritable value = new KryoWritable();
+        private boolean available = false;
+        private final Queue<SequenceFile.Reader> readers = new LinkedList<>();
+
+        public SequenceFilesKeyValueIterator(final Configuration configuration, final Path sideEffectPath) throws IOException {
+            final FileSystem fs = FileSystem.get(configuration);
+            for (final FileStatus status : fs.listStatus(sideEffectPath, new HiddenFileFilter())) {
+                this.readers.add(new SequenceFile.Reader(fs, status.getPath(), configuration));
             }
         }
-        mapReduce.addToSideEffects(sideEffects, list.iterator());
 
-        //sideEffects.set(mapReduce.getSideEffectKey(), mapReduce.generateSideEffect(list.iterator()));   // TODO: Don't aggregate to list, but make lazy
+        public boolean hasNext() {
+            try {
+                if (this.available) {
+                    return true;
+                } else {
+                    while (true) {
+                        if (this.readers.isEmpty())
+                            return false;
+                        if (this.readers.peek().next(this.key, this.value)) {
+                            this.available = true;
+                            return true;
+                        } else
+                            this.readers.remove();
+                    }
+                }
+            } catch (final IOException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        }
+
+        public Pair next() {
+            try {
+                if (this.available) {
+                    this.available = false;
+                    return new Pair(this.key.get(), this.value.get());
+                } else {
+                    while (true) {
+                        if (this.readers.isEmpty())
+                            throw FastNoSuchElementException.instance();
+                        if (this.readers.peek().next(this.key, this.value)) {
+                            return new Pair(this.key.get(), this.value.get());
+                        } else
+                            this.readers.remove();
+                    }
+                }
+            } catch (final IOException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        }
     }
 }
