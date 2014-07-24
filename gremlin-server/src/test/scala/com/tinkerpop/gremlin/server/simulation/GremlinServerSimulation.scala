@@ -38,10 +38,11 @@ class GremlinServerSimulation extends Simulation {
 
   setUp(
     fixedRequests.inject(
-      constantRate(1000 userPerSec) during(120 seconds),
+      constantRate(1000 userPerSec) during(60 seconds),
       nothingFor(5 seconds),
-      ramp(5000 users) over (360 seconds)),
+      ramp(5000 users) over (60 seconds)),
     randomNumberedRequests.inject(
+      nothingFor(180 seconds)
       split(1000 users).into(ramp(100 users) over (25 seconds)).separatedBy(1 seconds))
   ).assertions(global.responseTime.max.lessThan(250), global.successfulRequests.percent.greaterThan(95))
 }
