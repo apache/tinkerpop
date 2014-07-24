@@ -89,14 +89,14 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             CountTest.JavaComputerCountTest.class,
             GroupByTest.JavaComputerGroupByTest.class,
             GroupCountTest.JavaComputerGroupCountTest.class,
-            SideEffectCapTest.JavaComputerSideEffectCapTest.class,
+            /*SideEffectCapTest.JavaComputerSideEffectCapTest.class,
             // TODO: REMOVE? SideEffectTest.JavaSideEffectTest.class,
             StoreTest.JavaComputerStoreTest.class,
             // TODO: REMOVE? SubgraphTest.JavaSideEffectTest.class,
             TreeTest.JavaComputerTreeTest.class,
 
             // algorithms
-            PageRankVertexProgramTest.class
+            PageRankVertexProgramTest.class*/
     };
 
     /**

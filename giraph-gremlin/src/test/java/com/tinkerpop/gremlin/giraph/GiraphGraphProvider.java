@@ -22,14 +22,16 @@ public class GiraphGraphProvider extends AbstractGraphProvider {
             put("gremlin.graph", GiraphGraph.class.getName());
             put("giraph.vertexInputFormatClass", "com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexInputFormat");
             put("giraph.vertexOutputFormatClass", "com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexOutputFormat");
+            //put("gremlin.sideEffectOutputFormatClass", "org.apache.hadoop.mapreduce.lib.output.TextOutputFormat");
+            put("gremlin.sideEffectOutputFormatClass", "org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat");
             put("giraph.minWorkers", "1");
             put("giraph.maxWorkers", "1");
             put("giraph.SplitMasterWorker", "false");
             //baseConfiguration.setProperty("giraph.localTestMode", "true");
-            put("gremlin.extraJobsCalculator", "com.tinkerpop.gremlin.giraph.process.TraversalExtraJobsCalculator");
             put("giraph.zkJar", GiraphGremlinInputFormat.class.getResource("zookeeper-3.3.3.jar").getPath());
             put("gremlin.inputLocation", KryoInputFormat.class.getResource("tinkerpop-classic-vertices.gio").getPath());
             put("gremlin.outputLocation", "giraph-gremlin/target/test-output");
+            put("gremlin.deriveGlobals", "true");
         }};
     }
 
