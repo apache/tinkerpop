@@ -9,13 +9,17 @@ Documentation
 * link:http://tinkerpop.com/docs/current/[user documentation]
 * link:http://tinkerpop.com/javadocs/current/[javadoc]
 
-Building
-~~~~~~~~
+Building and Testing
+~~~~~~~~~~~~~~~~~~~~
 
 * Build Project: `mvn clean install`
 * Build AsciiDocs: `mvn process-resources -Dasciidoc`
 * Deploy AsciiDocs: `mvn deploy -Dasciidoc`
 * Deploy JavaDocs: `mvn deploy -Djavadoc`
+* Travis Deploy Docs: merge/push to `publish-docs` branch
+* Integration Tests: `mvn clean verify -DskipIntegrationTests=false`
+* Performance Tests: `mvn clean verify -DskipPerformanceTests=false`
+* Gatling Load Tests: `mvn clean test -Pgatling -Dhost={hostname}`
 
 Get Started
 ~~~~~~~~~~~
