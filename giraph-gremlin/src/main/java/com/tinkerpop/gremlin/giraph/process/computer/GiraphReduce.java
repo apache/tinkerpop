@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
+import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
-import com.tinkerpop.gremlin.giraph.process.computer.util.MapReduceHelper;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.hadoop.mapreduce.Reducer;
 
@@ -22,7 +22,7 @@ public class GiraphReduce extends Reducer<KryoWritable, KryoWritable, KryoWritab
     @Override
     public void setup(final Reducer<KryoWritable, KryoWritable, KryoWritable, KryoWritable>.Context context) {
         try {
-            this.mapReduce = context.getConfiguration().getClass(MapReduceHelper.MAP_REDUCE_CLASS, MapReduce.class, MapReduce.class).getConstructor().newInstance();
+            this.mapReduce = context.getConfiguration().getClass(Constants.MAP_REDUCE_CLASS, MapReduce.class, MapReduce.class).getConstructor().newInstance();
             this.mapReduce.loadState(ConfUtil.makeApacheConfiguration(context.getConfiguration()));
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);

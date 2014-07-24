@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
+import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.GraphVariableHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -18,7 +19,7 @@ public class GiraphGraphVariables implements Graph.Variables, Serializable {
     private final Map<String, Object> variables = new HashMap<>();
 
     public GiraphGraphVariables(final Configuration configuration) {
-        this.variables.put(GiraphGraph.CONFIGURATION, configuration);
+        this.variables.put(Constants.CONFIGURATION, configuration);
     }
 
     public Set<String> keys() {
@@ -39,7 +40,7 @@ public class GiraphGraphVariables implements Graph.Variables, Serializable {
     }
 
     public GiraphConfiguration getConfiguration() {
-        return this.get(GiraphGraph.CONFIGURATION);
+        return this.get(Constants.CONFIGURATION);
     }
 
     public String toString() {

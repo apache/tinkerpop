@@ -136,7 +136,7 @@ class GremlinGroovyTest {
         if (closure != null) {
             return closure.call(args);
         } else {
-            // Look for closure valued variable in the
+            // Look for closure valued sideEffectKey in the
             // given ScriptContext. If available, call it.
             Object value = ctx.getAttribute(name);
             if (value instanceof Closure) {

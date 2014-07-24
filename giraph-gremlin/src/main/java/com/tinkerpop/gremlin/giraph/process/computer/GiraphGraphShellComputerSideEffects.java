@@ -22,7 +22,7 @@ import java.util.Set;
  */
 public class GiraphGraphShellComputerSideEffects implements SideEffects {
 
-    private static final String COMPLETE_AND_IMMUTABLE = "The graph computation is complete and immutable";
+    private static final String COMPLETE_AND_IMMUTABLE = "The graph computation sideEffects are complete and immutable";
 
     final Map<String, Object> globals = new HashMap<>();
 
@@ -48,16 +48,15 @@ public class GiraphGraphShellComputerSideEffects implements SideEffects {
     }
 
     public void set(final String key, Object value) {
-       // throw new IllegalStateException(COMPLETE_AND_IMMUTABLE);
-        this.globals.put(key,value);
+        this.globals.put(key, value);
     }
 
     public int getIteration() {
-        return Integer.valueOf((String) this.globals.get("iteration"));
+        return (Integer) this.globals.get("iteration");
     }
 
     public long getRuntime() {
-        return Long.valueOf((String) this.globals.get("runtime"));
+        return (Long) this.globals.get("runtime");
     }
 
     public void setIfAbsent(final String key, final Object value) {
@@ -76,7 +75,7 @@ public class GiraphGraphShellComputerSideEffects implements SideEffects {
         throw new IllegalStateException(COMPLETE_AND_IMMUTABLE);
     }
 
-    private List<String> readLines(Path location, Configuration conf) throws Exception {
+    /*private List<String> readLines(Path location, Configuration conf) throws Exception {
         final FileSystem fileSystem = FileSystem.get(location.toUri(), conf);
         final CompressionCodecFactory factory = new CompressionCodecFactory(conf);
         final FileStatus[] items = fileSystem.listStatus(location);
@@ -106,5 +105,5 @@ public class GiraphGraphShellComputerSideEffects implements SideEffects {
             }
         }
         return results;
-    }
+    }*/
 }

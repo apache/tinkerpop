@@ -27,7 +27,7 @@ public class TinkerGraphComputer implements GraphComputer {
     private Isolation isolation = Isolation.BSP;
     private Configuration configuration = new BaseConfiguration();
     private final TinkerGraph graph;
-    private final TinkerGraphComputerSideEffects globals = new TinkerGraphComputerSideEffects();
+    private final TinkerGraphComputerSideEffects sideEffects = new TinkerGraphComputerSideEffects();
     private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
 
@@ -65,14 +65,14 @@ public class TinkerGraphComputer implements GraphComputer {
             g.graphView = new TinkerGraphView(this.isolation, vertexProgram.getElementKeys());
             g.useGraphView = true;
             // execute the vertex program
-            vertexProgram.setup(this.globals);
+            vertexProgram.setup(this.sideEffects);
 
             while (true) {
-                StreamFactory.parallelStream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard, vertexProgram.getMessageCombiner()), this.globals));
-                this.globals.incrIteration();
+                StreamFactory.parallelStream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard, vertexProgram.getMessageCombiner()), this.sideEffects));
+                this.sideEffects.incrIteration();
                 g.graphView.completeIteration();
                 this.messageBoard.completeIteration();
-                if (vertexProgram.terminate(this.globals)) break;
+                if (vertexProgram.terminate(this.sideEffects)) break;
             }
 
             // no need to run combiners as this is single machine
@@ -83,16 +83,16 @@ public class TinkerGraphComputer implements GraphComputer {
                     if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
                         final TinkerReduceEmitter reduceEmitter = new TinkerReduceEmitter();
                         mapEmitter.reduceMap.forEach((k, v) -> mapReduce.reduce(k, ((List) v).iterator(), reduceEmitter));
-                        this.globals.set(mapReduce.getSideEffectKey(), mapReduce.generateSideEffect(reduceEmitter.resultList.iterator()));
+                        mapReduce.addToSideEffects(this.sideEffects, reduceEmitter.resultList.iterator());
                     } else {
-                        this.globals.set(mapReduce.getSideEffectKey(), mapReduce.generateSideEffect(mapEmitter.mapList.iterator()));
+                        mapReduce.addToSideEffects(this.sideEffects, mapEmitter.mapList.iterator());
                     }
                 }
             }
 
             // update runtime and return the newly computed graph
-            this.globals.setRuntime(System.currentTimeMillis() - time);
-            return new Pair<>(this.graph, this.globals);
+            this.sideEffects.setRuntime(System.currentTimeMillis() - time);
+            return new Pair<>(this.graph, this.sideEffects);
         });
     }
 

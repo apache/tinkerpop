@@ -5,8 +5,12 @@ import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.io.GiraphGremlinInputFormat;
 import com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoInputFormat;
+import com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexInputFormat;
+import com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexOutputFormat;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
+import org.apache.giraph.conf.GiraphConstants;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,18 +24,19 @@ public class GiraphGraphProvider extends AbstractGraphProvider {
     public Map<String, Object> getBaseConfiguration(final String graphName) {
         return new HashMap<String, Object>() {{
             put("gremlin.graph", GiraphGraph.class.getName());
-            put("giraph.vertexInputFormatClass", "com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexInputFormat");
-            put("giraph.vertexOutputFormatClass", "com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexOutputFormat");
-            //put("gremlin.sideEffectOutputFormatClass", "org.apache.hadoop.mapreduce.lib.output.TextOutputFormat");
-            put("gremlin.sideEffectOutputFormatClass", "org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat");
-            put("giraph.minWorkers", "1");
-            put("giraph.maxWorkers", "1");
-            put("giraph.SplitMasterWorker", "false");
+            put(GiraphConstants.VERTEX_INPUT_FORMAT_CLASS.getKey(), KryoVertexInputFormat.class.getCanonicalName());
+            put(GiraphConstants.VERTEX_OUTPUT_FORMAT_CLASS.getKey(), KryoVertexOutputFormat.class.getCanonicalName());
+            //put(Constants.GREMLIN_SIDE_EFFECT_OUTPUT_FORMAT_CLASS, TextOutputFormat.class.getCanonicalName());
+            put(Constants.GREMLIN_SIDE_EFFECT_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class.getCanonicalName());
+            put(GiraphConstants.MIN_WORKERS, 1);
+            put(GiraphConstants.MAX_WORKERS, 1);
+            put(GiraphConstants.SPLIT_MASTER_WORKER.getKey(), false);
             //baseConfiguration.setProperty("giraph.localTestMode", "true");
-            put("giraph.zkJar", GiraphGremlinInputFormat.class.getResource("zookeeper-3.3.3.jar").getPath());
-            put("gremlin.inputLocation", KryoInputFormat.class.getResource("tinkerpop-classic-vertices.gio").getPath());
-            put("gremlin.outputLocation", "giraph-gremlin/target/test-output");
-            put("gremlin.deriveGlobals", "true");
+            put(GiraphConstants.ZOOKEEPER_JAR, GiraphGremlinInputFormat.class.getResource("zookeeper-3.3.3.jar").getPath());
+            put(Constants.GREMLIN_INPUT_LOCATION, KryoInputFormat.class.getResource("tinkerpop-classic-vertices.gio").getPath());
+            put(Constants.GREMLIN_OUTPUT_LOCATION, "giraph-gremlin/target/test-output");
+            put(Constants.GREMLIN_DERIVE_MAIN_SIDE_EFFECTS, true);
+            put(Constants.GREMLIN_JARS_IN_DISTRIBUTED_CACHE, true);
         }};
     }
 

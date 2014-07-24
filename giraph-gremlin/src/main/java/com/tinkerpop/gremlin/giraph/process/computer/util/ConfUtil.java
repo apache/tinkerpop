@@ -43,20 +43,4 @@ public class ConfUtil {
         throw new IllegalStateException("The provided VertexInputFormatClass is not a GiraphGremlinInputFormat");
     }
 
-    public static void setByteArray(final Configuration configuration, final String key, final byte[] bytes) {
-        final String[] byteStrings = new String[bytes.length];
-        for (int i = 0; i < bytes.length; i++) {
-            byteStrings[i] = Byte.toString(bytes[i]);
-        }
-        configuration.setStrings(key, byteStrings);
-    }
-
-    public static byte[] getByteArray(final Configuration configuration, final String key) {
-        final String[] byteStrings = configuration.getStrings(key);
-        final byte[] bytes = new byte[byteStrings.length];
-        for (int i = 0; i < byteStrings.length; i++) {
-            bytes[i] = Byte.valueOf(byteStrings[i]);
-        }
-        return bytes;
-    }
 }

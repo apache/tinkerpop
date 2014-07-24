@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
+import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
@@ -25,12 +26,6 @@ import java.util.Optional;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class GiraphGraph implements Graph, Serializable {
-
-    public static final String CONFIGURATION = "configuration";
-    public static final String GREMLIN_INPUT_LOCATION = "gremlin.inputLocation";
-    public static final String GREMLIN_OUTPUT_LOCATION = "gremlin.outputLocation";
-    public static final String GIRAPH_VERTEX_INPUT_FORMAT_CLASS = "giraph.vertexInputFormatClass";
-    public static final String GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS = "giraph.vertexOutputFormatClass";
 
     protected final GiraphGraphVariables variables;
 
@@ -94,11 +89,11 @@ public class GiraphGraph implements Graph, Serializable {
 
     public String toString() {
         final org.apache.hadoop.conf.Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(this.variables().getConfiguration());
-        final String fromString = this.variables().getConfiguration().containsKey(GIRAPH_VERTEX_INPUT_FORMAT_CLASS) ?
-                hadoopConfiguration.getClass(GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class).getSimpleName() :
+        final String fromString = this.variables().getConfiguration().containsKey(Constants.GIRAPH_VERTEX_INPUT_FORMAT_CLASS) ?
+                hadoopConfiguration.getClass(Constants.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class).getSimpleName() :
                 "none";
-        final String toString = this.variables().getConfiguration().containsKey(GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS) ?
-                hadoopConfiguration.getClass(GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS, VertexOutputFormat.class).getSimpleName() :
+        final String toString = this.variables().getConfiguration().containsKey(Constants.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS) ?
+                hadoopConfiguration.getClass(Constants.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS, VertexOutputFormat.class).getSimpleName() :
                 "none";
         return StringFactory.graphString(this, fromString.toLowerCase() + "->" + toString.toLowerCase());
     }
@@ -120,12 +115,12 @@ public class GiraphGraph implements Graph, Serializable {
                 // do nothing for serialization problems
             }
         });
-        if (this.variables().getConfiguration().containsKey(GREMLIN_OUTPUT_LOCATION)) {
-            conf.setProperty(GREMLIN_INPUT_LOCATION, this.variables().getConfiguration().getString(GREMLIN_OUTPUT_LOCATION));
+        if (this.variables().getConfiguration().containsKey(Constants.GREMLIN_OUTPUT_LOCATION)) {
+            conf.setProperty(Constants.GREMLIN_INPUT_LOCATION, this.variables().getConfiguration().getString(Constants.GREMLIN_OUTPUT_LOCATION));
         }
-        if (this.variables().getConfiguration().containsKey(GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS)) {
+        if (this.variables().getConfiguration().containsKey(Constants.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS)) {
             // TODO: Is this sufficient?
-            conf.setProperty(GIRAPH_VERTEX_INPUT_FORMAT_CLASS, this.variables().getConfiguration().getString(GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS).replace("OutputFormat", "InputFormat"));
+            conf.setProperty(Constants.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, this.variables().getConfiguration().getString(Constants.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS).replace("OutputFormat", "InputFormat"));
         }
         return GiraphGraph.open(conf);
     }

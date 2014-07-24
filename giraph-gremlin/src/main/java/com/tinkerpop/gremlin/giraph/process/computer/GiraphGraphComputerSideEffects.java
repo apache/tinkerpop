@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
+import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
-import com.tinkerpop.gremlin.giraph.process.computer.util.GlobalsMapReduce;
 import com.tinkerpop.gremlin.giraph.process.computer.util.MemoryAggregator;
 import com.tinkerpop.gremlin.giraph.process.computer.util.RuleWritable;
 import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
@@ -24,7 +24,7 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
     private final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputerSideEffects.class);
     private VertexProgram vertexProgram;
     private GiraphInternalVertex giraphInternalVertex;
-    private Set<String> globalKeys;
+    private Set<String> sideEffectKeys;
 
     public GiraphGraphComputerSideEffects() {
         this.giraphInternalVertex = null;
@@ -41,12 +41,12 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
         if (null == this.giraphInternalVertex) {  // master compute node
             try {
                 this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getConf()));
-                this.globalKeys = new HashSet<String>(this.vertexProgram.getSideEffectKeys());
+                this.sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectKeys());
                 for (final String key : (Set<String>) this.vertexProgram.getSideEffectKeys()) {
                     this.registerAggregator(key, MemoryAggregator.class); // TODO: Why does PersistentAggregator not work?
                 }
-                this.registerPersistentAggregator(GlobalsMapReduce.RUNTIME, MemoryAggregator.class);
-                this.setIfAbsent(GlobalsMapReduce.RUNTIME, System.currentTimeMillis());
+                this.registerPersistentAggregator(Constants.RUNTIME, MemoryAggregator.class);
+                this.setIfAbsent(Constants.RUNTIME, System.currentTimeMillis());
                 this.vertexProgram.setup(this);
             } catch (final Exception e) {
                 LOGGER.error(e.getMessage(), e);
@@ -54,7 +54,7 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
             }
         } else {  // local vertex aggregator
             this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.giraphInternalVertex.getConf()));
-            this.globalKeys = new HashSet<String>(this.vertexProgram.getSideEffectKeys());
+            this.sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectKeys());
         }
     }
 
@@ -71,11 +71,11 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
     }
 
     public long getRuntime() {
-        return System.currentTimeMillis() - this.<Long>get(GlobalsMapReduce.RUNTIME);
+        return System.currentTimeMillis() - this.<Long>get(Constants.RUNTIME);
     }
 
     public Set<String> keys() {
-        return this.globalKeys;
+        return this.sideEffectKeys;
     }
 
     public <R> R get(final String key) {

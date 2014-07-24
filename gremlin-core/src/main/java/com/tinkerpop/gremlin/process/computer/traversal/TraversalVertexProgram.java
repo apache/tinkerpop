@@ -81,9 +81,12 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
             traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
                 final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
                 this.mapReducers.add(mapReduce);
-                this.computeKeys.put(Graph.Key.hidden(mapReduce.getSideEffectKey()), KeyType.CONSTANT);
-
+                // this.computeKeys.put(Graph.Key.hidden(mapReduce.getSideEffectKey()), KeyType.CONSTANT);
             });
+            traversal.getSteps().stream().filter(step -> step instanceof SideEffectCapable).forEach(step -> {
+                this.computeKeys.put(Graph.Key.hidden(((SideEffectCapable) step).getVariable()), KeyType.CONSTANT);
+            });
+
             // TODO: This is LAME!
             this.computeKeys.put(SideEffectCapable.CAP_KEY, KeyType.CONSTANT);
 

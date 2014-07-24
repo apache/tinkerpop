@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapredu
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.SideEffectCapComputerStep;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
@@ -20,9 +21,9 @@ import java.util.stream.Stream;
  */
 public class SideEffectCapMapReduce implements MapReduce {
 
-    public static final String SIDE_EFFECT_CAP_STEP_VARIABLE = "gremlin.sideEffectCapStep.variable";
+    public static final String SIDE_EFFECT_CAP_STEP_SIDE_EFFECT_KEY = "gremlin.sideEffectCapStep.sideEffectKey";
 
-    private String variable;
+    private String sideEffectKey;
     private Traversal traversal;
 
     public SideEffectCapMapReduce() {
@@ -30,34 +31,29 @@ public class SideEffectCapMapReduce implements MapReduce {
     }
 
     public SideEffectCapMapReduce(final SideEffectCapComputerStep step) {
-        this.variable = step.getVariable();
+        this.sideEffectKey = step.getVariable();
         this.traversal = step.getTraversal();
     }
 
     public SideEffectCapMapReduce(final SideEffectCapStep step) {
-        this.variable = step.getVariable();
+        this.sideEffectKey = step.getVariable();
         this.traversal = step.getTraversal();
     }
 
     @Override
     public void storeState(final Configuration configuration) {
-        configuration.setProperty(SIDE_EFFECT_CAP_STEP_VARIABLE, this.variable);
+        configuration.setProperty(SIDE_EFFECT_CAP_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
     }
 
     @Override
     public void loadState(final Configuration configuration) {
         try {
-            this.variable = configuration.getString(SIDE_EFFECT_CAP_STEP_VARIABLE);
+            this.sideEffectKey = configuration.getString(SIDE_EFFECT_CAP_STEP_SIDE_EFFECT_KEY);
             this.traversal = ((SSupplier<Traversal>) VertexProgramHelper.deserialize(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER)).get();
             this.traversal.strategies().applyFinalStrategies();
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
-    }
-
-    @Override
-    public String getSideEffectKey() {
-        return variable;
     }
 
     @Override
@@ -71,10 +67,20 @@ public class SideEffectCapMapReduce implements MapReduce {
                 .filter(step -> step instanceof MapReducer)
                 .filter(step -> !(step instanceof SideEffectCapComputerStep))
                 .filter(step -> step instanceof SideEffectCapable)
-                .filter(step -> ((SideEffectCapable) step).getVariable().equals(this.variable))
+                .filter(step -> ((SideEffectCapable) step).getVariable().equals(this.sideEffectKey))
                 .findFirst().get())
                 .getMapReduce()
                 .generateSideEffect(keyValues);
         return result;
+    }
+
+    @Override
+    public void addToSideEffects(final SideEffects sideEffects, final Iterator keyValues) {
+
+    }
+
+    @Override
+    public String getSideEffectKey() {
+        return this.sideEffectKey;
     }
 }

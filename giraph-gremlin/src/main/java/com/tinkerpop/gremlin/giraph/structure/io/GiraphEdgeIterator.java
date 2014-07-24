@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.giraph.structure.io;
 
 import com.google.common.collect.Iterators;
+import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.hdfs.HDFSTools;
 import com.tinkerpop.gremlin.giraph.hdfs.HiddenFileFilter;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
@@ -26,18 +27,18 @@ import java.util.Queue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EdgeIterator implements Iterator<GiraphEdge> {
+public class GiraphEdgeIterator implements Iterator<GiraphEdge> {
 
     private final Queue<VertexReader> readers = new LinkedList<>();
     private Iterator<Edge> edgeIterator = Iterators.emptyIterator();
     private final GiraphGraph graph;
 
-    public EdgeIterator(final GiraphGraph graph) {
+    public GiraphEdgeIterator(final GiraphGraph graph) {
         this.graph = graph;
         try {
             final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.variables().getConfiguration());
-            final VertexInputFormat inputFormat = (VertexInputFormat) configuration.getClass(GiraphGraph.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class).getConstructor().newInstance();
-            HDFSTools.getAllFilePaths(FileSystem.get(configuration), new Path(configuration.get(GiraphGraph.GREMLIN_INPUT_LOCATION)), new HiddenFileFilter()).forEach(path -> {
+            final VertexInputFormat inputFormat = (VertexInputFormat) configuration.getClass(Constants.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class).getConstructor().newInstance();
+            HDFSTools.getAllFilePaths(FileSystem.get(configuration), new Path(configuration.get(Constants.GREMLIN_INPUT_LOCATION)), new HiddenFileFilter()).forEach(path -> {
                 try {
                     this.readers.add(inputFormat.createVertexReader(new FileSplit(path, 0, Integer.MAX_VALUE, new String[]{}), new TaskAttemptContext(configuration, new TaskAttemptID())));
                 } catch (Exception e) {

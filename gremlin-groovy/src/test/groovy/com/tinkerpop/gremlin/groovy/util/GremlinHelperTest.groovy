@@ -25,8 +25,8 @@ class GremlinHelperTest {
     public static Iterable<Object[]> data() {
         return [["simple constant", "'testing'$LINE_SEPARATOR", { 'testing' }, [], []] as Object[],
                 ["add constants", "1 + 2$LINE_SEPARATOR", { 1 + 2 }, [], []] as Object[],
-                ["sum one variable", "x + 1$LINE_SEPARATOR", {x -> x + 1 }, [2], ['x']] as Object[],
-                ["sum multi-variable", "x + y $LINE_SEPARATOR", {x, y -> x + y }, [1,2], ['y','x']] as Object[],
+                ["sum one sideEffectKey", "x + 1$LINE_SEPARATOR", {x -> x + 1 }, [2], ['x']] as Object[],
+                ["sum multi-sideEffectKey", "x + y $LINE_SEPARATOR", {x, y -> x + y }, [1,2], ['y','x']] as Object[],
                 ["simple multiline with explicit declaration", "java.lang.Integer z = x + y ${LINE_SEPARATOR}z / 2$LINE_SEPARATOR", { x, y ->
                     int z = x + y
                     z / 2

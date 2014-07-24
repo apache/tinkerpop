@@ -2,9 +2,11 @@ package com.tinkerpop.gremlin.process.computer.traversal.step.util;
 
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraverserCountTracker;
 import com.tinkerpop.gremlin.process.computer.traversal.TraverserPathTracker;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.javatuples.Pair;
@@ -16,16 +18,13 @@ import java.util.Iterator;
  */
 public class TraversalResultMapReduce implements MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Iterator<Object>> {
 
-    public static final String TRAVERSERS = "gremlin.traversers";
-
-    public String getSideEffectKey() {
-        return TRAVERSERS;
-    }
+    public static final String TRAVERSERS = Graph.Key.hidden("traversers");
 
     public boolean doStage(final Stage stage) {
         return stage.equals(Stage.MAP);
     }
 
+    @Override
     public void map(final Vertex vertex, final MapEmitter<MapReduce.NullObject, Object> emitter) {
         final Property mapProperty = vertex.property(TraversalVertexProgram.TRAVERSER_TRACKER);
         if (mapProperty.isPresent()) {
@@ -58,6 +57,7 @@ public class TraversalResultMapReduce implements MapReduce<MapReduce.NullObject,
 
     }
 
+    @Override
     public Iterator<Object> generateSideEffect(final Iterator<Pair<MapReduce.NullObject, Object>> keyValues) {
         return new Iterator<Object>() {
             public boolean hasNext() {
@@ -68,5 +68,10 @@ public class TraversalResultMapReduce implements MapReduce<MapReduce.NullObject,
                 return keyValues.next().getValue1();
             }
         };
+    }
+
+    @Override
+    public String getSideEffectKey() {
+        return TRAVERSERS;
     }
 }

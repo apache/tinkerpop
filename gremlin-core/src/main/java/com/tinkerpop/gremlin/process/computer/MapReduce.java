@@ -23,8 +23,6 @@ public interface MapReduce<MK, MV, RK, RV, R> {
 
     }
 
-    public String getSideEffectKey();
-
     public boolean doStage(final Stage stage);
 
     public default void map(final Vertex vertex, final MapEmitter<MK, MV> emitter) {
@@ -37,6 +35,12 @@ public interface MapReduce<MK, MV, RK, RV, R> {
     }
 
     public R generateSideEffect(final Iterator<Pair<RK, RV>> keyValues);
+
+    public String getSideEffectKey();
+
+    public default void addToSideEffects(final SideEffects sideEffects, final Iterator<Pair<RK, RV>> keyValues) {
+        sideEffects.set(this.getSideEffectKey(), this.generateSideEffect(keyValues));
+    }
 
     //////////////////
 
@@ -52,6 +56,7 @@ public interface MapReduce<MK, MV, RK, RV, R> {
 
     public static class NullObject implements Comparable<NullObject>, Serializable {
         private static final NullObject INSTANCE = new NullObject();
+        private static final String NULL_OBJECT = "MapReduce$NullObject";
 
         public static NullObject get() {
             return INSTANCE;
@@ -68,5 +73,7 @@ public interface MapReduce<MK, MV, RK, RV, R> {
         public int compareTo(final NullObject nullObject) {
             return 0;
         }
+
+        public String toString() { return NULL_OBJECT; }
     }
 }

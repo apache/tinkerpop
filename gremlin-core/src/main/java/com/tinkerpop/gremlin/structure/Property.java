@@ -118,7 +118,8 @@ public abstract interface Property<V> {
         }
 
         public static IllegalStateException propertyDoesNotExist(final String key) {
-            return new IllegalStateException("The property does not exist as the key has no associated value: " + key);
+            return Graph.Key.isHidden(key) ? new IllegalStateException("The hidden property does not exist as the key has no associated value: " + Graph.Key.unHide(key)) :
+                    new IllegalStateException("The property does not exist as the key has no associated value: " + key);
         }
 
         public static UnsupportedOperationException dataTypeOfPropertyValueNotSupported(final Object val) {

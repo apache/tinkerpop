@@ -1,11 +1,10 @@
 package com.tinkerpop.gremlin.giraph.structure.util;
 
-import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
+import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputerSideEffects;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphMessenger;
 import com.tinkerpop.gremlin.giraph.process.computer.KryoWritable;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
-import com.tinkerpop.gremlin.giraph.process.computer.util.GlobalsMapReduce;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Element;
@@ -37,7 +36,7 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
     private TinkerGraph tinkerGraph;
     private TinkerVertex tinkerVertex;
 
-    private GiraphGraphComputerSideEffects globals;
+    private GiraphGraphComputerSideEffects sideEffects;
 
     public GiraphInternalVertex() {
     }
@@ -66,7 +65,7 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
     public void setConf(final org.apache.giraph.conf.ImmutableClassesGiraphConfiguration configuration) {
         super.setConf(configuration);
         this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(configuration));
-        this.globals = new GiraphGraphComputerSideEffects(this);
+        this.sideEffects = new GiraphGraphComputerSideEffects(this);
     }
 
     public TinkerVertex getTinkerVertex() {
@@ -76,13 +75,13 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
     public void compute(final Iterable<KryoWritable> messages) {
         if (null == this.tinkerVertex)
             inflateGiraphVertex();
-        this.vertexProgram.execute(this.tinkerVertex, new GiraphMessenger(this, messages), this.globals);
-        if (this.getConf().getBoolean(GiraphGraphComputer.GREMLIN_DERIVE_GLOBALS, false)) {
-            this.globals.keys().forEach(key -> {
-                this.tinkerVertex.property(Graph.Key.hidden(key), this.globals.get(key));
+        this.vertexProgram.execute(this.tinkerVertex, new GiraphMessenger(this, messages), this.sideEffects);
+        if (this.getConf().getBoolean(Constants.GREMLIN_DERIVE_MAIN_SIDE_EFFECTS, false)) {
+            this.sideEffects.keys().forEach(key -> {
+                this.tinkerVertex.property(Graph.Key.hidden(key), this.sideEffects.get(key));
             });
-            this.tinkerVertex.property(Graph.Key.hidden(GlobalsMapReduce.RUNTIME), this.globals.getRuntime());
-            this.tinkerVertex.property(Graph.Key.hidden(GlobalsMapReduce.ITERATION), this.globals.getIteration());
+            this.tinkerVertex.property(Graph.Key.hidden(Constants.RUNTIME), this.sideEffects.getRuntime());
+            this.tinkerVertex.property(Graph.Key.hidden(Constants.ITERATION), this.sideEffects.getIteration());
         }
     }
 

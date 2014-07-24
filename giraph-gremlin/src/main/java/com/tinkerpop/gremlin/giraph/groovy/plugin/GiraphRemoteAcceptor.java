@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.giraph.groovy.plugin;
 
+import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.hdfs.HDFSTools;
 import com.tinkerpop.gremlin.giraph.hdfs.HiddenFileFilter;
 import com.tinkerpop.gremlin.giraph.hdfs.TextFileLineIterator;
@@ -81,7 +82,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object configure(final List<String> args) {
         for (int i = 0; i < args.size(); i = i + 2) {
-            this.giraphGraph.variables().<Configuration>get(GiraphGraph.CONFIGURATION).setProperty(args.get(i), args.get(i + 1));
+            this.giraphGraph.variables().<Configuration>get(Constants.CONFIGURATION).setProperty(args.get(i), args.get(i + 1));
         }
         return this.giraphGraph;
     }
@@ -112,8 +113,8 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
 
     private static Optional<Iterator<String>> getCapIterator(final Configuration configuration) {
         try {
-            if (configuration.containsKey(GiraphGraph.GREMLIN_OUTPUT_LOCATION)) {
-                final String output = configuration.getString(GiraphGraph.GREMLIN_OUTPUT_LOCATION);
+            if (configuration.containsKey(Constants.GREMLIN_OUTPUT_LOCATION)) {
+                final String output = configuration.getString(Constants.GREMLIN_OUTPUT_LOCATION);
                 final FileSystem fs = FileSystem.get(ConfUtil.makeHadoopConfiguration(configuration));
                 final Path capOutput = new Path(output + "/" + SideEffectCapable.CAP_KEY);
                 //final Path traversalResultOutput = new Path(output + "/" + "traversalResult");
