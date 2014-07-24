@@ -24,7 +24,7 @@ public class GiraphMap extends Mapper<NullWritable, GiraphInternalVertex, KryoWr
     public void setup(final Mapper<NullWritable, GiraphInternalVertex, KryoWritable, KryoWritable>.Context context) {
         try {
             this.mapReduce = context.getConfiguration().getClass(MapReduceHelper.MAP_REDUCE_CLASS, MapReduce.class, MapReduce.class).getConstructor().newInstance();
-            this.mapReduce.setup(ConfUtil.makeApacheConfiguration(context.getConfiguration()));
+            this.mapReduce.loadState(ConfUtil.makeApacheConfiguration(context.getConfiguration()));
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

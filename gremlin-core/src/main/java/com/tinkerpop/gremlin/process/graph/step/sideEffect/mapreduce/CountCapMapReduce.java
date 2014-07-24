@@ -28,16 +28,16 @@ public class CountCapMapReduce implements MapReduce<MapReduce.NullObject, Long, 
     }
 
     @Override
-    public void stageConfiguration(final Configuration configuration) {
+    public void storeState(final Configuration configuration) {
         configuration.setProperty(COUNT_VARIABLE, this.variable);
     }
 
-    public void setup(final Configuration configuration) {
+    public void loadState(final Configuration configuration) {
         this.variable = configuration.getString(COUNT_VARIABLE);
     }
 
     @Override
-    public String getResultVariable() {
+    public String getSideEffectKey() {
         return SideEffectCapable.CAP_KEY;
     }
 
@@ -67,7 +67,7 @@ public class CountCapMapReduce implements MapReduce<MapReduce.NullObject, Long, 
     }
 
     @Override
-    public Long getResult(Iterator<Pair<NullObject, Long>> keyValues) {
+    public Long generateSideEffect(Iterator<Pair<NullObject, Long>> keyValues) {
         return keyValues.next().getValue1();
     }
 }

@@ -27,37 +27,37 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
         CONSTANT
     }
 
-    public void initialize(final Configuration configuration);
+    public void loadState(final Configuration configuration);
 
     /**
      * The method is called at the beginning of the computation. The method is global to the {@link GraphComputer}
      * and as such, is not called for each vertex.
      *
-     * @param globals The global GraphMemory of the GraphComputer
+     * @param sideEffects The global sideEffects of the GraphComputer
      */
-    public void setup(final GraphComputer.Globals globals);
+    public void setup(final SideEffects sideEffects);
 
     /**
      * This method denotes the main body of computation that is executed on each vertex in the graph.
      *
-     * @param vertex    the {@link com.tinkerpop.gremlin.structure.Vertex} to execute the {@link VertexProgram} on
-     * @param messenger the messenger that moves data between vertices
-     * @param globals   the shared state between all vertices in the computation
+     * @param vertex      the {@link com.tinkerpop.gremlin.structure.Vertex} to execute the {@link VertexProgram} on
+     * @param messenger   the messenger that moves data between vertices
+     * @param sideEffects the shared state between all vertices in the computation
      */
-    public void execute(final Vertex vertex, final Messenger<M> messenger, final GraphComputer.Globals globals);
+    public void execute(final Vertex vertex, final Messenger<M> messenger, final SideEffects sideEffects);
 
     /**
      * The method is called at the end of a round to determine if the computation is complete. The method is global
      * to the {@link GraphComputer} and as such, is not called for each {@link com.tinkerpop.gremlin.structure.Vertex}.
      *
-     * @param globals The global {@link com.tinkerpop.gremlin.structure.Graph.Variables} of the {@link GraphComputer}
+     * @param sideEffects The global sideEffects of the {@link GraphComputer}
      * @return whether or not to halt the computation
      */
-    public boolean terminate(final GraphComputer.Globals globals);
+    public boolean terminate(final SideEffects sideEffects);
 
-    public Map<String, KeyType> getComputeKeys();
+    public Map<String, KeyType> getElementKeys();
 
-    public Set<String> getGlobalKeys();
+    public Set<String> getSideEffectKeys();
 
     public Class<M> getMessageClass();
 
@@ -69,7 +69,7 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
         return Collections.emptyList();
     }
 
-    public static Map<String, KeyType> ofComputeKeys(final Object... computeKeys) {
+    public static Map<String, KeyType> createElementKeys(final Object... computeKeys) {
         if (computeKeys.length % 2 != 0)
             throw new IllegalArgumentException("The provided arguments must have a size that is a factor of 2");
         final Map<String, KeyType> keys = new HashMap<>();
@@ -83,7 +83,7 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
         try {
             final Class<V> vertexProgramClass = (Class) Class.forName(configuration.getString(GraphComputer.VERTEX_PROGRAM));
             final V vertexProgram = vertexProgramClass.getConstructor().newInstance();
-            vertexProgram.initialize(configuration);
+            vertexProgram.loadState(configuration);
             return vertexProgram;
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);

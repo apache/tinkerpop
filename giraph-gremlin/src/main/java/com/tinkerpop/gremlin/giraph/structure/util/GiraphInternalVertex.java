@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.giraph.structure.util;
 
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
-import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputerGlobals;
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputerSideEffects;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphMessenger;
 import com.tinkerpop.gremlin.giraph.process.computer.KryoWritable;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
@@ -37,7 +37,7 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
     private TinkerGraph tinkerGraph;
     private TinkerVertex tinkerVertex;
 
-    private GiraphGraphComputerGlobals globals;
+    private GiraphGraphComputerSideEffects globals;
 
     public GiraphInternalVertex() {
     }
@@ -66,7 +66,7 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
     public void setConf(final org.apache.giraph.conf.ImmutableClassesGiraphConfiguration configuration) {
         super.setConf(configuration);
         this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(configuration));
-        this.globals = new GiraphGraphComputerGlobals(this);
+        this.globals = new GiraphGraphComputerSideEffects(this);
     }
 
     public TinkerVertex getTinkerVertex() {

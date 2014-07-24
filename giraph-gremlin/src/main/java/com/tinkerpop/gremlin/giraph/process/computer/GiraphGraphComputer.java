@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.giraph.process.computer;
 
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
@@ -61,8 +62,8 @@ public class GiraphGraphComputer implements GraphComputer {
         return this.giraphGraph;
     }
 
-    public Future<Pair<Graph, Globals>> submit() {
-        return CompletableFuture.<Pair<Graph, Globals>>supplyAsync(() -> {
+    public Future<Pair<Graph, SideEffects>> submit() {
+        return CompletableFuture.<Pair<Graph, SideEffects>>supplyAsync(() -> {
             final GiraphGraphRunner runner;
             try {
                 final String bspDirectory = "_bsp"; //"temp-" + UUID.randomUUID().toString();
@@ -98,7 +99,7 @@ public class GiraphGraphComputer implements GraphComputer {
             }
             // LOGGER.info(new GiraphGraphShellComputerGlobals(this.hadoopConfiguration).asMap().toString());
             //return new Pair<Graph, Globals>(this.giraphGraph.getOutputGraph(), new GiraphGraphShellComputerGlobals(this.hadoopConfiguration));
-            return new Pair<Graph, Globals>(this.giraphGraph.getOutputGraph(), runner.getGlobals());
+            return new Pair<Graph, SideEffects>(this.giraphGraph.getOutputGraph(), runner.getSideEffects());
         });
     }
 }

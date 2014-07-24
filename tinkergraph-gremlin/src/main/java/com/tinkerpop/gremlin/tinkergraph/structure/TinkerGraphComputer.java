@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -26,7 +27,7 @@ public class TinkerGraphComputer implements GraphComputer {
     private Isolation isolation = Isolation.BSP;
     private Configuration configuration = new BaseConfiguration();
     private final TinkerGraph graph;
-    private final TinkerGraphComputerGlobals globals = new TinkerGraphComputerGlobals();
+    private final TinkerGraphComputerSideEffects globals = new TinkerGraphComputerSideEffects();
     private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
 
@@ -48,7 +49,7 @@ public class TinkerGraphComputer implements GraphComputer {
         return this.graph;
     }
 
-    public Future<Pair<Graph, Globals>> submit() {
+    public Future<Pair<Graph, SideEffects>> submit() {
         if (this.executed)
             throw Exceptions.computerHasAlreadyBeenSubmittedAVertexProgram();
         else
@@ -57,11 +58,11 @@ public class TinkerGraphComputer implements GraphComputer {
         final VertexProgram vertexProgram = VertexProgram.createVertexProgram(this.configuration);
         GraphComputerHelper.validateProgramOnComputer(this, vertexProgram);
 
-        return CompletableFuture.<Pair<Graph, Globals>>supplyAsync(() -> {
+        return CompletableFuture.<Pair<Graph, SideEffects>>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
 
             final TinkerGraph g = this.graph;
-            g.graphView = new TinkerGraphView(this.isolation, vertexProgram.getComputeKeys());
+            g.graphView = new TinkerGraphView(this.isolation, vertexProgram.getElementKeys());
             g.useGraphView = true;
             // execute the vertex program
             vertexProgram.setup(this.globals);
@@ -82,9 +83,9 @@ public class TinkerGraphComputer implements GraphComputer {
                     if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
                         final TinkerReduceEmitter reduceEmitter = new TinkerReduceEmitter();
                         mapEmitter.reduceMap.forEach((k, v) -> mapReduce.reduce(k, ((List) v).iterator(), reduceEmitter));
-                        this.globals.set(mapReduce.getResultVariable(), mapReduce.getResult(reduceEmitter.resultList.iterator()));
+                        this.globals.set(mapReduce.getSideEffectKey(), mapReduce.generateSideEffect(reduceEmitter.resultList.iterator()));
                     } else {
-                        this.globals.set(mapReduce.getResultVariable(), mapReduce.getResult(mapEmitter.mapList.iterator()));
+                        this.globals.set(mapReduce.getSideEffectKey(), mapReduce.generateSideEffect(mapEmitter.mapList.iterator()));
                     }
                 }
             }

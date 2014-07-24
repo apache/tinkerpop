@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankStep;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
@@ -99,7 +100,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             final TraversalVertexProgram program = VertexProgram.createVertexProgram(configuration);
             final Traversal programTraversal = (Traversal) program.getTraversalSupplier().get();
             programTraversal.strategies().applyFinalStrategies();
-            final Pair<Graph, GraphComputer.Globals> result = computer.program(configuration).submit().get();
+            final Pair<Graph, SideEffects> result = computer.program(configuration).submit().get();
             final GraphTraversal traversal = new DefaultGraphTraversal<>();
             if (program.getResultVariable().equals(TraversalResultMapReduce.TRAVERSERS))
                 traversal.addStep(new ComputerResultStartStep<>(traversal, computer.getGraph(), result.getValue1().get(program.getResultVariable()), programTraversal));

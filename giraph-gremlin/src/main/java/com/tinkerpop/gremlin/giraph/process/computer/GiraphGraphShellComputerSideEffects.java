@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
-import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.SideEffects;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -21,13 +20,13 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphGraphShellComputerGlobals implements GraphComputer.Globals {
+public class GiraphGraphShellComputerSideEffects implements SideEffects {
 
     private static final String COMPLETE_AND_IMMUTABLE = "The graph computation is complete and immutable";
 
     final Map<String, Object> globals = new HashMap<>();
 
-    public GiraphGraphShellComputerGlobals(final Configuration configuration) {
+    public GiraphGraphShellComputerSideEffects(final Configuration configuration) {
         /*try {
             final String globalLocation = configuration.get(GiraphGraph.GREMLIN_OUTPUT_LOCATION, null);
             if (null != globalLocation) {

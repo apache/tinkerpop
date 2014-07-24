@@ -30,15 +30,15 @@ public class GroupCountMapReduce implements MapReduce<Object, Long, Object, Long
     }
 
     @Override
-    public void stageConfiguration(final Configuration configuration) {
+    public void storeState(final Configuration configuration) {
         configuration.setProperty(GROUP_COUNT_STEP_VARIABLE, this.variable);
     }
 
-    public void setup(final Configuration configuration) {
+    public void loadState(final Configuration configuration) {
         this.variable = configuration.getString(GROUP_COUNT_STEP_VARIABLE);
     }
 
-    public String getResultVariable() {
+    public String getSideEffectKey() {
         return variable;
     }
 
@@ -65,7 +65,7 @@ public class GroupCountMapReduce implements MapReduce<Object, Long, Object, Long
         reduce(key, values, emitter);
     }
 
-    public Map<Object, Long> getResult(final Iterator<Pair<Object, Long>> keyValues) {
+    public Map<Object, Long> generateSideEffect(final Iterator<Pair<Object, Long>> keyValues) {
         final Map<Object, Long> result = new HashMap<>();
         keyValues.forEachRemaining(pair -> result.put(pair.getValue0(), pair.getValue1()));
         return result;

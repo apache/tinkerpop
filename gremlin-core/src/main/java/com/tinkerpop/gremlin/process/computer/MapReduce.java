@@ -15,15 +15,15 @@ public interface MapReduce<MK, MV, RK, RV, R> {
     public static enum Stage {MAP, COMBINE, REDUCE}
 
 
-    public default void stageConfiguration(final Configuration configuration) {
+    public default void storeState(final Configuration configuration) {
 
     }
 
-    public default void setup(final Configuration configuration) {
+    public default void loadState(final Configuration configuration) {
 
     }
 
-    public String getResultVariable();
+    public String getSideEffectKey();
 
     public boolean doStage(final Stage stage);
 
@@ -36,7 +36,9 @@ public interface MapReduce<MK, MV, RK, RV, R> {
     public default void reduce(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter) {
     }
 
-    public R getResult(final Iterator<Pair<RK, RV>> keyValues);
+    public R generateSideEffect(final Iterator<Pair<RK, RV>> keyValues);
+
+    //////////////////
 
     public interface MapEmitter<K, V> {
         public void emit(final K key, final V value);
@@ -45,6 +47,8 @@ public interface MapReduce<MK, MV, RK, RV, R> {
     public interface ReduceEmitter<OK, OV> {
         public void emit(final OK key, OV value);
     }
+
+    //////////////////
 
     public static class NullObject implements Comparable<NullObject>, Serializable {
         private static final NullObject INSTANCE = new NullObject();

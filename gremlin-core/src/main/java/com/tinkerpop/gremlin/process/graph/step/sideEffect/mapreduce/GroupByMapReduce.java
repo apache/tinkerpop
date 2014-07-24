@@ -37,7 +37,7 @@ public class GroupByMapReduce implements MapReduce<Object, Collection, Object, O
     }
 
     @Override
-    public void stageConfiguration(final Configuration configuration) {
+    public void storeState(final Configuration configuration) {
         try {
             configuration.setProperty(GROUP_BY_STEP_VARIABLE, this.variable);
             VertexProgramHelper.serialize(this.reduceFunction, configuration, GROUP_BY_REDUCE_FUNCTION);
@@ -47,7 +47,7 @@ public class GroupByMapReduce implements MapReduce<Object, Collection, Object, O
 
     }
 
-    public void setup(final Configuration configuration) {
+    public void loadState(final Configuration configuration) {
         try {
             this.variable = configuration.getString(GROUP_BY_STEP_VARIABLE);
             this.reduceFunction = VertexProgramHelper.deserialize(configuration, GROUP_BY_REDUCE_FUNCTION);
@@ -57,7 +57,7 @@ public class GroupByMapReduce implements MapReduce<Object, Collection, Object, O
     }
 
     @Override
-    public String getResultVariable() {
+    public String getSideEffectKey() {
         return variable;
     }
 
@@ -80,7 +80,7 @@ public class GroupByMapReduce implements MapReduce<Object, Collection, Object, O
     }
 
     @Override
-    public Map getResult(Iterator<Pair<Object, Object>> keyValues) {
+    public Map generateSideEffect(Iterator<Pair<Object, Object>> keyValues) {
         final Map map = new HashMap();
         keyValues.forEachRemaining(pair -> map.put(pair.getValue0(), pair.getValue1()));
         return map;

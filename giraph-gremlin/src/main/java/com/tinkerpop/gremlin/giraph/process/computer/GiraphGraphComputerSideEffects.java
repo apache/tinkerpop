@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.giraph.process.computer.util.GlobalsMapReduce;
 import com.tinkerpop.gremlin.giraph.process.computer.util.MemoryAggregator;
 import com.tinkerpop.gremlin.giraph.process.computer.util.RuleWritable;
 import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.giraph.master.MasterCompute;
 import org.slf4j.Logger;
@@ -19,20 +19,20 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphGraphComputerGlobals extends MasterCompute implements GraphComputer.Globals {
+public class GiraphGraphComputerSideEffects extends MasterCompute implements SideEffects {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputerGlobals.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputerSideEffects.class);
     private VertexProgram vertexProgram;
     private GiraphInternalVertex giraphInternalVertex;
     private Set<String> globalKeys;
 
-    public GiraphGraphComputerGlobals() {
+    public GiraphGraphComputerSideEffects() {
         this.giraphInternalVertex = null;
         this.vertexProgram = null;
         this.initialize();
     }
 
-    public GiraphGraphComputerGlobals(final GiraphInternalVertex giraphInternalVertex) {
+    public GiraphGraphComputerSideEffects(final GiraphInternalVertex giraphInternalVertex) {
         this.giraphInternalVertex = giraphInternalVertex;
         this.initialize();
     }
@@ -41,8 +41,8 @@ public class GiraphGraphComputerGlobals extends MasterCompute implements GraphCo
         if (null == this.giraphInternalVertex) {  // master compute node
             try {
                 this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getConf()));
-                this.globalKeys = new HashSet<String>(this.vertexProgram.getGlobalKeys());
-                for (final String key : (Set<String>) this.vertexProgram.getGlobalKeys()) {
+                this.globalKeys = new HashSet<String>(this.vertexProgram.getSideEffectKeys());
+                for (final String key : (Set<String>) this.vertexProgram.getSideEffectKeys()) {
                     this.registerAggregator(key, MemoryAggregator.class); // TODO: Why does PersistentAggregator not work?
                 }
                 this.registerPersistentAggregator(GlobalsMapReduce.RUNTIME, MemoryAggregator.class);
@@ -54,7 +54,7 @@ public class GiraphGraphComputerGlobals extends MasterCompute implements GraphCo
             }
         } else {  // local vertex aggregator
             this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.giraphInternalVertex.getConf()));
-            this.globalKeys = new HashSet<String>(this.vertexProgram.getGlobalKeys());
+            this.globalKeys = new HashSet<String>(this.vertexProgram.getSideEffectKeys());
         }
     }
 

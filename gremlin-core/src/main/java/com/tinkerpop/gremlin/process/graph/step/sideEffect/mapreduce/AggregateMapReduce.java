@@ -31,15 +31,15 @@ public class AggregateMapReduce implements MapReduce<MapReduce.NullObject, Objec
     }
 
     @Override
-    public void stageConfiguration(final Configuration configuration) {
+    public void storeState(final Configuration configuration) {
         configuration.setProperty(AGGREGATE_STEP_VARIABLE, this.variable);
     }
 
-    public void setup(final Configuration configuration) {
+    public void loadState(final Configuration configuration) {
         this.variable = configuration.getString(AGGREGATE_STEP_VARIABLE);
     }
 
-    public String getResultVariable() {
+    public String getSideEffectKey() {
         return variable;
     }
 
@@ -53,7 +53,7 @@ public class AggregateMapReduce implements MapReduce<MapReduce.NullObject, Objec
             mapProperty.value().forEach(object -> emitter.emit(NullObject.get(), object));
     }
 
-    public List<Object> getResult(final Iterator<Pair<NullObject, Object>> keyValues) {
+    public List<Object> generateSideEffect(final Iterator<Pair<NullObject, Object>> keyValues) {
         final List<Object> result = new ArrayList<>();
         keyValues.forEachRemaining(pair -> result.add(pair.getValue1()));
         return result;

@@ -40,12 +40,12 @@ public class SideEffectCapMapReduce implements MapReduce {
     }
 
     @Override
-    public void stageConfiguration(final Configuration configuration) {
+    public void storeState(final Configuration configuration) {
         configuration.setProperty(SIDE_EFFECT_CAP_STEP_VARIABLE, this.variable);
     }
 
     @Override
-    public void setup(final Configuration configuration) {
+    public void loadState(final Configuration configuration) {
         try {
             this.variable = configuration.getString(SIDE_EFFECT_CAP_STEP_VARIABLE);
             this.traversal = ((SSupplier<Traversal>) VertexProgramHelper.deserialize(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER)).get();
@@ -56,7 +56,7 @@ public class SideEffectCapMapReduce implements MapReduce {
     }
 
     @Override
-    public String getResultVariable() {
+    public String getSideEffectKey() {
         return variable;
     }
 
@@ -66,7 +66,7 @@ public class SideEffectCapMapReduce implements MapReduce {
     }
 
     @Override
-    public Object getResult(final Iterator keyValues) {
+    public Object generateSideEffect(final Iterator keyValues) {
         final Object result = ((MapReducer) ((Stream<Step>) this.traversal.getSteps().stream())
                 .filter(step -> step instanceof MapReducer)
                 .filter(step -> !(step instanceof SideEffectCapComputerStep))
@@ -74,7 +74,7 @@ public class SideEffectCapMapReduce implements MapReduce {
                 .filter(step -> ((SideEffectCapable) step).getVariable().equals(this.variable))
                 .findFirst().get())
                 .getMapReduce()
-                .getResult(keyValues);
+                .generateSideEffect(keyValues);
         return result;
     }
 }

@@ -26,7 +26,7 @@ public class GlobalsMapReduce implements MapReduce<String, Object, String, Objec
 
     public Set<String> globalKeys = new HashSet<>();
 
-    public String getResultVariable() {
+    public String getSideEffectKey() {
         return GLOBALS;
     }
 
@@ -39,11 +39,11 @@ public class GlobalsMapReduce implements MapReduce<String, Object, String, Objec
     }
 
     @Override
-    public void stageConfiguration(final Configuration configuration) {
+    public void storeState(final Configuration configuration) {
         configuration.setProperty(GREMLIN_GLOBAL_KEYS, this.globalKeys.toArray(new String[this.globalKeys.size()]));
     }
 
-    public void setup(final Configuration configuration) {
+    public void loadState(final Configuration configuration) {
         this.globalKeys = new HashSet<>(Arrays.asList(configuration.getStringArray(GREMLIN_GLOBAL_KEYS)));
     }
 
@@ -68,7 +68,7 @@ public class GlobalsMapReduce implements MapReduce<String, Object, String, Objec
         emitter.emit(key, values.next());
     }
 
-    public Map<String, Object> getResult(final Iterator<Pair<String, Object>> keyValues) {
+    public Map<String, Object> generateSideEffect(final Iterator<Pair<String, Object>> keyValues) {
         final Map<String, Object> map = new HashMap<>();
         while (keyValues.hasNext()) {
             final Pair<String, Object> pair = keyValues.next();

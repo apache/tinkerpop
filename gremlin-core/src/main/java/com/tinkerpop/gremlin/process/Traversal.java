@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.filter.PathIdentityStep;
@@ -42,7 +43,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public default Traversal<S, E> submit(final GraphComputer computer) {
         try {
-            final Pair<Graph, GraphComputer.Globals> result = computer.program(TraversalVertexProgram.create().traversal(() -> this).getConfiguration()).submit().get();
+            final Pair<Graph, SideEffects> result = computer.program(TraversalVertexProgram.create().traversal(() -> this).getConfiguration()).submit().get();
             final Traversal traversal = new DefaultTraversal<>();
             traversal.addStarts(new SingleIterator(result.getValue1()));
             return traversal;

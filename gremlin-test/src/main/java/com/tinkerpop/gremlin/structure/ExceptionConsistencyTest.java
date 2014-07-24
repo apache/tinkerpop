@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.Messenger;
+import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -595,7 +596,7 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public void initialize(final Configuration configuration) {
+        public void loadState(final Configuration configuration) {
         }
 
         @Override
@@ -604,26 +605,26 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public void setup(final GraphComputer.Globals globals) {
+        public void setup(final SideEffects sideEffects) {
         }
 
         @Override
-        public void execute(final Vertex vertex, final Messenger messenger, final GraphComputer.Globals globals) {
+        public void execute(final Vertex vertex, final Messenger messenger, final SideEffects sideEffects) {
             vertex.property(this.key, this.val);
         }
 
         @Override
-        public boolean terminate(GraphComputer.Globals globals) {
+        public boolean terminate(SideEffects sideEffects) {
             return true;
         }
 
         @Override
-        public Set<String> getGlobalKeys() {
+        public Set<String> getSideEffectKeys() {
             return Collections.emptySet();
         }
 
         @Override
-        public Map<String, KeyType> getComputeKeys() {
+        public Map<String, KeyType> getElementKeys() {
             return this.computeKeys;
         }
     }
@@ -642,7 +643,7 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public void initialize(final Configuration configuration) {
+        public void loadState(final Configuration configuration) {
         }
 
         @Override
@@ -651,26 +652,26 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public void setup(final GraphComputer.Globals globals) {
+        public void setup(final SideEffects sideEffects) {
         }
 
         @Override
-        public void execute(final Vertex vertex, final Messenger messenger, final GraphComputer.Globals globals) {
+        public void execute(final Vertex vertex, final Messenger messenger, final SideEffects sideEffects) {
             vertex.bothE().forEach(e -> e.<String>property(this.key, this.val));
         }
 
         @Override
-        public boolean terminate(GraphComputer.Globals globals) {
+        public boolean terminate(SideEffects sideEffects) {
             return true;
         }
 
         @Override
-        public Set<String> getGlobalKeys() {
+        public Set<String> getSideEffectKeys() {
             return Collections.emptySet();
         }
 
         @Override
-        public Map<String, KeyType> getComputeKeys() {
+        public Map<String, KeyType> getElementKeys() {
             return this.computeKeys;
         }
     }

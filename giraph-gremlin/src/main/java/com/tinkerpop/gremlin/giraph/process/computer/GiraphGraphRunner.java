@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.commons.configuration.FileConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -35,12 +36,12 @@ public class GiraphGraphRunner extends Configured implements Tool {
 
     private final GiraphConfiguration giraphConfiguration;
     private static final Logger LOGGER = Logger.getLogger(GiraphGraphRunner.class);
-    private GraphComputer.Globals globals;
+    private SideEffects sideEffects;
 
     public GiraphGraphRunner(final org.apache.hadoop.conf.Configuration hadoopConfiguration) {
         this.giraphConfiguration = new GiraphConfiguration();
         hadoopConfiguration.forEach(entry -> this.giraphConfiguration.set(entry.getKey(), entry.getValue()));
-        this.giraphConfiguration.setMasterComputeClass(GiraphGraphComputerGlobals.class);
+        this.giraphConfiguration.setMasterComputeClass(GiraphGraphComputerSideEffects.class);
         this.giraphConfiguration.setVertexClass(GiraphInternalVertex.class);
         this.giraphConfiguration.setOutEdgesClass(EmptyOutEdges.class);
         this.giraphConfiguration.setClass("giraph.vertexIdClass", LongWritable.class, LongWritable.class);
@@ -49,7 +50,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
 
     public int run(final String[] args) {
         try {
-            this.globals = new GiraphGraphShellComputerGlobals(this.giraphConfiguration);
+            this.sideEffects = new GiraphGraphShellComputerSideEffects(this.giraphConfiguration);
             final VertexProgram vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.giraphConfiguration));
             final GiraphJob job = new GiraphJob(this.giraphConfiguration, GiraphGraphComputer.GIRAPH_GREMLIN_JOB_PREFIX + vertexProgram);
             //job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
@@ -61,7 +62,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
 
             // calculate global variables
             if (this.giraphConfiguration.getBoolean(GiraphGraphComputer.GREMLIN_DERIVE_GLOBALS, false)) {
-                final Set<String> globalKeys = new HashSet<String>(vertexProgram.getGlobalKeys());
+                final Set<String> globalKeys = new HashSet<String>(vertexProgram.getSideEffectKeys());
                 globalKeys.add(GlobalsMapReduce.RUNTIME);
                 globalKeys.add(GlobalsMapReduce.ITERATION);
                 this.giraphConfiguration.setStrings(GlobalsMapReduce.GREMLIN_GLOBAL_KEYS, (String[]) globalKeys.toArray(new String[globalKeys.size()]));
@@ -69,7 +70,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
             }
             // do extra map reduce jobs if necessary
             for (final MapReduce mapReduce : mapReduces) {
-                MapReduceHelper.executeMapReduceJob(mapReduce, this.globals, this.giraphConfiguration);
+                MapReduceHelper.executeMapReduceJob(mapReduce, this.sideEffects, this.giraphConfiguration);
             }
 
         } catch (Exception e) {
@@ -79,8 +80,8 @@ public class GiraphGraphRunner extends Configured implements Tool {
         return 0;
     }
 
-    public GraphComputer.Globals getGlobals() {
-        return this.globals;
+    public SideEffects getSideEffects() {
+        return this.sideEffects;
     }
 
     public static void main(final String[] args) throws Exception {

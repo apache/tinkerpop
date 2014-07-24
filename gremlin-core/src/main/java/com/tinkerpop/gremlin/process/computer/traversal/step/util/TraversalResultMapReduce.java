@@ -18,7 +18,7 @@ public class TraversalResultMapReduce implements MapReduce<MapReduce.NullObject,
 
     public static final String TRAVERSERS = "gremlin.traversers";
 
-    public String getResultVariable() {
+    public String getSideEffectKey() {
         return TRAVERSERS;
     }
 
@@ -58,7 +58,7 @@ public class TraversalResultMapReduce implements MapReduce<MapReduce.NullObject,
 
     }
 
-    public Iterator<Object> getResult(final Iterator<Pair<MapReduce.NullObject, Object>> keyValues) {
+    public Iterator<Object> generateSideEffect(final Iterator<Pair<MapReduce.NullObject, Object>> keyValues) {
         return new Iterator<Object>() {
             public boolean hasNext() {
                 return keyValues.hasNext();
