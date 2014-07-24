@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.computer.MapReduce;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface MapReducer {
+public interface MapReducer<MK, MV, RK, RV, R> {
 
-    public MapReduce getMapReduce();
+    public MapReduce<MK, MV, RK, RV, R> getMapReduce();
 }

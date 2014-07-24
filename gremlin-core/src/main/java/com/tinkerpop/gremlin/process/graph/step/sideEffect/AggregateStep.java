@@ -18,12 +18,13 @@ import com.tinkerpop.gremlin.util.function.SFunction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCapable, Reversible, Bulkable, VertexCentric, MapReducer {
+public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCapable, Reversible, Bulkable, VertexCentric, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
 
     public final SFunction<S, ?> preAggregateFunction;
     Collection aggregate;
@@ -52,7 +53,7 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCa
             vertex.property(Graph.Key.hidden(this.variable), this.aggregate);
     }
 
-    public MapReduce getMapReduce() {
+    public MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> getMapReduce() {
         return new AggregateMapReduce(this);
     }
 

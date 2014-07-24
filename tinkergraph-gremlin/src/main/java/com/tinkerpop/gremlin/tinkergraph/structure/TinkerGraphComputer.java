@@ -74,10 +74,11 @@ public class TinkerGraphComputer implements GraphComputer {
                 if (vertexProgram.terminate(this.globals)) break;
             }
 
+            // no need to run combiners as this is single machine
             for (final MapReduce mapReduce : (Iterable<MapReduce>) vertexProgram.getMapReducers()) {
                 if (mapReduce.doStage(MapReduce.Stage.MAP)) {
                     final TinkerMapEmitter mapEmitter = new TinkerMapEmitter(mapReduce.doStage(MapReduce.Stage.REDUCE));
-                    StreamFactory.stream(g.V()).forEach(vertex -> mapReduce.map(vertex, mapEmitter));
+                    StreamFactory.parallelStream(g.V()).forEach(vertex -> mapReduce.map(vertex, mapEmitter));
                     if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
                         final TinkerReduceEmitter reduceEmitter = new TinkerReduceEmitter();
                         mapEmitter.reduceMap.forEach((k, v) -> mapReduce.reduce(k, ((List) v).iterator(), reduceEmitter));

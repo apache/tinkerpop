@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CountCapStep<S> extends FilterStep<S> implements SideEffectCapable, Bulkable, VertexCentric, MapReducer {
+public class CountCapStep<S> extends FilterStep<S> implements SideEffectCapable, Bulkable, VertexCentric, MapReducer<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
 
     private long bulkCount = 1l;
     private AtomicLong count = new AtomicLong(0l);
@@ -41,7 +41,7 @@ public class CountCapStep<S> extends FilterStep<S> implements SideEffectCapable,
             vertex.property(CAP_KEY, this.count);
     }
 
-    public MapReduce getMapReduce() {
+    public MapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> getMapReduce() {
         return new CountCapMapReduce(this);
     }
 

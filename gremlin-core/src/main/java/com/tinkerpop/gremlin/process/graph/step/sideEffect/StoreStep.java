@@ -15,11 +15,12 @@ import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StoreStep<S> extends FilterStep<S> implements SideEffectCapable, Reversible, Bulkable, VertexCentric, MapReducer {
+public class StoreStep<S> extends FilterStep<S> implements SideEffectCapable, Reversible, Bulkable, VertexCentric, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
 
     public String variable;
     public Collection store;
@@ -54,7 +55,7 @@ public class StoreStep<S> extends FilterStep<S> implements SideEffectCapable, Re
             vertex.property(Graph.Key.hidden(this.variable), this.store);
     }
 
-    public MapReduce getMapReduce() {
+    public MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> getMapReduce() {
         return new StoreMapReduce(this);
     }
 

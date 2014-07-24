@@ -21,7 +21,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffectCapable, Reversible, VertexCentric, MapReducer {
+public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffectCapable, Reversible, VertexCentric, MapReducer<Object, Collection, Object, Object, Map> {
 
     public Map<K, Collection<V>> groupByMap;
     public final Map<K, R> reduceMap;
@@ -95,7 +95,7 @@ public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffect
             vertex.property(Graph.Key.hidden(this.variable), this.groupByMap);
     }
 
-    public MapReduce getMapReduce() {
+    public MapReduce<Object, Collection, Object, Object, Map> getMapReduce() {
         return new GroupByMapReduce(this);
     }
 }

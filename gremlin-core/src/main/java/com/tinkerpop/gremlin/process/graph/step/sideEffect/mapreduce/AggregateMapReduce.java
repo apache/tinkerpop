@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AggregateMapReduce implements MapReduce<Object, Object, Object, Object, List<Object>> {
+public class AggregateMapReduce implements MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
 
     public static final String AGGREGATE_STEP_VARIABLE = "gremlin.aggregateStep.variable";
 
@@ -47,13 +47,13 @@ public class AggregateMapReduce implements MapReduce<Object, Object, Object, Obj
         return stage.equals(Stage.MAP);
     }
 
-    public void map(final Vertex vertex, final MapEmitter<Object, Object> emitter) {
+    public void map(final Vertex vertex, final MapEmitter<NullObject, Object> emitter) {
         final Property<Collection> mapProperty = vertex.property(Graph.Key.hidden(variable));
         if (mapProperty.isPresent())
             mapProperty.value().forEach(object -> emitter.emit(NullObject.get(), object));
     }
 
-    public List<Object> getResult(final Iterator<Pair<Object, Object>> keyValues) {
+    public List<Object> getResult(final Iterator<Pair<NullObject, Object>> keyValues) {
         final List<Object> result = new ArrayList<>();
         keyValues.forEachRemaining(pair -> result.add(pair.getValue1()));
         return result;

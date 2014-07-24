@@ -20,7 +20,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapable, Reversible, Bulkable, VertexCentric, MapReducer {
+public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapable, Reversible, Bulkable, VertexCentric, MapReducer<Object, Long, Object, Long, Map<Object, Long>> {
 
     public Map<Object, Long> groupCountMap;
     public SFunction<S, ?> preGroupFunction;
@@ -54,7 +54,7 @@ public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapabl
             vertex.property(Graph.Key.hidden(this.variable), this.groupCountMap);
     }
 
-    public MapReduce getMapReduce() {
+    public MapReduce<Object, Long, Object, Long, Map<Object, Long>> getMapReduce() {
         return new GroupCountMapReduce(this);
     }
 
