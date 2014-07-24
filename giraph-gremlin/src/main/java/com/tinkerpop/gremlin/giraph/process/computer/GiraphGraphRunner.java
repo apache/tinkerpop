@@ -36,7 +36,7 @@ import java.util.Set;
 public class GiraphGraphRunner extends Configured implements Tool {
 
     private final GiraphConfiguration giraphConfiguration;
-    private static final Logger LOGGER = Logger.getLogger(GiraphGraphRunner.class);
+    public static final Logger LOGGER = Logger.getLogger(GiraphGraphRunner.class);
     private SideEffects sideEffects;
 
     public GiraphGraphRunner(final org.apache.hadoop.conf.Configuration hadoopConfiguration, final GiraphGraphShellComputerSideEffects sideEffects) {

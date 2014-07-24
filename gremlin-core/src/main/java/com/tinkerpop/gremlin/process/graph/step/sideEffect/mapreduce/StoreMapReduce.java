@@ -61,11 +61,6 @@ public class StoreMapReduce implements MapReduce<MapReduce.NullObject, Object, M
     }
 
     @Override
-    public void addToSideEffects(final SideEffects sideEffects, final Iterator<Pair<MapReduce.NullObject, Object>> keyValues) {
-        sideEffects.set(this.variable, generateSideEffect(keyValues));
-    }
-
-    @Override
     public String getSideEffectKey() {
         return this.variable;
     }

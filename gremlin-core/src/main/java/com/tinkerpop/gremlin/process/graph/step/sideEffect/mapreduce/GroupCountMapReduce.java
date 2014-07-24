@@ -74,11 +74,6 @@ public class GroupCountMapReduce implements MapReduce<Object, Long, Object, Long
     }
 
     @Override
-    public void addToSideEffects(final SideEffects sideEffects, final Iterator<Pair<Object, Long>> keyValues) {
-        sideEffects.set(this.sideEffectKey, generateSideEffect(keyValues));
-    }
-
-    @Override
     public String getSideEffectKey() {
         return this.sideEffectKey;
     }

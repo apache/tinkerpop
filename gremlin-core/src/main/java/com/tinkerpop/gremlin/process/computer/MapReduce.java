@@ -74,6 +74,8 @@ public interface MapReduce<MK, MV, RK, RV, R> {
             return 0;
         }
 
-        public String toString() { return NULL_OBJECT; }
+        public String toString() {
+            return NULL_OBJECT;
+        }
     }
 }
