@@ -1,7 +1,9 @@
-package com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect;
+package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SFunction;
@@ -18,27 +20,27 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroupByComputerMapReduce implements MapReduce<Object, Collection, Object, Object, Map> {
+public class GroupByMapReduce implements MapReduce<Object, Collection, Object, Object, Map> {
 
-    public static final String GROUP_BY_STEP_VARIABLE = "gremlin.groupByStep.variable";
+    public static final String GROUP_BY_STEP_SIDE_EFFECT_KEY = "gremlin.groupByStep.sideEffectKey";
     public static final String GROUP_BY_REDUCE_FUNCTION = "gremlin.groupByStep.reduceFunction";
 
-    private String variable;
+    private String sideEffectKey;
     private SFunction reduceFunction;
 
-    public GroupByComputerMapReduce() {
+    public GroupByMapReduce() {
 
     }
 
-    public GroupByComputerMapReduce(final GroupByComputerStep step) {
-        this.variable = step.getVariable();
+    public GroupByMapReduce(final GroupByStep step) {
+        this.sideEffectKey = step.getVariable();
         this.reduceFunction = step.reduceFunction;
     }
 
     @Override
-    public void stageConfiguration(final Configuration configuration) {
+    public void storeState(final Configuration configuration) {
         try {
-            configuration.setProperty(GROUP_BY_STEP_VARIABLE, this.variable);
+            configuration.setProperty(GROUP_BY_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
             VertexProgramHelper.serialize(this.reduceFunction, configuration, GROUP_BY_REDUCE_FUNCTION);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -46,9 +48,10 @@ public class GroupByComputerMapReduce implements MapReduce<Object, Collection, O
 
     }
 
-    public void setup(final Configuration configuration) {
+    @Override
+    public void loadState(final Configuration configuration) {
         try {
-            this.variable = configuration.getString(GROUP_BY_STEP_VARIABLE);
+            this.sideEffectKey = configuration.getString(GROUP_BY_STEP_SIDE_EFFECT_KEY);
             this.reduceFunction = VertexProgramHelper.deserialize(configuration, GROUP_BY_REDUCE_FUNCTION);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -56,18 +59,13 @@ public class GroupByComputerMapReduce implements MapReduce<Object, Collection, O
     }
 
     @Override
-    public String getResultVariable() {
-        return variable;
-    }
-
-    @Override
-    public boolean doReduce() {
-        return true;
+    public boolean doStage(final Stage stage) {
+        return !stage.equals(Stage.COMBINE);
     }
 
     @Override
     public void map(Vertex vertex, MapEmitter<Object, Collection> emitter) {
-        final HashMap<Object, Collection> tempMap = vertex.<HashMap<Object, Collection>>property(Graph.Key.hidden(variable)).orElse(new HashMap<>());
+        final HashMap<Object, Collection> tempMap = vertex.<HashMap<Object, Collection>>property(Graph.Key.hidden(sideEffectKey)).orElse(new HashMap<>());
         tempMap.forEach((k, v) -> emitter.emit(k, v));
     }
 
@@ -79,9 +77,14 @@ public class GroupByComputerMapReduce implements MapReduce<Object, Collection, O
     }
 
     @Override
-    public Map getResult(Iterator<Pair<Object, Object>> keyValues) {
+    public Map generateSideEffect(Iterator<Pair<Object, Object>> keyValues) {
         final Map map = new HashMap();
         keyValues.forEachRemaining(pair -> map.put(pair.getValue0(), pair.getValue1()));
         return map;
+    }
+
+    @Override
+    public String getSideEffectKey() {
+        return this.sideEffectKey;
     }
 }

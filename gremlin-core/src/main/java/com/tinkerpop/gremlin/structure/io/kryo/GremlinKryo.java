@@ -45,6 +45,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -231,6 +232,8 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(TraverserPathTracker.class, null, 58));
             add(Triplet.<Class, Serializer, Integer>with(Path.class, null, 59));
             add(Triplet.<Class, Serializer, Integer>with(DetachedPath.class, null, 60));
+            // TODO: Move to GiraphGremlin if cool.
+            add(Triplet.<Class, Serializer, Integer>with(AtomicLong.class, null, 61));
         }};
 
         private static final byte major = 1;
@@ -264,7 +267,7 @@ public final class GremlinKryo {
         public Builder addCustom(final Pair<Class, Serializer>... custom) {
             if (custom != null && custom.length > 0) {
                 serializationList.addAll(Arrays.asList(custom).stream()
-                        .map(c -> Triplet.<Class, Serializer, Integer>with(c.getValue0(), c.getValue1(), currentSerializationId.getAndIncrement()))
+                        .map(c -> Triplet.with(c.getValue0(), c.getValue1(), currentSerializationId.getAndIncrement()))
                         .collect(Collectors.<Triplet<Class, Serializer, Integer>>toList()));
             }
 

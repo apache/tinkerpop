@@ -38,7 +38,7 @@ public class PartitionGraphStrategy extends SubgraphStrategy {
     }
 
     private boolean testElement(final Element e) {
-        Property<String> p = e.property(this.partitionKey);
+        final Property<String> p = e.property(this.partitionKey);
         return p.isPresent() && this.readPartitions.contains(p.value());
     }
 

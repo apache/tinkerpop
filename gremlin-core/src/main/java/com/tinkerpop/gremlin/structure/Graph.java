@@ -119,8 +119,8 @@ public interface Graph extends AutoCloseable {
 
         public default Map<String, Object> asMap() {
             final Map<String, Object> map = keys().stream()
-                    .map(key -> Pair.<String, Object>with(key, get(key)))
-                    .collect(Collectors.toMap(kv -> kv.getValue0(), Pair::getValue1));
+                    .map(key -> Pair.with(key, get(key)))
+                    .collect(Collectors.toMap(Pair::getValue0, Pair::getValue1));
             return Collections.unmodifiableMap(map);
         }
 

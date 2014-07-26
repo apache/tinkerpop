@@ -83,7 +83,7 @@ public class TraversalHelper {
             while (true) {
                 iterator.next();
             }
-        } catch (final NoSuchElementException e) {
+        } catch (final NoSuchElementException ignored) {
 
         }
     }

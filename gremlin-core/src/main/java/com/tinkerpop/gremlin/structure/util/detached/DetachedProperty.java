@@ -75,14 +75,18 @@ public class DetachedProperty<V> implements Property, Serializable {
         throw new UnsupportedOperationException("Detached properties are readonly: " + this.toString());
     }
 
+    @Override
     public String toString() {
         return StringFactory.propertyString(this);
     }
 
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+    @Override
     public boolean equals(final Object object) {
         return ElementHelper.areEqual(this, object);
     }
 
+    @Override
     public int hashCode() {
         return this.hashCode;
     }

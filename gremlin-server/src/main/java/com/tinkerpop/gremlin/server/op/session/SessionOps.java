@@ -56,7 +56,6 @@ final class SessionOps {
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
 
-        // todo: validate session perhaps
         final Session session = getSession(context, msg);
 
         final String script = (String) msg.getArgs().get(Tokens.ARGS_GREMLIN);

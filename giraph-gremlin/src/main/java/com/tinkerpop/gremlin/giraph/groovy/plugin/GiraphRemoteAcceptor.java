@@ -1,29 +1,29 @@
 package com.tinkerpop.gremlin.giraph.groovy.plugin;
 
-import com.tinkerpop.gremlin.giraph.hdfs.HDFSTools;
-import com.tinkerpop.gremlin.giraph.hdfs.HiddenFileFilter;
-import com.tinkerpop.gremlin.giraph.hdfs.TextFileLineIterator;
-import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
+import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.groovy.engine.function.GremlinGroovySSupplier;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgramIterator;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.SideEffects;
+import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import com.tinkerpop.gremlin.process.computer.traversal.step.filter.ComputerResultStep;
+import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
+import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.FileConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.codehaus.groovy.tools.shell.Groovysh;
+import org.javatuples.Pair;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -81,7 +81,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object configure(final List<String> args) {
         for (int i = 0; i < args.size(); i = i + 2) {
-            this.giraphGraph.variables().<Configuration>get(GiraphGraph.CONFIGURATION).setProperty(args.get(i), args.get(i + 1));
+            this.giraphGraph.variables().<Configuration>get(Constants.CONFIGURATION).setProperty(args.get(i), args.get(i + 1));
         }
         return this.giraphGraph;
     }
@@ -89,17 +89,14 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object submit(final List<String> args) {
         try {
-            //VertexProgramHelper.serializeSupplier(new GremlinGroovySSupplier<>(PREFIX_SCRIPT + args.get(0)), this.graph.variables().getConfiguration(), TraversalVertexProgram.TRAVERSAL_SUPPLIER);
-            final TraversalVertexProgramIterator iterator = new TraversalVertexProgramIterator(this.giraphGraph, new GremlinGroovySSupplier<>(PREFIX_SCRIPT + args.get(0) + POSTFIX_SCRIPT));
-            this.shell.getInterp().getContext().setProperty("g", iterator.getResultantGraph());
-            return iterator;
-            /*final Pair<Graph, GraphComputer.Globals> result = this.graph.compute().program(this.graph.variables().getConfiguration()).submit().get();
-            final Optional<Iterator<String>> capResult = GiraphRemoteAcceptor.getCapIterator(this.graph.variables().getConfiguration());
+            VertexProgramHelper.serialize(new GremlinGroovySSupplier<>(PREFIX_SCRIPT + args.get(0) + POSTFIX_SCRIPT), this.giraphGraph.variables().getConfiguration(), TraversalVertexProgram.TRAVERSAL_SUPPLIER);
+            this.giraphGraph.variables().getConfiguration().setProperty(GraphComputer.VERTEX_PROGRAM, TraversalVertexProgram.class.getCanonicalName());
+            final Pair<Graph, SideEffects> result = this.giraphGraph.compute().program(this.giraphGraph.variables().getConfiguration()).submit().get();
             this.shell.getInterp().getContext().setProperty("g", result.getValue0());
-            if (capResult.isPresent())
-                return capResult.get();
-            else
-                return new TraverserRes result.getValue0();*/
+            this.shell.getInterp().getContext().setProperty("sideEffects", result.getValue1());
+            final GraphTraversal traversal = new DefaultGraphTraversal<>();
+            traversal.addStep(new ComputerResultStep<>(traversal, result.getValue0(), result.getValue1(), VertexProgram.createVertexProgram(this.giraphGraph.variables().getConfiguration())));
+            return traversal;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -108,29 +105,6 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     @Override
     public void close() throws IOException {
         this.giraphGraph.close();
-    }
-
-    private static Optional<Iterator<String>> getCapIterator(final Configuration configuration) {
-        try {
-            if (configuration.containsKey(GiraphGraph.GREMLIN_OUTPUT_LOCATION)) {
-                final String output = configuration.getString(GiraphGraph.GREMLIN_OUTPUT_LOCATION);
-                final FileSystem fs = FileSystem.get(ConfUtil.makeHadoopConfiguration(configuration));
-                final Path capOutput = new Path(output + "/" + SideEffectCapable.CAP_KEY);
-                //final Path traversalResultOutput = new Path(output + "/" + "traversalResult");
-                if (fs.exists(capOutput)) {
-                    final LinkedList<Path> paths = new LinkedList<>();
-                    paths.addAll(HDFSTools.getAllFilePaths(fs, capOutput, HiddenFileFilter.instance()));
-                    return Optional.of(new TextFileLineIterator(fs, paths, 25));
-                } /*else if (fs.exists(traversalResultOutput)) {
-                    final LinkedList<Path> paths = new LinkedList<>();
-                    paths.addAll(HDFSTools.getAllFilePaths(fs, traversalResultOutput, NoUnderscoreFilter.instance()));
-                    return Optional.of(new TextFileLineIterator(fs, paths, 25));
-                }*/
-            }
-        } catch (final Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-        return Optional.empty();
     }
 
     public GiraphGraph getGraph() {

@@ -10,38 +10,39 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface MapReduce<K, V, OK, OV, R> {
+public interface MapReduce<MK, MV, RK, RV, R> {
 
-    public static class NullObject implements Serializable {
-        private static final NullObject INSTANCE = new NullObject();
+    public static enum Stage {MAP, COMBINE, REDUCE}
 
-        public static NullObject get() {
-            return INSTANCE;
-        }
-    }
 
-    public default void stageConfiguration(final Configuration configuration) {
+    public default void storeState(final Configuration configuration) {
 
     }
 
-    public default void setup(final Configuration configuration) {
+    public default void loadState(final Configuration configuration) {
 
     }
 
-    public String getResultVariable();
+    public boolean doStage(final Stage stage);
 
-    public boolean doReduce();
-
-    // TODO: public boolean doMap();
-    // TODO: public boolean doCombine();
-    // TODO: public default void combine(final K key, final Iterator<V> values, final ReduceEmitter<OK, OV> emitter) { }
-
-    public void map(final Vertex vertex, final MapEmitter<K, V> emitter);
-
-    public default void reduce(final K key, final Iterator<V> values, final ReduceEmitter<OK, OV> emitter) {
+    public default void map(final Vertex vertex, final MapEmitter<MK, MV> emitter) {
     }
 
-    public R getResult(final Iterator<Pair<OK, OV>> keyValues);
+    public default void combine(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter) {
+    }
+
+    public default void reduce(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter) {
+    }
+
+    public R generateSideEffect(final Iterator<Pair<RK, RV>> keyValues);
+
+    public String getSideEffectKey();
+
+    public default void addToSideEffects(final SideEffects sideEffects, final Iterator<Pair<RK, RV>> keyValues) {
+        sideEffects.set(this.getSideEffectKey(), this.generateSideEffect(keyValues));
+    }
+
+    //////////////////
 
     public interface MapEmitter<K, V> {
         public void emit(final K key, final V value);
@@ -49,5 +50,32 @@ public interface MapReduce<K, V, OK, OV, R> {
 
     public interface ReduceEmitter<OK, OV> {
         public void emit(final OK key, OV value);
+    }
+
+    //////////////////
+
+    public static class NullObject implements Comparable<NullObject>, Serializable {
+        private static final NullObject INSTANCE = new NullObject();
+        private static final String NULL_OBJECT = "MapReduce$NullObject";
+
+        public static NullObject get() {
+            return INSTANCE;
+        }
+
+        public int hashCode() {
+            return 666666666;
+        }
+
+        public boolean equals(final Object object) {
+            return object instanceof NullObject;
+        }
+
+        public int compareTo(final NullObject nullObject) {
+            return 0;
+        }
+
+        public String toString() {
+            return NULL_OBJECT;
+        }
     }
 }

@@ -24,9 +24,8 @@ public class VertexTerminator {
 
         final VertexTerminator that = (VertexTerminator) o;
 
-        if (terminal != that.terminal) return false;
+        return terminal == that.terminal;
 
-        return true;
     }
 
     @Override

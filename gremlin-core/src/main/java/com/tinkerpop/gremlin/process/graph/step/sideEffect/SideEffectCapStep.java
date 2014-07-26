@@ -3,6 +3,8 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.marker.SideEffectCap;
+import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -12,7 +14,7 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SideEffectCapStep<S, E> extends AbstractStep<S, E> {
+public class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements SideEffectCap {
 
     private boolean done = false;
     public String variable;
@@ -29,7 +31,7 @@ public class SideEffectCapStep<S, E> extends AbstractStep<S, E> {
                 while (true) {
                     traverser = (Traverser<E>) this.starts.next();
                 }
-            } catch (final NoSuchElementException e) {
+            } catch (final NoSuchElementException ignored) {
             }
             this.done = true;
             return traverser.makeChild(this.getAs(), this.traversal.memory().get(this.variable));
@@ -42,5 +44,9 @@ public class SideEffectCapStep<S, E> extends AbstractStep<S, E> {
         return this.variable.equals(SideEffectCapable.CAP_KEY) ?
                 super.toString() :
                 TraversalHelper.makeStepString(this, this.variable);
+    }
+
+    public String getVariable() {
+        return this.variable;
     }
 }

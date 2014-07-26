@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
-import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.SideEffects;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -21,13 +20,13 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphGraphShellComputerGlobals implements GraphComputer.Globals {
+public class GiraphGraphShellComputerSideEffects implements SideEffects {
 
-    private static final String COMPLETE_AND_IMMUTABLE = "The graph computation is complete and immutable";
+    private static final String COMPLETE_AND_IMMUTABLE = "The graph computation sideEffects are complete and immutable";
 
     final Map<String, Object> globals = new HashMap<>();
 
-    public GiraphGraphShellComputerGlobals(final Configuration configuration) {
+    public GiraphGraphShellComputerSideEffects(final Configuration configuration) {
         /*try {
             final String globalLocation = configuration.get(GiraphGraph.GREMLIN_OUTPUT_LOCATION, null);
             if (null != globalLocation) {
@@ -49,16 +48,15 @@ public class GiraphGraphShellComputerGlobals implements GraphComputer.Globals {
     }
 
     public void set(final String key, Object value) {
-       // throw new IllegalStateException(COMPLETE_AND_IMMUTABLE);
-        this.globals.put(key,value);
+        this.globals.put(key, value);
     }
 
     public int getIteration() {
-        return Integer.valueOf((String) this.globals.get("iteration"));
+        return (Integer) this.globals.get("iteration");
     }
 
     public long getRuntime() {
-        return Long.valueOf((String) this.globals.get("runtime"));
+        return (Long) this.globals.get("runtime");
     }
 
     public void setIfAbsent(final String key, final Object value) {
@@ -77,7 +75,7 @@ public class GiraphGraphShellComputerGlobals implements GraphComputer.Globals {
         throw new IllegalStateException(COMPLETE_AND_IMMUTABLE);
     }
 
-    private List<String> readLines(Path location, Configuration conf) throws Exception {
+    /*private List<String> readLines(Path location, Configuration conf) throws Exception {
         final FileSystem fileSystem = FileSystem.get(location.toUri(), conf);
         final CompressionCodecFactory factory = new CompressionCodecFactory(conf);
         final FileStatus[] items = fileSystem.listStatus(location);
@@ -107,5 +105,5 @@ public class GiraphGraphShellComputerGlobals implements GraphComputer.Globals {
             }
         }
         return results;
-    }
+    }*/
 }

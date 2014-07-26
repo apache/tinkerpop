@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin.process.computer;
 
-import com.tinkerpop.gremlin.structure.Vertex;
-
 import java.io.Serializable;
 
 /**

@@ -1,5 +1,15 @@
 package com.tinkerpop.gremlin.server.simulation
 
+import io.gatling.core.Predef._
+import scala.concurrent.duration._
+import akka.actor.ActorRef
+import io.gatling.core.action.builder.ActionBuilder
+import io.gatling.core.action.{Chainable, system}
+import bootstrap._
+import assertions._
+import akka.actor.Props
+import io.gatling.core.result.message.{RequestMessage, KO, OK}
+import io.gatling.core.result.writer.DataWriter
 import com.tinkerpop.gremlin.driver.{Client, Cluster}
 
 class GremlinServerSimulation extends Simulation {
@@ -13,7 +23,7 @@ class GremlinServerSimulation extends Simulation {
     def build(next: ActorRef) = system.actorOf(Props(new GremlinServerAction(next, cluster, "1+1")))
   }
 
-  val scn = scenario("Gremlin Server Test").randomSwitch(
+  val randomNumberedRequests = scenario("Random Numbered Requests").randomSwitch(
     50 -> repeat(100) {
       exec(addition)
     },
@@ -22,9 +32,17 @@ class GremlinServerSimulation extends Simulation {
     }
   )
 
+  val fixedRequests = scenario("Fixed Requests").repeat(5) {
+    exec(addition)
+  }
+
   setUp(
-    scn.inject(
-      //constantRate(100 userPerSec) during(100 seconds))
+    fixedRequests.inject(
+      constantRate(1000 userPerSec) during(60 seconds),
+      nothingFor(5 seconds),
+      ramp(5000 users) over (60 seconds)),
+    randomNumberedRequests.inject(
+      nothingFor(180 seconds),
       split(1000 users).into(ramp(100 users) over (25 seconds)).separatedBy(1 seconds))
   ).assertions(global.responseTime.max.lessThan(250), global.successfulRequests.percent.greaterThan(95))
 }

@@ -177,6 +177,11 @@
                             <groupId>org.scala-lang</groupId>
                             <artifactId>scala-reflect</artifactId>
                         </exclusion>
+                        <!-- conflict with tinkerpop slf4j -->
+                        <exclusion>
+                            <groupId>ch.qos.logback</groupId>
+                            <artifactId>logback-classic</artifactId>
+                        </exclusion>
                     </exclusions>
                 </dependency>
                 <dependency>
@@ -184,6 +189,29 @@
                     <artifactId>scalaj-collection_${scala.version}</artifactId>
                     <version>1.5</version>
                     <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>io.gatling</groupId>
+                    <artifactId>gatling-recorder</artifactId>
+                    <version>${gatling.io.version}</version>
+                    <scope>test</scope>
+                    <exclusions>
+                        <!-- conflict with tinkerpop slf4j -->
+                        <exclusion>
+                            <groupId>ch.qos.logback</groupId>
+                            <artifactId>logback-classic</artifactId>
+                        </exclusion>
+                        <!-- conflict with tinkerpop -->
+                        <exclusion>
+                            <groupId>org.slf4j</groupId>
+                            <artifactId>slf4j-api</artifactId>
+                        </exclusion>
+                        <!-- self-conflict -->
+                        <exclusion>
+                            <groupId>org.scala-lang</groupId>
+                            <artifactId>scala-library</artifactId>
+                        </exclusion>
+                    </exclusions>
                 </dependency>
                 <dependency>
                     <groupId>io.gatling.highcharts</groupId>

@@ -297,4 +297,28 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         cluster.close();
     }
+
+    @Test
+    public void shouldExecuteScriptsInMultipleSession() throws Exception {
+        final Cluster cluster = Cluster.create().build();
+        final Client client1 = cluster.connect(name.getMethodName() + "1");
+        final Client client2 = cluster.connect(name.getMethodName() + "2");
+        final Client client3 = cluster.connect(name.getMethodName() + "3");
+
+        final ResultSet results11 = client1.submit("x = 1");
+        final ResultSet results21 = client2.submit("x = 2");
+        final ResultSet results31 = client3.submit("x = 3");
+        assertEquals(1, results11.all().get().get(0).getInt());
+        assertEquals(2, results21.all().get().get(0).getInt());
+        assertEquals(3, results31.all().get().get(0).getInt());
+
+        final ResultSet results12 = client1.submit("x + 100");
+        final ResultSet results22 = client2.submit("x * 2");
+        final ResultSet results32 = client3.submit("x * 10");
+        assertEquals(101, results12.all().get().get(0).getInt());
+        assertEquals(4, results22.all().get().get(0).getInt());
+        assertEquals(30, results32.all().get().get(0).getInt());
+
+        cluster.close();
+    }
 }

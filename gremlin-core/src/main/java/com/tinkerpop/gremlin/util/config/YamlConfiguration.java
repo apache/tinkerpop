@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Apache Commons Configuration object for YAML.  Adapted from code originally found here:
@@ -27,7 +28,6 @@ public class YamlConfiguration extends AbstractHierarchicalFileConfiguration {
     public final static int DEFAULT_IDENT = 4;
     private final DumperOptions yamlOptions = new DumperOptions();
     private final Yaml yaml = new Yaml(yamlOptions);
-    private int ident = DEFAULT_IDENT;
     private boolean xmlCompatibility = true;
 
     public YamlConfiguration() {
@@ -56,7 +56,7 @@ public class YamlConfiguration extends AbstractHierarchicalFileConfiguration {
     }
 
     private void initialize() {
-        yamlOptions.setIndent(this.ident);
+        yamlOptions.setIndent(DEFAULT_IDENT);
         yamlOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
     }
 
@@ -116,12 +116,7 @@ public class YamlConfiguration extends AbstractHierarchicalFileConfiguration {
             return parentNode.getValue();
 
         if (parentNode.getChildrenCount("item") == parentNode.getChildrenCount()) {
-            final List<Object> list = new ArrayList<>();
-            for (ConfigurationNode childNode : parentNode.getChildren()) {
-                list.add(saveHierarchy(childNode));
-            }
-
-            return list;
+            return parentNode.getChildren().stream().map(this::saveHierarchy).collect(Collectors.toList());
         } else {
             final Map<String, Object> map = new LinkedHashMap<>();
             for (ConfigurationNode childNode : parentNode.getChildren()) {

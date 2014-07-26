@@ -86,9 +86,10 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // sideEffect
             // TODO: REMOVE?  AddEdgeTest.JavaAddEdgeTest.class,
             AggregateTest.JavaComputerAggregateTest.class,
-            // TODO: Make work: CountTest.JavaComputerCountTest.class,
+            CountTest.JavaComputerCountTest.class,
             GroupByTest.JavaComputerGroupByTest.class,
             GroupCountTest.JavaComputerGroupCountTest.class,
+
             SideEffectCapTest.JavaComputerSideEffectCapTest.class,
             // TODO: REMOVE? SideEffectTest.JavaSideEffectTest.class,
             StoreTest.JavaComputerStoreTest.class,
@@ -134,7 +135,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // sideEffect
             // AddEdgeTest.class,
             AggregateTest.class,
-            // CountTest.class,
+            CountTest.class,
             GroupByTest.class,
             GroupCountTest.class,
             SideEffectCapTest.class,

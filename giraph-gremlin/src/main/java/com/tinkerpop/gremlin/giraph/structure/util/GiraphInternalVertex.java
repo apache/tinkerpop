@@ -1,9 +1,8 @@
 package com.tinkerpop.gremlin.giraph.structure.util;
 
-import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
-import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputerGlobals;
+import com.tinkerpop.gremlin.giraph.Constants;
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputerSideEffects;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphMessenger;
-import com.tinkerpop.gremlin.giraph.process.computer.GlobalsMapReduce;
 import com.tinkerpop.gremlin.giraph.process.computer.KryoWritable;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
@@ -37,7 +36,7 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
     private TinkerGraph tinkerGraph;
     private TinkerVertex tinkerVertex;
 
-    private GiraphGraphComputerGlobals globals;
+    private GiraphGraphComputerSideEffects sideEffects;
 
     public GiraphInternalVertex() {
     }
@@ -58,7 +57,7 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
             final TinkerEdge tinkerEdge = (TinkerEdge) otherVertex.addEdge(edge.label(), vertex, Element.ID, edge.id());
             edge.properties().forEach((k, v) -> tinkerEdge.property(k, v.value()));
         });
-        this.initialize(new LongWritable(Long.valueOf(this.tinkerVertex.id().toString())), this.deflateGiraphVertex(), EmptyOutEdges.instance());
+        this.initialize(new LongWritable(Long.valueOf(this.tinkerVertex.id().toString())), this.deflateTinkerVertex(), EmptyOutEdges.instance());
         // TODO? this.tinkerVertex = vertex;
     }
 
@@ -66,29 +65,30 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
     public void setConf(final org.apache.giraph.conf.ImmutableClassesGiraphConfiguration configuration) {
         super.setConf(configuration);
         this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(configuration));
-        this.globals = new GiraphGraphComputerGlobals(this);
+        this.sideEffects = new GiraphGraphComputerSideEffects(this);
     }
 
     public TinkerVertex getTinkerVertex() {
         return this.tinkerVertex;
     }
 
+    @Override
     public void compute(final Iterable<KryoWritable> messages) {
         if (null == this.tinkerVertex)
-            inflateGiraphVertex();
-        this.vertexProgram.execute(this.tinkerVertex, new GiraphMessenger(this, messages), this.globals);
-        if (this.getConf().getBoolean(GiraphGraphComputer.GREMLIN_DERIVE_GLOBALS, false)) {
-            this.globals.keys().forEach(key -> {
-                this.tinkerVertex.property(Graph.Key.hidden(key), this.globals.get(key));
+            inflateTinkerVertex();
+        this.vertexProgram.execute(this.tinkerVertex, new GiraphMessenger(this, messages), this.sideEffects);
+        if (this.getConf().getBoolean(Constants.GREMLIN_DERIVE_MAIN_SIDE_EFFECTS, false)) {
+            this.sideEffects.keys().forEach(key -> {
+                this.tinkerVertex.property(Graph.Key.hidden(key), this.sideEffects.get(key));
             });
-            this.tinkerVertex.property(Graph.Key.hidden(GlobalsMapReduce.RUNTIME), this.globals.getRuntime());
-            this.tinkerVertex.property(Graph.Key.hidden(GlobalsMapReduce.ITERATION), this.globals.getIteration());
+            this.tinkerVertex.property(Graph.Key.hidden(Constants.RUNTIME), this.sideEffects.getRuntime());
+            this.tinkerVertex.property(Graph.Key.hidden(Constants.ITERATION), this.sideEffects.getIteration());
         }
     }
 
     ///////////////////////////////////////////////
 
-    private Text deflateGiraphVertex() {
+    private Text deflateTinkerVertex() {
         try {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
             final KryoWriter writer = KryoWriter.create().build();
@@ -101,7 +101,7 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
         }
     }
 
-    private void inflateGiraphVertex() {
+    private void inflateTinkerVertex() {
         try {
             final ByteArrayInputStream bis = new ByteArrayInputStream(this.getValue().getBytes());
             final KryoReader reader = KryoReader.create().build();

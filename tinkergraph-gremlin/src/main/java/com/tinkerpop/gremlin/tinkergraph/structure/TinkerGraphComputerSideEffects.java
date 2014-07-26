@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.structure.util.GraphVariableHelper;
 
 import java.util.Map;
@@ -12,17 +12,17 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphComputerGlobals implements GraphComputer.Globals.Administrative {
+public class TinkerGraphComputerSideEffects implements SideEffects.Administrative {
 
     public final Map<String, Object> globals;
     private final AtomicInteger iteration = new AtomicInteger(0);
     private final AtomicLong runtime = new AtomicLong(0l);
 
-    public TinkerGraphComputerGlobals() {
+    public TinkerGraphComputerSideEffects() {
         this(new ConcurrentHashMap<>());
     }
 
-    public TinkerGraphComputerGlobals(final Map<String, Object> state) {
+    public TinkerGraphComputerSideEffects(final Map<String, Object> state) {
         this.globals = state;
     }
 

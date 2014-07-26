@@ -52,7 +52,6 @@ public abstract class CountTest extends AbstractGremlinTest {
     }
 
     @Test
-    @Ignore
     @LoadGraphWith(CLASSIC)
     public void g_V_filterXfalseX_count() {
         final Traversal<Vertex, Long> traversal = get_g_V_filterXfalseX_count();

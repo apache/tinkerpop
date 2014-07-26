@@ -20,9 +20,7 @@ class EdgeTerminator {
 
         final EdgeTerminator that = (EdgeTerminator) o;
 
-        if (terminal != that.terminal) return false;
-
-        return true;
+        return terminal == that.terminal;
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
+import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
@@ -44,7 +45,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     }
 
     @Override
-    public void initialize(final Configuration configuration) {
+    public void loadState(final Configuration configuration) {
         this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
         this.alpha = configuration.getDouble(ALPHA, 0.85d);
         this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
@@ -60,12 +61,12 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     }
 
     @Override
-    public Map<String, KeyType> getComputeKeys() {
-        return VertexProgram.ofComputeKeys(PAGE_RANK, KeyType.VARIABLE, EDGE_COUNT, KeyType.CONSTANT);
+    public Map<String, KeyType> getElementKeys() {
+        return VertexProgram.createElementKeys(PAGE_RANK, KeyType.VARIABLE, EDGE_COUNT, KeyType.CONSTANT);
     }
 
     @Override
-    public Set<String> getGlobalKeys() {
+    public Set<String> getSideEffectKeys() {
         return Collections.emptySet();
     }
 
@@ -76,13 +77,13 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     }
 
     @Override
-    public void setup(final GraphComputer.Globals globals) {
+    public void setup(final SideEffects sideEffects) {
 
     }
 
     @Override
-    public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphComputer.Globals globals) {
-        if (globals.isInitialIteration()) {
+    public void execute(final Vertex vertex, Messenger<Double> messenger, final SideEffects sideEffects) {
+        if (sideEffects.isInitialIteration()) {
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
             double edgeCount = Double.valueOf((Long) this.messageType.edges(vertex).count().next());
             vertex.property(PAGE_RANK, initialPageRank);
@@ -97,8 +98,8 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     }
 
     @Override
-    public boolean terminate(final GraphComputer.Globals globals) {
-        return globals.getIteration() >= this.totalIterations;
+    public boolean terminate(final SideEffects sideEffects) {
+        return sideEffects.getIteration() >= this.totalIterations;
     }
 
     //////////////////////////////

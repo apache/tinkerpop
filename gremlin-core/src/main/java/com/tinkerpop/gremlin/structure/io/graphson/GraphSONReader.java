@@ -69,9 +69,8 @@ public class GraphSONReader implements GraphReader {
         }
 
         final JsonFactory factory = mapper.getFactory();
-        final JsonParser parser = factory.createParser(inputStream);
 
-        try {
+        try (JsonParser parser = factory.createParser(inputStream)) {
             if (parser.nextToken() != JsonToken.START_OBJECT)
                 throw new IOException("Expected data to start with an Object");
 
@@ -112,8 +111,6 @@ public class GraphSONReader implements GraphReader {
             // rollback whatever portion failed
             graph.tx().rollback();
             throw new IOException(ex);
-        } finally {
-            parser.close();
         }
 
     }

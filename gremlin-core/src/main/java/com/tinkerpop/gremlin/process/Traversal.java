@@ -1,13 +1,14 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.filter.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
+import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -42,7 +43,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public default Traversal<S, E> submit(final GraphComputer computer) {
         try {
-            final Pair<Graph, GraphComputer.Globals> result = computer.program(TraversalVertexProgram.create().traversal(() -> this).getConfiguration()).submit().get();
+            final Pair<Graph, SideEffects> result = computer.program(TraversalVertexProgram.create().traversal(() -> this).getConfiguration()).submit().get();
             final Traversal traversal = new DefaultTraversal<>();
             traversal.addStarts(new SingleIterator(result.getValue1()));
             return traversal;
@@ -143,7 +144,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
             while (this.hasNext()) {
                 collection.add(this.next());
             }
-        } catch (final NoSuchElementException e) {
+        } catch (final NoSuchElementException ignored) {
         }
         return collection;
     }
@@ -153,7 +154,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
             while (this.hasNext()) {
                 this.next();
             }
-        } catch (final NoSuchElementException e) {
+        } catch (final NoSuchElementException ignored) {
         }
         return this;
     }
@@ -167,7 +168,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
             while (this.hasNext()) {
                 consumer.accept(this.next());
             }
-        } catch (final NoSuchElementException e) {
+        } catch (final NoSuchElementException ignored) {
 
         }
     }
