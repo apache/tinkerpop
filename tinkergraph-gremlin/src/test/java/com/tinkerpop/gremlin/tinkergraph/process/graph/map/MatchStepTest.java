@@ -2,18 +2,19 @@ package com.tinkerpop.gremlin.tinkergraph.process.graph.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.step.map.match.CartesianEnumerator;
+import com.tinkerpop.gremlin.process.graph.step.map.match.CrossJoinEnumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.Enumerator;
-import com.tinkerpop.gremlin.process.graph.step.map.match.EnumeratorIterator;
+import com.tinkerpop.gremlin.process.graph.step.map.match.InnerJoinEnumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.IteratorEnumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStepNew;
-import com.tinkerpop.gremlin.process.graph.step.util.As;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
 
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -24,7 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.function.BiPredicate;
+import java.util.function.BiConsumer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -36,6 +37,24 @@ import static org.junit.Assert.fail;
 public class MatchStepTest {
 
     @Test
+    public void testOutputs() throws Exception {
+        MatchStepNew<Object, Object> query;
+        Iterator iter;
+        Graph g = TinkerFactory.createClassic();
+
+        iter = g.V();
+        query = new MatchStepNew<>(g.V(), "a",
+                g.of().as("a").out("knows").as("b"),
+                g.of().as("a").out("created").as("c"));
+
+        GraphTraversal t = g.V().match("a", "x", g.of().as("a").out("knows").as("b"),
+                g.of().as("a").out("created").as("c"));
+        while (t.hasNext()) {
+            System.out.println("solution: " + t.next());
+        }
+    }
+
+    @Test
     public void testTreePatterns() throws Exception {
         MatchStepNew<Object, Object> query;
         Iterator iter;
@@ -45,7 +64,7 @@ public class MatchStepTest {
         query = new MatchStepNew<>(g.V(), "a",
                 g.of().as("a").out("knows").as("b"),
                 g.of().as("a").out("created").as("c"));
-        assertResults(query.solve(iter),
+        assertResults(query.solveFor(iter),
                 new Bindings<>().put("a", "v[1]").put("b", "v[2]").put("c", "v[3]"),
                 new Bindings<>().put("a", "v[1]").put("b", "v[4]").put("c", "v[3]"));
 
@@ -53,7 +72,7 @@ public class MatchStepTest {
                 g.of().as("a").out("knows").as("b"),
                 g.of().as("b").out("created").as("c"));
         iter = g.V();
-        assertResults(query.solve(iter),
+        assertResults(query.solveFor(iter),
                 new Bindings<>().put("a", "v[1]").put("b", "v[4]").put("c", "v[3]"),
                 new Bindings<>().put("a", "v[1]").put("b", "v[4]").put("c", "v[5]"));
 
@@ -63,20 +82,45 @@ public class MatchStepTest {
                 g.of().as("a").out("knows").as("b"),
                 g.of().as("b").out("created").as("c"));
         iter = g.V();
-        assertResults(query.solve(iter),
+        assertResults(query.solveFor(iter),
                 new Bindings<>().put("d", "v[2]").put("a", "v[1]").put("b", "v[4]").put("c", "v[3]"),
                 new Bindings<>().put("d", "v[2]").put("a", "v[1]").put("b", "v[4]").put("c", "v[5]"));
     }
 
     @Test
     public void testDAGPatterns() throws Exception {
-        // TODO
+        MatchStepNew<Object, Object> query;
+        Iterator iter;
+        Graph g = TinkerFactory.createModern();
+
+        iter = g.V();
+        query = new MatchStepNew<>(g.V(), "a",
+                g.of().as("a").out("uses").as("b"),
+                g.of().as("b").out("dependsOn").as("c"),
+                g.of().as("a").out("created").as("c"));
+
+        assertResults(query.solveFor(iter),
+                new Bindings<>().put("a", "v[1]").put("b", "v[10]").put("c", "v[11]"));
     }
 
+    // TODO
+    /*
     @Test
     public void testCyclicPatterns() throws Exception {
-        // TODO
+        MatchStepNew<Object, Object> query;
+        Iterator iter;
+        Graph g = TinkerFactory.createModern();
+
+        iter = g.V();
+        query = new MatchStepNew<>(g.V(), "a",
+                g.of().as("a").out("uses").as("b"),
+                g.of().as("b").out("dependsOn").as("c"),
+                g.of().as("c").in("created").as("a"));
+
+        assertResults(query.solve(iter),
+                new Bindings<>().put("a", "v[1]").put("b", "v[10]").put("c", "v[11]"));
     }
+    */
 
     @Test
     public void testTraversalUpdater() throws Exception {
@@ -132,7 +176,7 @@ public class MatchStepTest {
         assertEquals(4.0, query.findCost("d"), 0);
 
         // apply the query to the graph, gathering non-trivial branch factors
-        assertResults(query.solve(iter),
+        assertResults(query.solveFor(iter),
                 new Bindings<>().put("d", "v[2]").put("a", "v[1]").put("b", "v[4]").put("c", "v[3]"),
                 new Bindings<>().put("d", "v[2]").put("a", "v[1]").put("b", "v[4]").put("c", "v[5]"));
         query.optimize();
@@ -146,17 +190,44 @@ public class MatchStepTest {
         // the cost of a-knows->b is its branch factor (2.0) plus the branch factor times the cost of b-created->c (1.0), so 4.0
         // a has only one outgoing traversal, a-knows->b, so its total cost is 4.0
         assertEquals(4.0, query.findCost("a"), 0);
-        // d<-knows-a has a branch factor of 1/3 -- we put in all six vertices and got out marko (twice)
-        // the cost of d<-knows-a is its branch factor (1/3) plus the branch factor times the cost of a-knows->b (4.0), so 5/3
+        // d<-knows-a has a branch factor of 1/6 -- we put in all six vertices and got out marko
+        //     we get out marko only once, because d-name->"vadas" is tried first and rules out all but one "d"
+        // the cost of d<-knows-a is its branch factor (1/6) plus the branch factor times the cost of a-knows->b (4.0), so 5/6
         // since we optimized to put the has step first (it immediately eliminates most vertices),
         //     the cost of d->has(name,vadas) is 1/6 -- we put in all six vertices and got out one
         // the total cost of d is the cost of its first traversal times the branch factor of the first times the cost of the second,
-        //     or 1/6 + 1/6*5/3 = 4/9
-        assertEquals(4 / 9.0, query.findCost("d"), 0.001);
+        //     or 1/6 + 1/6*5/6 = 11/36
+        assertEquals(11 / 36.0, query.findCost("d"), 0.001);
     }
 
     @Test
-    public void testCartesianEnumerators() throws Exception {
+    public void testPerformance() throws Exception {
+        Graph g = TinkerGraph.open();
+        try (InputStream in = Graph.class.getResourceAsStream("util/io/graphml/grateful-dead.xml")) {
+            GraphMLReader r = GraphMLReader.create().build();
+            r.readGraph(in, g);
+        }
+
+        long startTime, endTime;
+        startTime = System.currentTimeMillis();
+        MatchStepNew<Object, Object> query = new MatchStepNew<>(g.V().has("name", "Garcia"), "garcia",
+                g.of().as("garcia").in("sung_by").as("song"),
+                g.of().as("song").out("written_by", "writer"));
+        Enumerator<Object> solutions = query.solveFor(g.V().has("name", "Garcia"));
+        exhaust(solutions);
+        endTime = System.currentTimeMillis();
+        assertEquals(147, solutions.size());
+        System.out.println("finished in " + (endTime - startTime) + "ms");
+
+        startTime = System.currentTimeMillis();
+        long count = g.V().has("name", "Garcia").as("garcia").in("sung_by").as("song").out("written_by").as("writer").count().next();
+        endTime = System.currentTimeMillis();
+        assertEquals(147, count);
+        System.out.println("finished in " + (endTime - startTime) + "ms");
+    }
+
+    @Test
+    public void testCrossJoin() throws Exception {
         String[] a1 = new String[]{"a", "b", "c"};
         String[] a2 = new String[]{"1", "2", "3", "4"};
         String[] a3 = new String[]{"@", "#"};
@@ -165,12 +236,11 @@ public class MatchStepTest {
         Enumerator<String> e2 = new IteratorEnumerator<>("number", Arrays.asList(a2).iterator());
         Enumerator<String> e3 = new IteratorEnumerator<>("punc", Arrays.asList(a3).iterator());
 
-        Enumerator<String> e1e2 = new CartesianEnumerator<>(e1, e2);
-        BiPredicate<String, String> visitor = (name, value) -> {
+        Enumerator<String> e1e2 = new CrossJoinEnumerator<>(e1, e2);
+        BiConsumer<String, String> visitor = (name, value) -> {
             //System.out.println("\t" + name + ":\t" + value);
-            return true;
         };
-        Enumerator<String> e1e2e3 = new CartesianEnumerator<>(e1e2, e3);
+        Enumerator<String> e1e2e3 = new CrossJoinEnumerator<>(e1e2, e3);
 
         int i = 0;
         Enumerator<String> e
@@ -182,20 +252,26 @@ public class MatchStepTest {
         assertEquals(24, i);
     }
 
+    /*
     @Test
-    public void testCartesianEnumeratorLaziness() throws Exception {
-        List<Integer> l = new LinkedList<>();
+    public void testCrossJoinLaziness() throws Exception {
+        List<Integer> value = new LinkedList<>();
         for (int j = 0; j < 1000; j++) {
-            l.add(j);
+            value.add(j);
         }
-        Enumerator<Integer> e = null;
-        for (int k = 0; k < 10; k++) {
+
+        int base = 3;
+        List<Enumerator<Integer>> enums = new LinkedList<>();
+        for (int k = 0; k < base; k++) {
             List<Integer> lNew = new LinkedList<>();
-            lNew.addAll(l);
-            Enumerator<Integer> ek = new IteratorEnumerator<>("" + k, lNew.iterator());
-            e = null == e ? ek : new CartesianEnumerator<>(e, ek);
+            lNew.addAll(value);
+            Enumerator<Integer> ek = new IteratorEnumerator<>("" + (char) ('a' + k), lNew.iterator());
+            enums.add(ek);
         }
-        // we now have an enumerator of 10^3^10 elements
+
+        Enumerator<Integer> e = new NewCrossJoinEnumerator<>(enums);
+
+        // we now have an enumerator of 5^3^10 elements
         EnumeratorIterator<Integer> iter = new EnumeratorIterator<>(e);
 
         int count = 0;
@@ -206,17 +282,91 @@ public class MatchStepTest {
         values.add(s);
         assertEquals(++count, values.size());
         // begin at the head of all iterators
-        assertEquals("{0=0, 1=0, 2=0, 3=0, 4=0, 5=0, 6=0, 7=0, 8=0, 9=0}", s);
-        // 10 choose 1
-        for (int i = 0; i < 10; i++) {
-        //for (int i = 0; i < 1023; i++) {
-            // variables are consecutively set to "1", in a breadth-first fashion
-            // order is undefined
+        assertEquals("{a=0, b=0, c=0, d=0, e=0, f=0, g=0, h=0, i=0, j=0}", s);
+        int lim0 = (int) Math.pow(1, base);
+        // first 2^10 results are binary (0's and 1's)
+        int lim1 = (int) Math.pow(2, base);
+        for (int i = lim0; i < lim1; i++) {
             s = iter.next().toString();
-            System.out.println("s = " + s);
+            System.out.println("" + i + ": " + count + ": " + s); System.out.flush();
+            assertTrue(s.contains("1"));
+            assertFalse(s.contains("2"));
             values.add(s);
             assertEquals(++count, values.size());
-            //assertEquals(2, s.split("2").length);
+        }
+        int lim2 = (int) Math.pow(3, base);
+        for (int i = lim1; i < lim2; i++) {
+            s = iter.next().toString();
+            System.out.println("" + i + ": " + count + ": " + s); System.out.flush();
+
+            if (!s.contains("2")) {
+                findMissing(null, 0, base, "abcdefghij".getBytes(), values);
+            }
+
+
+            assertTrue(s.contains("2"));
+            assertFalse(s.contains("3"));
+            values.add(s);
+            assertEquals(++count, values.size());
+        }
+    }
+    */
+
+    @Test
+    public void testInnerJoin() throws Exception {
+        String[] a1 = new String[]{"a", "b", "c"};
+        String[] a2 = new String[]{"1", "2", "3", "4"};
+        String[] a3 = new String[]{"2", "4", "6", "8", "10"};
+
+        Enumerator<String> e1 = new IteratorEnumerator<>("letter", Arrays.asList(a1).iterator());
+        Enumerator<String> e2 = new IteratorEnumerator<>("number", Arrays.asList(a2).iterator());
+        Enumerator<String> e3 = new IteratorEnumerator<>("number", Arrays.asList(a3).iterator());
+
+        Enumerator<String> e4 = new CrossJoinEnumerator<>(e1, e3);
+        Enumerator<String> e5 = new CrossJoinEnumerator<>(e2, e4);
+
+        // without AND semantics, we have all 60 combinations, including two "number" bindings per solution
+        exhaust(e5);
+        assertEquals(60, e5.size());
+
+        Enumerator<String> join = new InnerJoinEnumerator<>(e5, new HashSet<String>() {{
+            add("number");
+        }});
+        exhaust(join);
+        assertEquals(6, join.size());
+
+        assertResults(join,
+                new Bindings<String>().put("letter", "a").put("number", "2"),
+                new Bindings<String>().put("letter", "a").put("number", "4"),
+                new Bindings<String>().put("letter", "b").put("number", "2"),
+                new Bindings<String>().put("letter", "b").put("number", "4"),
+                new Bindings<String>().put("letter", "c").put("number", "2"),
+                new Bindings<String>().put("letter", "c").put("number", "4"));
+    }
+
+    private void findMissing(String s, final int i, final int n, final byte[] names, final Set<String> actual) {
+        if (0 == i) {
+            s = "{";
+        } else {
+            s += ", ";
+        }
+
+        s += (char) names[i];
+        s += "=";
+        String tmp = s;
+        for (int j = 0; j < 3; j++) {
+            s += j;
+
+            if (n - 1 == i) {
+                s += "}";
+                if (!actual.contains(s)) {
+                    fail("not in set: " + s);
+                }
+            } else {
+                findMissing(s, i + 1, n, names, actual);
+            }
+
+            s = tmp;
         }
     }
 
@@ -286,7 +436,6 @@ public class MatchStepTest {
         bindingsList.add(new Bindings<>());
         while (enumerator.visitSolution(i++, (name, value) -> {
             bindingsList.get(bindingsList.size() - 1).put(name, value);
-            return true;
         })) {
             bindingsList.add(new Bindings<>());
         }
@@ -321,6 +470,7 @@ public class MatchStepTest {
         }
     }
 
+    /*
     @Test
     public void forJosh() {
 
@@ -382,6 +532,7 @@ public class MatchStepTest {
 
         assertOutputs(t, "[v[1], v[3], lop]");
     }
+    */
 
     private void assertOutputs(final GraphTraversal t,
                                final String... resultsToString) {
@@ -402,6 +553,14 @@ public class MatchStepTest {
             if (!expected.contains(s)) {
                 fail("unexpected value: " + s);
             }
+        }
+    }
+
+    private <T> void exhaust(Enumerator<T> enumerator) {
+        BiConsumer<String, T> visitor = (s, t) -> {};
+        int i = 0;
+        if (!enumerator.isComplete()) {
+            while (enumerator.visitSolution(i, visitor)) i++;
         }
     }
 }

@@ -1,18 +1,28 @@
 package com.tinkerpop.gremlin.process.graph.step.map.match;
 
-import java.util.function.BiPredicate;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.BiConsumer;
 
 /**
  * An Enumerator which finds the Cartesian product of two other Enumerators, expanding at the same rate in either dimension.
  * This maximizes the size of the product with respect to the number of expansions of the base Enumerators.
  */
-public class CartesianEnumerator<T> implements Enumerator<T> {
+public class CrossJoinEnumerator<T> implements Enumerator<T> {
     private final Enumerator<T> xEnum, yEnum;
+    private final Set<String> variables;
 
-    public CartesianEnumerator(final Enumerator<T> xEnum,
+    public CrossJoinEnumerator(final Enumerator<T> xEnum,
                                final Enumerator<T> yEnum) {
         this.xEnum = xEnum;
         this.yEnum = yEnum;
+        this.variables = new HashSet<>();
+        this.variables.addAll(xEnum.getVariables());
+        this.variables.addAll(yEnum.getVariables());
+    }
+
+    public Set<String> getVariables() {
+        return variables;
     }
 
     public int size() {
@@ -26,8 +36,9 @@ public class CartesianEnumerator<T> implements Enumerator<T> {
                 || xc && yc;
     }
 
+    // note: permits random access
     public boolean visitSolution(final int i,
-                                 final BiPredicate<String, T> visitor) {
+                                 final BiConsumer<String, T> visitor) {
         int sq = (int) Math.sqrt(i);
 
         // choose x and y such that the solution represented by i
@@ -58,7 +69,7 @@ public class CartesianEnumerator<T> implements Enumerator<T> {
                 y = i / xEnum.size();
                 break;
             }
-            if (!xEnum.visitSolution(xEnum.size(), (BiPredicate<String, T>) MatchStepNew.TRIVIAL_VISITOR)) return false;
+            if (!xEnum.visitSolution(xEnum.size(), (BiConsumer<String, T>) MatchStepNew.TRIVIAL_CONSUMER)) return false;
         }
 
         int height = i / Math.min(1 + sq, xEnum.size());
@@ -73,14 +84,14 @@ public class CartesianEnumerator<T> implements Enumerator<T> {
                 height = yEnum.size();
                 int width = i / height;
                 while (width >= xEnum.size()) {
-                    if (!xEnum.visitSolution(xEnum.size(), (BiPredicate<String, T>) MatchStepNew.TRIVIAL_VISITOR)) return false;
+                    if (!xEnum.visitSolution(xEnum.size(), (BiConsumer<String, T>) MatchStepNew.TRIVIAL_CONSUMER)) return false;
                 }
                 x = i / yEnum.size();
                 y = i % yEnum.size();
                 break;
             }
 
-            if (!yEnum.visitSolution(yEnum.size(), (BiPredicate<String, T>) MatchStepNew.TRIVIAL_VISITOR)) return false;
+            if (!yEnum.visitSolution(yEnum.size(), (BiConsumer<String, T>) MatchStepNew.TRIVIAL_CONSUMER)) return false;
         }
 
         // solutions are visited completely (if we have reached this point), else not at all

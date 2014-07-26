@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.function.BiPredicate;
+import java.util.function.BiConsumer;
 
 /**
 * @author Joshua Shinavier (http://fortytwo.net)
@@ -14,9 +14,8 @@ public class EnumeratorIterator<T> implements Iterator<Map<String, T>> {
     private int index = 0;
     private Map<String, T> reuseMe = new HashMap<>();
 
-    private BiPredicate<String, T> setCur = (s, t) -> {
+    private BiConsumer<String, T> setCur = (s, t) -> {
         reuseMe.put(s, t);
-        return true;
     };
 
     public EnumeratorIterator(Enumerator<T> enumerator) {

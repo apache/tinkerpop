@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.process.graph.step.map.match;
 
 import com.tinkerpop.gremlin.process.SimpleTraverser;
-import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
+import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
@@ -20,15 +20,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.function.BiPredicate;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
 public class MatchStepNew<S, E> extends AbstractStep<S, E> {
-    public static final BiPredicate<String, Object> TRIVIAL_VISITOR = (s, t) -> true;
+
+    public static final BiConsumer<String, Object> TRIVIAL_CONSUMER = (s, t) -> {
+    };
 
     private static final String ANON_LABEL_PREFIX = "_";
 
@@ -101,30 +103,28 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
     protected Traverser<E> processNextStart() throws NoSuchElementException {
         if (null == curSolution || (curIndex >= curSolution.size() && curSolution.isComplete())) {
             if (this.starts.hasNext()) {
-                    /*
-        optimizeCounter = (optimizeCounter + 1) % startsPerOptimize;
-        if (0 == optimizeCounter) {
-            optimize();
-        }
-        */
+                optimizeCounter = (optimizeCounter + 1) % startsPerOptimize;
+                if (0 == optimizeCounter) {
+                    optimize();
+                }
 
-                curSolution = solve(new TraverserAsIterator<>(this.starts.next()));
+                curSolution = solveFor(new SingleIterator<>(this.starts.next().get()));
                 curIndex = 0;
             } else {
                 throw new NoSuchElementException();
             }
         }
 
-        //final Traversal t = GraphTraversal.of().id();
         final SimpleTraverser<S> result = new SimpleTraverser<>(null);
-        BiPredicate<String, S> resultSetter = (name, value) -> {
-            //result.set(value);
-            //t.addStarts(new SingleIterator<>(new SimpleTraverser<>(value)));
-            return true;
+        BiConsumer<String, S> resultSetter = (name, value) -> {
+            result.set(value);
         };
-        curSolution.visitSolution(curIndex++, resultSetter);
-        return (Traverser<E>) result;
-        //return (Traverser<E>) TraversalHelper.getEnd(t).next();
+
+        if (curSolution.visitSolution(curIndex++, resultSetter)) {
+            return (Traverser<E>) result;
+        } else {
+            throw FastNoSuchElementException.instance();
+        }
     }
 
     private void addTraversal(final Traversal<S, S> traversal) {
@@ -178,15 +178,8 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
         return ANON_LABEL_PREFIX + ++anonLabelCounter;
     }
 
-    public Enumerator<S> solve(final Iterator<S> inputs) {
-        Iterator<S> optInputs = new MapIterator<>(inputs, o -> {
-            // optimize if and only if a new start object is about to be handled
-            // do not optimize recursively; this happens once for each top-level start object
-            optimize();
-            return o;
-        });
-
-        return solveFor(startLabel, optInputs);
+    public Enumerator<S> solveFor(final Iterator<S> inputs) {
+        return solveFor(startLabel, inputs);
     }
 
     private Enumerator<S> solveFor(final String outLabel,
@@ -199,78 +192,61 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
             // for each value bound to outLabel, feed it into all out-traversals in parallel and join the results
             return new SerialEnumerator<>(outLabel, inputs, o -> {
                 Enumerator<S> result = null;
+                Set<String> leftLabels = new HashSet<>();
                 for (TraversalWrapper<S, S> w : outs) {
                     TraversalUpdater<S, S> updater = new TraversalUpdater<>(w, new SingleIterator<S>(o));
 
+                    Set<String> rightLabels = new HashSet<>();
+                    addVariables(w.inLabel, rightLabels);
                     Enumerator<S> ie = solveFor(w.inLabel, updater);
-                    result = null == result ? ie : new CartesianEnumerator<>(result, ie);
+                    result = null == result ? ie : crossJoin(result, ie, leftLabels, rightLabels);
+                    leftLabels.addAll(rightLabels);
                 }
-
-                int i = 0;
-                while (result.visitSolution(i++, (BiPredicate<String, S>) TRIVIAL_VISITOR)) ;
 
                 return result;
             });
         }
     }
 
-    public static <T> void visit(final String name,
-                                 final T value,
-                                 final BiPredicate<String, T> visitor) {
-        if (!isAnonymousLabel(name)) {
-            visitor.test(name, value);
+    private <T> Enumerator<T> crossJoin(final Enumerator<T> left,
+                                        final Enumerator<T> right,
+                                        final Set<String> leftLabels,
+                                        final Set<String> rightLabels) {
+        Set<String> shared = new HashSet<>();
+        for (String s : rightLabels) {
+            if (leftLabels.contains(s)) {
+                shared.add(s);
+            }
         }
+
+        Enumerator<T> cj = new CrossJoinEnumerator<>(left, right);
+        return shared.size() > 0 ? new InnerJoinEnumerator<>(cj, shared) : cj;
     }
 
-    public void visitSolutions(final S input,
-                               final Predicate<Map<String, S>> visitor) {
-        optimize();
+    private void addVariables(final String outLabel,
+                              final Set<String> variables) {
+        variables.add(outLabel);
 
-        visitSolutions(input, startLabel, visitor, new HashMap<>());
-    }
-
-    private boolean visitSolutions(final S o,
-                                   final String outLabel,
-                                   final Predicate<Map<String, S>> visitor,
-                                   final Map<String, S> bindings) {
-        bindings.put(outLabel, o);
-
-        try {
-            List<TraversalWrapper<S, S>> outs = traversalsOut.get(outLabel);
-            if (null == outs) {
-                visitor.test(bindings);
-            } else {
-                for (TraversalWrapper<S, S> w : outs) {
-                    Traversal<S, S> t = w.getTraversal();
-                    String inLabel = w.inLabel;
-                    t.addStarts(new SingleIterator<>(new SimpleTraverser<>(o)));
-
-                    int outputs = 0;
-
-                    // we always exhaust the traversal
-                    // ideally, this puts it into a fresh state w.r.t. the next set of starts
-                    while (t.hasNext()) {
-                        outputs++;
-                        S result = t.next();
-
-                        visitSolutions(result, inLabel, visitor, bindings);
-                    }
-
-                    w.incrementInputs();
-                    w.incrementOutputs(outputs);
-
-                    if (0 == outputs) {
-                        return false;
-                    }
+        List<TraversalWrapper<S, S>> outs = traversalsOut.get(outLabel);
+        if (null != outs) {
+            for (TraversalWrapper<S, S> w : outs) {
+                String inLabel = w.inLabel;
+                if (!variables.contains(inLabel)) {
+                    addVariables(inLabel, variables);
                 }
             }
-        } finally {
-            bindings.remove(outLabel);
         }
-
-        return true;
     }
 
+    public static <T> void visit(final String name,
+                                 final T value,
+                                 final BiConsumer<String, T> visitor) {
+        if (!isAnonymousLabel(name)) {
+            visitor.accept(name, value);
+        }
+    }
+
+    // note: optimize() is never called from within a solution iterator, as it changes the query plan
     public void optimize() {
         optimizeAt(startLabel);
     }
@@ -362,6 +338,12 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
             return traversal;
         }
 
+        public void exhaust() {
+            // TODO: we need a Traversal.reset() to make exhausting the traversal unnecessary;
+            // the latter defeats the purpose of joins which consume only as many iterator elements as necessary
+            while (traversal.hasNext()) traversal.next();
+        }
+
         @Override
         public String toString() {
             return "[" + outLabel + "->" + inLabel + "," + findBranchFactor() + "," + totalInputs + "," + totalOutputs + "," + traversal + "]";
@@ -377,46 +359,53 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
                                 final Iterator<A> inputs) {
             this.w = w;
 
-            Iterator<A> triggerIter = new TriggerIterator<>(inputs, ignored -> {
+            Iterator<A> seIter = new SideEffectIterator<>(inputs, ignored -> {
                 // only increment traversal input and output counts once an input has been completely processed by the traversal
                 if (-1 != outputs) {
                     w.incrementInputs();
                     w.incrementOutputs(outputs);
                 }
                 outputs = 0;
-
-                return true;
             });
-            Iterator<Traverser<A>> starts = new MapIterator<>(triggerIter, SimpleTraverser::new);
+            Iterator<Traverser<A>> starts = new MapIterator<>(seIter, SimpleTraverser::new);
 
+            w.exhaust();
+
+            // with the traversal "empty" and ready for re-use, add new starts
             w.traversal.addStarts(starts);
         }
 
+        // note: may return true after first returning false (inheriting this behavior from e.g. DefaultTraversal)
         public boolean hasNext() {
             return w.traversal.hasNext();
         }
 
         public B next() {
-            B value = w.traversal.next();
             outputs++;
-            return value;
+            B b = w.traversal.next();
+
+            // immediately check hasNext(), possibly updating the traverser's statistics even if we otherwise abandon the iterator
+            w.traversal.hasNext();
+
+            return b;
         }
     }
 
-    private static class TriggerIterator<T> implements Iterator<T> {
-        private final Predicate trigger;
+    // an iterator which executes a side-effect the first time hasNext() is called before a next()
+    private static class SideEffectIterator<T> implements Iterator<T> {
+        private final Consumer onHasNext;
         private final Iterator<T> baseIterator;
         private boolean ready = true;
 
-        private TriggerIterator(final Iterator<T> baseIterator,
-                                final Predicate trigger) {
-            this.trigger = trigger;
+        private SideEffectIterator(final Iterator<T> baseIterator,
+                                   final Consumer onHasNext) {
+            this.onHasNext = onHasNext;
             this.baseIterator = baseIterator;
         }
 
         public boolean hasNext() {
             if (ready) {
-                trigger.test(null);
+                onHasNext.accept(null);
                 ready = false;
             }
             return baseIterator.hasNext();
@@ -444,97 +433,6 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
 
         public B next() {
             return map.apply(baseIterator.next());
-        }
-    }
-
-    private static class NullEnumerator<T> implements Enumerator<T> {
-        public int size() {
-            return 0;
-        }
-
-        public boolean isComplete() {
-            return true;
-        }
-
-        public boolean visitSolution(int i, BiPredicate<String, T> visitor) {
-            return false;
-        }
-    }
-
-    private class SingleEnumerator<T> implements Enumerator<T> {
-        private final String name;
-        private final T value;
-
-        private SingleEnumerator(String name, T value) {
-            this.name = name;
-            this.value = value;
-        }
-
-        public int size() {
-            return 1;
-        }
-
-        public boolean isComplete() {
-            return true;
-        }
-
-        public boolean visitSolution(int i, BiPredicate<String, T> visitor) {
-            if (i > 0) {
-                return false;
-            } else {
-                visit(name, value, visitor);
-                return true;
-            }
-        }
-    }
-
-    private class Memoizer<T> {
-        private final Iterator<T> baseIterator;
-        private final List<T> memory = new ArrayList<>();
-
-        private Memoizer(Iterator<T> baseIterator) {
-            this.baseIterator = baseIterator;
-        }
-
-        public Iterator<T> iterator() {
-            return new Iterator<T>() {
-                private int nextIndex = 0;
-
-                public boolean hasNext() {
-                    return nextIndex < memory.size() || baseIterator.hasNext();
-                }
-
-                public T next() {
-                    T value;
-                    if (nextIndex < memory.size()) {
-                        value = memory.get(nextIndex);
-                    } else if (baseIterator.hasNext()) {
-                        value = baseIterator.next();
-                        memory.add(value);
-                    } else {
-                        throw new NoSuchElementException();
-                    }
-                    nextIndex++;
-
-                    return value;
-                }
-            };
-        }
-    }
-
-    private class TraverserAsIterator<T> implements Iterator<T> {
-        private final Traverser<T> traverser;
-
-        private TraverserAsIterator(Traverser<T> traverser) {
-            this.traverser = traverser;
-        }
-
-        public boolean hasNext() {
-            return !traverser.isDone();
-        }
-
-        public T next() {
-            return traverser.get();
         }
     }
 }

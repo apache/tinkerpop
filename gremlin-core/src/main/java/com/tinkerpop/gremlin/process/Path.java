@@ -61,6 +61,14 @@ public class Path {
         return new ArrayList<>(this.asLabels);
     }
 
+    public Object remove(final int index) {
+        Object removed = this.objects.remove(index);
+        if (null != removed) {
+            asLabels.remove(index);
+        }
+        return removed;
+    }
+
     // TODO: why does this have to exist. I hate this.
     public void renameLastStep(final String as) {
         this.asLabels.set(this.asLabels.size() - 1, as);
