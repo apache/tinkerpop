@@ -274,4 +274,31 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         cluster.close();
     }
+
+    // todo: get this test to pass - count connection and block incoming requests.
+    @Test
+    @org.junit.Ignore
+    public void shouldBlockWhenMaxConnectionsExceeded() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        try {
+            final CompletableFuture<ResultSet> result = client.submitAsync("Thread.sleep(500);'test'");
+            try {
+                // this request should get blocked by the server
+                client.submitAsync("'test-blocked'").join().one();
+                fail("Request should fail because max connections are exceeded");
+            }
+            catch (Exception ex) {
+                assertTrue(true);
+                ex.printStackTrace();
+            }
+
+            assertEquals("test", result.get().one().getString());
+        } catch (Exception re) {
+            fail("Should not have an exception here");
+        } finally {
+            cluster.close();
+        }
+    }
 }
