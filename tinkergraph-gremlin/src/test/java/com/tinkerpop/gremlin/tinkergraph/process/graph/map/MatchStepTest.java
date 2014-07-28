@@ -47,7 +47,7 @@ public class MatchStepTest {
                 g.of().as("a").out("knows").as("b"),
                 g.of().as("a").out("created").as("c"));
 
-        GraphTraversal t = g.V().match("a", "x", g.of().as("a").out("knows").as("b"),
+        GraphTraversal t = g.V().match("a", g.of().as("a").out("knows").as("b"),
                 g.of().as("a").out("created").as("c"));
         while (t.hasNext()) {
             System.out.println("solution: " + t.next());
