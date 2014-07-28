@@ -55,8 +55,9 @@ public class GiraphGraphComputer implements GraphComputer {
     }
 
     public Future<Pair<Graph, SideEffects>> submit() {
+        final long startTime = System.currentTimeMillis();
         return CompletableFuture.<Pair<Graph, SideEffects>>supplyAsync(() -> {
-            final GiraphGraphShellComputerSideEffects sideEffects = new GiraphGraphShellComputerSideEffects(this.hadoopConfiguration);
+            final GiraphGraphShellComputerSideEffects sideEffects = new GiraphGraphShellComputerSideEffects();
             try {
                 final String bspDirectory = "_bsp"; // "temp-" + UUID.randomUUID().toString();
                 final FileSystem fs = FileSystem.get(this.hadoopConfiguration);
@@ -91,7 +92,7 @@ public class GiraphGraphComputer implements GraphComputer {
                 e.printStackTrace();
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            // LOGGER.info(new GiraphGraphShellComputerGlobals(this.hadoopConfiguration).asMap().toString());
+            sideEffects.set(GiraphGraphShellComputerSideEffects.RUNTIME, System.currentTimeMillis() - startTime);
             return new Pair<>(this.giraphGraph.getOutputGraph(), sideEffects);
         });
     }

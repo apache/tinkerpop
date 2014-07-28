@@ -81,7 +81,6 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
             this.sideEffects.keys().forEach(key -> {
                 this.tinkerVertex.property(Graph.Key.hidden(key), this.sideEffects.get(key));
             });
-            this.tinkerVertex.property(Graph.Key.hidden(Constants.RUNTIME), this.sideEffects.getRuntime());
             this.tinkerVertex.property(Graph.Key.hidden(Constants.ITERATION), this.sideEffects.getIteration());
         }
     }

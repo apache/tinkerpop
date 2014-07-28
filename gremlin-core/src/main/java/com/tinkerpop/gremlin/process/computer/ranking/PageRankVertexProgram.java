@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.computer.ranking;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
@@ -17,7 +18,9 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,10 +38,12 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";
     private static final String TOTAL_ITERATIONS = "gremlin.pageRankVertexProgram.totalIterations";
     private static final String INCIDENT_TRAVERSAL = "gremlin.pageRankVertexProgram.incidentTraversal";
+    private static final String DO_RESULT_MAP_REDUCE = "gremlin.pageRankVertexProgram.doResultMapReduce";
 
     private double vertexCountAsDouble = 1;
     private double alpha = 0.85d;
     private int totalIterations = 30;
+    private boolean doResultMapReduce = false;
 
     public PageRankVertexProgram() {
 
@@ -49,6 +54,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
         this.alpha = configuration.getDouble(ALPHA, 0.85d);
         this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
+        this.doResultMapReduce = configuration.getBoolean(DO_RESULT_MAP_REDUCE, false);
         try {
             if (configuration.containsKey(INCIDENT_TRAVERSAL)) {
                 final SSupplier<Traversal> traversalSupplier = VertexProgramHelper.deserialize(configuration, INCIDENT_TRAVERSAL);
@@ -79,6 +85,11 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     @Override
     public void setup(final SideEffects sideEffects) {
 
+    }
+
+    @Override
+    public List<MapReduce> getMapReducers() {
+        return this.doResultMapReduce ? Arrays.asList(new PageRankMapReduce()) : Collections.emptyList();
     }
 
     @Override

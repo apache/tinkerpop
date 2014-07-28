@@ -29,13 +29,13 @@ import java.util.Set;
 public class GiraphGremlinPlugin extends AbstractGremlinPlugin {
 
     private static final Set<String> IMPORTS = new HashSet<String>() {{
-        add(IMPORT + GiraphGraph.class.getPackage().getName() + DOT_STAR);
-        add(IMPORT + GiraphGraphComputer.class.getPackage().getName() + DOT_STAR);
-        add(IMPORT + KryoVertexInputFormat.class.getPackage().getName() + DOT_STAR);
-        add(IMPORT + GraphSONVertexInputFormat.class.getPackage().getName() + DOT_STAR);
-        add(IMPORT + Constants.class.getPackage().getName() + DOT_STAR);
-        add(IMPORT + HDFSTools.class.getPackage().getName() + DOT_STAR);
-        add(IMPORT + GroupCountMapReduce.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + GiraphGraph.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + GiraphGraphComputer.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + KryoVertexInputFormat.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + GraphSONVertexInputFormat.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + Constants.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + HDFSTools.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + GroupCountMapReduce.class.getPackage().getName() + DOT_STAR);
         add("import org.apache.hadoop.hdfs.*");
         add("import org.apache.hadoop.conf.*");
         add("import org.apache.hadoop.fs.*");
@@ -60,7 +60,6 @@ public class GiraphGremlinPlugin extends AbstractGremlinPlugin {
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", JobClient.class.getName()));
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", GiraphGraphRunner.class.getName()));
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", GiraphJob.class.getName()));
-            //pluginAcceptor.eval("com.tinkerpop.gremlin.giraph.groovy.plugin.HadoopLoader.load()");
             pluginAcceptor.eval(HadoopLoader.class.getCanonicalName() + ".load()");
 
             pluginAcceptor.addBinding("hdfs", FileSystem.get(new Configuration()));
