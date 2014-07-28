@@ -2,10 +2,14 @@ package com.tinkerpop.gremlin.giraph.groovy.plugin
 
 import com.tinkerpop.gremlin.giraph.hdfs.HDFSTools
 import com.tinkerpop.gremlin.giraph.hdfs.HiddenFileFilter
-import com.tinkerpop.gremlin.giraph.hdfs.TextFileLineIterator
+import com.tinkerpop.gremlin.giraph.hdfs.KryoWritableIterator
+import com.tinkerpop.gremlin.giraph.hdfs.TextIterator
+import com.tinkerpop.gremlin.giraph.process.computer.KryoWritable
+import com.tinkerpop.gremlin.util.StreamFactory
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.*
 import org.apache.hadoop.io.IOUtils
+import org.apache.hadoop.io.Text
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -72,20 +76,27 @@ class HadoopLoader {
         }
 
         FileSystem.metaClass.head = { final String path, final long totalLines ->
-            final FileSystem fs = (FileSystem) delegate;
-            final List<Path> paths = new LinkedList<Path>();
-            paths.addAll(HDFSTools.getAllFilePaths(fs, new Path(path), HiddenFileFilter.instance()));
-            if (paths.isEmpty())
-                return Collections.emptyList();
-            else
-                return new TextFileLineIterator(fs, paths, totalLines);
-
+            return ((FileSystem) delegate).head(path, Long.MAX_VALUE, Text.class);
         }
 
+        FileSystem.metaClass.head = { final String path ->
+            return ((FileSystem) delegate).head(path, Long.MAX_VALUE, Text.class);
+        }
+
+        FileSystem.metaClass.head = { final String path, final Class<org.apache.hadoop.io.Writable> writableClass ->
+            return ((FileSystem) delegate).head(path, Long.MAX_VALUE, writableClass);
+        }
 
         FileSystem.metaClass.head = {
-            final String path ->
-                return ((FileSystem) delegate).head(path, Long.MAX_VALUE);
+            final String path, final long totalKeyValues, final Class<org.apache.hadoop.io.Writable> writableClass ->
+                // if(writableClass.equals(org.apache.giraph.graph.Vertex.class)) {
+                /// return StreamFactory.stream(new GiraphVertexIterator(((FileSystem) delegate).getConf(), new Path(path))).limit(totalKeyValues).iterator();
+                // } else
+                if (writableClass.equals(KryoWritable.class)) {
+                    return StreamFactory.stream(new KryoWritableIterator(((FileSystem) delegate).getConf(), new Path(path))).limit(totalKeyValues).iterator();
+                } else {
+                    return StreamFactory.stream(new TextIterator(((FileSystem) delegate).getConf(), new Path(path))).limit(totalKeyValues).iterator();
+                }
         }
 
         /*FileSystem.metaClass.unzip = { final String from, final String to, final boolean deleteZip ->

@@ -1,19 +1,9 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
 import com.tinkerpop.gremlin.process.computer.SideEffects;
-import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.compress.CompressionCodec;
-import org.apache.hadoop.io.compress.CompressionCodecFactory;
 
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,14 +14,14 @@ public class GiraphGraphShellComputerSideEffects implements SideEffects {
 
     private static final String COMPLETE_AND_IMMUTABLE = "The graph computation sideEffects are complete and immutable";
 
-    final Map<String, Object> globals = new HashMap<>();
+    final Map<String, Object> sideEffects = new HashMap<>();
 
     public GiraphGraphShellComputerSideEffects(final Configuration configuration) {
         /*try {
             final String globalLocation = configuration.get(GiraphGraph.GREMLIN_OUTPUT_LOCATION, null);
             if (null != globalLocation) {
                 for (final String line : this.readLines(new Path(globalLocation + "/" + GiraphGraphComputer.GLOBALS), configuration)) {
-                    this.globals.put(line.split("\t")[0], line.split("\t")[1]);
+                    this.sideEffects.put(line.split("\t")[0], line.split("\t")[1]);
                 }
             }
         } catch (Exception e) {
@@ -40,23 +30,23 @@ public class GiraphGraphShellComputerSideEffects implements SideEffects {
     }
 
     public Set<String> keys() {
-        return this.globals.keySet();
+        return this.sideEffects.keySet();
     }
 
     public <R> R get(final String key) {
-        return (R) this.globals.get(key);
+        return (R) this.sideEffects.get(key);
     }
 
     public void set(final String key, Object value) {
-        this.globals.put(key, value);
+        this.sideEffects.put(key, value);
     }
 
     public int getIteration() {
-        return (Integer) this.globals.get("iteration");
+        return (Integer) this.sideEffects.get("iteration");
     }
 
     public long getRuntime() {
-        return (Long) this.globals.get("runtime");
+        return (Long) this.sideEffects.get("runtime");
     }
 
     public void setIfAbsent(final String key, final Object value) {

@@ -63,7 +63,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
 
             final List<MapReduce> mapReduces = new ArrayList<MapReduce>(vertexProgram.getMapReducers());
             // calculate main traversal vertex program sideEffect variables
-            if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_DERIVE_MAIN_SIDE_EFFECTS, false)) {
+            if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_DERIVE_COMPUTER_SIDE_EFFECTS, false)) {
                 final Set<String> sideEffectKeys = new HashSet<String>(vertexProgram.getSideEffectKeys());
                 sideEffectKeys.add(Constants.RUNTIME);
                 sideEffectKeys.add(Constants.ITERATION);

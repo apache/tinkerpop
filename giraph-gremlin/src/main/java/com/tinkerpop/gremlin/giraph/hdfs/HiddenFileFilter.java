@@ -10,6 +10,10 @@ public class HiddenFileFilter implements PathFilter {
 
     private static final HiddenFileFilter INSTANCE = new HiddenFileFilter();
 
+    private HiddenFileFilter() {
+
+    }
+
     public boolean accept(final Path path) {
         final String name = path.getName();
         return !name.startsWith("_") && !name.startsWith(".");

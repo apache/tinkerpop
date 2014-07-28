@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.giraph.process.graph.step.map;
 
+import com.tinkerpop.gremlin.giraph.hdfs.GiraphEdgeIterator;
+import com.tinkerpop.gremlin.giraph.hdfs.GiraphVertexIterator;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
-import com.tinkerpop.gremlin.giraph.structure.io.GiraphEdgeIterator;
-import com.tinkerpop.gremlin.giraph.structure.io.GiraphVertexIterator;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.step.map.GraphStep;
 import com.tinkerpop.gremlin.process.util.TraverserIterator;

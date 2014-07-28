@@ -47,7 +47,7 @@ public class GiraphGraphComputer implements GraphComputer {
     }
 
     public static void mergeComputedView(final Graph original, final Graph computed, Map<String, String> keyMapping) {
-        throw new UnsupportedOperationException("GiraphGraphComputer does not support merge computed view as this does not make sense in a Hadoop environment");
+        throw new UnsupportedOperationException("GiraphGraphComputer does not support merge computed view as this does not make sense in a Hadoop environment where the graph is fully copied");
     }
 
     public Graph getGraph() {

@@ -105,7 +105,7 @@
         <url>git@github.com:tinkerpop/tinkerpop3.git</url>
     </scm>
     <properties>
-        <groovy.version>2.3.5</groovy.version>
+        <groovy.version>2.3.6</groovy.version>
         <junit.version>4.11</junit.version>
         <kuali.s3.wagon.version>1.1.20</kuali.s3.wagon.version>
         <!-- Directory containing the file ${log4j.properties} defined

@@ -41,7 +41,6 @@ public class ComputerResultStep<S> extends AbstractStep<S, S> {
         this(traversal, null, sideEffects, traversalVertexProgram);
     }
 
-
     public Traverser<S> processNextStart() {
         final Traverser<S> traverser = this.traversers.next();
         if (null != this.graph && traverser.get() instanceof Element) {

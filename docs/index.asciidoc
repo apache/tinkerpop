@@ -1869,6 +1869,8 @@ Using the Gremlin Console
 
 The example in the previous section was using a static Java `SSupplier<Traversal>`. This is the method to use when programmatically interacting with Giraph-Gremlin. However, it is also possible to use Giraph-Gremin via the Gremlin Console.
 
+IMPORTANT: The directory references below will be different depending on the location of `gremlin-console`. Be sure to adjust paths accordingly.
+
 [source,text]
 ----
 $ bin/gremlin.sh
@@ -1885,12 +1887,12 @@ $ bin/gremlin.sh
          (o o)
 ─────oOOo-(3)-oOOo─────
 plugin loaded: giraph
-gremlin> hdfs.copyFromLocal('../../../data/tinkerpop-classic-vertices.ldjson', 'tinkerpop-classic-vertices.ldjson')
+gremlin> hdfs.copyFromLocal('../../../data/tinkerpop-classic-vertices.gio', 'tinkerpop-classic-vertices.gio')
 ==>null
 gremlin> hdfs.ls()
-==>rw-r--r-- marko supergroup 2356 tinkerpop-classic-vertices.ldjson
-gremlin> :remote connect giraph ../giraph-gremlin/conf/giraph-graphson.properties
-==>giraphgraph[graphsonvertexinputformat->graphsonvertexoutputformat]
+==>rw-r--r-- marko supergroup 891 tinkerpop-classic-vertices.gio
+gremlin> :remote connect giraph ../../../giraph-gremlin/conf/giraph-kryo.properties
+==>giraphgraph[kryovertexinputformat->kryovertexoutputformat]
 gremlin> :> g.V.groupBy{it.value('name')[1]}{it.value('name')}
 INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner  - GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, GroupByStep]
 WARN  org.apache.hadoop.mapred.JobClient  - Use GenericOptionsParser for parsing the arguments. Applications should implement Tool for the same.
@@ -1936,52 +1938,57 @@ INFO  org.apache.hadoop.mapred.JobClient  -     SLOTS_MILLIS_REDUCES=0
 INFO  org.apache.hadoop.mapred.JobClient  -     SLOTS_MILLIS_MAPS=41383
 INFO  org.apache.hadoop.mapred.JobClient  -   File Output Format Counters
 INFO  org.apache.hadoop.mapred.JobClient  -     Bytes Written=0
-INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner  - GiraphGremlin: GiraphGroupByStep[SideEffect Calculation]
+INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner  - GiraphGremlin: GroupByMapReduce
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201406231706_0018
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 INFO  org.apache.hadoop.mapred.JobClient  -  map 100% reduce 0%
 INFO  org.apache.hadoop.mapred.JobClient  -  map 100% reduce 33%
 INFO  org.apache.hadoop.mapred.JobClient  -  map 100% reduce 100%
-INFO  org.apache.hadoop.mapred.JobClient  - Job complete: job_201406231706_0018
+INFO  org.apache.hadoop.mapred.JobClient  - Job complete: job_201407241031_0018
 INFO  org.apache.hadoop.mapred.JobClient  - Counters: 26
 INFO  org.apache.hadoop.mapred.JobClient  -   Map-Reduce Framework
 INFO  org.apache.hadoop.mapred.JobClient  -     Spilled Records=12
-INFO  org.apache.hadoop.mapred.JobClient  -     Map output materialized bytes=238
+INFO  org.apache.hadoop.mapred.JobClient  -     Map output materialized bytes=274
 INFO  org.apache.hadoop.mapred.JobClient  -     Reduce input records=6
 INFO  org.apache.hadoop.mapred.JobClient  -     Map input records=6
 INFO  org.apache.hadoop.mapred.JobClient  -     SPLIT_RAW_BYTES=240
-INFO  org.apache.hadoop.mapred.JobClient  -     Map output bytes=214
-INFO  org.apache.hadoop.mapred.JobClient  -     Reduce shuffle bytes=238
+INFO  org.apache.hadoop.mapred.JobClient  -     Map output bytes=250
+INFO  org.apache.hadoop.mapred.JobClient  -     Reduce shuffle bytes=274
 INFO  org.apache.hadoop.mapred.JobClient  -     Reduce input groups=4
-INFO  org.apache.hadoop.mapred.JobClient  -     Combine output records=6
+INFO  org.apache.hadoop.mapred.JobClient  -     Combine output records=0
 INFO  org.apache.hadoop.mapred.JobClient  -     Reduce output records=4
 INFO  org.apache.hadoop.mapred.JobClient  -     Map output records=6
-INFO  org.apache.hadoop.mapred.JobClient  -     Combine input records=6
-INFO  org.apache.hadoop.mapred.JobClient  -     Total committed heap usage (bytes)=592445440
+INFO  org.apache.hadoop.mapred.JobClient  -     Combine input records=0
+INFO  org.apache.hadoop.mapred.JobClient  -     Total committed heap usage (bytes)=573571072
 INFO  org.apache.hadoop.mapred.JobClient  -   File Input Format Counters
-INFO  org.apache.hadoop.mapred.JobClient  -     Bytes Read=3504
+INFO  org.apache.hadoop.mapred.JobClient  -     Bytes Read=6
 INFO  org.apache.hadoop.mapred.JobClient  -   FileSystemCounters
-INFO  org.apache.hadoop.mapred.JobClient  -     HDFS_BYTES_READ=3744
-INFO  org.apache.hadoop.mapred.JobClient  -     FILE_BYTES_WRITTEN=245666
-INFO  org.apache.hadoop.mapred.JobClient  -     FILE_BYTES_READ=232
-INFO  org.apache.hadoop.mapred.JobClient  -     HDFS_BYTES_WRITTEN=52
+INFO  org.apache.hadoop.mapred.JobClient  -     HDFS_BYTES_READ=1513
+INFO  org.apache.hadoop.mapred.JobClient  -     FILE_BYTES_WRITTEN=248960
+INFO  org.apache.hadoop.mapred.JobClient  -     FILE_BYTES_READ=268
+INFO  org.apache.hadoop.mapred.JobClient  -     HDFS_BYTES_WRITTEN=356
 INFO  org.apache.hadoop.mapred.JobClient  -   Job Counters
 INFO  org.apache.hadoop.mapred.JobClient  -     Launched map tasks=2
 INFO  org.apache.hadoop.mapred.JobClient  -     Launched reduce tasks=1
-INFO  org.apache.hadoop.mapred.JobClient  -     SLOTS_MILLIS_REDUCES=8511
-INFO  org.apache.hadoop.mapred.JobClient  -     SLOTS_MILLIS_MAPS=7723
+INFO  org.apache.hadoop.mapred.JobClient  -     SLOTS_MILLIS_REDUCES=8593
+INFO  org.apache.hadoop.mapred.JobClient  -     Total time spent by all reduces waiting after reserving slots (ms)=0
+INFO  org.apache.hadoop.mapred.JobClient  -     SLOTS_MILLIS_MAPS=7088
+INFO  org.apache.hadoop.mapred.JobClient  -     Total time spent by all maps waiting after reserving slots (ms)=0
 INFO  org.apache.hadoop.mapred.JobClient  -     Data-local map tasks=2
 INFO  org.apache.hadoop.mapred.JobClient  -   File Output Format Counters
-INFO  org.apache.hadoop.mapred.JobClient  -     Bytes Written=52
-==>giraphgraph[graphsonvertexinputformat->graphsonvertexoutputformat]
+INFO  org.apache.hadoop.mapred.JobClient  -     Bytes Written=356
+==>[a:[marko, vadas], e:[peter], i:[ripple], o:[lop, josh]]
 gremlin> hdfs.ls('output')
 ==>rwxr-xr-x marko supergroup 0 (D) ~cap
 ==>rwxr-xr-x marko supergroup 0 (D) ~g
 gremlin> hdfs.head('output/~cap')
-==>a	[marko, vadas]
-==>e	[peter]
-==>i	[ripple]
-==>o	[lop, josh]
+==>SEQ:com.tinkerpop.gremlin.giraph.process.computer.KryoWritable:com.tinkerpop.gremlin.giraph.process.computer.KryoWritable�h�p��
+�>�]�3�+�a%java.util.ArrayLis�mark�vada�$�ejava.util.ArrayLis�pete�%�ijava.util.ArrayLis�rippl�(�o"java.util.ArrayLis�lo�jos�
+gremlin> hdfs.head('output/~cap',KryoWritable.class)
+==>[a, [marko, vadas]]
+==>[e, [peter]]
+==>[i, [ripple]]
+==>[o, [lop, josh]]
 gremlin>
 ----
 
@@ -1998,7 +2005,8 @@ A list of the HDFS methods available are itemized below:
  * `hdfs.copyFromLocat(String from, String to)`: copy the specified local path to the specified path
  * `hdfs.mergeToLocal(String from, String to)`: merge the files at path to the specified local path
  * `hdfs.head(String path)`: display the data in the path
- * `hdfs.head(String path, long lineCount)`: display only the first lineCount data in the path
+ * `hdfs.head(String path, long lineCount)`: display only the first `totalKeyValues` in the path
+ * `hdfs.head(String path, long totalKeyValues, Class<Writable> writableClass)`: head the path interpreting the key values as respective writable
 
 A PageRank Example
 ~~~~~~~~~~~~~~~~~~

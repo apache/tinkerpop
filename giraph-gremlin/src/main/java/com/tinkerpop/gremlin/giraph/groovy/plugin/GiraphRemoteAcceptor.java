@@ -94,9 +94,16 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
             final Pair<Graph, SideEffects> result = this.giraphGraph.compute().program(this.giraphGraph.variables().getConfiguration()).submit().get();
             this.shell.getInterp().getContext().setProperty("g", result.getValue0());
             this.shell.getInterp().getContext().setProperty("sideEffects", result.getValue1());
-            final GraphTraversal traversal = new DefaultGraphTraversal<>();
-            traversal.addStep(new ComputerResultStep<>(traversal, result.getValue0(), result.getValue1(), VertexProgram.createVertexProgram(this.giraphGraph.variables().getConfiguration())));
-            return traversal;
+
+            final GraphTraversal traversal1 = new DefaultGraphTraversal<>();
+            traversal1.addStep(new ComputerResultStep<>(traversal1, result.getValue0(), result.getValue1(), VertexProgram.createVertexProgram(this.giraphGraph.variables().getConfiguration())));
+            this.shell.getInterp().getContext().setProperty("_l", traversal1);
+
+            final GraphTraversal traversal2 = new DefaultGraphTraversal<>();
+            traversal2.addStep(new ComputerResultStep<>(traversal2, result.getValue0(), result.getValue1(), VertexProgram.createVertexProgram(this.giraphGraph.variables().getConfiguration())));
+            traversal2.range(0, 19);
+            return traversal2;
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

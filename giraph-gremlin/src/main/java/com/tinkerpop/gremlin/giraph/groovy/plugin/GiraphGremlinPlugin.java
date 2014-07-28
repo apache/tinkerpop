@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.giraph.groovy.plugin;
 
 
+import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
@@ -30,6 +31,7 @@ public class GiraphGremlinPlugin extends AbstractGremlinPlugin {
         add(IMPORT + GiraphGraphComputer.class.getPackage().getName() + DOT_STAR);
         add(IMPORT + KryoVertexInputFormat.class.getPackage().getName() + DOT_STAR);
         add(IMPORT + GraphSONVertexInputFormat.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT + Constants.class.getPackage().getName() + DOT_STAR);
         add("import org.apache.hadoop.hdfs.*");
         add("import org.apache.hadoop.conf.*");
         add("import org.apache.hadoop.fs.*");
@@ -54,7 +56,8 @@ public class GiraphGremlinPlugin extends AbstractGremlinPlugin {
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", JobClient.class.getName()));
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", GiraphGraphRunner.class.getName()));
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", GiraphJob.class.getName()));
-            pluginAcceptor.eval("com.tinkerpop.gremlin.giraph.groovy.plugin.HadoopLoader.load()");
+            //pluginAcceptor.eval("com.tinkerpop.gremlin.giraph.groovy.plugin.HadoopLoader.load()");
+            pluginAcceptor.eval(HadoopLoader.class.getCanonicalName() + ".load()");
 
             pluginAcceptor.addBinding("hdfs", FileSystem.get(new Configuration()));
             pluginAcceptor.addBinding("local", FileSystem.getLocal(new Configuration()));
