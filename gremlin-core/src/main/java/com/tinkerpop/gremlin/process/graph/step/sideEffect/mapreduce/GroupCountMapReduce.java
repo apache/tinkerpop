@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
@@ -47,9 +46,9 @@ public class GroupCountMapReduce implements MapReduce<Object, Long, Object, Long
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<Object, Long> emitter) {
-        final Property<Map<Object, Long>> mapProperty = vertex.property(Graph.Key.hidden(this.sideEffectKey));
+        final Property<Map<Object, Number>> mapProperty = vertex.property(Graph.Key.hidden(this.sideEffectKey));
         if (mapProperty.isPresent())
-            mapProperty.value().forEach((k, v) -> emitter.emit(k, v));
+            mapProperty.value().forEach((k, v) -> emitter.emit(k, v.longValue()));
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.giraph.groovy.plugin;
 
 
 import com.tinkerpop.gremlin.giraph.Constants;
+import com.tinkerpop.gremlin.giraph.hdfs.HDFSTools;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
@@ -11,6 +12,7 @@ import com.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
 import com.tinkerpop.gremlin.groovy.plugin.Artifact;
 import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupCountMapReduce;
 import org.apache.giraph.job.GiraphJob;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -32,6 +34,8 @@ public class GiraphGremlinPlugin extends AbstractGremlinPlugin {
         add(IMPORT + KryoVertexInputFormat.class.getPackage().getName() + DOT_STAR);
         add(IMPORT + GraphSONVertexInputFormat.class.getPackage().getName() + DOT_STAR);
         add(IMPORT + Constants.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT + HDFSTools.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT + GroupCountMapReduce.class.getPackage().getName() + DOT_STAR);
         add("import org.apache.hadoop.hdfs.*");
         add("import org.apache.hadoop.conf.*");
         add("import org.apache.hadoop.fs.*");
