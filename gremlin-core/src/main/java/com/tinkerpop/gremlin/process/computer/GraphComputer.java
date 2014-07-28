@@ -37,6 +37,8 @@ public interface GraphComputer {
 
     public GraphComputer program(final Configuration configuration);
 
+    public GraphComputer mapReduce(final MapReduce mapReduce);
+
     public Graph getGraph();
 
     public Future<Pair<Graph, SideEffects>> submit();

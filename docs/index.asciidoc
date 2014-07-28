@@ -769,7 +769,7 @@ TinkerPop3 provides two primary means of interacting with a graph: link:http://e
 
 image::oltp-vs-olap.png[width=600]
 
-The image above demonstrates the difference between Gremlin OLTP and Gremlin OLAP. With Gremlin OLTP, the graph is walked by moving from vertex-to-vertex via incident edges. With Gremlin OLAP, all vertices are provided a VertexProgram. The programs send messages to one another according to the topological structure of the graph as a communication network (with random message passing possible). In many respects, the messages passed are like the OLTP traversers moving from vertex-to-vertex. However, all messages are being working independent of one another, in parallel.
+The image above demonstrates the difference between Gremlin OLTP and Gremlin OLAP. With Gremlin OLTP, the graph is walked by moving from vertex-to-vertex via incident edges. With Gremlin OLAP, all vertices are provided a VertexProgram. The programs send messages to one another according to the topological structure of the graph as a communication network (with random message passing possible). In many respects, the messages passed are like the OLTP traversers moving from vertex-to-vertex. However, all messages are moving independent of one another, in parallel.
 
 GraphComputer and VertexProgram
 -------------------------------
@@ -779,18 +779,55 @@ In Gremlin, it is possible to have the same traversal executed either using the 
 [source,groovy]
 g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-g.v(1).out('knows').name
-==>vadas
-==>josh
-g.v(1).out('knows').name.submit(g.compute())
-==>vadas
-==>josh
+g.V.both.has('age').age.groupCount.next()
+==>32=3
+==>35=1
+==>27=1
+==>29=3
+g.V.both.has('age').age.groupCount.submit(g.compute()).next()
+==>32=3
+==>35=1
+==>27=1
+==>29=3
 
-image:bsp-diagram.png[width=400,float=right] The first traversal assumes the standard `Traversal` iterator should be `next'd()` for its results. The second traversal is submitted to `g.compute()` which is the `GraphComputer` associated with the graph `g`. GraphComputer forms the foundation of the OLAP model of TinkerPop3. GraphComputer takes a `VertexProgram`. A VertexProgram can be thought of as a piece of code that is executed at each vertex in logically parallel manner until some termination condition is met (e.g. a number of iterations have occurred, no more data is changing in the graph, etc.). A submitted VertexProgram is copied to all the vertices in the graph. Then the GraphComputer orchestrates the execution of the `VertexProgram.execute()` method on all the vertices in an link:http://en.wikipedia.org/wiki/Bulk_synchronous_parallel[bulk synchronous parallel] (BSP) fashion. The vertices are able to communicate with one another via messages. There are two types of messages in Gremlin OLAP: `LocalMessage` and `GlobalMessage`. A local message is a message to an incident edge or adjacent vertex. A global message is a message to any arbitrary element in the graph. 
+image:bsp-diagram.png[width=400,float=right] The first traversal assumes the standard `Traversal` iterator should be `next'd()` for its results. The second traversal is submitted to `g.compute()` which is the `GraphComputer` associated with the graph `g` (see <<traversalvertexprogram,TraversalVertexProgram>> for more information). GraphComputer forms the foundation of the OLAP model of TinkerPop3. GraphComputer takes a `VertexProgram`. A VertexProgram can be thought of as a piece of code that is executed at each vertex in logically parallel manner until some termination condition is met (e.g. a number of iterations have occurred, no more data is changing in the graph, etc.). A submitted VertexProgram is copied to all the vertices in the graph. Then the GraphComputer orchestrates the execution of the `VertexProgram.execute()` method on all the vertices in an link:http://en.wikipedia.org/wiki/Bulk_synchronous_parallel[bulk synchronous parallel] (BSP) fashion. The vertices are able to communicate with one another via messages. There are two types of messages in Gremlin OLAP: `LocalMessage` and `GlobalMessage`. A local message is a message to an incident edge or adjacent vertex. A global message is a message to any arbitrary element in the graph. 
 
 image::graphcomputer.png[width=500]
 
 NOTE: This model of graph computing was made popular by Google's link:http://googleresearch.blogspot.com/2009/06/large-scale-graph-computing-at-google.html[Pregel] graph system. In the open source world, this model is found in OLAP graph computing systems such as link:https://giraph.apache.org/[Giraph], link:https://hama.apache.org/[Hama], and link:http://faunus.thinkaurelius.com[Faunus].
+
+[[mapreduce-extensions]]
+MapReduce Extensions
+--------------------
+
+The BSP model proposed by Pregel and Giraph stores the results of the computation in a distributed manner across the vertices in the graph. However, in many situations, it necessary to aggregate those results into a single result set (i.e. a statistic). For instance, assume a VertexProgram that computes a nominal cluster for each vertex in the graph. At the end of the computation, each vertex will have an hidden property denoting the cluster it is in. In order to answer the following questions, a MapReduce job is required over those resultant properties:
+
+ * How many unique clusters are there?
+ * How many vertices are in each cluster?
+ * What is the average age of each vertex in each cluster?
+ * What is the degree distribution of the vertices in each cluster?
+
+[source,java]
+public interface MapReduce<MK, MV, RK, RV, R> {
+
+    public void map(final Vertex vertex, final MapEmitter<MK, MV> emitter);
+
+    public void reduce(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter);
+}
+
+A compressed representation of the `MapReduce` API in TinkerPop3 is provided above. The key idea is that the `map`-stage processes all vertices to emit some key/value pair. Those values are aggregated on their respective key for the `reduce`-stage to do its processing to ultimately yield some iterator of key/value results.
+
+
+A Collection of VertexPrograms
+------------------------------
+
+TinkerPop3 provides a collection of `VertexProgram`s that implement common algorithms. This section discusses the various implementations.
+
+[[traversalvertexprogram]]
+TraversalVertexProgram
+~~~~~~~~~~~~~~~~~~~~~~
+
+`TraversalVertexProgram` supports the execution of `Traversal's in an OLAP manner.
 
 [source,groovy]
 g.v(1).out('knows').name.submit(g.compute())
@@ -803,15 +840,11 @@ In the traversal above, the traversal is put into a newly constructed `Traversal
  . For every counter at my vertex, send it to those vertices adjacent to me by a knows-edge.
  . For every counter at my vertex, send it to the name-property on my vertex.
 
-When this returns, it returns an weighted iterator where those objects with counters are iterated and displayed for the number of counters on associated with that object.
+The counters that are propagated around the graph are stored in a hidden property called `gremlin.traversalTracker`. When the computation is complete a MapReduce job executes which aggregates all the `gremlin.traversalTracker` counts and displays the results.
 
-NOTE: This model of path-based graph traversal in a BSP system was made popular by the link:http://faunus.thinkaurelius.com[Faunus] graph analytics system and originally described in link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engines/[Local and Distributed Traversal Engines].
+NOTE: This model of graph traversal in a BSP system was made popular by the link:http://faunus.thinkaurelius.com[Faunus] graph analytics engine and originally described in link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engines/[Local and Distributed Traversal Engines].
 
-A Collection of VertexPrograms
-------------------------------
-
-TinkerPop3 provides a collection of `VertexProgram`s that implement common algorithms. This section discusses the various implementations.
-
+[[pagerankvertexprogram]]
 PageRankVertexProgram
 ~~~~~~~~~~~~~~~~~~~~~
 

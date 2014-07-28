@@ -25,7 +25,6 @@ import org.apache.hadoop.util.Tool;
 import org.apache.log4j.Logger;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -38,8 +37,9 @@ public class GiraphGraphRunner extends Configured implements Tool {
     private final GiraphConfiguration giraphConfiguration;
     public static final Logger LOGGER = Logger.getLogger(GiraphGraphRunner.class);
     private SideEffects sideEffects;
+    private final List<MapReduce> mapReduces;
 
-    public GiraphGraphRunner(final org.apache.hadoop.conf.Configuration hadoopConfiguration, final GiraphGraphShellComputerSideEffects sideEffects) {
+    public GiraphGraphRunner(final org.apache.hadoop.conf.Configuration hadoopConfiguration, final GiraphGraphShellComputerSideEffects sideEffects, final List<MapReduce> mapReduces) {
         this.giraphConfiguration = new GiraphConfiguration();
         hadoopConfiguration.forEach(entry -> this.giraphConfiguration.set(entry.getKey(), entry.getValue()));
         this.giraphConfiguration.setMasterComputeClass(GiraphGraphComputerSideEffects.class);
@@ -49,6 +49,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
         this.giraphConfiguration.setClass("giraph.vertexValueClass", Text.class, Text.class);
         ///
         this.sideEffects = sideEffects;
+        this.mapReduces = mapReduces;
     }
 
     public int run(final String[] args) {
@@ -61,17 +62,17 @@ public class GiraphGraphRunner extends Configured implements Tool {
             LOGGER.info(Constants.GIRAPH_GREMLIN_JOB_PREFIX + vertexProgram);
             job.run(true);
 
-            final List<MapReduce> mapReduces = new ArrayList<MapReduce>(vertexProgram.getMapReducers());
+            this.mapReduces.addAll(vertexProgram.getMapReducers());
             // calculate main traversal vertex program sideEffect variables
             if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_DERIVE_COMPUTER_SIDE_EFFECTS, false)) {
                 final Set<String> sideEffectKeys = new HashSet<String>(vertexProgram.getSideEffectKeys());
                 sideEffectKeys.add(Constants.RUNTIME);
                 sideEffectKeys.add(Constants.ITERATION);
                 this.giraphConfiguration.setStrings(Constants.GREMLIN_SIDE_EFFECT_KEYS, (String[]) sideEffectKeys.toArray(new String[sideEffectKeys.size()]));
-                mapReduces.add(new SideEffectsMapReduce(sideEffectKeys));
+                this.mapReduces.add(new SideEffectsMapReduce(sideEffectKeys));
             }
             // do extra map reduce jobs if necessary
-            for (final MapReduce mapReduce : mapReduces) {
+            for (final MapReduce mapReduce : this.mapReduces) {
                 MapReduceHelper.executeMapReduceJob(mapReduce, this.sideEffects, this.giraphConfiguration);
             }
 

@@ -14,6 +14,7 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -30,6 +31,7 @@ public class TinkerGraphComputer implements GraphComputer {
     private final TinkerGraphComputerSideEffects sideEffects = new TinkerGraphComputerSideEffects();
     private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
+    private final List<MapReduce> mapReduces = new ArrayList<>();
 
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;
@@ -42,6 +44,11 @@ public class TinkerGraphComputer implements GraphComputer {
 
     public GraphComputer program(final Configuration configuration) {
         configuration.getKeys().forEachRemaining(key -> this.configuration.setProperty(key, configuration.getProperty(key)));
+        return this;
+    }
+
+    public GraphComputer mapReduce(final MapReduce mapReduce) {
+        this.mapReduces.add(mapReduce);
         return this;
     }
 
@@ -75,11 +82,12 @@ public class TinkerGraphComputer implements GraphComputer {
                 if (vertexProgram.terminate(this.sideEffects)) break;
             }
 
-            // no need to run combiners as this is single machine
-            for (final MapReduce mapReduce : (Iterable<MapReduce>) vertexProgram.getMapReducers()) {
+            this.mapReduces.addAll(vertexProgram.getMapReducers());
+            for (final MapReduce mapReduce : this.mapReduces) {
                 if (mapReduce.doStage(MapReduce.Stage.MAP)) {
                     final TinkerMapEmitter mapEmitter = new TinkerMapEmitter(mapReduce.doStage(MapReduce.Stage.REDUCE));
                     StreamFactory.parallelStream(g.V()).forEach(vertex -> mapReduce.map(vertex, mapEmitter));
+                    // no need to run combiners as this is single machine
                     if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
                         final TinkerReduceEmitter reduceEmitter = new TinkerReduceEmitter();
                         mapEmitter.reduceMap.forEach((k, v) -> mapReduce.reduce(k, ((List) v).iterator(), reduceEmitter));

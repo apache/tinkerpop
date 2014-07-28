@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.giraph.process.computer;
 import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
@@ -15,7 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -29,6 +32,7 @@ public class GiraphGraphComputer implements GraphComputer {
 
     protected final GiraphGraph giraphGraph;
     protected org.apache.hadoop.conf.Configuration hadoopConfiguration = new org.apache.hadoop.conf.Configuration();
+    private final List<MapReduce> mapReduces = new ArrayList<>();
 
     public GiraphGraphComputer(final GiraphGraph giraphGraph, final Configuration configuration) {
         configuration.getKeys().forEachRemaining(key -> this.hadoopConfiguration.set(key, configuration.getProperty(key).toString()));
@@ -43,6 +47,11 @@ public class GiraphGraphComputer implements GraphComputer {
 
     public GraphComputer program(final Configuration configuration) {
         configuration.getKeys().forEachRemaining(key -> this.hadoopConfiguration.set(key, configuration.getProperty(key).toString()));
+        return this;
+    }
+
+    public GraphComputer mapReduce(final MapReduce mapReduce) {
+        this.mapReduces.add(mapReduce);
         return this;
     }
 
@@ -85,7 +94,7 @@ public class GiraphGraphComputer implements GraphComputer {
                 } else {
                     LOGGER.warn("No jars loaded from $GIRAPH_GREMLIN_HOME as there is no /lib directory. Attempting to proceed regardless.");
                 }
-                ToolRunner.run(new GiraphGraphRunner(this.hadoopConfiguration, sideEffects), new String[]{});
+                ToolRunner.run(new GiraphGraphRunner(this.hadoopConfiguration, sideEffects, this.mapReduces), new String[]{});
                 // sideEffects.keys().forEach(k -> LOGGER.error(k + "---" + sideEffects.get(k)));
                 fs.delete(new Path(bspDirectory), true);
             } catch (Exception e) {
