@@ -810,14 +810,11 @@ The BSP model proposed by Pregel stores the results of the computation in a dist
 A compressed representation of the `MapReduce` API in TinkerPop3 is provided below. The key idea is that the `map`-stage processes all vertices to emit some key/value pair. Those values are aggregated on their respective key for the `reduce`-stage to do its processing to ultimately yield some iterator of key/value results.
 
 [source,java]
-----
 public interface MapReduce<MK, MV, RK, RV, R> {
-
-    public void map(final Vertex vertex, final MapEmitter<MK, MV> emitter);
-
-    public void reduce(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter);
+  public void map(final Vertex vertex, final MapEmitter<MK, MV> emitter);
+  public void reduce(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter);
+  // there are more methods
 }
-----
 
 The `MapReduce` extension to GraphComputer is made explicit when examining the `PeerPressureVertexProgram` and corresponding `ClusterPopulationMapReduce`. In the code below, the GraphComputer result returns the computed on `Graph` as well as the `SideEffects` of the computation (`Pair<Graph,SideEffects>`). The sideEffects maintain the results of any MapReduce jobs. The cluster population MapReduce result states that there are 5 vertices in cluster 1 and 1 vertex in cluster 6. This can be verified (in a serial manner) by looking at the hidden `PeerPressureVertexProgram.CLUSTER` property of the resultant graph.
 
