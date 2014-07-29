@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.computer.ranking;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
+import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.javatuples.Pair;
 import org.junit.Test;

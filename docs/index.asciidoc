@@ -800,12 +800,14 @@ NOTE: This model of graph computing was made popular by Google's link:http://goo
 MapReduce Extensions
 --------------------
 
-The BSP model proposed by Pregel and Giraph stores the results of the computation in a distributed manner across the vertices in the graph. However, in many situations, it necessary to aggregate those results into a single result set (i.e. a statistic). For instance, assume a VertexProgram that computes a nominal cluster for each vertex in the graph. At the end of the computation, each vertex will have an hidden property denoting the cluster it is in. In order to answer the following questions, a MapReduce job is required over those resultant properties:
+The BSP model proposed by Pregel stores the results of the computation in a distributed manner as properties of the vertices in the graph. However, in many situations, it necessary to aggregate those resultant properties into a single result set (i.e. a statistic). For instance, assume a VertexProgram that computes a nominal cluster for each vertex. At the end of the computation, each vertex will have an hidden property denoting the cluster it is in. In order to answer the following questions, MapReduce jobs are required:
 
- * How many unique clusters are there?
- * How many vertices are in each cluster?
+ * How many vertices are in each cluster? (*presented below*)
+ * How many unique clusters are there? (*presented below*)
  * What is the average age of each vertex in each cluster?
  * What is the degree distribution of the vertices in each cluster?
+
+A compressed representation of the `MapReduce` API in TinkerPop3 is provided below. The key idea is that the `map`-stage processes all vertices to emit some key/value pair. Those values are aggregated on their respective key for the `reduce`-stage to do its processing to ultimately yield some iterator of key/value results.
 
 [source,java]
 public interface MapReduce<MK, MV, RK, RV, R> {
@@ -815,7 +817,40 @@ public interface MapReduce<MK, MV, RK, RV, R> {
     public void reduce(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter);
 }
 
-A compressed representation of the `MapReduce` API in TinkerPop3 is provided above. The key idea is that the `map`-stage processes all vertices to emit some key/value pair. Those values are aggregated on their respective key for the `reduce`-stage to do its processing to ultimately yield some iterator of key/value results.
+The `MapReduce` extension to GraphComputer is made explicit when examining the `PeerPressureVertexProgram` and corresponding `ClusterPopulationMapReduce`. In the code below, the GraphComputer result returns the computed on `Graph` as well as the `SideEffects` of the computation (`Pair<Graph,SideEffects>`). The sideEffects maintain the results of any MapReduce jobs. The cluster population MapReduce result states that there are 5 vertices in cluster 1 and 1 vertex in cluster 6. This can be verified (in a serial manner) by looking at the hidden `PeerPressureVertexProgram.CLUSTER` property of the resultant graph.
+
+[source,groovy]
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> results = g.compute().program(PeerPressureVertexProgram.create().configuration).mapReduce(new ClusterPopulationMapReduce()).submit().get()
+==>tinkergraph[vertices:6 edges:6]
+==>sideEffects[size:1]
+gremlin> results.getValue1().get('clusterPopulation')
+==>1=5
+==>6=1
+gremlin> results.getValue0().V().map{it.get().value(PeerPressureVertexProgram.CLUSTER)}
+==>1
+==>1
+==>1
+==>1
+==>1
+==>6
+
+If there are numerous statistics desired, then its possible to register as many MapReduce jobs as needed. For instance, the `ClusterCountMapReduce` determines how many unique clusters were created by the peer pressure algorithm. Below both `ClusterCountMapReduce` and `ClusterPopulationMapReduce` are computed over the resultant graph.
+
+[source,groovy]
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> results = g.compute().program(PeerPressureVertexProgram.create().configuration).
+ mapReduce(new ClusterPopulationMapReduce()).
+ mapReduce(new ClusterCountMapReduce()).submit().get()
+==>tinkergraph[vertices:6 edges:6]
+==>sideEffects[size:3]
+gremlin> results.getValue1().get('clusterPopulation')
+==>1=5
+==>6=1
+gremlin> results.getValue1().get('clusterCount')
+==>2
 
 
 A Collection of VertexPrograms
@@ -927,6 +962,12 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
 <7> Initially, each vertex is provided an equal amount of energy represented as a double.
 <8> Energy is aggregated, computed on according to the PageRank algorithm, and then disseminated according to the defined `MessageType.Local`.
 <9> The computation is terminated after a pre-defined number of iterations.
+
+[[peerpressurevertexprogram]]
+PeerPressureVertexProgram
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+TODO...
 
 
 Gremlin Utilities

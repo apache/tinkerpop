@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.giraph.process.computer.util.RuleWritable;
 import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.giraph.master.MasterCompute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,5 +132,9 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
     }
 
     public void readFields(final DataInput input) {
+    }
+
+    public String toString() {
+        return StringFactory.computerSideEffectsString(this);
     }
 }

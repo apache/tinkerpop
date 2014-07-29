@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
 import com.tinkerpop.gremlin.process.computer.SideEffects;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,5 +52,9 @@ public class GiraphGraphShellComputerSideEffects implements SideEffects {
 
     public boolean or(final String key, final boolean bool) {
         throw new IllegalStateException(COMPLETE_AND_IMMUTABLE);
+    }
+
+    public String toString() {
+        return StringFactory.computerSideEffectsString(this);
     }
 }

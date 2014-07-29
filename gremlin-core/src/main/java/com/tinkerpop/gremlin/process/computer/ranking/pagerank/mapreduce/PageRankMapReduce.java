@@ -1,6 +1,7 @@
-package com.tinkerpop.gremlin.process.computer.ranking;
+package com.tinkerpop.gremlin.process.computer.ranking.pagerank.mapreduce;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.javatuples.Pair;

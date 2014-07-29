@@ -18,4 +18,16 @@ public class MapHelper {
         temp.add(value);
         map.put(key, temp);
     }
+
+    public static <T> T largestCount(final Map<T, Long> map) {
+        T largestKey = null;
+        long largestValue = Long.MIN_VALUE;
+        for (Map.Entry<T, Long> entry : map.entrySet()) {
+            if (entry.getValue() >= largestValue) {
+                largestKey = entry.getKey();
+                largestValue = entry.getValue();
+            }
+        }
+        return largestKey;
+    }
 }

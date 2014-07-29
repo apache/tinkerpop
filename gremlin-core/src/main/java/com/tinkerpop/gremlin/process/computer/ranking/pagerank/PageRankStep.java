@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.computer.ranking;
+package com.tinkerpop.gremlin.process.computer.ranking.pagerank;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;

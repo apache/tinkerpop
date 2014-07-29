@@ -1,0 +1,54 @@
+package com.tinkerpop.gremlin.process.computer.clustering.peerpressure.mapreduce;
+
+import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
+import org.javatuples.Pair;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+/**
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
+ */
+public class ClusterPopulationMapReduce implements MapReduce<Serializable, Long, Serializable, Long, Map<Serializable, Long>> {
+
+    public boolean doStage(final Stage stage) {
+        return true;
+    }
+
+    @Override
+    public void map(final Vertex vertex, final MapEmitter<Serializable, Long> emitter) {
+        final Property<Serializable> cluster = vertex.property(PeerPressureVertexProgram.CLUSTER);
+        if (cluster.isPresent()) {
+            emitter.emit(cluster.value(), 1l);
+        }
+    }
+
+    public void combine(final Serializable key, final Iterator<Long> values, final ReduceEmitter<Serializable, Long> emitter) {
+        this.reduce(key, values, emitter);
+    }
+
+    public void reduce(final Serializable key, final Iterator<Long> values, final ReduceEmitter<Serializable, Long> emitter) {
+        long count = 0l;
+        while (values.hasNext()) {
+            count = count + values.next();
+        }
+        emitter.emit(key, count);
+    }
+
+    @Override
+    public Map<Serializable, Long> generateSideEffect(final Iterator<Pair<Serializable, Long>> keyValues) {
+        final Map<Serializable, Long> clusterPopulation = new HashMap<>();
+        keyValues.forEachRemaining(pair -> clusterPopulation.put(pair.getValue0(), pair.getValue1()));
+        return clusterPopulation;
+    }
+
+    @Override
+    public String getSideEffectKey() {
+        return "clusterPopulation";
+    }
+}

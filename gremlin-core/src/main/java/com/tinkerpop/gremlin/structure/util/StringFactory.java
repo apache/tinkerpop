@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.util;
 
+import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
@@ -71,6 +72,10 @@ public class StringFactory {
 
     public static String graphVariablesString(final Graph.Variables variables) {
         return "variables" + L_BRACKET + "size:" + variables.keys().size() + R_BRACKET;
+    }
+
+    public static String computerSideEffectsString(final SideEffects sideEffects) {
+        return "sideEffects" + L_BRACKET + "size:" + sideEffects.keys().size() + R_BRACKET;
     }
 
     public static String featureString(final Graph.Features features) {
