@@ -816,6 +816,8 @@ public interface MapReduce<MK, MV, RK, RV, R> {
   // there are more methods
 }
 
+image::mapreduce.png[width=650]
+
 The `MapReduce` extension to GraphComputer is made explicit when examining the `PeerPressureVertexProgram` and corresponding `ClusterPopulationMapReduce`. In the code below, the GraphComputer result returns the computed on `Graph` as well as the `SideEffects` of the computation (`Pair<Graph,SideEffects>`). The sideEffects maintain the results of any MapReduce jobs. The cluster population MapReduce result states that there are 5 vertices in cluster 1 and 1 vertex in cluster 6. This can be verified (in a serial manner) by looking at the hidden `PeerPressureVertexProgram.CLUSTER` property of the resultant graph.
 
 [source,groovy]
@@ -888,10 +890,10 @@ Perhaps the most popular OLAP-oriented graph algorithm is link:http://en.wikiped
 ----
 public class PageRankVertexProgram implements VertexProgram<Double> { <1>
 
-    private MessageType.Local messageType = MessageType.Local.of(() -> GraphTraversal.of().outE()); <2>
+    private MessageType.Local messageType = MessageType.Local.of(() -> new DefaultGraphTraversal().outE()); <2>
 
-    public static final String PAGE_RANK = Property.hidden("gremlin.pageRankVertexProgram.pageRank"); <3>
-    public static final String EDGE_COUNT = Property.hidden("gremlin.pageRankVertexProgram.edgeCount");
+    public static final String PAGE_RANK = Graph.Key.hidden("gremlin.pageRank"); <3>
+    public static final String EDGE_COUNT = Graph.Key.hidden("gremlin.edgeCount");
 
     private static final String VERTEX_COUNT = "gremlin.pageRankVertexProgram.vertexCount";
     private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";
@@ -906,48 +908,69 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
 
     }
 
-   public void initialize(final Configuration configuration) { <4>
+    @Override
+    public void loadState(final Configuration configuration) { <4>
         this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
         this.alpha = configuration.getDouble(ALPHA, 0.85d);
         this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
         try {
             if (configuration.containsKey(INCIDENT_TRAVERSAL)) {
-                this.messageType = MessageType.Local.of(VertexProgramHelper.deserializeSupplier(configuration, INCIDENT_TRAVERSAL));
+                final SSupplier<Traversal> traversalSupplier = VertexProgramHelper.deserialize(configuration, INCIDENT_TRAVERSAL);
+                VertexProgramHelper.verifyReversibility(traversalSupplier.get());
+                this.messageType = MessageType.Local.of((SSupplier) traversalSupplier);
             }
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
-    public Map<String, KeyType> getComputeKeys() { <5>
-        return VertexProgram.ofComputeKeys(PAGE_RANK, KeyType.VARIABLE, EDGE_COUNT, KeyType.CONSTANT);
+    @Override
+    public void storeState(final Configuration configuration) {
+        configuration.setProperty(GraphComputer.VERTEX_PROGRAM, PageRankVertexProgram.class.getName());
+        configuration.setProperty(VERTEX_COUNT, this.vertexCountAsDouble);
+        configuration.setProperty(ALPHA, this.alpha);
+        configuration.setProperty(TOTAL_ITERATIONS, this.totalIterations);
+        try {
+            VertexProgramHelper.serialize(this.messageType.getIncidentTraversal(), configuration, INCIDENT_TRAVERSAL);
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
+    @Override
+    public Map<String, KeyType> getElementComputeKeys() { <5>
+        return VertexProgram.createElementKeys(PAGE_RANK, KeyType.VARIABLE, EDGE_COUNT, KeyType.CONSTANT);
+    }
+
+    @Override
     public Class<Double> getMessageClass() {
         return Double.class;
     }
 
-    public void setup(final GraphComputer.Globals globals) {
+    @Override
+    public void setup(final SideEffects sideEffects) {
 
     }
 
-    public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphComputer.Globals globals) { <6>
-        if (globals.isInitialIteration()) { <7>
+    @Override
+    public void execute(final Vertex vertex, Messenger<Double> messenger, final SideEffects sideEffects) { <6>
+        if (sideEffects.isInitialIteration()) { <7>
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
-            double edgeCount = Long.valueOf(this.messageType.edges(vertex).count()).doubleValue();
+            double edgeCount = Double.valueOf((Long) this.messageType.edges(vertex).count().next());
             vertex.property(PAGE_RANK, initialPageRank);
             vertex.property(EDGE_COUNT, edgeCount);
-            messenger.sendMessage(vertex, this.messageType, initialPageRank / edgeCount);
+            messenger.sendMessage(this.messageType, initialPageRank / edgeCount);
         } else { <8>
-            double newPageRank = StreamFactory.stream(messenger.receiveMessages(vertex, this.messageType)).reduce(0.0d, (a, b) -> a + b);
+            double newPageRank = StreamFactory.stream(messenger.receiveMessages(this.messageType)).reduce(0.0d, (a, b) -> a + b);
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
             vertex.property(PAGE_RANK, newPageRank);
-            messenger.sendMessage(vertex, this.messageType, newPageRank / vertex.<Double>property(EDGE_COUNT).orElse(0.0d));
+            messenger.sendMessage(this.messageType, newPageRank / vertex.<Double>property(EDGE_COUNT).orElse(0.0d));
         }
     }
 
-    public boolean terminate(final GraphComputer.Globals globals) { <9>
-        return globals.getIteration() >= this.totalIterations;
+    @Override
+    public boolean terminate(final SideEffects sideEffects) { <9>
+        return sideEffects.getIteration() >= this.totalIterations;
     }
 }
 ----
