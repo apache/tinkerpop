@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.giraph.hdfs;
 
+import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
@@ -32,7 +33,7 @@ public class GiraphVertexIterator implements Iterator<Vertex> {
 
     public GiraphVertexIterator(final GiraphGraph graph, final VertexInputFormat inputFormat, final Path path) throws IOException {
         this.graph = graph;
-        final Configuration configuration = ConfUtil.makeHadoopConfiguration(graph.variables().getConfiguration());
+        final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.variables().getConfiguration());
         for (final FileStatus status : FileSystem.get(configuration).listStatus(path, HiddenFileFilter.instance())) {
             this.readers.add(inputFormat.createVertexReader(new FileSplit(status.getPath(), 0, Integer.MAX_VALUE, new String[]{}), new TaskAttemptContext(configuration, new TaskAttemptID())));
         }
@@ -41,10 +42,12 @@ public class GiraphVertexIterator implements Iterator<Vertex> {
     public GiraphVertexIterator(final GiraphGraph graph) throws IOException {
         try {
             this.graph = graph;
-            final Configuration configuration = ConfUtil.makeHadoopConfiguration(graph.variables().getConfiguration());
-            final VertexInputFormat inputFormat = graph.variables().getConfiguration().getInputFormat().getConstructor().newInstance();
-            for (final FileStatus status : FileSystem.get(configuration).listStatus(new Path(graph.variables().getConfiguration().getInputLocation()), HiddenFileFilter.instance())) {
-                this.readers.add(inputFormat.createVertexReader(new FileSplit(status.getPath(), 0, Integer.MAX_VALUE, new String[]{}), new TaskAttemptContext(configuration, new TaskAttemptID())));
+            if (this.graph.variables().getConfiguration().containsKey(Constants.GREMLIN_INPUT_LOCATION)) {
+                final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.variables().getConfiguration());
+                final VertexInputFormat inputFormat = this.graph.variables().getConfiguration().getInputFormat().getConstructor().newInstance();
+                for (final FileStatus status : FileSystem.get(configuration).listStatus(new Path(graph.variables().getConfiguration().getInputLocation()), HiddenFileFilter.instance())) {
+                    this.readers.add(inputFormat.createVertexReader(new FileSplit(status.getPath(), 0, Integer.MAX_VALUE, new String[]{}), new TaskAttemptContext(configuration, new TaskAttemptID())));
+                }
             }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);

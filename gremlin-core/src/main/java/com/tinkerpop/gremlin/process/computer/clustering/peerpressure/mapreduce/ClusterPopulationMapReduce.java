@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
 import java.io.Serializable;
@@ -16,6 +17,29 @@ import java.util.Map;
  */
 public class ClusterPopulationMapReduce implements MapReduce<Serializable, Long, Serializable, Long, Map<Serializable, Long>> {
 
+    public static final String CLUSTER_POPULATION_SIDE_EFFECT_KEY = "gremlin.clusterPopulation.sideEffectKey";
+
+    private String sideEffectKey;
+
+    public ClusterPopulationMapReduce() {
+
+    }
+
+    public ClusterPopulationMapReduce(final String sideEffectKey) {
+        this.sideEffectKey = sideEffectKey;
+    }
+
+    @Override
+    public void storeState(final Configuration configuration) {
+        configuration.setProperty(CLUSTER_POPULATION_SIDE_EFFECT_KEY, this.sideEffectKey);
+    }
+
+    @Override
+    public void loadState(final Configuration configuration) {
+        this.sideEffectKey = configuration.getString(CLUSTER_POPULATION_SIDE_EFFECT_KEY, "clusterPopulation");
+    }
+
+    @Override
     public boolean doStage(final Stage stage) {
         return true;
     }
@@ -28,10 +52,12 @@ public class ClusterPopulationMapReduce implements MapReduce<Serializable, Long,
         }
     }
 
+    @Override
     public void combine(final Serializable key, final Iterator<Long> values, final ReduceEmitter<Serializable, Long> emitter) {
         this.reduce(key, values, emitter);
     }
 
+    @Override
     public void reduce(final Serializable key, final Iterator<Long> values, final ReduceEmitter<Serializable, Long> emitter) {
         long count = 0l;
         while (values.hasNext()) {
@@ -49,6 +75,6 @@ public class ClusterPopulationMapReduce implements MapReduce<Serializable, Long,
 
     @Override
     public String getSideEffectKey() {
-        return "clusterPopulation";
+        return this.sideEffectKey;
     }
 }

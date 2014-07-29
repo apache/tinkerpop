@@ -20,7 +20,7 @@ public class PageRankVertexProgramTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void testPageRank() throws Exception {
-        final Pair<Graph, SideEffects> pair = g.compute().program(PageRankVertexProgram.create().getConfiguration()).submit().get();
+        final Pair<Graph, SideEffects> pair = g.compute().program(PageRankVertexProgram.build().create()).submit().get();
         final Graph viewGraph = pair.getValue0();
         final SideEffects sideEffects = pair.getValue1();
         viewGraph.V().forEach(v -> {

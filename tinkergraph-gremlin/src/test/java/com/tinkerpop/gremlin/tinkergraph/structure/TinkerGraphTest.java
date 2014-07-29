@@ -52,7 +52,7 @@ public class TinkerGraphTest implements Serializable {
         Graph g = TinkerFactory.createClassic();
         g.traversal(TinkerFactory.SocialTraversal.class).people("marko").knows().name().forEach(System.out::println);
 
-        /*Graph h = g.compute().program(PageRankVertexProgram.create().getConfiguration()).submit().get().getValue0();
+        /*Graph h = g.compute().program(PageRankVertexProgram.create().create()).submit().get().getValue0();
         System.out.println(h.v(1).value(PageRankVertexProgram.PAGE_RANK).toString());
         Map<String, String> map = new HashMap<>();
         map.put(PageRankVertexProgram.PAGE_RANK, "pageRank");
@@ -90,7 +90,7 @@ public class TinkerGraphTest implements Serializable {
         final TinkerGraph g = TinkerFactory.createClassic();
         /*Traversal traversal = g.V().both().value("name").groupCount("a").path();
         TinkerHelper.prepareTraversalForComputer(traversal);
-        Pair<Graph,GraphComputer.Globals> result = g.compute().program(TraversalVertexProgram.create().traversal(() -> traversal).getConfiguration()).submit().get();
+        Pair<Graph,GraphComputer.Globals> result = g.compute().program(TraversalVertexProgram.create().traversal(() -> traversal).create()).submit().get();
         System.out.println("" + result.getValue1().get("a"));*/
 
         Traversal traversal = g.V().out().out().submit(g.compute()).in().value("name");

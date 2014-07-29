@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.hdfs.KeyHelper;
 import com.tinkerpop.gremlin.giraph.hdfs.KryoWritableIterator;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
-import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphMap;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphReduce;
 import com.tinkerpop.gremlin.giraph.process.computer.KryoWritable;
@@ -46,7 +45,7 @@ public class MapReduceHelper {
         } else {
             newConfiguration.setClass(Constants.MAP_REDUCE_CLASS, mapReduce.getClass(), MapReduce.class);
             final Job job = new Job(newConfiguration, mapReduce.toString());
-            GiraphGraphRunner.LOGGER.info(Constants.GIRAPH_GREMLIN_JOB_PREFIX + mapReduce.toString());
+            GiraphGraphComputer.LOGGER.info(Constants.GIRAPH_GREMLIN_JOB_PREFIX + mapReduce.toString());
             job.setJarByClass(GiraphGraph.class);
             job.setMapperClass(GiraphMap.class);
             if (mapReduce.doStage(MapReduce.Stage.COMBINE))

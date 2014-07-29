@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
 import java.util.Iterator;
@@ -13,6 +14,29 @@ import java.util.Iterator;
  */
 public class PageRankMapReduce implements MapReduce<Object, Double, Object, Double, Iterator<Pair<Object, Double>>> {
 
+    public static final String PAGE_RANK_SIDE_EFFECT_KEY = "gremlin.pageRank.sideEffectKey";
+
+    private String sideEffectKey;
+
+    public PageRankMapReduce() {
+
+    }
+
+    public PageRankMapReduce(final String sideEffectKey) {
+        this.sideEffectKey = sideEffectKey;
+    }
+
+    @Override
+    public void storeState(final Configuration configuration) {
+        configuration.setProperty(PAGE_RANK_SIDE_EFFECT_KEY, this.sideEffectKey);
+    }
+
+    @Override
+    public void loadState(final Configuration configuration) {
+        this.sideEffectKey = configuration.getString(PAGE_RANK_SIDE_EFFECT_KEY, PageRankVertexProgram.PAGE_RANK);
+    }
+
+    @Override
     public boolean doStage(final Stage stage) {
         return stage.equals(Stage.MAP);
     }
@@ -32,6 +56,6 @@ public class PageRankMapReduce implements MapReduce<Object, Double, Object, Doub
 
     @Override
     public String getSideEffectKey() {
-        return "pageRank";
+        return this.sideEffectKey;
     }
 }

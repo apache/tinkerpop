@@ -89,5 +89,9 @@ public abstract class MessageType implements Serializable {
         public BiFunction<M1, Edge, M2> getEdgeFunction() {
             return this.edgeFunction;
         }
+
+        public SSupplier<Traversal<Vertex, Edge>> getIncidentTraversal() {
+            return this.incidentTraversal;
+        }
     }
 }

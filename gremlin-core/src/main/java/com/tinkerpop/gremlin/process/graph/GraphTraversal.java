@@ -7,10 +7,10 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
-import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankStep;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.filter.ComputerResultStep;
+import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.ExceptStep;
@@ -52,7 +52,6 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
@@ -74,7 +73,6 @@ import com.tinkerpop.gremlin.util.function.SConsumer;
 import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SPredicate;
 import com.tinkerpop.gremlin.util.function.SSupplier;
-import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
 import java.util.Arrays;
@@ -94,10 +92,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> submit(final GraphComputer computer) {
         try {
-            final Configuration configuration = TraversalVertexProgram.create().traversal(() -> this).getConfiguration();
-            final Pair<Graph, SideEffects> result = computer.program(configuration).submit().get();
+            TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> this).create();
+            final Pair<Graph, SideEffects> result = computer.program(vertexProgram).submit().get();
             final GraphTraversal traversal = new DefaultGraphTraversal<>();
-            traversal.addStep(new ComputerResultStep<>(traversal, result.getValue0(), result.getValue1(), VertexProgram.createVertexProgram(configuration)));
+            traversal.addStep(new ComputerResultStep<>(traversal, result.getValue0(), result.getValue1(), vertexProgram));
             return traversal;
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);

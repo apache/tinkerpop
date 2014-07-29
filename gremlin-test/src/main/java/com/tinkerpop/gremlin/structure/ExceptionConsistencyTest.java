@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import org.apache.commons.configuration.BaseConfiguration;
+import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -25,7 +25,8 @@ import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATU
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Ensure that exception handling is consistent within Blueprints. It may be necessary to throw exceptions in an
@@ -577,8 +578,13 @@ public class ExceptionConsistencyTest {
 
     private static class MockVertexProgramBuilder implements VertexProgram.Builder {
         @Override
-        public Configuration getConfiguration() {
-            return new BaseConfiguration();
+        public <P extends VertexProgram> P create() {
+            return (P) new PageRankVertexProgram();
+        }
+
+        @Override
+        public VertexProgram.Builder configure(final Object... keyValues) {
+            return this;
         }
     }
 
@@ -597,6 +603,10 @@ public class ExceptionConsistencyTest {
 
         @Override
         public void loadState(final Configuration configuration) {
+        }
+
+        @Override
+        public void storeState(final Configuration configuration) {
         }
 
         @Override
@@ -619,12 +629,12 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public Set<String> getSideEffectKeys() {
+        public Set<String> getSideEffectComputeKeys() {
             return Collections.emptySet();
         }
 
         @Override
-        public Map<String, KeyType> getElementKeys() {
+        public Map<String, KeyType> getElementComputeKeys() {
             return this.computeKeys;
         }
     }
@@ -640,6 +650,10 @@ public class ExceptionConsistencyTest {
         public MockVertexProgramForEdge(final String key, final String val) {
             this.key = key;
             this.val = val;
+        }
+
+        @Override
+        public void storeState(final Configuration configuration) {
         }
 
         @Override
@@ -666,12 +680,12 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public Set<String> getSideEffectKeys() {
+        public Set<String> getSideEffectComputeKeys() {
             return Collections.emptySet();
         }
 
         @Override
-        public Map<String, KeyType> getElementKeys() {
+        public Map<String, KeyType> getElementComputeKeys() {
             return this.computeKeys;
         }
     }

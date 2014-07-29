@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.MapHelper;
@@ -13,15 +14,12 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SSupplier;
-import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -56,15 +54,20 @@ public class PeerPressureVertexProgram implements VertexProgram<Serializable> {
     }
 
     @Override
-    public Map<String, KeyType> getElementKeys() {
-        return VertexProgram.createElementKeys(CLUSTER, KeyType.VARIABLE);
+    public void storeState(final Configuration configuration) {
+        configuration.setProperty(GraphComputer.VERTEX_PROGRAM, PeerPressureVertexProgram.class.getName());
+        configuration.setProperty(MAX_ITERATIONS, this.maxIterations);
+        try {
+            VertexProgramHelper.serialize(this.messageType.getIncidentTraversal(), configuration, INCIDENT_TRAVERSAL);
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     @Override
-    public Set<String> getSideEffectKeys() {
-        return Collections.emptySet();
+    public Map<String, KeyType> getElementComputeKeys() {
+        return VertexProgram.createElementKeys(CLUSTER, KeyType.VARIABLE);
     }
-
 
     @Override
     public Class<Serializable> getMessageClass() {
@@ -106,16 +109,15 @@ public class PeerPressureVertexProgram implements VertexProgram<Serializable> {
 
     //////////////////////////////
 
-    public static Builder create() {
+    public static Builder build() {
         return new Builder();
     }
 
-    public static class Builder implements VertexProgram.Builder {
+    public static class Builder extends AbstractBuilder {
 
-        private final Configuration configuration = new BaseConfiguration();
 
         private Builder() {
-            this.configuration.setProperty(GraphComputer.VERTEX_PROGRAM, PeerPressureVertexProgram.class.getName());
+            super(PeerPressureVertexProgram.class);
         }
 
         public Builder maxIterations(final int iterations) {
@@ -130,10 +132,6 @@ public class PeerPressureVertexProgram implements VertexProgram<Serializable> {
                 throw new IllegalStateException(e.getMessage(), e);
             }
             return this;
-        }
-
-        public Configuration getConfiguration() {
-            return this.configuration;
         }
     }
 

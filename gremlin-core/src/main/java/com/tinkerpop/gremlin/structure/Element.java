@@ -122,7 +122,7 @@ public abstract interface Element {
         }
 
         public static IllegalArgumentException providedKeyValuesMustHaveALegalKeyOnEvenIndices() {
-            return new IllegalArgumentException("The provided key/value array must have a String key or Property.Key on even array indices");
+            return new IllegalArgumentException("The provided key/value array must have a String key on even array indices");
         }
 
         public static IllegalStateException propertyAdditionNotSupported() {

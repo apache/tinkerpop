@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.giraph.hdfs;
 
 import com.google.common.collect.Iterators;
+import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.GiraphEdge;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
@@ -44,10 +45,12 @@ public class GiraphEdgeIterator implements Iterator<Edge> {
     public GiraphEdgeIterator(final GiraphGraph graph) throws IOException {
         try {
             this.graph = graph;
-            final Configuration configuration = ConfUtil.makeHadoopConfiguration(graph.variables().getConfiguration());
-            final VertexInputFormat inputFormat = graph.variables().getConfiguration().getInputFormat().getConstructor().newInstance();
-            for (final FileStatus status : FileSystem.get(configuration).listStatus(new Path(graph.variables().getConfiguration().getInputLocation()), HiddenFileFilter.instance())) {
-                this.readers.add(inputFormat.createVertexReader(new FileSplit(status.getPath(), 0, Integer.MAX_VALUE, new String[]{}), new TaskAttemptContext(configuration, new TaskAttemptID())));
+            if (this.graph.variables().getConfiguration().containsKey(Constants.GREMLIN_INPUT_LOCATION)) {
+                final Configuration configuration = ConfUtil.makeHadoopConfiguration(graph.variables().getConfiguration());
+                final VertexInputFormat inputFormat = graph.variables().getConfiguration().getInputFormat().getConstructor().newInstance();
+                for (final FileStatus status : FileSystem.get(configuration).listStatus(new Path(graph.variables().getConfiguration().getInputLocation()), HiddenFileFilter.instance())) {
+                    this.readers.add(inputFormat.createVertexReader(new FileSplit(status.getPath(), 0, Integer.MAX_VALUE, new String[]{}), new TaskAttemptContext(configuration, new TaskAttemptID())));
+                }
             }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);

@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process.computer;
 
 import com.tinkerpop.gremlin.structure.Graph;
-import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
 import java.util.Map;
@@ -35,11 +34,9 @@ public interface GraphComputer {
 
     public GraphComputer isolation(final Isolation isolation);
 
-    public GraphComputer program(final Configuration configuration);
+    public GraphComputer program(final VertexProgram vertexProgram);
 
     public GraphComputer mapReduce(final MapReduce mapReduce);
-
-    public Graph getGraph();
 
     public Future<Pair<Graph, SideEffects>> submit();
 

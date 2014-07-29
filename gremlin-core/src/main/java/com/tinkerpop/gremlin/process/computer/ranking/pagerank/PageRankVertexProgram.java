@@ -2,12 +2,11 @@ package com.tinkerpop.gremlin.process.computer.ranking.pagerank;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.process.computer.ranking.pagerank.mapreduce.PageRankMapReduce;
+import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -15,15 +14,10 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.util.function.SSupplier;
-import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -39,12 +33,10 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";
     private static final String TOTAL_ITERATIONS = "gremlin.pageRankVertexProgram.totalIterations";
     private static final String INCIDENT_TRAVERSAL = "gremlin.pageRankVertexProgram.incidentTraversal";
-    private static final String DO_RESULT_MAP_REDUCE = "gremlin.pageRankVertexProgram.doResultMapReduce";
 
     private double vertexCountAsDouble = 1;
     private double alpha = 0.85d;
     private int totalIterations = 30;
-    private boolean doResultMapReduce = false;
 
     public PageRankVertexProgram() {
 
@@ -55,7 +47,6 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
         this.alpha = configuration.getDouble(ALPHA, 0.85d);
         this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
-        this.doResultMapReduce = configuration.getBoolean(DO_RESULT_MAP_REDUCE, false);
         try {
             if (configuration.containsKey(INCIDENT_TRAVERSAL)) {
                 final SSupplier<Traversal> traversalSupplier = VertexProgramHelper.deserialize(configuration, INCIDENT_TRAVERSAL);
@@ -68,15 +59,22 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     }
 
     @Override
-    public Map<String, KeyType> getElementKeys() {
-        return VertexProgram.createElementKeys(PAGE_RANK, KeyType.VARIABLE, EDGE_COUNT, KeyType.CONSTANT);
+    public void storeState(final Configuration configuration) {
+        configuration.setProperty(GraphComputer.VERTEX_PROGRAM, PageRankVertexProgram.class.getName());
+        configuration.setProperty(VERTEX_COUNT, this.vertexCountAsDouble);
+        configuration.setProperty(ALPHA, this.alpha);
+        configuration.setProperty(TOTAL_ITERATIONS, this.totalIterations);
+        try {
+            VertexProgramHelper.serialize(this.messageType.getIncidentTraversal(), configuration, INCIDENT_TRAVERSAL);
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     @Override
-    public Set<String> getSideEffectKeys() {
-        return Collections.emptySet();
+    public Map<String, KeyType> getElementComputeKeys() {
+        return VertexProgram.createElementKeys(PAGE_RANK, KeyType.VARIABLE, EDGE_COUNT, KeyType.CONSTANT);
     }
-
 
     @Override
     public Class<Double> getMessageClass() {
@@ -86,11 +84,6 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     @Override
     public void setup(final SideEffects sideEffects) {
 
-    }
-
-    @Override
-    public List<MapReduce> getMapReducers() {
-        return this.doResultMapReduce ? Arrays.asList(new PageRankMapReduce()) : Collections.emptyList();
     }
 
     @Override
@@ -116,16 +109,14 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
     //////////////////////////////
 
-    public static Builder create() {
+    public static Builder build() {
         return new Builder();
     }
 
-    public static class Builder implements VertexProgram.Builder {
-
-        private final Configuration configuration = new BaseConfiguration();
+    public static class Builder extends AbstractBuilder {
 
         private Builder() {
-            this.configuration.setProperty(GraphComputer.VERTEX_PROGRAM, PageRankVertexProgram.class.getName());
+            super(PageRankVertexProgram.class);
         }
 
         public Builder iterations(final int iterations) {
@@ -150,10 +141,6 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         public Builder vertexCount(final long vertexCount) {
             this.configuration.setProperty(VERTEX_COUNT, (double) vertexCount);
             return this;
-        }
-
-        public Configuration getConfiguration() {
-            return this.configuration;
         }
     }
 

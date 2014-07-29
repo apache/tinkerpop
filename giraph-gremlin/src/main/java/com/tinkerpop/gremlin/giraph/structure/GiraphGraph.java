@@ -79,7 +79,7 @@ public class GiraphGraph implements Graph, Serializable {
     }
 
     public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass) {
-        return (C) new GiraphGraphComputer(this, this.variables().getConfiguration());
+        return (C) new GiraphGraphComputer(this);
     }
 
 

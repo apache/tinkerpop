@@ -42,8 +42,8 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
         if (null == this.giraphInternalVertex) {  // master compute node
             try {
                 this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getConf()));
-                this.sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectKeys());
-                for (final String key : (Set<String>) this.vertexProgram.getSideEffectKeys()) {
+                this.sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectComputeKeys());
+                for (final String key : (Set<String>) this.vertexProgram.getSideEffectComputeKeys()) {
                     this.registerAggregator(key, MemoryAggregator.class); // TODO: Why does PersistentAggregator not work?
                 }
                 this.registerPersistentAggregator(Constants.RUNTIME, MemoryAggregator.class);
@@ -55,7 +55,7 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
             }
         } else {  // local vertex aggregator
             this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.giraphInternalVertex.getConf()));
-            this.sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectKeys());
+            this.sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectComputeKeys());
         }
     }
 
