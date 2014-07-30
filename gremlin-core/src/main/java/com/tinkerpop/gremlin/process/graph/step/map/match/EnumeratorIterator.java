@@ -9,6 +9,7 @@ import java.util.function.BiConsumer;
 /**
 * @author Joshua Shinavier (http://fortytwo.net)
 */
+// TODO: This is not being used, delete?
 public class EnumeratorIterator<T> implements Iterator<Map<String, T>> {
     private final Enumerator<T> enumerator;
     private int index = 0;

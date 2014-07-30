@@ -37,8 +37,8 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
     // optimize before processing each start object, by default
     private static final int DEFAULT_STARTS_PER_OPTIMIZE = 1;
 
-    private final String startLabel;
-    private final LinkedHashSet<String> labels;
+    private final String inAs;
+    private final LinkedHashSet<String> asLabels;
     private final Map<String, List<TraversalWrapper<S, S>>> traversalsOut;
 
     private int startsPerOptimize = DEFAULT_STARTS_PER_OPTIMIZE;
@@ -46,13 +46,11 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
 
     private int anonLabelCounter = 0;
 
-    public MatchStepNew(final Traversal traversal,
-                        final String startLabel,
-                        final Traversal... traversals) {
+    public MatchStepNew(final Traversal traversal, final String inAs, final Traversal... traversals) {
         super(traversal);
 
-        this.startLabel = startLabel;
-        labels = new LinkedHashSet<>();
+        this.inAs = inAs;
+        asLabels = new LinkedHashSet<>();
         traversalsOut = new HashMap<>();
 
         for (final Traversal tl : traversals) {
@@ -60,19 +58,20 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
         }
     }
 
-    public void setStartsPerOptimize(final int startsPerOptimize) {
-        if (startsPerOptimize < 1) {
+    // TODO: Not being called so commented it out
+    /*public void setStartsPerOptimize(final int startsPerOptimize) {
+        if (startsPerOptimize < 1)
             throw new IllegalArgumentException();
-        }
-
         this.startsPerOptimize = startsPerOptimize;
-    }
+    }*/
 
     public String summarize() {
-        StringBuilder sb = new StringBuilder("match \"")
-                .append(startLabel).append("\":\t").append(findCost(startLabel)).append("\n");
-        summarize(startLabel, sb, new HashSet<>(), 1);
-
+        final StringBuilder sb = new StringBuilder("match \"")
+                .append(this.inAs)
+                .append("\":\t")
+                .append(findCost(this.inAs))
+                .append("\n");
+        summarize(this.inAs, sb, new HashSet<>(), 1);
         return sb.toString();
     }
 
@@ -82,9 +81,9 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
                            final int indent) {
         if (!visited.contains(outLabel)) {
             visited.add(outLabel);
-            List<TraversalWrapper<S, S>> outs = traversalsOut.get(outLabel);
+            final List<TraversalWrapper<S, S>> outs = traversalsOut.get(outLabel);
             if (null != outs) {
-                for (TraversalWrapper<S, S> w : outs) {
+                for (final TraversalWrapper<S, S> w : outs) {
                     for (int i = 0; i < indent; i++) sb.append("\t");
                     sb.append(outLabel).append("->").append(w.inLabel).append(":\t");
                     sb.append(findCost(w));
@@ -96,35 +95,35 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
         }
     }
 
-    private Enumerator<S> curSolution;
-    private int curIndex;
+    private Enumerator<S> currentSolution;
+    private int currentIndex;
     // initial value allows MatchStep to be used as a non-Step
-    private Traverser<S> curStart = new SimpleTraverser<>(null);
+    private Traverser<S> currentStart = new SimpleTraverser<>(null);
 
     @Override
     protected Traverser<E> processNextStart() throws NoSuchElementException {
-        if (null == curSolution || (curIndex >= curSolution.size() && curSolution.isComplete())) {
+        if (null == this.currentSolution || (this.currentIndex >= this.currentSolution.size() && this.currentSolution.isComplete())) {
             if (this.starts.hasNext()) {
-                optimizeCounter = (optimizeCounter + 1) % startsPerOptimize;
-                if (0 == optimizeCounter) {
+                this.optimizeCounter = (this.optimizeCounter + 1) % this.startsPerOptimize;
+                if (0 == this.optimizeCounter) {
                     optimize();
                 }
 
-                curStart = this.starts.next();
-                curSolution = solveFor(new SingleIterator<>(curStart.get()));
-                curIndex = 0;
+                this.currentStart = this.starts.next();
+                this.currentSolution = solveFor(new SingleIterator<>(currentStart.get()));
+                this.currentIndex = 0;
             } else {
-                throw new NoSuchElementException();
+                throw FastNoSuchElementException.instance();
             }
         }
 
-        final Traverser<S> result = curStart.makeSibling();
-        BiConsumer<String, S> resultSetter = (name, value) -> {
+        final Traverser<S> result = this.currentStart.makeSibling();
+        final BiConsumer<String, S> resultSetter = (name, value) -> {
             result.set(value);
             //result.getPath().add(name, value);
         };
 
-        if (curSolution.visitSolution(curIndex++, resultSetter)) {
+        if (this.currentSolution.visitSolution(this.currentIndex++, resultSetter)) {
             return (Traverser<E>) result;
         } else {
             throw FastNoSuchElementException.instance();
@@ -132,58 +131,58 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
     }
 
     private void addTraversal(final Traversal<S, S> traversal) {
-        String outLabel, inLabel;
-        String start = TraversalHelper.getStart(traversal).getAs();
-        String end = TraversalHelper.getEnd(traversal).getAs();
-        if (!TraversalHelper.isLabeled(start)) {
-            throw new IllegalArgumentException("All match traversals must have their start pipe labeled");
+        String outAs, inAs;
+        final String startAs = TraversalHelper.getStart(traversal).getAs();
+        final String endAs = TraversalHelper.getEnd(traversal).getAs();
+        if (!TraversalHelper.isLabeled(startAs)) {
+            throw new IllegalArgumentException("All match traversals must have their start step named with as()");
         } else {
-            outLabel = start;
+            outAs = startAs;
         }
-        inLabel = TraversalHelper.isLabeled(end) ? end : null;
-        checkLabel(outLabel);
-        if (null == inLabel) {
-            inLabel = createAnonymousLabel();
+        inAs = TraversalHelper.isLabeled(endAs) ? endAs : null;
+        checkAs(outAs);
+        if (null == inAs) {
+            inAs = createAnonymousAs();
         } else {
-            checkLabel(inLabel);
+            checkAs(inAs);
         }
-        labels.add(outLabel);
-        labels.add(inLabel);
+        this.asLabels.add(outAs);
+        this.asLabels.add(inAs);
 
-        TraversalWrapper<S, S> wrapper = new TraversalWrapper<>(traversal, outLabel, inLabel);
-        List<TraversalWrapper<S, S>> l2 = traversalsOut.get(outLabel);
+        final TraversalWrapper<S, S> wrapper = new TraversalWrapper<>(traversal, outAs, inAs);
+        List<TraversalWrapper<S, S>> l2 = this.traversalsOut.get(outAs);
         if (null == l2) {
             l2 = new LinkedList<>();
-            traversalsOut.put(outLabel, l2);
+            this.traversalsOut.put(outAs, l2);
         }
         l2.add(wrapper);
     }
 
     public Collection<TraversalWrapper<S, S>> getTraversals() {
-        Collection<TraversalWrapper<S, S>> traversals = new LinkedList<>();
-        for (List<TraversalWrapper<S, S>> l : traversalsOut.values()) {
+        final Collection<TraversalWrapper<S, S>> traversals = new LinkedList<>();
+        for (List<TraversalWrapper<S, S>> l : this.traversalsOut.values()) {
             traversals.addAll(l);
         }
         return traversals;
     }
 
-    private void checkLabel(final String label) {
+    private void checkAs(final String as) {
         // note: this won't happen so long as the anon prefix is the same as Traversal.UNDERSCORE
-        if (isAnonymousLabel(label)) {
-            throw new IllegalArgumentException("label '" + label + "' uses reserved prefix '" + ANON_LABEL_PREFIX + "'");
+        if (isAnonymousAs(as)) {
+            throw new IllegalArgumentException("The step named '" + as + "' uses reserved prefix '" + ANON_LABEL_PREFIX + "'");
         }
     }
 
-    public static boolean isAnonymousLabel(final String label) {
-        return label.startsWith(ANON_LABEL_PREFIX);
+    public static boolean isAnonymousAs(final String as) {
+        return as.startsWith(ANON_LABEL_PREFIX);
     }
 
-    private String createAnonymousLabel() {
-        return ANON_LABEL_PREFIX + ++anonLabelCounter;
+    private String createAnonymousAs() {
+        return ANON_LABEL_PREFIX + ++this.anonLabelCounter;
     }
 
     public Enumerator<S> solveFor(final Iterator<S> inputs) {
-        return solveFor(startLabel, inputs);
+        return solveFor(inAs, inputs);
     }
 
     private Enumerator<S> solveFor(final String outLabel,
@@ -198,7 +197,7 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
                 Enumerator<S> result = null;
                 Set<String> leftLabels = new HashSet<>();
                 for (TraversalWrapper<S, S> w : outs) {
-                    TraversalUpdater<S, S> updater = new TraversalUpdater<>(w, new SingleIterator<S>(o), curStart);
+                    TraversalUpdater<S, S> updater = new TraversalUpdater<>(w, new SingleIterator<S>(o), currentStart);
 
                     Set<String> rightLabels = new HashSet<>();
                     addVariables(w.inLabel, rightLabels);
@@ -245,14 +244,14 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
     public static <T> void visit(final String name,
                                  final T value,
                                  final BiConsumer<String, T> visitor) {
-        if (!isAnonymousLabel(name)) {
+        if (!isAnonymousAs(name)) {
             visitor.accept(name, value);
         }
     }
 
     // note: optimize() is never called from within a solution iterator, as it changes the query plan
     public void optimize() {
-        optimizeAt(startLabel);
+        optimizeAt(inAs);
     }
 
     private void optimizeAt(final String outLabel) {
@@ -268,7 +267,7 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
 
     public List<String> getLabels() {
         List<String> labelList = new ArrayList<>();
-        labelList.addAll(labels);
+        labelList.addAll(asLabels);
         return labelList;
     }
 
@@ -373,7 +372,11 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
                 outputs = 0;
             });
             Iterator<Traverser<A>> starts = new MapIterator<>(seIter,
-                    o -> {Traverser<A> t = start.makeSibling(); t.set(o); return t;});
+                    o -> {
+                        Traverser<A> t = start.makeSibling();
+                        t.set(o);
+                        return t;
+                    });
 
             w.exhaust();
 
@@ -410,16 +413,16 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
         }
 
         public boolean hasNext() {
-            if (ready) {
-                onHasNext.accept(null);
-                ready = false;
+            if (this.ready) {
+                this.onHasNext.accept(null);
+                this.ready = false;
             }
-            return baseIterator.hasNext();
+            return this.baseIterator.hasNext();
         }
 
         public T next() {
-            T value = baseIterator.next();
-            ready = true;
+            T value = this.baseIterator.next();
+            this.ready = true;
             return value;
         }
     }
@@ -428,17 +431,17 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
         private final Function<A, B> map;
         private final Iterator<A> baseIterator;
 
-        public MapIterator(Iterator<A> baseIterator, Function<A, B> map) {
+        public MapIterator(final Iterator<A> baseIterator, final Function<A, B> map) {
             this.map = map;
             this.baseIterator = baseIterator;
         }
 
         public boolean hasNext() {
-            return baseIterator.hasNext();
+            return this.baseIterator.hasNext();
         }
 
         public B next() {
-            return map.apply(baseIterator.next());
+            return this.map.apply(this.baseIterator.next());
         }
     }
 }

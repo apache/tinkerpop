@@ -21,7 +21,7 @@ public class SerialEnumerator<T> implements Enumerator<T> {
     private final Function<T, Enumerator<T>> constructor;
     private final List<Enumerator<T>> memory = new ArrayList<>();
     private final List<T> values = new ArrayList<>();
-    private int completedEnumsSize = 0;
+    private int completedEnumsSize = 0; // TODO, why is this not being accessed (only assigned)
 
     public SerialEnumerator(final String name,
                             final Iterator<T> iterator,
