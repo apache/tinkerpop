@@ -614,7 +614,7 @@ g.V().match("a", "c"
 Traversal Strategy
 ------------------
 
-A `TraversalStrategy` can analyze a `Traversal` and mutate the traversal as it deems fit. This is useful in two situations:
+image:traversal-strategy.png[width=125,float=right] A `TraversalStrategy` can analyze a `Traversal` and mutate the traversal as it deems fit. This is useful in two situations:
 
  * There is a more efficient way to express the traversal at the TinkerPop3 level.
  * There is a more efficient way to express the traversal at the graph vendor level.
@@ -762,7 +762,7 @@ By extending Traversal, users can create a DSL that is respective of the semanti
 The GraphComputer API
 =====================
 
-TinkerPop3 provides two primary means of interacting with a graph: link:http://en.wikipedia.org/wiki/Online_transaction_processing[online transaction processing] (OLTP) and link:http://en.wikipedia.org/wiki/Online_analytical_processing[online analytical processing] (OLAP). OTLP-based graph systems allow the user to query the graph in real-time. However, typically, real-time performance is only possible when a local traversal is enacted. A local traversal is one that starts at a particular vertex (or small set of vertices) and touches a small set of connected vertices (by any arbitrary path of arbitrary length). In short, OLTP queries interact with a limited set of data and respond on the order of milliseconds or seconds. On the other hand, with OLAP graph processing, the entire graph is processed and thus, every vertex and edge is analyzed (some times more than once for iterative-based algorithms). Due to the amount of data being processed, the results are typically not returned in real-time and for massive graphs (i.e. graphs represented across a cluster of machines), results can take on the order of minutes or hours.
+image:graphcomputer-puffers.png[width=350,float=right] TinkerPop3 provides two primary means of interacting with a graph: link:http://en.wikipedia.org/wiki/Online_transaction_processing[online transaction processing] (OLTP) and link:http://en.wikipedia.org/wiki/Online_analytical_processing[online analytical processing] (OLAP). OTLP-based graph systems allow the user to query the graph in real-time. However, typically, real-time performance is only possible when a local traversal is enacted. A local traversal is one that starts at a particular vertex (or small set of vertices) and touches a small set of connected vertices (by any arbitrary path of arbitrary length). In short, OLTP queries interact with a limited set of data and respond on the order of milliseconds or seconds. On the other hand, with OLAP graph processing, the entire graph is processed and thus, every vertex and edge is analyzed (some times more than once for iterative-based algorithms). Due to the amount of data being processed, the results are typically not returned in real-time and for massive graphs (i.e. graphs represented across a cluster of machines), results can take on the order of minutes or hours.
 
  * *OLTP*: real-time, limited data accessed, random data access, sequential processing, querying
  * *OLAP*: long running, entire data set accessed, sequential data access, parallel processing, batch processing
@@ -1024,17 +1024,17 @@ Gremlin Utilities
 Gremlin Console
 ---------------
 
-The Gremlin Console is an interactive terminal or link:http://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop[REPL] that can be used to traverse graphs and interact with the data that they contain.  It represents the most common method for performing ad-hoc graph analysis, small to medium sized data loading projects and other exploratory functions.  The Gremlin Console is highly extensible, featuring a rich plugin system that allows new tools, commands, link:http://en.wikipedia.org/wiki/Domain-specific_language[DSLs], etc. to be exposed to users.
+image:gremlin-console.png[width=275,float=right] The Gremlin Console is an interactive terminal or link:http://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop[REPL] that can be used to traverse graphs and interact with the data that they contain.  It represents the most common method for performing ad-hoc graph analysis, small to medium sized data loading projects and other exploratory functions.  The Gremlin Console is highly extensible, featuring a rich plugin system that allows new tools, commands, link:http://en.wikipedia.org/wiki/Domain-specific_language[DSLs], etc. to be exposed to users.
 
 To start the Gremlin Console, run `gremlin.sh` or `gremlin.bat`:
 
 [source,text]
 ----
-bin/gremlin.sh
+$ bin/gremlin.sh
 
          \,,,/
          (o o)
-─────oOOo─(3)─oOOo─────
+-----oOOo-(3)-oOOo-----
 plugin loaded: server
 plugin loaded: gephi
 gremlin>
