@@ -53,7 +53,7 @@ public class IteratorEnumerator<T> implements Enumerator<T> {
             memory.add(value);
         } while (index >= memory.size());
 
-        MatchStepNew.visit(name, value, visitor);
+        MatchStep.visit(name, value, visitor);
 
         return true;
     }

@@ -33,7 +33,6 @@ import com.tinkerpop.gremlin.process.graph.step.map.ElementValuesStep;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.FoldStep;
 import com.tinkerpop.gremlin.process.graph.step.map.IdStep;
-import com.tinkerpop.gremlin.process.graph.step.map.IntersectStep;
 import com.tinkerpop.gremlin.process.graph.step.map.JumpStep;
 import com.tinkerpop.gremlin.process.graph.step.map.LabelStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
@@ -43,9 +42,8 @@ import com.tinkerpop.gremlin.process.graph.step.map.PropertyValueStep;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ShuffleStep;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldStep;
-import com.tinkerpop.gremlin.process.graph.step.map.UnionStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
-import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStepNew;
+import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStep;
 import com.tinkerpop.gremlin.process.graph.step.map.match.keep.KeepManyStep;
 import com.tinkerpop.gremlin.process.graph.step.map.match.keep.KeepOneStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeStep;
@@ -267,13 +265,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> match(final String inAs, final Traversal... traversals) {
-        return (GraphTraversal) this.addStep(new MatchStepNew<S, Map<String, E2>>(this, inAs, traversals));
-    }
-
-    public default <E2> GraphTraversal<S, E2> keep(final String... asLabels) {
-        return asLabels.length == 1 ?
-                (GraphTraversal) this.addStep(new KeepOneStep<E2>(this, asLabels[0])) :
-                (GraphTraversal) this.addStep(new KeepManyStep<Map<String, E2>>(this, asLabels));
+        return (GraphTraversal) this.addStep(new MatchStep<S, Map<String, E2>>(this, inAs, traversals));
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final List<String> asLabels, SFunction... stepFunctions) {
@@ -284,13 +276,19 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new SelectStep(this, Arrays.asList(), stepFunctions));
     }
 
-    public default <E2> GraphTraversal<S, E2> union(final Traversal... traversals) {
-        return (GraphTraversal) this.addStep(new UnionStep(this, traversals));
+    public default <E2> GraphTraversal<S, E2> keep(final String... asLabels) {
+        return asLabels.length == 1 ?
+                (GraphTraversal) this.addStep(new KeepOneStep<E2>(this, asLabels[0])) :
+                (GraphTraversal) this.addStep(new KeepManyStep<Map<String, E2>>(this, asLabels));
     }
 
-    public default <E2> GraphTraversal<S, E2> intersect(final Traversal... traversals) {
+    /*public default <E2> GraphTraversal<S, E2> union(final Traversal... traversals) {
+        return (GraphTraversal) this.addStep(new UnionStep(this, traversals));
+    }*/
+
+    /*public default <E2> GraphTraversal<S, E2> intersect(final Traversal... traversals) {
         return (GraphTraversal) this.addStep(new IntersectStep(this, traversals));
-    }
+    }*/
 
     public default <E2> GraphTraversal<S, E2> unfold() {
         return (GraphTraversal) this.addStep(new UnfoldStep<>(this));

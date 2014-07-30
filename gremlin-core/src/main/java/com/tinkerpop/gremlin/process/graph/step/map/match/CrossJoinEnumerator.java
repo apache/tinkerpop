@@ -69,7 +69,7 @@ public class CrossJoinEnumerator<T> implements Enumerator<T> {
                 y = index / xEnum.size();
                 break;
             }
-            if (!xEnum.visitSolution(xEnum.size(), (BiConsumer<String, T>) MatchStepNew.TRIVIAL_CONSUMER)) return false;
+            if (!xEnum.visitSolution(xEnum.size(), (BiConsumer<String, T>) MatchStep.TRIVIAL_CONSUMER)) return false;
         }
 
         int height = index / Math.min(1 + sq, xEnum.size());
@@ -84,14 +84,14 @@ public class CrossJoinEnumerator<T> implements Enumerator<T> {
                 height = yEnum.size();
                 int width = index / height;
                 while (width >= xEnum.size()) {
-                    if (!xEnum.visitSolution(xEnum.size(), (BiConsumer<String, T>) MatchStepNew.TRIVIAL_CONSUMER)) return false;
+                    if (!xEnum.visitSolution(xEnum.size(), (BiConsumer<String, T>) MatchStep.TRIVIAL_CONSUMER)) return false;
                 }
                 x = index / yEnum.size();
                 y = index % yEnum.size();
                 break;
             }
 
-            if (!yEnum.visitSolution(yEnum.size(), (BiConsumer<String, T>) MatchStepNew.TRIVIAL_CONSUMER)) return false;
+            if (!yEnum.visitSolution(yEnum.size(), (BiConsumer<String, T>) MatchStep.TRIVIAL_CONSUMER)) return false;
         }
 
         // solutions are visited completely (if we have reached this point), else not at all

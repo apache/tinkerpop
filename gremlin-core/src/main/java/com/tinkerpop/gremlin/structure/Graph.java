@@ -86,9 +86,9 @@ public interface Graph extends AutoCloseable {
      */
     public default <T extends Traversal> T traversal(final Class<T> traversalClass) {
         try {
-            final T t = (T) traversalClass.getMethod(Traversal.OF).invoke(null);
-            t.memory().set("g", this);
-            return t;
+            final T traversal = (T) traversalClass.getMethod(Traversal.OF).invoke(null);
+            traversal.memory().set("g", this);
+            return traversal;
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

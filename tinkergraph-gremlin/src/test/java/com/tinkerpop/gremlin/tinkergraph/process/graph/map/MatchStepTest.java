@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.match.CrossJoinEnumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.Enumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.InnerJoinEnumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.IteratorEnumerator;
-import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStepNew;
+import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStep;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
@@ -40,12 +40,12 @@ public class MatchStepTest {
 
     @Test
     public void testOutputs() throws Exception {
-        MatchStepNew<Object, Object> query;
+        MatchStep<Object, Object> query;
         Iterator iter;
         Graph g = TinkerFactory.createClassic();
 
         iter = g.V();
-        query = new MatchStepNew<>(g.V(), "a",
+        query = new MatchStep<>(g.V(), "a",
                 g.of().as("a").out("knows").as("b"),
                 g.of().as("a").out("created").as("c"));
 
@@ -59,19 +59,19 @@ public class MatchStepTest {
 
     @Test
     public void testTreePatterns() throws Exception {
-        MatchStepNew<Object, Object> query;
+        MatchStep<Object, Object> query;
         Iterator iter;
         Graph g = TinkerFactory.createClassic();
 
         iter = g.V();
-        query = new MatchStepNew<>(g.V(), "a",
+        query = new MatchStep<>(g.V(), "a",
                 g.of().as("a").out("knows").as("b"),
                 g.of().as("a").out("created").as("c"));
         assertResults(query.solveFor(iter),
                 new Bindings<>().put("a", "v[1]").put("b", "v[2]").put("c", "v[3]"),
                 new Bindings<>().put("a", "v[1]").put("b", "v[4]").put("c", "v[3]"));
 
-        query = new MatchStepNew<>(g.V(), "a",
+        query = new MatchStep<>(g.V(), "a",
                 g.of().as("a").out("knows").as("b"),
                 g.of().as("b").out("created").as("c"));
         iter = g.V();
@@ -79,7 +79,7 @@ public class MatchStepTest {
                 new Bindings<>().put("a", "v[1]").put("b", "v[4]").put("c", "v[3]"),
                 new Bindings<>().put("a", "v[1]").put("b", "v[4]").put("c", "v[5]"));
 
-        query = new MatchStepNew<>(g.V(), "d",
+        query = new MatchStep<>(g.V(), "d",
                 g.of().as("d").in("knows").as("a"),
                 g.of().as("d").has("name", "vadas"),
                 g.of().as("a").out("knows").as("b"),
@@ -92,12 +92,12 @@ public class MatchStepTest {
 
     @Test
     public void testDAGPatterns() throws Exception {
-        MatchStepNew<Object, Object> query;
+        MatchStep<Object, Object> query;
         Iterator iter;
         Graph g = TinkerFactory.createModern();
 
         iter = g.V();
-        query = new MatchStepNew<>(g.V(), "a",
+        query = new MatchStep<>(g.V(), "a",
                 g.of().as("a").out("uses").as("b"),
                 g.of().as("b").out("dependsOn").as("c"),
                 g.of().as("a").out("created").as("c"));
@@ -152,11 +152,11 @@ public class MatchStepTest {
 
     @Test
     public void testOptimization() throws Exception {
-        MatchStepNew<Object, Object> query;
+        MatchStep<Object, Object> query;
         Iterator iter;
         Graph g = TinkerFactory.createClassic();
 
-        query = new MatchStepNew<>(g.V(), "d",
+        query = new MatchStep<>(g.V(), "d",
                 g.of().as("d").in("knows").as("a"),
                 g.of().as("d").has("name", "vadas"),
                 g.of().as("a").out("knows").as("b"),
@@ -213,7 +213,7 @@ public class MatchStepTest {
 
         long startTime, endTime;
         startTime = System.currentTimeMillis();
-        MatchStepNew<Object, Object> query = new MatchStepNew<>(g.V().has("name", "Garcia"), "garcia",
+        MatchStep<Object, Object> query = new MatchStep<>(g.V().has("name", "Garcia"), "garcia",
                 g.of().as("garcia").in("sung_by").as("song"),
                 g.of().as("song").out("written_by", "writer"));
         Enumerator<Object> solutions = query.solveFor(g.V().has("name", "Garcia"));
@@ -239,7 +239,7 @@ public class MatchStepTest {
 
         long startTime, endTime;
         startTime = System.currentTimeMillis();
-        MatchStepNew<Object, Object> query = createQuery1(g);
+        MatchStep<Object, Object> query = createQuery1(g);
         query.setStartsPerOptimize(1);
         Enumerator<Object> solutions = query.solveFor(g.V().has("name", "Garcia"));
         exhaust(solutions);
@@ -266,8 +266,8 @@ public class MatchStepTest {
         System.out.println("finished in " + (endTime - startTime) + "ms");
     }
 
-    private MatchStepNew<Object, Object> createQuery1(final Graph g) {
-        return new MatchStepNew<>(g.V().has("name", "Garcia"), "garcia",
+    private MatchStep<Object, Object> createQuery1(final Graph g) {
+        return new MatchStep<>(g.V().has("name", "Garcia"), "garcia",
                 g.of().as("garcia").in("sung_by").as("song"),
                 g.of().as("song").out("written_by", "writer"));
     }
@@ -421,8 +421,8 @@ public class MatchStepTest {
                                     final Traversal t,
                                     final Iterator inputs) {
         Traverser start = new SimpleTraverser(null);
-        MatchStepNew.TraversalWrapper w = new MatchStepNew.TraversalWrapper(t, "a", "b");
-        MatchStepNew.TraversalUpdater updater = new MatchStepNew.TraversalUpdater<>(w, inputs, start, "x");
+        MatchStep.TraversalWrapper w = new MatchStep.TraversalWrapper(t, "a", "b");
+        MatchStep.TraversalUpdater updater = new MatchStep.TraversalUpdater<>(w, inputs, start, "x");
         while (updater.hasNext()) {
             updater.next();
         }

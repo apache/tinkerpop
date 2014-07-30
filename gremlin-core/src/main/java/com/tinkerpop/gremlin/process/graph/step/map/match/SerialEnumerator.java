@@ -69,7 +69,7 @@ public class SerialEnumerator<T> implements Enumerator<T> {
                 Enumerator<T> e = memory.get(index);
 
                 if ((!e.isComplete() || e.isComplete() && i < totalSize + e.size()) && e.visitSolution(i - totalSize, visitor)) {
-                    MatchStepNew.visit(name, values.get(index), visitor);
+                    MatchStep.visit(name, values.get(index), visitor);
 
                     return true;
                 }

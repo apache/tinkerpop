@@ -25,7 +25,7 @@ import java.util.function.Function;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class MatchStepNew<S, E> extends AbstractStep<S, Map<String, E>> {
+public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
 
     static final BiConsumer<String, Object> TRIVIAL_CONSUMER = (s, t) -> {
     };
@@ -44,7 +44,7 @@ public class MatchStepNew<S, E> extends AbstractStep<S, Map<String, E>> {
 
     private int anonLabelCounter = 0;
 
-    public MatchStepNew(final Traversal traversal, final String inAs, final Traversal... traversals) {
+    public MatchStep(final Traversal traversal, final String inAs, final Traversal... traversals) {
         super(traversal);
 
         this.inAs = inAs;
