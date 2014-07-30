@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.junit.Test;
 
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -74,7 +75,7 @@ public class ExceptionCoverageTest {
 
         // evaluate each of the blueprints exceptions and find the list of exception methods...assert them against
         // the list of implementedExceptions to make sure they are covered.
-        Stream.of(blueprintsExceptions).flatMap(c -> Stream.of(c.getDeclaredMethods()).map(m -> String.format("%s#%s", c.getName(), m.getName())))
+        Stream.of(blueprintsExceptions).flatMap(c -> Stream.of(c.getDeclaredMethods()).map((Method m) -> String.format("%s#%s", c.getName(), m.getName())))
                 .filter(s -> !ignore.contains(s))
                 .forEach(s -> {
                     System.out.println(s);
