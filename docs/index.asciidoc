@@ -2156,7 +2156,7 @@ Graph Developers
 | link:http://test.com[Bryn Cooke] (2013) | Gremlin domain specific language theorist.
 | link:http://test.com[James Thornton] (2013) | Creator of Bulbs and TinkerPop evangelist.
 | link:http://test.com[Sridhar Ramachandran] (2013) | Lambda Zen representative and Gremlin traversal engine theorist.
-| link:http://test.com[Nicholas Quinn] (2013) | Objective representative.
+| link:http://test.com[Nicholas Quinn] (2013) | Objectivity representative.
 | link:http://test.com[Xavier Sanchez] (2013) | Sparksee representative.
 | link:http://test.com[Daniel Kuppitz] (2014) | Gremlin traversal theorist and public technology support.
 | link:http://test.com[Michael Pollmeier] (2014) | Gremlin-Scala creator and traversal API theorist.
