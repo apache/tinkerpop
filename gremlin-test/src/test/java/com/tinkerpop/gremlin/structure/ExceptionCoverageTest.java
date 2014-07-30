@@ -46,10 +46,6 @@ public class ExceptionCoverageTest {
 
             add("com.tinkerpop.gremlin.structure.Graph$Exceptions#onlyOneOrNoGraphComputerClass");
 
-            add("com.tinkerpop.gremlin.structure.Graph$Exceptions#vertexAdditionsNotSupported");
-            add("com.tinkerpop.gremlin.structure.Graph$Exceptions#vertexLookupsNotSupported");
-            add("com.tinkerpop.gremlin.structure.Graph$Exceptions#edgeLookupsNotSupported");
-
             // todo: need to write consistency tests for the following items still...........
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeRead");
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeWritten");
@@ -58,10 +54,15 @@ public class ExceptionCoverageTest {
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#isolationNotSupported");
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#computerHasAlreadyBeenSubmittedAVertexProgram");
 
+            add("com.tinkerpop.gremlin.structure.Graph$Exceptions#vertexAdditionsNotSupported");
             add("com.tinkerpop.gremlin.structure.Element$Exceptions#propertyAdditionNotSupported");
+            add("com.tinkerpop.gremlin.structure.Vertex$Exceptions#edgeAdditionsNotSupported");
+
+            add("com.tinkerpop.gremlin.structure.Graph$Exceptions#vertexLookupsNotSupported");
+            add("com.tinkerpop.gremlin.structure.Graph$Exceptions#edgeLookupsNotSupported");
+
             add("com.tinkerpop.gremlin.structure.Element$Exceptions#propertyRemovalNotSupported");
             add("com.tinkerpop.gremlin.structure.Vertex$Exceptions#vertexRemovalNotSupported");
-            add("com.tinkerpop.gremlin.structure.Vertex$Exceptions#edgeAdditionsNotSupported");
             add("com.tinkerpop.gremlin.structure.Edge$Exceptions#edgeRemovalNotSupported");
 
         }};
