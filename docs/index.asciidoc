@@ -2158,7 +2158,7 @@ Graph Developers
 | link:http://test.com[Sridhar Ramachandran] (2013) | Lambda Zen representative and Gremlin traversal theorist.
 | link:http://test.com[Nicholas Quinn] (2013) | Objective representative.
 | link:http://test.com[Xavier Sanchez] (2013) | Sparksee representative.
-| link:http://test.com[Daniel Kuppitz] (2014) | Gremlin traversal theorist and public technology support.
+| link:https://www.google.com/search?q=daniel+kuppitz[Daniel Kuppitz] (2014) | Gremlin traversal theorist and public technology support.
 | link:http://test.com[Michael Pollmeier] (2014) | Gremlin-Scala creator and traversal theorist.
 | link:http://test.com[Jean-Baptiste Musso] (2014) | Gremlin-JavaScript creator.
 | link:http://test.com[Bob Briody] (2014) | Gremlin visualization creator.
