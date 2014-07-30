@@ -52,7 +52,8 @@ public class MatchStepTest {
         GraphTraversal t = g.V().match("a", g.of().as("a").out("knows").as("b"),
                 g.of().as("a").out("created").as("c"));
         while (t.hasNext()) {
-            System.out.println("solution: " + t.next());
+            Object n = t.next();
+            System.out.println("solution: " + n);
         }
     }
 
@@ -229,6 +230,49 @@ public class MatchStepTest {
     }
 
     @Test
+    public void testStartsPerOptimize() throws Exception {
+        Graph g = TinkerGraph.open();
+        try (InputStream in = Graph.class.getResourceAsStream("util/io/graphml/grateful-dead.xml")) {
+            GraphMLReader r = GraphMLReader.create().build();
+            r.readGraph(in, g);
+        }
+
+        long startTime, endTime;
+        startTime = System.currentTimeMillis();
+        MatchStepNew<Object, Object> query = createQuery1(g);
+        query.setStartsPerOptimize(1);
+        Enumerator<Object> solutions = query.solveFor(g.V().has("name", "Garcia"));
+        exhaust(solutions);
+        endTime = System.currentTimeMillis();
+        assertEquals(147, solutions.size());
+        System.out.println("finished in " + (endTime - startTime) + "ms");
+
+        startTime = System.currentTimeMillis();
+        query = createQuery1(g);
+        query.setStartsPerOptimize(100);
+        solutions = query.solveFor(g.V().has("name", "Garcia"));
+        exhaust(solutions);
+        endTime = System.currentTimeMillis();
+        assertEquals(147, solutions.size());
+        System.out.println("finished in " + (endTime - startTime) + "ms");
+
+        startTime = System.currentTimeMillis();
+        query = createQuery1(g);
+        query.setStartsPerOptimize(1);
+        solutions = query.solveFor(g.V().has("name", "Garcia"));
+        exhaust(solutions);
+        endTime = System.currentTimeMillis();
+        assertEquals(147, solutions.size());
+        System.out.println("finished in " + (endTime - startTime) + "ms");
+    }
+
+    private MatchStepNew<Object, Object> createQuery1(final Graph g) {
+        return new MatchStepNew<>(g.V().has("name", "Garcia"), "garcia",
+                g.of().as("garcia").in("sung_by").as("song"),
+                g.of().as("song").out("written_by", "writer"));
+    }
+
+    @Test
     public void testCrossJoin() throws Exception {
         String[] a1 = new String[]{"a", "b", "c"};
         String[] a2 = new String[]{"1", "2", "3", "4"};
@@ -378,7 +422,7 @@ public class MatchStepTest {
                                     final Iterator inputs) {
         Traverser start = new SimpleTraverser(null);
         MatchStepNew.TraversalWrapper w = new MatchStepNew.TraversalWrapper(t, "a", "b");
-        MatchStepNew.TraversalUpdater updater = new MatchStepNew.TraversalUpdater<>(w, inputs, start);
+        MatchStepNew.TraversalUpdater updater = new MatchStepNew.TraversalUpdater<>(w, inputs, start, "x");
         while (updater.hasNext()) {
             updater.next();
         }

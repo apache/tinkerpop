@@ -264,9 +264,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new BackStep<>(this, as));
     }
 
-    public default <E2> GraphTraversal<S, E2> match(final String inAs, final Traversal... traversals) {
-        return (GraphTraversal) this.addStep(new MatchStepNew<S, E2>(this, inAs, traversals));
-        //return (GraphTraversal) this.addStep(new MatchStep<S, E2>(this, inAs, outAs, traversals));
+    public default <E2> GraphTraversal<S, Map<String, E2>> match(final String inAs, final Traversal... traversals) {
+        return (GraphTraversal) this.addStep(new MatchStepNew<S, Map<String, E2>>(this, inAs, traversals));
     }
 
     public default GraphTraversal<S, Path> select(final List<String> asLabels, SFunction... stepFunctions) {

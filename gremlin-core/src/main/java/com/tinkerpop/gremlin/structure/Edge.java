@@ -141,8 +141,8 @@ public interface Edge extends Element {
         return this.start().map(function);
     }
 
-    public default <E2> GraphTraversal<Edge, E2> match(final String inAs, final Traversal... traversals) {
-        return this.start().match(inAs, traversals);
+    public default <E2> GraphTraversal<Edge, Map<String, E2>> match(final String inAs, final Traversal... traversals) {
+        return (GraphTraversal) this.start().match(inAs, traversals);
     }
 
     public default GraphTraversal<Edge, Edge> sideEffect(final SConsumer<Traverser<Edge>> consumer) {
