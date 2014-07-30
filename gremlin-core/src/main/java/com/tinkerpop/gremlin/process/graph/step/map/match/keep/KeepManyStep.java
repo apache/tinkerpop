@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class KeepManyStep extends MapStep<Map<String, Object>, Map<String, Object>> {
+public class KeepManyStep<E> extends MapStep<Map<String, E>, Map<String, E>> {
 
     public final List<String> keepAsLabels;
 
@@ -19,10 +19,10 @@ public class KeepManyStep extends MapStep<Map<String, Object>, Map<String, Objec
         super(traversal);
         this.keepAsLabels = Arrays.asList(keepAsLabels);
         this.setFunction(traverser -> {
-            final Map<String, Object> startMap = traverser.get();
-            final Map<String, Object> endMap = new HashMap<>();
+            final Map<String, E> startMap = traverser.get();
+            final Map<String, E> endMap = new HashMap<>();
             for (final String as : this.keepAsLabels) {
-                final Object value = startMap.get(as);
+                final E value = startMap.get(as);
                 if (null != value)
                     endMap.put(as, value);
             }

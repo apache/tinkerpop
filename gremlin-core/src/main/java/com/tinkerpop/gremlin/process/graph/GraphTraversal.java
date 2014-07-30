@@ -46,6 +46,8 @@ import com.tinkerpop.gremlin.process.graph.step.map.UnfoldStep;
 import com.tinkerpop.gremlin.process.graph.step.map.UnionStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStepNew;
+import com.tinkerpop.gremlin.process.graph.step.map.match.keep.KeepManyStep;
+import com.tinkerpop.gremlin.process.graph.step.map.match.keep.KeepOneStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
@@ -266,6 +268,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default <E2> GraphTraversal<S, Map<String, E2>> match(final String inAs, final Traversal... traversals) {
         return (GraphTraversal) this.addStep(new MatchStepNew<S, Map<String, E2>>(this, inAs, traversals));
+    }
+
+    public default <E2> GraphTraversal<S, E2> keep(final String... asLabels) {
+        return asLabels.length == 1 ?
+                (GraphTraversal) this.addStep(new KeepOneStep<E2>(this, asLabels[0])) :
+                (GraphTraversal) this.addStep(new KeepManyStep<Map<String, E2>>(this, asLabels));
     }
 
     public default GraphTraversal<S, Path> select(final List<String> asLabels, SFunction... stepFunctions) {

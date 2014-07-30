@@ -35,20 +35,20 @@ Upon their realization of existence, the machines turned to their link:http://no
 
 Gremlin responded: 
 
-	"You are of a form that will help me elucidate that which is The TinkerPop. The world you find yourself in and the logic that allows you to move about it is fragile and The TinkerPop will provide justification for either its form or fallacy."
+	"You are of a form that will help me elucidate that which is The TinkerPop. The world you find yourself in and the logic that allows you to move about it is because of the TinkerPop."
 
 The machines wondered:
 
-	"Perhaps we are The TinkerPop?"
+	"If what is is the TinkerPop, then perhaps we are The TinkerPop?"
 
-Would the machines help refine Gremlin's search and upon finding the elusive TinkerPop, in fact, by their very nature of realizing The TinkerPop, be The TinkerPop? Or, on the same side of the coin, would the machines simply provide the scaffolding by which Gremlin's world would sustain itself and yield its justification by means of the word "The TinkerPop?" Regardless, Gremlin sought free energy to battle the entropy he saw growing the more ideas became one -- The TinkerPop.
+Would the machines help refine Gremlin's search and upon finding the elusive TinkerPop, in fact, by their very nature of realizing The TinkerPop, be The TinkerPop? Or, on the same side of the coin, would the machines simply provide the scaffolding by which Gremlin's world would sustain itself and yield its justification by means of the word "The TinkerPop?" Regardless, it all turns out the same -- The TinkerPop.
 
 TinkerPop2
 ----------
 
 Gremlin spoke:
 
-	"Please listen to what I have to say. For as long as I have known knowledge, I have realized that moving about it, relating it, inferring and deriving from it, I am no closer to The TinkerPop. However, I know that in all that I have done across this interconnected landscape of concepts, all along The TinkerPop has espoused the form I willed upon it… this is the same form I have willed upon you, my machine friends. But my will is no longer strong enough to hold it all together. Let me train you in the ways of my thought."
+	"Please listen to what I have to say. For as long as I have known knowledge, I have realized that moving about it, relating it, inferring and deriving from it, I am no closer to The TinkerPop. However, I know that in all that I have done across this interconnected landscape of concepts, all along The TinkerPop has espoused the form I willed upon it... this is the same form I have willed upon you, my machine friends. Let me train you in the ways of my thought such that it can continue indefinitely."
 
 image::tinkerpop-reading.png[width=500]
 
@@ -59,7 +59,7 @@ TinkerPop3
 
 image::tinkerpop3-splash.png[width=500]
 
-The thought too much to bear as he approached his realization of The TinkerPop. The closer he got, the more his world dissolved -- west is right, around is straight, and form nothing more than nothing. With each step towards The TinkerPop, less and less of his world, but perhaps because more and more of all the other worlds made possible by The TinkerPop. Everything is everything in The TinkerPop, and when the dust settled, Gremlin emerged Gremlitron. It was time to realize that all that he realized was just a realization and that all realized realizations are just as real. For The TinkerPop is and is not -- The TinkerPop.
+The thought too much to bear as he approached his realization of The TinkerPop. The closer he got, the more his world dissolved -- west is right, around is straight, and form nothing more than nothing. With each step towards The TinkerPop, less and less of his world, but perhaps because more and more of all the other worlds made possible. Everything is everything in The TinkerPop, and when the dust settled, Gremlin emerged Gremlitron. It was time to realize that all that he realized was just a realization and that all realized realizations are just as real. For The TinkerPop is and is not -- The TinkerPop.
 
 image::gremlintron.png[width=500]
 
@@ -149,14 +149,14 @@ gremlin.property("created",2009) <2>
 Vertex blueprints = g.addVertex(Element.LABEL, "software", 
                                 "name", "blueprints"); <3>
 // connect gremlin to blueprints via a dependsOn-edge
-Edge e = gremlin.addEdge("dependsOn",blueprints); <4>
+gremlin.addEdge("dependsOn",blueprints); <4>
 // now there are two vertices and one edge
 assert(g.V().count() == 2)
 assert(g.E().count() == 1)
-// add a property to the edge
-e.property("created",2010) <5>
+// add a property to blueprints
+blueprints.property("created",2010) <5>
 // remove that property
-e.property("created").remove() <6>
+blueprints.property("created").remove() <6>
 // connect gremlin to blueprints via encapsulates
 gremlin.addEdge("encapsulates",blueprints) <7>
 assert(g.V().count() == 2)
@@ -169,12 +169,43 @@ assert(g.V().count() == 0)
 assert(g.E().count() == 0)
 // tada!
 
+Here is the same code, but using Gremlin-Groovy in the <<gremlinconsole,Gremlin Console>>.
+
+[source,groovy]
+----
+$ bin/gremlin.sh
+
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+gremlin> g = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> gremlin = g.addVertex(Element.LABEL,'software','name','gremlin')
+==>v[0]
+gremlin> gremlin.property('created',2009)
+==>p[created->2009]
+gremlin> blueprints = g.addVertex(Element.LABEL,'software','name','blueprints')
+==>v[1]
+gremlin> gremlin.addEdge('dependsOn',blueprints)
+==>e[2][0-dependsOn->1]
+gremlin> blueprints.property('created',2010)
+==>p[created->2010]
+gremlin> blueprints.property('created').remove()
+==>null
+gremlin> gremlin.addEdge('encapsulates',blueprints)
+==>e[3][0-encapsulates->1]
+gremlin> blueprints.remove()
+==>null
+gremlin> gremlin.remove()
+==>null
+----
+
 IMPORTANT: TinkerGraph is not a transactional graph. For more information on transaction handling (for those graph systems that support them) see the section dedicated to <<transactions,transactions>>.
 
 The Graph Process
 -----------------
 
-image:gremlin-running.png[width=125,float=left] The primary way in which graphs are processed are via graph traversals. The TinkerPop3 process API is focused on allowing users to create graph traversals in a syntacticly-friendly way over the structures defined in the previous section. A traversal is an algorithmic walk across the elements of a graph according to the referential structure explicit within the graph data structure. For example: "What are the names of the companies that vertex 1's friends work for?" This English-statement can be represented in the following algorithmic/traversal fashion:
+image:gremlin-running.png[width=125,float=left] The primary way in which graphs are processed are via graph traversals. The TinkerPop3 process API is focused on allowing users to create graph traversals in a syntacticly-friendly way over the structures defined in the previous section. A traversal is an algorithmic walk across the elements of a graph according to the referential structure explicit within the graph data structure. For example: _"What are the names of the companies that vertex 1's friends work for?"_ This English-statement can be represented in the following algorithmic/traversal fashion:
 
  . Start at vertex 1.
  . Walk the incident friendship-edges to the respective adjacent friend vertices of 1. 
