@@ -20,7 +20,6 @@ import org.neo4j.graphdb.index.RelationshipAutoIndexer;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -63,22 +62,22 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
     private Iterator<? extends Vertex> vertices() {
         this.graph.tx().readWrite();
-        Stream<? extends Vertex> vertexStream;
+        final Stream<? extends Vertex> vertexStream;
         if (this.hasContainers.size() > 1 && this.hasContainers.get(0).key.equals(Element.LABEL) && this.hasContainers.get(1).predicate.equals(Compare.EQUAL)) {
             //Scenario 1, using labeled index via 2 HasContainer
-            HasContainer hasContainer1 = this.hasContainers.get(0);
-            HasContainer hasContainer2 = this.hasContainers.get(1);
+            final HasContainer hasContainer1 = this.hasContainers.get(0);
+            final HasContainer hasContainer2 = this.hasContainers.get(1);
             //In this case neo4j will work out if there is an index or not
             this.hasContainers.remove(hasContainer1);
             this.hasContainers.remove(hasContainer2);
             vertexStream = getVerticesUsingLabeledIndex((String) hasContainer1.value, hasContainer2.key, hasContainer2.value);
         } else if (this.hasContainers.size() > 0 && this.hasContainers.get(0).key.equals(Element.LABEL)) {
             //Scenario 2, using label only for search
-            HasContainer hasContainer1 = this.hasContainers.get(0);
+            final HasContainer hasContainer1 = this.hasContainers.get(0);
             vertexStream = getVerticesUsingLabel((String) hasContainer1.value);
             this.hasContainers.remove(hasContainer1);
         } else  {
-            HasContainer hasContainer1 = getVertexIndexKey();
+            final HasContainer hasContainer1 = getVertexIndexKey();
             if (hasContainer1 != null) {
                 vertexStream = getVerticesUsingLegacyIndex(hasContainer1.key, hasContainer1.value);
                 this.hasContainers.remove(hasContainer1);
@@ -100,22 +99,21 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     }
 
     private Stream<Vertex> getVerticesUsingLabeledIndex(final String label, String key, Object value) {
-        ResourceIterator<Node> iterator = graph.getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(label), key, value).iterator();
+        final ResourceIterator<Node> iterator = graph.getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(label), key, value).iterator();
         return StreamFactory.stream(iterator).map(n -> new Neo4jVertex(n, this.graph));
     }
 
     private Stream<Vertex> getVerticesUsingLabel(final String label) {
-        ResourceIterator<Node> iterator = GlobalGraphOperations.at(graph.getBaseGraph()).getAllNodesWithLabel(DynamicLabel.label(label)).iterator();
+        final ResourceIterator<Node> iterator = GlobalGraphOperations.at(graph.getBaseGraph()).getAllNodesWithLabel(DynamicLabel.label(label)).iterator();
         return StreamFactory.stream(iterator).map(n -> new Neo4jVertex(n, this.graph));
     }
 
-    private Stream<Vertex> getVerticesUsingLegacyIndex(String key, Object value) {
+    private Stream<Vertex> getVerticesUsingLegacyIndex(final String key, final Object value) {
         final AutoIndexer indexer = this.graph.getBaseGraph().index().getNodeAutoIndexer();
-        if (indexer.isEnabled() && indexer.getAutoIndexedProperties().contains(key))
-            return StreamFactory.stream(this.graph.getBaseGraph().index().getNodeAutoIndexer().getAutoIndex().get(key, value).iterator())
-                    .map(n -> new Neo4jVertex(n, this.graph));
-        else
-            throw new IllegalStateException("Index not here"); // todo: unecessary check/throw?
+        return indexer.isEnabled() && indexer.getAutoIndexedProperties().contains(key) ?
+                StreamFactory.stream(this.graph.getBaseGraph().index().getNodeAutoIndexer().getAutoIndex().get(key, value).iterator())
+                        .map(n -> new Neo4jVertex(n, this.graph)) :
+                Stream.empty();
     }
 
     private Stream<Neo4jEdge> getEdgesUsingIndex(final HasContainer indexedContainer) {
@@ -127,20 +125,18 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
     private HasContainer getVertexIndexKey() {
         final Set<String> indexedKeys = this.graph.getBaseGraph().index().getNodeAutoIndexer().getAutoIndexedProperties();
-        HasContainer indexedHasContainer = this.hasContainers.stream()
+        return this.hasContainers.stream()
                 .filter(c -> (indexedKeys.contains(c.key) && c.predicate.equals(Compare.EQUAL)))
                 .findFirst()
                 .orElseGet(() -> null);
-        return indexedHasContainer;
     }
 
     private HasContainer getEdgeIndexKey() {
         final Set<String> indexedKeys = this.graph.getBaseGraph().index().getRelationshipAutoIndexer().getAutoIndexedProperties();
-        HasContainer indexedHasContainer = this.hasContainers.stream()
+        return this.hasContainers.stream()
                 .filter(c -> (indexedKeys.contains(c.key) && c.predicate.equals(Compare.EQUAL)))
                 .findFirst()
                 .orElseGet(() -> null);
-        return indexedHasContainer;
     }
 
 
