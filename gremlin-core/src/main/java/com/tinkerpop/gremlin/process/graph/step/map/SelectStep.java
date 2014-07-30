@@ -2,16 +2,18 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
+import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.util.function.SFunction;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SelectStep extends MapStep<Object, Path> implements PathConsumer {
+public class SelectStep<E> extends MapStep<Object, Map<String, E>> implements PathConsumer {
 
     public final FunctionRing functionRing;
     public final String[] asLabels;
@@ -22,16 +24,23 @@ public class SelectStep extends MapStep<Object, Path> implements PathConsumer {
         this.asLabels = asLabels.toArray(new String[asLabels.size()]);
         this.setFunction(traverser -> {
             final Path path = traverser.getPath();
+            final Map<String, E> temp = new HashMap<>();
             if (this.functionRing.hasFunctions()) {
-                final Path temp = new Path();
                 if (this.asLabels.length == 0)
-                    path.forEach((as, object) -> temp.add(as, this.functionRing.next().apply(object)));
+                    path.forEach((as, object) -> temp.put(as, (E) this.functionRing.next().apply(object)));
                 else
-                    path.subset(this.asLabels).forEach((as, object) -> temp.add(as, this.functionRing.next().apply(object)));
+                    path.subset(this.asLabels).forEach((as, object) -> temp.put(as, (E) this.functionRing.next().apply(object)));
                 return temp;
             } else {
-                return this.asLabels.length == 0 ? path : path.subset(this.asLabels);
+                if (this.asLabels.length == 0) {
+                    path.forEach((k, v) -> temp.put(k, (E) v));
+                } else {
+                    for (final String as : this.asLabels) {
+                        temp.put(as, path.get(as));
+                    }
+                }
             }
+            return temp;
         });
     }
 }

@@ -276,11 +276,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 (GraphTraversal) this.addStep(new KeepManyStep<Map<String, E2>>(this, asLabels));
     }
 
-    public default GraphTraversal<S, Path> select(final List<String> asLabels, SFunction... stepFunctions) {
+    public default <E2> GraphTraversal<S, Map<String, E2>> select(final List<String> asLabels, SFunction... stepFunctions) {
         return (GraphTraversal) this.addStep(new SelectStep(this, asLabels, stepFunctions));
     }
 
-    public default GraphTraversal<S, Path> select(final SFunction... stepFunctions) {
+    public default <E2> GraphTraversal<S, Map<String, E2>> select(final SFunction... stepFunctions) {
         return (GraphTraversal) this.addStep(new SelectStep(this, Arrays.asList(), stepFunctions));
     }
 
