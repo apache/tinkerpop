@@ -607,40 +607,56 @@ gremlin> sg.E
 
 <1> Starting at vertex `3`, traverse 3 steps away on in-edges, outputting all of that into the subgraph.
 
+[[match-step]]
 Match Step
 ~~~~~~~~~~
 
-`MatchStep` was introduced into TinkerPop3 to support a more declarative form of pattern matching. This step extends the functionality of `table()` and `select()` with the inclusion of `match()`.
+`MatchStep` was introduced into TinkerPop3 to support a more declarative form of pattern matching. This step extends the functionality of `select()` with the inclusion of `match()`.
 
 "Who created a project named 'lop' that was also created by someone who is 29 years old? Return the two creators."
 
 image::match-step.png[width=500]
 
-[source,java]
-g.V().match("a",
-  GraphTraversal.of().as("a").out("created").as("b"),
-  GraphTraversal.of().as("b").has("name", "lop"),
-  GraphTraversal.of().as("b").in("created").as("c"),
-  GraphTraversal.of().as("c").has("age", 29))
-    .select(As.of("a", "c"), v -> v.value("name")) 
-// [josh, marko]
-// [marko, marko]
-// [peter, marko]
+[source,groovy]
+gremlin> g.V.match('a',
+           g.of().as('a').out('created').as('b'),
+           g.of().as('b').has('name', 'lop'),
+           g.of().as('b').in('created').as('c'),
+           g.of().as('c').has('age', 29)).
+          select(['a', 'c']){it.value('name')} 
+==>[a:josh, c:marko]
+==>[a:marko, c:marko]
+==>[a:peter, c:marko]
 
-MatchStep brings functionality similar to SPARQL to TinkerPop. A few of the the differentiating qualities include:
+MatchStep brings functionality similar to link:http://en.wikipedia.org/wiki/SPARQL[SPARQL] to Gremlin. A few of the the differentiating qualities include:
 
-[source,java]
-g.V().match("a", "c"
-  GraphTraversal.of().as("a").out("created").has("name","lop").as("b"), <1>
-  GraphTraversal.of().as("b").in("created").has("age", 29).as("c"),
-  GraphTraversal.of().as("c").out().jump("c")(v -> v.getLoops() < 2). <2>
-    .out("knows").name  <3>
-// josh
-// vadas
+[source,groovy]
+gremlin> g.V.match('a',
+            g.of().as('a').out('created').has('name','lop').as('b'), <1>
+            g.of().as('b').in('created').has('age', 29).as('c'),
+            g.of().as('c').out().jump('c',2). <2>
+           select('c').out('knows').name <3>
+==>vadas
+==>josh
 
 <1> *Arbitrary length patterns*: `match()` is not restricted to triple patterns.
 <2> *Recursion support*: `match()` supports the `jump()`-step within a pattern.
-<3> *Path/pattern hybrid*: Pre and prior to a match an be a path expression and thus, both constructs supported in the same traversal.
+<3> *Imperative/declarative hybrid*: Pre and prior to a `match()`, it is possible to leverage classic Gremlin imperative.
+
+To extend point #3, it is possible to support going from imperative, to declarative, to imperative, ad infinitum.
+
+[source,groovy]
+gremlin> g.V.match('a', 
+           g.of().as('a').out('knows').as('b'),
+           g.of().as('b').out('created').has('name','lop')).
+          select('b').
+          out('created').
+          match('a',
+           g.of().as('a').in('created').as('b'),
+           g.of().as('b').out('knows').as('c')).
+          select('c').name
+==>vadas
+==>josh
 
 Traversal Strategy
 ------------------
@@ -1055,7 +1071,7 @@ Gremlin Utilities
 Gremlin Console
 ---------------
 
-image:gremlin-console.png[width=275,float=right] The Gremlin Console is an interactive terminal or link:http://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop[REPL] that can be used to traverse graphs and interact with the data that they contain.  It represents the most common method for performing ad-hoc graph analysis, small to medium sized data loading projects and other exploratory functions.  The Gremlin Console is highly extensible, featuring a rich plugin system that allows new tools, commands, link:http://en.wikipedia.org/wiki/Domain-specific_language[DSLs], etc. to be exposed to users.
+image:gremlin-console.png[width=325,float=right] The Gremlin Console is an interactive terminal or link:http://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop[REPL] that can be used to traverse graphs and interact with the data that they contain.  It represents the most common method for performing ad-hoc graph analysis, small to medium sized data loading projects and other exploratory functions.  The Gremlin Console is highly extensible, featuring a rich plugin system that allows new tools, commands, link:http://en.wikipedia.org/wiki/Domain-specific_language[DSLs], etc. to be exposed to users.
 
 To start the Gremlin Console, run `gremlin.sh` or `gremlin.bat`:
 
@@ -1563,7 +1579,7 @@ Note that there are no edges in the set B, as the only edge added to partition B
 Gremlin Server
 --------------
 
-Gremlin Server provides a way to remotely execute Gremlin scripts against one or more `Graph` instances hosted within it.  The benefits of using Gremlin Server include:
+image:gremlin-server.png[width=400,float=right] Gremlin Server provides a way to remotely execute Gremlin scripts against one or more `Graph` instances hosted within it.  The benefits of using Gremlin Server include:
 
 * Allows any Gremlin Structure-enabled graph to exist as a standalone server, which in turn enables the ability for multiple clients to communicate with the same graph database.
 * Enables execution of ad-hoc queries through remotely submitted Gremlin scripts.
@@ -2187,7 +2203,7 @@ Graph Developers
 | link:http://test.com[Bryn Cooke] (2013) | Gremlin domain specific language theorist.
 | link:http://test.com[James Thornton] (2013) | Creator of Bulbs and TinkerPop evangelist.
 | link:http://test.com[Sridhar Ramachandran] (2013) | Lambda Zen representative and Gremlin traversal theorist.
-| link:http://test.com[Nicholas Quinn] (2013) | Objective representative.
+| link:http://test.com[Nicholas Quinn] (2013) | Objectivity representative.
 | link:http://test.com[Xavier Sanchez] (2013) | Sparksee representative.
 | link:https://www.google.com/search?q=daniel+kuppitz[Daniel Kuppitz] (2014) | Gremlin traversal theorist and public technology support.
 | link:http://test.com[Michael Pollmeier] (2014) | Gremlin-Scala creator and traversal theorist.
