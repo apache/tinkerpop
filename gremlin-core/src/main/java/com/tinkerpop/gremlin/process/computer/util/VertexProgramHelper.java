@@ -30,4 +30,13 @@ public class VertexProgramHelper {
         if (!TraversalHelper.isReversible(traversal))
             throw new IllegalArgumentException("The provided traversal is not reversible");
     }
+
+    public static void legalConfigurationKeyValueArray(final Object... configurationKeyValues) throws IllegalArgumentException {
+        if (configurationKeyValues.length % 2 != 0)
+            throw new IllegalArgumentException("The provided arguments must have a size that is a factor of 2");
+        for (int i = 0; i < configurationKeyValues.length; i = i + 2) {
+            if (!(configurationKeyValues[i] instanceof String))
+                throw new IllegalArgumentException("The provided key/value array must have a String key on even array indices");
+        }
+    }
 }

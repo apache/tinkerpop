@@ -5,12 +5,9 @@ import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.groovy.engine.function.GremlinGroovySSupplier;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
-import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.filter.ComputerResultStep;
-import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -89,14 +86,20 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object submit(final List<String> args) {
         try {
-            VertexProgramHelper.serialize(new GremlinGroovySSupplier<>(PREFIX_SCRIPT + args.get(0) + POSTFIX_SCRIPT), this.giraphGraph.variables().getConfiguration(), TraversalVertexProgram.TRAVERSAL_SUPPLIER);
-            this.giraphGraph.variables().getConfiguration().setProperty(GraphComputer.VERTEX_PROGRAM, TraversalVertexProgram.class.getCanonicalName());
-            final Pair<Graph, SideEffects> result = this.giraphGraph.compute().program(this.giraphGraph.variables().getConfiguration()).submit().get();
+            TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(new GremlinGroovySSupplier<>(PREFIX_SCRIPT + args.get(0) + POSTFIX_SCRIPT)).create();
+            final Pair<Graph, SideEffects> result = this.giraphGraph.compute().program(vertexProgram).submit().get();
             this.shell.getInterp().getContext().setProperty("g", result.getValue0());
             this.shell.getInterp().getContext().setProperty("sideEffects", result.getValue1());
-            final GraphTraversal traversal = new DefaultGraphTraversal<>();
-            traversal.addStep(new ComputerResultStep<>(traversal, result.getValue0(), result.getValue1(), VertexProgram.createVertexProgram(this.giraphGraph.variables().getConfiguration())));
-            return traversal;
+
+            final GraphTraversal traversal1 = new DefaultGraphTraversal<>();
+            traversal1.addStep(new ComputerResultStep<>(traversal1, result.getValue0(), result.getValue1(), vertexProgram));
+            this.shell.getInterp().getContext().setProperty("_l", traversal1);
+
+            final GraphTraversal traversal2 = new DefaultGraphTraversal<>();
+            traversal2.addStep(new ComputerResultStep<>(traversal2, result.getValue0(), result.getValue1(), vertexProgram));
+            traversal2.range(0, 19);
+            return traversal2;
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

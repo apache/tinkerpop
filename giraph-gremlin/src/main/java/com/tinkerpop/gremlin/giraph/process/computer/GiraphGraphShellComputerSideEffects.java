@@ -1,19 +1,9 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
 import com.tinkerpop.gremlin.process.computer.SideEffects;
-import org.apache.commons.io.IOUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.compress.CompressionCodec;
-import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,40 +13,29 @@ import java.util.Set;
 public class GiraphGraphShellComputerSideEffects implements SideEffects {
 
     private static final String COMPLETE_AND_IMMUTABLE = "The graph computation sideEffects are complete and immutable";
+    protected static final String RUNTIME = "runtime";
+    protected static final String ITERATION = "iteration";
 
-    final Map<String, Object> globals = new HashMap<>();
-
-    public GiraphGraphShellComputerSideEffects(final Configuration configuration) {
-        /*try {
-            final String globalLocation = configuration.get(GiraphGraph.GREMLIN_OUTPUT_LOCATION, null);
-            if (null != globalLocation) {
-                for (final String line : this.readLines(new Path(globalLocation + "/" + GiraphGraphComputer.GLOBALS), configuration)) {
-                    this.globals.put(line.split("\t")[0], line.split("\t")[1]);
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }*/
-    }
+    final Map<String, Object> sideEffects = new HashMap<>();
 
     public Set<String> keys() {
-        return this.globals.keySet();
+        return this.sideEffects.keySet();
     }
 
     public <R> R get(final String key) {
-        return (R) this.globals.get(key);
+        return (R) this.sideEffects.get(key);
     }
 
     public void set(final String key, Object value) {
-        this.globals.put(key, value);
+        this.sideEffects.put(key, value);
     }
 
     public int getIteration() {
-        return (Integer) this.globals.get("iteration");
+        return (Integer) this.sideEffects.get(ITERATION);
     }
 
     public long getRuntime() {
-        return (Long) this.globals.get("runtime");
+        return (Long) this.sideEffects.get(RUNTIME);
     }
 
     public void setIfAbsent(final String key, final Object value) {
@@ -75,35 +54,7 @@ public class GiraphGraphShellComputerSideEffects implements SideEffects {
         throw new IllegalStateException(COMPLETE_AND_IMMUTABLE);
     }
 
-    /*private List<String> readLines(Path location, Configuration conf) throws Exception {
-        final FileSystem fileSystem = FileSystem.get(location.toUri(), conf);
-        final CompressionCodecFactory factory = new CompressionCodecFactory(conf);
-        final FileStatus[] items = fileSystem.listStatus(location);
-        if (items == null) return new ArrayList<>();
-        final List<String> results = new ArrayList<>();
-        for (final FileStatus item : items) {
-            // ignoring files like _SUCCESS
-            if (item.getPath().getName().startsWith("_")) {
-                continue;
-            }
-
-            final CompressionCodec codec = factory.getCodec(item.getPath());
-            InputStream stream = null;
-
-            // check if we have a compression codec we need to use
-            if (codec != null) {
-                stream = codec.createInputStream(fileSystem.open(item.getPath()));
-            } else {
-                stream = fileSystem.open(item.getPath());
-            }
-
-            final StringWriter writer = new StringWriter();
-            IOUtils.copy(stream, writer, "UTF-8");
-            final String raw = writer.toString();
-            for (final String str : raw.split("\n")) {
-                results.add(str);
-            }
-        }
-        return results;
-    }*/
+    public String toString() {
+        return StringFactory.computerSideEffectsString(this);
+    }
 }

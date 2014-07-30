@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.computer.traversal.step.util;
+package com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MapReduce;

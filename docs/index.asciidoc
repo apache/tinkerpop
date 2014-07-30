@@ -8,8 +8,10 @@ image::tinkerpop3-logo.png[width=500]
 // :source-highlighter: coderay
 
 
-The TinkerPop Story
-===================
+TinkePop3 Documentation
+=======================
+
+In the beginning...
 
 TinkerPop0
 ----------
@@ -310,14 +312,14 @@ gremlin> v = g.addVertex('name','pierre')
 ==>v[0]
 gremlin> v.property('location','belgium')
 ==>p[location->belgium]
-gremlin> v.property(Property.hidden('status'),'user')
+gremlin> v.property(Graph.Key.hidden('status'),'user')
 ==>p[status->user]
 gremlin> v.keys()
 ==>name
 ==>location
 gremlin> v.hiddenKeys()
 ==>status
-gremlin> p = v.property(Property.hidden('status'))
+gremlin> p = v.property(Graph.Key.hidden('status'))
 ==>p[status->user]
 gremlin> p.isHidden()
 ==>true
@@ -760,56 +762,150 @@ By extending Traversal, users can create a DSL that is respective of the semanti
 The GraphComputer API
 =====================
 
-TinkerPop3 provides two primary means of interacting with a graph: link:http://en.wikipedia.org/wiki/Online_transaction_processing[online transaction processing] (OLTP) and link:http://en.wikipedia.org/wiki/Online_analytical_processing[online analytical processing] (OLAP). OTLP-based graph systems allow the user to query the graph in real-time. However, typically, real-time performance is only possible when a local traversal is enacted. A local traversal is one that starts at a particular vertex (or small set of vertices) and only touches a small set of connected vertices (by any arbitrary path of arbitrary length). In short, OLTP queries touch a limited set of data and respond on the order of milliseconds or seconds. On the other hand, with OLAP graph processing, the entire graph is processed and thus, every vertex and edge is analyzed (some times more than once for iterative-based algorithms). Due to the amount of data being processed, the results are typically not returned in real-time and for massive graphs (i.e. graphs represented across a cluster of machines), results can take on the order of minutes or hours.
+TinkerPop3 provides two primary means of interacting with a graph: link:http://en.wikipedia.org/wiki/Online_transaction_processing[online transaction processing] (OLTP) and link:http://en.wikipedia.org/wiki/Online_analytical_processing[online analytical processing] (OLAP). OTLP-based graph systems allow the user to query the graph in real-time. However, typically, real-time performance is only possible when a local traversal is enacted. A local traversal is one that starts at a particular vertex (or small set of vertices) and touches a small set of connected vertices (by any arbitrary path of arbitrary length). In short, OLTP queries interact with a limited set of data and respond on the order of milliseconds or seconds. On the other hand, with OLAP graph processing, the entire graph is processed and thus, every vertex and edge is analyzed (some times more than once for iterative-based algorithms). Due to the amount of data being processed, the results are typically not returned in real-time and for massive graphs (i.e. graphs represented across a cluster of machines), results can take on the order of minutes or hours.
 
  * *OLTP*: real-time, limited data accessed, random data access, sequential processing, querying
  * *OLAP*: long running, entire data set accessed, sequential data access, parallel processing, batch processing
 
 image::oltp-vs-olap.png[width=600]
 
-The image above demonstrates the difference between Gremlin OLTP and Gremlin OLAP. With Gremlin OLTP, the graph is walked by moving from vertex-to-vertex via incident edges. With Gremlin OLAP, all vertices are provided a VertexProgram. The programs send messages to one another according to the topological structure of the graph as a communication network (with random message passing possible). In many respects, the messages passed are like the OLTP traversers moving from vertex-to-vertex. However, all messages are being working independent of one another, in parallel.
+The image above demonstrates the difference between Gremlin OLTP and Gremlin OLAP. With Gremlin OLTP, the graph is walked by moving from vertex-to-vertex via incident edges. With Gremlin OLAP, all vertices are provided a `VertexProgram`. The programs send messages to one another with the topological structure of the graph acting as the communication network (though random message passing possible). In many respects, the messages passed are like the OLTP traversers moving from vertex-to-vertex. However, all messages are moving independent of one another, in parallel. Once a vertex program is finished computing, TinkerPop3's OLAP engine supports any number link:http://en.wikipedia.org/wiki/MapReduce[`MapReduce`] jobs over the resultant graph.
 
-GraphComputer and VertexProgram
--------------------------------
+[[vertexprogram]]
+VertexProgram
+-------------
 
-In Gremlin, it is possible to have the same traversal executed either using the standard OTLP-engine or have it executed using the OLAP-engine. The difference being where the query is submitted.
-
-[source,groovy]
-g = TinkerFactory.createClassic()
-==>tinkergraph[vertices:6 edges:6]
-g.v(1).out('knows').name
-==>vadas
-==>josh
-g.v(1).out('knows').name.submit(g.compute())
-==>vadas
-==>josh
-
-image:bsp-diagram.png[width=400,float=right] The first traversal assumes the standard `Traversal` iterator should be `next'd()` for its results. The second traversal is submitted to `g.compute()` which is the `GraphComputer` associated with the graph `g`. GraphComputer forms the foundation of the OLAP model of TinkerPop3. GraphComputer takes a `VertexProgram`. A VertexProgram can be thought of as a piece of code that is executed at each vertex in logically parallel manner until some termination condition is met (e.g. a number of iterations have occurred, no more data is changing in the graph, etc.). A submitted VertexProgram is copied to all the vertices in the graph. Then the GraphComputer orchestrates the execution of the `VertexProgram.execute()` method on all the vertices in an link:http://en.wikipedia.org/wiki/Bulk_synchronous_parallel[bulk synchronous parallel] (BSP) fashion. The vertices are able to communicate with one another via messages. There are two types of messages in Gremlin OLAP: `LocalMessage` and `GlobalMessage`. A local message is a message to an incident edge or adjacent vertex. A global message is a message to any arbitrary element in the graph. 
+image:bsp-diagram.png[width=400,float=right] GraphComputer takes a `VertexProgram`. A VertexProgram can be thought of as a piece of code that is executed at each vertex in logically parallel manner until some termination condition is met (e.g. a number of iterations have occurred, no more data is changing in the graph, etc.). A submitted VertexProgram is copied to all the vertices in the graph. Then the GraphComputer orchestrates the execution of the `VertexProgram.execute()` method on all the vertices in an link:http://en.wikipedia.org/wiki/Bulk_synchronous_parallel[bulk synchronous parallel] (BSP) fashion. The vertices are able to communicate with one another via messages. There are two types of messages in Gremlin OLAP: `LocalMessage` and `GlobalMessage`. A local message is a message to an incident edge or adjacent vertex. A global message is a message to any arbitrary element in the graph. Once the VertexProgram has completed its execution, any number of `MapReduce` jobs are evaluated afterwards. MapReduce jobs are provided by the user via `GraphComputer.mapReduce()` or by the VertexProgram via `VertexProgram.getMapReducers()`.
 
 image::graphcomputer.png[width=500]
 
-NOTE: This model of graph computing was made popular by Google's link:http://googleresearch.blogspot.com/2009/06/large-scale-graph-computing-at-google.html[Pregel] graph system. In the open source world, this model is found in OLAP graph computing systems such as link:https://giraph.apache.org/[Giraph], link:https://hama.apache.org/[Hama], and link:http://faunus.thinkaurelius.com[Faunus].
+The example below demonstrates how to submit a VertexProgram to a graph's GraphComputer. The result is of `submit()` is a `Future<Pair<Graph,SideEffect>>`. The `Pair<Graph,SideEffect>` result has the resultant computed graph which can be a full copy of the orginal graph (see <<giraph-gremlin,Giraph-Gremlin>>) or a view over the original graph (see <<tinkergraph,TinkerGraph>>). The pair result also provides access to computational side-effects (e.g. runtime, number of iterations, results of MapReduce jobs, and VertexProgram-specific side-effects).
 
 [source,groovy]
-g.v(1).out('knows').name.submit(g.compute())
-==>vadas
-==>josh
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> results = g.compute().program(new PageRankVertexProgram()).submit().get()
+==>tinkergraph[vertices:6 edges:6]
+==>sideEffects[size:0]
+gremlin> results.getValue0().V.map{[it.get().value('name'), it.get().value(PageRankVertexProgram.PAGE_RANK)]}
+==>[marko, 0.15000000000000002]
+==>[vadas, 0.19250000000000003]
+==>[lop, 0.4018125]
+==>[josh, 0.19250000000000003]
+==>[ripple, 0.23181250000000003]
+==>[peter, 0.15000000000000002]
+gremlin> results.getValue1().getRuntime()
+==>49
 
-In the traversal above, the traversal is put into a newly constructed `TraversalVertexProgram` and that program is sent to each vertex in the graph. There are 3 BSP iterations and each iterations is interpreted as such:
+NOTE: This model of "vertex-centric graph computing" was made popular by Google's link:http://googleresearch.blogspot.com/2009/06/large-scale-graph-computing-at-google.html[Pregel] graph engine. In the open source world, this model is found in OLAP graph computing systems such as link:https://giraph.apache.org/[Giraph], link:https://hama.apache.org/[Hama], and link:http://faunus.thinkaurelius.com[Faunus]. TinkerPop3 extends the popularized model with integrated post-processing <<mapreduce,MapReduce>> jobs over the vertex set.
 
- . If my vertex has the id 1, put a counter on my vertex.
- . For every counter at my vertex, send it to those vertices adjacent to me by a knows-edge.
- . For every counter at my vertex, send it to the name-property on my vertex.
+[[mapreduce]]
+MapReduce
+---------
 
-When this returns, it returns an weighted iterator where those objects with counters are iterated and displayed for the number of counters on associated with that object.
+The BSP model proposed by Pregel stores the results of the computation in a distributed manner as properties on the vertices in the graph. In many situations, it is necessary to aggregate those resultant properties into a single result set (i.e. a statistic). For instance, assume a VertexProgram that computes a nominal cluster for each vertex (i.e. link:http://en.wikipedia.org/wiki/Community_structure[a graph clustering algorithm]). At the end of the computation, each vertex will have an hidden property denoting the cluster it was assigned to. TinkerPop3 provides the ability to answer questions about the results of the graph clusters using `MapReduce`. For instance, in order to answer the following questions, MapReduce jobs are required:
 
-NOTE: This model of path-based graph traversal in a BSP system was made popular by the link:http://faunus.thinkaurelius.com[Faunus] graph analytics system and originally described in link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engines/[Local and Distributed Traversal Engines].
+ * How many vertices are in each cluster? (*presented below*)
+ * How many unique clusters are there? (*presented below*)
+ * What is the average age of each vertex in each cluster?
+ * What is the degree distribution of the vertices in each cluster?
+
+A compressed representation of the `MapReduce` API in TinkerPop3 is provided below. The key idea is that the `map`-stage processes all vertices to emit key/value pairs. Those values are aggregated on their respective key for the `reduce`-stage to do its processing to ultimately yield more key/value pairs.
+
+[source,java]
+public interface MapReduce<MK, MV, RK, RV, R> {
+  public void map(final Vertex vertex, final MapEmitter<MK, MV> emitter);
+  public void reduce(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter);
+  // there are more methods
+}
+
+image::mapreduce.png[width=650]
+
+The `MapReduce` extension to GraphComputer is made explicit when examining the <<peerpressurevertexprogram,`PeerPressureVertexProgram`>> and corresponding `ClusterPopulationMapReduce`. In the code below, the GraphComputer result returns the computed on `Graph` as well as the `SideEffects` of the computation (`Pair<Graph,SideEffects>`). The sideEffects maintain the results of any MapReduce jobs. The cluster population MapReduce result states that there are 5 vertices in cluster 1 and 1 vertex in cluster 6. This can be verified (in a serial manner) by looking at the hidden `PeerPressureVertexProgram.CLUSTER` property of the resultant graph. In essence, the serial process of the final Gremlin traversal is done in a parallel MapReduce fashion using `ClusterPopulationMapReduce`.
+
+[source,groovy]
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> results = g.compute().program(new PeerPressureVertexProgram()).mapReduce(new ClusterPopulationMapReduce()).submit().get()
+==>tinkergraph[vertices:6 edges:6]
+==>sideEffects[size:1]
+gremlin> results.getValue1().get('clusterPopulation')
+==>1=5
+==>6=1
+gremlin> results.getValue0().V().value(PeerPressureVertexProgram.CLUSTER).groupCount.next()
+==>1=5
+==>6=1
+
+If there are numerous statistics desired, then its possible to register as many MapReduce jobs as needed. For instance, the `ClusterCountMapReduce` determines how many unique clusters were created by the peer pressure algorithm. Below both `ClusterCountMapReduce` and `ClusterPopulationMapReduce` are computed over the resultant graph.
+
+[source,groovy]
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> results = g.compute().program(new PeerPressureVertexProgram()).
+ mapReduce(new ClusterPopulationMapReduce()).
+ mapReduce(new ClusterCountMapReduce()).submit().get()
+==>tinkergraph[vertices:6 edges:6]
+==>sideEffects[size:3]
+gremlin> results.getValue1().get('clusterPopulation')
+==>1=5
+==>6=1
+gremlin> results.getValue1().get('clusterCount')
+==>2
+
+IMPORTANT: The MapReduce model of TinkerPop3 does not support MapReduce chaining. Thus, the order in which the MapReduce jobs are executed is irrelevant. This is made apparent when realizing that the `map()`-stage takes a `Vertex` as its input and the `reduce()`-stage yields key/value pairs.
 
 A Collection of VertexPrograms
 ------------------------------
 
-TinkerPop3 provides a collection of `VertexProgram`s that implement common algorithms. This section discusses the various implementations.
+TinkerPop3 provides a collection of VertexPrograms that implement common algorithms. This section discusses the various implementations.
 
+[[traversalvertexprogram]]
+TraversalVertexProgram
+~~~~~~~~~~~~~~~~~~~~~~
+
+The `TraversalVertexProgram` is a "special" VertexProgram in that it can be executed via `GraphTraversal.submit()`. In Gremlin, it is possible to have the same traversal executed using either the standard OTLP-engine or the GraphComputer OLAP-engine. The difference being where the query is submitted.
+
+[source,groovy]
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> g.V.both.has('age').age.groupCount.next() // OLTP
+==>32=3
+==>35=1
+==>27=1
+==>29=3
+gremlin> g.V.both.has('age').age.groupCount.submit(g.compute()).next() // OLAP
+==>32=3
+==>35=1
+==>27=1
+==>29=3
+
+In the OLAP traversal above, the traversal is put into a newly constructed `TraversalVertexProgram` and that program is sent to each vertex in the graph. There are 5 BSP iterations and each iterations is interpreted as such:
+
+ . Put a counter on each vertex of the graph.
+ . Propagate counters to all vertices both-adjacent.
+ . If the vertex doesn't have an `age` property, remove its counters.
+ . Propagate all counters to each vertex's `age` property.
+ . Create a hidden `Map` property which indexes how many times the particular age has been seen.
+
+The counters that are propagated around the graph are stored in a hidden property called `gremlin.traversalTracker`. When the computation is complete a MapReduce job executes which aggregates all the `groupCount` hidden `Map` properties on each vertex and generates a local copy of the Map (thus, turning the distributed Map representation into a local Map representation).
+
+NOTE: This model of graph traversal in a BSP system was made popular by the link:http://faunus.thinkaurelius.com[Faunus] graph analytics engine and originally described in link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engines/[Local and Distributed Traversal Engines].
+
+The same OLAP traversal can be executed using the standard `g.compute()` model, though at the expense of verbosity.
+
+[source,groovy]
+gremlin> import com.tinkerpop.gremlin.groovy.engine.function.GremlinGroovySSupplier
+...
+gremlin> result = g.compute().program(TraversalVertexProgram.build().traversal(new GremlinGroovySSupplier("TinkerGraph.open().V.both.has('age').age.groupCount")).create()).submit().get()
+==>tinkergraph[vertices:6 edges:6]
+==>sideEffects[size:3]
+gremlin> result.getValue1().get(Graph.Key.hidden('cap'))
+==>32=3
+==>35=1
+==>27=1
+==>29=3
+
+[[pagerankvertexprogram]]
 PageRankVertexProgram
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -819,10 +915,10 @@ Perhaps the most popular OLAP-oriented graph algorithm is link:http://en.wikiped
 ----
 public class PageRankVertexProgram implements VertexProgram<Double> { <1>
 
-    private MessageType.Local messageType = MessageType.Local.of(() -> GraphTraversal.of().outE()); <2>
+    private MessageType.Local messageType = MessageType.Local.of(() -> new DefaultGraphTraversal().outE()); <2>
 
-    public static final String PAGE_RANK = Property.hidden("gremlin.pageRankVertexProgram.pageRank"); <3>
-    public static final String EDGE_COUNT = Property.hidden("gremlin.pageRankVertexProgram.edgeCount");
+    public static final String PAGE_RANK = Graph.Key.hidden("gremlin.pageRank"); <3>
+    public static final String EDGE_COUNT = Graph.Key.hidden("gremlin.edgeCount");
 
     private static final String VERTEX_COUNT = "gremlin.pageRankVertexProgram.vertexCount";
     private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";
@@ -837,48 +933,69 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
 
     }
 
-   public void initialize(final Configuration configuration) { <4>
+    @Override
+    public void loadState(final Configuration configuration) { <4>
         this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
         this.alpha = configuration.getDouble(ALPHA, 0.85d);
         this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
         try {
             if (configuration.containsKey(INCIDENT_TRAVERSAL)) {
-                this.messageType = MessageType.Local.of(VertexProgramHelper.deserializeSupplier(configuration, INCIDENT_TRAVERSAL));
+                final SSupplier<Traversal> traversalSupplier = VertexProgramHelper.deserialize(configuration, INCIDENT_TRAVERSAL);
+                VertexProgramHelper.verifyReversibility(traversalSupplier.get());
+                this.messageType = MessageType.Local.of((SSupplier) traversalSupplier);
             }
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
-    public Map<String, KeyType> getComputeKeys() { <5>
-        return VertexProgram.ofComputeKeys(PAGE_RANK, KeyType.VARIABLE, EDGE_COUNT, KeyType.CONSTANT);
+    @Override
+    public void storeState(final Configuration configuration) {
+        configuration.setProperty(GraphComputer.VERTEX_PROGRAM, PageRankVertexProgram.class.getName());
+        configuration.setProperty(VERTEX_COUNT, this.vertexCountAsDouble);
+        configuration.setProperty(ALPHA, this.alpha);
+        configuration.setProperty(TOTAL_ITERATIONS, this.totalIterations);
+        try {
+            VertexProgramHelper.serialize(this.messageType.getIncidentTraversal(), configuration, INCIDENT_TRAVERSAL);
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
+    @Override
+    public Map<String, KeyType> getElementComputeKeys() { <5>
+        return VertexProgram.createElementKeys(PAGE_RANK, KeyType.VARIABLE, EDGE_COUNT, KeyType.CONSTANT);
+    }
+
+    @Override
     public Class<Double> getMessageClass() {
         return Double.class;
     }
 
-    public void setup(final GraphComputer.Globals globals) {
+    @Override
+    public void setup(final SideEffects sideEffects) {
 
     }
 
-    public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphComputer.Globals globals) { <6>
-        if (globals.isInitialIteration()) { <7>
+    @Override
+    public void execute(final Vertex vertex, Messenger<Double> messenger, final SideEffects sideEffects) { <6>
+        if (sideEffects.isInitialIteration()) { <7>
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
-            double edgeCount = Long.valueOf(this.messageType.edges(vertex).count()).doubleValue();
+            double edgeCount = Double.valueOf((Long) this.messageType.edges(vertex).count().next());
             vertex.property(PAGE_RANK, initialPageRank);
             vertex.property(EDGE_COUNT, edgeCount);
-            messenger.sendMessage(vertex, this.messageType, initialPageRank / edgeCount);
+            messenger.sendMessage(this.messageType, initialPageRank / edgeCount);
         } else { <8>
-            double newPageRank = StreamFactory.stream(messenger.receiveMessages(vertex, this.messageType)).reduce(0.0d, (a, b) -> a + b);
+            double newPageRank = StreamFactory.stream(messenger.receiveMessages(this.messageType)).reduce(0.0d, (a, b) -> a + b);
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
             vertex.property(PAGE_RANK, newPageRank);
-            messenger.sendMessage(vertex, this.messageType, newPageRank / vertex.<Double>property(EDGE_COUNT).orElse(0.0d));
+            messenger.sendMessage(this.messageType, newPageRank / vertex.<Double>property(EDGE_COUNT).orElse(0.0d));
         }
     }
 
-    public boolean terminate(final GraphComputer.Globals globals) { <9>
-        return globals.getIteration() >= this.totalIterations;
+    @Override
+    public boolean terminate(final SideEffects sideEffects) { <9>
+        return sideEffects.getIteration() >= this.totalIterations;
     }
 }
 ----
@@ -893,10 +1010,17 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
 <8> Energy is aggregated, computed on according to the PageRank algorithm, and then disseminated according to the defined `MessageType.Local`.
 <9> The computation is terminated after a pre-defined number of iterations.
 
+[[peerpressurevertexprogram]]
+PeerPressureVertexProgram
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+TODO...
+
 
 Gremlin Utilities
 =================
 
+[[gremlinconsole]]
 Gremlin Console
 ---------------
 
@@ -1591,7 +1715,6 @@ List<Item> results = client.submit(new RemoteTraversal()).all().get();
 The code above shows that a `Traversal` instance can be sent for remote execution in Gremlin Server.  This feature is *highly experimental*, but has some interesting implications in that it provides a way to avoid maintaining "fat strings" of Gremlin in the application code base.  While the "fat string" approach can also be avoided by developing a server-side DSL, the sending of an actual `Traversal` provides another method that might provide new and better patterns for developing graph-based applications.
 
 
-
 Implementations
 ===============
 
@@ -1673,201 +1796,20 @@ Giraph-Gremlin
 </dependency>
 ----
 
-image:giraph-logo.png[width=75,float=left] link:http://giraph.apache.org[Giraph] is an Apache Foundation project focused on OLAP-based graph processing. Giraph makes use of the message-passing model of the distributed graph computing paradigm made popular by Google's Pregel. In Giraph, developers write "vertex programs" that get executed at each vertex in parallel. These programs can then communicate with one another in a bulk synchronous parallel (BSP) manner. This model aligns well with TinkerPop OLAP and the `GraphComputer` API. TinkerPop3 provides an implementation of `GraphComputer` that works for Giraph and is called `GiraphGraphComputer`.
+image:giraph-logo.png[width=100,float=left] link:http://giraph.apache.org[Giraph] is an Apache Foundation project focused on OLAP-based graph processing. Giraph makes use of the distributed graph computing paradigm made popular by Google's Pregel. In Giraph, developers write "vertex programs" that get executed at each vertex in parallel. These programs communicate with one another in a bulk synchronous parallel (BSP) manner. This model aligns with TinkerPop3's `GraphComputer` API. TinkerPop3 provides an implementation of `GraphComputer` that works for Giraph called `GiraphGraphComputer`. Moreover, with TinkerPop3's <<mapreduce,MapReduce>>-framework, the standard Giraph/Pregel model is extended to support an arbitrary number of MapReduce phases to aggregate and yield results from the graph. Finally, note that `GiraphGraph` also supports read-only OLTP operations (though via linear scans of HDFS serializations).
 
 IMPORTANT: image:hadoop-logo-notext.png[width=100,float=left] This section assumes that the user has a Hadoop 1.x cluster functioning. For more information on getting started with Hadoop, please see their link:http://hadoop.apache.org/docs/r1.2.1/single_node_setup.html[Single Node Setup] tutorial. Moreover, it is advisable that the reader also familiarize themselves with Giraph as well via their link:http://giraph.apache.org/quick_start.html[Getting Started] page.
 
 Installing Giraph-Gremlin
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To the `.bash_profile` file, add the following environmental variables (of course, be sure the directories are the respective locations on the local machine).
+To the `.bash_profile` file, add the following environmental variables (of course, be sure the directories are respective of the local machine locations).
 
-[source,text]
+[source,shell]
 export GIRAPH_HOME=/usr/local/giraph-1.0.0
 export GIRAPH_GREMLIN_HOME=/usr/local/giraph-gremlin-3.0.0
 
-Properties Files
-~~~~~~~~~~~~~~~~
-
-The `GiraphGraphComputer` makes use of a properties file much like any other `GraphComputer`. However, given the relationship to Hadoop which is property heavy, it is important to look at a particular properties file. The properties file below is located at `conf/giraph-graphson.properties'.
-
-[source,text]
-gremlin.inputLocation=tinkerpop-classic-adjlist.ldjson
-giraph.vertexInputFormatClass=com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONVertexInputFormat
-gremlin.outputLocation=output
-giraph.vertexOutputFormatClass=com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONVertexOutputFormat
-gremlin.vertexProgram=com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
-gremlin.traversalSupplierClass=com.tinkerpop.gremlin.giraph.process.graph.example.TraversalSupplier1
-gremlin.extraJobsCalculator=com.tinkerpop.gremlin.giraph.process.TraversalExtraJobsCalculator
-gremlin.deriveGlobals=false
-giraph.minWorkers=2
-giraph.maxWorkers=2
-
-NOTE: The extension `ldjson` refers to link:http://en.wikipedia.org/wiki/Line_Delimited_JSON[line-delimitated JSON] which is the file format used by `GraphSONWriter` when writing an link:http://en.wikipedia.org/wiki/Adjacency_list[adjacency list] representation of a graph.
-
-A review of the properties above are discussed below.
-
- * `gremlin.inputLocation`: the location of the input file(s) for Giraph to read the graph from
- * `giraph.vertexInputFormatClass`: the format that the input file(s) are represented in
- * `gremlin.outputLocation`: the location to write the final Giraph graph to
- * `giraph.vertexOutputFormatClass`: the format that the output file(s) should be represented in
- * `gremlin.vertexProgram`: the `VertexProgram` to disseminate to all vertices in the `GiraphGraph`
- * `gremlin.traversalSupplierClass`: for `TraversalVertexProgram`, the location of the Gremlin traversal to use
-  * This is only required if using GiraphGremlin programmatically versus via the Gremlin Console
- * `gremlin.extraJobsCalculator`: the class to use to determine if extra MapReduce jobs are required of the computation
- * `gremlin.deriveGlobal`: whether or not `Globals` are yielded (requires an extra MapReduce job if true)
- * `giraph.minWorkers`: the minimum number of parallel workers to execute the vertices of the graph
- * `giraph.maxWorkers`: the maximum number of parallel workers to execute the vertices of the graph
-
-IMPORTANT: The maximum number of workers can be no larger than the number of map-slots in the Hadoop cluster minus 1. For example, if the Hadoop cluster has 4 map slots, then `giraph.maxWorkers` can not be larger than 3. One map-slot is reserved for the master compute node and all other slots can be allocated as workers to execute the `VertexProgram`s on the vertices of the graph.
-
-The above properties file states:
-
-	The location of the graph is tinkerpop-classic-adjlist.ldjson. Interpret that file using GraphSONVertexInputFormat. Execute the TraversalVertexProgram on all vertices of the graph using the traversal defined in TraversalSupplier1. Write the computed on GiraphGraph to output/ using the GraphSONOutputFormat. Use 2 workers (thus, 3 map-slots) to execute the job.
- 
-Along with the properties above, the numerous link:http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/core-default.xml[Hadoop specific properties] can be added as needed to tune and parameterize the executed Giraph-Gremlin job on the respective Hadoop cluster.
-
-
-Running a Giraph-Gremlin Job
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The properties file in the previous section stated the `gremlin.inputLocation` to be `tinkerpop-classic-adjlist.ldjson`. This means that this file will be looked for on link:http://en.wikipedia.org/wiki/Apache_Hadoop#Hadoop_distributed_file_system[HDFS]. Therefore, the file must be put into the filesystem.
-
-[source,bash]
-$ hadoop fs -copyFromLocal data/tinkerpop-classic-adjlist.ldjson tinkerpop-classic-adjlist.ldjson
-$ hadoop fs -ls
-Found 1 item
--rw-r--r--   1 marko supergroup       2387 2014-05-26 12:11 /user/marko/tinkerpop-classic-adjlist.ldjson
-
-
-Next, the `TraversalSupplier1` class mentioned in the properties file is distributed with Giraph-Gremlin. It declares what Gremlin-Java traversal to execute on the loaded `GiraphGraph` by way of `TraversalVertexProgram` (the `gremlin.vertexProgram`). 
-
-[source,java]
-public class TraversalSupplier1 implements SSupplier<Traversal> {
-    public Traversal get() {
-        return GiraphGraph.open().V().out().out().value("name");
-    }
-}
-
-To execute this traversal from the command line, use `GiraphGraphRunner` as follows:
-
-[source,bash]
-$ hadoop jar target/giraph-gremlin-3.0.0-SNAPSHOT-job.jar com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner conf/giraph-graphson.properties
-14/06/24 08:16:19 INFO computer.GiraphGraphRunner: GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, VertexStep, VertexStep, ElementValueStep]
-14/06/24 08:16:19 INFO mapred.JobClient: Running job: job_201406231706_0015
-14/06/24 08:16:20 INFO mapred.JobClient:  map 0% reduce 0%
-14/06/24 08:16:41 INFO mapred.JobClient:  map 33% reduce 0%
-14/06/24 08:16:42 INFO mapred.JobClient:  map 100% reduce 0%
-14/06/24 08:16:43 INFO mapred.JobClient: Job complete: job_201406231706_0015
-14/06/24 08:16:43 INFO mapred.JobClient: Counters: 32
-14/06/24 08:16:43 INFO mapred.JobClient:   Map-Reduce Framework
-14/06/24 08:16:43 INFO mapred.JobClient:     Spilled Records=0
-14/06/24 08:16:43 INFO mapred.JobClient:     Map input records=3
-14/06/24 08:16:43 INFO mapred.JobClient:     SPLIT_RAW_BYTES=132
-14/06/24 08:16:43 INFO mapred.JobClient:     Map output records=0
-14/06/24 08:16:43 INFO mapred.JobClient:     Total committed heap usage (bytes)=351272960
-14/06/24 08:16:43 INFO mapred.JobClient:   Giraph Timers
-14/06/24 08:16:43 INFO mapred.JobClient:     Total (milliseconds)=2897
-14/06/24 08:16:43 INFO mapred.JobClient:     Superstep 2 (milliseconds)=67
-14/06/24 08:16:43 INFO mapred.JobClient:     Shutdown (milliseconds)=356
-14/06/24 08:16:43 INFO mapred.JobClient:     Superstep 1 (milliseconds)=134
-14/06/24 08:16:43 INFO mapred.JobClient:     Input superstep (milliseconds)=1014
-14/06/24 08:16:43 INFO mapred.JobClient:     Superstep 0 (milliseconds)=298
-14/06/24 08:16:43 INFO mapred.JobClient:     Setup (milliseconds)=947
-14/06/24 08:16:43 INFO mapred.JobClient:     Superstep 3 (milliseconds)=43
-14/06/24 08:16:43 INFO mapred.JobClient:     Superstep 4 (milliseconds)=35
-14/06/24 08:16:43 INFO mapred.JobClient:   File Input Format Counters
-14/06/24 08:16:43 INFO mapred.JobClient:     Bytes Read=0
-14/06/24 08:16:43 INFO mapred.JobClient:   Giraph Stats
-14/06/24 08:16:43 INFO mapred.JobClient:     Aggregate finished vertices=0
-14/06/24 08:16:43 INFO mapred.JobClient:     Aggregate edges=0
-14/06/24 08:16:43 INFO mapred.JobClient:     Sent messages=0
-14/06/24 08:16:43 INFO mapred.JobClient:     Current workers=2
-14/06/24 08:16:43 INFO mapred.JobClient:     Last checkpointed superstep=0
-14/06/24 08:16:43 INFO mapred.JobClient:     Current master task partition=0
-14/06/24 08:16:43 INFO mapred.JobClient:     Superstep=5
-14/06/24 08:16:43 INFO mapred.JobClient:     Aggregate vertices=6
-14/06/24 08:16:43 INFO mapred.JobClient:   FileSystemCounters
-14/06/24 08:16:43 INFO mapred.JobClient:     HDFS_BYTES_READ=2488
-14/06/24 08:16:43 INFO mapred.JobClient:     FILE_BYTES_WRITTEN=235290
-14/06/24 08:16:43 INFO mapred.JobClient:     HDFS_BYTES_WRITTEN=3318
-14/06/24 08:16:43 INFO mapred.JobClient:   Job Counters
-14/06/24 08:16:43 INFO mapred.JobClient:     Launched map tasks=3
-14/06/24 08:16:43 INFO mapred.JobClient:     SLOTS_MILLIS_REDUCES=0
-14/06/24 08:16:43 INFO mapred.JobClient:     SLOTS_MILLIS_MAPS=29890
-14/06/24 08:16:43 INFO mapred.JobClient:   File Output Format Counters
-14/06/24 08:16:43 INFO mapred.JobClient:     Bytes Written=0
-
-Understanding the Output
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-When job completes, the output is written to `gremlin.outputLocation` which was defined in the properties file as `output`. Realize that Hadoop will write the output according to the number of workers. Given that there were 2 workers, there are two files in `output`. Also, realize the output is the graph which, in the traversal is the hidden memory variables `~g`.
-
-[source,bash]
-$ hadoop fs -ls /user/marko/output/
-Found 1 items
-drwxr-xr-x   - marko supergroup          0 2014-06-24 09:03 /user/marko/output/~g
-$ hadoop fs -ls /user/marko/output/~g
-Found 4 items
--rw-r--r--   1 marko supergroup          0 2014-06-24 09:03 /user/marko/output/~g/_SUCCESS
-drwxr-xr-x   - marko supergroup          0 2014-06-24 09:03 /user/marko/output/~g/_logs
--rw-r--r--   1 marko supergroup       1820 2014-06-24 09:03 /user/marko/output/~g/part-m-00001
--rw-r--r--   1 marko supergroup       1498 2014-06-24 09:03 /user/marko/output/~g/part-m-00002
-
-
-[source,bash]
-$ hadoop fs -cat output/~g/*
-{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":0,"label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":2,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.5}},{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":3,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}],"id":1,"label":"vertex","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traverserTracker":{"previousObjectTracks":{},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{}}},"properties":{"name":"marko","age":29}}
-{"inE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":0,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}}],"outE":[],"id":5,"label":"vertex","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traverserTracker":{"previousObjectTracks":{"ripple":1},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{"ripple":1}}},"properties":{"name":"ripple","lang":"java"}}
-{"inE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":0,"label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":1,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":2,"label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}],"outE":[],"id":3,"label":"vertex","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traverserTracker":{"previousObjectTracks":{"lop":1},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{"lop":1}}},"properties":{"name":"lop","lang":"java"}}
-{"inE":[{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}],"outE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}}],"id":4,"label":"vertex","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traverserTracker":{"previousObjectTracks":{},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{}}},"properties":{"name":"josh","age":32}}
-{"inE":[{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.5}}],"outE":[],"id":2,"label":"vertex","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traverserTracker":{"previousObjectTracks":{},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{}}},"properties":{"name":"vadas","age":27}}
-{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}],"id":6,"label":"vertex","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traverserTracker":{"previousObjectTracks":{},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{}}},"properties":{"name":"peter","age":35}}
-
-Looking particularly at the lop-vertex:
-
-[source,js]
-{
- "inE":[
-  {"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":0,
-   "label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},
-  {"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":1,
-   "label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}},
-  {"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":2,
-   "label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}
- ],
- "id":3,
- "label":"vertex",
- "type":"vertex",
- "hiddens":{
-  "gremlin.traversalVertexProgram.traverserTracker": {
-    "previousObjectTracks":{"lop":1},
-    "graphTracks":{},
-    "objectTracks":{},
-    "doneGraphTracks":{},
-    "doneObjectTracks":{"lop":1}}
-  },
- "outE":[],
- "properties":{
-  "name":"lop",
-  "lang":"java"
-}
-
-In the hidden properties of the vertex is a property called `gremlin.traversalVertexProgram.traverserTracker`. The `doneObjectTracks`-key states that there is a single counter on the `String` "lop". An analogous result is found on "ripple." This is the correct result of the computation as:
-
-[source,groovy]
-gremlin> g = TinkerFactory.createClassic()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> g.V.out.out.name
-==>ripple
-==>lop
-
-IMPORTANT: GraphSON is a verbose I/O format. It is useful for demonstrations because it is a human-readable format, but in practice is not used for large-scale computations. Instead, <<gremlin-kryo,GremlinKryo>> is used.
-
-Using the Gremlin Console
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The example in the previous section was using a static Java `SSupplier<Traversal>`. This is the method to use when programmatically interacting with Giraph-Gremlin. However, it is also possible to use Giraph-Gremin via the Gremlin Console.
+If using the <<gremlinconsole,Gremlin Console>>, it is important to install the Giraph-Gremlin plugin.
 
 [source,text]
 ----
@@ -1875,117 +1817,163 @@ $ bin/gremlin.sh
 
          \,,,/
          (o o)
-─────oOOo-(3)-oOOo─────
-gremlin> :use install com.tinkerpop giraph-gremlin 3.x.y
-==>loaded: [com.tinkerpop, giraph-gremlin, 3.x.y] - restart the console to use [giraph]
+-----oOOo-(3)-oOOo-----
+plugin loaded: server
+plugin loaded: gephi
+plugin loaded: utilities
+gremlin> :use install com.tinkerpop giraph-gremlin 3.0.0
+==>loaded: [com.tinkerpop, giraph-gremlin, 3.0.0] - restart the console to use [giraph]
 gremlin> :q
 $ bin/gremlin.sh
 
          \,,,/
          (o o)
-─────oOOo-(3)-oOOo─────
+-----oOOo-(3)-oOOo-----
+plugin loaded: server
+plugin loaded: gephi
+plugin loaded: utilities
 plugin loaded: giraph
-gremlin> hdfs.copyFromLocal('../../../data/tinkerpop-classic-vertices.ldjson', 'tinkerpop-classic-vertices.ldjson')
-==>null
-gremlin> hdfs.ls()
-==>rw-r--r-- marko supergroup 2356 tinkerpop-classic-vertices.ldjson
-gremlin> :remote connect giraph ../giraph-gremlin/conf/giraph-graphson.properties
-==>giraphgraph[graphsonvertexinputformat->graphsonvertexoutputformat]
-gremlin> :> g.V.groupBy{it.value('name')[1]}{it.value('name')}
-INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner  - GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, GroupByStep]
-WARN  org.apache.hadoop.mapred.JobClient  - Use GenericOptionsParser for parsing the arguments. Applications should implement Tool for the same.
-INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201406231706_0017
-INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
-INFO  org.apache.hadoop.mapred.JobClient  -  map 66% reduce 0%
-INFO  org.apache.hadoop.mapred.JobClient  -  map 100% reduce 0%
-INFO  org.apache.hadoop.mapred.JobClient  - Job complete: job_201406231706_0017
-INFO  org.apache.hadoop.mapred.JobClient  - Counters: 31
-INFO  org.apache.hadoop.mapred.JobClient  -   Map-Reduce Framework
-INFO  org.apache.hadoop.mapred.JobClient  -     Spilled Records=0
-INFO  org.apache.hadoop.mapred.JobClient  -     Map input records=3
-INFO  org.apache.hadoop.mapred.JobClient  -     SPLIT_RAW_BYTES=132
-INFO  org.apache.hadoop.mapred.JobClient  -     Map output records=0
-INFO  org.apache.hadoop.mapred.JobClient  -     Total committed heap usage (bytes)=243793920
-INFO  org.apache.hadoop.mapred.JobClient  -   Giraph Timers
-INFO  org.apache.hadoop.mapred.JobClient  -     Total (milliseconds)=7131
-INFO  org.apache.hadoop.mapred.JobClient  -     Superstep 2 (milliseconds)=56
-INFO  org.apache.hadoop.mapred.JobClient  -     Shutdown (milliseconds)=315
-INFO  org.apache.hadoop.mapred.JobClient  -     Superstep 1 (milliseconds)=115
-INFO  org.apache.hadoop.mapred.JobClient  -     Input superstep (milliseconds)=5404
-INFO  org.apache.hadoop.mapred.JobClient  -     Superstep 0 (milliseconds)=262
-INFO  org.apache.hadoop.mapred.JobClient  -     Setup (milliseconds)=923
-INFO  org.apache.hadoop.mapred.JobClient  -     Superstep 3 (milliseconds)=54
-INFO  org.apache.hadoop.mapred.JobClient  -   File Input Format Counters
-INFO  org.apache.hadoop.mapred.JobClient  -     Bytes Read=0
-INFO  org.apache.hadoop.mapred.JobClient  -   Giraph Stats
-INFO  org.apache.hadoop.mapred.JobClient  -     Aggregate finished vertices=0
-INFO  org.apache.hadoop.mapred.JobClient  -     Aggregate edges=0
-INFO  org.apache.hadoop.mapred.JobClient  -     Sent messages=0
-INFO  org.apache.hadoop.mapred.JobClient  -     Current workers=2
-INFO  org.apache.hadoop.mapred.JobClient  -     Last checkpointed superstep=0
-INFO  org.apache.hadoop.mapred.JobClient  -     Current master task partition=0
-INFO  org.apache.hadoop.mapred.JobClient  -     Superstep=4
-INFO  org.apache.hadoop.mapred.JobClient  -     Aggregate vertices=6
-INFO  org.apache.hadoop.mapred.JobClient  -   FileSystemCounters
-INFO  org.apache.hadoop.mapred.JobClient  -     HDFS_BYTES_READ=2488
-INFO  org.apache.hadoop.mapred.JobClient  -     FILE_BYTES_WRITTEN=239055
-INFO  org.apache.hadoop.mapred.JobClient  -     HDFS_BYTES_WRITTEN=3504
-INFO  org.apache.hadoop.mapred.JobClient  -   Job Counters
-INFO  org.apache.hadoop.mapred.JobClient  -     Launched map tasks=3
-INFO  org.apache.hadoop.mapred.JobClient  -     SLOTS_MILLIS_REDUCES=0
-INFO  org.apache.hadoop.mapred.JobClient  -     SLOTS_MILLIS_MAPS=41383
-INFO  org.apache.hadoop.mapred.JobClient  -   File Output Format Counters
-INFO  org.apache.hadoop.mapred.JobClient  -     Bytes Written=0
-INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner  - GiraphGremlin: GiraphGroupByStep[SideEffect Calculation]
-INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201406231706_0018
-INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
-INFO  org.apache.hadoop.mapred.JobClient  -  map 100% reduce 0%
-INFO  org.apache.hadoop.mapred.JobClient  -  map 100% reduce 33%
-INFO  org.apache.hadoop.mapred.JobClient  -  map 100% reduce 100%
-INFO  org.apache.hadoop.mapred.JobClient  - Job complete: job_201406231706_0018
-INFO  org.apache.hadoop.mapred.JobClient  - Counters: 26
-INFO  org.apache.hadoop.mapred.JobClient  -   Map-Reduce Framework
-INFO  org.apache.hadoop.mapred.JobClient  -     Spilled Records=12
-INFO  org.apache.hadoop.mapred.JobClient  -     Map output materialized bytes=238
-INFO  org.apache.hadoop.mapred.JobClient  -     Reduce input records=6
-INFO  org.apache.hadoop.mapred.JobClient  -     Map input records=6
-INFO  org.apache.hadoop.mapred.JobClient  -     SPLIT_RAW_BYTES=240
-INFO  org.apache.hadoop.mapred.JobClient  -     Map output bytes=214
-INFO  org.apache.hadoop.mapred.JobClient  -     Reduce shuffle bytes=238
-INFO  org.apache.hadoop.mapred.JobClient  -     Reduce input groups=4
-INFO  org.apache.hadoop.mapred.JobClient  -     Combine output records=6
-INFO  org.apache.hadoop.mapred.JobClient  -     Reduce output records=4
-INFO  org.apache.hadoop.mapred.JobClient  -     Map output records=6
-INFO  org.apache.hadoop.mapred.JobClient  -     Combine input records=6
-INFO  org.apache.hadoop.mapred.JobClient  -     Total committed heap usage (bytes)=592445440
-INFO  org.apache.hadoop.mapred.JobClient  -   File Input Format Counters
-INFO  org.apache.hadoop.mapred.JobClient  -     Bytes Read=3504
-INFO  org.apache.hadoop.mapred.JobClient  -   FileSystemCounters
-INFO  org.apache.hadoop.mapred.JobClient  -     HDFS_BYTES_READ=3744
-INFO  org.apache.hadoop.mapred.JobClient  -     FILE_BYTES_WRITTEN=245666
-INFO  org.apache.hadoop.mapred.JobClient  -     FILE_BYTES_READ=232
-INFO  org.apache.hadoop.mapred.JobClient  -     HDFS_BYTES_WRITTEN=52
-INFO  org.apache.hadoop.mapred.JobClient  -   Job Counters
-INFO  org.apache.hadoop.mapred.JobClient  -     Launched map tasks=2
-INFO  org.apache.hadoop.mapred.JobClient  -     Launched reduce tasks=1
-INFO  org.apache.hadoop.mapred.JobClient  -     SLOTS_MILLIS_REDUCES=8511
-INFO  org.apache.hadoop.mapred.JobClient  -     SLOTS_MILLIS_MAPS=7723
-INFO  org.apache.hadoop.mapred.JobClient  -     Data-local map tasks=2
-INFO  org.apache.hadoop.mapred.JobClient  -   File Output Format Counters
-INFO  org.apache.hadoop.mapred.JobClient  -     Bytes Written=52
-==>giraphgraph[graphsonvertexinputformat->graphsonvertexoutputformat]
-gremlin> hdfs.ls('output')
-==>rwxr-xr-x marko supergroup 0 (D) ~cap
-==>rwxr-xr-x marko supergroup 0 (D) ~g
-gremlin> hdfs.head('output/~cap')
-==>a	[marko, vadas]
-==>e	[peter]
-==>i	[ripple]
-==>o	[lop, josh]
 gremlin>
 ----
 
-IMPORTANT: When using Giraph-Gremlin from the Gremlin console, the only language subset supported is Gremlin-Groovy.
+Properties Files
+~~~~~~~~~~~~~~~~
+
+The `GiraphGraphComputer` makes use of a properties file much like any other `GraphComputer`. However, given the relationship to Hadoop which is property heavy, it is important to look at a particular properties file. The properties file below is located at `conf/giraph-kryo.properties'.
+
+[source,text]
+gremlin.inputLocation=tinkerpop-classic-vertices.gio
+giraph.vertexInputFormatClass=com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexInputFormat
+gremlin.outputLocation=output
+giraph.vertexOutputFormatClass=com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexOutputFormat
+gremlin.sideEffectOutputFormatClass=org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat
+gremlin.vertexProgram=com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
+gremlin.traversalVertexProgram.traversalSupplierClass=com.tinkerpop.gremlin.giraph.process.graph.example.TraversalSupplier1
+gremlin.jarsInDistributedCache=true
+gremlin.deriveComputerSideEffects=false
+giraph.minWorkers=2
+giraph.maxWorkers=2
+
+A review of the properties above are presented in the table below.
+
+[width="100%",cols="2,10",options="header"]
+|=========================================================
+|Property |Description
+|`gremlin.inputLocation` |The location of the input file(s) for Giraph to read the graph from.
+|`giraph.vertexInputFormatClass` |The format that the graph input file(s) are represented in.
+|`gremlin.outputLocation` |The location to write the computed Giraph graph to.
+|`giraph.vertexOutputFormatClass` |The format that the output file(s) should be represented in.
+|`gremlin.sideEffectOutputFormatClass` |The format of any resultant GraphComputer SideEffects.
+|`gremlin.vertexProgram` |The `VertexProgram` to distribute to all vertices in the `GiraphGraph`
+|`gremlin.traversalVertexProgram.traversalSupplierClass` |For `TraversalVertexProgram`, the location of the Gremlin traversal to use (if not using Gremlin Console).
+|`gremlin.jarsInDistributedCache` |Whether to upload the Giraph-Gremlin jars to Hadoop's distributed cache (necessary if jars are not on machines' classpaths).
+|`gremlin.deriveComputerSideEffects` |Whether or not `SideEffects` are yielded (requires an extra MapReduce job if true).
+|`giraph.minWorkers` |The minimum number of parallel workers to execute the vertices of the graph.
+|`giraph.maxWorkers` |The maximum number of parallel workers to execute the vertices of the graph.
+|=========================================================
+
+IMPORTANT: The maximum number of workers can be no larger than the number of map-slots in the Hadoop cluster minus 1. For example, if the Hadoop cluster has 4 map slots, then `giraph.maxWorkers` can not be larger than 3. One map-slot is reserved for the master compute node and all other slots can be allocated as workers to execute the VertexPrograms on the vertices of the graph.
+
+The above properties file states:
+
+	The location of the graph is tinkerpop-classic-vertices.gio. Interpret that file using KryoVertexInputFormat. When evaluating the graph over the Giraph/Hadoop cluster, execute the TraversalVertexProgram on all vertices of the graph using the traversal defined in TraversalSupplier1. Write the computed on GiraphGraph to output/ using the KryoVertexOutputFormat. Use 2 workers (thus, 3 map-slots) to execute the job.
+ 
+Along with the properties above, the numerous link:http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/core-default.xml[Hadoop specific properties] can be added as needed to tune and parameterize the executed Giraph-Gremlin job on the respective Hadoop cluster.
+
+OLTP Giraph-Gremlin
+~~~~~~~~~~~~~~~~~~~
+
+It is possible to execute OLTP operations over Giraph-Gremlin. However, realize that the underlying HDFS files are typically not random access and thus, to retrieve a vertex, a linear scan is required. It is possible to create input formats that leverage Hadoop Map files.
+
+[source,text]
+gremlin> hdfs.copyFromLocal('../../../data/tinkerpop-classic-vertices.gio', 'tinkerpop-classic-vertices.gio')
+==>null
+gremlin> hdfs.ls()
+==>rw-r--r-- marko supergroup 891 tinkerpop-classic-vertices.gio
+gremlin> conf = new PropertiesConfiguration()
+==>org.apache.commons.configuration.PropertiesConfiguration@37d3d232
+gremlin> conf.load('../../../giraph-gremlin/conf/giraph-kryo.properties')
+==>null
+gremlin> g = GiraphGraph.open(conf)
+==>giraphgraph[kryovertexinputformat->kryovertexoutputformat]
+gremlin> g.V.count()
+==>6
+gremlin> g.V.out.out.name
+==>ripple
+==>lop
+gremlin> g.V.groupBy{it.value('name')[1]}{it.value('name')}.next()
+==>a=[marko, vadas]
+==>e=[peter]
+==>i=[ripple]
+==>o=[lop, josh]
+
+CAUTION: OLTP operations on `GiraphGraph` are not efficient. They require linear scans to execute and are unreasonable for large graphs. In such large graph situations, make use of <<traversalvertexprogram,TraversalVertexProgram>> which is the OLAP implementation of the Gremlin language.
+
+OLAP Giraph-Gremlin
+~~~~~~~~~~~~~~~~~~~
+
+Giraph-Gremlin was designed to execute OLAP operations via `GraphComputer`. The OLTP examples presented above are reproduced below, but using `TraversalVertexProgram` for the execution of the Gremlin traversal.
+
+IMPORTANT: When using Giraph-Gremlin OLAP from the Gremlin Console, the only Gremlin language subset supported is Gremlin-Groovy.
+
+[source,text]
+gremlin> :remote connect giraph ../../../giraph-gremlin/conf/giraph-kryo.properties
+==>giraphgraph[kryovertexinputformat->kryovertexoutputformat]
+gremlin> :> g.V.count()
+INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, CountStep]
+INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0037
+INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
+...
+INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: CountCapMapReduce
+INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0038
+INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
+...
+==>6
+gremlin> :> g.V.out.out.name
+INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, VertexStep(OUT), VertexStep(OUT), ElementValueStep(name)]
+INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0031
+INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
+...
+INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: TraversalResultMapReduce
+INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0032
+INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
+...
+==>ripple
+==>lop
+gremlin> :> g.V.groupBy{it.value('name')[1]}{it.value('name')}
+INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, GroupByStep]
+INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0039
+INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
+...
+INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: GroupByMapReduce
+INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0040
+INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
+...
+==>[a:[marko, vadas], e:[peter], i:[ripple], o:[lop, josh]]
+gremlin> _l.next()
+==>a=[marko, vadas]
+==>e=[peter]
+==>i=[ripple]
+==>o=[lop, josh]
+
+The results of the graph traversal are stored in HDFS accessible via `hdfs`.
+
+[source,text]
+gremlin> hdfs.ls()
+==>rwxr-xr-x marko supergroup 0 (D) output
+==>rw-r--r-- marko supergroup 891 tinkerpop-classic-vertices.gio
+gremlin> hdfs.ls('output')
+==>rwxr-xr-x marko supergroup 0 (D) ~cap
+==>rwxr-xr-x marko supergroup 0 (D) ~g
+gremlin> hdfs.ls('output/~cap')
+==>rw-r--r-- marko supergroup 0 _SUCCESS
+==>rwxr-xr-x marko supergroup 0 (D) _logs
+==>rw-r--r-- marko supergroup 332 part-r-00000
+gremlin> hdfs.head('output/~cap',KryoWritable.class)
+==>[a, [marko, vadas]]
+==>[e, [peter]]
+==>[i, [ripple]]
+==>[o, [lop, josh]]
 
 A list of the HDFS methods available are itemized below:
 
@@ -1998,27 +1986,118 @@ A list of the HDFS methods available are itemized below:
  * `hdfs.copyFromLocat(String from, String to)`: copy the specified local path to the specified path
  * `hdfs.mergeToLocal(String from, String to)`: merge the files at path to the specified local path
  * `hdfs.head(String path)`: display the data in the path
- * `hdfs.head(String path, long lineCount)`: display only the first lineCount data in the path
+ * `hdfs.head(String path, long lineCount)`: display only the first `totalKeyValues` in the path
+ * `hdfs.head(String path, long totalKeyValues, Class<Writable> writableClass)`: head the path interpreting the key values as respective writable
 
-A PageRank Example
-~~~~~~~~~~~~~~~~~~
+The `TraversalSupplier1` class mentioned in the `giraph-kryo.properties` file is distributed with Giraph-Gremlin. It declares what Gremlin-Java traversal to execute on the loaded `GiraphGraph`. This is the means why which traversals can be programmatically executed in Giraph-Gremlin.
+
+[source,java]
+----
+// gremlin.traversalVertexProgram.traversalSupplierClass=com.tinkerpop.gremlin.giraph.process.graph.example.TraversalSupplier1
+
+public class TraversalSupplier1 implements SSupplier<Traversal> {
+    public Traversal get() {
+        return GiraphGraph.open().V().out().out().value("name");
+    }
+}
+----
+
+A Command Line Example
+~~~~~~~~~~~~~~~~~~~~~~
 
 image::pagerank-logo.png[width=300]
 
-The classic link:http://en.wikipedia.org/wiki/PageRank[PageRank] centrality algorithm can be executed over TinkerPop classic by simply updating the properties file.
+The classic link:http://en.wikipedia.org/wiki/PageRank[PageRank] centrality algorithm can be executed over TinkerPop classic from the command line.
+
+NOTE: The extension `ldjson` in `giraph-graphson.properties` refers to link:http://en.wikipedia.org/wiki/Line_Delimited_JSON[line-delimitated JSON] which is the file format used by `GraphSONWriter` when writing an link:http://en.wikipedia.org/wiki/Adjacency_list[adjacency list] representation of a graph.
 
 [source,text]
-gremlin.input.location=tinkerpop-classic-adjlist.ldjson
-giraph.vertexInputFormatClass=
-   com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONVertexInputFormat
-gremlin.output.location=output
-giraph.vertexOutputFormatClass=
-   com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONVertexOutputFormat
-gremlin.vertexProgram=com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgram
-giraph.minWorkers=2
-giraph.maxWorkers=2
+$ hadoop fs -copyFromLocal ../data/tinkergraph-classic-vertices.ldjson tinkergraph-classic-vertices.ldjson
+$ hadoop fs -ls
+Found 2 items
+-rw-r--r--   1 marko supergroup        891 2014-07-28 13:00 /user/marko/tinkerpop-classic-vertices.gio
+-rw-r--r--   1 marko supergroup       2356 2014-07-28 13:00 /user/marko/tinkerpop-classic-vertices.ldjson
+$ hadoop jar target/giraph-gremlin-3.0.0-job.jar com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer conf/giraph-graphson.properties
+14/07/29 12:08:27 INFO computer.GiraphGraphComputer: GiraphGremlin: com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram
+14/07/29 12:08:28 INFO mapred.JobClient: Running job: job_201407281259_0041
+14/07/29 12:08:29 INFO mapred.JobClient:  map 0% reduce 0%
+14/07/29 12:08:51 INFO mapred.JobClient:  map 66% reduce 0%
+14/07/29 12:08:52 INFO mapred.JobClient:  map 100% reduce 0%
+14/07/29 12:08:54 INFO mapred.JobClient: Job complete: job_201407281259_0041
+14/07/29 12:08:54 INFO mapred.JobClient: Counters: 57
+14/07/29 12:08:54 INFO mapred.JobClient:   Map-Reduce Framework
+14/07/29 12:08:54 INFO mapred.JobClient:     Spilled Records=0
+14/07/29 12:08:54 INFO mapred.JobClient:     Map input records=3
+14/07/29 12:08:54 INFO mapred.JobClient:     SPLIT_RAW_BYTES=132
+14/07/29 12:08:54 INFO mapred.JobClient:     Map output records=0
+14/07/29 12:08:54 INFO mapred.JobClient:     Total committed heap usage (bytes)=347602944
+14/07/29 12:08:54 INFO mapred.JobClient:   Giraph Timers
+14/07/29 12:08:54 INFO mapred.JobClient:     Shutdown (milliseconds)=385
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 1 (milliseconds)=89
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 23 (milliseconds)=28
+14/07/29 12:08:54 INFO mapred.JobClient:     Input superstep (milliseconds)=1127
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 27 (milliseconds)=30
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 10 (milliseconds)=34
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 5 (milliseconds)=43
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 22 (milliseconds)=31
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 14 (milliseconds)=35
+14/07/29 12:08:54 INFO mapred.JobClient:     Total (milliseconds)=4023
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 2 (milliseconds)=50
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 18 (milliseconds)=29
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 11 (milliseconds)=35
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 24 (milliseconds)=32
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 28 (milliseconds)=32
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 15 (milliseconds)=34
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 6 (milliseconds)=37
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 19 (milliseconds)=31
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 25 (milliseconds)=27
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 8 (milliseconds)=33
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 12 (milliseconds)=44
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 20 (milliseconds)=31
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 16 (milliseconds)=31
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 9 (milliseconds)=36
+14/07/29 12:08:54 INFO mapred.JobClient:     Setup (milliseconds)=1119
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 3 (milliseconds)=50
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 7 (milliseconds)=38
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 13 (milliseconds)=36
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 29 (milliseconds)=37
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 26 (milliseconds)=40
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 0 (milliseconds)=293
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 21 (milliseconds)=46
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 17 (milliseconds)=32
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 4 (milliseconds)=39
+14/07/29 12:08:54 INFO mapred.JobClient:   File Input Format Counters
+14/07/29 12:08:54 INFO mapred.JobClient:     Bytes Read=0
+14/07/29 12:08:54 INFO mapred.JobClient:   Giraph Stats
+14/07/29 12:08:54 INFO mapred.JobClient:     Aggregate finished vertices=0
+14/07/29 12:08:54 INFO mapred.JobClient:     Aggregate edges=0
+14/07/29 12:08:54 INFO mapred.JobClient:     Sent messages=6
+14/07/29 12:08:54 INFO mapred.JobClient:     Current workers=2
+14/07/29 12:08:54 INFO mapred.JobClient:     Last checkpointed superstep=0
+14/07/29 12:08:54 INFO mapred.JobClient:     Current master task partition=0
+14/07/29 12:08:54 INFO mapred.JobClient:     Superstep=30
+14/07/29 12:08:54 INFO mapred.JobClient:     Aggregate vertices=6
+14/07/29 12:08:54 INFO mapred.JobClient:   FileSystemCounters
+14/07/29 12:08:54 INFO mapred.JobClient:     HDFS_BYTES_READ=2488
+14/07/29 12:08:54 INFO mapred.JobClient:     FILE_BYTES_WRITTEN=250470
+14/07/29 12:08:54 INFO mapred.JobClient:     HDFS_BYTES_WRITTEN=2719
+14/07/29 12:08:54 INFO mapred.JobClient:   Job Counters
+14/07/29 12:08:54 INFO mapred.JobClient:     Launched map tasks=3
+14/07/29 12:08:54 INFO mapred.JobClient:     SLOTS_MILLIS_REDUCES=0
+14/07/29 12:08:54 INFO mapred.JobClient:     Total time spent by all reduces waiting after reserving slots (ms)=0
+14/07/29 12:08:54 INFO mapred.JobClient:     SLOTS_MILLIS_MAPS=31907
+14/07/29 12:08:54 INFO mapred.JobClient:     Total time spent by all maps waiting after reserving slots (ms)=0
+14/07/29 12:08:54 INFO mapred.JobClient:   File Output Format Counters
+14/07/29 12:08:54 INFO mapred.JobClient:     Bytes Written=0
+$ hadoop fs -cat output/~g/*
+{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.5}},{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}],"id":1,"label":"vertex","type":"vertex","hiddens":{"gremlin.pageRank":0.15000000000000002,"gremlin.edgeCount":3.0},"properties":{"name":"marko","age":29}}
+{"inE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}}],"outE":[],"id":5,"label":"vertex","type":"vertex","hiddens":{"gremlin.pageRank":0.23181250000000003,"gremlin.edgeCount":0.0},"properties":{"name":"ripple","lang":"java"}}
+{"inE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}],"outE":[],"id":3,"label":"vertex","type":"vertex","hiddens":{"gremlin.pageRank":0.4018125,"gremlin.edgeCount":0.0},"properties":{"name":"lop","lang":"java"}}
+{"inE":[{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}],"outE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}}],"id":4,"label":"vertex","type":"vertex","hiddens":{"gremlin.pageRank":0.19250000000000003,"gremlin.edgeCount":2.0},"properties":{"name":"josh","age":32}}
+{"inE":[{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.5}}],"outE":[],"id":2,"label":"vertex","type":"vertex","hiddens":{"gremlin.pageRank":0.19250000000000003,"gremlin.edgeCount":0.0},"properties":{"name":"vadas","age":27}}
+{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}],"id":6,"label":"vertex","type":"vertex","hiddens":{"gremlin.pageRank":0.15000000000000002,"gremlin.edgeCount":1.0},"properties":{"name":"peter","age":35}}
 
-A `hadoop fs -getmerge output tinkerpop-classic-adjlist-2.ldjson` yields the computed graph which has the PageRank values of every vertex as a hidden property. Vertex 4 ("josh") is isolated below:
+Vertex 4 ("josh") is isolated below:
 
 [source,js]
 {
@@ -2036,8 +2115,8 @@ A `hadoop fs -getmerge output tinkerpop-classic-adjlist-2.ldjson` yields the com
  "label":"vertex",
  "type":"vertex",
  "hiddens":{
-  "gremlin.pageRankVertexProgram.pageRank":0.19250000000000003,
-  "gremlin.pageRankVertexProgram.edgeCount":2.0
+  "gremlin.pageRank":0.19250000000000003,
+  "gremlin.edgeCount":2.0
  },
  "properties":{
   "name":"josh",

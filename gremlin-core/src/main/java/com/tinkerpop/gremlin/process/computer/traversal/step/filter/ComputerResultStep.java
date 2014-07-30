@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.process.computer.traversal.step.util.TraversalResultMapReduce;
+import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraversalResultMapReduce;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCap;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
@@ -40,7 +40,6 @@ public class ComputerResultStep<S> extends AbstractStep<S, S> {
     public ComputerResultStep(final Traversal traversal, final SideEffects sideEffects, final TraversalVertexProgram traversalVertexProgram) {
         this(traversal, null, sideEffects, traversalVertexProgram);
     }
-
 
     public Traverser<S> processNextStart() {
         final Traverser<S> traverser = this.traversers.next();

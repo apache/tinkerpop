@@ -22,7 +22,7 @@ public class GraphComputerHelper {
                     supports = (boolean) GraphComputer.Features.class.getMethod(method.getName().replace("requires", "supports")).invoke(graphComputerFeatures);
                     requires = (boolean) method.invoke(vertexProgramFeatures);
                 } catch (final Exception e) {
-                    throw new RuntimeException("A reflection exception has occurred: " + e.getMessage(), e);
+                    throw new IllegalStateException("A reflection exception has occurred: " + e.getMessage(), e);
                 }
                 if (requires && !supports)
                     throw new IllegalStateException("The vertex program can not be executed on the graph computer: " + method.getName());

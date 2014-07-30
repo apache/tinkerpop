@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.structure.util.GraphVariableHelper;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Map;
 import java.util.Set;
@@ -83,5 +84,9 @@ public class TinkerGraphComputerSideEffects implements SideEffects.Administrativ
     public void set(final String key, final Object value) {
         GraphVariableHelper.validateVariable(key, value);
         this.globals.put(key, value);
+    }
+
+    public String toString() {
+        return StringFactory.computerSideEffectsString(this);
     }
 }

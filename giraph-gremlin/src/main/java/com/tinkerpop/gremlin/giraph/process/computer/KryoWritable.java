@@ -6,6 +6,7 @@ import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.process.PathTraverser;
 import com.tinkerpop.gremlin.process.SimpleTraverser;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.io.WritableUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -47,7 +48,7 @@ public class KryoWritable<T> implements WritableComparable<KryoWritable> {
 
     public void readFields(final DataInput input) {
         try {
-            final int objectLength = input.readInt();
+            final int objectLength = WritableUtils.readVInt(input);
             final byte[] objectBytes = new byte[objectLength];
             for (int i = 0; i < objectLength; i++) {
                 objectBytes[i] = input.readByte();
@@ -65,7 +66,7 @@ public class KryoWritable<T> implements WritableComparable<KryoWritable> {
             final Output out = new Output(outputStream);
             KRYO.writeClassAndObject(out, this.t);
             out.flush();
-            output.writeInt(outputStream.toByteArray().length);
+            WritableUtils.writeVInt(output, outputStream.toByteArray().length);
             output.write(outputStream.toByteArray());
             out.close();
         } catch (Exception e) {

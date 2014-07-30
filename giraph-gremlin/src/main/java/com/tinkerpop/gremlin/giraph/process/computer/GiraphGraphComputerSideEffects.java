@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.giraph.process.computer.util.RuleWritable;
 import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.giraph.master.MasterCompute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,8 +42,8 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
         if (null == this.giraphInternalVertex) {  // master compute node
             try {
                 this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getConf()));
-                this.sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectKeys());
-                for (final String key : (Set<String>) this.vertexProgram.getSideEffectKeys()) {
+                this.sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectComputeKeys());
+                for (final String key : (Set<String>) this.vertexProgram.getSideEffectComputeKeys()) {
                     this.registerAggregator(key, MemoryAggregator.class); // TODO: Why does PersistentAggregator not work?
                 }
                 this.registerPersistentAggregator(Constants.RUNTIME, MemoryAggregator.class);
@@ -54,7 +55,7 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
             }
         } else {  // local vertex aggregator
             this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.giraphInternalVertex.getConf()));
-            this.sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectKeys());
+            this.sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectComputeKeys());
         }
     }
 
@@ -131,5 +132,9 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
     }
 
     public void readFields(final DataInput input) {
+    }
+
+    public String toString() {
+        return StringFactory.computerSideEffectsString(this);
     }
 }

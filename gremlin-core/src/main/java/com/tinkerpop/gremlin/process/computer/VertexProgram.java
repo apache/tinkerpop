@@ -29,6 +29,8 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
 
     public void loadState(final Configuration configuration);
 
+    public void storeState(final Configuration configuration);
+
     /**
      * The method is called at the beginning of the computation. The method is global to the {@link GraphComputer}
      * and as such, is not called for each vertex.
@@ -55,11 +57,13 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
      */
     public boolean terminate(final SideEffects sideEffects);
 
-    public Map<String, KeyType> getElementKeys();
-
-    public Set<String> getSideEffectKeys();
-
     public Class<M> getMessageClass();
+
+    public Map<String, KeyType> getElementComputeKeys();
+
+    public default Set<String> getSideEffectComputeKeys() {
+        return Collections.emptySet();
+    }
 
     public default Optional<MessageCombiner<M>> getMessageCombiner() {
         return Optional.empty();
@@ -92,7 +96,9 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
 
     public interface Builder {
 
-        public Configuration getConfiguration();
+        public <P extends VertexProgram> P create();
+
+        public Builder configure(final Object... keyValues);
 
     }
 

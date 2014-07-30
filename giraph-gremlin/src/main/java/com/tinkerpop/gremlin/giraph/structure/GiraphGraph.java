@@ -79,7 +79,7 @@ public class GiraphGraph implements Graph, Serializable {
     }
 
     public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass) {
-        return (C) new GiraphGraphComputer(this, this.variables().getConfiguration());
+        return (C) new GiraphGraphComputer(this);
     }
 
 
@@ -116,7 +116,7 @@ public class GiraphGraph implements Graph, Serializable {
             }
         });
         if (this.variables().getConfiguration().containsKey(Constants.GREMLIN_OUTPUT_LOCATION)) {
-            conf.setProperty(Constants.GREMLIN_INPUT_LOCATION, this.variables().getConfiguration().getString(Constants.GREMLIN_OUTPUT_LOCATION));
+            conf.setProperty(Constants.GREMLIN_INPUT_LOCATION, this.variables().getConfiguration().getString(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + Constants.TILDA_G);
         }
         if (this.variables().getConfiguration().containsKey(Constants.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS)) {
             // TODO: Is this sufficient?

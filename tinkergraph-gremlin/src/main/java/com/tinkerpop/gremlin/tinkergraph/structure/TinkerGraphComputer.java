@@ -10,10 +10,9 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerMapEmitter;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerReduceEmitter;
 import com.tinkerpop.gremlin.util.StreamFactory;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -25,11 +24,12 @@ import java.util.concurrent.Future;
 public class TinkerGraphComputer implements GraphComputer {
 
     private Isolation isolation = Isolation.BSP;
-    private Configuration configuration = new BaseConfiguration();
+    private VertexProgram vertexProgram;
     private final TinkerGraph graph;
     private final TinkerGraphComputerSideEffects sideEffects = new TinkerGraphComputerSideEffects();
     private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
+    private final List<MapReduce> mapReduces = new ArrayList<>();
 
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;
@@ -40,13 +40,14 @@ public class TinkerGraphComputer implements GraphComputer {
         return this;
     }
 
-    public GraphComputer program(final Configuration configuration) {
-        configuration.getKeys().forEachRemaining(key -> this.configuration.setProperty(key, configuration.getProperty(key)));
+    public GraphComputer program(final VertexProgram vertexProgram) {
+        this.vertexProgram = vertexProgram;
         return this;
     }
 
-    public Graph getGraph() {
-        return this.graph;
+    public GraphComputer mapReduce(final MapReduce mapReduce) {
+        this.mapReduces.add(mapReduce);
+        return this;
     }
 
     public Future<Pair<Graph, SideEffects>> submit() {
@@ -55,31 +56,31 @@ public class TinkerGraphComputer implements GraphComputer {
         else
             this.executed = true;
 
-        final VertexProgram vertexProgram = VertexProgram.createVertexProgram(this.configuration);
         GraphComputerHelper.validateProgramOnComputer(this, vertexProgram);
 
         return CompletableFuture.<Pair<Graph, SideEffects>>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
 
             final TinkerGraph g = this.graph;
-            g.graphView = new TinkerGraphView(this.isolation, vertexProgram.getElementKeys());
+            g.graphView = new TinkerGraphView(this.isolation, this.vertexProgram.getElementComputeKeys());
             g.useGraphView = true;
             // execute the vertex program
-            vertexProgram.setup(this.sideEffects);
+            this.vertexProgram.setup(this.sideEffects);
 
             while (true) {
-                StreamFactory.parallelStream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard, vertexProgram.getMessageCombiner()), this.sideEffects));
+                StreamFactory.parallelStream(g.V()).forEach(vertex -> this.vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard, this.vertexProgram.getMessageCombiner()), this.sideEffects));
                 this.sideEffects.incrIteration();
                 g.graphView.completeIteration();
                 this.messageBoard.completeIteration();
-                if (vertexProgram.terminate(this.sideEffects)) break;
+                if (this.vertexProgram.terminate(this.sideEffects)) break;
             }
 
-            // no need to run combiners as this is single machine
-            for (final MapReduce mapReduce : (Iterable<MapReduce>) vertexProgram.getMapReducers()) {
+            this.mapReduces.addAll(this.vertexProgram.getMapReducers());
+            for (final MapReduce mapReduce : this.mapReduces) {
                 if (mapReduce.doStage(MapReduce.Stage.MAP)) {
                     final TinkerMapEmitter mapEmitter = new TinkerMapEmitter(mapReduce.doStage(MapReduce.Stage.REDUCE));
                     StreamFactory.parallelStream(g.V()).forEach(vertex -> mapReduce.map(vertex, mapEmitter));
+                    // no need to run combiners as this is single machine
                     if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
                         final TinkerReduceEmitter reduceEmitter = new TinkerReduceEmitter();
                         mapEmitter.reduceMap.forEach((k, v) -> mapReduce.reduce(k, ((List) v).iterator(), reduceEmitter));

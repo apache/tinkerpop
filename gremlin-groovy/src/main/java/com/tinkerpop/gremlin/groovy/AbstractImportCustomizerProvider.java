@@ -3,6 +3,11 @@ package com.tinkerpop.gremlin.groovy;
 import com.tinkerpop.gremlin.algorithm.generator.AbstractGenerator;
 import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
+import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.mapreduce.ClusterPopulationMapReduce;
+import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
+import com.tinkerpop.gremlin.process.computer.ranking.pagerank.mapreduce.PageRankMapReduce;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -69,6 +74,11 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
 
         // algorithms
         imports.add(AbstractGenerator.class.getPackage().getName() + DOT_STAR);
+        imports.add(PeerPressureVertexProgram.class.getPackage().getName() + DOT_STAR);
+        imports.add(ClusterPopulationMapReduce.class.getPackage().getName() + DOT_STAR);
+        imports.add(PageRankVertexProgram.class.getPackage().getName() + DOT_STAR);
+        imports.add(PageRankMapReduce.class.getPackage().getName() + DOT_STAR);
+        imports.add(TraversalVertexProgram.class.getPackage().getName() + DOT_STAR);
 
         // groovy extras
         imports.add(Grape.class.getCanonicalName());

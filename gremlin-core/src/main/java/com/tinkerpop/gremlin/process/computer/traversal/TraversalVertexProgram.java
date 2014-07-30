@@ -12,17 +12,17 @@ import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.SideEffectCapComputerStep;
-import com.tinkerpop.gremlin.process.computer.traversal.step.util.TraversalResultMapReduce;
+import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraversalResultMapReduce;
+import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
-import com.tinkerpop.gremlin.process.graph.step.map.GraphStep;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
+import com.tinkerpop.gremlin.process.graph.step.map.GraphStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SSupplier;
-import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
@@ -45,16 +45,13 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     public static final String TRAVERSAL_SUPPLIER = "gremlin.traversalVertexProgram.traversalSupplier";
     public static final String TRAVERSAL_SUPPLIER_CLASS = "gremlin.traversalVertexProgram.traversalSupplierClass";
-
-    private static final String TRACK_PATHS = "gremlin.traversalVertexProgram.trackPaths";
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
     public static final String TRAVERSER_TRACKER = Graph.Key.hidden("gremlin.traverserTracker");
 
     private SSupplier<Traversal> traversalSupplier;
+    private Class<SSupplier<Traversal>> traversalSupplierClass = null;
     private boolean trackPaths = false;
-
     public List<MapReduce> mapReducers = new ArrayList<>();
-    public String resultVariable;
 
     public Map<String, KeyType> computeKeys = new HashMap<String, KeyType>() {{
         put(TRAVERSER_TRACKER, KeyType.CONSTANT);
@@ -66,13 +63,11 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     @Override
     public void loadState(final Configuration configuration) {
         try {
-            this.trackPaths = configuration.getBoolean(TRACK_PATHS, false);
             if (configuration.containsKey(TRAVERSAL_SUPPLIER)) {
                 this.traversalSupplier = VertexProgramHelper.deserialize(configuration, TRAVERSAL_SUPPLIER);
             } else {
-                final Class<SSupplier<Traversal>> traversalSupplierClass =
-                        (Class) Class.forName(configuration.getProperty(TRAVERSAL_SUPPLIER_CLASS).toString());
-                this.traversalSupplier = traversalSupplierClass.getConstructor().newInstance();
+                this.traversalSupplierClass = (Class) Class.forName(configuration.getProperty(TRAVERSAL_SUPPLIER_CLASS).toString());
+                this.traversalSupplier = this.traversalSupplierClass.getConstructor().newInstance();
             }
 
             final Traversal traversal = this.traversalSupplier.get();
@@ -81,23 +76,31 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
             traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
                 final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
                 this.mapReducers.add(mapReduce);
-                // this.computeKeys.put(Graph.Key.hidden(mapReduce.getSideEffectKey()), KeyType.CONSTANT);
-            });
-            traversal.getSteps().stream().filter(step -> step instanceof SideEffectCapable).forEach(step -> {
-                this.computeKeys.put(Graph.Key.hidden(((SideEffectCapable) step).getVariable()), KeyType.CONSTANT);
+                this.computeKeys.put(Graph.Key.hidden(mapReduce.getSideEffectKey()), KeyType.CONSTANT);
             });
 
             // TODO: This is LAME!
             this.computeKeys.put(SideEffectCapable.CAP_KEY, KeyType.CONSTANT);
 
-            if (TraversalHelper.getEnd(traversal) instanceof SideEffectCapComputerStep) {
-                this.resultVariable = ((SideEffectCapComputerStep) TraversalHelper.getEnd(traversal)).getVariable();
-            } else {
+            if (!(TraversalHelper.getEnd(traversal) instanceof SideEffectCapComputerStep))
                 this.mapReducers.add(new TraversalResultMapReduce());
-                this.resultVariable = TraversalResultMapReduce.TRAVERSERS;
-            }
+
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void storeState(final Configuration configuration) {
+        configuration.setProperty(GraphComputer.VERTEX_PROGRAM, TraversalVertexProgram.class.getName());
+        if (this.traversalSupplierClass != null) {
+            configuration.setProperty(TRAVERSAL_SUPPLIER_CLASS, this.traversalSupplierClass.getCanonicalName());
+        } else {
+            try {
+                VertexProgramHelper.serialize(this.traversalSupplier, configuration, TRAVERSAL_SUPPLIER);
+            } catch (Exception e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
         }
     }
 
@@ -174,8 +177,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     @Override
-    public Map<String, KeyType> getElementKeys() {
-        // return VertexProgram.createElementKeys(TRAVERSER_TRACKER, KeyType.CONSTANT);
+    public Map<String, KeyType> getElementComputeKeys() {
         return this.computeKeys;
     }
 
@@ -185,17 +187,13 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     @Override
-    public Set<String> getSideEffectKeys() {
+    public Set<String> getSideEffectComputeKeys() {
         final Set<String> keys = new HashSet<>();
         keys.add(VOTE_TO_HALT);
         return keys;
     }
 
-    public String getResultVariable() {
-        return this.resultVariable;
-    }
-
-
+    @Override
     public String toString() {
         return this.getClass().getSimpleName() + this.traversalSupplier.get().toString();
     }
@@ -220,15 +218,14 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     //////////////
 
-    public static Builder create() {
+    public static Builder build() {
         return new Builder();
     }
 
-    public static class Builder implements VertexProgram.Builder {
-        private final Configuration configuration = new BaseConfiguration();
+    public static class Builder extends AbstractBuilder {
 
         public Builder() {
-            this.configuration.setProperty(GraphComputer.VERTEX_PROGRAM, TraversalVertexProgram.class.getName());
+            super(TraversalVertexProgram.class);
         }
 
         public Builder traversal(final SSupplier<Traversal> traversalSupplier) {
@@ -243,10 +240,6 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         public Builder traversal(final Class<SSupplier<Traversal>> traversalSupplierClass) {
             this.configuration.setProperty(TRAVERSAL_SUPPLIER_CLASS, traversalSupplierClass);
             return this;
-        }
-
-        public Configuration getConfiguration() {
-            return this.configuration;
         }
     }
 
