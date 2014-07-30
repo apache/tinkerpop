@@ -39,11 +39,11 @@ public class IteratorEnumerator<T> implements Enumerator<T> {
         return !iterator.hasNext();
     }
 
-    public boolean visitSolution(int i, BiConsumer<String, T> visitor) {
+    public boolean visitSolution(int index, BiConsumer<String, T> visitor) {
         T value;
 
-        if (i < memory.size()) {
-            value = memory.get(i);
+        if (index < memory.size()) {
+            value = memory.get(index);
         } else do {
             if (!iterator.hasNext()) {
                 return false;
@@ -51,7 +51,7 @@ public class IteratorEnumerator<T> implements Enumerator<T> {
 
             value = iterator.next();
             memory.add(value);
-        } while (i >= memory.size());
+        } while (index >= memory.size());
 
         MatchStepNew.visit(name, value, visitor);
 

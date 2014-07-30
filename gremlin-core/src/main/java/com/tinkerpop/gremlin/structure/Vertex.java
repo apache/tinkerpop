@@ -202,8 +202,8 @@ public interface Vertex extends Element {
         return this.start().map(function);
     }
 
-    public default <E2> GraphTraversal<Vertex, E2> match(final String inAs, final String outAs, final Traversal... traversals) {
-        return this.start().match(inAs, outAs, traversals);
+    public default <E2> GraphTraversal<Vertex, E2> match(final String inAs, final Traversal... traversals) {
+        return this.start().match(inAs, traversals);
     }
 
     public default GraphTraversal<Vertex, Vertex> sideEffect(final SConsumer<Traverser<Vertex>> consumer) {

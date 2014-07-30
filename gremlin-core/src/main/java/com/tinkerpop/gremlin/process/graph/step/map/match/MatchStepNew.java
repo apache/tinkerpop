@@ -98,6 +98,8 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
 
     private Enumerator<S> curSolution;
     private int curIndex;
+    // initial value allows MatchStep to be used as a non-Step
+    private Traverser<S> curStart = new SimpleTraverser<>(null);
 
     @Override
     protected Traverser<E> processNextStart() throws NoSuchElementException {
@@ -108,16 +110,18 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
                     optimize();
                 }
 
-                curSolution = solveFor(new SingleIterator<>(this.starts.next().get()));
+                curStart = this.starts.next();
+                curSolution = solveFor(new SingleIterator<>(curStart.get()));
                 curIndex = 0;
             } else {
                 throw new NoSuchElementException();
             }
         }
 
-        final SimpleTraverser<S> result = new SimpleTraverser<>(null);
+        final Traverser<S> result = curStart.makeSibling();
         BiConsumer<String, S> resultSetter = (name, value) -> {
             result.set(value);
+            //result.getPath().add(name, value);
         };
 
         if (curSolution.visitSolution(curIndex++, resultSetter)) {
@@ -194,7 +198,7 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
                 Enumerator<S> result = null;
                 Set<String> leftLabels = new HashSet<>();
                 for (TraversalWrapper<S, S> w : outs) {
-                    TraversalUpdater<S, S> updater = new TraversalUpdater<>(w, new SingleIterator<S>(o));
+                    TraversalUpdater<S, S> updater = new TraversalUpdater<>(w, new SingleIterator<S>(o), curStart);
 
                     Set<String> rightLabels = new HashSet<>();
                     addVariables(w.inLabel, rightLabels);
@@ -356,7 +360,8 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
         private int outputs = -1;
 
         public TraversalUpdater(final TraversalWrapper<A, B> w,
-                                final Iterator<A> inputs) {
+                                final Iterator<A> inputs,
+                                final Traverser<A> start) {
             this.w = w;
 
             Iterator<A> seIter = new SideEffectIterator<>(inputs, ignored -> {
@@ -367,7 +372,8 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
                 }
                 outputs = 0;
             });
-            Iterator<Traverser<A>> starts = new MapIterator<>(seIter, SimpleTraverser::new);
+            Iterator<Traverser<A>> starts = new MapIterator<>(seIter,
+                    o -> {Traverser<A> t = start.makeSibling(); t.set(o); return t;});
 
             w.exhaust();
 

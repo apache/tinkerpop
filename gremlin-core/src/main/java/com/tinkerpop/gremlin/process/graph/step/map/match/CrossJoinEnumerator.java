@@ -37,18 +37,18 @@ public class CrossJoinEnumerator<T> implements Enumerator<T> {
     }
 
     // note: permits random access
-    public boolean visitSolution(final int i,
+    public boolean visitSolution(final int index,
                                  final BiConsumer<String, T> visitor) {
-        int sq = (int) Math.sqrt(i);
+        int sq = (int) Math.sqrt(index);
 
         // choose x and y such that the solution represented by i
         // remains constant as this Enumerator expands
         int x, y;
 
-        if (0 == i) {
+        if (0 == index) {
             x = y = 0;
         } else {
-            int r = i - sq * sq;
+            int r = index - sq * sq;
             if (r < sq) {
                 x = sq;
                 y = r;
@@ -65,14 +65,14 @@ public class CrossJoinEnumerator<T> implements Enumerator<T> {
                 if (0 == xEnum.size()) {
                     return false;
                 }
-                x = i % xEnum.size();
-                y = i / xEnum.size();
+                x = index % xEnum.size();
+                y = index / xEnum.size();
                 break;
             }
             if (!xEnum.visitSolution(xEnum.size(), (BiConsumer<String, T>) MatchStepNew.TRIVIAL_CONSUMER)) return false;
         }
 
-        int height = i / Math.min(1 + sq, xEnum.size());
+        int height = index / Math.min(1 + sq, xEnum.size());
 
         // expand y
         while (height >= yEnum.size()) {
@@ -82,12 +82,12 @@ public class CrossJoinEnumerator<T> implements Enumerator<T> {
                     return false;
                 }
                 height = yEnum.size();
-                int width = i / height;
+                int width = index / height;
                 while (width >= xEnum.size()) {
                     if (!xEnum.visitSolution(xEnum.size(), (BiConsumer<String, T>) MatchStepNew.TRIVIAL_CONSUMER)) return false;
                 }
-                x = i / yEnum.size();
-                y = i % yEnum.size();
+                x = index / yEnum.size();
+                y = index % yEnum.size();
                 break;
             }
 

@@ -28,9 +28,9 @@ public interface Enumerator<T> {
 
     /**
      * Provides access to a solution, allowing it to be printed, put into a map, etc.
-     * @param i the index of the solution
+     * @param index the index of the solution
      * @param visitor a consumer for each key/value pair in the solution
      * @return whether a solution exists at the given index and was visited
      */
-    boolean visitSolution(int i, BiConsumer<String, T> visitor);
+    boolean visitSolution(int index, BiConsumer<String, T> visitor);
 }

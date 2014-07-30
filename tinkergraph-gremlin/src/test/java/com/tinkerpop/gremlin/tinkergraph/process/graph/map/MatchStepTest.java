@@ -1,6 +1,8 @@
 package com.tinkerpop.gremlin.tinkergraph.process.graph.map;
 
+import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.map.match.CrossJoinEnumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.Enumerator;
@@ -47,7 +49,7 @@ public class MatchStepTest {
                 g.of().as("a").out("knows").as("b"),
                 g.of().as("a").out("created").as("c"));
 
-        GraphTraversal t = g.V().match("a", "x", g.of().as("a").out("knows").as("b"),
+        GraphTraversal t = g.V().match("a", g.of().as("a").out("knows").as("b"),
                 g.of().as("a").out("created").as("c"));
         while (t.hasNext()) {
             System.out.println("solution: " + t.next());
@@ -329,6 +331,7 @@ public class MatchStepTest {
         exhaust(e5);
         assertEquals(60, e5.size());
 
+        // with AND semantics, we have only those six solutions for which a2 and a3 align
         Enumerator<String> join = new InnerJoinEnumerator<>(e5, new HashSet<String>() {{
             add("number");
         }});
@@ -373,8 +376,9 @@ public class MatchStepTest {
     private void assertBranchFactor(final double branchFactor,
                                     final Traversal t,
                                     final Iterator inputs) {
+        Traverser start = new SimpleTraverser(null);
         MatchStepNew.TraversalWrapper w = new MatchStepNew.TraversalWrapper(t, "a", "b");
-        MatchStepNew.TraversalUpdater updater = new MatchStepNew.TraversalUpdater<>(w, inputs);
+        MatchStepNew.TraversalUpdater updater = new MatchStepNew.TraversalUpdater<>(w, inputs, start);
         while (updater.hasNext()) {
             updater.next();
         }
