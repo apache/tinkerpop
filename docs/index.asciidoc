@@ -1883,7 +1883,9 @@ Along with the properties above, the numerous link:http://hadoop.apache.org/docs
 OLTP Giraph-Gremlin
 ~~~~~~~~~~~~~~~~~~~
 
-It is possible to execute OLTP operations over Giraph-Gremlin. However, realize that the underlying HDFS files are typically not random access and thus, to retrieve a vertex, a linear scan is required. It is possible to create input formats that leverage Hadoop Map files.
+image:giraph-pipes.png[width=110,float=left] It is possible to execute OLTP operations over Giraph-Gremlin. However, realize that the underlying HDFS files are typically not random access and thus, to retrieve a vertex, a linear scan is required. It is possible to create input formats that leverage Hadoop Map files.
+
+CAUTION: OLTP operations on `GiraphGraph` are not efficient. They require linear scans to execute and are unreasonable for large graphs. In such large graph situations, make use of <<traversalvertexprogram,TraversalVertexProgram>> which is the OLAP implementation of the Gremlin language.
 
 [source,text]
 gremlin> hdfs.copyFromLocal('../../../data/tinkerpop-classic-vertices.gio', 'tinkerpop-classic-vertices.gio')
@@ -1907,12 +1909,10 @@ gremlin> g.V.groupBy{it.value('name')[1]}{it.value('name')}.next()
 ==>i=[ripple]
 ==>o=[lop, josh]
 
-CAUTION: OLTP operations on `GiraphGraph` are not efficient. They require linear scans to execute and are unreasonable for large graphs. In such large graph situations, make use of <<traversalvertexprogram,TraversalVertexProgram>> which is the OLAP implementation of the Gremlin language.
-
 OLAP Giraph-Gremlin
 ~~~~~~~~~~~~~~~~~~~
 
-Giraph-Gremlin was designed to execute OLAP operations via `GraphComputer`. The OLTP examples presented above are reproduced below, but using `TraversalVertexProgram` for the execution of the Gremlin traversal.
+image:giraph-furnace.png[width=110,float=left] Giraph-Gremlin was designed to execute OLAP operations via `GraphComputer`. The OLTP examples presented above are reproduced below, but using `TraversalVertexProgram` for the execution of the Gremlin traversal.
 
 IMPORTANT: When using Giraph-Gremlin OLAP from the Gremlin Console, the only Gremlin language subset supported is Gremlin-Groovy.
 
@@ -2156,7 +2156,7 @@ Graph Developers
 | link:http://test.com[Bryn Cooke] (2013) | Gremlin domain specific language theorist.
 | link:http://test.com[James Thornton] (2013) | Creator of Bulbs and TinkerPop evangelist.
 | link:http://test.com[Sridhar Ramachandran] (2013) | Lambda Zen representative and Gremlin traversal engine theorist.
-| link:http://test.com[Nicholas Quinn] (2013) | Objectivity representative.
+| link:http://test.com[Nicholas Quinn] (2013) | Objective representative.
 | link:http://test.com[Xavier Sanchez] (2013) | Sparksee representative.
 | link:http://test.com[Daniel Kuppitz] (2014) | Gremlin traversal theorist and public technology support.
 | link:http://test.com[Michael Pollmeier] (2014) | Gremlin-Scala creator and traversal API theorist.
