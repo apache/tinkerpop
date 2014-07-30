@@ -20,6 +20,10 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
         this.path.add(as, t);
     }
 
+    public boolean hasPath() {
+        return true;
+    }
+
     public Path getPath() {
         return this.path;
     }

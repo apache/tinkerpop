@@ -4,40 +4,61 @@ import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.function.SFunction;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SelectStep<E> extends MapStep<Object, Map<String, E>> implements PathConsumer {
+public class SelectStep<E> extends MapStep<Object, Map<String, E>> {
 
     public final FunctionRing functionRing;
-    public final String[] asLabels;
+    public final List<String> asLabels;
+    private final boolean wasEmpty;
 
     public SelectStep(final Traversal traversal, final List<String> asLabels, SFunction... stepFunctions) {
         super(traversal);
         this.functionRing = new FunctionRing(stepFunctions);
-        this.asLabels = asLabels.toArray(new String[asLabels.size()]);
+        this.wasEmpty = asLabels.size() == 0;
+        this.asLabels = this.wasEmpty ? TraversalHelper.getAsLabels(this.traversal) : asLabels;
         this.setFunction(traverser -> {
-            final Path path = traverser.getPath();
-            final Map<String, E> temp = new HashMap<>();
-            if (this.functionRing.hasFunctions()) {
-                if (this.asLabels.length == 0)
-                    path.forEach((as, object) -> temp.put(as, (E) this.functionRing.next().apply(object)));
-                else
-                    path.subset(this.asLabels).forEach((as, object) -> temp.put(as, (E) this.functionRing.next().apply(object)));
-                return temp;
-            } else {
-                if (this.asLabels.length == 0) {
-                    path.forEach((k, v) -> temp.put(k, (E) v));
-                } else {
-                    for (final String as : this.asLabels) {
-                        temp.put(as, path.get(as));
-                    }
+            final Path path = traverser.hasPath() ? traverser.getPath() : null;
+            final Object start = traverser.get();
+            final Map<String, E> temp = new LinkedHashMap<>();
+            if (this.functionRing.hasFunctions()) {   ////////// FUNCTION RING
+                if (null != path)
+                    this.asLabels.forEach(as -> {   ////// PROCESS PATHS
+                        if (path.hasAs(as))
+                            temp.put(as, (E) this.functionRing.next().apply(path.get(as)));
+                    });
+
+                if (start instanceof Map) {  ////// PROCESS MAPS
+                    if (this.wasEmpty)
+                        ((Map) start).forEach((k, v) -> temp.put((String) k, (E) this.functionRing.next().apply(v)));
+                    else
+                        this.asLabels.forEach(as -> {
+                            if (((Map) start).containsKey(as))
+                                temp.put(as, (E) this.functionRing.next().apply(((Map) start).get(as)));
+                        });
+                }
+            } else {    ////////// IF NO FUNCTION RING
+                if (path != null)
+                    this.asLabels.forEach(as -> {  ////// PROCESS PATHS
+                        if (path.hasAs(as))
+                            temp.put(as, path.get(as));
+                    });
+                if (start instanceof Map) {  ////// PROCESS MAPS
+                    if (this.wasEmpty)
+                        ((Map) start).forEach((k, v) -> temp.put((String) k, (E) v));
+                    else
+                        this.asLabels.forEach(as -> {
+                            if (((Map) start).containsKey(as))
+                                temp.put(as, (E) ((Map) start).get(as));
+                        });
                 }
             }
             return temp;

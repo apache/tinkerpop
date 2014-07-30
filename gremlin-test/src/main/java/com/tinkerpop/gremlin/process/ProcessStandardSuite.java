@@ -90,7 +90,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             SelectTest.JavaSelectTest.class,
             TraversalTest.JavaTraversalTest.class,
             UnfoldTest.JavaUnfoldTest.class,
-            UnionTest.JavaUnionTest.class,
+            // UnionTest.JavaUnionTest.class,
             ValuesTest.JavaValuesTest.class,
 
             // sideEffect

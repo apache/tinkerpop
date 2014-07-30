@@ -61,6 +61,10 @@ public class Path {
         return new ArrayList<>(this.asLabels);
     }
 
+    public boolean hasAs(final String as) {
+        return this.asLabels.contains(as);
+    }
+
     public Object remove(final int index) {
         Object removed = this.objects.remove(index);
         if (null != removed) {

@@ -80,7 +80,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             SelectTest.JavaComputerSelectTest.class,
             TraversalTest.JavaComputerTraversalTest.class,
             UnfoldTest.JavaComputerUnfoldTest.class,
-            UnionTest.JavaComputerUnionTest.class,
+            // UnionTest.JavaComputerUnionTest.class,
             ValuesTest.JavaComputerValuesTest.class,
 
             // sideEffect

@@ -26,7 +26,7 @@ public class JumpStep<S> extends AbstractStep<S, S> {
         this.jumpAs = jumpAs;
         this.ifPredicate = ifPredicate;
         this.emitPredicate = emitPredicate;
-        this.jumpToStep = TraversalHelper.asExists(this.jumpAs, this.traversal) ? TraversalHelper.getAs(this.jumpAs, this.traversal).getNextStep() : null;
+        this.jumpToStep = TraversalHelper.hasAs(this.jumpAs, this.traversal) ? TraversalHelper.getAs(this.jumpAs, this.traversal).getNextStep() : null;
         this.jumpBack = null != this.jumpToStep;
     }
 
@@ -40,7 +40,7 @@ public class JumpStep<S> extends AbstractStep<S, S> {
         this.loops = loops;
         this.ifPredicate = t -> t.getLoops() < this.loops;
         this.emitPredicate = emitPredicate;
-        this.jumpToStep = TraversalHelper.asExists(this.jumpAs, this.traversal) ? TraversalHelper.getAs(this.jumpAs, this.traversal).getNextStep() : null;
+        this.jumpToStep = TraversalHelper.hasAs(this.jumpAs, this.traversal) ? TraversalHelper.getAs(this.jumpAs, this.traversal).getNextStep() : null;
         this.jumpBack = null != this.jumpToStep;
     }
 

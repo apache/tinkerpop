@@ -19,6 +19,8 @@ public interface Traverser<T> extends Serializable {
         return this.getFuture().equals(NO_FUTURE);
     }
 
+    public boolean hasPath();
+
     public Path getPath();
 
     public void setPath(final Path path);

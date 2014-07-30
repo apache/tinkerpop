@@ -33,5 +33,9 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable, Clonea
         public boolean equals(final Object object) {
             return object instanceof NoObject;
         }
+
+        public int hashCode() {
+            return 1212121212;
+        }
     }
 }

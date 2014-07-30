@@ -43,6 +43,10 @@ public class SimpleTraverser<T> implements Traverser<T> {
         this.future = as;
     }
 
+    public boolean hasPath() {
+        return false;
+    }
+
     public Path getPath() {
         throw new IllegalStateException(PATH_ERROR_MESSAGE);
     }

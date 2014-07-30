@@ -43,10 +43,21 @@ public class TraversalHelper {
                 .orElseThrow(() -> new IllegalArgumentException("The provided name does not exist: " + as));
     }
 
-    public static boolean asExists(final String as, final Traversal<?, ?> traversal) {
+    public static boolean hasAs(final String as, final Traversal<?, ?> traversal) {
         return traversal.getSteps().stream()
                 .filter(p -> as.equals(p.getAs()))
                 .findFirst().isPresent();
+    }
+
+    public static List<String> getAsLabels(final Traversal traversal) {
+        final List<String> asLabels = new ArrayList<String>();
+        for (final Step step : (List<Step>) traversal.getSteps()) {
+            final String as = step.getAs();
+            if (isLabeled(as)) {
+                asLabels.add(as);
+            }
+        }
+        return asLabels;
     }
 
     public static <S, E> Step<S, ?> getStart(final Traversal<S, E> traversal) {

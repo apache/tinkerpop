@@ -39,13 +39,12 @@ import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PathStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertyValueStep;
+import com.tinkerpop.gremlin.process.graph.step.map.SelectOneStep;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ShuffleStep;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStep;
-import com.tinkerpop.gremlin.process.graph.step.map.match.keep.KeepManyStep;
-import com.tinkerpop.gremlin.process.graph.step.map.match.keep.KeepOneStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
@@ -125,11 +124,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, Object> id() {
-        return (GraphTraversal) this.addStep(new IdStep<Element>(this));
+        return (GraphTraversal) this.addStep(new IdStep<>(this));
     }
 
     public default GraphTraversal<S, String> label() {
-        return (GraphTraversal) this.addStep(new LabelStep<Element>(this));
+        return (GraphTraversal) this.addStep(new LabelStep<>(this));
     }
 
     public default GraphTraversal<S, E> identity() {
@@ -269,17 +268,22 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final List<String> asLabels, SFunction... stepFunctions) {
-        return (GraphTraversal) this.addStep(new SelectStep(this, asLabels, stepFunctions));
+        this.addStep(new SelectStep<>(this, asLabels, stepFunctions));
+        if (asLabels.stream().filter(as -> TraversalHelper.hasAs(as, this)).findFirst().isPresent())
+            this.addStep(new PathIdentityStep<>(this));
+        return (GraphTraversal) this;
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final SFunction... stepFunctions) {
-        return (GraphTraversal) this.addStep(new SelectStep(this, Arrays.asList(), stepFunctions));
+        this.addStep(new SelectStep(this, Arrays.asList(), stepFunctions));
+        return (GraphTraversal) this.addStep(new PathIdentityStep<>(this));
     }
 
-    public default <E2> GraphTraversal<S, E2> keep(final String... asLabels) {
-        return asLabels.length == 1 ?
-                (GraphTraversal) this.addStep(new KeepOneStep<E2>(this, asLabels[0])) :
-                (GraphTraversal) this.addStep(new KeepManyStep<Map<String, E2>>(this, asLabels));
+    public default <E2> GraphTraversal<S, E2> select(final String as, SFunction... stepFunctions) {
+        this.addStep(new SelectOneStep<>(this, as, stepFunctions));
+        if (TraversalHelper.hasAs(as, this))
+            this.addStep(new PathIdentityStep<>(this));
+        return (GraphTraversal) this;
     }
 
     /*public default <E2> GraphTraversal<S, E2> union(final Traversal... traversals) {
@@ -540,7 +544,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     ///////////////////// UTILITY STEPS /////////////////////
 
     public default GraphTraversal<S, E> as(final String as) {
-        if (TraversalHelper.asExists(as, this))
+        if (TraversalHelper.hasAs(as, this))
             throw new IllegalStateException("The named step already exists");
         final List<Step> steps = this.getSteps();
         steps.get(steps.size() - 1).setAs(as);

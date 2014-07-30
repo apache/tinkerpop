@@ -26,6 +26,7 @@ public class FilterStep<S> extends AbstractStep<S, S> {
         while (true) {
             final Traverser<S> traverser = this.starts.next();
             if (this.predicate.test(traverser)) {
+                // TODO: we can remove this and say that you can't as-label filter steps ??
                 if (traverser instanceof PathTraverser && TraversalHelper.isLabeled(this.getAs()))
                     traverser.getPath().renameLastStep(this.getAs());
                 return traverser;
