@@ -666,7 +666,7 @@ image:traversal-strategy.png[width=125,float=right] A `TraversalStrategy` can an
  * There is a more efficient way to express the traversal at the TinkerPop3 level.
  * There is a more efficient way to express the traversal at the graph vendor level.
 
-A simple TraversalStrategy is the `IdentityOptimizerTraversalStrategy` and it is a type-1 strategy defined as follows:
+A simple TraversalStrategy is the `IdentityReductionStrategy` and it is a type-1 strategy defined as follows:
 
 [source,java]
 public class IdentityReductionStrategy implements TraversalStrategy.FinalTraversalStrategy {
