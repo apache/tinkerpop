@@ -1770,7 +1770,7 @@ Neo4j-Gremlin
 </dependency>
 ----
 
-image:neotech-logo.png[width=150,float=left] link:http://neotechnology.com[Neo Technology] are the developers of the link:http://neo4j.org[Neo4j graph database]. Neo4j natively supports the property graph data model. Note that Neo4j requires that the value objects in the property map of an element be Java primitives, `java.lang.String` values, or arrays of primitives and `java.lang.String` values.
+image:neotechnology-logo.png[width=150,float=left] link:http://neotechnology.com[Neo Technology] are the developers of the link:http://neo4j.org[Neo4j graph database]. Neo4j natively supports the property graph data model. Note that Neo4j requires that the value objects in the property map of an element be Java primitives, `java.lang.String` values, or arrays of primitives and `java.lang.String` values.
 
 [source,groovy]
 ----
@@ -1975,19 +1975,24 @@ gremlin> hdfs.head('output/~cap',KryoWritable.class)
 ==>[i, [ripple]]
 ==>[o, [lop, josh]]
 
-A list of the HDFS methods available are itemized below:
+A list of the HDFS methods available are itemized below. Note that these methods are also available for the 'local' variable:
 
- * `hdfs.ls(String path)`: list the contents of the supplied directory  
- * `hdfs.cp(String from, String to)`: copy the specified path to the specified path
- * `hdfs.exists(String path)`: whether the specification path exists
- * `hdfs.rm(String path)`: remove the specified path
- * `hdfs.rmr(String path)`: remove the specified path with recursion
- * `hdfs.copyToLocal(String from, String to)`: copy the specified path to the specified local path
- * `hdfs.copyFromLocat(String from, String to)`: copy the specified local path to the specified path
- * `hdfs.mergeToLocal(String from, String to)`: merge the files at path to the specified local path
- * `hdfs.head(String path)`: display the data in the path
- * `hdfs.head(String path, long lineCount)`: display only the first `totalKeyValues` in the path
- * `hdfs.head(String path, long totalKeyValues, Class<Writable> writableClass)`: head the path interpreting the key values as respective writable
+[width="100%",cols="2,10",options="header"]
+|=========================================================
+| Method| Description
+|`hdfs.ls(String path)`| List the contents of the supplied directory. 
+|`hdfs.cp(String from, String to)`| Copy the specified path to the specified path.
+|`hdfs.exists(String path)`| Whether the specified path exists.
+|`hdfs.rm(String path)`| Remove the specified path.
+|`hdfs.rmr(String path)`| Remove the specified path and its contents recurssively.
+|`hdfs.copyToLocal(String from, String to)`| Copy the specified HDFS path to the specified local path.
+|`hdfs.copyFromLocat(String from, String to)`| Copy the specified local path to the specified HDFS path.
+|`hdfs.mergeToLocal(String from, String to)`| Merge the files in path to the specified local path.
+|`hdfs.head(String path)`| Text display the data in the path.
+|`hdfs.head(String path, long lineCount)`| Text display only the first `totalKeyValues` in the path.
+|`hdfs.head(String path, long totalKeyValues, Class<Writable> writableClass)`| Display the path interpreting the key values as respective writable.
+|=========================================================
+
 
 The `TraversalSupplier1` class mentioned in the `giraph-kryo.properties` file is distributed with Giraph-Gremlin. It declares what Gremlin-Java traversal to execute on the loaded `GiraphGraph`. This is the means why which traversals can be programmatically executed in Giraph-Gremlin.
 
@@ -2128,6 +2133,50 @@ Conclusion
 ==========
 
 The world that we know, you and me, is but a subset of the world that Gremlin has weaved within The TinkerPop. Gremlin has constructed a fully connected graph and only the subset that makes logical sense to our traversing thoughts is the fragment we have come to know and have come to see one another within. But there are many more out there, within other webs of logics unfathomed. From any thought, every other thought, we come to realize that which is -- The TinkerPop.
+
+TinkerPop Contributors
+======================
+
+TinkerPop is a group of graph developers and vendors committed to providing a vendor-agnostic graph computing abstraction in support of technology interoperability.
+
+Graph Developers
+----------------
+
+[width="100%",cols="5,10"]
+|=========================================================
+| link:http://markorodriguez.com[Marko A. Rodriguez] (2009) | TinkerPop co-founder and creator and developer of Gremlin.
+| link:http://se.linkedin.com/in/neubauer[Peter Neubauer] (2009) | TinkerPop co-founder and Neo Technology representative.
+| link:http://fortytwo.net[Joshua Shinavier] (2009) | TinkerPop co-founder and full-stack developer.
+| link:http://ketrinayim.com[Ketrina Yim] (2009) | TinkerPop cartoonist and logo designer.
+| link:http://stephen.genoprime.com/[Stephen Mallette] (2011) | Primary developer on every aspect of TinkerPop.
+| link:http://test.com[Pierre DeWilde] (2011) | Documentation support and evangelist.
+| link:http://test.com[Derrick Wiebe] (2011) | Creator of Pacer and Gremlin traversal developer.
+| link:http://test.com[Luca Garulli] (2012) | Orient Technologies representative and Gremlin structure theorist.
+| link:http://www.matthiasb.com[Matthias Bröcheler] (2012) | Aurelius representative and full-stack theorist.
+| link:http://test.com[Bryn Cooke] (2013) | Gremlin domain specific language theorist.
+| link:http://test.com[James Thornton] (2013) | Creator of Bulbs and TinkerPop evangelist.
+| link:http://test.com[Sridhar Ramachandran] (2013) | Lambda Zen representative and Gremlin traversal engine theorist.
+| link:http://test.com[Nicholas Quinn] (2013) | Objective representative.
+| link:http://test.com[Xavier Sanchez] (2013) | Sparksee representative.
+| link:http://test.com[Daniel Kuppitz] (2014) | Gremlin traversal theorist and public technology support.
+| link:http://test.com[Michael Pollmeier] (2014) | Gremlin-Scala creator and traversal API theorist.
+| link:http://test.com[Jean-Baptiste Musso] (2014) | Gremlin-JavaScript creator.
+| link:http://test.com[Bob Briody] (2014) | Gremlin visualization creator.
+| link:http://test.com[Mike Personick] (2014) | BigData representative and Gremlin OLAP theorist.
+| link:http://test.com[Michael Hackstein] (2014) | ArrangoDB representative.
+|=========================================================
+
+
+Graph Vendors
+-------------
+
+[width="100%"]
+|=========================================================
+| image:arangodb-logo.png[width=200,link="http://arangodb.com"] | image:aurelius-logo.png[width=200,link="http://thinkaurelius.com"] | image:bigdata-logo.png[width=200,link="http://www.systap.com/"]
+| image:foundationdb-logo.png[width=200,link="https://foundationdb.com/"] | image:infinitegraph-logo.png[width=200,link="http://www.objectivity.com/infinitegraph"] | image:lambda-zen-logo.png[width=200,link="http://lambdazen.blogspot.com"]
+| image:neotechnology-logo.png[width=200,link="http://neotechnology.com"] | image:orientechnologies-logo.png[width=200,link="http://www.orientechnologies.com"] | image:sparsity-technologies-logo.png[width=200,link="http://www.sparsity-technologies.com/"]
+|=========================================================
+
 
 Acknowledgements
 ================
