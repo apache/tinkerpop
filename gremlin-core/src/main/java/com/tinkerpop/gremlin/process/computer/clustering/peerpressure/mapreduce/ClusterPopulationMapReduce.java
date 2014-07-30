@@ -18,11 +18,11 @@ import java.util.Map;
 public class ClusterPopulationMapReduce implements MapReduce<Serializable, Long, Serializable, Long, Map<Serializable, Long>> {
 
     public static final String CLUSTER_POPULATION_SIDE_EFFECT_KEY = "gremlin.clusterPopulation.sideEffectKey";
+    public static final String DEFAULT_SIDE_EFFECT_KEY = "clusterPopulation";
 
-    private String sideEffectKey;
+    private String sideEffectKey = DEFAULT_SIDE_EFFECT_KEY;
 
     public ClusterPopulationMapReduce() {
-
     }
 
     public ClusterPopulationMapReduce(final String sideEffectKey) {
@@ -36,7 +36,7 @@ public class ClusterPopulationMapReduce implements MapReduce<Serializable, Long,
 
     @Override
     public void loadState(final Configuration configuration) {
-        this.sideEffectKey = configuration.getString(CLUSTER_POPULATION_SIDE_EFFECT_KEY, "clusterPopulation");
+        this.sideEffectKey = configuration.getString(CLUSTER_POPULATION_SIDE_EFFECT_KEY, DEFAULT_SIDE_EFFECT_KEY);
     }
 
     @Override

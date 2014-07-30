@@ -18,8 +18,11 @@ import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -67,6 +70,11 @@ public class PeerPressureVertexProgram implements VertexProgram<Serializable> {
     @Override
     public Map<String, KeyType> getElementComputeKeys() {
         return VertexProgram.createElementKeys(CLUSTER, KeyType.VARIABLE);
+    }
+
+    @Override
+    public Set<String> getSideEffectComputeKeys() {
+        return new HashSet<>(Arrays.asList(VOTE_TO_HALT));
     }
 
     @Override

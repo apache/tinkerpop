@@ -18,8 +18,10 @@ import java.util.Set;
 public class ClusterCountMapReduce implements MapReduce<MapReduce.NullObject, Serializable, MapReduce.NullObject, Integer, Integer> {
 
     public static final String CLUSTER_COUNT_SIDE_EFFECT_KEY = "gremlin.clusterCount.sideEffectKey";
+    public static final String DEFAULT_SIDE_EFFECT_KEY = "clusterCount";
 
-    private String sideEffectKey;
+    private String sideEffectKey = DEFAULT_SIDE_EFFECT_KEY;
+
 
     public ClusterCountMapReduce() {
 
@@ -36,7 +38,7 @@ public class ClusterCountMapReduce implements MapReduce<MapReduce.NullObject, Se
 
     @Override
     public void loadState(final Configuration configuration) {
-        this.sideEffectKey = configuration.getString(CLUSTER_COUNT_SIDE_EFFECT_KEY, "clusterCount");
+        this.sideEffectKey = configuration.getString(CLUSTER_COUNT_SIDE_EFFECT_KEY, DEFAULT_SIDE_EFFECT_KEY);
     }
 
     @Override

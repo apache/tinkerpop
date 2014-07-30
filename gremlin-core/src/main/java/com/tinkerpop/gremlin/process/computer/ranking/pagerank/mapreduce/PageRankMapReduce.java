@@ -15,8 +15,9 @@ import java.util.Iterator;
 public class PageRankMapReduce implements MapReduce<Object, Double, Object, Double, Iterator<Pair<Object, Double>>> {
 
     public static final String PAGE_RANK_SIDE_EFFECT_KEY = "gremlin.pageRank.sideEffectKey";
+    public static final String DEFAULT_SIDE_EFFECT_KEY = "pageRank";
 
-    private String sideEffectKey;
+    private String sideEffectKey = DEFAULT_SIDE_EFFECT_KEY;
 
     public PageRankMapReduce() {
 
@@ -33,7 +34,7 @@ public class PageRankMapReduce implements MapReduce<Object, Double, Object, Doub
 
     @Override
     public void loadState(final Configuration configuration) {
-        this.sideEffectKey = configuration.getString(PAGE_RANK_SIDE_EFFECT_KEY, PageRankVertexProgram.PAGE_RANK);
+        this.sideEffectKey = configuration.getString(PAGE_RANK_SIDE_EFFECT_KEY, DEFAULT_SIDE_EFFECT_KEY);
     }
 
     @Override
