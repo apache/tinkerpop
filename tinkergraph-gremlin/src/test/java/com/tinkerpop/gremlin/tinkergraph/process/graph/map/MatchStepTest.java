@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.step.map.match.Bindings;
 import com.tinkerpop.gremlin.process.graph.step.map.match.CrossJoinEnumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.Enumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.InnerJoinEnumerator;
@@ -25,8 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.function.BiConsumer;
 
 import static org.junit.Assert.assertEquals;
@@ -40,14 +39,7 @@ public class MatchStepTest {
 
     @Test
     public void testOutputs() throws Exception {
-        MatchStep<Object, Object> query;
-        Iterator iter;
         Graph g = TinkerFactory.createClassic();
-
-        iter = g.V();
-        query = new MatchStep<>(g.V(), "a",
-                g.of().as("a").out("knows").as("b"),
-                g.of().as("a").out("created").as("c"));
 
         GraphTraversal t = g.V().match("a", g.of().as("a").out("knows").as("b"),
                 g.of().as("a").out("created").as("c"));
@@ -429,55 +421,6 @@ public class MatchStepTest {
         assertEquals(branchFactor, w.findBranchFactor(), 0);
     }
 
-    private class Bindings<T> implements Comparable<Bindings<T>> {
-        private final SortedMap<String, T> map = new TreeMap<>();
-
-        public Bindings() {
-        }
-
-        public Bindings(final Map<String, T> map) {
-            this.map.putAll(map);
-        }
-
-        public Bindings<T> put(final String name, final T value) {
-            map.put(name, value);
-            return this;
-        }
-
-        public int compareTo(Bindings<T> other) {
-            int cmp = ((Integer) map.size()).compareTo(other.map.size());
-            if (0 != cmp) return cmp;
-
-            Iterator<Map.Entry<String, T>> i1 = map.entrySet().iterator();
-            Iterator<Map.Entry<String, T>> i2 = other.map.entrySet().iterator();
-            while (i1.hasNext()) {
-                Map.Entry<String, T> e1 = i1.next();
-                Map.Entry<String, T> e2 = i2.next();
-
-                cmp = e1.getKey().compareTo(e1.getKey());
-                if (0 != cmp) return cmp;
-
-                cmp = e1.getValue().toString().compareTo(e2.getValue().toString());
-                if (0 != cmp) return cmp;
-            }
-
-            return 0;
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder("{");
-            boolean first = true;
-            for (Map.Entry<String, T> entry : map.entrySet()) {
-                if (first) first = false;
-                else sb.append(", ");
-                sb.append(entry.getKey()).append(":").append(entry.getValue());
-            }
-            sb.append("}");
-            return sb.toString();
-        }
-    }
-
     private <T> List<Bindings<T>> toBindings(final Enumerator<T> enumerator) {
         List<Bindings<T>> bindingsList = new LinkedList<>();
         int i = 0;
@@ -514,6 +457,28 @@ public class MatchStepTest {
 
             if (0 != a.compareTo(e)) {
                 fail("unexpected result(s), including " + a);
+            }
+        }
+    }
+
+    private <S, E> void assertOutputs(final Traversal<S, Map<String, E>> t,
+                                      final String... resultsToString) {
+        Set<String> expected = new HashSet<>();
+        Collections.addAll(expected, resultsToString);
+        Set<String> actual = new HashSet<>();
+        t.forEach(o -> {
+            actual.add(o.toString());
+        });
+
+        for (String s : expected) {
+            if (!actual.contains(s)) {
+                fail("expected value not found: " + s);
+            }
+        }
+
+        for (String s : actual) {
+            if (!expected.contains(s)) {
+                fail("unexpected value: " + s);
             }
         }
     }
@@ -581,28 +546,6 @@ public class MatchStepTest {
         assertOutputs(t, "[v[1], v[3], lop]");
     }
     */
-
-    private void assertOutputs(final GraphTraversal t,
-                               final String... resultsToString) {
-        Set<String> expected = new HashSet<>();
-        Collections.addAll(expected, resultsToString);
-        Set<String> actual = new HashSet<>();
-        t.forEach(o -> {
-            actual.add(o.toString());
-        });
-
-        for (String s : expected) {
-            if (!actual.contains(s)) {
-                fail("expected value not found: " + s);
-            }
-        }
-
-        for (String s : actual) {
-            if (!expected.contains(s)) {
-                fail("unexpected value: " + s);
-            }
-        }
-    }
 
     private <T> void exhaust(Enumerator<T> enumerator) {
         BiConsumer<String, T> visitor = (s, t) -> {};
