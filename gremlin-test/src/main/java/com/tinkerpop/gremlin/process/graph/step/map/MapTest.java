@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
-import java.util.Iterator;
 import java.util.List;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
@@ -28,6 +27,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(CLASSIC)
     public void g_v1_mapXnameX() {
         final Traversal<Vertex, String> traversal = get_g_v1_mapXnameX(convertToVertexId("marko"));
+        System.out.println("Testing: " + traversal);
         assertEquals(traversal.next(), "marko");
         assertFalse(traversal.hasNext());
     }
@@ -35,16 +35,21 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outE_label_mapXlengthX() {
-        final List<Integer> lengths = get_g_v1_outE_label_mapXlengthX(convertToVertexId("marko")).toList();
+        final Traversal<Vertex, Integer> traversal = get_g_v1_outE_label_mapXlengthX(convertToVertexId("marko"));
+        System.out.println("Testing: " + traversal);
+        List<Integer> lengths = traversal.toList();
         assertTrue(lengths.contains("created".length()));
         assertTrue(lengths.contains("knows".length()));
         assertEquals(lengths.size(), 3);
+        assertFalse(traversal.hasNext());
     }
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_mapXnameX_mapXlengthX() {
-        final List<Integer> lengths = get_g_v1_out_mapXnameX_mapXlengthX(convertToVertexId("marko")).toList();
+        final Traversal<Vertex, Integer> traversal = get_g_v1_out_mapXnameX_mapXlengthX(convertToVertexId("marko"));
+        System.out.println("Testing: " + traversal);
+        final List<Integer> lengths = traversal.toList();
         assertTrue(lengths.contains("josh".length()));
         assertTrue(lengths.contains("vadas".length()));
         assertTrue(lengths.contains("lop".length()));
@@ -59,9 +64,10 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
         int josh = 0;
         int other = 0;
 
-        final Iterator<String> itty = get_g_V_asXaX_out_mapXa_nameX();
-        while (itty.hasNext()) {
-            final String name = itty.next();
+        final Traversal<Vertex, String> traversal = get_g_V_asXaX_out_mapXa_nameX();
+        System.out.println("Testing: " + traversal);
+        while (traversal.hasNext()) {
+            final String name = traversal.next();
             if (name.equals("marko")) marko++;
             else if (name.equals("peter")) peter++;
             else if (name.equals("josh")) josh++;

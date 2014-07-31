@@ -613,7 +613,7 @@ Match Step
 
 `MatchStep` was introduced into TinkerPop3 to support a more declarative form of link:http://en.wikipedia.org/wiki/Pattern_matching[pattern matching]. Similar constructs were available in previous TinkerPop versions via the `table()`-step, but that has since been removed in favor of the `match().select()`-pattern. With MatchStep in TinkerPop, a query optimizer exists based on the link:http://www.knowledgefrominformation.com/2011/04/16/budget-match-cost-effective-subgraph-matching-on-large-networks/[budget match algorithm]. For very large graphs, where the developer is uncertain of the statistics of the graph (e.g. how many `knows`-edges vs. `worksFor`-edges exist in the graph), it is best to use `match()` as the optimal traversal path will be determined automatically.
 
-"Who created a project named 'lop' that was also created by someone who is 29 years old? Return the two creators."
+	"Who created a project named 'lop' that was also created by someone who is 29 years old? Return the two creators."
 
 image::match-step.png[width=500]
 
@@ -2204,7 +2204,7 @@ Graph Developers
 | link:http://test.com[James Thornton] (2013) | Creator of Bulbs and TinkerPop evangelist.
 | link:http://test.com[Sridhar Ramachandran] (2013) | Lambda Zen representative and Gremlin traversal theorist.
 | link:http://test.com[Nicholas Quinn] (2013) | Objectivity representative.
-| link:http://test.com[Xavier Sanchez] (2013) | Sparksee representative.
+| link:http://www.linkedin.com/pub/xavier-sanchez/84/5b8/804[Xavier Sanchez] (2013) | Sparksee representative.
 | link:http://twitter.com/dkuppitz[Daniel Kuppitz] (2014) | Gremlin traversal theorist and public technology support.
 | link:http://test.com[Michael Pollmeier] (2014) | Gremlin-Scala creator and traversal theorist.
 | link:http://twitter.com/jbmusso[Jean-Baptiste Musso] (2014) | Gremlin-JavaScript creator.

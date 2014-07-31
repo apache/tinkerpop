@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -314,7 +315,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
     // The position of a traversal in a query never changes, although its priority / likelihood of being executed does.
     // Priority in turn affects branch factor.
     // However, with sufficient inputs and optimizations,the branch factor is expected to converge on a stable value.
-    public static class TraversalWrapper<A, B> implements Comparable<TraversalWrapper<A, B>> {
+    public static class TraversalWrapper<A, B> implements Comparable<TraversalWrapper<A, B>>, Serializable {
         private final Traversal<A, B> traversal;
         private final String outLabel, inLabel;
         private int totalInputs = 0;
