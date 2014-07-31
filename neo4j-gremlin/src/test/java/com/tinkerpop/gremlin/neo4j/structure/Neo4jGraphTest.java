@@ -2,8 +2,8 @@ package com.tinkerpop.gremlin.neo4j.structure;
 
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.neo4j.Neo4jGraphProvider;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
@@ -16,10 +16,8 @@ import org.neo4j.graphdb.ConstraintViolationException;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import org.neo4j.graphdb.index.AutoIndexer;
 import org.neo4j.graphdb.schema.ConstraintDefinition;
-import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
 
 import javax.script.Bindings;
@@ -27,8 +25,6 @@ import javax.script.ScriptException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.StreamSupport;
 
 import static org.junit.Assert.*;
 
@@ -76,9 +72,32 @@ public class Neo4jGraphTest {
     public void shouldExecuteCypher() throws Exception {
         this.g.addVertex("name", "marko");
         this.g.tx().commit();
-        final Iterator<Map<String, Object>> result = g.query("MATCH (a {name:\"marko\"}) RETURN a", null);
+        final Iterator<Map<String, Object>> result = g.cypher("MATCH (a {name:\"marko\"}) RETURN a", null);
         assertNotNull(result);
         assertTrue(result.hasNext());
+    }
+
+    @Test
+    public void shouldExecuteCypherWithArgs() throws Exception {
+        this.g.addVertex("name", "marko");
+        this.g.tx().commit();
+        final Map<String,Object> bindings = new HashMap<>();
+        bindings.put("n", "marko");
+        final Iterator<Map<String, Object>> result = g.cypher("MATCH (a {name:{n}}) RETURN a", bindings);
+        assertNotNull(result);
+        assertTrue(result.hasNext());
+    }
+
+    @Test
+    public void shouldExecuteCypherAndBackToGremlin() throws Exception {
+        this.g.addVertex("name", "marko", "age", 29, "color", "red");
+        this.g.addVertex("name", "marko", "age", 30, "color", "yellow");
+
+        this.g.tx().commit();
+        final Traversal result = g.cypher("MATCH (a {name:\"marko\"}) RETURN a").map(t -> t.get().get("a")).has("age", 29).value("color");
+        assertNotNull(result);
+        assertTrue(result.hasNext());
+        assertEquals("red", result.next().toString());
     }
 
     @Test
