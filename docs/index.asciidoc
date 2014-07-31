@@ -611,7 +611,7 @@ gremlin> sg.E
 Match Step
 ~~~~~~~~~~
 
-`MatchStep` was introduced into TinkerPop3 to support a more declarative form of link:http://en.wikipedia.org/wiki/Pattern_matching[pattern matching]. Similar constructs were available in previous TinkerPop versions via the `table()`-step, but that has since been removed in favor of the `match().select()`-pattern. With MatchStep in TinkerPop, a query optimizer exists t
+`MatchStep` was introduced into TinkerPop3 to support a more declarative form of link:http://en.wikipedia.org/wiki/Pattern_matching[pattern matching]. Similar constructs were available in previous TinkerPop versions via the `table()`-step, but that has since been removed in favor of the `match().select()`-pattern. With MatchStep in TinkerPop, a query optimizer exists based on the link:http://www.knowledgefrominformation.com/2011/04/16/budget-match-cost-effective-subgraph-matching-on-large-networks/[budget match algorithm]. For very large graphs, where the developer is uncertain of the statistics of the graph (e.g. how many `knows`-edges vs. `worksFor`-edges exist in the graph), it is best to use `match()` as the optimal traversal path will be determined automatically.
 
 "Who created a project named 'lop' that was also created by someone who is 29 years old? Return the two creators."
 
