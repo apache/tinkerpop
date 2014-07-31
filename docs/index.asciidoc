@@ -2189,28 +2189,28 @@ TinkerPop is a group of graph developers and vendors committed to providing a ve
 Graph Developers
 ----------------
 
-[width="100%",cols="5,10"]
+[width="100%",cols="5,10,2"]
 |=========================================================
-| link:http://markorodriguez.com[Marko A. Rodriguez] (2009) | TinkerPop co-founder and creator and developer of Gremlin.
-| link:http://se.linkedin.com/in/neubauer[Peter Neubauer] (2009) | TinkerPop co-founder and Neo Technology representative.
-| link:http://fortytwo.net[Joshua Shinavier] (2009) | TinkerPop co-founder and full-stack developer.
-| link:http://ketrinayim.com[Ketrina Yim] (2009) | TinkerPop cartoonist and logo designer.
-| link:http://stephen.genoprime.com/[Stephen Mallette] (2011) | Primary developer on every aspect of TinkerPop.
-| link:http://www.linkedin.com/in/pierredewilde[Pierre De Wilde] (2011) | Documentation support and evangelist.
-| link:http://test.com[Derrick Wiebe] (2011) | Creator of Pacer and Gremlin traversal developer.
-| link:http://test.com[Luca Garulli] (2012) | Orient Technologies representative and Gremlin structure theorist.
-| link:http://www.matthiasb.com[Matthias Bröcheler] (2012) | Aurelius representative and full-stack theorist.
-| link:http://test.com[Bryn Cooke] (2013) | Gremlin domain specific language theorist.
-| link:http://test.com[James Thornton] (2013) | Creator of Bulbs and TinkerPop evangelist.
-| link:http://test.com[Sridhar Ramachandran] (2013) | Lambda Zen representative and Gremlin traversal theorist.
-| link:http://test.com[Nicholas Quinn] (2013) | Objectivity representative.
-| link:http://www.linkedin.com/pub/xavier-sanchez/84/5b8/804[Xavier Sanchez] (2013) | Sparksee representative.
-| link:http://twitter.com/dkuppitz[Daniel Kuppitz] (2014) | Gremlin traversal theorist and public technology support.
-| link:http://test.com[Michael Pollmeier] (2014) | Gremlin-Scala creator and traversal theorist.
-| link:http://twitter.com/jbmusso[Jean-Baptiste Musso] (2014) | Gremlin-JavaScript creator.
-| link:http://bobbriody.com[Bob Briody] (2014) | Gremlin bashboard creator.
-| link:http://systap.com[Mike Personick] (2014) | Bigdata representative and OLAP theorist.
-| link:http://test.com[Michael Hackstein] (2014) | ArangoDB representative.
+| link:http://markorodriguez.com[Marko A. Rodriguez] (2009) | TinkerPop co-founder and creator and developer of Gremlin.|
+| link:http://se.linkedin.com/in/neubauer[Peter Neubauer] (2009) | TinkerPop co-founder and Neo Technology representative.| link:http://neo4j.org[*Neo4j*]
+| link:http://fortytwo.net[Joshua Shinavier] (2009) | TinkerPop co-founder and full-stack developer.|
+| link:http://ketrinayim.com[Ketrina Yim] (2009) | TinkerPop cartoonist and logo designer.|
+| link:http://stephen.genoprime.com/[Stephen Mallette] (2011) | Primary developer on every aspect of TinkerPop.|
+| link:http://www.linkedin.com/in/pierredewilde[Pierre De Wilde] (2011) | Documentation support and evangelist.| 
+| link:http://test.com[Derrick Wiebe] (2011) | Creator of Pacer and Gremlin traversal developer.|
+| link:http://test.com[Luca Garulli] (2012) | Orient Technologies representative and Gremlin structure theorist.| link:http://www.orientechnologies.com/orientdb/[*OrientDB*]
+| link:http://www.matthiasb.com[Matthias Bröcheler] (2012) | Aurelius representative and full-stack theorist.| link:http://titan.thinkaurelius.com[*Titan*]
+| link:http://test.com[Bryn Cooke] (2013) | Gremlin domain specific language theorist.|
+| link:http://jamesthornton.com[James Thornton] (2013) | Creator of Bulbs and TinkerPop evangelist.|
+| link:http://test.com[Sridhar Ramachandran] (2013) | Lambda Zen representative and Gremlin traversal theorist.| link:https://bitbucket.org/lambdazen/bitsy/wiki/Home[*Bitsy*]
+| link:http://www.linkedin.com/pub/nick-quinn/3/ab4/a56/[Nicholas Quinn] (2013) | Objectivity representative.| link:http://www.objectivity.com/infinitegraph[*InfiniteGraph*]
+| link:http://www.linkedin.com/pub/xavier-sanchez/84/5b8/804[Xavier Sanchez] (2013) | Sparsity Technologies representative.| link:http://www.sparsity-technologies.com/#sparksee[*Sparksee*]
+| link:http://twitter.com/dkuppitz[Daniel Kuppitz] (2014) | Gremlin traversal theorist and public technology support.|
+| link:http://test.com[Michael Pollmeier] (2014) | Gremlin-Scala creator and traversal theorist.|
+| link:http://twitter.com/jbmusso[Jean-Baptiste Musso] (2014) | Gremlin-JavaScript creator.|
+| link:http://bobbriody.com[Bob Briody] (2014) | Gremlin bashboard creator.|
+| link:http://bigdata.com[Mike Personick] (2014) | Bigdata representative and OLAP theorist.| link:http://bigdata.com[*Bigdata*] 
+| link:http://test.com[Michael Hackstein] (2014) | ArangoDB representative.| link:http://arangodb.org/[*ArangoDB*]
 |=========================================================
 
 
@@ -2219,8 +2219,8 @@ Graph Vendors
 
 [width="100%"]
 |=========================================================
-| image:arangodb-logo.png[width=200,link="http://arangodb.com"] | image:aurelius-logo.png[width=200,link="http://thinkaurelius.com"] | image:bigdata-logo.png[width=200,link="http://www.systap.com/"]
-| image:foundationdb-logo.png[width=200,link="https://foundationdb.com/"] | image:infinitegraph-logo.png[width=200,link="http://www.objectivity.com/infinitegraph"] | image:lambda-zen-logo.png[width=200,link="http://lambdazen.blogspot.com"]
+| image:arangodb-logo.png[width=200,link="http://arangodb.com"] | image:aurelius-logo.png[width=200,link="http://thinkaurelius.com"] | image:bigdata-logo.png[width=200,link="http://bigdata.com"]
+| image:foundationdb-logo.png[width=200,link="https://foundationdb.com/"] | image:objectivity-logo.png[width=200,link="http://www.objectivity.com"] | image:lambda-zen-logo.png[width=200,link="http://lambdazen.blogspot.com"]
 | image:neotechnology-logo.png[width=200,link="http://neotechnology.com"] | image:orientechnologies-logo.png[width=200,link="http://www.orientechnologies.com"] | image:sparsity-technologies-logo.png[width=200,link="http://www.sparsity-technologies.com/"]
 |=========================================================
 
