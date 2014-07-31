@@ -2250,7 +2250,8 @@ Graph Developers
 | link:http://twitter.com/jbmusso[Jean-Baptiste Musso] (2014) | Gremlin-JavaScript creator.|
 | link:http://bobbriody.com[Bob Briody] (2014) | Gremlin dashboard creator.|
 | link:http://bigdata.com[Mike Personick] (2014) | Bigdata representative and OLAP theorist.| link:http://bigdata.com[*Bigdata*] 
-| link:http://test.com[Michael Hackstein] (2014) | ArangoDB representative.| link:http://arangodb.org/[*ArangoDB*]
+| link:http://test.com[Michael Hackstein] (2014) | ArangoDB representative.| link:http://arangodb.org[*ArangoDB*]
+| link:http://test.com[Michael McMahon] (2014) | FoundationDB representative.| link:http://foundationdb.com[*FoundationDB*]
 |=========================================================
 
 

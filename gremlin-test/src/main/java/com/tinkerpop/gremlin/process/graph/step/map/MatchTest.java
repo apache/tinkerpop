@@ -28,7 +28,9 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_out_jump2_bX_selectXab_nameX();
 
-    //public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_out_loop2_b__b_path__X_selectXab_nameX();
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__c_created_bX_selectXnameX();
+
+    public abstract Traversal<Vertex, String> get_g_V_out_out_hasXname_rippleX_matchXb_created_a__c_knows_bX_selectXcX_outXknowsX_name();
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -122,6 +124,50 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_matchXa_created_b__c_created_bX_selectXnameX() throws Exception {
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_created_b__c_created_bX_selectXnameX();
+        System.out.println("Testing: " + traversal);
+        assertTrue(traversal.hasNext());
+        final Map<String, Long> countMap = new HashMap<>();
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            final Map<String, String> bindings = traversal.next();
+            // TODO: c is not being bound
+            // assertEquals(3, bindings.size());
+            assertEquals("lop", bindings.get("b"));
+            MapHelper.incr(countMap, bindings.get("a") + ":" + bindings.get("c"), 1l);
+        }
+        // TODO: without 'c' binding, cant check results
+        // assertEquals(Long.valueOf(1), countMap.get("marko:marko"));
+        //assertEquals(Long.valueOf(1), countMap.get("marko:josh"));
+        //assertEquals(Long.valueOf(1), countMap.get("marko:peter"));
+        //assertEquals(Long.valueOf(1), countMap.get("josh:marko"));
+        //assertEquals(Long.valueOf(1), countMap.get("josh:josh"));
+        //assertEquals(Long.valueOf(1), countMap.get("josh:peter"));
+        //assertEquals(Long.valueOf(1), countMap.get("peter:marko"));
+        //assertEquals(Long.valueOf(1), countMap.get("peter:josh"));
+        //assertEquals(Long.valueOf(1), countMap.get("peter:peter"));
+        //assertEquals(countMap.size(), 9);
+        //assertEquals(9, counter);
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_out_out_hasXname_rippleX_matchXb_created_a__c_knows_bX_selectXcX_outXknowsX_name() throws Exception {
+        // TODO: Doesn't work, only bindings to 'a' in binding set.
+        /*final Traversal<Vertex, String> traversal = get_g_V_out_out_hasXname_rippleX_matchXb_created_a__c_knows_bX_selectXcX_outXknowsX_name();
+        System.out.println("Testing: " + traversal);
+        assertTrue(traversal.hasNext());
+        final List<String> results = traversal.toList();
+        assertEquals(2, results.size());
+        assertTrue(results.contains("josh"));
+        assertTrue(results.contains("vadas"));*/
+    }
+
 
     public static class JavaMapTest extends MatchTest {
         public JavaMapTest() {
@@ -150,6 +196,20 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             return g.V().match("a",
                     g.of().as("a").out("created").as("b"),
                     g.of().as("a").out().jump("a", 2).as("b")).select(As.of("a", "b"), v -> ((Vertex) v).value("name"));
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__c_created_bX_selectXnameX() {
+            return g.V().match("a",
+                    g.of().as("a").out("created").as("b"),
+                    g.of().as("c").out("created").as("b")).select(v -> ((Vertex) v).value("name"));
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_out_out_hasXname_rippleX_matchXb_created_a__c_knows_bX_selectXcX_outXknowsX_name() {
+            return g.V().out().out().match("a",
+                    g.of().as("b").out("created").as("a"),
+                    g.of().as("c").out("knows").as("b")).select("c").out("knows").value("name");
         }
 
     }
@@ -181,6 +241,21 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             return (Traversal) g.V().match("a",
                     g.of().as("a").out("created").as("b"),
                     g.of().as("a").out().jump("a", 2).as("b")).select(As.of("a", "b"), v -> ((Vertex) v).value("name")).submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__c_created_bX_selectXnameX() {
+            // TODO: Does not work with GraphComputer (to recheck, add .submit(g.compute())
+            return g.V().match("a",
+                    g.of().as("a").out("created").as("b"),
+                    g.of().as("c").out("created").as("b")).select(v -> ((Vertex) v).value("name"));
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_out_out_hasXname_rippleX_matchXb_created_a__c_knows_bX_selectXcX_outXknowsX_name() {
+            return (Traversal) g.V().out().out().match("a",
+                    g.of().as("b").out("created").as("a"),
+                    g.of().as("c").out("knows").as("b")).select("c").out("knows").value("name").submit(g.compute());
         }
     }
 }

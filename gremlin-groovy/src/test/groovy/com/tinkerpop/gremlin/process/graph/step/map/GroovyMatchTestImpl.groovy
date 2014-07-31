@@ -33,4 +33,18 @@ class GroovyMatchTestImpl extends MatchTest {
                 g.of().as('a').out().jump('a', 2).as('b')).select(['a', 'b']) { it.value('name') }
     }
 
+    @Override
+    public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__c_created_bX_selectXnameX() {
+        g.V.match("a",
+                g.of().as("a").out('created').as("b"),
+                g.of().as('c').out("created").as('b')).select { it.value('name') }
+    }
+
+    @Override
+    public Traversal<Vertex, String> get_g_V_out_out_hasXname_rippleX_matchXb_created_a__c_knows_bX_selectXcX_outXknowsX_name() {
+        g.V.out.out.match('a',
+                g.of().as('b').out("created").as('a'),
+                g.of().as('c').out("knows").as("b")).select('c').out('knows').name
+    }
+
 }
