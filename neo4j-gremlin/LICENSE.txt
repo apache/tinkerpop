@@ -2,8 +2,7 @@
 
 Neo4j software is licensed as AGPL. As such, the neo4j-gremlin/
 source package as well as respective binary distributions of
-neo4j-gremlin are NOT Apache2 licensed like the other source packages
-and binaries of TinkerPop3 and thus, neo4j-gremlin/ is released AGPL.
+neo4j-gremlin are released AGPL.
 
 =====================================================================
 
