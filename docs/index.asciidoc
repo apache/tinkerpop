@@ -169,7 +169,7 @@ assert(g.V().count() == 0)
 assert(g.E().count() == 0)
 // tada!
 
-Here is the same code, but using Gremlin-Groovy in the <<gremlinconsole,Gremlin Console>>.
+Here is the same code, but using Gremlin-Groovy in the <<gremlin-console,Gremlin Console>>.
 
 [source,groovy]
 ----
@@ -611,7 +611,7 @@ gremlin> sg.E
 Match Step
 ~~~~~~~~~~
 
-`MatchStep` was introduced into TinkerPop3 to support a more declarative form of link:http://en.wikipedia.org/wiki/Pattern_matching[pattern matching]. Similar constructs were available in previous TinkerPop versions via the `table()`-step, but that has since been removed in favor of the `match().select()`-pattern. With MatchStep in TinkerPop, a query optimizer exists based on the link:http://www.knowledgefrominformation.com/2011/04/16/budget-match-cost-effective-subgraph-matching-on-large-networks/[budget match algorithm]. For very large graphs, where the developer is uncertain of the statistics of the graph (e.g. how many `knows`-edges vs. `worksFor`-edges exist in the graph), it is best to use `match()` as the optimal traversal path will be determined automatically.
+`MatchStep` was introduced into TinkerPop3 to support a more link:http://en.wikipedia.org/wiki/Declarative_programming[declarative] form of link:http://en.wikipedia.org/wiki/Pattern_matching[pattern matching]. Similar constructs were available in previous TinkerPop versions via the `table()`-step, but that has since been removed in favor of the `match().select()`-pattern. With MatchStep in TinkerPop, a query optimizer exists based on the link:http://www.knowledgefrominformation.com/2011/04/16/budget-match-cost-effective-subgraph-matching-on-large-networks/[budget match algorithm]. For very large graphs, where the developer is uncertain of the statistics of the graph (e.g. how many `knows`-edges vs. `worksFor`-edges exist in the graph), it is best to use `match()` as the optimal traversal path will be determined automatically.
 
 	"Who created a project named 'lop' that was also created by someone who is 29 years old? Return the two creators."
 
@@ -619,14 +619,26 @@ image::match-step.png[width=500]
 
 [source,groovy]
 gremlin> g.V.match('a',
-           g.of().as('a').out('created').as('b'),
-           g.of().as('b').has('name', 'lop'),
-           g.of().as('b').in('created').as('c'),
-           g.of().as('c').has('age', 29)).
+            g.of().as('a').out('created').as('b'),
+            g.of().as('b').has('name', 'lop'),
+            g.of().as('b').in('created').as('c'),
+            g.of().as('c').has('age', 29)).
           select(['a', 'c']){it.value('name')} 
 ==>[a:josh, c:marko]
 ==>[a:marko, c:marko]
 ==>[a:peter, c:marko]
+
+Note that the above can also be more concisely written as below which demonstrates that imperative inner-traversals can be arbitrarily defined.
+
+[source,groovy]
+gremlin> g.V.match('a',
+            g.of().as('a').out('created').has('name', 'lop').as('b'),
+            g.of().as('b').in('created').has('age', 29).as('c')).
+          select(['a', 'c']){it.value('name')} 
+==>[a:josh, c:marko]
+==>[a:marko, c:marko]
+==>[a:peter, c:marko]
+
 
 MatchStep brings functionality similar to link:http://en.wikipedia.org/wiki/SPARQL[SPARQL] to Gremlin. A few of the the differentiating qualities include:
 
@@ -647,17 +659,20 @@ To extend point #3, it is possible to support going from imperative, to declarat
 
 [source,groovy]
 gremlin> g.V.match('a', 
-           g.of().as('a').out('knows').as('b'),
-           g.of().as('b').out('created').has('name','lop')).
+            g.of().as('a').out('knows').as('b'),
+            g.of().as('b').out('created').has('name','lop')).
           select('b').
           out('created').
           match('a',
-           g.of().as('a').in('created').as('b'),
-           g.of().as('b').out('knows').as('c')).
+            g.of().as('a').in('created').as('b'),
+            g.of().as('b').out('knows').as('c')).
           select('c').name
 ==>vadas
 ==>josh
 
+WARNING: Currently `match()` can not operate within a multi-JVM <<graphcomputer,GraphComputer>> OLAP environment. Future work includes a linearization <<traversalstrategy,TraversalStrategy>> for `match()`.
+
+[[traversalstrategy]]
 Traversal Strategy
 ------------------
 
@@ -806,6 +821,7 @@ g.traversal(SocialTraversal.class).people("marko").knows().name()
 
 By extending Traversal, users can create a DSL that is respective of the semantics of their data. Instead of querying in terms of vertices/edges/properties, they can query in terms of, for example, people, their friends, and their names.
 
+[[graphcomputer]]
 The GraphComputer API
 =====================
 
@@ -1067,7 +1083,7 @@ TODO...
 Gremlin Utilities
 =================
 
-[[gremlinconsole]]
+[[gremlin-console]]
 Gremlin Console
 ---------------
 
@@ -1576,6 +1592,7 @@ gremlin> "in B: " + sg.V().count().next() + ", " + sg.E().count().next()
 
 Note that there are no edges in the set B, as the only edge added to partition B is incident on a vertex of A.
 
+[[gremlin-server]]
 Gremlin Server
 --------------
 
@@ -1817,7 +1834,9 @@ Neo4j-Gremlin
 </dependency>
 ----
 
-image:neotechnology-logo.png[width=150,float=left] link:http://neotechnology.com[Neo Technology] are the developers of the link:http://neo4j.org[Neo4j graph database]. Neo4j natively supports the property graph data model. Note that Neo4j requires that the value objects in the property map of an element be Java primitives, `java.lang.String` values, or arrays of primitives and `java.lang.String` values.
+image:neotechnology-logo.png[width=150,float=left] link:http://neotechnology.com[Neo Technology] are the developers of the OLTP-based link:http://neo4j.org[Neo4j graph database].
+
+CAUTION: Neo4j is licensed as link:http://en.wikipedia.org/wiki/Affero_General_Public_License[AGPL]. Thus, `gremlin-neo4j` (source and binaries) are also licensed as AGPL due to their dependency on the Neo4j libraries. Note that the <<gremlin-console,Gremlin Console>> does not distribute with the Neo4j binaries. To access the binaries, use the `:use` command to download binaries from link:http://search.maven.org/[Maven Central Repository].
 
 [source,groovy]
 ----
@@ -1828,7 +1847,28 @@ gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
 ----
 
-Note that those connecting to Neo4j Server require use of Neo4j HA. To configure `Neo4jGraph` for "HA mode", set the `gremlin.neo4j.ha` flag to `true` in the `Configuration` object passed to `Neo4jGraph.open()`.  Note that when the flag is set (by default it is `false`), the `Neo4jGraph` instance expects HA configuration settings to be present.  As with embedded Neo4j, HA configuration keys should be prefixed with `gremlin.neo4j.conf`.  Please consult Neo4j documentation for more information on link:http://docs.neo4j.org/chunked/stable/ha.html[High Availability] configuration.
+For those leveraging Neo4j High Availability, configure `Neo4jGraph` for "HA mode" by setting the `gremlin.neo4j.ha` flag to `true` in the `Configuration` object passed to `Neo4jGraph.open()`.  Note that when the flag is set (by default it is `false`), the `Neo4jGraph` instance expects HA configuration settings to be present.  As with embedded Neo4j, HA configuration keys should be prefixed with `gremlin.neo4j.conf`.  Please consult Neo4j documentation for more information on link:http://docs.neo4j.org/chunked/stable/ha.html[High Availability] configuration.
+
+Cypher
+~~~~~~
+
+Neo4j are the creators of their own graph pattern-match query language called link:http://www.neo4j.org/learn/cypher[Cypher]. It is possible to leverage Cypher from within Gremlin by using the `neo4j-gremlin`-specific `Neo4jGraph.cypher()` graph traversal method.
+
+[source,groovy]
+gremlin> g = Neo4jGraph.open('/tmp/neo4j')
+==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
+gremlin> g.loadKryo('data/tinkerpop-classic.gio')
+==>null
+gremlin> g.cypher('MATCH (a {name:"marko"}) RETURN a')
+==>[a:v[0]]
+gremlin> g.cypher('MATCH (a {name:"marko"}) RETURN a').select('a').out('knows').name
+==>vadas
+==>josh
+
+Thus, like <<match-step,`match()`>> in Gremlin, it is possible to do a declarative pattern match and then move back into imperative Gremlin.
+
+IMPORTANT: For those developers using <<gremlin-server,Gremlin Server>> against Neo4j, it is possible to do Cypher queries by simply placing the Cypher string in `g.cypher(...)` before submission to the server.
+
 
 [[giraph-gremlin]]
 Giraph-Gremlin
@@ -1856,7 +1896,7 @@ To the `.bash_profile` file, add the following environmental variables (of cours
 export GIRAPH_HOME=/usr/local/giraph-1.0.0
 export GIRAPH_GREMLIN_HOME=/usr/local/giraph-gremlin-3.0.0
 
-If using the <<gremlinconsole,Gremlin Console>>, it is important to install the Giraph-Gremlin plugin.
+If using the <<gremlin-console,Gremlin Console>>, it is important to install the Giraph-Gremlin plugin.
 
 [source,text]
 ----
