@@ -1700,8 +1700,6 @@ gremlin> m.sort{-it.value}
 Connecting via Java
 ~~~~~~~~~~~~~~~~~~~
 
-TinkerPop3 comes equipped with a reference client for Java-based applications.  It is referred to as Gremlin Driver, which enables applications to send requests to Gremlin Server and get back results.
-
 [source,xml]
 ----
 <dependency>
@@ -1710,6 +1708,8 @@ TinkerPop3 comes equipped with a reference client for Java-based applications.  
    <version>3.y.z</version>
 </dependency>
 ----
+
+image:gremlin-java.png[width=175,float=left] TinkerPop3 comes equipped with a reference client for Java-based applications.  It is referred to as Gremlin Driver, which enables applications to send requests to Gremlin Server and get back results.
 
 CAUTION: Gremlin Driver is currently under heavy development.  The API and configuration options are subject to drastic and breaking change.
 
