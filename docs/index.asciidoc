@@ -611,7 +611,7 @@ gremlin> sg.E
 Match Step
 ~~~~~~~~~~
 
-`MatchStep` was introduced into TinkerPop3 to support a more declarative form of pattern matching. This step extends the functionality of `select()` with the inclusion of `match()`.
+`MatchStep` was introduced into TinkerPop3 to support a more declarative form of link:http://en.wikipedia.org/wiki/Pattern_matching[pattern matching]. Similar constructs were available in previous TinkerPop versions via the `table()`-step, but that has since been removed in favor of the `match().select()`-pattern. With MatchStep in TinkerPop, a query optimizer exists t
 
 "Who created a project named 'lop' that was also created by someone who is 29 years old? Return the two creators."
 
@@ -634,7 +634,7 @@ MatchStep brings functionality similar to link:http://en.wikipedia.org/wiki/SPAR
 gremlin> g.V.match('a',
             g.of().as('a').out('created').has('name','lop').as('b'), <1>
             g.of().as('b').in('created').has('age', 29).as('c'),
-            g.of().as('c').out().jump('c',2). <2>
+            g.of().as('c').out().jump('c',2)). <2>
            select('c').out('knows').name <3>
 ==>vadas
 ==>josh
