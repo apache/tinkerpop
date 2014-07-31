@@ -2205,10 +2205,10 @@ Graph Developers
 | link:http://test.com[Sridhar Ramachandran] (2013) | Lambda Zen representative and Gremlin traversal theorist.
 | link:http://test.com[Nicholas Quinn] (2013) | Objectivity representative.
 | link:http://test.com[Xavier Sanchez] (2013) | Sparksee representative.
-| link:https://www.google.com/search?q=daniel+kuppitz[Daniel Kuppitz] (2014) | Gremlin traversal theorist and public technology support.
+| link:http://twitter.com/dkuppitz[Daniel Kuppitz] (2014) | Gremlin traversal theorist and public technology support.
 | link:http://test.com[Michael Pollmeier] (2014) | Gremlin-Scala creator and traversal theorist.
 | link:http://test.com[Jean-Baptiste Musso] (2014) | Gremlin-JavaScript creator.
-| link:http://test.com[Bob Briody] (2014) | Gremlin visualization creator.
+| link:http://bobbriody.com[Bob Briody] (2014) | Gremlin bashboard creator.
 | link:http://test.com[Mike Personick] (2014) | BigData representative and OLAP theorist.
 | link:http://test.com[Michael Hackstein] (2014) | ArangoDB representative.
 |=========================================================
