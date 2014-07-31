@@ -8,8 +8,8 @@ image::tinkerpop3-logo.png[width=500]
 // :source-highlighter: coderay
 
 
-TinkePop3 Documentation
-=======================
+TinkerPop3 Documentation
+========================
 
 In the beginning...
 
@@ -2246,9 +2246,9 @@ Graph Developers
 | link:http://www.linkedin.com/pub/nick-quinn/3/ab4/a56/[Nicholas Quinn] (2013) | Objectivity representative.| link:http://www.objectivity.com/infinitegraph[*InfiniteGraph*]
 | link:http://www.linkedin.com/pub/xavier-sanchez/84/5b8/804[Xavier Sanchez] (2013) | Sparsity Technologies representative.| link:http://www.sparsity-technologies.com/#sparksee[*Sparksee*]
 | link:http://twitter.com/dkuppitz[Daniel Kuppitz] (2014) | Gremlin traversal theorist and public technology support.|
-| link:http://test.com[Michael Pollmeier] (2014) | Gremlin-Scala creator and traversal theorist.|
+| link:http://www.michaelpollmeier.com[Michael Pollmeier] (2014) | Gremlin-Scala creator and traversal theorist.|
 | link:http://twitter.com/jbmusso[Jean-Baptiste Musso] (2014) | Gremlin-JavaScript creator.|
-| link:http://bobbriody.com[Bob Briody] (2014) | Gremlin bashboard creator.|
+| link:http://bobbriody.com[Bob Briody] (2014) | Gremlin dashboard creator.|
 | link:http://bigdata.com[Mike Personick] (2014) | Bigdata representative and OLAP theorist.| link:http://bigdata.com[*Bigdata*] 
 | link:http://test.com[Michael Hackstein] (2014) | ArangoDB representative.| link:http://arangodb.org/[*ArangoDB*]
 |=========================================================

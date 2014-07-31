@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.step.util.As;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -23,8 +24,11 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Object> get_g_V_matchXa_out_bX_selectXb_idX();
 
-    public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_outXknowsX_b__b_outXcreatedX_cX();
+    public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_knows_b__b_created_cX();
 
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_out_jump2_bX_selectXab_nameX();
+
+    //public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_out_loop2_b__b_path__X_selectXab_nameX();
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -85,7 +89,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_a_outXknowsX_b__b_outXcreatedX_c() throws Exception {
-        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_outXknowsX_b__b_outXcreatedX_cX();
+        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_knows_b__b_created_cX();
         System.out.println("Testing: " + traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -102,6 +106,20 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         }
         assertFalse(traversal.hasNext());
         assertEquals(2, counter);
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_matchXa_created_b__a_out_jump2_bX_selectXab_nameX() throws Exception {
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_created_b__a_out_jump2_bX_selectXab_nameX();
+        System.out.println("Testing: " + traversal);
+        assertTrue(traversal.hasNext());
+        final Map<String, String> bindings = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(2, bindings.size());
+        assertEquals("marko", bindings.get("a"));
+        assertEquals("lop", bindings.get("b"));
+        assertFalse(traversal.hasNext());
     }
 
 
@@ -121,12 +139,18 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_outXknowsX_b__b_outXcreatedX_cX() {
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_knows_b__b_created_cX() {
             return g.V().match("a",
                     g.of().as("a").out("knows").as("b"),
                     g.of().as("b").out("created").as("c"));
         }
 
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_out_jump2_bX_selectXab_nameX() {
+            return g.V().match("a",
+                    g.of().as("a").out("created").as("b"),
+                    g.of().as("a").out().jump("a", 2).as("b")).select(As.of("a", "b"), v -> ((Vertex) v).value("name"));
+        }
 
     }
 
@@ -146,10 +170,17 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_outXknowsX_b__b_outXcreatedX_cX() {
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_knows_b__b_created_cX() {
             return (Traversal) g.V().match("a",
                     g.of().as("a").out("knows").as("b"),
                     g.of().as("b").out("created").as("c")).submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_out_jump2_bX_selectXab_nameX() {
+            return (Traversal) g.V().match("a",
+                    g.of().as("a").out("created").as("b"),
+                    g.of().as("a").out().jump("a", 2).as("b")).select(As.of("a", "b"), v -> ((Vertex) v).value("name")).submit(g.compute());
         }
     }
 }
