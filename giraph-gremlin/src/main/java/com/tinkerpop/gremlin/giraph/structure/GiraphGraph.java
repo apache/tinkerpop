@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.giraph.process.graph.step.map.GiraphGraphStep;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -63,6 +64,14 @@ public class GiraphGraph implements Graph, Serializable {
         };
         traversal.addStep(new GiraphGraphStep(traversal, Edge.class, this));
         traversal.memory().set(Key.hidden("g"), this);
+        return traversal;
+    }
+
+    @Override
+    public <S, E> GraphTraversal<S, E> of() {
+        final GraphTraversal<S, E> traversal = new DefaultGraphTraversal<>();
+        traversal.memory().set(Graph.Key.hidden("g"), this);
+        traversal.addStep(new StartStep<>(traversal));
         return traversal;
     }
 

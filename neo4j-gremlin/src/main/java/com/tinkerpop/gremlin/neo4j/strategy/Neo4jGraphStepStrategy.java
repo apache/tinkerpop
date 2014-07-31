@@ -11,7 +11,7 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 /**
  * @author Pieter Martin
  */
-public class Neo4jGraphStepTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
+public class Neo4jGraphStepStrategy implements TraversalStrategy.FinalTraversalStrategy {
 
     public void apply(final Traversal traversal) {
         if (traversal.getSteps().get(0) instanceof Neo4jGraphStep) {

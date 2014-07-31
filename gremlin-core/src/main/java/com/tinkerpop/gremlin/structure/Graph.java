@@ -94,9 +94,7 @@ public interface Graph extends AutoCloseable {
         }
     }
 
-    public default <S, E> GraphTraversal<S, E> of() {
-        return new DefaultGraphTraversal<>();
-    }
+    public <S, E> GraphTraversal<S, E> of();
 
     public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass);
 

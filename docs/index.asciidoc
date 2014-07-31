@@ -2207,9 +2207,9 @@ Graph Developers
 | link:http://test.com[Xavier Sanchez] (2013) | Sparksee representative.
 | link:http://twitter.com/dkuppitz[Daniel Kuppitz] (2014) | Gremlin traversal theorist and public technology support.
 | link:http://test.com[Michael Pollmeier] (2014) | Gremlin-Scala creator and traversal theorist.
-| link:http://test.com[Jean-Baptiste Musso] (2014) | Gremlin-JavaScript creator.
+| link:http://twitter.com/jbmusso[Jean-Baptiste Musso] (2014) | Gremlin-JavaScript creator.
 | link:http://bobbriody.com[Bob Briody] (2014) | Gremlin bashboard creator.
-| link:http://test.com[Mike Personick] (2014) | BigData representative and OLAP theorist.
+| link:http://systap.com[Mike Personick] (2014) | Bigdata representative and OLAP theorist.
 | link:http://test.com[Michael Hackstein] (2014) | ArangoDB representative.
 |=========================================================
 

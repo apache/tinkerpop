@@ -2,12 +2,15 @@ package com.tinkerpop.gremlin.neo4j.structure;
 
 import com.tinkerpop.gremlin.neo4j.process.step.map.Neo4jCypherStep;
 import com.tinkerpop.gremlin.neo4j.process.step.map.Neo4jGraphStep;
-import com.tinkerpop.gremlin.neo4j.strategy.Neo4jGraphStepTraversalStrategy;
+import com.tinkerpop.gremlin.neo4j.strategy.Neo4jGraphStepStrategy;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.structure.*;
+import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
@@ -15,14 +18,13 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
-import org.neo4j.graphdb.*;
+import org.neo4j.graphdb.DynamicLabel;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.NotFoundException;
+import org.neo4j.graphdb.NotInTransactionException;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
-import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import org.neo4j.graphdb.factory.HighlyAvailableGraphDatabaseFactory;
-import org.neo4j.graphdb.index.AutoIndexer;
-import org.neo4j.graphdb.index.RelationshipAutoIndexer;
-import org.neo4j.graphdb.schema.ConstraintDefinition;
-import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
 import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.kernel.impl.core.NodeManager;
@@ -30,8 +32,9 @@ import org.neo4j.kernel.impl.core.NodeManager;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -128,7 +131,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     public GraphTraversal<Vertex, Vertex> V() {
         this.tx().readWrite();
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>();
-        traversal.strategies().register(new Neo4jGraphStepTraversalStrategy());
+        traversal.strategies().register(new Neo4jGraphStepStrategy());
         traversal.addStep(new Neo4jGraphStep(traversal, Vertex.class, this));
         return traversal;
     }
@@ -137,7 +140,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     public GraphTraversal<Edge, Edge> E() {
         this.tx().readWrite();
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Edge>();
-        traversal.strategies().register(new Neo4jGraphStepTraversalStrategy());
+        traversal.strategies().register(new Neo4jGraphStepStrategy());
         traversal.addStep(new Neo4jGraphStep(traversal, Edge.class, this));
         return traversal;
     }
@@ -172,6 +175,15 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         } catch (NotInTransactionException e) {     // todo: is this right?
             throw Graph.Exceptions.elementNotFound();
         }
+    }
+
+    @Override
+    public <S, E> GraphTraversal<S, E> of() {
+        final GraphTraversal<S, E> traversal = new DefaultGraphTraversal<>();
+        traversal.memory().set(Graph.Key.hidden("g"), this);
+        traversal.strategies().register(new Neo4jGraphStepStrategy());
+        traversal.addStep(new StartStep<>(traversal));
+        return traversal;
     }
 
     @Override
@@ -215,15 +227,15 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         return this.baseGraph.schema();
     }
 
-    public GraphTraversal<Object,Map<String, Object>> cypher(final String query) {
+    public GraphTraversal<Object, Map<String, Object>> cypher(final String query) {
         return cypher(query, null);
     }
 
-    public GraphTraversal<Object,Map<String, Object>> cypher(final String query, final Map<String, Object> params) {
+    public GraphTraversal<Object, Map<String, Object>> cypher(final String query, final Map<String, Object> params) {
         this.tx().readWrite();
 
-        final GraphTraversal traversal = new DefaultGraphTraversal<Object, Map<String,Object>>();
-        traversal.strategies().register(new Neo4jGraphStepTraversalStrategy());
+        final GraphTraversal traversal = new DefaultGraphTraversal<Object, Map<String, Object>>();
+        traversal.strategies().register(new Neo4jGraphStepStrategy());
         traversal.addStep(new Neo4jCypherStep<>(cypher.execute(query, null == params ? Collections.<String, Object>emptyMap() : params).iterator(), traversal, this));
 
         return traversal;
