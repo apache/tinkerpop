@@ -15,6 +15,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SSupplier;
 import org.apache.commons.configuration.Configuration;
+import org.javatuples.Pair;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -27,11 +28,13 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PeerPressureVertexProgram implements VertexProgram<Serializable> {
+public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializable, Double>> {
 
     private MessageType.Local messageType = MessageType.Local.of(() -> new DefaultGraphTraversal().outE());
 
     public static final String CLUSTER = Graph.Key.hidden("gremlin.cluster");
+    public static final String VOTE_STRENGTH = Graph.Key.hidden("gremlin.voteStrength");
+
     private static final String MAX_ITERATIONS = "gremlin.peerPressureVertexProgram.maxIterations";
     private static final String INCIDENT_TRAVERSAL = "gremlin.peerPressureVertexProgram.incidentTraversal";
     private static final String VOTE_TO_HALT = "gremlin.peerPressureVertexProgram.voteToHalt";
@@ -69,7 +72,7 @@ public class PeerPressureVertexProgram implements VertexProgram<Serializable> {
 
     @Override
     public Map<String, KeyType> getElementComputeKeys() {
-        return VertexProgram.createElementKeys(CLUSTER, KeyType.VARIABLE);
+        return VertexProgram.createElementKeys(CLUSTER, KeyType.VARIABLE, VOTE_STRENGTH, KeyType.CONSTANT);
     }
 
     @Override
@@ -78,8 +81,8 @@ public class PeerPressureVertexProgram implements VertexProgram<Serializable> {
     }
 
     @Override
-    public Class<Serializable> getMessageClass() {
-        return Serializable.class;
+    public Class<Pair<Serializable, Double>> getMessageClass() {
+        return (Class) Pair.class;
     }
 
     @Override
@@ -88,19 +91,22 @@ public class PeerPressureVertexProgram implements VertexProgram<Serializable> {
     }
 
     @Override
-    public void execute(final Vertex vertex, Messenger<Serializable> messenger, final SideEffects sideEffects) {
+    public void execute(final Vertex vertex, Messenger<Pair<Serializable, Double>> messenger, final SideEffects sideEffects) {
         if (sideEffects.isInitialIteration()) {
+            double voteStrength = 1.0d / Double.valueOf((Long) this.messageType.edges(vertex).count().next());
             vertex.property(CLUSTER, vertex.id());
-            messenger.sendMessage(this.messageType, (Serializable) vertex.id());
+            vertex.property(VOTE_STRENGTH, voteStrength);
+            messenger.sendMessage(this.messageType, new Pair<>((Serializable) vertex.id(), voteStrength));
             sideEffects.and(VOTE_TO_HALT, false);
         } else {
-            final Map<Serializable, Long> votes = new HashMap<>();
-            messenger.receiveMessages(this.messageType).forEach(message -> MapHelper.incr(votes, message, 1l));
-            Serializable cluster = MapHelper.largestCount(votes);
+            final Map<Serializable, Double> votes = new HashMap<>();
+            votes.put(vertex.value(CLUSTER), vertex.<Double>value(VOTE_STRENGTH));
+            messenger.receiveMessages(this.messageType).forEach(message -> MapHelper.incr(votes, message.getValue0(), message.getValue1()));
+            Serializable cluster = PeerPressureVertexProgram.largestCount(votes);
             if (null == cluster) cluster = (Serializable) vertex.id();
             sideEffects.and(VOTE_TO_HALT, vertex.value(CLUSTER).equals(cluster));
             vertex.property(CLUSTER, cluster);
-            messenger.sendMessage(this.messageType, cluster);
+            messenger.sendMessage(this.messageType, new Pair<>(cluster, vertex.<Double>value(VOTE_STRENGTH)));
         }
     }
 
@@ -113,6 +119,23 @@ public class PeerPressureVertexProgram implements VertexProgram<Serializable> {
             sideEffects.or(VOTE_TO_HALT, true);
             return false;
         }
+    }
+
+    private static <T> T largestCount(final Map<T, Double> map) {
+        T largestKey = null;
+        double largestValue = Double.MIN_VALUE;
+        for (Map.Entry<T, Double> entry : map.entrySet()) {
+            if (entry.getValue() == largestValue) {
+                if (null != largestKey && largestKey.toString().compareTo(entry.getKey().toString()) > 0) {
+                    largestKey = entry.getKey();
+                    largestValue = entry.getValue();
+                }
+            } else if (entry.getValue() > largestValue) {
+                largestKey = entry.getKey();
+                largestValue = entry.getValue();
+            }
+        }
+        return largestKey;
     }
 
     //////////////////////////////

@@ -78,19 +78,19 @@ public class TinkerGraph implements Graph, Serializable {
     ////////////// STRUCTURE API METHODS //////////////////
 
     public Vertex v(final Object id) {
-        if (null == id) throw Graph.Exceptions.elementNotFound();
+        if (null == id) throw Graph.Exceptions.elementNotFound(Vertex.class, id);
         final Vertex vertex = this.vertices.get(id);
         if (null == vertex)
-            throw Graph.Exceptions.elementNotFound();
+            throw Graph.Exceptions.elementNotFound(Vertex.class, id);
         else
             return vertex;
     }
 
     public Edge e(final Object id) {
-        if (null == id) throw Graph.Exceptions.elementNotFound();
+        if (null == id) throw Graph.Exceptions.elementNotFound(Edge.class, id);
         final Edge edge = this.edges.get(id);
         if (null == edge)
-            throw Graph.Exceptions.elementNotFound();
+            throw Graph.Exceptions.elementNotFound(Edge.class, id);
         else
             return edge;
     }

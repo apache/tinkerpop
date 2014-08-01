@@ -2,9 +2,6 @@ package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
-
-import static com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
-
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
@@ -17,12 +14,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_FLOAT_VALUES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.*;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -185,7 +179,7 @@ public class TransactionTest extends AbstractGremlinTest {
             g.v(oid);
             fail("Vertex should not be found as close behavior was set to rollback");
         } catch (Exception ex) {
-            final Exception expected = Graph.Exceptions.elementNotFound();
+            final Exception expected = Graph.Exceptions.elementNotFound(Vertex.class, oid);
             assertEquals(expected.getMessage(), ex.getMessage());
         }
     }

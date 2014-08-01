@@ -56,7 +56,7 @@ public class SubgraphStrategy implements GraphStrategy {
         return (f) -> (id) -> {
             final Vertex v = f.apply(id);
             if (!testVertex(v)) {
-                throw Graph.Exceptions.elementNotFound();
+                throw Graph.Exceptions.elementNotFound(Vertex.class, id);
             }
 
             return v;
@@ -69,7 +69,7 @@ public class SubgraphStrategy implements GraphStrategy {
             final Edge e = f.apply(id);
 
             if (!testEdge(e)) {
-                throw Graph.Exceptions.elementNotFound();
+                throw Graph.Exceptions.elementNotFound(Edge.class, id);
             }
 
             return e;

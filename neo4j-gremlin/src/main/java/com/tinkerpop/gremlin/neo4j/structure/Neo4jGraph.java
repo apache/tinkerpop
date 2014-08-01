@@ -148,32 +148,32 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     @Override
     public Vertex v(final Object id) {
         this.tx().readWrite();
-        if (null == id) throw Graph.Exceptions.elementNotFound();
+        if (null == id) throw Graph.Exceptions.elementNotFound(Vertex.class, id);
 
         try {
             return new Neo4jVertex(this.baseGraph.getNodeById(evaluateToLong(id)), this);
         } catch (NotFoundException e) {
-            throw Graph.Exceptions.elementNotFound();
+            throw Graph.Exceptions.elementNotFound(Vertex.class, id);
         } catch (NumberFormatException e) {
-            throw Graph.Exceptions.elementNotFound();
+            throw Graph.Exceptions.elementNotFound(Vertex.class, id);
         } catch (NotInTransactionException e) {     // todo: is this right?
-            throw Graph.Exceptions.elementNotFound();
+            throw Graph.Exceptions.elementNotFound(Vertex.class, id);
         }
     }
 
     @Override
     public Edge e(final Object id) {
         this.tx().readWrite();
-        if (null == id) throw Graph.Exceptions.elementNotFound();
+        if (null == id) throw Graph.Exceptions.elementNotFound(Edge.class, id);
 
         try {
             return new Neo4jEdge(this.baseGraph.getRelationshipById(evaluateToLong(id)), this);
         } catch (NotFoundException e) {
-            throw Graph.Exceptions.elementNotFound();
+            throw Graph.Exceptions.elementNotFound(Edge.class, id);
         } catch (NumberFormatException e) {
-            throw Graph.Exceptions.elementNotFound();
+            throw Graph.Exceptions.elementNotFound(Edge.class, id);
         } catch (NotInTransactionException e) {     // todo: is this right?
-            throw Graph.Exceptions.elementNotFound();
+            throw Graph.Exceptions.elementNotFound(Edge.class, id);
         }
     }
 

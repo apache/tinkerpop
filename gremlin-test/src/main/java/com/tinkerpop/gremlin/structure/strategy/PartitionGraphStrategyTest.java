@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -96,7 +95,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         try {
             g.v(vA.id());
         } catch (Exception ex) {
-            final Exception expected = Graph.Exceptions.elementNotFound();
+            final Exception expected = Graph.Exceptions.elementNotFound(Vertex.class, vA.id());
             assertEquals(expected.getClass(), ex.getClass());
             assertEquals(expected.getMessage(), ex.getMessage());
         }
@@ -114,7 +113,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         try {
             g.e(e.id());
         } catch (Exception ex) {
-            final Exception expected = Graph.Exceptions.elementNotFound();
+            final Exception expected = Graph.Exceptions.elementNotFound(Edge.class, e.id());
             assertEquals(expected.getClass(), ex.getClass());
             assertEquals(expected.getMessage(), ex.getMessage());
         }

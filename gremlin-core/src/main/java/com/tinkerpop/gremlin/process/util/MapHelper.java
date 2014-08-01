@@ -13,21 +13,13 @@ public class MapHelper {
         map.put(key, value + map.getOrDefault(key, 0l));
     }
 
+    public static <T> void incr(final Map<T, Double> map, final T key, final Double value) {
+        map.put(key, value + map.getOrDefault(key, 0.0d));
+    }
+
     public static <T, U> void incr(final Map<T, List<U>> map, final T key, final U value) {
         final List<U> temp = map.getOrDefault(key, new ArrayList<>());
         temp.add(value);
         map.put(key, temp);
-    }
-
-    public static <T> T largestCount(final Map<T, Long> map) {
-        T largestKey = null;
-        long largestValue = Long.MIN_VALUE;
-        for (Map.Entry<T, Long> entry : map.entrySet()) {
-            if (entry.getValue() >= largestValue) {
-                largestKey = entry.getKey();
-                largestValue = entry.getValue();
-            }
-        }
-        return largestKey;
     }
 }

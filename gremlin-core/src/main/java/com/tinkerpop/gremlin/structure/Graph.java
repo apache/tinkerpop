@@ -2,9 +2,7 @@ package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.javatuples.Pair;
 
@@ -55,7 +53,7 @@ public interface Graph extends AutoCloseable {
      * @throws NoSuchElementException if the element is not found.
      */
     public default Vertex v(final Object id) {
-        if (null == id) throw Graph.Exceptions.elementNotFound();
+        if (null == id) throw Graph.Exceptions.elementNotFound(Vertex.class, null);
         return (Vertex) this.V().has(Element.ID, id).next();
     }
 
@@ -65,7 +63,7 @@ public interface Graph extends AutoCloseable {
      * @throws NoSuchElementException if the element is not found.
      */
     public default Edge e(final Object id) {
-        if (null == id) throw Graph.Exceptions.elementNotFound();
+        if (null == id) throw Graph.Exceptions.elementNotFound(Edge.class, null);
         return (Edge) this.E().has(Element.ID, id).next();
     }
 
@@ -512,13 +510,10 @@ public interface Graph extends AutoCloseable {
             return new IllegalArgumentException(String.format("The provided argument can not be null: %s", argument));
         }
 
-        public static NoSuchElementException elementNotFound() {
-            // if in debug mode then write a regular exception so the whole stack trace comes with it.
-            // very hard to figure out problems in the stack without that.
-            if (debug)
-                return new NoSuchElementException();
-            else
-                return FastNoSuchElementException.instance();
+        public static NoSuchElementException elementNotFound(final Class<? extends Element> elementClass, final Object id) {
+            return (null == id) ?
+                    new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id null does not exist in the graph") :
+                    new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id " + id + " of type " + id.getClass().getSimpleName() + " does not exist in the graph");
         }
 
         public static IllegalArgumentException onlyOneOrNoGraphComputerClass() {

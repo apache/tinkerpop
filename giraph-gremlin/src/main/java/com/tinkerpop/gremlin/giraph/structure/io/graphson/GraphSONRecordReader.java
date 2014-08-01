@@ -20,6 +20,7 @@ import org.apache.hadoop.mapreduce.lib.input.LineRecordReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.NoSuchElementException;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
@@ -84,7 +85,7 @@ public class GraphSONRecordReader extends RecordReader<NullWritable, GiraphInter
         Vertex outV;
         try {
             outV = g.v(outId);
-        } catch (FastNoSuchElementException e) {
+        } catch (final NoSuchElementException e) {
             outV = null;
         }
         if (null == outV) {
@@ -94,7 +95,7 @@ public class GraphSONRecordReader extends RecordReader<NullWritable, GiraphInter
         Vertex inV;
         try {
             inV = g.v(inId);
-        } catch (FastNoSuchElementException e) {
+        } catch (final NoSuchElementException e) {
             inV = null;
         }
         if (null == inV) {

@@ -437,7 +437,7 @@ public class ExceptionConsistencyTest {
                 g.v(null);
                 fail("Call to g.v(null) should throw an exception");
             } catch (Exception ex) {
-                final Exception expectedException = Graph.Exceptions.elementNotFound();
+                final Exception expectedException = Graph.Exceptions.elementNotFound(Vertex.class, null);
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }
@@ -450,7 +450,7 @@ public class ExceptionConsistencyTest {
                 g.e(null);
                 fail("Call to g.e(null) should throw an exception");
             } catch (Exception ex) {
-                final Exception expectedException = Graph.Exceptions.elementNotFound();
+                final Exception expectedException = Graph.Exceptions.elementNotFound(Edge.class, null);
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }
@@ -463,7 +463,7 @@ public class ExceptionConsistencyTest {
                 g.v(10000l);
                 fail("Call to g.v(null) should throw an exception");
             } catch (Exception ex) {
-                final Exception expectedException = Graph.Exceptions.elementNotFound();
+                final Exception expectedException = Graph.Exceptions.elementNotFound(Vertex.class, 10000l);
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }
@@ -476,7 +476,7 @@ public class ExceptionConsistencyTest {
                 g.e(10000l);
                 fail("Call to g.e(null) should throw an exception");
             } catch (Exception ex) {
-                final Exception expectedException = Graph.Exceptions.elementNotFound();
+                final Exception expectedException = Graph.Exceptions.elementNotFound(Edge.class, 10000l);
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }

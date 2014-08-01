@@ -1460,7 +1460,16 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
 PeerPressureVertexProgram
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-TODO...
+The `PeerPressureVertexProgram` is a clustering algorithm that assigns a nominal value to each vertex in the graph. The nominal value represents the vertex's cluster. If two vertices have the same nominal value, then they are in the same cluster. The algorithm proceeds in the following manner.
+
+ . Every vertex assigns itself to a unique cluster ID (initially, its vertex ID).
+ . Every vertex determines its per neighbor vote strength as 1.0d / incident edges count.
+ . Every vertex sends its cluster ID and vote strength to its adjacent vertices as a `Pair<Serializable,Double>`
+ . Every vertex generates a vote energy distribution of received cluster IDs and changes its current cluster ID to the most frequent cluster ID.
+  .. If there is a tie, then the cluster with the lowest `toString()` comparison is selected.
+ . Steps 3 and 4 repeat until either a max number of iterations has occurred or no vertex has adjusted its cluster anymore.
+
+
 
 
 Gremlin Applications
@@ -2253,7 +2262,7 @@ Graph Developers
 | link:http://twitter.com/mchacki[Michael Hackstein] (2014) | ArangoDB representative.| link:http://arangodb.org[*ArangoDB*]
 | link:http://github.com/MMcM[Michael McMahon] (2014) | FoundationDB representative.| link:http://foundationdb.com[*FoundationDB*]
 | link:http://www.linkedin.com/pub/ryan-webb/39/23a/ab8[Ryan Webb] (2014) | Johns Hopkins Applied Physics Laboratory representative. | link:https://github.com/JHUAPL/AccumuloGraph[*AccumuloGraph*] 
-| link:www.linkedin.com/in/averyching[Avery Ching] (2014) | Apache Giraph representative and OLAP theorist.| link:http://giraph.apache.org[*Giraph*]
+| link:http://www.linkedin.com/in/averyching[Avery Ching] (2014) | Apache Giraph representative and OLAP theorist.| link:http://giraph.apache.org[*Giraph*]
 |=========================================================
 
 

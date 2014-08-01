@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.giraph.structure.io.kryo;
 
-import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -15,9 +14,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
@@ -157,7 +155,7 @@ public class VertexStreamIterator implements Iterator<Vertex> {
         Vertex outV;
         try {
             outV = g.v(outId);
-        } catch (FastNoSuchElementException e) {
+        } catch (final NoSuchElementException e) {
             outV = null;
         }
         if (null == outV) {
@@ -167,7 +165,7 @@ public class VertexStreamIterator implements Iterator<Vertex> {
         Vertex inV;
         try {
             inV = g.v(inId);
-        } catch (FastNoSuchElementException e) {
+        } catch (final NoSuchElementException e) {
             inV = null;
         }
         if (null == inV) {
