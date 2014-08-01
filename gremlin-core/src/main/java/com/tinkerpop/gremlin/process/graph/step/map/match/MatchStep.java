@@ -105,21 +105,6 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
 
     @Override
     protected Traverser<Map<String, E>> processNextStart() throws NoSuchElementException {
-        if (null == this.currentSolution || (this.currentIndex >= this.currentSolution.size() && this.currentSolution.isComplete())) {
-            if (this.starts.hasNext()) {
-                this.optimizeCounter = (this.optimizeCounter + 1) % this.startsPerOptimize;
-                if (0 == this.optimizeCounter) {
-                    optimize();
-                }
-
-                this.currentStart = this.starts.next();
-                this.currentSolution = solveFor(new SingleIterator<>(currentStart.get()));
-                this.currentIndex = 0;
-            } else {
-                throw FastNoSuchElementException.instance();
-            }
-        }
-
         final Map<String, E> map = new HashMap<>();
         final Traverser<Map<String, E>> result = this.currentStart.makeChild(this.getAs(), map);
         final BiConsumer<String, S> resultSetter = (name, value) -> {
@@ -128,10 +113,26 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
             map.put(name, (E) value);
         };
 
-        if (this.currentSolution.visitSolution(this.currentIndex++, resultSetter)) {
-            return result;
-        } else {
-            throw FastNoSuchElementException.instance();
+        while (true) { // break out when the current solution is exhausted and there are no more starts
+            if (null == this.currentSolution || (this.currentIndex >= this.currentSolution.size() && this.currentSolution.isComplete())) {
+                if (this.starts.hasNext()) {
+                    this.optimizeCounter = (this.optimizeCounter + 1) % this.startsPerOptimize;
+                    if (0 == this.optimizeCounter) {
+                        optimize();
+                    }
+
+                    this.currentStart = this.starts.next();
+                    this.currentSolution = solveFor(new SingleIterator<>(currentStart.get()));
+                    this.currentIndex = 0;
+                } else {
+                    throw FastNoSuchElementException.instance();
+                }
+            }
+
+            map.clear();
+            if (this.currentSolution.visitSolution(this.currentIndex++, resultSetter)) {
+                return result;
+            }
         }
     }
 

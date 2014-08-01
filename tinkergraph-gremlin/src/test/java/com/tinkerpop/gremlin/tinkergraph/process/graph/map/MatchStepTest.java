@@ -20,6 +20,7 @@ import org.junit.Test;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -435,8 +437,11 @@ public class MatchStepTest {
         return bindingsList;
     }
 
+    private static final Function<Object, String> simpleToStringFunction = Object::toString;
+
     private <T> void assertResults(final Enumerator<T> actual,
                                    final Bindings<T>... expected) {
+        Comparator<Bindings<T>> comp = new Bindings.BindingsComparator<>((Function<T, String>) simpleToStringFunction);
 
         List<Bindings<T>> actualList = toBindings(actual);
         List<Bindings<T>> expectedList = new LinkedList<>();
@@ -448,14 +453,14 @@ public class MatchStepTest {
             fail("" + (actualList.size() - expectedList.size()) + " unexpected results, including " + actualList.get(expectedList.size()));
         }
 
-        Collections.sort(actualList);
-        Collections.sort(expectedList);
+        Collections.sort(actualList, comp);
+        Collections.sort(expectedList, comp);
 
         for (int j = 0; j < actualList.size(); j++) {
             Bindings<T> a = actualList.get(j);
             Bindings<T> e = expectedList.get(j);
 
-            if (0 != a.compareTo(e)) {
+            if (0 != comp.compare(a, e)) {
                 fail("unexpected result(s), including " + a);
             }
         }

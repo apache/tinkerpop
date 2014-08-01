@@ -3,13 +3,19 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.step.map.match.Bindings;
 import com.tinkerpop.gremlin.process.graph.step.util.As;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.*;
@@ -37,6 +43,16 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     public void g_V_matchXa_out_bX() throws Exception {
         final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_out_bX();
         System.out.println("Testing: " + traversal);
+
+        assertResults(vertexToStr, traversal,
+                new Bindings<Vertex>().put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "lop")),
+                new Bindings<Vertex>().put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "josh")),
+                new Bindings<Vertex>().put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "vadas")),
+                new Bindings<Vertex>().put("a", convertToVertex(g, "josh")).put("b", convertToVertex(g, "ripple")),
+                new Bindings<Vertex>().put("a", convertToVertex(g, "josh")).put("b", convertToVertex(g, "lop")),
+                new Bindings<Vertex>().put("a", convertToVertex(g, "peter")).put("b", convertToVertex(g, "lop")));
+
+        /*
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
@@ -58,8 +74,8 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             }
         }
         assertFalse(traversal.hasNext());
-        // TODO: The full result set isn't coming back (only the marko vertices)
         // assertEquals(6, counter);
+        */
     }
 
     @Test
@@ -79,13 +95,10 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         }
         assertFalse(traversal.hasNext());
         assertEquals(idCounts.get(vadasId), Long.valueOf(1l));
-        // TODO: The full result set isn't coming back (only the marko vertices)
-        // assertEquals(idCounts.get(lopId), Long.valueOf(3l));
+        assertEquals(idCounts.get(lopId), Long.valueOf(3l));
         assertEquals(idCounts.get(joshId), Long.valueOf(1l));
-        // TODO: The full result set isn't coming back (only the marko vertices)
-        // assertEquals(idCounts.get(rippleId), Long.valueOf(1l));
-        // TODO: The full result set isn't coming back (only the marko vertices)
-        //       assertEquals(6, counter);
+        assertEquals(idCounts.get(rippleId), Long.valueOf(1l));
+        assertEquals(6, counter);
     }
 
     @Test
@@ -124,6 +137,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    /* TODO: this test requires path reversal
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_matchXa_created_b__c_created_bX_selectXnameX() throws Exception {
@@ -154,20 +168,22 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         //assertEquals(9, counter);
         assertFalse(traversal.hasNext());
     }
+    */
 
+    /* TODO: this test requires path reversal
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_out_out_hasXname_rippleX_matchXb_created_a__c_knows_bX_selectXcX_outXknowsX_name() throws Exception {
         // TODO: Doesn't work, only bindings to 'a' in binding set.
-        /*final Traversal<Vertex, String> traversal = get_g_V_out_out_hasXname_rippleX_matchXb_created_a__c_knows_bX_selectXcX_outXknowsX_name();
+        final Traversal<Vertex, String> traversal = get_g_V_out_out_hasXname_rippleX_matchXb_created_a__c_knows_bX_selectXcX_outXknowsX_name();
         System.out.println("Testing: " + traversal);
         assertTrue(traversal.hasNext());
         final List<String> results = traversal.toList();
         assertEquals(2, results.size());
         assertTrue(results.contains("josh"));
-        assertTrue(results.contains("vadas"));*/
+        assertTrue(results.contains("vadas"));
     }
-
+    */
 
     public static class JavaMapTest extends MatchTest {
         public JavaMapTest() {
@@ -257,5 +273,43 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                     g.of().as("b").out("created").as("a"),
                     g.of().as("c").out("knows").as("b")).select("c").out("knows").value("name").submit(g.compute());
         }
+    }
+
+    private static final Function<Vertex, String> vertexToStr = v -> v.id().toString();
+
+    private <S, E> void assertResults(final Function<E, String> toStringFunction,
+                                      final Traversal<S, Map<String, E>> actual,
+                                      final Bindings<E>... expected) {
+        Comparator<Bindings<E>> comp = new Bindings.BindingsComparator<>(toStringFunction);
+
+        List<Bindings<E>> actualList = toBindings(actual);
+        List<Bindings<E>> expectedList = new LinkedList<>();
+        Collections.addAll(expectedList, expected);
+
+        if (expectedList.size() > actualList.size()) {
+            fail("" + (expectedList.size() - actualList.size()) + " expected results not found, including " + expectedList.get(actualList.size()));
+        } else if (actualList.size() > expectedList.size()) {
+            fail("" + (actualList.size() - expectedList.size()) + " unexpected results, including " + actualList.get(expectedList.size()));
+        }
+
+        Collections.sort(actualList, comp);
+        Collections.sort(expectedList, comp);
+
+        for (int j = 0; j < actualList.size(); j++) {
+            Bindings<E> a = actualList.get(j);
+            Bindings<E> e = expectedList.get(j);
+
+            if (0 != comp.compare(a, e)) {
+                fail("unexpected result(s), including " + a);
+            }
+        }
+    }
+
+    private <S, E> List<Bindings<E>> toBindings(final Traversal<S, Map<String, E>> traversal) {
+        List<Bindings<E>> result = new LinkedList<>();
+        traversal.forEach(o -> {
+            result.add(new Bindings<>(o));
+        });
+        return result;
     }
 }
