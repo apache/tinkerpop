@@ -2251,7 +2251,7 @@ Graph Developers
 | link:http://bobbriody.com[Bob Briody] (2014) | Gremlin dashboard creator.|
 | link:http://bigdata.com[Mike Personick] (2014) | Bigdata representative and OLAP theorist.| link:http://bigdata.com[*Bigdata*] 
 | link:http://twitter.com/mchacki[Michael Hackstein] (2014) | ArangoDB representative.| link:http://arangodb.org[*ArangoDB*]
-| link:https://github.com/MMcM[Michael McMahon] (2014) | FoundationDB representative.| link:http://foundationdb.com[*FoundationDB*]
+| link:http://github.com/MMcM[Michael McMahon] (2014) | FoundationDB representative.| link:http://foundationdb.com[*FoundationDB*]
 | link:http://www.linkedin.com/pub/ryan-webb/39/23a/ab8[Ryan Webb] (2014) | Johns Hopkins Applied Physics Laboratory representative. | link:https://github.com/JHUAPL/AccumuloGraph[*AccumuloGraph*] 
 | link:www.linkedin.com/in/averyching[Avery Ching] (2014) | Apache Giraph representative and OLAP theorist.| link:http://giraph.apache.org[*Giraph*]
 |=========================================================

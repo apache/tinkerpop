@@ -1,6 +1,5 @@
-package com.tinkerpop.gremlin.process.graph.strategy;
+package com.tinkerpop.gremlin.process.strategy;
 
-import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
