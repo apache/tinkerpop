@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.structure.Graph
 import com.tinkerpop.gremlin.structure.Vertex
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter
 
@@ -49,8 +51,21 @@ class GraphLoader {
         }
 
         Graph.metaClass.saveGraphML = { final def fileObject ->
-            final GraphMLWriter writer = GraphMLWriter.create().build();
-            writer.writeGraph(new FileOutputStream(fileObject), (Graph) delegate)
+            GraphMLWriter.create().build().writeGraph(new FileOutputStream(fileObject), (Graph) delegate)
+        }
+
+        // GraphSON loading and saving
+        Graph.metaClass.loadGraphSON = { final def fileObject ->
+            final GraphSONReader reader = GraphSONReader.create().build();
+            try {
+                reader.readGraph(new URL(fileObject).openStream(), (Graph) delegate);
+            } catch (final MalformedURLException e) {
+                reader.readGraph(new FileInputStream(fileObject), (Graph) delegate)
+            }
+        }
+
+        Graph.metaClass.saveGraphSON = { final def fileObject ->
+            GraphSONWriter.create().build().writeGraph(new FileOutputStream(fileObject), (Graph) delegate)
         }
 
         // Kryo loading and saving
@@ -64,8 +79,7 @@ class GraphLoader {
         }
 
         Graph.metaClass.saveKryo = { final def fileObject ->
-            final KryoWriter writer = KryoWriter.create().build();
-            writer.writeGraph(new FileOutputStream(fileObject), (Graph) delegate)
+            KryoWriter.create().build().writeGraph(new FileOutputStream(fileObject), (Graph) delegate)
         }
 
 
