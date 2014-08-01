@@ -88,11 +88,11 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
             if (null != outs) {
                 for (final TraversalWrapper<S, S> w : outs) {
                     for (int i = 0; i < indent; i++) sb.append("\t");
-                    sb.append(outLabel).append("->").append(w.inLabel).append(":\t");
+                    sb.append(outLabel).append("->").append(w.inAs).append(":\t");
                     sb.append(findCost(w));
                     sb.append("\t").append(w);
                     sb.append("\n");
-                    summarize(w.inLabel, sb, visited, indent + 1);
+                    summarize(w.inAs, sb, visited, indent + 1);
                 }
             }
         }
@@ -122,7 +122,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
                     }
 
                     this.currentStart = this.starts.next();
-                    this.currentSolution = solveFor(new SingleIterator<>(currentStart.get()));
+                    this.currentSolution = solveFor(new SingleIterator<>(this.currentStart.get()));
                     this.currentIndex = 0;
                 } else {
                     throw FastNoSuchElementException.instance();
@@ -141,7 +141,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         final String startAs = TraversalHelper.getStart(traversal).getAs();
         final String endAs = TraversalHelper.getEnd(traversal).getAs();
         if (!TraversalHelper.isLabeled(startAs)) {
-            throw new IllegalArgumentException("All match traversals must have their start step named with as()");
+            throw new IllegalArgumentException("All match traversals must have their start step labeled with as()");
         } else {
             outAs = startAs;
         }
@@ -204,8 +204,8 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
                     TraversalUpdater<S, S> updater = new TraversalUpdater<>(w, new SingleIterator<S>(o), currentStart, this.getAs());
 
                     Set<String> rightLabels = new HashSet<>();
-                    addVariables(w.inLabel, rightLabels);
-                    Enumerator<S> ie = solveFor(w.inLabel, updater);
+                    addVariables(w.inAs, rightLabels);
+                    Enumerator<S> ie = solveFor(w.inAs, updater);
                     result = null == result ? ie : crossJoin(result, ie, leftLabels, rightLabels);
                     leftLabels.addAll(rightLabels);
                 }
@@ -237,7 +237,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         List<TraversalWrapper<S, S>> outs = traversalsOut.get(outLabel);
         if (null != outs) {
             for (TraversalWrapper<S, S> w : outs) {
-                String inLabel = w.inLabel;
+                String inLabel = w.inAs;
                 if (!variables.contains(inLabel)) {
                     addVariables(inLabel, variables);
                 }
@@ -261,11 +261,11 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         optimizeAt(inAs);
     }
 
-    private void optimizeAt(final String outLabel) {
-        List<TraversalWrapper<S, S>> outs = traversalsOut.get(outLabel);
+    private void optimizeAt(final String outAs) {
+        List<TraversalWrapper<S, S>> outs = traversalsOut.get(outAs);
         if (null != outs) {
             for (TraversalWrapper<S, S> t : outs) {
-                optimizeAt(t.inLabel);
+                optimizeAt(t.inAs);
                 updateOrderingFactor(t);
             }
             Collections.sort(outs);
@@ -274,16 +274,16 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
 
     private double findCost(final TraversalWrapper<S, S> root) {
         double bf = root.findBranchFactor();
-        return bf + findCost(root.inLabel, root.findBranchFactor());
+        return bf + findCost(root.inAs, root.findBranchFactor());
     }
 
-    private double findCost(final String outLabel,
+    private double findCost(final String outAs,
                             final double branchFactor) {
         double bf = branchFactor;
 
         double cost = 0;
 
-        List<TraversalWrapper<S, S>> outs = traversalsOut.get(outLabel);
+        List<TraversalWrapper<S, S>> outs = traversalsOut.get(outAs);
         if (null != outs) {
             for (TraversalWrapper<S, S> child : outs) {
                 cost += bf * findCost(child);
@@ -318,17 +318,17 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
     // However, with sufficient inputs and optimizations,the branch factor is expected to converge on a stable value.
     public static class TraversalWrapper<A, B> implements Comparable<TraversalWrapper<A, B>>, Serializable {
         private final Traversal<A, B> traversal;
-        private final String outLabel, inLabel;
+        private final String outAs, inAs;
         private int totalInputs = 0;
         private int totalOutputs = 0;
         private double orderingFactor;
 
         public TraversalWrapper(final Traversal<A, B> traversal,
-                                final String outLabel,
-                                final String inLabel) {
+                                final String outAs,
+                                final String inAs) {
             this.traversal = traversal;
-            this.outLabel = outLabel;
-            this.inLabel = inLabel;
+            this.outAs = outAs;
+            this.inAs = inAs;
         }
 
         public void incrementInputs() {
@@ -360,7 +360,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
 
         @Override
         public String toString() {
-            return "[" + outLabel + "->" + inLabel + "," + findBranchFactor() + "," + totalInputs + "," + totalOutputs + "," + traversal + "]";
+            return "[" + outAs + "->" + inAs + "," + findBranchFactor() + "," + totalInputs + "," + totalOutputs + "," + traversal + "]";
         }
     }
 
