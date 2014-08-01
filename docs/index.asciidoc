@@ -65,8 +65,8 @@ image::gremlintron.png[width=500]
 
 NOTE: TinkerPop2 and below made a sharp distinction between the various TinkerPop projects: Blueprints, Pipes, Gremlin, Frames, Furnace, and Rexster. With TinkerPop3, all of these projects have been merged and are generally known as Gremlin. *Blueprints* -> Gremlin Structure API : *Pipes* -> `GraphTraversal` : *Frames* -> `Traversal` : *Furnace* -> `GraphComputer` and `VertexProgram` : *Rexster* -> GremlinServer.
 
-Graph Computing
-===============
+Introduction to Graph Computing
+===============================
 
 A link:http://en.wikipedia.org/wiki/Graph_(data_structure)[graph] is a data structure composed of vertices (nodes, dots) and edges (arcs, lines). When modeling a graph in a computer and applying it to modern data sets and practices, the generic mathematically-oriented, binary graph is extended to support both labels and key/value properties. This structure is known as a property graph. More formally, it is a directed, binary, attributed multi-graph. An example property graph is diagrammed below. This graph example will be used extensively throughout the documentation and is called "TinkerPop Classic" as it is the original demo graph distributed with TinkerPop0 back in 2009 (i.e. the good ol' days -- it was the best of times and it was the worst of times).
 
@@ -309,8 +309,8 @@ marko.as('a').out.jump('a'){it.loops < 2}.name
 
 IMPORTANT: In TinkerPop2, the `jump()`-step was called `loop()`. Jump has been generalized to support both do-while and while-do semantics which is explained in <<jump-step,Jump Step>>.
 
-The Graph API
-=============
+The Graph
+=========
 
 image::gremlin-standing.png[width=125]
 
@@ -463,8 +463,391 @@ gremlin> g.tx().submit{it.addVertex("name","daniel")}.exponentialBackoff(10)
 
 As shown above, the `submit` method takes a `Function<Graph, R>` which is the unit of work to execute and possibly retry on failure.  The method returns a `Transaction.Workload` object which has a number of default methods for common retry strategies.  It is also possible to supply a custom retry function if a default one does not suit the required purpose.
 
-The Traversal API
-=================
+Gremlin I/O
+-----------
+
+The task of getting data in and out of `Graph` instances is the job of the Gremlin I/O packages.  Gremlin I/O provides two interfaces that for reading and writing `Graph` instances: `GraphReader` and `GraphWriter`.  These interfaces expose methods that support:
+
+* Reading and writing an entire `Graph`
+* Reading and writing a `Traversal<Vertex>` as adjacency list format
+* Reading and writing a single `Vertex` (with and without associated `Edge` objects)
+* Reading and writing a single `Edge`
+
+In all cases, these methods operate in the currency of `InputStream` and `OutputStream` objects, allowing graphs and their related elements to be written to and read from files, byte arrays, etc.
+
+
+GraphML Reader/Writer
+~~~~~~~~~~~~~~~~~~~~~
+
+image:gremlin-graphml.png[width=350,float=left] The link:http://graphml.graphdrawing.org/[GraphML] file format is a common XML-based representation of a graph. It is widely supported by graph-related tools and libraries making it a solid interchange format for TinkerPop. In other words, if the intent is to work with graph data in conjunction with applications outside of TinkerPop, GraphML maybe be the best choice to do that. Common use cases might be:
+
+* Generate a graph link:https://networkx.github.io/[NetworkX], export it with GraphML and import it to TinkerPop.
+* Produce a subgraph and export it to GraphML to be consumed by and visualized in link:https://gephi.org/[Gephi].
+* Migrate the data of an entire graph to a different graph database not supported by TinkerPop.
+
+As GraphML is a specification for the serialization of an entire graph and not the individual elements of a graph, methods that support input and output of single vertices and edges are not supported.
+
+CAUTION: GraphML is a "lossy" format in that it only supports primitive values for properties and does not have support for `Graph` variables.  It will use `toString` to serialize property values outside of those primitives.
+
+The following code shows how to write a `Graph` instance to file called `tinkerpop-classic.xml` and then how to read that file back into a different instance:
+
+[source,java]
+----
+final Graph g = TinkerFactory.createClassic();
+try (final OutputStream os = new FileOutputStream("tinkerpop-classic.xml")) {
+    GraphMLWriter.create().build().writeGraph(os, g);
+}
+
+final GraphReader reader = GraphMLReader.create().build();
+try (final InputStream stream = new FileInputStream("tinkerpop-classic.xml")) {
+    reader.readGraph(stream, g);
+}
+----
+
+GraphSON Reader/Writer
+~~~~~~~~~~~~~~~~~~~~~~
+
+image:gremlin-graphson.png[width=350,float=left] GraphSON is a link:http://json.org/[JSON]-based format extended from earlier versions of TinkerPop. It is important to note that TinkerPop3's GraphSON is not backwards compatible with prior TinkerPop GraphSON versions. GraphSON has some support from graph-related application outside of TinkerPop, but it is generally best used in two cases:
+
+* A text format of the graph or its elements is desired (e.g. debugging, usage in source control, etc.)
+* The graph or its elements need to be consumed by code that is not JVM-based (e.g. JavaScript, Python, .NET, etc.)
+
+GraphSON supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, a single `Vertex` or a single `Edge`.  The following code shows how to write a `Graph` instance to file called `tinkerpop-classic.json` and then how to read that file back into a different instance:
+
+[source,java]
+----
+final Graph g = TinkerFactory.createClassic();
+try (final OutputStream os = new FileOutputStream("tinkerpop-classic.json")) {
+    GraphSONWriter.create().build().writeGraph(os, g);
+}
+
+final GraphReader reader = GraphSONReader.create().build();
+try (final InputStream stream = new FileInputStream("tinkerpop-classic.json")) {
+    reader.readGraph(stream, g);
+}
+----
+
+The `GraphSONReader` and `GraphSONWriter` have a number of options that they can be configured with.  One of the important options is the ability to embed type information into the output.  By embedding the types, it becomes possible to serialize a graph without losing type information that might be important when being consumed by another source.  The importance of this concept is demonstrated in the following example where a single `Vertex` is written to GraphSON using the Gremlin Console:
+
+[source,groovy]
+----
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> w = GraphSONWriter.create().build()
+==>com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter@1af146
+gremlin> f = new FileOutputStream('test.txt')
+==>java.io.FileOutputStream@5c8eee0f
+gremlin> w.writeVertex(f, g.v(1), Direction.BOTH)
+==>null
+gremlin> f.close()
+----
+
+The following GraphSON example shows the output of `GraphSonWriter.writeVertex()` with associated edges:
+
+[source,js]
+----
+{
+    "inV": [],
+    "id": 1,
+    "label": "vertex",
+    "type": "vertex",
+    "outV": [
+        {
+            "inV": 3,
+            "inVLabel": "vertex",
+            "outVLabel": "vertex",
+            "id": 9,
+            "label": "created",
+            "type": "edge",
+            "outV": 1,
+            "properties": {
+                "weight": 0.4
+            }
+        },
+        {
+            "inV": 2,
+            "inVLabel": "vertex",
+            "outVLabel": "vertex",
+            "id": 7,
+            "label": "knows",
+            "type": "edge",
+            "outV": 1,
+            "properties": {
+                "weight": 0.5
+            }
+        },
+        {
+            "inV": 4,
+            "inVLabel": "vertex",
+            "outVLabel": "vertex",
+            "id": 8,
+            "label": "knows",
+            "type": "edge",
+            "outV": 1,
+            "properties": {
+                "weight": 1
+            }
+        }
+    ],
+    "properties": {
+        "name": "marko",
+        "age": 29
+    }
+}
+----
+
+The vertex properly serializes to valid JSON but note that a consuming application will not automatically know how to interpret the numeric values.  In coercing those Java values to JSON, such information is lost.  For example, it is no longer clear if the `weight` value on the edges should be read as a `Double` or an `Float`.
+
+With a minor change to the construction of the `GraphSONWriter` the lossy nature of GraphSON can be avoided:
+
+[source,groovy]
+----
+gremlin> w = GraphSONWriter.create().embedTypes(true).build()
+==>com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter@350ec41e
+----
+
+In the above code, the `embedTypes` option is set to `true` and the output below shows the difference in the output:
+
+[source,js]
+----
+{
+    "@class": "java.util.HashMap",
+    "inV": [
+        "java.util.ArrayList",
+        []
+    ],
+    "id": 1,
+    "label": "vertex",
+    "type": "vertex",
+    "outV": [
+        "java.util.ArrayList",
+        [
+            {
+                "@class": "java.util.HashMap",
+                "inV": 3,
+                "inVLabel": "vertex",
+                "outVLabel": "vertex",
+                "id": 9,
+                "label": "created",
+                "type": "edge",
+                "outV": 1,
+                "properties": {
+                    "@class": "java.util.HashMap",
+                    "weight": [
+                        "java.lang.Float",
+                        0.4
+                    ]
+                }
+            },
+            {
+                "@class": "java.util.HashMap",
+                "inV": 2,
+                "inVLabel": "vertex",
+                "outVLabel": "vertex",
+                "id": 7,
+                "label": "knows",
+                "type": "edge",
+                "outV": 1,
+                "properties": {
+                    "@class": "java.util.HashMap",
+                    "weight": [
+                        "java.lang.Float",
+                        0.5
+                    ]
+                }
+            },
+            {
+                "@class": "java.util.HashMap",
+                "inV": 4,
+                "inVLabel": "vertex",
+                "outVLabel": "vertex",
+                "id": 8,
+                "label": "knows",
+                "type": "edge",
+                "outV": 1,
+                "properties": {
+                    "@class": "java.util.HashMap",
+                    "weight": [
+                        "java.lang.Float",
+                        1
+                    ]
+                }
+            }
+        ]
+    ],
+    "properties": {
+        "@class": "java.util.HashMap",
+        "name": "marko",
+        "age": 29
+    }
+}
+----
+
+The ambiguity of components of the GraphSON is now removed by the `@class` property, which contains Java class information for the data it is associated with.  While the output is more verbose, it comes with the security of not losing type information.  While non-JVM languages won't be able to consume this information automatically, at least there is a hint as to how the values should be coerced back into the correct types in the target language.
+
+[[gremlin-kryo]]
+Kryo Reader/Writer
+~~~~~~~~~~~~~~~~~~
+
+image:gremlin-kryo.png[width=400,float=left] link:https://github.com/EsotericSoftware/kryo[Kryo] is a popular serialization package for the JVM. Gremlin-Kryo is a binary Graph serialization format for use on the JVM by JVM languages. It is designed to be space efficient, non-lossy and is promoted as the standard format to use when working with graph data inside of the TinkerPop stack. A list of common use cases is presented below:
+
+* Migration from one Gremlin Structure implementation to another (e.g. `TinkerGraph` to `Neo4jGraph`)
+* Serialization of individual graph elements to be sent over the network to another JVM.
+* Backups of in-memory graphs or subgraphs.
+
+CAUTION: When migrating between Gremlin Structure implementations, Kryo may not lose data, but it is important to consider the features of each `Graph` and whether or not the data types supported in one will be supported in the other.  Failure to do so, may result in errors.
+
+Kryo supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, a single `Vertex` or a single `Edge`.  The following code shows how to write a `Graph` instance to file called `tinkerpop-classic.gio` and then how to read that file back into a different instance:
+
+[source,java]
+----
+final Graph g = TinkerFactory.createClassic();
+try (final OutputStream os = new FileOutputStream("tinkerpop-classic.gio")) {
+    KryoWriter.create().build().writeGraph(os, g);
+}
+
+final GraphReader reader = KryoReader.create().build();
+try (final InputStream stream = new FileInputStream("tinkerpop-classic.gio")) {
+    reader.readGraph(stream, g);
+}
+----
+
+NOTE: The preferred extension for files names produced by Kryo is `.gio`.
+
+Graph Strategy
+--------------
+
+A Graph Strategy provides a way to expand, inspect or otherwise alter the behavior of a `Graph` implementation.  A Graph Strategy injects arbitrary functions into the `Graph` API, so that when a method call is made, the strategy functions can manipulate the default behavior of the underlying `Graph`.  TinkerPop3 is packaged with the following strategies:
+
+* `IdGraphStrategy` - enables support for custom element identifiers for those graphs which don't otherwise support them
+* `PartitionGraphStrategy` - enables support for logical graph partitioning where the `Graph` can be blinded to different parts of the total graph
+* `ReadOnlyGraphStrategy` - prevents writing to the `Graph`
+* `SequenceGraphStrategy` - apply multiple `GraphStrategy` implementations in sequenced ordered to a single `Graph` instance
+* `SubgraphStrategy` - create a logical subgraph which selectively includes vertices and edges of a `Graph` according to provided criteria
+
+NOTE: TinkerPop2 had the notion of "Graph Wrappers" which decorated standard `Graph` implementations with additional features.  A Graph strategy is generally analogous to that capability.
+
+To use a `GraphStrategy` instance, use the `GraphFactory` to instantiate the `Graph` as follows:
+
+[source,groovy]
+----
+gremlin> conf = new BaseConfiguration()
+==>org.apache.commons.configuration.BaseConfiguration@5b40ceb
+gremlin> conf.setProperty("gremlin.graph","com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph")
+==>null
+gremlin> g = GraphFactory.open(conf, Optional.of(new ReadOnlyGraphStrategy()))
+==>[readonlygraphstrategy[tinkergraph[vertices:0 edges:0]]]
+----
+
+The above code specifies the creation of a `TinkerGraph` with the use of `ReadOnlyGraphStrategy`.  Note that the `GraphFactory` does not return a `TinkerGraph` instance.  It returns a `StrategyWrappedGraph` which is a traverser for the underlying `TinkerGraph` and the `ReadOnlyGraphStrategy`.  Since `StrategyWrappedGraph` implements the `Graph` interface, it can be used in the same manner as `TinkerGraph` or any other implementation.
+
+[source,groovy]
+----
+gremlin> g.addVertex('name','stephen')
+Graph uses class com.tinkerpop.gremlin.structure.strategy.ReadOnlyGraphStrategy and is therefore unmodifiable
+----
+
+The above code tries to mutate the underlying `TinkerGraph`.  Note that `ReadOnlyGraphStrategy` prevents that and throws an exception.  At any point, the `GraphStrategy` can be bypassed by getting the underlying `TinkerGraph`.
+
+[source,groovy]
+----
+gremlin> bg = g.getBaseGraph()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> bg.addVertex('name','stephen')
+==>v[0]
+gremlin> g.v(0l).value('name')
+==>stephen
+----
+
+By getting the "base graph" (i.e. the underlying `TinkerGraph`) it is possible to mutate the graph.  The above code demonstrates that and also shows that it then possible to read back that added vertex.
+
+Further details on specific GraphStrategy implementations follow.
+
+SubgraphStrategy
+~~~~~~~~~~~~~~~~
+
+A general-purpose `SubgraphStrategy` is created by defining a "vertex criterion" and an "edge criterion" as Java 8 `Predicates` and applying them to a `Graph`.  All vertices present in the base `Graph` which pass the vertex criterion will be present in the `StrategyWrappedGraph`.  All edges present in the base `Graph` which pass the edge criterion *and* whose in- and out-vertices both pass the vertex criterion will be present in the `StrategyWrappedGraph`.
+
+NOTE: edges are either entirely visible, or entirely invisible to a subgraph.  You will never find an edge which cannot be traversed due to a missing in- or out-vertex.
+
+For example:
+
+[source,java]
+----
+Graph g = TinkerFactory.createClassic();              
+
+Predicate<Vertex> vertexCriterion = vertex -> true;
+Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
+
+GraphStrategy strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion);
+StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+sg.strategy().setGraphStrategy(strategy);
+
+// all vertices are here
+System.out.println("" + sg.V().count() + " of " + g.V().count() + " vertices");
+
+// only the given edges are included
+System.out.println("" + sg.E().count() + " of " + g.E().count() + " edges");
+----
+ 
+PartitionGraphStrategy
+~~~~~~~~~~~~~~~~~~~~~~
+
+`PartitionGraphStrategy` is a `SubgraphStrategy` which creates logical subgraphs through the use of designated properties.  When each element is written to the `Graph`, it is marked with a property value indicating the current write-partition.  As elements are read from the graph, they are matched against the current set of read-partitions.  The read-partitions thereby define the union of a set of vertices and edges. For example:
+
+[source,groovy]
+----
+gremlin> g = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> strategy = new PartitionGraphStrategy(Graph.Key.hidden("partition"), "A")
+==>PartitionGraphStrategy
+gremlin> sg = new StrategyWrappedGraph(g)
+==>[passthru[tinkergraph[vertices:0 edges:0]]]
+gremlin> sg.strategy().setGraphStrategy(strategy)
+==>null
+----
+
+Add vertices and edges first in one partition, then another:
+
+[source,groovy]
+----
+gremlin> v1 = sg.addVertex("name", "one")
+==>[PartitionGraphStrategy[v[0]]]
+gremlin> v2 = sg.addVertex("name", "two")
+==>[PartitionGraphStrategy[v[1]]]
+gremlin> v1.addEdge("knows", v2)
+==>[PartitionGraphStrategy[e[2][0-knows->1]]]
+gremlin> strategy.setWritePartition("B")
+==>null
+gremlin> v3 = sg.addVertex("name", "three")
+==>[PartitionGraphStrategy[v[3]]]
+gremlin> v1.addEdge("knows", v3)
+==>[PartitionGraphStrategy[e[4][0-knows->3]]]
+gremlin> 
+----
+
+Define sets of partitions which provide access to different subgraphs, or slices of the data:
+
+[source,groovy]
+----
+gremlin> "in A: " + sg.V().count().next() + ", " + sg.E().count().next()
+==>in A: 2, 1
+gremlin> strategy.addReadPartition("B")
+==>null
+gremlin> "in A+B: " + sg.V().count().next() + ", " + sg.E().count().next()
+==>in A+B: 3, 2
+gremlin> strategy.clearReadPartitions()
+==>null
+gremlin> strategy.addReadPartition("B")
+==>null
+gremlin> "in B: " + sg.V().count().next() + ", " + sg.E().count().next()
+==>in B: 1, 0
+----
+
+Note that there are no edges in the set B, as the only edge added to partition B is incident on a vertex of A.
+
+The Traversal
+=============
 
 image::gremlin-running.png[width=125]
 
@@ -822,8 +1205,8 @@ g.traversal(SocialTraversal.class).people("marko").knows().name()
 By extending Traversal, users can create a DSL that is respective of the semantics of their data. Instead of querying in terms of vertices/edges/properties, they can query in terms of, for example, people, their friends, and their names.
 
 [[graphcomputer]]
-The GraphComputer API
-=====================
+The GraphComputer
+=================
 
 image:graphcomputer-puffers.png[width=350,float=right] TinkerPop3 provides two primary means of interacting with a graph: link:http://en.wikipedia.org/wiki/Online_transaction_processing[online transaction processing] (OLTP) and link:http://en.wikipedia.org/wiki/Online_analytical_processing[online analytical processing] (OLAP). OTLP-based graph systems allow the user to query the graph in real-time. However, typically, real-time performance is only possible when a local traversal is enacted. A local traversal is one that starts at a particular vertex (or small set of vertices) and touches a small set of connected vertices (by any arbitrary path of arbitrary length). In short, OLTP queries interact with a limited set of data and respond on the order of milliseconds or seconds. On the other hand, with OLAP graph processing, the entire graph is processed and thus, every vertex and edge is analyzed (some times more than once for iterative-based algorithms). Due to the amount of data being processed, the results are typically not returned in real-time and for massive graphs (i.e. graphs represented across a cluster of machines), results can take on the order of minutes or hours.
 
@@ -1209,389 +1592,6 @@ include::../gremlin-groovy/src/main/java/com/tinkerpop/gremlin/groovy/plugin/Rem
 The `RemoteAcceptor` implementation ties to a `GremlinPlugin` and will only be executed when in use with the Gremlin Console plugin host.  Simply instantiate and return a `RemoteAcceptor` in the `GremlinPlugin.remoteAcceptor()` method of the plugin implementation.  Generally speaking, each call to `remoteAcceptor()` should produce a new instance of a `RemoteAcceptor`.  It will likely be necessary that you provide context from the `GremlinPlugin` to the `RemoteAcceptor` plugin.  For example, the `RemoteAcceptor` implementation might require an instance of `Groovysh` to provide a way to dynamically evaluate a script provided to it so that it can process the results in a different way.
 
 
-Gremlin I/O
------------
-
-The task of getting data in and out of `Graph` instances is the job of the Gremlin I/O packages.  Gremlin I/O provides two interfaces that for reading and writing `Graph` instances: `GraphReader` and `GraphWriter`.  These interfaces expose methods that support:
-
-* Reading and writing an entire `Graph`
-* Reading and writing a `Traversal<Vertex>` as adjacency list format
-* Reading and writing a single `Vertex` (with and without associated `Edge` objects)
-* Reading and writing a single `Edge`
-
-In all cases, these methods operate in the currency of `InputStream` and `OutputStream` objects, allowing graphs and their related elements to be written to and read from files, byte arrays, etc.
-
-
-GraphML Reader/Writer
-~~~~~~~~~~~~~~~~~~~~~
-
-image:gremlin-graphml.png[width=350,float=left] The link:http://graphml.graphdrawing.org/[GraphML] file format is a common XML-based representation of a graph. It is widely supported by graph-related tools and libraries making it a solid interchange format for TinkerPop. In other words, if the intent is to work with graph data in conjunction with applications outside of TinkerPop, GraphML maybe be the best choice to do that. Common use cases might be:
-
-* Generate a graph link:https://networkx.github.io/[NetworkX], export it with GraphML and import it to TinkerPop.
-* Produce a subgraph and export it to GraphML to be consumed by and visualized in link:https://gephi.org/[Gephi].
-* Migrate the data of an entire graph to a different graph database not supported by TinkerPop.
-
-As GraphML is a specification for the serialization of an entire graph and not the individual elements of a graph, methods that support input and output of single vertices and edges are not supported.
-
-CAUTION: GraphML is a "lossy" format in that it only supports primitive values for properties and does not have support for `Graph` variables.  It will use `toString` to serialize property values outside of those primitives.
-
-The following code shows how to write a `Graph` instance to file called `tinkerpop-classic.xml` and then how to read that file back into a different instance:
-
-[source,java]
-----
-final Graph g = TinkerFactory.createClassic();
-try (final OutputStream os = new FileOutputStream("tinkerpop-classic.xml")) {
-    GraphMLWriter.create().build().writeGraph(os, g);
-}
-
-final GraphReader reader = GraphMLReader.create().build();
-try (final InputStream stream = new FileInputStream("tinkerpop-classic.xml")) {
-    reader.readGraph(stream, g);
-}
-----
-
-GraphSON Reader/Writer
-~~~~~~~~~~~~~~~~~~~~~~
-
-image:gremlin-graphson.png[width=350,float=left] GraphSON is a link:http://json.org/[JSON]-based format extended from earlier versions of TinkerPop. It is important to note that TinkerPop3's GraphSON is not backwards compatible with prior TinkerPop GraphSON versions. GraphSON has some support from graph-related application outside of TinkerPop, but it is generally best used in two cases:
-
-* A text format of the graph or its elements is desired (e.g. debugging, usage in source control, etc.)
-* The graph or its elements need to be consumed by code that is not JVM-based (e.g. JavaScript, Python, .NET, etc.)
-
-GraphSON supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, a single `Vertex` or a single `Edge`.  The following code shows how to write a `Graph` instance to file called `tinkerpop-classic.json` and then how to read that file back into a different instance:
-
-[source,java]
-----
-final Graph g = TinkerFactory.createClassic();
-try (final OutputStream os = new FileOutputStream("tinkerpop-classic.json")) {
-    GraphSONWriter.create().build().writeGraph(os, g);
-}
-
-final GraphReader reader = GraphSONReader.create().build();
-try (final InputStream stream = new FileInputStream("tinkerpop-classic.json")) {
-    reader.readGraph(stream, g);
-}
-----
-
-The `GraphSONReader` and `GraphSONWriter` have a number of options that they can be configured with.  One of the important options is the ability to embed type information into the output.  By embedding the types, it becomes possible to serialize a graph without losing type information that might be important when being consumed by another source.  The importance of this concept is demonstrated in the following example where a single `Vertex` is written to GraphSON using the Gremlin Console:
-
-[source,groovy]
-----
-gremlin> g = TinkerFactory.createClassic()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> w = GraphSONWriter.create().build()
-==>com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter@1af146
-gremlin> f = new FileOutputStream('test.txt')
-==>java.io.FileOutputStream@5c8eee0f
-gremlin> w.writeVertex(f, g.v(1), Direction.BOTH)
-==>null
-gremlin> f.close()
-----
-
-The following GraphSON example shows the output of `GraphSonWriter.writeVertex()` with associated edges:
-
-[source,js]
-----
-{
-    "inV": [],
-    "id": 1,
-    "label": "vertex",
-    "type": "vertex",
-    "outV": [
-        {
-            "inV": 3,
-            "inVLabel": "vertex",
-            "outVLabel": "vertex",
-            "id": 9,
-            "label": "created",
-            "type": "edge",
-            "outV": 1,
-            "properties": {
-                "weight": 0.4
-            }
-        },
-        {
-            "inV": 2,
-            "inVLabel": "vertex",
-            "outVLabel": "vertex",
-            "id": 7,
-            "label": "knows",
-            "type": "edge",
-            "outV": 1,
-            "properties": {
-                "weight": 0.5
-            }
-        },
-        {
-            "inV": 4,
-            "inVLabel": "vertex",
-            "outVLabel": "vertex",
-            "id": 8,
-            "label": "knows",
-            "type": "edge",
-            "outV": 1,
-            "properties": {
-                "weight": 1
-            }
-        }
-    ],
-    "properties": {
-        "name": "marko",
-        "age": 29
-    }
-}
-----
-
-The vertex properly serializes to valid JSON but note that a consuming application will not automatically know how to interpret the numeric values.  In coercing those Java values to JSON, such information is lost.  For example, it is no longer clear if the `weight` value on the edges should be read as a `Double` or an `Float`.
-
-With a minor change to the construction of the `GraphSONWriter` the lossy nature of GraphSON can be avoided:
-
-[source,groovy]
-----
-gremlin> w = GraphSONWriter.create().embedTypes(true).build()
-==>com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter@350ec41e
-----
-
-In the above code, the `embedTypes` option is set to `true` and the output below shows the difference in the output:
-
-[source,js]
-----
-{
-    "@class": "java.util.HashMap",
-    "inV": [
-        "java.util.ArrayList",
-        []
-    ],
-    "id": 1,
-    "label": "vertex",
-    "type": "vertex",
-    "outV": [
-        "java.util.ArrayList",
-        [
-            {
-                "@class": "java.util.HashMap",
-                "inV": 3,
-                "inVLabel": "vertex",
-                "outVLabel": "vertex",
-                "id": 9,
-                "label": "created",
-                "type": "edge",
-                "outV": 1,
-                "properties": {
-                    "@class": "java.util.HashMap",
-                    "weight": [
-                        "java.lang.Float",
-                        0.4
-                    ]
-                }
-            },
-            {
-                "@class": "java.util.HashMap",
-                "inV": 2,
-                "inVLabel": "vertex",
-                "outVLabel": "vertex",
-                "id": 7,
-                "label": "knows",
-                "type": "edge",
-                "outV": 1,
-                "properties": {
-                    "@class": "java.util.HashMap",
-                    "weight": [
-                        "java.lang.Float",
-                        0.5
-                    ]
-                }
-            },
-            {
-                "@class": "java.util.HashMap",
-                "inV": 4,
-                "inVLabel": "vertex",
-                "outVLabel": "vertex",
-                "id": 8,
-                "label": "knows",
-                "type": "edge",
-                "outV": 1,
-                "properties": {
-                    "@class": "java.util.HashMap",
-                    "weight": [
-                        "java.lang.Float",
-                        1
-                    ]
-                }
-            }
-        ]
-    ],
-    "properties": {
-        "@class": "java.util.HashMap",
-        "name": "marko",
-        "age": 29
-    }
-}
-----
-
-The ambiguity of components of the GraphSON is now removed by the `@class` property, which contains Java class information for the data it is associated with.  While the output is more verbose, it comes with the security of not losing type information.  While non-JVM languages won't be able to consume this information automatically, at least there is a hint as to how the values should be coerced back into the correct types in the target language.
-
-[[gremlin-kryo]]
-Kryo Reader/Writer
-~~~~~~~~~~~~~~~~~~
-
-image:gremlin-kryo.png[width=400,float=left] link:https://github.com/EsotericSoftware/kryo[Kryo] is a popular serialization package for the JVM. Gremlin-Kryo is a binary Graph serialization format for use on the JVM by JVM languages. It is designed to be space efficient, non-lossy and is promoted as the standard format to use when working with graph data inside of the TinkerPop stack. A list of common use cases is presented below:
-
-* Migration from one Gremlin Structure implementation to another (e.g. `TinkerGraph` to `Neo4jGraph`)
-* Serialization of individual graph elements to be sent over the network to another JVM.
-* Backups of in-memory graphs or subgraphs.
-
-CAUTION: When migrating between Gremlin Structure implementations, Kryo may not lose data, but it is important to consider the features of each `Graph` and whether or not the data types supported in one will be supported in the other.  Failure to do so, may result in errors.
-
-Kryo supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, a single `Vertex` or a single `Edge`.  The following code shows how to write a `Graph` instance to file called `tinkerpop-classic.gio` and then how to read that file back into a different instance:
-
-[source,java]
-----
-final Graph g = TinkerFactory.createClassic();
-try (final OutputStream os = new FileOutputStream("tinkerpop-classic.gio")) {
-    KryoWriter.create().build().writeGraph(os, g);
-}
-
-final GraphReader reader = KryoReader.create().build();
-try (final InputStream stream = new FileInputStream("tinkerpop-classic.gio")) {
-    reader.readGraph(stream, g);
-}
-----
-
-NOTE: The preferred extension for files names produced by Kryo is `.gio`.
-
-Graph Strategy
---------------
-
-A Graph Strategy provides a way to expand, inspect or otherwise alter the behavior of a `Graph` implementation.  A Graph Strategy injects arbitrary functions into the `Graph` API, so that when a method call is made, the strategy functions can manipulate the default behavior of the underlying `Graph`.  TinkerPop3 is packaged with the following strategies:
-
-* `IdGraphStrategy` - enables support for custom element identifiers for those graphs which don't otherwise support them
-* `PartitionGraphStrategy` - enables support for logical graph partitioning where the `Graph` can be blinded to different parts of the total graph
-* `ReadOnlyGraphStrategy` - prevents writing to the `Graph`
-* `SequenceGraphStrategy` - apply multiple `GraphStrategy` implementations in sequenced ordered to a single `Graph` instance
-* `SubgraphStrategy` - create a logical subgraph which selectively includes vertices and edges of a `Graph` according to provided criteria
-
-NOTE: TinkerPop2 had the notion of "Graph Wrappers" which decorated standard `Graph` implementations with additional features.  A Graph strategy is generally analogous to that capability.
-
-To use a `GraphStrategy` instance, use the `GraphFactory` to instantiate the `Graph` as follows:
-
-[source,groovy]
-----
-gremlin> conf = new BaseConfiguration()
-==>org.apache.commons.configuration.BaseConfiguration@5b40ceb
-gremlin> conf.setProperty("gremlin.graph","com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph")
-==>null
-gremlin> g = GraphFactory.open(conf, Optional.of(new ReadOnlyGraphStrategy()))
-==>[readonlygraphstrategy[tinkergraph[vertices:0 edges:0]]]
-----
-
-The above code specifies the creation of a `TinkerGraph` with the use of `ReadOnlyGraphStrategy`.  Note that the `GraphFactory` does not return a `TinkerGraph` instance.  It returns a `StrategyWrappedGraph` which is a traverser for the underlying `TinkerGraph` and the `ReadOnlyGraphStrategy`.  Since `StrategyWrappedGraph` implements the `Graph` interface, it can be used in the same manner as `TinkerGraph` or any other implementation.
-
-[source,groovy]
-----
-gremlin> g.addVertex('name','stephen')
-Graph uses class com.tinkerpop.gremlin.structure.strategy.ReadOnlyGraphStrategy and is therefore unmodifiable
-----
-
-The above code tries to mutate the underlying `TinkerGraph`.  Note that `ReadOnlyGraphStrategy` prevents that and throws an exception.  At any point, the `GraphStrategy` can be bypassed by getting the underlying `TinkerGraph`.
-
-[source,groovy]
-----
-gremlin> bg = g.getBaseGraph()
-==>tinkergraph[vertices:0 edges:0]
-gremlin> bg.addVertex('name','stephen')
-==>v[0]
-gremlin> g.v(0l).value('name')
-==>stephen
-----
-
-By getting the "base graph" (i.e. the underlying `TinkerGraph`) it is possible to mutate the graph.  The above code demonstrates that and also shows that it then possible to read back that added vertex.
-
-Further details on specific GraphStrategy implementations follow.
-
-SubgraphStrategy
-~~~~~~~~~~~~~~~~
-
-A general-purpose `SubgraphStrategy` is created by defining a "vertex criterion" and an "edge criterion" as Java 8 `Predicates` and applying them to a `Graph`.  All vertices present in the base `Graph` which pass the vertex criterion will be present in the `StrategyWrappedGraph`.  All edges present in the base `Graph` which pass the edge criterion *and* whose in- and out-vertices both pass the vertex criterion will be present in the `StrategyWrappedGraph`.
-
-NOTE: edges are either entirely visible, or entirely invisible to a subgraph.  You will never find an edge which cannot be traversed due to a missing in- or out-vertex.
-
-For example:
-
-[source,java]
-----
-Graph g = TinkerFactory.createClassic();              
-
-Predicate<Vertex> vertexCriterion = vertex -> true;
-Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
-
-GraphStrategy strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion);
-StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
-sg.strategy().setGraphStrategy(strategy);
-
-// all vertices are here
-System.out.println("" + sg.V().count() + " of " + g.V().count() + " vertices");
-
-// only the given edges are included
-System.out.println("" + sg.E().count() + " of " + g.E().count() + " edges");
-----
- 
-PartitionGraphStrategy
-~~~~~~~~~~~~~~~~~~~~~~
-
-`PartitionGraphStrategy` is a `SubgraphStrategy` which creates logical subgraphs through the use of designated properties.  When each element is written to the `Graph`, it is marked with a property value indicating the current write-partition.  As elements are read from the graph, they are matched against the current set of read-partitions.  The read-partitions thereby define the union of a set of vertices and edges. For example:
-
-[source,groovy]
-----
-gremlin> g = TinkerGraph.open()
-==>tinkergraph[vertices:0 edges:0]
-gremlin> strategy = new PartitionGraphStrategy(Graph.Key.hidden("partition"), "A")
-==>PartitionGraphStrategy
-gremlin> sg = new StrategyWrappedGraph(g)
-==>[passthru[tinkergraph[vertices:0 edges:0]]]
-gremlin> sg.strategy().setGraphStrategy(strategy)
-==>null
-----
-
-Add vertices and edges first in one partition, then another:
-
-[source,groovy]
-----
-gremlin> v1 = sg.addVertex("name", "one")
-==>[PartitionGraphStrategy[v[0]]]
-gremlin> v2 = sg.addVertex("name", "two")
-==>[PartitionGraphStrategy[v[1]]]
-gremlin> v1.addEdge("knows", v2)
-==>[PartitionGraphStrategy[e[2][0-knows->1]]]
-gremlin> strategy.setWritePartition("B")
-==>null
-gremlin> v3 = sg.addVertex("name", "three")
-==>[PartitionGraphStrategy[v[3]]]
-gremlin> v1.addEdge("knows", v3)
-==>[PartitionGraphStrategy[e[4][0-knows->3]]]
-gremlin> 
-----
-
-Define sets of partitions which provide access to different subgraphs, or slices of the data:
-
-[source,groovy]
-----
-gremlin> "in A: " + sg.V().count().next() + ", " + sg.E().count().next()
-==>in A: 2, 1
-gremlin> strategy.addReadPartition("B")
-==>null
-gremlin> "in A+B: " + sg.V().count().next() + ", " + sg.E().count().next()
-==>in A+B: 3, 2
-gremlin> strategy.clearReadPartitions()
-==>null
-gremlin> strategy.addReadPartition("B")
-==>null
-gremlin> "in B: " + sg.V().count().next() + ", " + sg.E().count().next()
-==>in B: 1, 0
-----
-
-Note that there are no edges in the set B, as the only edge added to partition B is incident on a vertex of A.
-
 [[gremlin-server]]
 Gremlin Server
 --------------
@@ -1836,7 +1836,7 @@ Neo4j-Gremlin
 
 image:neotechnology-logo.png[width=150,float=left] link:http://neotechnology.com[Neo Technology] are the developers of the OLTP-based link:http://neo4j.org[Neo4j graph database].
 
-CAUTION: Unless under a commercial agreement with Neo Technology, Neo4j is licensed as link:http://en.wikipedia.org/wiki/Affero_General_Public_License[AGPL]. Thus, `gremlin-neo4j` (source and binaries) are licensed as such due to their dependency on the Neo4j library. Note that neither the <<gremlin-console,Gremlin Console>> nor <<gremlin-server,Gremlin Server>> distribute with the Neo4j binaries. To access the binaries, use the `:use` command to download binaries from link:http://search.maven.org/[Maven Central Repository].
+CAUTION: Unless under a commercial agreement with Neo Technology, Neo4j is licensed as link:http://en.wikipedia.org/wiki/Affero_General_Public_License[AGPL]. Thus, `gremlin-neo4j` (source and binaries) are licensed as such due to their dependency on the Neo4j library. Note that neither the <<gremlin-console,Gremlin Console>> nor <<gremlin-server,Gremlin Server>> distribute with the Neo4j binaries. To access the Neo4j binaries, use the `:use` command to download binaries from link:http://search.maven.org/[Maven Central Repository].
 
 [source,groovy]
 ----

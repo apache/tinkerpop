@@ -7,7 +7,8 @@ import java.io.Serializable;
  */
 public interface TraversalStrategy extends Serializable, Comparable<TraversalStrategy> {
 
-    // A TraversalStrategy should never have a constructor
+    // A TraversalStrategy should not have a public constructor
+    // Make use of a singleton instance() object to reduce object creation on the JVM
 
     public void apply(final Traversal traversal);
 
