@@ -1470,8 +1470,6 @@ The `PeerPressureVertexProgram` is a clustering algorithm that assigns a nominal
  . Steps 3 and 4 repeat until either a max number of iterations has occurred or no vertex has adjusted its cluster anymore.
 
 
-
-
 Gremlin Applications
 ====================
 
