@@ -1,9 +1,9 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.strategy.ComputerReplacementStrategy;
-import com.tinkerpop.gremlin.process.strategy.CountCapStrategy;
-import com.tinkerpop.gremlin.process.strategy.TraverserSourceStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.ComputerReplacementStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.CountCapStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.MultiIterator;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -12,7 +12,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
-import com.tinkerpop.gremlin.tinkergraph.process.strategy.TinkerGraphStepStrategy;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerGraphStepStrategy;
 
 import java.util.ArrayList;
 import java.util.Collection;
