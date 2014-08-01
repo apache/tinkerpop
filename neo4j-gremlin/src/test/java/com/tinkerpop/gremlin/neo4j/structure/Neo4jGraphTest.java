@@ -22,8 +22,10 @@ import org.neo4j.graphdb.schema.Schema;
 
 import javax.script.Bindings;
 import javax.script.ScriptException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -89,12 +91,26 @@ public class Neo4jGraphTest {
     }
 
     @Test
+    public void shouldExecuteCypherWithArgsUsingVertexIdList() throws Exception {
+        final Vertex v = this.g.addVertex("name", "marko");
+        final List<Object> idList = Arrays.asList(v.id());
+        this.g.tx().commit();
+
+        final Map<String,Object> bindings = new HashMap<>();
+        bindings.put("ids", idList);
+        final Iterator<String> result = g.cypher("START n=node({ids}) RETURN n", bindings).select("n").value("name");
+        assertNotNull(result);
+        assertTrue(result.hasNext());
+        assertEquals("marko", result.next());
+    }
+
+    @Test
     public void shouldExecuteCypherAndBackToGremlin() throws Exception {
         this.g.addVertex("name", "marko", "age", 29, "color", "red");
         this.g.addVertex("name", "marko", "age", 30, "color", "yellow");
 
         this.g.tx().commit();
-        final Traversal result = g.cypher("MATCH (a {name:\"marko\"}) RETURN a").map(t -> t.get().get("a")).has("age", 29).value("color");
+        final Traversal result = g.cypher("MATCH (a {name:\"marko\"}) RETURN a").select("a").has("age", 29).value("color");
         assertNotNull(result);
         assertTrue(result.hasNext());
         assertEquals("red", result.next().toString());
