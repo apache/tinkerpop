@@ -50,7 +50,7 @@ public class TraversalCounterMessage extends TraversalMessage {
 
         final TraverserCountTracker tracker = vertex.value(TraversalVertexProgram.TRAVERSER_TRACKER);
         final Traversal traversal = traversalSupplier.get();
-        traversal.strategies().applyFinalStrategies();
+        traversal.strategies().apply();
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         final Map<Traverser, Long> localCounts = new HashMap<>();

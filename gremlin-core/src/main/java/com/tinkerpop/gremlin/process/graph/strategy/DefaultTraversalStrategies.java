@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,19 +27,19 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
 
 
     public void register(final TraversalStrategy traversalStrategy) {
-        this.traversalStrategies.add(0, traversalStrategy);   // TODO: eek around TraverserSourceStrategy
+        this.traversalStrategies.add(traversalStrategy);
     }
 
     public void unregister(final Class<? extends TraversalStrategy> optimizerClass) {
-        this.traversalStrategies.stream().filter(o -> optimizerClass.isAssignableFrom(o.getClass()))
+        this.traversalStrategies.stream().filter(c -> optimizerClass.isAssignableFrom(c.getClass()))
                 .collect(Collectors.toList())
                 .forEach(this.traversalStrategies::remove);
     }
 
-    public void applyFinalStrategies() {
-        this.traversalStrategies.stream()
-                .filter(o -> o instanceof TraversalStrategy.FinalTraversalStrategy)
-                .forEach(o -> ((TraversalStrategy.FinalTraversalStrategy) o).apply(this.traversal));
+    public void apply() {
+        Collections.sort(this.traversalStrategies);
+        //System.out.println("***" + this.traversalStrategies);
+        this.traversalStrategies.forEach(ts -> ts.apply(this.traversal));
     }
 
     public void clear() {

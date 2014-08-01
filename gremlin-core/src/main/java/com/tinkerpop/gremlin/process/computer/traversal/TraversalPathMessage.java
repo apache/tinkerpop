@@ -39,7 +39,7 @@ public class TraversalPathMessage extends TraversalMessage {
 
         final TraverserPathTracker tracker = vertex.value(TraversalVertexProgram.TRAVERSER_TRACKER);
         final Traversal traversal = traversalSupplier.get();
-        traversal.strategies().applyFinalStrategies();
+        traversal.strategies().apply();
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         messenger.receiveMessages(MessageType.Global.of()).forEach(message -> {

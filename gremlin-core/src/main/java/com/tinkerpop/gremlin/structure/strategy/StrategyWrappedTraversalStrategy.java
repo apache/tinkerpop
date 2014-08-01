@@ -24,7 +24,7 @@ import java.util.List;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class StrategyWrappedTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
+public class StrategyWrappedTraversalStrategy implements TraversalStrategy.NoDependencies {
 
     private final StrategyWrappedGraph graph;
 

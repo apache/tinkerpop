@@ -97,7 +97,7 @@ public class SubgraphStrategy implements GraphStrategy {
         return SubgraphStrategy.class.getSimpleName();
     }
 
-    private class SubgraphTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
+    private class SubgraphTraversalStrategy implements TraversalStrategy.NoDependencies {
 
         public void apply(final Traversal traversal) {
             // modify the traversal by appending filters after some steps, replacing others

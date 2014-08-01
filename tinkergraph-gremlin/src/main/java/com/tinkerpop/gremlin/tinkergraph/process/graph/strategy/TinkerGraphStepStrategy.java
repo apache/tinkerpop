@@ -13,7 +13,12 @@ import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphStepStrategy implements TraversalStrategy.FinalTraversalStrategy {
+public class TinkerGraphStepStrategy implements TraversalStrategy.NoDependencies {
+
+    private static final TinkerGraphStepStrategy INSTANCE = new TinkerGraphStepStrategy();
+
+    private TinkerGraphStepStrategy() {
+    }
 
     public void apply(final Traversal traversal) {
 
@@ -38,5 +43,9 @@ public class TinkerGraphStepStrategy implements TraversalStrategy.FinalTraversal
                 currentStep = currentStep.getNextStep();
             }
         }
+    }
+
+    public static TinkerGraphStepStrategy instance() {
+        return INSTANCE;
     }
 }

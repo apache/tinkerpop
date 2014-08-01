@@ -9,12 +9,21 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CountCapStrategy implements TraversalStrategy.FinalTraversalStrategy {
+public class CountCapStrategy implements TraversalStrategy.NoDependencies {
+
+    private static final CountCapStrategy INSTANCE = new CountCapStrategy();
+
+    private CountCapStrategy() {
+    }
+
 
     public void apply(final Traversal traversal) {
         if (TraversalHelper.getEnd(traversal) instanceof CountStep) {
             TraversalHelper.replaceStep(TraversalHelper.getEnd(traversal), new CountCapStep<>(traversal), traversal);
         }
+    }
 
+    public static CountCapStrategy instance() {
+        return INSTANCE;
     }
 }

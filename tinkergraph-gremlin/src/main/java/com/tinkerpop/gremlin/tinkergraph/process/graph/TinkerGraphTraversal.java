@@ -17,7 +17,7 @@ public class TinkerGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
 
     public TinkerGraphTraversal(final TinkerGraph graph, final Class<? extends Element> elementClass) {
         this.memory().set(Graph.Key.hidden("g"), graph);
-        this.strategies().register(new TinkerGraphStepStrategy());
+        this.strategies().register(TinkerGraphStepStrategy.instance());
         this.addStep(new TinkerGraphStep(this, elementClass, graph));
     }
 

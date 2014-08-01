@@ -1,6 +1,6 @@
-package com.tinkerpop.gremlin.neo4j.strategy;
+package com.tinkerpop.gremlin.neo4j.process.strategy;
 
-import com.tinkerpop.gremlin.neo4j.process.step.map.Neo4jGraphStep;
+import com.tinkerpop.gremlin.neo4j.process.graph.step.map.Neo4jGraphStep;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
@@ -11,7 +11,12 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 /**
  * @author Pieter Martin
  */
-public class Neo4jGraphStepStrategy implements TraversalStrategy.FinalTraversalStrategy {
+public class Neo4jGraphStepStrategy implements TraversalStrategy.NoDependencies {
+
+    private static final Neo4jGraphStepStrategy INSTANCE = new Neo4jGraphStepStrategy();
+
+    private Neo4jGraphStepStrategy() {
+    }
 
     public void apply(final Traversal traversal) {
         if (traversal.getSteps().get(0) instanceof Neo4jGraphStep) {
@@ -29,6 +34,10 @@ public class Neo4jGraphStepStrategy implements TraversalStrategy.FinalTraversalS
                 currentStep = currentStep.getNextStep();
             }
         }
+    }
+
+    public static Neo4jGraphStepStrategy instance() {
+        return INSTANCE;
     }
 
 }

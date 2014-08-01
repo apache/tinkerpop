@@ -16,5 +16,5 @@ public interface TraversalStrategies extends Serializable {
 
     public void clear();
 
-    public void applyFinalStrategies();
+    public void apply();
 }

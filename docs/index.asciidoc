@@ -1229,7 +1229,7 @@ image:gremlin-graphml.png[width=350,float=left] The link:http://graphml.graphdra
 
 * Generate a graph link:https://networkx.github.io/[NetworkX], export it with GraphML and import it to TinkerPop.
 * Produce a subgraph and export it to GraphML to be consumed by and visualized in link:https://gephi.org/[Gephi].
-* Migrate the data of an entire graph to a different graph database no supported by TinkerPop.
+* Migrate the data of an entire graph to a different graph database not supported by TinkerPop.
 
 As GraphML is a specification for the serialization of an entire graph and not the individual elements of a graph, methods that support input and output of single vertices and edges are not supported.
 
@@ -1435,7 +1435,7 @@ The ambiguity of components of the GraphSON is now removed by the `@class` prope
 Kryo Reader/Writer
 ~~~~~~~~~~~~~~~~~~
 
-image:gremlin-kryo.png[width=400,float=left] link:https://github.com/EsotericSoftware/kryo[Kryo] is a popular serialization package for the JVM. Gremlin-Kryo is a binary Graph serialization format designed for usage by JVM languages. It is designed to be an space efficient, non-lossy and is promoted as the standard format to use when working with graph data inside of the TinkerPop stack.  A list of common use cases is presented below:
+image:gremlin-kryo.png[width=400,float=left] link:https://github.com/EsotericSoftware/kryo[Kryo] is a popular serialization package for the JVM. Gremlin-Kryo is a binary Graph serialization format for use on the JVM by JVM languages. It is designed to be space efficient, non-lossy and is promoted as the standard format to use when working with graph data inside of the TinkerPop stack. A list of common use cases is presented below:
 
 * Migration from one Gremlin Structure implementation to another (e.g. `TinkerGraph` to `Neo4jGraph`)
 * Serialization of individual graph elements to be sent over the network to another JVM.
@@ -1836,7 +1836,7 @@ Neo4j-Gremlin
 
 image:neotechnology-logo.png[width=150,float=left] link:http://neotechnology.com[Neo Technology] are the developers of the OLTP-based link:http://neo4j.org[Neo4j graph database].
 
-CAUTION: Neo4j is licensed as link:http://en.wikipedia.org/wiki/Affero_General_Public_License[AGPL]. Thus, `gremlin-neo4j` (source and binaries) are also licensed as AGPL due to their dependency on the Neo4j libraries. Note that the <<gremlin-console,Gremlin Console>> does not distribute with the Neo4j binaries. To access the binaries, use the `:use` command to download binaries from link:http://search.maven.org/[Maven Central Repository].
+CAUTION: Unless under a commercial agreement with Neo Technology, Neo4j is licensed as link:http://en.wikipedia.org/wiki/Affero_General_Public_License[AGPL]. Thus, `gremlin-neo4j` (source and binaries) are licensed as such due to their dependency on the Neo4j library. Note that neither the <<gremlin-console,Gremlin Console>> nor <<gremlin-server,Gremlin Server>> distribute with the Neo4j binaries. To access the binaries, use the `:use` command to download binaries from link:http://search.maven.org/[Maven Central Repository].
 
 [source,groovy]
 ----
@@ -1852,7 +1852,7 @@ For those leveraging Neo4j High Availability, configure `Neo4jGraph` for "HA mod
 Cypher
 ~~~~~~
 
-Neo4j are the creators of their own graph pattern-match query language called link:http://www.neo4j.org/learn/cypher[Cypher]. It is possible to leverage Cypher from within Gremlin by using the `neo4j-gremlin`-specific `Neo4jGraph.cypher()` graph traversal method.
+Neo4j are the creators of the graph pattern-match query language link:http://www.neo4j.org/learn/cypher[Cypher]. It is possible to leverage Cypher from within Gremlin by using the `Neo4jGraph.cypher()` graph traversal method.
 
 [source,groovy]
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
@@ -2073,7 +2073,7 @@ A list of the HDFS methods available are itemized below. Note that these methods
 |`hdfs.rm(String path)`| Remove the specified path.
 |`hdfs.rmr(String path)`| Remove the specified path and its contents recurssively.
 |`hdfs.copyToLocal(String from, String to)`| Copy the specified HDFS path to the specified local path.
-|`hdfs.copyFromLocat(String from, String to)`| Copy the specified local path to the specified HDFS path.
+|`hdfs.copyFromLocal(String from, String to)`| Copy the specified local path to the specified HDFS path.
 |`hdfs.mergeToLocal(String from, String to)`| Merge the files in path to the specified local path.
 |`hdfs.head(String path)`| Text display the data in the path.
 |`hdfs.head(String path, long lineCount)`| Text display only the first `totalKeyValues` in the path.
@@ -2252,6 +2252,7 @@ Graph Developers
 | link:http://bigdata.com[Mike Personick] (2014) | Bigdata representative and OLAP theorist.| link:http://bigdata.com[*Bigdata*] 
 | link:http://test.com[Michael Hackstein] (2014) | ArangoDB representative.| link:http://arangodb.org[*ArangoDB*]
 | link:http://test.com[Michael McMahon] (2014) | FoundationDB representative.| link:http://foundationdb.com[*FoundationDB*]
+| link:https://www.linkedin.com/pub/ryan-webb/39/23a/ab8[Ryan Webb] (2014) | Johns Hopkins Applied Physics Laboratory representative. | link:https://github.com/JHUAPL/AccumuloGraph[*AccumuloGraph*] 
 |=========================================================
 
 
@@ -2261,7 +2262,7 @@ Graph Vendors
 [width="100%"]
 |=========================================================
 | image:arangodb-logo.png[width=200,link="http://arangodb.com"] | image:aurelius-logo.png[width=200,link="http://thinkaurelius.com"] | image:bigdata-logo.png[width=200,link="http://bigdata.com"]
-| image:foundationdb-logo.png[width=200,link="https://foundationdb.com/"] | image:objectivity-logo.png[width=200,link="http://www.objectivity.com"] | image:lambda-zen-logo.png[width=200,link="http://lambdazen.blogspot.com"]
+| image:foundationdb-logo.png[width=200,link="https://foundationdb.com/"] | image:lambda-zen-logo.png[width=200,link="http://lambdazen.blogspot.com"] | image:objectivity-logo.png[width=200,link="http://www.objectivity.com"]
 | image:neotechnology-logo.png[width=200,link="http://neotechnology.com"] | image:orientechnologies-logo.png[width=200,link="http://www.orientechnologies.com"] | image:sparsity-technologies-logo.png[width=200,link="http://www.sparsity-technologies.com/"]
 |=========================================================
 

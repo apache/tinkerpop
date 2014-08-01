@@ -30,7 +30,7 @@ public class ComputerResultStep<S> extends AbstractStep<S, S> {
         super(traversal);
         this.graph = graph;
         this.computerTraversal = (Traversal) traversalVertexProgram.getTraversalSupplier().get();
-        this.computerTraversal.strategies().applyFinalStrategies();
+        this.computerTraversal.strategies().apply();
         final Step endStep = TraversalHelper.getEnd(this.computerTraversal);
         this.traversers = endStep instanceof SideEffectCap ?
                 new SingleIterator<>(new SimpleTraverser<>((S) sideEffects.get(((SideEffectCap) endStep).getVariable()))) :

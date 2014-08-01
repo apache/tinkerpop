@@ -50,7 +50,7 @@ public class TraversalHelper {
     }
 
     public static List<String> getAsLabels(final Traversal traversal) {
-        final List<String> asLabels = new ArrayList<String>();
+        final List<String> asLabels = new ArrayList<>();
         for (final Step step : (List<Step>) traversal.getSteps()) {
             final String as = step.getAs();
             if (isLabeled(as)) {
@@ -76,17 +76,6 @@ public class TraversalHelper {
                 return false;
         }
         return true;
-    }
-
-    public static boolean hasNextIteration(final Iterator iterator) {
-        if (iterator.hasNext()) {
-            while (iterator.hasNext()) {
-                iterator.next();
-            }
-            return true;
-        } else {
-            return false;
-        }
     }
 
     public static void iterate(final Iterator iterator) {

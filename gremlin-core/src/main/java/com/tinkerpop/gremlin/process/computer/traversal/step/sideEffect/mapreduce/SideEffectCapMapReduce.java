@@ -50,7 +50,7 @@ public class SideEffectCapMapReduce implements MapReduce {
         try {
             this.sideEffectKey = configuration.getString(SIDE_EFFECT_CAP_STEP_SIDE_EFFECT_KEY);
             this.traversal = ((SSupplier<Traversal>) VertexProgramHelper.deserialize(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER)).get();
-            this.traversal.strategies().applyFinalStrategies();
+            this.traversal.strategies().apply();
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

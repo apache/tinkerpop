@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.strategy.ComputerStepReplacementStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.ComputerReplacementStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.CountCapStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.MultiIterator;
@@ -148,7 +148,10 @@ public class TinkerHelper {
         traversal.memory().remove(Graph.Key.hidden("g"));
         traversal.strategies().unregister(TinkerGraphStepStrategy.class);
         traversal.strategies().unregister(TraverserSourceStrategy.class);
-        traversal.strategies().register(new ComputerStepReplacementStrategy());
+        traversal.strategies().register(CountCapStrategy.instance());
+        traversal.strategies().register(ComputerReplacementStrategy.instance());
+        //traversal.strategies().register(new SideEffectCapComputerStrategy());
+        //traversal.strategies().register(new JumpComputerStrategy());
     }
 
     private static class TinkerVertexIterator implements Iterator<TinkerVertex> {

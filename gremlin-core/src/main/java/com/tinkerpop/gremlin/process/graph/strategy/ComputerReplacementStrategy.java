@@ -11,19 +11,33 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ComputerStepReplacementStrategy implements TraversalStrategy.FinalTraversalStrategy {
+public class ComputerReplacementStrategy implements TraversalStrategy {
+
+    private static final ComputerReplacementStrategy INSTANCE = new ComputerReplacementStrategy();
+
+    private ComputerReplacementStrategy() {
+    }
 
     public void apply(final Traversal traversal) {
-
-        new CountCapStrategy().apply(traversal);
-
-        new SideEffectCapStrategy().apply(traversal);
 
         TraversalHelper.getStepsOfClass(JumpStep.class, traversal)
                 .forEach(step -> TraversalHelper.replaceStep(step, new JumpComputerStep(traversal, step), traversal));
 
         TraversalHelper.getStepsOfClass(SideEffectCapStep.class, traversal)
                 .forEach(step -> TraversalHelper.replaceStep(step, new SideEffectCapComputerStep<>(traversal, step), traversal));
+    }
+
+    public int compareTo(final TraversalStrategy traversalStrategy) {
+        if (traversalStrategy instanceof SideEffectCapStrategy)
+            return 1;
+        else if (traversalStrategy instanceof UnrollJumpStrategy || traversalStrategy instanceof TraverserSourceStrategy)
+            return -1;
+        else
+            return 0;
+    }
+
+    public static ComputerReplacementStrategy instance() {
+        return INSTANCE;
     }
 }
 

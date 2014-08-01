@@ -5,14 +5,16 @@ import java.io.Serializable;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TraversalStrategy extends Serializable {
+public interface TraversalStrategy extends Serializable, Comparable<TraversalStrategy> {
 
-    public interface FinalTraversalStrategy extends TraversalStrategy {
-        public void apply(final Traversal traversal);
-    }
+    // A TraversalStrategy should never have a constructor
 
-    public interface RuntimeTraversalStrategy extends TraversalStrategy {
-        public void apply(final Traversal traversal);
+    public void apply(final Traversal traversal);
+
+    public interface NoDependencies extends TraversalStrategy {
+        public default int compareTo(final TraversalStrategy traversalStrategy) {
+            return traversalStrategy instanceof NoDependencies ? -1 : -1 * traversalStrategy.compareTo(this);
+        }
     }
 
 }

@@ -11,7 +11,12 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class UnrollJumpStrategy implements TraversalStrategy.FinalTraversalStrategy {
+public class UnrollJumpStrategy implements TraversalStrategy {
+
+    private static final UnrollJumpStrategy INSTANCE = new UnrollJumpStrategy();
+
+    private UnrollJumpStrategy() {
+    }
 
     public void apply(final Traversal traversal) {
 
@@ -35,5 +40,13 @@ public class UnrollJumpStrategy implements TraversalStrategy.FinalTraversalStrat
                         toStep.getPreviousStep().setAs(toStep.getAs());
                     TraversalHelper.removeStep(toStep, traversal);
                 });
+    }
+
+    public int compareTo(final TraversalStrategy traversalStrategy) {
+        return traversalStrategy instanceof TraverserSourceStrategy ? -1 : 1;
+    }
+
+    public static UnrollJumpStrategy instance() {
+        return INSTANCE;
     }
 }

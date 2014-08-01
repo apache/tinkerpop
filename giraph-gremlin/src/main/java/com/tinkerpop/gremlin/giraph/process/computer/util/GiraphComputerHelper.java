@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.giraph.process.computer.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.strategy.ComputerStepReplacementStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.ComputerReplacementStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 
 /**
@@ -11,6 +11,6 @@ public class GiraphComputerHelper {
 
     public static void prepareTraversalForComputer(final Traversal traversal) {
         traversal.strategies().unregister(TraverserSourceStrategy.class);
-        traversal.strategies().register(new ComputerStepReplacementStrategy());
+        traversal.strategies().register(ComputerReplacementStrategy.instance());
     }
 }

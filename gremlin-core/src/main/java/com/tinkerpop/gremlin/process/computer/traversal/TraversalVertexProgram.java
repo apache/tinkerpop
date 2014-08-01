@@ -71,7 +71,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
             }
 
             final Traversal traversal = this.traversalSupplier.get();
-            traversal.strategies().applyFinalStrategies();
+            traversal.strategies().apply();
             this.trackPaths = TraversalHelper.trackPaths(traversal);
             traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
                 final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
@@ -120,7 +120,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final SideEffects sideEffects) {
         final Traversal traversal = this.traversalSupplier.get();
-        traversal.strategies().applyFinalStrategies();
+        traversal.strategies().apply();
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
         final String future = (traversal.getSteps().size() == 1) ? Traverser.NO_FUTURE : ((Step) traversal.getSteps().get(1)).getAs();
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);

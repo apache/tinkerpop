@@ -23,8 +23,8 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     protected boolean firstNext = true;
 
     public DefaultTraversal() {
-        this.traversalStrategies.register(new TraverserSourceStrategy());
-        this.traversalStrategies.register(new AsStrategy());
+        this.traversalStrategies.register(TraverserSourceStrategy.instance());
+        this.traversalStrategies.register(AsStrategy.instance());
     }
 
     public List<Step> getSteps() {
@@ -36,7 +36,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     }
 
     public TraversalStrategies strategies() {
-        return traversalStrategies;
+        return this.traversalStrategies;
     }
 
     public void addStarts(final Iterator<Traverser<S>> starts) {
@@ -49,12 +49,12 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     }
 
     public boolean hasNext() {
-        this.doFinalOptimization();
+        this.applyStrategies();
         return this.steps.get(this.steps.size() - 1).hasNext();
     }
 
     public E next() {
-        this.doFinalOptimization();
+        this.applyStrategies();
         return ((Traverser<E>) this.steps.get(this.steps.size() - 1).next()).get();
     }
 
@@ -66,9 +66,9 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
         return object instanceof Iterator && TraversalHelper.areEqual(this, (Iterator) object);
     }
 
-    private void doFinalOptimization() {
+    private void applyStrategies() {
         if (this.firstNext) {
-            this.strategies().applyFinalStrategies();
+            this.strategies().apply();
             this.firstNext = false;
         }
     }
