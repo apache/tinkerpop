@@ -2252,7 +2252,8 @@ Graph Developers
 | link:http://bigdata.com[Mike Personick] (2014) | Bigdata representative and OLAP theorist.| link:http://bigdata.com[*Bigdata*] 
 | link:http://test.com[Michael Hackstein] (2014) | ArangoDB representative.| link:http://arangodb.org[*ArangoDB*]
 | link:http://test.com[Michael McMahon] (2014) | FoundationDB representative.| link:http://foundationdb.com[*FoundationDB*]
-| link:https://www.linkedin.com/pub/ryan-webb/39/23a/ab8[Ryan Webb] (2014) | Johns Hopkins Applied Physics Laboratory representative. | link:https://github.com/JHUAPL/AccumuloGraph[*AccumuloGraph*] 
+| link:http://www.linkedin.com/pub/ryan-webb/39/23a/ab8[Ryan Webb] (2014) | Johns Hopkins Applied Physics Laboratory representative. | link:https://github.com/JHUAPL/AccumuloGraph[*AccumuloGraph*] 
+| link:www.linkedin.com/in/averyching[Avery Ching] (2014) | Apache Giraph representative and OLAP theorist.| link:http://giraph.apache.org[*Giraph*]
 |=========================================================
 
 
@@ -2261,9 +2262,10 @@ Graph Vendors
 
 [width="100%"]
 |=========================================================
-| image:arangodb-logo.png[width=200,link="http://arangodb.com"] | image:aurelius-logo.png[width=200,link="http://thinkaurelius.com"] | image:bigdata-logo.png[width=200,link="http://bigdata.com"]
-| image:foundationdb-logo.png[width=200,link="https://foundationdb.com/"] | image:lambda-zen-logo.png[width=200,link="http://lambdazen.blogspot.com"] | image:objectivity-logo.png[width=200,link="http://www.objectivity.com"]
-| image:neotechnology-logo.png[width=200,link="http://neotechnology.com"] | image:orientechnologies-logo.png[width=200,link="http://www.orientechnologies.com"] | image:sparsity-technologies-logo.png[width=200,link="http://www.sparsity-technologies.com/"]
+| image:jhapl-logo.png[width=220,link="http://www.jhuapl.edu/"] | image:arangodb-logo.png[width=220,link="http://arangodb.com"] | image:aurelius-logo.png[width=220,link="http://thinkaurelius.com"] 
+| image:bigdata-logo.png[width=220,link="http://bigdata.com"]| image:foundationdb-logo.png[width=220,link="https://foundationdb.com/"]| image:apache-giraph-logo.png[width=220,link="http://giraph.apache.org"]  
+| image:lambda-zen-logo.png[width=220,link="http://lambdazen.blogspot.com"]| image:neotechnology-logo.png[width=220,link="http://neotechnology.com"]  | image:objectivity-logo.png[width=220,link="http://www.objectivity.com"]
+| image:orientechnologies-logo.png[width=220,link="http://www.orientechnologies.com"] | image:sparsity-technologies-logo.png[width=220,link="http://www.sparsity-technologies.com/"]| 
 |=========================================================
 
 
