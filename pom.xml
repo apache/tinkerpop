@@ -682,6 +682,7 @@
                                 <inherited>false</inherited>
                                 <configuration>
                                     <fromFile>${server.artifact}</fromFile>
+                                    <toFile>gremlin-server-${project.version}.zip</toFile>
                                     <serverId>tinkerpop.s3</serverId>
                                     <!-- your ~/.m2/settings.xml must match -->
                                     <!-- <optimize>true</optimize> --> <!-- not supported by the S3 wagon -->
@@ -713,6 +714,7 @@
                                 <inherited>false</inherited>
                                 <configuration>
                                     <fromFile>${console.artifact}</fromFile>
+                                    <toFile>gremlin-console-${project.version}.zip</toFile>
                                     <serverId>tinkerpop.s3</serverId>
                                     <!-- your ~/.m2/settings.xml must match -->
                                     <!-- <optimize>true</optimize> --> <!-- not supported by the S3 wagon -->
