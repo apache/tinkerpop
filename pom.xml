@@ -689,6 +689,22 @@
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>upload-gremlin-server-to-s3-current</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>upload-single</goal>
+                                </goals>
+                                <inherited>false</inherited>
+                                <configuration>
+                                    <fromFile>${server.artifact}</fromFile>
+                                    <toFile>gremlin-server.zip</toFile>
+                                    <serverId>tinkerpop.s3</serverId>
+                                    <!-- your ~/.m2/settings.xml must match -->
+                                    <!-- <optimize>true</optimize> --> <!-- not supported by the S3 wagon -->
+                                    <url>s3://www.tinkerpop.com/downloads/current</url>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>upload-gremlin-console-to-s3-versioned</id>
                                 <phase>deploy</phase>
                                 <goals>
@@ -701,6 +717,22 @@
                                     <!-- your ~/.m2/settings.xml must match -->
                                     <!-- <optimize>true</optimize> --> <!-- not supported by the S3 wagon -->
                                     <url>s3://www.tinkerpop.com/downloads/${project.version}</url>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>upload-gremlin-console-to-s3-current</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>upload-single</goal>
+                                </goals>
+                                <inherited>false</inherited>
+                                <configuration>
+                                    <fromFile>${console.artifact}</fromFile>
+                                    <toFile>gremlin-console.zip</toFile>
+                                    <serverId>tinkerpop.s3</serverId>
+                                    <!-- your ~/.m2/settings.xml must match -->
+                                    <!-- <optimize>true</optimize> --> <!-- not supported by the S3 wagon -->
+                                    <url>s3://www.tinkerpop.com/downloads/current</url>
                                 </configuration>
                             </execution>
                         </executions>
