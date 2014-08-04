@@ -66,16 +66,22 @@ public class TinkerFactory {
     public interface SocialTraversal<S, E> extends Traversal<S, E> {
 
         public default SocialTraversal<S, Vertex> people() {
-            return (SocialTraversal) this.addStep(new StartStep<Vertex>(this, this.memory().<Graph>get("g").V().has("age")));
+            return (SocialTraversal) this.addStep(new StartStep<>(this, this.memory().<Graph>get("g").V().has("age")));
         }
 
         public default SocialTraversal<S, Vertex> people(String name) {
-            return (SocialTraversal) this.addStep(new StartStep<Vertex>(this, this.memory().<Graph>get("g").V().has("name", name)));
+            return (SocialTraversal) this.addStep(new StartStep<>(this, this.memory().<Graph>get("g").V().has("name", name)));
         }
 
         public default SocialTraversal<S, Vertex> knows() {
             final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
             flatMapStep.setFunction(v -> v.get().out("knows"));
+            return (SocialTraversal) this.addStep(flatMapStep);
+        }
+
+        public default SocialTraversal<S, Vertex> created() {
+            final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
+            flatMapStep.setFunction(v -> v.get().out("created"));
             return (SocialTraversal) this.addStep(flatMapStep);
         }
 
@@ -85,8 +91,10 @@ public class TinkerFactory {
             return (SocialTraversal) this.addStep(mapStep);
         }
 
-        public static SocialTraversal of() {
-            return new DefaultSocialTraversal();
+        public static <S, E> SocialTraversal<S, E> of(final Graph graph) {
+            final SocialTraversal traversal = new DefaultSocialTraversal();
+            traversal.memory().set("g", graph);
+            return traversal;
         }
 
         public class DefaultSocialTraversal extends DefaultTraversal implements SocialTraversal {

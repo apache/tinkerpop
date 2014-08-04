@@ -68,8 +68,8 @@ public class GiraphGraph implements Graph, Serializable {
     }
 
     @Override
-    public <S, E> GraphTraversal<S, E> of() {
-        final GraphTraversal<S, E> traversal = new DefaultGraphTraversal<>();
+    public <S> GraphTraversal<S, S> of() {
+        final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>();
         traversal.memory().set(Graph.Key.hidden("g"), this);
         traversal.addStep(new StartStep<>(traversal));
         return traversal;

@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.IoTest;
@@ -24,10 +23,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -50,51 +47,8 @@ public class TinkerGraphTest implements Serializable {
     @Test
     public void testTraversalDSL() throws Exception {
         Graph g = TinkerFactory.createClassic();
-        g.traversal(TinkerFactory.SocialTraversal.class).people("marko").knows().name().forEach(System.out::println);
-
-        /*Graph h = g.compute().program(PageRankVertexProgram.create().create()).submit().get().getValue0();
-        System.out.println(h.v(1).value(PageRankVertexProgram.PAGE_RANK).toString());
-        Map<String, String> map = new HashMap<>();
-        map.put(PageRankVertexProgram.PAGE_RANK, "pageRank");
-        TinkerGraphComputer.mergeComputedView(g, h, map);
-        System.out.println(g.v(1).value("pageRank").toString());*/
-    }
-
-    @Test
-    public void shouldPerformBasicTinkerGraphIntegrationTest() {
-        final TinkerGraph g = TinkerGraph.open();
-        g.createIndex("name", Vertex.class);
-        final Vertex marko = g.addVertex("name", "marko", "age", 33, "blah", "bloop");
-        final Vertex stephen = g.addVertex("name", "stephen", "id", 12, "blah", "bloop");
-        stephen.property(Graph.Key.hidden("name"), "stephen");
-        assertEquals("stephen", stephen.property(Graph.Key.hidden("name")).value());
-        final Random r = new Random();
-        Stream.generate(() -> g.addVertex(r.nextBoolean() + "1", r.nextInt(), "name", r.nextInt())).limit(100000).count();
-        assertEquals(100002, g.vertices.size());
-        final Edge edge = marko.addEdge("knows", stephen);
-        //System.out.println(g.V().has("name", Compare.EQUAL, "marko"));
-        //System.out.println(marko.out("knows", "workedWith").toString());
-        g.createIndex("blah", Vertex.class);
-
-        edge.property("weight", 1.0f);
-        edge.property("creator", "stephen");
-        assertEquals(edge.value("weight"), Float.valueOf(1.0f));
-        assertEquals(edge.property("creator").value(), "stephen");
-
-        //g.V().out().value("name").path().map(p -> p.get().getAsLabels()).forEach(System.out::println);
-        //marko.out().path().map(p -> p.get().getAsLabels()).forEach(System.out::println);
-    }
-
-    @Test
-    public void testPlay() throws Exception {
-        final TinkerGraph g = TinkerFactory.createClassic();
-        /*Traversal traversal = g.V().both().value("name").groupCount("a").path();
-        TinkerHelper.prepareTraversalForComputer(traversal);
-        Pair<Graph,GraphComputer.Globals> result = g.compute().program(TraversalVertexProgram.create().traversal(() -> traversal).create()).submit().get();
-        System.out.println("" + result.getValue1().get("a"));*/
-
-        Traversal traversal = g.V().out().out().submit(g.compute()).in().value("name");
-        traversal.forEachRemaining(System.out::println);
+        g.of(TinkerFactory.SocialTraversal.class).people("marko").knows().name().forEach(name -> assertTrue(name.equals("josh") || name.equals("vadas")));
+        g.of(TinkerFactory.SocialTraversal.class).people("marko").created().name().forEach(name -> assertEquals("lop", name));
     }
 
     /**

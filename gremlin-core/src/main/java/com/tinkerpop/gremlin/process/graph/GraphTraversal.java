@@ -93,12 +93,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         try {
             TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> this).create();
             final Pair<Graph, SideEffects> result = computer.program(vertexProgram).submit().get();
-            final GraphTraversal traversal = new DefaultGraphTraversal<>();
+            final GraphTraversal traversal = new DefaultGraphTraversal<>(); // TODO: of() with resultant graph?
             traversal.addStep(new ComputerResultStep<>(traversal, result.getValue0(), result.getValue1(), vertexProgram));
             return traversal;
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
+    }
+
+    public static <S> GraphTraversal<S, S> of(final Graph graph) {
+        final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>();
+        traversal.memory().set("g", graph);
+        return traversal;
     }
 
     public default GraphTraversal<S, E> trackPaths() {

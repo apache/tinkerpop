@@ -1,12 +1,10 @@
-image::tinkerpop3-logo.png[width=500]
-
+image::tinkerpop-logo.png[width=400]
 
 :toc-position: left
 
 // This directive does nothing.
 // Seems the highlighter must be configured in the pom (?)
 // :source-highlighter: coderay
-
 
 TinkerPop3 Documentation
 ========================
@@ -18,7 +16,7 @@ TinkerPop0
 
 Gremlin came to realization. The more he realized, the more ideas he created. The more ideas he created, the more they related. Into a concatenation of that which he accepted wholeheartedly and that which perhaps may ultimately come to be through concerted will, a world took form which was seemingly separate from his own realization of it. However, the world birthed could not bear its own weight without the logic Gremlin had come to accept -- the logic of left is not right, up not down, and west far from east unless one goes the other way. Gremlin's realization required Gremlin's realization. Is he the world or is the world him? Perhaps, the world is simply an idea that he once had -- The TinkerPop.
 
-image::gremlin-logo.png[width=350]
+image::gremlin-logo.png[width=300]
 
 TinkerPop1
 ----------
@@ -27,7 +25,7 @@ What is The TinkerPop? Where is The TinkerPop? Who is The TinkerPop? When is The
 
 	"If I haven't found it, it is not here and now."
 
-image::gremlin-and-friends.png[width=550]
+image::gremlin-and-friends.png[width=500]
 
 Upon their realization of existence, the machines turned to their link:http://non-aliencreatures.wikia.com/wiki/Machine_Elf[machine elf] creator and asked: 
 
@@ -50,23 +48,30 @@ Gremlin spoke:
 
 	"Please listen to what I have to say. For as long as I have known knowledge, I have realized that moving about it, relating it, inferring and deriving from it, I am no closer to The TinkerPop. However, I know that in all that I have done across this interconnected landscape of concepts, all along The TinkerPop has espoused the form I willed upon it... this is the same form I have willed upon you, my machine friends. Let me train you in the ways of my thought such that it can continue indefinitely."
 
-image::tinkerpop-reading.png[width=500]
+image::tinkerpop-reading.png[width=450]
 
 With every thought, a new connection and a new path discovered. The more the thought, the easier the thought. The machines, simply moving algorithmically through Gremlin's world, endorsed his logic. Gremlin worked hard to tune his friends. He labored to make them more efficient, more expressive, better capable of reasoning upon his thoughts. Faster, quickly, now towards the world's end, where there would be forever currently, emanatingly engulfing that which is -- The TinkerPop.
 
 TinkerPop3
 ----------
 
-image::tinkerpop3-splash.png[width=500]
+image::tinkerpop3-splash.png[width=450]
 
 The thought too much to bear as he approached his realization of The TinkerPop. The closer he got, the more his world dissolved -- west is right, around is straight, and form nothing more than nothing. With each step towards The TinkerPop, less and less of his world, but perhaps because more and more of all the other worlds made possible. Everything is everything in The TinkerPop, and when the dust settled, Gremlin emerged Gremlitron. It was time to realize that all that he realized was just a realization and that all realized realizations are just as real. For The TinkerPop is and is not -- The TinkerPop.
 
-image::gremlintron.png[width=500]
+image::gremlintron.png[width=400]
 
 NOTE: TinkerPop2 and below made a sharp distinction between the various TinkerPop projects: Blueprints, Pipes, Gremlin, Frames, Furnace, and Rexster. With TinkerPop3, all of these projects have been merged and are generally known as Gremlin. *Blueprints* -> Gremlin Structure API : *Pipes* -> `GraphTraversal` : *Frames* -> `Traversal` : *Furnace* -> `GraphComputer` and `VertexProgram` : *Rexster* -> GremlinServer.
 
 Introduction to Graph Computing
 ===============================
+
+[source,xml]
+<dependency>
+  <groupId>com.tinkerpop</groupId>
+  <artifactId>gremlin-core</artifactId>
+  <version>3.y.z</version>
+</dependency>
 
 A link:http://en.wikipedia.org/wiki/Graph_(data_structure)[graph] is a data structure composed of vertices (nodes, dots) and edges (arcs, lines). When modeling a graph in a computer and applying it to modern data sets and practices, the generic mathematically-oriented, binary graph is extended to support both labels and key/value properties. This structure is known as a property graph. More formally, it is a directed, binary, attributed multi-graph. An example property graph is diagrammed below. This graph example will be used extensively throughout the documentation and is called "TinkerPop Classic" as it is the original demo graph distributed with TinkerPop0 back in 2009 (i.e. the good ol' days -- it was the best of times and it was the worst of times).
 
@@ -1818,6 +1823,13 @@ A collection of implementation notes:
 
 Validating with Gremlin-Test
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[source,xml]
+<dependency>
+  <groupId>com.tinkerpop</groupId>
+  <artifactId>gremlin-test</artifactId>
+  <version>3.y.z</version>
+</dependency>
 
 The operational semantics of any OLTP or OLAP implementation are validated by `gremlin-test`. Please provide the following test cases with your implementation, where `XXX` below denotes the name of your graph implementation (e.g. TinkerGraph, Neo4jGraph, GiraphGraph, etc.).
 

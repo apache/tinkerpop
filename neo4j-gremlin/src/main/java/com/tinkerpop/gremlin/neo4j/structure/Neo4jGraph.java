@@ -178,8 +178,8 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     }
 
     @Override
-    public <S, E> GraphTraversal<S, E> of() {
-        final GraphTraversal<S, E> traversal = new DefaultGraphTraversal<>();
+    public <S> GraphTraversal<S, S> of() {
+        final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>();
         traversal.memory().set(Graph.Key.hidden("g"), this);
         traversal.strategies().register(Neo4jGraphStepStrategy.instance());
         traversal.addStep(new StartStep<>(traversal));

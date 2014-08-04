@@ -82,17 +82,17 @@ public interface Graph extends AutoCloseable {
      *
      * @param traversalClass a {@link Traversal} implementation to use
      */
-    public default <T extends Traversal> T traversal(final Class<T> traversalClass) {
+    public default <T extends Traversal<S, S>, S> T of(final Class<T> traversalClass) {
         try {
-            final T traversal = (T) traversalClass.getMethod(Traversal.OF).invoke(null);
-            traversal.memory().set("g", this);
-            return traversal;
+            return (T) traversalClass.getMethod(Traversal.OF, Graph.class).invoke(null, this);
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
-    public <S, E> GraphTraversal<S, E> of();
+    public default <S> GraphTraversal<S, S> of() {
+        return GraphTraversal.of(this);
+    }
 
     public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass);
 

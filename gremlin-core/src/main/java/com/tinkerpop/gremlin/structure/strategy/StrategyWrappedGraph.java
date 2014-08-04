@@ -77,13 +77,13 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
     }
 
     @Override
-    public <S, E> GraphTraversal<S, E> of() {
+    public <S> GraphTraversal<S, S> of() {
         return applyStrategy(baseGraph.of());
     }
 
     @Override
-    public <T extends Traversal> T traversal(final Class<T> traversalClass) {
-        return this.baseGraph.traversal(traversalClass);
+    public <T extends Traversal<S,S>,S> T of(final Class<T> traversalClass) {
+        return this.baseGraph.of(traversalClass);
     }
 
     @Override
