@@ -1,0 +1,15 @@
+TinkerPop3 CHANEGLOG
+====================
+
+
+TinkerPop 3.0.0
+---------------
+
+A Gremlin Rāga in 7/15 Time
+image:
+
+TinkerPop 3.0.0-M1
+~~~~~~~~~~~~~~~~~~
+[Release Date: August 6, 2014]
+
+* First official release of TinkerPop3.
