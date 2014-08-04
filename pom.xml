@@ -47,44 +47,9 @@
     </developers>
     <contributors>
         <contributor>
-            <name>Blake Eggleston</name>
-            <email>bdeggleston@gmail.com</email>
-            <url>https://github.com/bdeggleston</url>
-        </contributor>
-        <contributor>
-            <name>Bryn Cooke</name>
-            <email>bryn@jglue.org</email>
-            <url>http://jglue.org</url>
-        </contributor>
-        <contributor>
-            <name>Darrick Wiebe</name>
-            <email>darrick@innatesoftware.com</email>
-            <url>http://github.com/pangloss</url>
-        </contributor>
-        <contributor>
             <name>Joshua Shinavier</name>
             <email>josh@fortytwo.net</email>
             <url>http://fortytwo.net</url>
-        </contributor>
-        <contributor>
-            <name>Luca Garulli</name>
-            <email>l.garulli@orientechnologies.com</email>
-            <url>http://zion-city.blogspot.com</url>
-        </contributor>
-        <contributor>
-            <name>Matthias Broecheler</name>
-            <email>me@matthiasb.com</email>
-            <url>http://matthiasb.com</url>
-        </contributor>
-        <contributor>
-            <name>Pavel Yaskevich</name>
-            <email>povel.y@gmail.com</email>
-            <url>http://github.com/xedin</url>
-        </contributor>
-        <contributor>
-            <name>Peter Neubauer</name>
-            <email>peter.neubauer@neotechnology.com</email>
-            <url>http://www.linkedin.com/in/neubauer</url>
         </contributor>
     </contributors>
     <modules>
