@@ -860,6 +860,7 @@ At the most general level there is `Traversal<S,E>` which implements `Iterator<E
 
 The classic notion of a graph traversal is provided by `GraphTraversal<S,E>` which extends `Traversal<S,E>`.
 
+[[graph-traversal-steps]]
 Graph Traversal Steps
 ---------------------
 
@@ -1809,10 +1810,11 @@ The classes that a vendor should focus on implemented are itemized below. Please
  .. Everything required of OTLP is required of OLAP (but not vice versa).
  .. GraphComputer API: `GraphComputer`, `Messenger`, `SideEffects`.
 
-Here are some notes regarding implementations:
+A collection of implementation notes:
+
 * Please ensure your `Graph` implementation is named as `XXXGraph` (e.g. TinkerGraph, Neo4jGraph, GiraphGraph, etc.).
 * Use `StringHelper` to ensuring that the `toString()` representation of classes are consistent with other implementations.
-* Be sure to ensure `Features` (Graph, Vertex, etc.) are correct so that test cases handle expectations and exceptions accordingly.
+* Ensure that your implementation's `Features` (Graph, Vertex, etc.) are correct so that test cases handle particulars accordingly.
 
 Validating with Gremlin-Test
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1896,7 +1898,7 @@ public class Neo4jGremlinPlugin implements GremlinPlugin {
         pluginAcceptor.addImports(IMPORTS);
     }
 }
-----
+---- 
 
 With the above plugin implementations, users can now download respective binaries for Gremlin Console, Gremlin Server, etc.
 
@@ -1905,9 +1907,17 @@ gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 No such property: Neo4jGraph for class: groovysh_evaluate
 Display stack trace? [yN]
 gremlin> :use now com.tinkerpop neo4j-gremlin 3.0.0
-...
+…
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
+
+In-Depth Implementations
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+image:gremlin-handdrawn.png[width=125,float=right] The vendor implementation details presented thus far are minimum requirements necessary to yield a valid TinkerPop3 implementation. However, there are other areas that a vendor can tweak to provide an implementation more optimized for their underlying graph engine. Typical areas of focus include:
+
+* Traversal Strategies: A <<traversalstrategy,TraversalStrategy>> can be used to alter a traversal prior to its execution. A typical example is converting a pattern of `g.V().has('name','marko')` into a global index lookup for all vertices with name "marko". In this way, a `O(|V|)` lookup becomes an `O(log(|V|))` Please review `TinkerGraphStepStrategy` for ideas.
+* Step Implementations: Every <<graph-traversal-steps,step>> if reference via the `GraphTraversal` interface. It is possible to extend `GraphTraversal` to use a vendor-specific step implementation.
 
 
 [[tinkergraph-gremlin]]
