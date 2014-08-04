@@ -1789,6 +1789,127 @@ The code above shows that a `Traversal` instance can be sent for remote executio
 Implementations
 ===============
 
+image::gremlin-racecar.png[width=325]
+
+[[vendor-requirements]]
+Vendor Requirements
+-------------------
+
+image:tinkerpop-enabled.png[width=125,float=left] At the core of TinkerPop3 is a Java8 API. The implementation of this core API and its validation via the `gremlin-test` suite is all that is required of a vendor wishing to provide a TinkerPop3-enabled graph engine. Once a vendor has a valid implementation, then all the applications provided by TinkerPop (e.g. Gremlin Console, Gremlin Server, etc.) and 3rd-party developers (e.g. Gremlin-Scale, Gremlin-JS, etc.) will integrate properly with their graph engine. Finally, please feel free to use the logo on the left to promote your TinkerPop3 implementation.
+
+Implementing Gremlin-Core
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The classes that a vendor should focus on implemented are itemized below. Please feel free to study the TinkerGraph (in-memory OLTP and OLAP in `tinkergraph-gremlin`), Neo4jGraph (OTLP w/ transactions in `neo4j-gremlin`) and/or GiraphGraph (OLAP in `giraph-gremlin`) implementations for ideas and patterns.
+
+. Online Transactional Processing Graph Systems (*OLTP*)
+ .. Structure API: `Graph`, `Element`, `Vertex`, `Edge`, `Property` and `Transaction` (if transactions are supported).
+ .. Process API: a single `Step` that states how to yield vertices or edges from a `Graph` (i.e. `Graph.V()` and `Graph.E()`).
+. Online Analytics Processing Graph Systems (*OLAP*)
+ .. Everything required of OTLP is required of OLAP (but not vice versa).
+ .. GraphComputer API: `GraphComputer`, `Messenger`, `SideEffects`.
+
+Here are some notes regarding implementations:
+* Please ensure your `Graph` implementation is named as `XXXGraph` (e.g. TinkerGraph, Neo4jGraph, GiraphGraph, etc.).
+* Use `StringHelper` to ensuring that the `toString()` representation of classes are consistent with other implementations.
+* Be sure to ensure `Features` (Graph, Vertex, etc.) are correct so that test cases handle expectations and exceptions accordingly.
+
+Validating with Gremlin-Test
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The operational semantics of any OLTP or OLAP implementation are validated by `gremlin-test`. Please provide the following test cases with your implementation, where `XXX` below denotes the name of your graph implementation (e.g. TinkerGraph, Neo4jGraph, GiraphGraph, etc.).
+
+[source,java]
+----
+// Structure API tests
+@RunWith(StructureStandardSuite.class)
+@StructureStandardSuite.GraphProviderClass(XXXGraphProvider.class)
+public class XXXStructureStandardTest {}
+
+@RunWith(StructurePerformanceSuite.class)
+@StructurePerformanceSuite.GraphProviderClass(XXXGraphProvider.class)
+public class XXXStructurePerformanceTest {}
+
+// Process API tests
+@RunWith(ProcessComputerSuite.class)
+@ProcessComputerSuite.GraphProviderClass(XXXGraphProvider.class)
+public class XXXProcessComputerTest {}
+
+@RunWith(ProcessStandardSuite.class)
+@ProcessStandardSuite.GraphProviderClass(XXXGraphProvider.class)
+public class XXXProcessStandardTest {}
+----
+
+The only test-class that requires any code investment is the `XXXGraphProvider.class`. Neo4j's implementation is provided below for reference.
+
+[source,java]
+----
+public class Neo4jGraphProvider extends AbstractGraphProvider {
+    @Override
+    public Map<String, Object> getBaseConfiguration(final String graphName) {
+	// this is what is passed into XXX.open()
+        return new HashMap<String, Object>() {{
+            put("gremlin.graph", Neo4jGraph.class.getName());
+            put("gremlin.neo4j.directory", getWorkingDirectory() + File.separator + graphName);
+        }};
+    }
+
+    @Override
+    public void clear(final Graph g, final Configuration configuration) throws Exception {
+        if (null != g) {
+            if (g.getFeatures().graph().supportsTransactions())
+                g.tx().rollback();
+            g.close();
+        }
+        if (configuration.containsKey("gremlin.neo4j.directory")) {
+            // this is a non-in-memory configuration so blow away the directory
+            final File graphDirectory = new File(configuration.getString("gremlin.neo4j.directory"));
+            deleteDirectory(graphDirectory);
+        }
+    }
+}
+---- 
+
+Accessibility via GremlinPlugin
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+image:gremlin-plugin.png[width=100,float=left] The applications distributed with TinkerPop3 do not distribute with any vendor implementations besides TinkerGraph. If your implementation is stored in a Maven repository (e.g. Maven Central Repository), then it is best to provide a `GremlinPlugin` implementation so the respective jars can be downloaded according and when required by the user. Neo4j's GremlinPlugin is provided below for reference.
+
+[source,java]
+----
+public class Neo4jGremlinPlugin implements GremlinPlugin {
+
+    private static final String IMPORT = "import ";
+    private static final String DOT_STAR = ".*";
+
+    private static final Set<String> IMPORTS = new HashSet<String>() {{
+        add(IMPORT + Neo4jGraph.class.getPackage().getName() + DOT_STAR);
+    }};
+
+    @Override
+    public String getName() {
+        return "neo4j";
+    }
+
+    @Override
+    public void pluginTo(final PluginAcceptor pluginAcceptor) {
+        pluginAcceptor.addImports(IMPORTS);
+    }
+}
+----
+
+With the above plugin implementations, users can now download respective binaries for Gremlin Console, Gremlin Server, etc.
+
+[source,groovy]
+gremlin> g = Neo4jGraph.open('/tmp/neo4j')
+No such property: Neo4jGraph for class: groovysh_evaluate
+Display stack trace? [yN]
+gremlin> :use now com.tinkerpop neo4j-gremlin 3.0.0
+...
+gremlin> g = Neo4jGraph.open('/tmp/neo4j')
+==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
+
+
 [[tinkergraph-gremlin]]
 TinkerGraph-Gremlin
 -------------------
