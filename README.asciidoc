@@ -18,6 +18,7 @@ Building and Testing
 * Deploy JavaDocs: `mvn deploy -Djavadoc`
 * Deploy Zip Archives: `mvn deploy -Darchives`
 * Travis Deploy Docs: merge/push to `publish-docs` branch
+** `./publish-docs.sh` is a doc deployment script which assumes `master` branch
 * Integration Tests: `mvn clean verify -DskipIntegrationTests=false`
 * Performance Tests: `mvn clean verify -DskipPerformanceTests=false`
 * Gatling Load Tests: `mvn clean test -Pgatling -Dhost={hostname}`
