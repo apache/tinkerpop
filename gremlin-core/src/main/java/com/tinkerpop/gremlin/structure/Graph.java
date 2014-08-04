@@ -26,15 +26,15 @@ public interface Graph extends AutoCloseable {
 
         private static final String HIDDEN_PREFIX = "%&%";
 
-        public static final String hidden(final String key) {
+        public static String hidden(final String key) {
             return HIDDEN_PREFIX.concat(key);
         }
 
-        public static final String unHide(final String key) {
+        public static String unHide(final String key) {
             return key.startsWith(HIDDEN_PREFIX) ? key.substring(HIDDEN_PREFIX.length()) : key;
         }
 
-        public static final boolean isHidden(final String key) {
+        public static boolean isHidden(final String key) {
             return key.startsWith(HIDDEN_PREFIX);
         }
     }

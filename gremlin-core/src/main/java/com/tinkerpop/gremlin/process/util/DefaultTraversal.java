@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.strategy.AsStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.DefaultTraversalStrategies;
 import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 
 import java.util.ArrayList;

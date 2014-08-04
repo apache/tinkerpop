@@ -56,6 +56,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -105,6 +106,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>();
         traversal.memory().set("g", graph);
         return traversal;
+    }
+
+    public static <S> GraphTraversal<S, S> of() {
+        return new DefaultGraphTraversal<>();
     }
 
     public default GraphTraversal<S, E> trackPaths() {

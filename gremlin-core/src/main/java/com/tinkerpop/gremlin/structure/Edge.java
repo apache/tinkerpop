@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.structure;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.util.function.SBiPredicate;
@@ -162,7 +162,7 @@ public interface Edge extends Element {
     }
 
     public default GraphTraversal<Edge, Edge> start() {
-        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>();
+        final GraphTraversal<Edge, Edge> traversal = GraphTraversal.of();
         return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 

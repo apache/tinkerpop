@@ -1,5 +1,6 @@
-package com.tinkerpop.gremlin.process.graph;
+package com.tinkerpop.gremlin.process.graph.util;
 
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.strategy.DedupOptimizerStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.IdentityReductionStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapStrategy;
