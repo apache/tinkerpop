@@ -82,7 +82,7 @@ public abstract class OrderTest extends AbstractGremlinTest {
         }
 
         public Traversal<Vertex, String> get_g_V_orderXa_nameXb_nameX_name() {
-            return g.V().order((a, b) -> a.get().<String>value("name").compareTo(b.get().value("name"))).value("name");
+            return g.V().order((a, b) -> a.get().<String>value("name").compareTo(b.get().<String>value("name"))).value("name");
         }
     }
 }
