@@ -1,15 +1,12 @@
-TinkerPop3 CHANEGLOG
-====================
+TinkerPop3 CHANGEGLOG
+=====================
 
-TinkerPop 3.0.0
+TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 ---------------
-
-A Gremlin Rāga in 7/16 Time
 
 image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=200]
 
-TinkerPop 3.0.0-M1
-~~~~~~~~~~~~~~~~~~
-(Release Date: August ?, 2014)
+TinkerPop 3.0.0-M1 (Release Date: August ?, 2014)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * First official release of TinkerPop3 and thus, no changes.
