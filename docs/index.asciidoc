@@ -1810,10 +1810,11 @@ The classes that a vendor should focus on implemented are itemized below. Please
  .. Everything required of OTLP is required of OLAP (but not vice versa).
  .. GraphComputer API: `GraphComputer`, `Messenger`, `SideEffects`.
 
-Here are some notes regarding implementations:
+A collection of implementation notes:
+
 * Please ensure your `Graph` implementation is named as `XXXGraph` (e.g. TinkerGraph, Neo4jGraph, GiraphGraph, etc.).
 * Use `StringHelper` to ensuring that the `toString()` representation of classes are consistent with other implementations.
-* Be sure to ensure `Features` (Graph, Vertex, etc.) are correct so that test cases handle expectations and exceptions accordingly.
+* Ensure that your implementation's `Features` (Graph, Vertex, etc.) are correct so that test cases handle particulars accordingly.
 
 Validating with Gremlin-Test
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
