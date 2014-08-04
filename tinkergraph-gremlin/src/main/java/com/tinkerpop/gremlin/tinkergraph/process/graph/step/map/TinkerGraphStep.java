@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -51,7 +52,7 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
                 TinkerHelper.queryEdgeIndex(this.graph, indexedContainer.key, indexedContainer.value).stream();
 
         // the copy to a new List is intentional as remove() operations will cause ConcurrentModificationException otherwise
-        return (Iterator) edgeStream.filter(e -> HasContainer.testAll((Edge) e, this.hasContainers)).collect(java.util.stream.Collectors.toList()).iterator();
+        return edgeStream.filter(e->HasContainer.testAll(e,hasContainers)).collect(Collectors.<Edge>toList()).iterator();
     }
 
     private Iterator<? extends Vertex> vertices() {
@@ -61,7 +62,7 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
                 TinkerHelper.queryVertexIndex(this.graph, indexedContainer.key, indexedContainer.value).stream();
 
         // the copy to a new List is intentional as remove() operations will cause ConcurrentModificationException otherwise
-        return (Iterator) vertexStream.filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers)).collect(java.util.stream.Collectors.toList()).iterator();
+        return vertexStream.filter(v -> HasContainer.testAll(v, this.hasContainers)).collect(Collectors.<Vertex>toList()).iterator();
     }
 
     private HasContainer getIndexKey(final Class<? extends Element> indexedClass) {
