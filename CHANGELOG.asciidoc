@@ -5,8 +5,8 @@ TinkerPop3 CHANEGLOG
 TinkerPop 3.0.0
 ---------------
 
-A Gremlin Rāga in 7/15 Time
-image:
+A Gremlin Rāga in 7/16 Time
+image:http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=100]
 
 TinkerPop 3.0.0-M1
 ~~~~~~~~~~~~~~~~~~
