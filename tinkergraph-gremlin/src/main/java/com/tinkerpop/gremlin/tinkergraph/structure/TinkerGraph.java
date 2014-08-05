@@ -138,8 +138,8 @@ public class TinkerGraph implements Graph, Serializable {
     }
 
 
-    public <V extends Variables> V variables() {
-        return (V) this.variables;
+    public Variables variables() {
+        return this.variables;
     }
 
     public String toString() {

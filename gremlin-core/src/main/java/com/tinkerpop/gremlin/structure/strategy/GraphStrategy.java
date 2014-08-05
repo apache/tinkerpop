@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.TriFunction;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -80,7 +81,7 @@ public interface GraphStrategy {
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with {@link com.tinkerpop.gremlin.structure.Graph.Variables#get(String)} signature
      * and returns an enhanced strategy {@link java.util.function.Function} with the same signature
      */
-    public default <R> UnaryOperator<Function<String, R>> getVariableGetStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
+    public default <R> UnaryOperator<Function<String, Optional<R>>> getVariableGetStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -95,7 +96,7 @@ public interface GraphStrategy {
         return UnaryOperator.identity();
     }
 
-    public default <R> UnaryOperator<Function<String, R>> getVariableRemoveStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
+    public default UnaryOperator<Consumer<String>> getVariableRemoveStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
         return UnaryOperator.identity();
     }
 

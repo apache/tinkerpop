@@ -10,6 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,26 +23,60 @@ import java.util.stream.Collectors;
  */
 public interface Graph extends AutoCloseable {
 
+    /**
+     * Key is a helper class for manipulating keys wherever they may be (e.g. properties, memory, sideEffects, etc.)
+     */
     public class Key {
 
+        /**
+         * A low probability prefix to denote that a key is hidden.
+         */
         private static final String HIDDEN_PREFIX = "%&%";
 
+        /**
+         * Turn the provided key into a hidden key. If the key is already hidden, return key.
+         *
+         * @param key the key to hide
+         * @return the hidden key
+         */
         public static String hide(final String key) {
-            return HIDDEN_PREFIX.concat(key);
+            return isHidden(key) ? key : HIDDEN_PREFIX.concat(key);
         }
 
+        /**
+         * Turn the provided hidden key into an unhidden key. If the key is not hidden, return key.
+         *
+         * @param key the hidden key
+         * @return the unhidden representation of the key
+         */
         public static String unHide(final String key) {
-            return key.startsWith(HIDDEN_PREFIX) ? key.substring(HIDDEN_PREFIX.length()) : key;
+            return isHidden(key) ? key.substring(HIDDEN_PREFIX.length()) : key;
         }
 
+        /**
+         * Determines whether the provided key is hidden or not.
+         *
+         * @param key the key to check for hidden status
+         * @return whether the provided key is hidden or not
+         */
         public static boolean isHidden(final String key) {
             return key.startsWith(HIDDEN_PREFIX);
+        }
+
+        /**
+         * Provides a consistent String representation of a key (hidden or not)
+         *
+         * @param key the key to make a string
+         * @return the toString() of the key
+         */
+        public String toString(final String key) {
+            return isHidden(key) ? "hidden[" + key + "]" : key;
         }
     }
 
     /**
-     * Add a {@link Vertex} to a {@code Graph} given an optional series of key/value pairs.  These key/values
-     * must be provided in an even number where the odd numbered arguments are {@link String} key values and the
+     * Add a {@link Vertex} to the graph given an optional series of key/value pairs.  These key/values
+     * must be provided in an even number where the odd numbered arguments are {@link String} property keys and the
      * even numbered arguments are the related property values.  Hidden properties can be set by specifying
      * the key as {@link com.tinkerpop.gremlin.structure.Graph.Key#hide}.
      */
@@ -50,9 +85,10 @@ public interface Graph extends AutoCloseable {
     /**
      * Get a {@link Vertex} given its unique identifier.
      *
-     * @throws NoSuchElementException if the element is not found.
+     * @param id the unique identifier of the vertex to locate
+     * @throws NoSuchElementException if the vertex is not found.
      */
-    public default Vertex v(final Object id) {
+    public default Vertex v(final Object id) throws NoSuchElementException {
         if (null == id) throw Graph.Exceptions.elementNotFound(Vertex.class, null);
         return (Vertex) this.V().has(Element.ID, id).next();
     }
@@ -60,27 +96,28 @@ public interface Graph extends AutoCloseable {
     /**
      * Get a {@link Edge} given its unique identifier.
      *
-     * @throws NoSuchElementException if the element is not found.
+     * @param id the unique identifier of the edge to locate
+     * @throws NoSuchElementException if the edge is not found.
      */
-    public default Edge e(final Object id) {
+    public default Edge e(final Object id) throws NoSuchElementException {
         if (null == id) throw Graph.Exceptions.elementNotFound(Edge.class, null);
         return (Edge) this.E().has(Element.ID, id).next();
     }
 
     /**
-     * Starts a {@link GraphTraversal} over all vertices.
+     * Starts a {@link GraphTraversal} over all vertices in the graph.
      */
     public GraphTraversal<Vertex, Vertex> V();
 
     /**
-     * Starts a {@link GraphTraversal} over all edges.
+     * Starts a {@link GraphTraversal} over all edges in the graph.
      */
     public GraphTraversal<Edge, Edge> E();
 
     /**
-     * Constructs a new {@link Traversal} over the {@code Graph}
+     * Constructs a new domain specific {@link Traversal} for this graph.
      *
-     * @param traversalClass a {@link Traversal} implementation to use
+     * @param traversalClass the domain specific {@link Traversal} bound to this graph
      */
     public default <T extends Traversal<S, S>, S> T of(final Class<T> traversalClass) {
         try {
@@ -90,10 +127,25 @@ public interface Graph extends AutoCloseable {
         }
     }
 
+    /**
+     * Constructs a new {@link GraphTraversal} for this graph.
+     *
+     * @param <S> The start class of the GraphTraversal
+     * @return the newly constructed GraphTraversal bound to this graph
+     */
     public default <S> GraphTraversal<S, S> of() {
         return GraphTraversal.of(this);
     }
 
+    /**
+     * Create an OLAP {@link GraphComputer} to execute a vertex program over this graph.
+     * If the graph does not support graph computer then an {@link java.lang.UnsupportedOperationException} is thrown.
+     * The provided arguments can be of either length 0 or 1. A graph can support multiple graph computers.
+     *
+     * @param graphComputerClass The graph computer class to use (if no argument, then a default is selected by the graph)
+     * @param <C>                The class of the graph computer
+     * @return a graph computer for processing this graph
+     */
     public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass);
 
     /**
@@ -101,21 +153,31 @@ public interface Graph extends AutoCloseable {
      */
     public Transaction tx();
 
-    public <V extends Variables> V variables();
+    /**
+     * A collection of global {@link Variables} associated with the graph.
+     * Variables are used for storing metadata about the graph.
+     *
+     * @return The variables associated with this graph
+     */
+    public Variables variables();
 
+    /**
+     * Graph variables are a set of key/value pairs associated with the graph.
+     * The keys are String and the values are Objects.
+     */
     public interface Variables {
 
         public Set<String> keys();
 
-        public <R> R get(final String key);
+        public <R> Optional<R> get(final String key);
 
         public void set(final String key, Object value);
 
-        public <R> R remove(final String key);
+        public void remove(final String key);
 
         public default Map<String, Object> asMap() {
             final Map<String, Object> map = keys().stream()
-                    .map(key -> Pair.with(key, get(key)))
+                    .map(key -> Pair.with(key, get(key).get()))
                     .collect(Collectors.toMap(Pair::getValue0, Pair::getValue1));
             return Collections.unmodifiableMap(map);
         }

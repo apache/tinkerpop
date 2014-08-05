@@ -9,6 +9,7 @@ import org.apache.commons.configuration.Configuration;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -26,12 +27,12 @@ public class GiraphGraphVariables implements Graph.Variables, Serializable {
         return this.variables.keySet();
     }
 
-    public <R> R get(final String key) {
-        return (R) this.variables.get(key);
+    public <R> Optional<R> get(final String key) {
+        return Optional.ofNullable((R) this.variables.get(key));
     }
 
-    public <R> R remove(final String key) {
-        return (R) this.variables.remove(key);
+    public void remove(final String key) {
+        this.variables.remove(key);
     }
 
     public void set(final String key, final Object value) {
@@ -40,7 +41,7 @@ public class GiraphGraphVariables implements Graph.Variables, Serializable {
     }
 
     public GiraphConfiguration getConfiguration() {
-        return this.get(Constants.CONFIGURATION);
+        return this.<GiraphConfiguration>get(Constants.CONFIGURATION).get();
     }
 
     public String toString() {

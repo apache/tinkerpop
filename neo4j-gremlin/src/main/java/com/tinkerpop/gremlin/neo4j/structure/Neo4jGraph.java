@@ -4,9 +4,9 @@ import com.tinkerpop.gremlin.neo4j.process.graph.step.map.Neo4jCypherStep;
 import com.tinkerpop.gremlin.neo4j.process.graph.step.map.Neo4jGraphStep;
 import com.tinkerpop.gremlin.neo4j.process.graph.strategy.Neo4jGraphStepStrategy;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
@@ -154,11 +154,11 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
 
         try {
             return new Neo4jVertex(this.baseGraph.getNodeById(evaluateToLong(id)), this);
-        } catch (NotFoundException e) {
+        } catch (final NotFoundException e) {
             throw Graph.Exceptions.elementNotFound(Vertex.class, id);
-        } catch (NumberFormatException e) {
+        } catch (final NumberFormatException e) {
             throw Graph.Exceptions.elementNotFound(Vertex.class, id);
-        } catch (NotInTransactionException e) {     // todo: is this right?
+        } catch (final NotInTransactionException e) {     // todo: is this right?
             throw Graph.Exceptions.elementNotFound(Vertex.class, id);
         }
     }
@@ -170,11 +170,11 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
 
         try {
             return new Neo4jEdge(this.baseGraph.getRelationshipById(evaluateToLong(id)), this);
-        } catch (NotFoundException e) {
+        } catch (final NotFoundException e) {
             throw Graph.Exceptions.elementNotFound(Edge.class, id);
-        } catch (NumberFormatException e) {
+        } catch (final NumberFormatException e) {
             throw Graph.Exceptions.elementNotFound(Edge.class, id);
-        } catch (NotInTransactionException e) {     // todo: is this right?
+        } catch (final NotInTransactionException e) {     // todo: is this right?
             throw Graph.Exceptions.elementNotFound(Edge.class, id);
         }
     }
@@ -199,7 +199,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     }
 
     @Override
-    public <V extends Variables> V variables() {
+    public Variables variables() {
         throw Graph.Exceptions.variablesNotSupported();
     }
 

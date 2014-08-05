@@ -4,11 +4,11 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.filter.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -54,19 +54,19 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public interface Memory extends Serializable {
 
-        public <T> void set(final String key, final T value);
+        public <V> void set(final String key, final V value);
 
-        public <T> T get(final String key);
+        public <V> V get(final String key);
 
-        public <T> T remove(final String key);
+        public <V> V remove(final String key);
 
         public Set<String> keys();
 
-        public default <T> T getOrCreate(final String key, final Supplier<T> orCreate) {
+        public default <V> V getOrCreate(final String key, final Supplier<V> orCreate) {
             if (this.keys().contains(key))
                 return this.get(key);
             else {
-                T t = orCreate.get();
+                V t = orCreate.get();
                 this.set(key, t);
                 return t;
             }
