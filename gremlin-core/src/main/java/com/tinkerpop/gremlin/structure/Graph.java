@@ -450,91 +450,154 @@ public interface Graph extends AutoCloseable {
             public static final String FEATURE_STRING_VALUES = "StringValues";
             public static final String FEATURE_UNIFORM_LIST_VALUES = "UniformListValues";
 
+            /**
+             * Supports setting of a boolean value.
+             */
             @FeatureDescriptor(name = FEATURE_BOOLEAN_VALUES)
             public default boolean supportsBooleanValues() {
                 return true;
             }
 
+            /**
+             * Supports setting of a byte value.
+             */
             @FeatureDescriptor(name = FEATURE_BYTE_VALUES)
             public default boolean supportsByteValues() {
                 return true;
             }
 
+            /**
+             * Supports setting of a double value.
+             */
             @FeatureDescriptor(name = FEATURE_DOUBLE_VALUES)
             public default boolean supportsDoubleValues() {
                 return true;
             }
 
+            /**
+             * Supports setting of a float value.
+             */
             @FeatureDescriptor(name = FEATURE_FLOAT_VALUES)
             public default boolean supportsFloatValues() {
                 return true;
             }
 
+            /**
+             * Supports setting of a integer value.
+             */
             @FeatureDescriptor(name = FEATURE_INTEGER_VALUES)
             public default boolean supportsIntegerValues() {
                 return true;
             }
 
+            /**
+             * Supports setting of a long value.
+             */
             @FeatureDescriptor(name = FEATURE_LONG_VALUES)
             public default boolean supportsLongValues() {
                 return true;
             }
 
+            /**
+             * Supports setting of a {@code Map} value.  The assumption is that the {@code Map} can contain
+             * arbitrary serializable values that may or may not be defined as a feature itself.
+             */
             @FeatureDescriptor(name = FEATURE_MAP_VALUES)
             public default boolean supportsMapValues() {
                 return true;
             }
 
+            /**
+             * Supports setting of a {@code List} value.  The assumption is that the {@code List} can contain
+             * arbitrary serializable values that may or may not be defined as a feature itself.  As this
+             * {@code List} is "mixed" it does not need to contain objects of the same type.
+             *
+             * @see #supportsMixedListValues()
+             */
             @FeatureDescriptor(name = FEATURE_MIXED_LIST_VALUES)
             public default boolean supportsMixedListValues() {
                 return true;
             }
 
+            /**
+             * Supports setting of an array of boolean values.
+             */
             @FeatureDescriptor(name = FEATURE_BOOLEAN_ARRAY_VALUES)
             public default boolean supportsBooleanArrayValues() {
                 return true;
             }
 
+            /**
+             * Supports setting of an array of byte values.
+             */
             @FeatureDescriptor(name = FEATURE_BYTE_ARRAY_VALUES)
             public default boolean supportsByteArrayValues() {
                 return true;
             }
 
+            /**
+             * Supports setting of an array of double values.
+             */
             @FeatureDescriptor(name = FEATURE_DOUBLE_ARRAY_VALUES)
             public default boolean supportsDoubleArrayValues() {
                 return true;
             }
 
+            /**
+             * Supports setting of an array of float values.
+             */
             @FeatureDescriptor(name = FEATURE_FLOAT_ARRAY_VALUES)
             public default boolean supportsFloatArrayValues() {
                 return true;
             }
 
+            /**
+             * Supports setting of an array of integer values.
+             */
             @FeatureDescriptor(name = FEATURE_INTEGER_ARRAY_VALUES)
             public default boolean supportsIntegerArrayValues() {
                 return true;
             }
 
+            /**
+             * Supports setting of an array of string values.
+             */
             @FeatureDescriptor(name = FEATURE_STRING_ARRAY_VALUES)
             public default boolean supportsStringArrayValues() {
                 return true;
             }
 
+            /**
+             * Supports setting of an array of long values.
+             */
             @FeatureDescriptor(name = FEATURE_LONG_ARRAY_VALUES)
             public default boolean supportsLongArrayValues() {
                 return true;
             }
 
+            /**
+             * Supports setting of a Java serializable value.
+             */
             @FeatureDescriptor(name = FEATURE_SERIALIZABLE_VALUES)
             public default boolean supportsSerializableValues() {
                 return true;
             }
 
+            /**
+             * Supports setting of a long value.
+             */
             @FeatureDescriptor(name = FEATURE_STRING_VALUES)
             public default boolean supportsStringValues() {
                 return true;
             }
 
+            /**
+             * Supports setting of a {@code List} value.  The assumption is that the {@code List} can contain
+             * arbitrary serializable values that may or may not be defined as a feature itself.  As this
+             * {@code List} is "uniform" it must contain objects of the same type.
+             *
+             * @see #supportsMixedListValues()
+             */
             @FeatureDescriptor(name = FEATURE_UNIFORM_LIST_VALUES)
             public default boolean supportsUniformListValues() {
                 return true;
