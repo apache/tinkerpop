@@ -196,27 +196,50 @@ public interface Graph extends AutoCloseable {
 
     }
 
+    /**
+     * Gets the {@link Features} exposed by the underlying {@code Graph} implementation.
+     */
     public default Features getFeatures() {
         return new Features() {
         };
     }
 
+    /**
+     * An interface that represents the capabilities of a {@code Graph} implementation.  By default all methods
+     * of features return {@code true} and it is up to implementers to disable feature they don't support.  Users
+     * should check features prior to using various functions of TinkerPop to help ensure code portability
+     * across implementations.  For example, a common usage would be to check if a graph supports transactions prior
+     * to calling the commit method on {@link #tx()}.
+     */
     public interface Features {
+
+        /**
+         * Gets the features related to "graph" operation.
+         */
         public default GraphFeatures graph() {
             return new GraphFeatures() {
             };
         }
 
+        /**
+         * Gets the features related to "vertex" operation.
+         */
         public default VertexFeatures vertex() {
             return new VertexFeatures() {
             };
         }
 
+        /**
+         * Gets the features related to "edge" operation.
+         */
         public default EdgeFeatures edge() {
             return new EdgeFeatures() {
             };
         }
 
+        /**
+         * Features specific to a operations of a "graph".
+         */
         public interface GraphFeatures extends FeatureSet {
             public static final String FEATURE_COMPUTER = "Computer";
             public static final String FEATURE_TRANSACTIONS = "Transactions";
@@ -224,21 +247,38 @@ public interface Graph extends AutoCloseable {
             public static final String FEATURE_THREADED_TRANSACTIONS = "ThreadedTransactions";
             public static final String FEATURE_FULLY_ISOLATED_TRANSACTIONS = "FullyIsolatedTransactions";
 
+            /**
+             * Determines if the {@code Graph} implementation supports
+             * {@link com.tinkerpop.gremlin.process.computer.GraphComputer} based processing.
+             */
             @FeatureDescriptor(name = FEATURE_COMPUTER)
             public default boolean supportsComputer() {
                 return true;
             }
 
+            /**
+             * Determines if the {@code Graph} implementation supports persisting it's contents natively to disk.
+             * This feature does not refer to every graph's ability to write to disk via the Gremlin IO packages
+             * (.e.g. GraphML), unless the graph natively persists to disk via those options somehow.  For example,
+             * TinkerGraph does not support this feature as it is a pure in-memory graph.
+             */
             @FeatureDescriptor(name = FEATURE_PERSISTENCE)
             public default boolean supportsPersistence() {
                 return true;
             }
 
+            /**
+             * Determines if the {@code Graph} implementations supports transactions.
+             */
             @FeatureDescriptor(name = FEATURE_TRANSACTIONS)
             public default boolean supportsTransactions() {
                 return true;
             }
 
+            /**
+             * Determines if the {@code Graph} implementation supports threaded transactions which allow a transaction
+             * to be executed across multiple threads via {@link com.tinkerpop.gremlin.structure.Transaction#create()}.
+             */
             @FeatureDescriptor(name = FEATURE_THREADED_TRANSACTIONS)
             public default boolean supportsThreadedTransactions() {
                 return true;
