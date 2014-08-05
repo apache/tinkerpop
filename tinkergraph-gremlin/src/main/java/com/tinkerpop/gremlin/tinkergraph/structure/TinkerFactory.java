@@ -34,35 +34,6 @@ public class TinkerFactory {
         peter.addEdge("created", lop, Element.ID, 12, "weight", 0.2f);
     }
 
-    public static TinkerGraph createModern() {
-        final TinkerGraph g = TinkerGraph.open();
-        generateModern(g);
-        return g;
-    }
-
-    public static void generateModern(final TinkerGraph g) {
-        final Graph.Variables variables = g.variables();
-        variables.set("name", "modern");
-        variables.set("year", 2014);
-
-        final String aclPropertyKey = Graph.Key.hide("acl");
-        final Vertex marko = g.addVertex(Element.ID, 1, Element.LABEL, "person", "name", "marko", aclPropertyKey, "rw");
-        final Vertex stephen = g.addVertex(Element.ID, 7, Element.LABEL, "person", "name", "stephen", aclPropertyKey, "rw");
-        final Vertex matthias = g.addVertex(Element.ID, 8, Element.LABEL, "person", "name", "matthias", aclPropertyKey, "r");
-        final Vertex daniel = g.addVertex(Element.ID, 9, Element.LABEL, "person", "name", "daniel", aclPropertyKey, "r");
-        final Vertex gremlin = g.addVertex(Element.ID, 10, Element.LABEL, "software", "name", "gremlin");
-        final Vertex blueprints = g.addVertex(Element.ID, 11, Element.LABEL, "software", "name", "blueprints");
-
-        marko.addEdge("created", gremlin, "date", 2009);
-        marko.addEdge("uses", gremlin, "skill", 0.9f);
-        marko.addEdge("created", blueprints, "date", 2010);
-        stephen.addEdge("created", blueprints, "date", 2011);
-        stephen.addEdge("created", gremlin, "date", 2014);
-        matthias.addEdge("created", blueprints, "date", 2012);
-        daniel.addEdge("uses", gremlin, "skill", 1.0f);
-        gremlin.addEdge("dependsOn", blueprints);
-    }
-
     public interface SocialTraversal<S, E> extends Traversal<S, E> {
 
         public default SocialTraversal<S, Vertex> people() {

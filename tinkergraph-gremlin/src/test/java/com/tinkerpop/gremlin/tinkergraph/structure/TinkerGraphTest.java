@@ -102,38 +102,6 @@ public class TinkerGraphTest implements Serializable {
         os.close();
     }
 
-
-    /**
-     * No assertions.  Just write out the graph for convenience.
-     */
-    @Test
-    public void shouldWriteModernGraphAsGraphSONNoTypes() throws IOException {
-        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern.json");
-        GraphSONWriter.create().build().writeGraph(os, TinkerFactory.createModern());
-        os.close();
-    }
-
-    /**
-     * No assertions.  Just write out the graph for convenience.
-     */
-    @Test
-    public void shouldWriteModernGraphAsGraphSONWithTypes() throws IOException {
-        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-typed.json");
-        GraphSONWriter.create().embedTypes(true)
-                .build().writeGraph(os, TinkerFactory.createModern());
-        os.close();
-    }
-
-    /**
-     * No assertions.  Just write out the graph for convenience.
-     */
-    @Test
-    public void shouldWriteModernGraphNormalizedAsGraphSON() throws IOException {
-        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-normalized.json");
-        GraphSONWriter.create().normalize(true).build().writeGraph(os, TinkerFactory.createModern());
-        os.close();
-    }
-
     /**
      * No assertions.  Just write out the graph for convenience.
      */
@@ -161,17 +129,6 @@ public class TinkerGraphTest implements Serializable {
 
         final OutputStream os = new FileOutputStream(tempPath + "grateful-dead.json");
         GraphSONWriter.create().embedTypes(true).build().writeGraph(os, g);
-        os.close();
-    }
-
-
-    /**
-     * No assertions.  Just write out the graph for convenience.
-     */
-    @Test
-    public void shouldWriteModernGraphAsKryo() throws IOException {
-        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern.gio");
-        KryoWriter.create().build().writeGraph(os, TinkerFactory.createModern());
         os.close();
     }
 

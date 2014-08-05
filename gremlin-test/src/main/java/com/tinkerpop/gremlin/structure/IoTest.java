@@ -328,60 +328,6 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    public void shouldReadWriteModernToGraphSON() throws Exception {
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphWriter writer = GraphSONWriter.create().embedTypes(true).build();
-            writer.writeGraph(os, g);
-
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
-            graphProvider.clear(configuration);
-            final Graph g1 = graphProvider.openTestGraph(configuration);
-            final GraphReader reader = GraphSONReader.create()
-                    .embedTypes(true).build();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readGraph(bais, g1);
-            }
-
-            assertModernGraph(g1);
-
-            // need to manually close the "g1" instance
-            graphProvider.clear(g1, configuration);
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    public void shouldReadWriteModernToKryo() throws Exception {
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.create().build();
-            writer.writeGraph(os, g);
-
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
-            graphProvider.clear(configuration);
-            final Graph g1 = graphProvider.openTestGraph(configuration);
-            final KryoReader reader = KryoReader.create()
-                    .setWorkingDirectory(File.separator + "tmp").build();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readGraph(bais, g1);
-            }
-
-            assertModernGraph(g1);
-
-            // need to manually close the "g1" instance
-            graphProvider.clear(g1, configuration);
-        }
-    }
-
-    @Test
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteEdgeToKryo() throws Exception {
         final Vertex v1 = g.addVertex();

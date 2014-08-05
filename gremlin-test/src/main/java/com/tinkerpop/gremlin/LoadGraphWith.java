@@ -19,8 +19,7 @@ public @interface LoadGraphWith {
 
     public enum GraphData {
         CLASSIC,
-        GRATEFUL,
-        MODERN;
+        GRATEFUL;
 
 
         public String location() {
@@ -29,8 +28,6 @@ public @interface LoadGraphWith {
                     return RESOURCE_PATH_PREFIX + "tinkerpop-classic.gio";
                 case GRATEFUL:
                     return RESOURCE_PATH_PREFIX + "grateful-dead.gio";
-                case MODERN:
-                    return RESOURCE_PATH_PREFIX + "tinkerpop-modern.gio";
             }
 
             throw new RuntimeException("No file for this GraphData type");
