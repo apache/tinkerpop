@@ -43,7 +43,6 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
 
     private int startsPerOptimize = DEFAULT_STARTS_PER_OPTIMIZE;
     private int optimizeCounter = -1;
-
     private int anonLabelCounter = 0;
 
     private Enumerator<S> currentSolution;
@@ -54,15 +53,13 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
 
     public MatchStep(final Traversal traversal, final String inAs, final Traversal... traversals) {
         super(traversal);
-
         this.inAs = inAs;
-        asLabels = new LinkedHashSet<>();
-        traversalsOut = new HashMap<>();
-
+        this.asLabels = new LinkedHashSet<>();
+        this.traversalsOut = new HashMap<>();
         for (final Traversal tl : traversals) {
             addTraversal(tl);
         }
-
+        // given all the wrapped traversals, determine bad patterns in the set and throw exceptions if not solvable
         checkSolvability();
     }
 
@@ -91,9 +88,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
     protected Traverser<Map<String, E>> processNextStart() throws NoSuchElementException {
         final Map<String, E> map = new HashMap<>();
         final Traverser<Map<String, E>> result = this.currentStart.makeChild(this.getAs(), map);
-        final BiConsumer<String, S> resultSetter = (name, value) -> {
-            map.put(name, (E) value);
-        };
+        final BiConsumer<String, S> resultSetter = (name, value) -> map.put(name, (E) value);
 
         while (true) { // break out when the current solution is exhausted and there are no more starts
             if (null == this.currentSolution || (this.currentIndex >= this.currentSolution.size() && this.currentSolution.isComplete())) {
@@ -139,7 +134,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
     }
 
     private void addTraversal(final Traversal<S, S> traversal) {
-        String outAs, inAs;
+        String outAs, inAs; // TODO: are these named backwards? inAs -> startAs; outAs -> endAs;
         final String startAs = TraversalHelper.getStart(traversal).getAs();
         final String endAs = TraversalHelper.getEnd(traversal).getAs();
         if (!TraversalHelper.isLabeled(startAs)) {
@@ -158,6 +153,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         this.asLabels.add(inAs);
 
         final TraversalWrapper<S, S> wrapper = new TraversalWrapper<>(traversal, outAs, inAs);
+        // index all wrapped traversals by their outAs (should be inAs though it seems -- naming wise)
         List<TraversalWrapper<S, S>> l2 = this.traversalsOut.get(outAs);
         if (null == l2) {
             l2 = new LinkedList<>();
@@ -167,33 +163,32 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
     }
 
     private void checkSolvability() {
-        Set<String> pathSet = new HashSet<>();
-        Stack<String> stack = new Stack<>();
-        stack.push(inAs);
+        final Set<String> pathSet = new HashSet<>();
+        final Stack<String> stack = new Stack<>();
+        stack.push(this.inAs);
         int countTraversals = 0;
         while (!stack.isEmpty()) {
-            String outAs = stack.peek();
+            final String outAs = stack.peek();
             if (pathSet.contains(outAs)) {
                 stack.pop();
                 pathSet.remove(outAs);
             } else {
                 pathSet.add(outAs);
-                List<TraversalWrapper<S, S>> l = traversalsOut.get(outAs);
+                final List<TraversalWrapper<S, S>> l = traversalsOut.get(outAs);
                 if (null != l) {
-                    for (TraversalWrapper<S, S> tw : l) {
+                    for (final TraversalWrapper<S, S> tw : l) {
                         countTraversals++;
-                        String inAs = tw.inAs;
-                        if (pathSet.contains(inAs)) {
-                            throw new IllegalArgumentException("The provided traversal set contains a cycle due to '" + inAs + "'");
+                        if (pathSet.contains(tw.inAs)) {
+                            throw new IllegalArgumentException("The provided traversal set contains a cycle due to '" + tw.inAs + "'");
                         }
-                        stack.push(inAs);
+                        stack.push(tw.inAs);
                     }
                 }
             }
         }
 
         int totalTraversals = 0;
-        for (List<TraversalWrapper<S, S>> l : traversalsOut.values()) {
+        for (List<TraversalWrapper<S, S>> l : this.traversalsOut.values()) {
             totalTraversals += l.size();
         }
 
@@ -370,35 +365,35 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         }
 
         public void incrementInputs() {
-            totalInputs++;
+            this.totalInputs++;
         }
 
         public void incrementOutputs(int outputs) {
-            totalOutputs += outputs;
+            this.totalOutputs += outputs;
         }
 
         // TODO: take variance into account, to avoid penalizing traversals for early encounters with super-inputs, or simply for never having been tried
         public double findBranchFactor() {
-            return 0 == totalInputs ? 1 : totalOutputs / ((double) totalInputs);
+            return 0 == this.totalInputs ? 1 : this.totalOutputs / ((double) this.totalInputs);
         }
 
         public int compareTo(final TraversalWrapper<A, B> other) {
-            return ((Double) orderingFactor).compareTo(other.orderingFactor);
+            return ((Double) this.orderingFactor).compareTo(other.orderingFactor);
         }
 
         public Traversal<A, B> getTraversal() {
-            return traversal;
+            return this.traversal;
         }
 
         public void exhaust() {
             // TODO: we need a Traversal.reset() to make exhausting the traversal unnecessary;
             // the latter defeats the purpose of joins which consume only as many iterator elements as necessary
-            while (traversal.hasNext()) traversal.next();
+            while (this.traversal.hasNext()) this.traversal.next();
         }
 
         @Override
         public String toString() {
-            return "[" + outAs + "->" + inAs + "," + findBranchFactor() + "," + totalInputs + "," + totalOutputs + "," + traversal + "]";
+            return "[" + this.outAs + "->" + this.inAs + "," + findBranchFactor() + "," + this.totalInputs + "," + this.totalOutputs + "," + this.traversal + "]";
         }
     }
 
