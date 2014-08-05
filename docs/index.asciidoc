@@ -1852,6 +1852,8 @@ The following table describes the various configuration options that Gremlin Ser
 Tuning
 ~~~~~~
 
+image::gremlin-handdrawn.png[width=200]
+
 Tuning Gremlin Server for a particular environment may require some simple trial-and-error, but the following represent some basic guidelines that might be useful:
 
 * A "good" setting for `threadPoolWorker` is `2*number of cores`.  If a smaller setting can be used there while still achieving performance needs, then choose the smaller setting.  If a larger setting is needed, then consider a server with more cores.
