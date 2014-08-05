@@ -2,8 +2,8 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.IdentityStep;
@@ -26,12 +26,12 @@ public class TraversalHelperTest {
 
     @Test
     public void shouldCorrectlyTestIfReversible() {
-        assertTrue(TraversalHelper.isReversible(new DefaultGraphTraversal().out()));
-        assertTrue(TraversalHelper.isReversible(new DefaultGraphTraversal().outE().inV()));
-        assertTrue(TraversalHelper.isReversible(new DefaultGraphTraversal().in().in()));
-        assertTrue(TraversalHelper.isReversible(new DefaultGraphTraversal().inE().outV().outE().inV()));
-        assertTrue(TraversalHelper.isReversible(new DefaultGraphTraversal().outE().has("since").inV()));
-        assertTrue(TraversalHelper.isReversible(new DefaultGraphTraversal().outE().as("x")));
+        assertTrue(TraversalHelper.isReversible(GraphTraversal.of().out()));
+        assertTrue(TraversalHelper.isReversible(GraphTraversal.of().outE().inV()));
+        assertTrue(TraversalHelper.isReversible(GraphTraversal.of().in().in()));
+        assertTrue(TraversalHelper.isReversible(GraphTraversal.of().inE().outV().outE().inV()));
+        assertTrue(TraversalHelper.isReversible(GraphTraversal.of().outE().has("since").inV()));
+        assertTrue(TraversalHelper.isReversible(GraphTraversal.of().outE().as("x")));
 
         assertFalse(TraversalHelper.isReversible(new DefaultGraphTraversal().identity().as("a").outE().back("a")));
 

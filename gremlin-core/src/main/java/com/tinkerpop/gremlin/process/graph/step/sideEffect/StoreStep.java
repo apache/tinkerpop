@@ -51,9 +51,9 @@ public class StoreStep<S> extends FilterStep<S> implements SideEffectCapable, Re
     }
 
     public void setCurrentVertex(final Vertex vertex) {
-        this.store = vertex.<Collection>property(Graph.Key.hidden(this.variable)).orElse(new ArrayList());
-        if (!vertex.property(Graph.Key.hidden(this.variable)).isPresent())
-            vertex.property(Graph.Key.hidden(this.variable), this.store);
+        this.store = vertex.<Collection>property(Graph.Key.hide(this.variable)).orElse(new ArrayList());
+        if (!vertex.property(Graph.Key.hide(this.variable)).isPresent())
+            vertex.property(Graph.Key.hide(this.variable), this.store);
     }
 
     public MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> getMapReduce() {

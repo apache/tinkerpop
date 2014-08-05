@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
 import com.tinkerpop.gremlin.giraph.process.graph.step.map.GiraphGraphStep;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -51,7 +51,7 @@ public class GiraphGraph implements Graph, Serializable {
             }
         };
         traversal.addStep(new GiraphGraphStep(traversal, Vertex.class, this));
-        traversal.memory().set(Key.hidden("g"), this);
+        traversal.memory().set(Key.hide("g"), this);
         return traversal;
     }
 
@@ -63,14 +63,14 @@ public class GiraphGraph implements Graph, Serializable {
             }
         };
         traversal.addStep(new GiraphGraphStep(traversal, Edge.class, this));
-        traversal.memory().set(Key.hidden("g"), this);
+        traversal.memory().set(Key.hide("g"), this);
         return traversal;
     }
 
     @Override
-    public <S, E> GraphTraversal<S, E> of() {
-        final GraphTraversal<S, E> traversal = new DefaultGraphTraversal<>();
-        traversal.memory().set(Graph.Key.hidden("g"), this);
+    public <S> GraphTraversal<S, S> of() {
+        final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>();
+        traversal.memory().set(Graph.Key.hide("g"), this);
         traversal.addStep(new StartStep<>(traversal));
         return traversal;
     }

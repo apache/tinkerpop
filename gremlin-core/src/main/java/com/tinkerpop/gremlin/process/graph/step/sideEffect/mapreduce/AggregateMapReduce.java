@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
@@ -48,7 +47,7 @@ public class AggregateMapReduce implements MapReduce<MapReduce.NullObject, Objec
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<NullObject, Object> emitter) {
-        final Property<Collection> mapProperty = vertex.property(Graph.Key.hidden(sideEffectKey));
+        final Property<Collection> mapProperty = vertex.property(Graph.Key.hide(sideEffectKey));
         if (mapProperty.isPresent())
             mapProperty.value().forEach(object -> emitter.emit(NullObject.get(), object));
     }

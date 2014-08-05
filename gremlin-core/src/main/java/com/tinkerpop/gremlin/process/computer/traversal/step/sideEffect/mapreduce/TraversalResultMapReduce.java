@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapredu
 
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraverserCountTracker;
 import com.tinkerpop.gremlin.process.computer.traversal.TraverserPathTracker;
@@ -18,7 +17,7 @@ import java.util.Iterator;
  */
 public class TraversalResultMapReduce implements MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Iterator<Object>> {
 
-    public static final String TRAVERSERS = Graph.Key.hidden("traversers");
+    public static final String TRAVERSERS = Graph.Key.hide("traversers");
 
     public boolean doStage(final Stage stage) {
         return stage.equals(Stage.MAP);

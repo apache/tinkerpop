@@ -50,9 +50,9 @@ public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapabl
     }
 
     public void setCurrentVertex(final Vertex vertex) {
-        this.groupCountMap = vertex.<java.util.Map<Object, Long>>property(Graph.Key.hidden(this.variable)).orElse(new HashMap<>());
-        if (!vertex.property(Graph.Key.hidden(this.variable)).isPresent())
-            vertex.property(Graph.Key.hidden(this.variable), this.groupCountMap);
+        this.groupCountMap = vertex.<java.util.Map<Object, Long>>property(Graph.Key.hide(this.variable)).orElse(new HashMap<>());
+        if (!vertex.property(Graph.Key.hide(this.variable)).isPresent())
+            vertex.property(Graph.Key.hide(this.variable), this.groupCountMap);
     }
 
     public MapReduce<Object, Long, Object, Long, Map<Object, Long>> getMapReduce() {

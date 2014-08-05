@@ -103,7 +103,7 @@ public class TinkerGraph implements Graph, Serializable {
         return new TinkerGraphTraversal<>(this, Edge.class);
     }
 
-    public GraphTraversal of() {
+    public <S> GraphTraversal<S, S> of() {
         return new TinkerTraversal<>(this);
     }
 

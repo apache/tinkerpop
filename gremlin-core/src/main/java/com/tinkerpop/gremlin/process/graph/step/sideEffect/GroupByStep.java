@@ -91,9 +91,9 @@ public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffect
 
     public void setCurrentVertex(final Vertex vertex) {
         this.vertexCentric = true;
-        this.groupByMap = vertex.<java.util.Map<K, Collection<V>>>property(Graph.Key.hidden(this.variable)).orElse(new HashMap<>());
-        if (!vertex.property(Graph.Key.hidden(this.variable)).isPresent())
-            vertex.property(Graph.Key.hidden(this.variable), this.groupByMap);
+        this.groupByMap = vertex.<java.util.Map<K, Collection<V>>>property(Graph.Key.hide(this.variable)).orElse(new HashMap<>());
+        if (!vertex.property(Graph.Key.hide(this.variable)).isPresent())
+            vertex.property(Graph.Key.hide(this.variable), this.groupByMap);
     }
 
     public MapReduce<Object, Collection, Object, Object, Map> getMapReduce() {

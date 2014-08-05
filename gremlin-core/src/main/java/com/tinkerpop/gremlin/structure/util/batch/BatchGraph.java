@@ -221,12 +221,12 @@ public class BatchGraph<T extends Graph> implements Graph {
     }
 
     @Override
-    public <S, E> GraphTraversal<S, E> of() {
+    public <S> GraphTraversal<S,S> of() {
         throw retrievalNotSupported();
     }
 
     @Override
-    public <T extends Traversal> T traversal(final Class<T> traversalClass) {
+    public <T extends Traversal<S,S>,S> T of(final Class<T> traversalClass) {
         throw retrievalNotSupported();
     }
 

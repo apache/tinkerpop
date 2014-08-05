@@ -56,6 +56,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -93,12 +94,22 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         try {
             TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> this).create();
             final Pair<Graph, SideEffects> result = computer.program(vertexProgram).submit().get();
-            final GraphTraversal traversal = new DefaultGraphTraversal<>();
+            final GraphTraversal traversal = new DefaultGraphTraversal<>(); // TODO: of() with resultant graph?
             traversal.addStep(new ComputerResultStep<>(traversal, result.getValue0(), result.getValue1(), vertexProgram));
             return traversal;
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
+    }
+
+    public static <S> GraphTraversal<S, S> of(final Graph graph) {
+        final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>();
+        traversal.memory().set("g", graph);
+        return traversal;
+    }
+
+    public static <S> GraphTraversal<S, S> of() {
+        return new DefaultGraphTraversal<>();
     }
 
     public default GraphTraversal<S, E> trackPaths() {

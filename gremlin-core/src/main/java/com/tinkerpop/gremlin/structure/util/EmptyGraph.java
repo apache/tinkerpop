@@ -32,12 +32,12 @@ public class EmptyGraph implements Graph {
     }
 
     @Override
-    public <T extends Traversal> T traversal(final Class<T> traversal) {
+    public <T extends Traversal<S,S>,S> T of(final Class<T> traversal) {
         return (T) EmptyTraversal.instance();
     }
 
     @Override
-    public <S, E> GraphTraversal<S, E> of() {
+    public <S> GraphTraversal<S, S> of() {
         return (GraphTraversal) EmptyTraversal.instance();
     }
 

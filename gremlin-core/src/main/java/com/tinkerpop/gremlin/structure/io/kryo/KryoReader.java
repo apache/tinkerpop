@@ -385,7 +385,7 @@ public class KryoReader implements GraphReader {
         final int numberOfHiddens = input.readInt();
         IntStream.range(0, numberOfHiddens).forEach(i -> {
             final String key = input.readString();
-            elementArgs.add(Graph.Key.hidden(key));
+            elementArgs.add(Graph.Key.hide(key));
             elementArgs.add(kryo.readClassAndObject(input));
         });
     }

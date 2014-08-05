@@ -31,7 +31,7 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
 
     //TODO: Dangerous that the underlying TinkerGraph Vertex can have edges written to it.
 
-    private static final String VERTEX_ID = Graph.Key.hidden("vertexId");
+    private static final String VERTEX_ID = Graph.Key.hide("vertexId");
     private VertexProgram vertexProgram;
     private TinkerGraph tinkerGraph;
     private TinkerVertex tinkerVertex;
@@ -79,9 +79,9 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
         this.vertexProgram.execute(this.tinkerVertex, new GiraphMessenger(this, messages), this.sideEffects);
         if (this.getConf().getBoolean(Constants.GREMLIN_DERIVE_COMPUTER_SIDE_EFFECTS, false)) {
             this.sideEffects.keys().forEach(key -> {
-                this.tinkerVertex.property(Graph.Key.hidden(key), this.sideEffects.get(key));
+                this.tinkerVertex.property(Graph.Key.hide(key), this.sideEffects.get(key));
             });
-            this.tinkerVertex.property(Graph.Key.hidden(Constants.ITERATION), this.sideEffects.getIteration());
+            this.tinkerVertex.property(Graph.Key.hide(Constants.ITERATION), this.sideEffects.getIteration());
         }
     }
 

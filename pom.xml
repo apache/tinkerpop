@@ -47,44 +47,9 @@
     </developers>
     <contributors>
         <contributor>
-            <name>Blake Eggleston</name>
-            <email>bdeggleston@gmail.com</email>
-            <url>https://github.com/bdeggleston</url>
-        </contributor>
-        <contributor>
-            <name>Bryn Cooke</name>
-            <email>bryn@jglue.org</email>
-            <url>http://jglue.org</url>
-        </contributor>
-        <contributor>
-            <name>Darrick Wiebe</name>
-            <email>darrick@innatesoftware.com</email>
-            <url>http://github.com/pangloss</url>
-        </contributor>
-        <contributor>
             <name>Joshua Shinavier</name>
             <email>josh@fortytwo.net</email>
             <url>http://fortytwo.net</url>
-        </contributor>
-        <contributor>
-            <name>Luca Garulli</name>
-            <email>l.garulli@orientechnologies.com</email>
-            <url>http://zion-city.blogspot.com</url>
-        </contributor>
-        <contributor>
-            <name>Matthias Broecheler</name>
-            <email>me@matthiasb.com</email>
-            <url>http://matthiasb.com</url>
-        </contributor>
-        <contributor>
-            <name>Pavel Yaskevich</name>
-            <email>povel.y@gmail.com</email>
-            <url>http://github.com/xedin</url>
-        </contributor>
-        <contributor>
-            <name>Peter Neubauer</name>
-            <email>peter.neubauer@neotechnology.com</email>
-            <url>http://www.linkedin.com/in/neubauer</url>
         </contributor>
     </contributors>
     <modules>
@@ -116,7 +81,6 @@
         <log4j.properties.dir>${project.basedir}/../gremlin-server/config/</log4j.properties.dir>
         <log4j.properties>log4j-server.properties</log4j.properties>
         <metrics.version>3.0.2</metrics.version>
-        <netty.version>4.0.21.Final</netty.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipIntegrationTests>true</skipIntegrationTests>
@@ -396,55 +360,6 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.neo4j</groupId>
-                <artifactId>neo4j</artifactId>
-                <version>${neo4j.version}</version>
-                <!--<type>pom</type>-->
-                <exclusions>
-                    <!-- neo4j self-conflicts -->
-                    <exclusion>
-                        <groupId>org.neo4j</groupId>
-                        <artifactId>neo4j-lucene-index</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.neo4j</groupId>
-                        <artifactId>neo4j-kernel</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.scala-lang</groupId>
-                        <artifactId>scala-library</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>net.sf.opencsv</groupId>
-                        <artifactId>opencsv</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.neo4j</groupId>
-                        <artifactId>neo4j-graph-matching</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.neo4j</groupId>
-                        <artifactId>neo4j-graph-algo</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.neo4j</groupId>
-                <artifactId>neo4j-ha</artifactId>
-                <version>${neo4j.version}</version>
-                <exclusions>
-                    <!-- conflicts with gremlin-core -->
-                    <exclusion>
-                        <groupId>log4j</groupId>
-                        <artifactId>log4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
                 <groupId>commons-configuration</groupId>
                 <artifactId>commons-configuration</artifactId>
                 <version>1.10</version>
@@ -453,27 +368,6 @@
                     <exclusion>
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.giraph</groupId>
-                <artifactId>giraph-core</artifactId>
-                <version>1.0.0</version>
-                <exclusions>
-                    <!-- self-conflict -->
-                    <exclusion>
-                        <groupId>log4j</groupId>
-                        <artifactId>log4j</artifactId>
-                    </exclusion>
-                    <!-- conflicts with gremlin-core -->
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-log4j12</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -744,6 +638,103 @@
                                     <!-- your ~/.m2/settings.xml must match -->
                                     <!-- <optimize>true</optimize> --> <!-- not supported by the S3 wagon -->
                                     <url>s3://www.tinkerpop.com/javadocs/current</url>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>archives</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>archives</name>
+                </property>
+            </activation>
+
+            <properties>
+                <server.artifact>gremlin-server/target/gremlin-server-${project.version}-distribution.zip</server.artifact>
+                <console.artifact>gremlin-console/target/gremlin-console-${project.version}-distribution.zip</console.artifact>
+            </properties>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>wagon-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>upload-gremlin-server-to-s3-versioned</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>upload-single</goal>
+                                </goals>
+                                <inherited>false</inherited>
+                                <configuration>
+                                    <fromFile>${server.artifact}</fromFile>
+                                    <toFile>gremlin-server-${project.version}.zip</toFile>
+                                    <serverId>tinkerpop.s3</serverId>
+                                    <!-- your ~/.m2/settings.xml must match -->
+                                    <!-- <optimize>true</optimize> --> <!-- not supported by the S3 wagon -->
+                                    <url>s3://www.tinkerpop.com/downloads/${project.version}</url>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>upload-gremlin-server-to-s3-current</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>upload-single</goal>
+                                </goals>
+                                <inherited>false</inherited>
+                                <configuration>
+                                    <fromFile>${server.artifact}</fromFile>
+                                    <toFile>gremlin-server.zip</toFile>
+                                    <serverId>tinkerpop.s3</serverId>
+                                    <!-- your ~/.m2/settings.xml must match -->
+                                    <!-- <optimize>true</optimize> --> <!-- not supported by the S3 wagon -->
+                                    <url>s3://www.tinkerpop.com/downloads/current</url>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>upload-gremlin-console-to-s3-versioned</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>upload-single</goal>
+                                </goals>
+                                <inherited>false</inherited>
+                                <configuration>
+                                    <fromFile>${console.artifact}</fromFile>
+                                    <toFile>gremlin-console-${project.version}.zip</toFile>
+                                    <serverId>tinkerpop.s3</serverId>
+                                    <!-- your ~/.m2/settings.xml must match -->
+                                    <!-- <optimize>true</optimize> --> <!-- not supported by the S3 wagon -->
+                                    <url>s3://www.tinkerpop.com/downloads/${project.version}</url>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>upload-gremlin-console-to-s3-current</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>upload-single</goal>
+                                </goals>
+                                <inherited>false</inherited>
+                                <configuration>
+                                    <fromFile>${console.artifact}</fromFile>
+                                    <toFile>gremlin-console.zip</toFile>
+                                    <serverId>tinkerpop.s3</serverId>
+                                    <!-- your ~/.m2/settings.xml must match -->
+                                    <!-- <optimize>true</optimize> --> <!-- not supported by the S3 wagon -->
+                                    <url>s3://www.tinkerpop.com/downloads/current</url>
                                 </configuration>
                             </execution>
                         </executions>

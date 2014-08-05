@@ -2,8 +2,8 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.computer.traversal.step.map.JumpComputerStep;
-import com.tinkerpop.gremlin.process.graph.step.map.JumpStep;
+import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.SideEffectCapComputerStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 /**
@@ -18,19 +18,12 @@ public class SideEffectCapComputerStrategy implements TraversalStrategy {
 
 
     public void apply(final Traversal traversal) {
-        TraversalHelper.getStepsOfClass(JumpStep.class, traversal)
-                .forEach(step -> TraversalHelper.replaceStep(step, new JumpComputerStep(traversal, step), traversal));
+        TraversalHelper.getStepsOfClass(SideEffectCapStep.class, traversal)
+                .forEach(step -> TraversalHelper.replaceStep(step, new SideEffectCapComputerStep<>(traversal, step), traversal));
     }
 
     public int compareTo(final TraversalStrategy traversalStrategy) {
-        if (traversalStrategy instanceof TraverserSourceStrategy)
-            return -1;
-        else if (traversalStrategy instanceof SideEffectCapStrategy)
-            return 1;
-        else
-            return 1;
-
-
+        return traversalStrategy instanceof TraverserSourceStrategy ? -1 : 1;
     }
 
     public static SideEffectCapComputerStrategy instance() {

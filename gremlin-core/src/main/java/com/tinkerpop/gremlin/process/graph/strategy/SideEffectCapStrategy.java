@@ -1,15 +1,15 @@
 package com.tinkerpop.gremlin.process.graph.strategy;
 
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
-import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SideEffectCapStrategy implements TraversalStrategy.NoDependencies {
+public class SideEffectCapStrategy implements TraversalStrategy {
 
     private static final SideEffectCapStrategy INSTANCE = new SideEffectCapStrategy();
 
@@ -18,17 +18,13 @@ public class SideEffectCapStrategy implements TraversalStrategy.NoDependencies {
 
 
     public void apply(final Traversal traversal) {
-        if (TraversalHelper.getEnd(traversal) instanceof SideEffectCapable)
-            traversal.cap(SideEffectCapable.CAP_KEY);
+        final Step endStep = TraversalHelper.getEnd(traversal);
+        if (endStep instanceof SideEffectCapable)
+            traversal.cap(((SideEffectCapable) endStep).getVariable());
     }
 
     public int compareTo(final TraversalStrategy traversalStrategy) {
-        if (traversalStrategy instanceof TraverserSource)
-            return -1;
-        else if (traversalStrategy instanceof CountCapStrategy)
-            return 1;
-        else
-            return 1;
+        return traversalStrategy instanceof TraverserSourceStrategy ? -1 : 1;
     }
 
     public static SideEffectCapStrategy instance() {

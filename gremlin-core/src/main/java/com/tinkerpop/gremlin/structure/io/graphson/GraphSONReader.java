@@ -164,7 +164,7 @@ public class GraphSONReader implements GraphReader {
         final Map<String, Object> hiddens = (Map<String, Object>) edgeData.get(GraphSONTokens.HIDDENS);
         final Object[] propsAsArray = Stream.concat(
                 properties.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue())),
-                hiddens.entrySet().stream().flatMap(e -> Stream.of(Graph.Key.hidden(e.getKey()), e.getValue()))).toArray();
+                hiddens.entrySet().stream().flatMap(e -> Stream.of(Graph.Key.hide(e.getKey()), e.getValue()))).toArray();
 
         return edgeMaker.apply(
                 edgeData.get(GraphSONTokens.ID),
@@ -179,7 +179,7 @@ public class GraphSONReader implements GraphReader {
         final Map<String, Object> hiddens = (Map<String, Object>) vertexData.get(GraphSONTokens.HIDDENS);
         final Object[] propsAsArray = Stream.concat(
                 properties.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue())),
-                hiddens.entrySet().stream().flatMap(e -> Stream.of(Graph.Key.hidden(e.getKey()), e.getValue()))).toArray();
+                hiddens.entrySet().stream().flatMap(e -> Stream.of(Graph.Key.hide(e.getKey()), e.getValue()))).toArray();
 
         return vertexMaker.apply(vertexData.get(GraphSONTokens.ID), vertexData.get(GraphSONTokens.LABEL).toString(), propsAsArray);
     }

@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.neo4j.process.graph.step.map.Neo4jCypherStep;
 import com.tinkerpop.gremlin.neo4j.process.graph.step.map.Neo4jGraphStep;
 import com.tinkerpop.gremlin.neo4j.process.graph.strategy.Neo4jGraphStepStrategy;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -133,6 +133,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>();
         traversal.strategies().register(Neo4jGraphStepStrategy.instance());
         traversal.addStep(new Neo4jGraphStep(traversal, Vertex.class, this));
+        traversal.memory().set(Key.hide("g"), this);
         return traversal;
     }
 
@@ -142,6 +143,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Edge>();
         traversal.strategies().register(Neo4jGraphStepStrategy.instance());
         traversal.addStep(new Neo4jGraphStep(traversal, Edge.class, this));
+        traversal.memory().set(Key.hide("g"), this);
         return traversal;
     }
 
@@ -178,9 +180,9 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     }
 
     @Override
-    public <S, E> GraphTraversal<S, E> of() {
-        final GraphTraversal<S, E> traversal = new DefaultGraphTraversal<>();
-        traversal.memory().set(Graph.Key.hidden("g"), this);
+    public <S> GraphTraversal<S, S> of() {
+        final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>();
+        traversal.memory().set(Graph.Key.hide("g"), this);
         traversal.strategies().register(Neo4jGraphStepStrategy.instance());
         traversal.addStep(new StartStep<>(traversal));
         return traversal;

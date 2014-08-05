@@ -26,15 +26,15 @@ public interface Graph extends AutoCloseable {
 
         private static final String HIDDEN_PREFIX = "%&%";
 
-        public static final String hidden(final String key) {
+        public static String hide(final String key) {
             return HIDDEN_PREFIX.concat(key);
         }
 
-        public static final String unHide(final String key) {
+        public static String unHide(final String key) {
             return key.startsWith(HIDDEN_PREFIX) ? key.substring(HIDDEN_PREFIX.length()) : key;
         }
 
-        public static final boolean isHidden(final String key) {
+        public static boolean isHidden(final String key) {
             return key.startsWith(HIDDEN_PREFIX);
         }
     }
@@ -43,7 +43,7 @@ public interface Graph extends AutoCloseable {
      * Add a {@link Vertex} to a {@code Graph} given an optional series of key/value pairs.  These key/values
      * must be provided in an even number where the odd numbered arguments are {@link String} key values and the
      * even numbered arguments are the related property values.  Hidden properties can be set by specifying
-     * the key as {@link com.tinkerpop.gremlin.structure.Graph.Key#hidden}.
+     * the key as {@link com.tinkerpop.gremlin.structure.Graph.Key#hide}.
      */
     public Vertex addVertex(final Object... keyValues);
 
@@ -82,17 +82,17 @@ public interface Graph extends AutoCloseable {
      *
      * @param traversalClass a {@link Traversal} implementation to use
      */
-    public default <T extends Traversal> T traversal(final Class<T> traversalClass) {
+    public default <T extends Traversal<S, S>, S> T of(final Class<T> traversalClass) {
         try {
-            final T traversal = (T) traversalClass.getMethod(Traversal.OF).invoke(null);
-            traversal.memory().set("g", this);
-            return traversal;
+            return (T) traversalClass.getMethod(Traversal.OF, Graph.class).invoke(null, this);
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
-    public <S, E> GraphTraversal<S, E> of();
+    public default <S> GraphTraversal<S, S> of() {
+        return GraphTraversal.of(this);
+    }
 
     public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass);
 

@@ -49,9 +49,9 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCa
     }
 
     public void setCurrentVertex(final Vertex vertex) {
-        this.aggregate = vertex.<Collection>property(Graph.Key.hidden(this.variable)).orElse(new ArrayList());
-        if (!vertex.property(Graph.Key.hidden(this.variable)).isPresent())
-            vertex.property(Graph.Key.hidden(this.variable), this.aggregate);
+        this.aggregate = vertex.<Collection>property(Graph.Key.hide(this.variable)).orElse(new ArrayList());
+        if (!vertex.property(Graph.Key.hide(this.variable)).isPresent())
+            vertex.property(Graph.Key.hide(this.variable), this.aggregate);
     }
 
     public MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> getMapReduce() {

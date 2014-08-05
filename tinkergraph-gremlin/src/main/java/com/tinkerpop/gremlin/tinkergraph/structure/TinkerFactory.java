@@ -45,7 +45,7 @@ public class TinkerFactory {
         variables.set("name", "modern");
         variables.set("year", 2014);
 
-        final String aclPropertyKey = Graph.Key.hidden("acl");
+        final String aclPropertyKey = Graph.Key.hide("acl");
         final Vertex marko = g.addVertex(Element.ID, 1, Element.LABEL, "person", "name", "marko", aclPropertyKey, "rw");
         final Vertex stephen = g.addVertex(Element.ID, 7, Element.LABEL, "person", "name", "stephen", aclPropertyKey, "rw");
         final Vertex matthias = g.addVertex(Element.ID, 8, Element.LABEL, "person", "name", "matthias", aclPropertyKey, "r");
@@ -66,16 +66,22 @@ public class TinkerFactory {
     public interface SocialTraversal<S, E> extends Traversal<S, E> {
 
         public default SocialTraversal<S, Vertex> people() {
-            return (SocialTraversal) this.addStep(new StartStep<Vertex>(this, this.memory().<Graph>get("g").V().has("age")));
+            return (SocialTraversal) this.addStep(new StartStep<>(this, this.memory().<Graph>get("g").V().has("age")));
         }
 
         public default SocialTraversal<S, Vertex> people(String name) {
-            return (SocialTraversal) this.addStep(new StartStep<Vertex>(this, this.memory().<Graph>get("g").V().has("name", name)));
+            return (SocialTraversal) this.addStep(new StartStep<>(this, this.memory().<Graph>get("g").V().has("name", name)));
         }
 
         public default SocialTraversal<S, Vertex> knows() {
             final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
             flatMapStep.setFunction(v -> v.get().out("knows"));
+            return (SocialTraversal) this.addStep(flatMapStep);
+        }
+
+        public default SocialTraversal<S, Vertex> created() {
+            final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
+            flatMapStep.setFunction(v -> v.get().out("created"));
             return (SocialTraversal) this.addStep(flatMapStep);
         }
 
@@ -85,8 +91,10 @@ public class TinkerFactory {
             return (SocialTraversal) this.addStep(mapStep);
         }
 
-        public static SocialTraversal of() {
-            return new DefaultSocialTraversal();
+        public static <S, E> SocialTraversal<S, E> of(final Graph graph) {
+            final SocialTraversal traversal = new DefaultSocialTraversal();
+            traversal.memory().set("g", graph);
+            return traversal;
         }
 
         public class DefaultSocialTraversal extends DefaultTraversal implements SocialTraversal {

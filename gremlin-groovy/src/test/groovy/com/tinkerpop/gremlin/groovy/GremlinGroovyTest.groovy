@@ -1,10 +1,8 @@
 package com.tinkerpop.gremlin.groovy
 
-import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyClassLoader
+import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader
+import com.tinkerpop.gremlin.structure.Graph
 import groovy.grape.Grape
-import org.codehaus.groovy.control.CompilerConfiguration
-import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
-import org.codehaus.groovy.control.customizers.ImportCustomizer
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl
 import org.codehaus.groovy.runtime.MetaClassHelper
 import org.codehaus.groovy.runtime.MethodClosure
@@ -18,11 +16,22 @@ import javax.script.ScriptContext
 import javax.script.SimpleBindings
 import java.lang.reflect.Method
 
+import static org.junit.Assert.assertEquals
+
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class GremlinGroovyTest {
     private ManagedConcurrentValueMap<String, Closure> globalClosures = new ManagedConcurrentValueMap<String, Closure>(ReferenceBundle.getHardBundle());
+
+    @Test
+    public void shouldHideAndUnhideKeys() {
+        GremlinLoader.load();
+        assertEquals(Graph.Key.hide("g"), -"g");
+        assertEquals("g", -Graph.Key.hide("g"));
+        assertEquals("g", -(-"g"));
+
+    }
 
     @Test
     @Ignore("Just playing")
