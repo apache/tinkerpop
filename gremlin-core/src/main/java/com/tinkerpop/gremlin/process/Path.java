@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -79,7 +79,7 @@ public class Path {
     }
 
     public boolean isSimple() {
-        return new LinkedHashSet<>(this.objects).size() == this.objects.size();
+        return new HashSet<>(this.objects).size() == this.objects.size();
     }
 
     public void forEach(final Consumer<Object> consumer) {
@@ -94,15 +94,6 @@ public class Path {
 
     public Stream<Pair<String, Object>> stream() {
         return IntStream.range(0, this.size()).mapToObj(i -> Pair.with(this.asLabels.get(i), this.objects.get(i)));
-    }
-
-    public Path subset(final String... asLabels) {
-        final Path path = new Path();
-        this.forEach((as, object) -> {
-            if (Stream.of(asLabels).anyMatch(as::equals))
-                path.add(as, object);
-        });
-        return path;
     }
 
     public String toString() {

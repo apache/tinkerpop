@@ -7,8 +7,8 @@ import com.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -20,14 +20,10 @@ public abstract class MemoryTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_memory() {
         final Traversal.Memory memory = get_g_V_memory();
-        try {
-            memory.get("a");
-            fail("Accessing a memory element that does not exist should not return null");
-        } catch (IllegalArgumentException e) {
-            assertTrue(true);
-        }
-        assertTrue(Graph.class.isAssignableFrom(memory.get(Graph.Key.hide("g")).getClass()));
-
+        assertFalse(memory.get("a").isPresent());
+        assertTrue(memory.get(Graph.Key.hide("g")).isPresent());
+        assertFalse(memory.get("g").isPresent());
+        assertTrue(Graph.class.isAssignableFrom(memory.get(Graph.Key.hide("g")).get().getClass()));
     }
 
     public static class JavaMemoryTest extends MemoryTest {

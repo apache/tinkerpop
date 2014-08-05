@@ -32,7 +32,7 @@ public class EmptyGraph implements Graph {
     }
 
     @Override
-    public <T extends Traversal<S,S>,S> T of(final Class<T> traversal) {
+    public <T extends Traversal<S, S>, S> T of(final Class<T> traversal) {
         return (T) EmptyTraversal.instance();
     }
 
@@ -61,7 +61,7 @@ public class EmptyGraph implements Graph {
     }
 
     @Override
-    public <M extends Variables> M variables() {
+    public Variables variables() {
         throw new IllegalStateException(MESSAGE);
     }
 

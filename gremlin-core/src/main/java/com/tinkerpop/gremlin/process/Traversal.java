@@ -4,11 +4,10 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.filter.PathIdentityStep;
-import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -20,6 +19,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -54,19 +54,19 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public interface Memory extends Serializable {
 
-        public <T> void set(final String key, final T value);
+        public <V> void set(final String key, final V value);
 
-        public <T> T get(final String key);
+        public <V> Optional<V> get(final String key);
 
-        public <T> T remove(final String key);
+        public void remove(final String key);
 
         public Set<String> keys();
 
-        public default <T> T getOrCreate(final String key, final Supplier<T> orCreate) {
+        public default <V> V getOrCreate(final String key, final Supplier<V> orCreate) {
             if (this.keys().contains(key))
-                return this.get(key);
+                return this.<V>get(key).get();
             else {
-                T t = orCreate.get();
+                V t = orCreate.get();
                 this.set(key, t);
                 return t;
             }
@@ -97,13 +97,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
     }
 
     /////////
-
-    public default <E2> Traversal<S, E2> memory(final String key) {
-        final MapStep<S, E2> mapStep = new MapStep<>(this);
-        mapStep.setFunction(t -> this.memory().get(key));
-        this.addStep(mapStep);
-        return (Traversal) this;
-    }
 
     public default Traversal<S, E> trackPaths() {
         return (Traversal) this.addStep(new PathIdentityStep<>(this));

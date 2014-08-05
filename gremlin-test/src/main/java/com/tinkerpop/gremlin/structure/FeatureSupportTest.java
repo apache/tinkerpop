@@ -229,7 +229,7 @@ public class FeatureSupportTest {
 
         @Parameterized.Parameters(name = "{index}: supports{0}({1})")
         public static Iterable<Object[]> data() {
-            return MemoryTest.MemoryFeatureSupportTest.data();
+            return VariablesTest.MemoryFeatureSupportTest.data();
         }
 
         @Parameterized.Parameter(value = 0)

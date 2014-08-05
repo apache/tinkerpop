@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraphTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -55,7 +54,7 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             GraphConstructionTest.class,
             IdGraphStrategyTest.class,
             IoTest.class,
-            MemoryTest.class,
+            VariablesTest.class,
             PartitionGraphStrategyTest.class,
             PropertyTest.class,
             ReadOnlyGraphStrategyTest.class,

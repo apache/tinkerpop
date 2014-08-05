@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure.strategy;
 import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -30,7 +31,7 @@ public class StrategyWrappedVariables implements StrategyWrapped, Graph.Variable
     }
 
     @Override
-    public <R> R get(final String key) {
+    public <R> Optional<R> get(final String key) {
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.<R>getVariableGetStrategy(variableStrategyContext),
                 this.baseVariables::get).apply(key);
@@ -44,10 +45,10 @@ public class StrategyWrappedVariables implements StrategyWrapped, Graph.Variable
     }
 
     @Override
-    public <R> R remove(final String key) {
-        return this.strategyWrappedGraph.strategy().compose(
-                s -> s.<R>getVariableGetStrategy(variableStrategyContext),
-                this.baseVariables::remove).apply(key);
+    public void remove(final String key) {
+        this.strategyWrappedGraph.strategy().compose(
+                s -> s.getVariableRemoveStrategy(variableStrategyContext),
+                this.baseVariables::remove).accept(key);
     }
 
     @Override

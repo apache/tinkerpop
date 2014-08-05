@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
-import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankStep;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.filter.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
@@ -72,7 +71,6 @@ import com.tinkerpop.gremlin.util.function.SBiPredicate;
 import com.tinkerpop.gremlin.util.function.SConsumer;
 import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SPredicate;
-import com.tinkerpop.gremlin.util.function.SSupplier;
 import org.javatuples.Pair;
 
 import java.util.Arrays;
@@ -587,16 +585,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this;
     }
 
-    public default <E2> GraphTraversal<S, E2> memory(final String key) {
-        final MapStep<S, E2> mapStep = new MapStep<>(this);
-        mapStep.setFunction(t -> this.memory().get(key));
-        this.addStep(mapStep);
-        return (GraphTraversal) this;
-    }
-
-
     /////////////////////////////////////
 
+    /*
+    // TODO: Will add as we flush out for GA
     public default GraphTraversal<S, Pair<Vertex, Double>> pageRank() {
         return (GraphTraversal) this.addStep(new PageRankStep(this));
     }
@@ -604,4 +596,5 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, Pair<Vertex, Double>> pageRank(final SSupplier<Traversal> incidentTraversal) {
         return (GraphTraversal) this.addStep(new PageRankStep(this, (SSupplier) incidentTraversal));
     }
+    */
 }
