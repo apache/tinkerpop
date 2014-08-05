@@ -1894,9 +1894,7 @@ The following table describes the various configuration options that Gremlin Ser
 Tuning
 ~~~~~~
 
-image::gremlin-handdrawn.png[width=200]
-
-Tuning Gremlin Server for a particular environment may require some simple trial-and-error, but the following represent some basic guidelines that might be useful:
+image:gremlin-handdrawn.png[width=120,float=right] Tuning Gremlin Server for a particular environment may require some simple trial-and-error, but the following represent some basic guidelines that might be useful:
 
 * A "good" setting for `threadPoolWorker` is `2*number of cores`.  If a smaller setting can be used there while still achieving performance needs, then choose the smaller setting.  If a larger setting is needed, then consider a server with more cores.
 * The "right" size of the `gremlinPool` setting is somewhat dependent on the type of scripts that will be processed by Gremlin Server.  As requests arrive to Gremlin Server they are decoded and queued to be processed by threads in this pool.  When this pool is exhausted of threads, Gremlin Server will continue to accept incoming requests, but the queue will continue to grow.  If left to grow too large, the server will begin to slow.  When tuning around this setting, consider whether the bulk of the scripts being processed will be "fast" or "slow", where "fast" generally means being measured in the low hundreds of milliseconds and "slow" means anything longer than that.
@@ -2212,17 +2210,17 @@ A review of the properties above are presented in the table below.
 [width="100%",cols="2,10",options="header"]
 |=========================================================
 |Property |Description
-|`gremlin.inputLocation` |The location of the input file(s) for Giraph to read the graph from.
-|`giraph.vertexInputFormatClass` |The format that the graph input file(s) are represented in.
-|`gremlin.outputLocation` |The location to write the computed Giraph graph to.
-|`giraph.vertexOutputFormatClass` |The format that the output file(s) should be represented in.
-|`gremlin.sideEffectOutputFormatClass` |The format of any resultant GraphComputer SideEffects.
-|`gremlin.vertexProgram` |The `VertexProgram` to distribute to all vertices in the `GiraphGraph`
-|`gremlin.traversalVertexProgram.traversalSupplierClass` |For `TraversalVertexProgram`, the location of the Gremlin traversal to use (if not using Gremlin Console).
-|`gremlin.jarsInDistributedCache` |Whether to upload the Giraph-Gremlin jars to Hadoop's distributed cache (necessary if jars are not on machines' classpaths).
-|`gremlin.deriveComputerSideEffects` |Whether or not `SideEffects` are yielded (requires an extra MapReduce job if true).
-|`giraph.minWorkers` |The minimum number of parallel workers to execute the vertices of the graph.
-|`giraph.maxWorkers` |The maximum number of parallel workers to execute the vertices of the graph.
+|gremlin.inputLocation |The location of the input file(s) for Giraph to read the graph from.
+|giraph.vertexInputFormatClass |The format that the graph input file(s) are represented in.
+|gremlin.outputLocation |The location to write the computed Giraph graph to.
+|giraph.vertexOutputFormatClass |The format that the output file(s) should be represented in.
+|gremlin.sideEffectOutputFormatClass |The format of any resultant GraphComputer SideEffects.
+|gremlin.vertexProgram |The `VertexProgram` to distribute to all vertices in the `GiraphGraph`
+|gremlin.traversalVertexProgram.traversalSupplierClass |For `TraversalVertexProgram`, the location of the Gremlin traversal to use (if not using Gremlin Console).
+|gremlin.jarsInDistributedCache |Whether to upload the Giraph-Gremlin jars to Hadoop's distributed cache (necessary if jars are not on machines' classpaths).
+|gremlin.deriveComputerSideEffects |Whether or not `SideEffects` are yielded (requires an extra MapReduce job if true).
+|giraph.minWorkers |The minimum number of parallel workers to execute the vertices of the graph.
+|giraph.maxWorkers |The maximum number of parallel workers to execute the vertices of the graph.
 |=========================================================
 
 IMPORTANT: The maximum number of workers can be no larger than the number of map-slots in the Hadoop cluster minus 1. For example, if the Hadoop cluster has 4 map slots, then `giraph.maxWorkers` can not be larger than 3. One map-slot is reserved for the master compute node and all other slots can be allocated as workers to execute the VertexPrograms on the vertices of the graph.
@@ -2330,20 +2328,20 @@ gremlin> hdfs.head('output/~cap',KryoWritable.class)
 
 A list of the HDFS methods available are itemized below. Note that these methods are also available for the 'local' variable:
 
-[width="100%",cols="2,10",options="header"]
+[width="100%",cols="13,10",options="header"]
 |=========================================================
 | Method| Description
-|`hdfs.ls(String path)`| List the contents of the supplied directory. 
-|`hdfs.cp(String from, String to)`| Copy the specified path to the specified path.
-|`hdfs.exists(String path)`| Whether the specified path exists.
-|`hdfs.rm(String path)`| Remove the specified path.
-|`hdfs.rmr(String path)`| Remove the specified path and its contents recurssively.
-|`hdfs.copyToLocal(String from, String to)`| Copy the specified HDFS path to the specified local path.
-|`hdfs.copyFromLocal(String from, String to)`| Copy the specified local path to the specified HDFS path.
-|`hdfs.mergeToLocal(String from, String to)`| Merge the files in path to the specified local path.
-|`hdfs.head(String path)`| Text display the data in the path.
-|`hdfs.head(String path, long lineCount)`| Text display only the first `totalKeyValues` in the path.
-|`hdfs.head(String path, long totalKeyValues, Class<Writable> writableClass)`| Display the path interpreting the key values as respective writable.
+|hdfs.ls(String path)| List the contents of the supplied directory. 
+|hdfs.cp(String from, String to)| Copy the specified path to the specified path.
+|hdfs.exists(String path)| Whether the specified path exists.
+|hdfs.rm(String path)| Remove the specified path.
+|hdfs.rmr(String path)| Remove the specified path and its contents recurssively.
+|hdfs.copyToLocal(String from, String to)| Copy the specified HDFS path to the specified local path.
+|hdfs.copyFromLocal(String from, String to)| Copy the specified local path to the specified HDFS path.
+|hdfs.mergeToLocal(String from, String to)| Merge the files in path to the specified local path.
+|hdfs.head(String path)| Text display the data in the path.
+|hdfs.head(String path, long lineCount)| Text display only the first `totalKeyValues` in the path.
+|hdfs.head(String path, long totalKeyValues, Class<Writable> writableClass)| Display the path interpreting the key values as respective writable.
 |=========================================================
 
 
