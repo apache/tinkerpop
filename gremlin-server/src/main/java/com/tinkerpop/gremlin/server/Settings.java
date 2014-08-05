@@ -71,15 +71,6 @@ public class Settings {
     public int resultIterationBatchSize = 64;
 
     /**
-     * The size of the frame queue which contains an individual serialized result (a frame) to be written back
-     * to the client on each request. If the frame queue fills (i.e. the server serializes results far faster than
-     * it can write them back to the client) then serialization will cease until there is space in the queue.  Note
-     * that if there is excessive blocking then the serializedResponseTimeout will be exceeded and the response
-     * will produce an error.
-     */
-    public int frameQueueSize = 256;
-
-    /**
      * The maximum length of the initial line (e.g. {@code "GET / HTTP/1.0"}). Can reduce excessive memory consumption.
      * This setting ties to the Netty {@code HttpRequestDecoder}
      */
