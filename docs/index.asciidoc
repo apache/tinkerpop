@@ -913,42 +913,6 @@ Graph Traversal Steps
 
 A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, or an Edge. A list of all the steps are provided in the TinkerPop3 link:http://www.tinkerpop.com/javadocs/current/com/tinkerpop/gremlin/process/graph/GraphTraversal.html[GraphTraversal JavaDoc]. A few of the more interesting/complex steps are discussed in the following subsections.
 
-[[jump-step]]
-Jump Step
-~~~~~~~~~
-
-TinkerPop3 introduces the `jump()`-step. This step allows the propagating traverser object to jump to any arbitrary section of the `Traversal`. Typically, this is determined by means of a predicate. In particular, with jump(), the Gremlin is no longer constrained to *do-while* semantics, but can as well support *while-do* (see link:http://docs.oracle.com/javase/tutorial/java/nutsandbolts/while.html[Java Documentation on While]). Below are some examples of jump() in action in Gremlin-Groovy.
-
-[source,groovy]
-gremlin> g.v(1).as('a').out.jump('a'){it.loops<2}.name <1>
-==>ripple
-==>lop
-gremlin> g.v(1).as('a').jump('b'){it.loops>1}.out.jump('a').as('b').name <2>
-==>ripple
-==>lop
-gremlin> g.v(1).jump('a').out.out.out.as('a').name <3>
-==>marko
-
-<1> do-while semantics as found in the classic `loop()`-step in TinkerPop2.
-<2> while-do semantics as introduced in TinkerPop3. Jump to step `b` if loops greater than 1 else, `out` and jump back to `a`.   
-<3> a non-predicate based jump where `out.out.out` is seen as inert code.
-
-Finally, jump() also supports an "emit predicate." Whereby the traverser is split in two -- the traverser exists the code block as well as continues back within the code block.
-
-[source,groovy]
-gremlin> g.v(1).as('a').out.jump('a'){it.loops<2}{true}.name
-==>lop
-==>vadas
-==>josh
-==>ripple
-==>lop
-
-image::jump-step-example.png[width=500]
-
-The first time through the jump-sequence, the vertices lop, vadas, and josh are seen. Given that the loops==0, then traverser jumps back to step `a`. However, because the emit-predicate is declared true, those vertices are emitted from jump-sequence. At step 2 (loops==1), the vertices touched are ripple and lop (Josh's created projects). Thus, they are emitted. Therefore, the solution the traversal is all vertices touched: lop, vadas, josh, ripple, and lop.
-
-The jump()-step highlights one of the major benefits of `Traverser<T>` in TinkerPop3: the ability to arbitrarily take a traverser and place it anywhere in the Traversal step-sequence. Because a traverser maintains all the metadata associated with its particular walk, and no step maintains state information about a traverser, traverses can be moved between traversal steps as necessary without ill-effects.
-
 [[choose-step]]
 Choose Step
 ~~~~~~~~~~~
@@ -996,47 +960,41 @@ g.V.has("age").choose(v -> v.get().value("name").length(), new HashMap() {{
   put(4,g.of().out); 
 }}).value("name")
 
-[[subgraph-step]]
-Subgraph Step
-~~~~~~~~~~~~~
+[[jump-step]]
+Jump Step
+~~~~~~~~~
 
-Extracting a portion of a graph from a larger one for analysis, visualization or other purposes is a fairly common use case for graph analysts and developers. The Subgraph Step provides a way to produce an edge-induced subgraph from virtually any traversal.  The following code shows how to produce the "knows" subgraph:
-
-[source,groovy]
-----
-gremlin> g = TinkerFactory.createClassic()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> sg = TinkerGraph.open() <1>
-==>tinkergraph[vertices:0 edges:0]
-gremlin> g.E.subgraph(sg, {it.label == 'knows'}) <2>
-==>tinkergraph[vertices:3 edges:2]
-gremlin> sg.E <3>
-==>e[7][1-knows->2]
-==>e[8][1-knows->4]
-----
-
-<1> The empty graph to which the subgraph will be generated.
-<2> As this function produces "edge-induced" subgraphs, the traversal must contain edges in the path.  Those edges found in that path are evaluated by a `Predicate` function to determine if they should be copied to the subgraph in conjunction with their associated vertices.
-<3> The subgraph contains only "knows" edges.
-
-A more common subgraphing use case is to get all of the graph structure surrounding a single vertex:
+TinkerPop3 introduces the `jump()`-step. This step allows the propagating traverser object to jump to any arbitrary section of the `Traversal`. Typically, this is determined by means of a predicate. In particular, with jump(), the Gremlin is no longer constrained to *do-while* semantics, but can as well support *while-do* (see link:http://docs.oracle.com/javase/tutorial/java/nutsandbolts/while.html[Java Documentation on While]). Below are some examples of jump() in action in Gremlin-Groovy.
 
 [source,groovy]
-----
-gremlin> g = TinkerFactory.createClassic()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> sg = TinkerGraph.open()
-==>tinkergraph[vertices:0 edges:0]
-gremlin> g.v(3).as('a').inE.outV.jump('a'){it.loops<3}{true}.subgraph(sg, {true})   <1>
-==>tinkergraph[vertices:4 edges:4]
-gremlin> sg.E
-==>e[8][1-knows->4]
-==>e[9][1-created->3]
-==>e[11][4-created->3]
-==>e[12][6-created->3]
-----
+gremlin> g.v(1).as('a').out.jump('a'){it.loops<2}.name <1>
+==>ripple
+==>lop
+gremlin> g.v(1).as('a').jump('b'){it.loops>1}.out.jump('a').as('b').name <2>
+==>ripple
+==>lop
+gremlin> g.v(1).jump('a').out.out.out.as('a').name <3>
+==>marko
 
-<1> Starting at vertex `3`, traverse 3 steps away on in-edges, outputting all of that into the subgraph.
+<1> do-while semantics as found in the classic `loop()`-step in TinkerPop2.
+<2> while-do semantics as introduced in TinkerPop3. Jump to step `b` if loops greater than 1 else, `out` and jump back to `a`.   
+<3> a non-predicate based jump where `out.out.out` is seen as inert code.
+
+Finally, jump() also supports an "emit predicate." Whereby the traverser is split in two -- the traverser exists the code block as well as continues back within the code block.
+
+[source,groovy]
+gremlin> g.v(1).as('a').out.jump('a'){it.loops<2}{true}.name
+==>lop
+==>vadas
+==>josh
+==>ripple
+==>lop
+
+image::jump-step-example.png[width=500]
+
+The first time through the jump-sequence, the vertices lop, vadas, and josh are seen. Given that the loops==0, then traverser jumps back to step `a`. However, because the emit-predicate is declared true, those vertices are emitted from jump-sequence. At step 2 (loops==1), the vertices touched are ripple and lop (Josh's created projects). Thus, they are emitted. Therefore, the solution the traversal is all vertices touched: lop, vadas, josh, ripple, and lop.
+
+The jump()-step highlights one of the major benefits of `Traverser<T>` in TinkerPop3: the ability to arbitrarily take a traverser and place it anywhere in the Traversal step-sequence. Because a traverser maintains all the metadata associated with its particular walk, and no step maintains state information about a traverser, traverses can be moved between traversal steps as necessary without ill-effects.
 
 [[match-step]]
 Match Step
@@ -1102,6 +1060,82 @@ gremlin> g.V.match('a',
 ==>josh
 
 WARNING: Currently `match()` can not operate within a multi-JVM <<graphcomputer,GraphComputer>> OLAP environment. Future work includes a linearization <<traversalstrategy,TraversalStrategy>> for `match()`.
+
+[[subgraph-step]]
+Subgraph Step
+~~~~~~~~~~~~~
+
+Extracting a portion of a graph from a larger one for analysis, visualization or other purposes is a fairly common use case for graph analysts and developers. The Subgraph Step provides a way to produce an edge-induced subgraph from virtually any traversal.  The following code shows how to produce the "knows" subgraph:
+
+[source,groovy]
+----
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> sg = TinkerGraph.open() <1>
+==>tinkergraph[vertices:0 edges:0]
+gremlin> g.E.subgraph(sg, {it.label == 'knows'}) <2>
+==>tinkergraph[vertices:3 edges:2]
+gremlin> sg.E <3>
+==>e[7][1-knows->2]
+==>e[8][1-knows->4]
+----
+
+<1> The empty graph to which the subgraph will be generated.
+<2> As this function produces "edge-induced" subgraphs, the traversal must contain edges in the path.  Those edges found in that path are evaluated by a `Predicate` function to determine if they should be copied to the subgraph in conjunction with their associated vertices.
+<3> The subgraph contains only "knows" edges.
+
+A more common subgraphing use case is to get all of the graph structure surrounding a single vertex:
+
+[source,groovy]
+----
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> sg = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> g.v(3).as('a').inE.outV.jump('a'){it.loops<3}{true}.subgraph(sg, {true})   <1>
+==>tinkergraph[vertices:4 edges:4]
+gremlin> sg.E
+==>e[8][1-knows->4]
+==>e[9][1-created->3]
+==>e[11][4-created->3]
+==>e[12][6-created->3]
+----
+
+<1> Starting at vertex `3`, traverse 3 steps away on in-edges, outputting all of that into the subgraph.
+
+[[timelimit-step]]
+TimeLimit Step
+~~~~~~~~~~~~~~
+
+In many situations, a graph traversal is not about getting an exact answer as its about getting a relative ranking. A classic example is link:http://en.wikipedia.org/wiki/Recommender_system[recommendation]. What is desired is a relative ranking of vertices, not their absolute rank. Next, it may be desirable to have the traversal execute for no more than 750 milliseconds. In such situations, `timeLimit()`-step can be used.
+
+NOTE: The method `clock(int runs, Closure code)` is a utility preloaded in the <<gremlin-console,Gremlin Console>> that can be used to time execution of a body of code.
+
+image::timelimit-step.png[width=500]
+
+[source,groovy]
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> g.V.as('x').both.groupCount('m').jump('x',16).cap('m').next().sort{-it.value}
+==>v[1]=2744208
+==>v[3]=2744208
+==>v[4]=2744208
+==>v[2]=1136688
+==>v[5]=1136688
+==>v[6]=1136688
+gremlin> clock(1){g.V.as('x').both.groupCount('m').jump('x',16).cap('m').next().sort{-it.value}}
+==>2735.111
+gremlin> g.V.as('x').timeLimit(750).both.groupCount('m').jump('x',16).cap('m').next().sort{-it.value}
+==>v[1]=648473
+==>v[3]=647510
+==>v[4]=647499
+==>v[5]=268540
+==>v[6]=268533
+==>v[2]=267941
+gremlin> clock(1){g.V.as('x').timeLimit(750).both.groupCount('m').jump('x',16).cap('m').next().sort{-it.value}}
+==>750.03
+
+In essence, the relative order is respected, even through the number traversers at each vertex is not. The primary benefit being that the calculation is guaranteed to complete at the specified time limit (in milliseconds). Finally, note that the internal clock of `timeLimit()`-step starts when the first traverser enters it. When the the time limit is reached, any `next()` evaluation of the step will yield a `NoSuchElementException` and any `hasNext()` evaluation will yield `false`.
 
 [[traversalstrategy]]
 Traversal Strategy
