@@ -49,6 +49,13 @@ class GroovyMatchTestImpl extends MatchTest {
     }
 
     @Override
+    public Traversal<Vertex, Map<String, Object>> get_g_V_matchXa_created_b__b_0created_aX() {
+        g.V.match('a',
+                g.of().as('a').out('created').as('b'),
+                g.of().as('b').in('created').as('a'))
+    }
+
+    @Override
     public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_knows_b__b_created_lop__b_matchXa1_created_b1__b1_0created_c1X_selectXc1X_cX_selectXnameX() {
         g.V.match('a',
                 g.of().as('a').out('knows').as('b'),
