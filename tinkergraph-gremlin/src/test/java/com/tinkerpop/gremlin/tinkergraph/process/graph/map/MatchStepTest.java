@@ -385,6 +385,23 @@ public class MatchStepTest {
                 new Bindings<String>().put("letter", "c").put("number", "4"));
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void testUnreachableLabels() throws Exception {
+        Graph g = TinkerFactory.createClassic();
+
+        GraphTraversal t = g.V().match("a", g.of().as("a").out("knows").as("b"),
+                g.of().as("c").out("knows").as("b"));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testCyclesUnsupported() throws Exception {
+        Graph g = TinkerFactory.createClassic();
+
+        GraphTraversal t = g.V().match("a", g.of().as("a").out("knows").as("b"),
+                g.of().as("a").has("name", "marko"),
+                g.of().as("b").out("knows").as("a"));
+    }
+
     private void findMissing(String s, final int i, final int n, final byte[] names, final Set<String> actual) {
         if (0 == i) {
             s = "{";

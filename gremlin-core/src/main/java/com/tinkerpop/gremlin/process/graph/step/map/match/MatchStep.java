@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.Stack;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -45,6 +46,12 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
 
     private int anonLabelCounter = 0;
 
+    private Enumerator<S> currentSolution;
+    private int currentIndex;
+
+    // initial value allows MatchStep to be used as a stand-alone query engine
+    private Traverser<S> currentStart = new SimpleTraverser<>(null);
+
     public MatchStep(final Traversal traversal, final String inAs, final Traversal... traversals) {
         super(traversal);
 
@@ -55,6 +62,8 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         for (final Traversal tl : traversals) {
             addTraversal(tl);
         }
+
+        checkSolvability();
     }
 
     public void setStartsPerOptimize(final int startsPerOptimize) {
@@ -78,38 +87,11 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         return sb.toString();
     }
 
-    private void summarize(final String outLabel,
-                           final StringBuilder sb,
-                           final Set<String> visited,
-                           final int indent) {
-        if (!visited.contains(outLabel)) {
-            visited.add(outLabel);
-            final List<TraversalWrapper<S, S>> outs = traversalsOut.get(outLabel);
-            if (null != outs) {
-                for (final TraversalWrapper<S, S> w : outs) {
-                    for (int i = 0; i < indent; i++) sb.append("\t");
-                    sb.append(outLabel).append("->").append(w.inAs).append(":\t");
-                    sb.append(findCost(w));
-                    sb.append("\t").append(w);
-                    sb.append("\n");
-                    summarize(w.inAs, sb, visited, indent + 1);
-                }
-            }
-        }
-    }
-
-    private Enumerator<S> currentSolution;
-    private int currentIndex;
-    // initial value allows MatchStep to be used as a non-Step
-    private Traverser<S> currentStart = new SimpleTraverser<>(null);
-
     @Override
     protected Traverser<Map<String, E>> processNextStart() throws NoSuchElementException {
         final Map<String, E> map = new HashMap<>();
         final Traverser<Map<String, E>> result = this.currentStart.makeChild(this.getAs(), map);
         final BiConsumer<String, S> resultSetter = (name, value) -> {
-            //result.set(value);
-            //result.getPath().add(name, value);
             map.put(name, (E) value);
         };
 
@@ -132,6 +114,26 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
             map.clear();
             if (this.currentSolution.visitSolution(this.currentIndex++, resultSetter)) {
                 return result;
+            }
+        }
+    }
+
+    private void summarize(final String outLabel,
+                           final StringBuilder sb,
+                           final Set<String> visited,
+                           final int indent) {
+        if (!visited.contains(outLabel)) {
+            visited.add(outLabel);
+            final List<TraversalWrapper<S, S>> outs = traversalsOut.get(outLabel);
+            if (null != outs) {
+                for (final TraversalWrapper<S, S> w : outs) {
+                    for (int i = 0; i < indent; i++) sb.append("\t");
+                    sb.append(outLabel).append("->").append(w.inAs).append(":\t");
+                    sb.append(findCost(w));
+                    sb.append("\t").append(w);
+                    sb.append("\n");
+                    summarize(w.inAs, sb, visited, indent + 1);
+                }
             }
         }
     }
@@ -162,6 +164,42 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
             this.traversalsOut.put(outAs, l2);
         }
         l2.add(wrapper);
+    }
+
+    private void checkSolvability() {
+        Set<String> pathSet = new HashSet<>();
+        Stack<String> stack = new Stack<>();
+        stack.push(inAs);
+        int countTraversals = 0;
+        while (!stack.isEmpty()) {
+            String outAs = stack.peek();
+            if (pathSet.contains(outAs)) {
+                stack.pop();
+                pathSet.remove(outAs);
+            } else {
+                pathSet.add(outAs);
+                List<TraversalWrapper<S, S>> l = traversalsOut.get(outAs);
+                if (null != l) {
+                    for (TraversalWrapper<S, S> tw : l) {
+                        countTraversals++;
+                        String inAs = tw.inAs;
+                        if (pathSet.contains(inAs)) {
+                            throw new IllegalStateException("query contains a cycle");
+                        }
+                        stack.push(inAs);
+                    }
+                }
+            }
+        }
+
+        int totalTraversals = 0;
+        for (List<TraversalWrapper<S, S>> l : traversalsOut.values()) {
+            totalTraversals += l.size();
+        }
+
+        if (countTraversals < totalTraversals) {
+            throw new IllegalStateException("query contains unreachable 'as' label(s)");
+        }
     }
 
     private void checkAs(final String as) {
