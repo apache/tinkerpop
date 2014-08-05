@@ -933,7 +933,7 @@ gremlin> g.V.has('age').filter{it.get().value('name').length() == 4}.out.name
 
 Given that statistics above, the following `choose()` examples are made clear.
 
-image::choose-step-example.png[width=700]
+image::choose-step.png[width=700]
 
 [source,groovy]
 gremlin> g.V.has('age').choose({it.get().value('name').length() == 5}, 
@@ -959,6 +959,32 @@ g.V.has("age").choose(v -> v.get().value("name").length(), new HashMap() {{
   put(5,g.of().in); 
   put(4,g.of().out); 
 }}).value("name")
+
+[[groupcount-step]]
+GroupCount Step
+~~~~~~~~~~~~~~~
+
+When it is important to know how many times a particular object has been at a particular part of a traversal, `groupCount`-step is used.
+
+	"What is the distribution of ages in the graph?"
+
+[source,groovy]
+gremlin> g.V.has('age').age.groupCount
+==>[32:1, 35:1, 27:1, 29:1]
+gremlin> g.V.has('age').groupCount{it.value('age')} // you can also supply a pre-group lambda
+==>[32:1, 35:1, 27:1, 29:1]
+
+There is one person that is 32, one person that is 35, one person that is 27, and one person that is 29.
+
+	"Iteratively walk the graph and count the number of times you see the second letter of each name."
+
+image::groupcount-step.png[width=500]
+
+[source,groovy]
+gremlin> g.V.as('x').both.groupCount('m'){it.value('name')[1]}.jump('x',10).cap('m')
+==>[a:19598, e:5740, i:5740, o:27716]
+
+The above is interesting in that it demonstrates the use of referencing the internal `Map<Object,Long>` of `groupCount` with a string variable. Given that `groupCount` is a sideEffect-step, it simply passes the object it received to its output. Internal to `groupCount`, the object's count is incremented. If `groupCount` is the last step in the traversal, the `SideEffectCapStrategy` (see <<traversalstrategy,Traversal Strategy>>) automatically returns the internal map. However, if the `groupCount` is not the last step, then the sideEffect data structure (i.e. the internal map of `groupCount`) can be accessed with `cap`-step by referencing the desired variable.
 
 [[jump-step]]
 Jump Step
@@ -990,7 +1016,7 @@ gremlin> g.v(1).as('a').out.jump('a'){it.loops<2}{true}.name
 ==>ripple
 ==>lop
 
-image::jump-step-example.png[width=500]
+image::jump-step.png[width=500]
 
 The first time through the jump-sequence, the vertices lop, vadas, and josh are seen. Given that the loops==0, then traverser jumps back to step `a`. However, because the emit-predicate is declared true, those vertices are emitted from jump-sequence. At step 2 (loops==1), the vertices touched are ripple and lop (Josh's created projects). Thus, they are emitted. Therefore, the solution the traversal is all vertices touched: lop, vadas, josh, ripple, and lop.
 
