@@ -25,10 +25,9 @@ public class TinkerElementTraversal<S, E> extends DefaultGraphTraversal<S, E> {
     private final Object id;
 
     public TinkerElementTraversal(final Element element, final TinkerGraph graph) {
-        super();
+        super(graph);
         this.elementClass = element.getClass();
         this.id = element.id();
-        this.memory().set(Graph.Key.hidden("g"), graph);
         this.addStep(new StartStep<>(this, element));
     }
 

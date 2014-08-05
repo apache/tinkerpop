@@ -45,7 +45,7 @@ public class TinkerFactory {
         variables.set("name", "modern");
         variables.set("year", 2014);
 
-        final String aclPropertyKey = Graph.Key.hidden("acl");
+        final String aclPropertyKey = Graph.Key.hide("acl");
         final Vertex marko = g.addVertex(Element.ID, 1, Element.LABEL, "person", "name", "marko", aclPropertyKey, "rw");
         final Vertex stephen = g.addVertex(Element.ID, 7, Element.LABEL, "person", "name", "stephen", aclPropertyKey, "rw");
         final Vertex matthias = g.addVertex(Element.ID, 8, Element.LABEL, "person", "name", "matthias", aclPropertyKey, "r");

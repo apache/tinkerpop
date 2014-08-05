@@ -133,7 +133,7 @@ public class JsonMessageSerializerV1d0Test {
     public void serializeHiddenProperties() throws Exception {
         final Graph g = TinkerGraph.open();
         final Vertex v = g.addVertex("abc", 123);
-        v.property(Graph.Key.hidden("hidden"), "stephen");
+        v.property(Graph.Key.hide("hidden"), "stephen");
 
         final Iterable iterable = g.V().toList();
         final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.create(msg).result(iterable).build());

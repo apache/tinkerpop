@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class PartitionGraphStrategyTest extends AbstractGremlinTest {
-    private static final String partition = Graph.Key.hidden("partition");
+    private static final String partition = Graph.Key.hide("partition");
 
     public PartitionGraphStrategyTest() {
         super(new PartitionGraphStrategy(partition, "A"));

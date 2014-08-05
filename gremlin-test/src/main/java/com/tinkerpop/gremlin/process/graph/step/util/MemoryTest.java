@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.util;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
@@ -25,6 +26,8 @@ public abstract class MemoryTest extends AbstractGremlinProcessTest {
         } catch (IllegalArgumentException e) {
             assertTrue(true);
         }
+        assertTrue(Graph.class.isAssignableFrom(memory.get(Graph.Key.hide("g")).getClass()));
+
     }
 
     public static class JavaMemoryTest extends MemoryTest {

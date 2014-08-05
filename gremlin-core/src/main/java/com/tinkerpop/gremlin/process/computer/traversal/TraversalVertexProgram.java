@@ -46,7 +46,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     public static final String TRAVERSAL_SUPPLIER = "gremlin.traversalVertexProgram.traversalSupplier";
     public static final String TRAVERSAL_SUPPLIER_CLASS = "gremlin.traversalVertexProgram.traversalSupplierClass";
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
-    public static final String TRAVERSER_TRACKER = Graph.Key.hidden("gremlin.traverserTracker");
+    public static final String TRAVERSER_TRACKER = Graph.Key.hide("gremlin.traverserTracker");
 
     private SSupplier<Traversal> traversalSupplier;
     private Class<SSupplier<Traversal>> traversalSupplierClass = null;
@@ -76,7 +76,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
             traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
                 final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
                 this.mapReducers.add(mapReduce);
-                this.computeKeys.put(Graph.Key.hidden(mapReduce.getSideEffectKey()), KeyType.CONSTANT);
+                this.computeKeys.put(Graph.Key.hide(mapReduce.getSideEffectKey()), KeyType.CONSTANT);
             });
 
             // TODO: This is LAME!

@@ -57,7 +57,7 @@ abstract class Neo4jElement implements Element, WrappedElement<PropertyContainer
     public Map<String, Property> hiddens() {
         this.graph.tx().readWrite();
         return hiddenKeys().stream()
-                .map(key -> Pair.<String, Property>with(key, new Neo4jProperty<>(this, key, this.baseElement.getProperty(Graph.Key.hidden(key)))))
+                .map(key -> Pair.<String, Property>with(key, new Neo4jProperty<>(this, key, this.baseElement.getProperty(Graph.Key.hide(key)))))
                 .collect(Collectors.toMap(kv -> kv.getValue0(), kv -> kv.getValue1()));
     }
 

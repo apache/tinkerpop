@@ -127,7 +127,7 @@ public class IdGraphStrategy implements GraphStrategy {
 
     /**
      * Gets the property name of the key used to lookup graph elements.  This is a "hidden" key created by
-     * {@link com.tinkerpop.gremlin.structure.Graph.Key#hidden(String)}.  Use this value to create an index in the underlying graph instance.
+     * {@link com.tinkerpop.gremlin.structure.Graph.Key#hide(String)}.  Use this value to create an index in the underlying graph instance.
      */
     public String getIdKey() {
         return this.idKey;
@@ -183,7 +183,7 @@ public class IdGraphStrategy implements GraphStrategy {
             if (!this.supportsEdgeId && !this.supportsVertexId)
                 throw new IllegalStateException("Since supportsEdgeId and supportsVertexId are false, there is no need to use IdGraphStrategy");
 
-            final String keyForId = this.hiddenIdKey ? Graph.Key.hidden(this.idKey) : this.idKey;
+            final String keyForId = this.hiddenIdKey ? Graph.Key.hide(this.idKey) : this.idKey;
             return new IdGraphStrategy(keyForId, this.vertexIdSupplier, this.edgeIdSupplier,
                     this.supportsVertexId, this.supportsEdgeId);
         }

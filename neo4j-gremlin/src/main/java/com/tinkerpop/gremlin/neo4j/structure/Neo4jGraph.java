@@ -133,6 +133,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>();
         traversal.strategies().register(Neo4jGraphStepStrategy.instance());
         traversal.addStep(new Neo4jGraphStep(traversal, Vertex.class, this));
+        traversal.memory().set(Key.hide("g"), this);
         return traversal;
     }
 
@@ -142,6 +143,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Edge>();
         traversal.strategies().register(Neo4jGraphStepStrategy.instance());
         traversal.addStep(new Neo4jGraphStep(traversal, Edge.class, this));
+        traversal.memory().set(Key.hide("g"), this);
         return traversal;
     }
 
@@ -180,7 +182,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     @Override
     public <S> GraphTraversal<S, S> of() {
         final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>();
-        traversal.memory().set(Graph.Key.hidden("g"), this);
+        traversal.memory().set(Graph.Key.hide("g"), this);
         traversal.strategies().register(Neo4jGraphStepStrategy.instance());
         traversal.addStep(new StartStep<>(traversal));
         return traversal;

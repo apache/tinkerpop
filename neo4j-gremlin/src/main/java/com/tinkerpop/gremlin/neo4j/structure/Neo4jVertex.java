@@ -1,8 +1,11 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -67,6 +70,11 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
     public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
         this.graph.tx().readWrite();
         return (Iterator) StreamFactory.stream(Neo4jHelper.getEdges(this, direction, labels)).limit(branchFactor).iterator();
+    }
+
+    public GraphTraversal<Vertex, Vertex> start() {
+        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this.graph);
+        return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 
     public Node getBaseVertex() {

@@ -32,8 +32,8 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
 
     private MessageType.Local messageType = MessageType.Local.of(() -> GraphTraversal.<Vertex>of().outE());
 
-    public static final String CLUSTER = Graph.Key.hidden("gremlin.cluster");
-    public static final String VOTE_STRENGTH = Graph.Key.hidden("gremlin.voteStrength");
+    public static final String CLUSTER = Graph.Key.hide("gremlin.cluster");
+    public static final String VOTE_STRENGTH = Graph.Key.hide("gremlin.voteStrength");
 
     private static final String MAX_ITERATIONS = "gremlin.peerPressureVertexProgram.maxIterations";
     private static final String INCIDENT_TRAVERSAL = "gremlin.peerPressureVertexProgram.incidentTraversal";

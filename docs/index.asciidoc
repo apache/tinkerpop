@@ -348,14 +348,14 @@ gremlin> v = g.addVertex('name','pierre')
 ==>v[0]
 gremlin> v.property('location','belgium')
 ==>p[location->belgium]
-gremlin> v.property(Graph.Key.hidden('status'),'user')
+gremlin> v.property(Graph.Key.hide('status'),'user')
 ==>p[status->user]
 gremlin> v.keys()
 ==>name
 ==>location
 gremlin> v.hiddenKeys()
 ==>status
-gremlin> p = v.property(Graph.Key.hidden('status'))
+gremlin> p = v.property(Graph.Key.hide('status'))
 ==>p[status->user]
 gremlin> p.isHidden()
 ==>true
@@ -804,7 +804,7 @@ PartitionGraphStrategy
 ----
 gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> strategy = new PartitionGraphStrategy(Graph.Key.hidden("partition"), "A")
+gremlin> strategy = new PartitionGraphStrategy(Graph.Key.hide("partition"), "A")
 ==>PartitionGraphStrategy
 gremlin> sg = new StrategyWrappedGraph(g)
 ==>[passthru[tinkergraph[vertices:0 edges:0]]]
@@ -1351,7 +1351,7 @@ gremlin> import com.tinkerpop.gremlin.groovy.engine.function.GremlinGroovySSuppl
 gremlin> result = g.compute().program(TraversalVertexProgram.build().traversal(new GremlinGroovySSupplier("TinkerGraph.open().V.both.has('age').age.groupCount")).create()).submit().get()
 ==>tinkergraph[vertices:6 edges:6]
 ==>sideEffects[size:3]
-gremlin> result.getValue1().get(Graph.Key.hidden('cap'))
+gremlin> result.getValue1().get(Graph.Key.hide('cap'))
 ==>32=3
 ==>35=1
 ==>27=1
@@ -1369,8 +1369,8 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
 
     private MessageType.Local messageType = MessageType.Local.of(() -> new DefaultGraphTraversal().outE()); <2>
 
-    public static final String PAGE_RANK = Graph.Key.hidden("gremlin.pageRank"); <3>
-    public static final String EDGE_COUNT = Graph.Key.hidden("gremlin.edgeCount");
+    public static final String PAGE_RANK = Graph.Key.hide("gremlin.pageRank"); <3>
+    public static final String EDGE_COUNT = Graph.Key.hide("gremlin.edgeCount");
 
     private static final String VERTEX_COUNT = "gremlin.pageRankVertexProgram.vertexCount";
     private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";

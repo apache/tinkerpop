@@ -38,7 +38,6 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
 
     public void apply() {
         Collections.sort(this.traversalStrategies);
-        //System.out.println("***" + this.traversalStrategies);
         this.traversalStrategies.forEach(ts -> ts.apply(this.traversal));
     }
 

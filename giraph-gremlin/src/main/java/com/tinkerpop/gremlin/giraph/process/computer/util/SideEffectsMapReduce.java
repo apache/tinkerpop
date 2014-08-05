@@ -54,7 +54,7 @@ public class SideEffectsMapReduce implements MapReduce<String, Object, String, O
     @Override
     public void map(final Vertex vertex, final MapEmitter<String, Object> emitter) {
         for (final String sideEffectKey : this.sideEffectKeys) {
-            final Property property = vertex.property(Graph.Key.hidden(sideEffectKey));
+            final Property property = vertex.property(Graph.Key.hide(sideEffectKey));
             if (property.isPresent()) {
                 emitter.emit(sideEffectKey, property.value());
             }

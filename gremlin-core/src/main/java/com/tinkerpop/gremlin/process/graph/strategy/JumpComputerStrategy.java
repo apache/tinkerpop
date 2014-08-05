@@ -24,10 +24,7 @@ public class JumpComputerStrategy implements TraversalStrategy {
     }
 
     public int compareTo(final TraversalStrategy traversalStrategy) {
-        if (traversalStrategy instanceof TraverserSourceStrategy || traversalStrategy instanceof UnrollJumpStrategy)
-            return -1;
-        else
-            return 1;
+        return (traversalStrategy instanceof TraverserSourceStrategy || traversalStrategy instanceof UnrollJumpStrategy) ? -1 : 1;
     }
 
     public static JumpComputerStrategy instance() {
