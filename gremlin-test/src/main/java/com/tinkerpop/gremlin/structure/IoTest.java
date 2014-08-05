@@ -521,7 +521,6 @@ public class IoTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexNoEdgesToKryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko", Graph.Key.hide("acl"), "rw");
@@ -601,7 +600,6 @@ public class IoTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldReadWriteVerticesNoEdgesToKryoManual() throws Exception {
@@ -633,7 +631,6 @@ public class IoTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldReadWriteVerticesNoEdgesToKryo() throws Exception {
@@ -721,7 +718,6 @@ public class IoTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithOUTOUTEdgesToKryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko");
@@ -833,7 +829,6 @@ public class IoTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithININEdgesToKryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko");
@@ -948,7 +943,6 @@ public class IoTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithBOTHBOTHEdgesToKryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko");
@@ -1026,7 +1020,6 @@ public class IoTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithBOTHBOTHEdgesToKryoSkipProperties() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko");
@@ -1208,7 +1201,6 @@ public class IoTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithBOTHINEdgesToKryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko");
@@ -1334,7 +1326,6 @@ public class IoTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithBOTHOUTEdgesToKryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko");

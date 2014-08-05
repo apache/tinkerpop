@@ -299,33 +299,44 @@ public interface Graph extends AutoCloseable {
                 return true;
             }
 
+            /**
+             * Gets the features related to "graph memory" operation.
+             */
             public default VariableFeatures memory() {
                 return new VariableFeatures() {
                 };
             }
         }
 
+        /**
+         * Features that are related to {@link Vertex} operations.
+         */
         public interface VertexFeatures extends FeatureSet {
             public static final String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
             public static final String FEATURE_ADD_VERTICES = "AddVertices";
 
+            /**
+             * Determines if a {@link Vertex} can have a user defined identifier.  Implementation that do not support
+             * this feature will be expected to auto-generate unique identifiers.
+             */
             @FeatureDescriptor(name = FEATURE_USER_SUPPLIED_IDS)
             public default boolean supportsUserSuppliedIds() {
                 return true;
             }
 
+            /**
+             * Determines if a {@link Vertex} can be added to the {@code Graph}.
+             */
             @FeatureDescriptor(name = FEATURE_ADD_VERTICES)
             public default boolean supportsAddVertices() {
                 return true;
             }
 
+            /**
+             * Gets features related to "properties" on a {@link Vertex}.
+             */
             public default VertexPropertyFeatures properties() {
                 return new VertexPropertyFeatures() {
-                };
-            }
-
-            public default VertexAnnotationFeatures annotations() {
-                return new VertexAnnotationFeatures() {
                 };
             }
         }
@@ -389,27 +400,6 @@ public interface Graph extends AutoCloseable {
                         || supportsIntegerArrayValues() || supportsLongArrayValues() || supportsStringArrayValues();
             }
         }
-
-        public interface VertexAnnotationFeatures extends AnnotationFeatures {
-        }
-
-        public interface AnnotationFeatures extends DataTypeFeatures {
-            public static final String FEATURE_ANNOTATIONS = "Annotations";
-
-            /**
-             * If any of the features on {@link AnnotationFeatures} is true then this value must be true.
-             */
-            @FeatureDescriptor(name = FEATURE_ANNOTATIONS)
-            public default boolean supportsAnnotations() {
-                return supportsBooleanValues() || supportsByteValues() || supportsDoubleValues() || supportsFloatValues()
-                        || supportsIntegerValues() || supportsLongValues() || supportsMapValues()
-                        || supportsMixedListValues() || supportsSerializableValues()
-                        || supportsStringValues() || supportsUniformListValues() || supportsBooleanArrayValues()
-                        || supportsByteArrayValues() || supportsDoubleArrayValues() || supportsFloatArrayValues()
-                        || supportsIntegerArrayValues() || supportsLongArrayValues() || supportsStringArrayValues();
-            }
-        }
-
 
         public interface DataTypeFeatures extends FeatureSet {
             public static final String FEATURE_BOOLEAN_VALUES = "BooleanValues";
@@ -543,8 +533,6 @@ public interface Graph extends AutoCloseable {
                 instance = this.vertex();
             else if (featureClass.equals(VertexPropertyFeatures.class))
                 instance = this.vertex().properties();
-            else if (featureClass.equals(VertexAnnotationFeatures.class))
-                instance = this.vertex().annotations();
             else if (featureClass.equals(EdgeFeatures.class))
                 instance = this.edge();
             else if (featureClass.equals(EdgePropertyFeatures.class))
@@ -553,10 +541,6 @@ public interface Graph extends AutoCloseable {
                 throw new IllegalArgumentException(String.format(
                         "Do not reference PropertyFeatures directly in tests, utilize a specific instance: %s, %s",
                         EdgePropertyFeatures.class, VertexPropertyFeatures.class));
-            else if (featureClass.equals(AnnotationFeatures.class))
-                throw new IllegalArgumentException(String.format(
-                        "Do not reference AnnotationFeatures directly in tests, utilize a specific instance: %s, %s",
-                        VertexAnnotationFeatures.class, VariableFeatures.class));
             else
                 throw new IllegalArgumentException(String.format(
                         "Expecting featureClass to be a valid Feature instance and not %s", featureClass));

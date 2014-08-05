@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures;
-import com.tinkerpop.gremlin.structure.Graph.Features.VertexAnnotationFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 import org.junit.Before;
@@ -267,7 +266,6 @@ public class FeatureSupportTest {
         private GraphFeatures graphFeatures;
         private Graph.Features.VariableFeatures variableFeatures;
         private VertexFeatures vertexFeatures;
-        private VertexAnnotationFeatures vertexAnnotationFeatures;
         private VertexPropertyFeatures vertexPropertyFeatures;
 
         @Before
@@ -278,7 +276,6 @@ public class FeatureSupportTest {
             graphFeatures = f.graph();
             variableFeatures = graphFeatures.memory();
             vertexFeatures = f.vertex();
-            vertexAnnotationFeatures = vertexFeatures.annotations();
             vertexPropertyFeatures = vertexFeatures.properties();
         }
 
@@ -296,25 +293,12 @@ public class FeatureSupportTest {
         }
 
         @Test
-        public void ifVertexHasAnnotationsEnabledThenItMustSupportADataType() {
-            assertEquals(vertexAnnotationFeatures.supportsAnnotations(), (vertexAnnotationFeatures.supportsBooleanValues() || vertexAnnotationFeatures.supportsDoubleValues()
-                    || vertexAnnotationFeatures.supportsFloatValues() || vertexAnnotationFeatures.supportsIntegerValues()
-                    || vertexAnnotationFeatures.supportsLongValues() || vertexAnnotationFeatures.supportsMapValues()
-                    || vertexAnnotationFeatures.supportsMixedListValues() || vertexAnnotationFeatures.supportsByteValues()
-                    || vertexAnnotationFeatures.supportsBooleanArrayValues() || vertexAnnotationFeatures.supportsByteArrayValues()
-                    || vertexAnnotationFeatures.supportsDoubleArrayValues() || vertexAnnotationFeatures.supportsFloatArrayValues()
-                    || vertexAnnotationFeatures.supportsIntegerArrayValues() || vertexAnnotationFeatures.supportsLongArrayValues()
-                    || vertexAnnotationFeatures.supportsSerializableValues() || vertexAnnotationFeatures.supportsStringValues()
-                    || vertexAnnotationFeatures.supportsUniformListValues()) || vertexAnnotationFeatures.supportsStringArrayValues());
-        }
-
-        @Test
         public void ifEdgeHasPropertyEnabledThenItMustSupportADataType() {
             assertEquals(edgePropertyFeatures.supportsProperties(), (edgePropertyFeatures.supportsBooleanValues() || edgePropertyFeatures.supportsDoubleValues()
                     || edgePropertyFeatures.supportsFloatValues() || edgePropertyFeatures.supportsIntegerValues()
                     || edgePropertyFeatures.supportsLongValues() || edgePropertyFeatures.supportsMapValues()
                     || edgePropertyFeatures.supportsMixedListValues() || edgePropertyFeatures.supportsByteValues()
-                    || edgePropertyFeatures.supportsBooleanArrayValues() || vertexAnnotationFeatures.supportsByteArrayValues()
+                    || edgePropertyFeatures.supportsBooleanArrayValues() || edgePropertyFeatures.supportsByteArrayValues()
                     || edgePropertyFeatures.supportsDoubleArrayValues() || edgePropertyFeatures.supportsFloatArrayValues()
                     || edgePropertyFeatures.supportsIntegerArrayValues() || edgePropertyFeatures.supportsLongArrayValues()
                     || edgePropertyFeatures.supportsSerializableValues() || edgePropertyFeatures.supportsStringValues()
@@ -327,7 +311,7 @@ public class FeatureSupportTest {
                     || vertexPropertyFeatures.supportsFloatValues() || vertexPropertyFeatures.supportsIntegerValues()
                     || vertexPropertyFeatures.supportsLongValues() || vertexPropertyFeatures.supportsMapValues()
                     || vertexPropertyFeatures.supportsMixedListValues() || vertexPropertyFeatures.supportsByteValues()
-                    || vertexPropertyFeatures.supportsBooleanArrayValues() || vertexAnnotationFeatures.supportsByteArrayValues()
+                    || vertexPropertyFeatures.supportsBooleanArrayValues() || vertexPropertyFeatures.supportsByteArrayValues()
                     || vertexPropertyFeatures.supportsDoubleArrayValues() || vertexPropertyFeatures.supportsFloatArrayValues()
                     || vertexPropertyFeatures.supportsIntegerArrayValues() || vertexPropertyFeatures.supportsLongArrayValues()
                     || vertexPropertyFeatures.supportsSerializableValues() || vertexPropertyFeatures.supportsStringValues()

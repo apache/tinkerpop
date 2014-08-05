@@ -86,7 +86,6 @@ public class StringFactory {
         Stream.of(Pair.with(Graph.Features.GraphFeatures.class, features.graph()),
                 Pair.with(Graph.Features.VariableFeatures.class, features.graph().memory()),
                 Pair.with(Graph.Features.VertexFeatures.class, features.vertex()),
-                Pair.with(Graph.Features.VertexAnnotationFeatures.class, features.vertex().annotations()),
                 Pair.with(Graph.Features.VertexPropertyFeatures.class, features.vertex().properties()),
                 Pair.with(Graph.Features.EdgeFeatures.class, features.edge()),
                 Pair.with(Graph.Features.EdgePropertyFeatures.class, features.edge().properties())).forEach(p -> {

@@ -21,11 +21,6 @@ class BatchFeatures implements Graph.Features {
         public VertexPropertyFeatures properties() {
             return vertexPropertyFeatures;
         }
-
-        @Override
-        public VertexAnnotationFeatures annotations() {
-            return annotationFeatures;
-        }
     };
 
     private final EdgeFeatures edgeFeatures = new EdgeFeatures() {
@@ -43,7 +38,6 @@ class BatchFeatures implements Graph.Features {
 
     private final EdgePropertyFeatures edgePropertyFeatures = new BatchEdgePropertyFeatures();
     private final VertexPropertyFeatures vertexPropertyFeatures = new BatchVertexPropertyFeatures();
-    private final VertexAnnotationFeatures annotationFeatures = new BatchVertexAnnotationFeatures();
 
     public BatchFeatures(final Graph.Features baseFeatures) {
         this.baseFeatures = baseFeatures;
@@ -75,13 +69,6 @@ class BatchFeatures implements Graph.Features {
         @Override
         public boolean supportsProperties() {
             return baseFeatures.edge().properties().supportsProperties();
-        }
-    }
-
-    class BatchVertexAnnotationFeatures extends BatchDataTypeFeature implements VertexAnnotationFeatures {
-        @Override
-        public boolean supportsAnnotations() {
-            return baseFeatures.vertex().annotations().supportsAnnotations();
         }
     }
 

@@ -401,10 +401,6 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         }
 
         public static class Neo4jVertexFeatures implements VertexFeatures {
-            @Override
-            public VertexAnnotationFeatures annotations() {
-                return new Neo4jVertexAnnotationFeatures();
-            }
 
             @Override
             public boolean supportsUserSuppliedIds() {
@@ -474,98 +470,6 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         }
 
         public static class Neo4jVariableFeatures implements VariableFeatures {
-            @Override
-            public boolean supportsBooleanValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsDoubleValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsFloatValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsIntegerValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsLongValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsMapValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsMixedListValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsByteValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsBooleanArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsByteArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsDoubleArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsFloatArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsIntegerArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsLongArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsStringArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsSerializableValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsStringValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsUniformListValues() {
-                return false;
-            }
-        }
-
-        public static class Neo4jVertexAnnotationFeatures implements VertexAnnotationFeatures {
             @Override
             public boolean supportsBooleanValues() {
                 return false;
