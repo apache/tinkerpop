@@ -36,8 +36,8 @@ public interface Graph extends AutoCloseable {
         /**
          * Turn the provided key into a hidden key. If the key is already hidden, return key.
          *
-         * @param key the key to hide
-         * @return the hidden key
+         * @param key The key to hide
+         * @return The hidden key
          */
         public static String hide(final String key) {
             return isHidden(key) ? key : HIDDEN_PREFIX.concat(key);
@@ -46,8 +46,8 @@ public interface Graph extends AutoCloseable {
         /**
          * Turn the provided hidden key into an unhidden key. If the key is not hidden, return key.
          *
-         * @param key the hidden key
-         * @return the unhidden representation of the key
+         * @param key The hidden key
+         * @return The unhidden representation of the key
          */
         public static String unHide(final String key) {
             return isHidden(key) ? key.substring(HIDDEN_PREFIX.length()) : key;
@@ -56,8 +56,8 @@ public interface Graph extends AutoCloseable {
         /**
          * Determines whether the provided key is hidden or not.
          *
-         * @param key the key to check for hidden status
-         * @return whether the provided key is hidden or not
+         * @param key The key to check for hidden status
+         * @return Whether the provided key is hidden or not
          */
         public static boolean isHidden(final String key) {
             return key.startsWith(HIDDEN_PREFIX);
@@ -66,8 +66,8 @@ public interface Graph extends AutoCloseable {
         /**
          * Provides a consistent String representation of a key (hidden or not)
          *
-         * @param key the key to make a string
-         * @return the toString() of the key
+         * @param key The key to make a string
+         * @return The toString() of the key
          */
         public String toString(final String key) {
             return isHidden(key) ? "hidden[" + key + "]" : key;
@@ -79,13 +79,16 @@ public interface Graph extends AutoCloseable {
      * must be provided in an even number where the odd numbered arguments are {@link String} property keys and the
      * even numbered arguments are the related property values.  Hidden properties can be set by specifying
      * the key as {@link com.tinkerpop.gremlin.structure.Graph.Key#hide}.
+     *
+     * @param keyValues The key/value pairs to turn into vertex properties
+     * @return The newly created vertex
      */
     public Vertex addVertex(final Object... keyValues);
 
     /**
      * Get a {@link Vertex} given its unique identifier.
      *
-     * @param id the unique identifier of the vertex to locate
+     * @param id The unique identifier of the vertex to locate
      * @throws NoSuchElementException if the vertex is not found.
      */
     public default Vertex v(final Object id) throws NoSuchElementException {
@@ -96,7 +99,7 @@ public interface Graph extends AutoCloseable {
     /**
      * Get a {@link Edge} given its unique identifier.
      *
-     * @param id the unique identifier of the edge to locate
+     * @param id The unique identifier of the edge to locate
      * @throws NoSuchElementException if the edge is not found.
      */
     public default Edge e(final Object id) throws NoSuchElementException {
@@ -131,7 +134,7 @@ public interface Graph extends AutoCloseable {
      * Constructs a new {@link GraphTraversal} for this graph.
      *
      * @param <S> The start class of the GraphTraversal
-     * @return the newly constructed GraphTraversal bound to this graph
+     * @return The newly constructed GraphTraversal bound to this graph
      */
     public default <S> GraphTraversal<S, S> of() {
         return GraphTraversal.of(this);
@@ -144,7 +147,7 @@ public interface Graph extends AutoCloseable {
      *
      * @param graphComputerClass The graph computer class to use (if no argument, then a default is selected by the graph)
      * @param <C>                The class of the graph computer
-     * @return a graph computer for processing this graph
+     * @return A graph computer for processing this graph
      */
     public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass);
 
@@ -532,6 +535,9 @@ public interface Graph extends AutoCloseable {
         }
     }
 
+    /**
+     * Common exceptions to use with a graph.
+     */
     public static class Exceptions {
 
         private static final boolean debug = Boolean.parseBoolean(System.getenv().getOrDefault("gremlin.structure.debug", "false"));

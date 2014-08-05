@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.structure;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.util.function.SBiPredicate;
@@ -31,8 +30,18 @@ import java.util.Map;
  */
 public interface Edge extends Element {
 
+    /**
+     * The default label to use for an edge.
+     * This is typically never used as when an edge is created, an edge label is required to be specified.
+     */
     public static final String DEFAULT_LABEL = "edge";
 
+    /**
+     * Retrieve the vertex (or vertices) associated with this edge as defined by the direction.
+     *
+     * @param direction Get the incoming vertex, outgoing vertex, or both vertices
+     * @return An iterator with 1 or 2 vertices
+     */
     public Iterator<Vertex> vertices(final Direction direction);
 
     // element steps ///////////////////////////////////////////////////////////
@@ -168,6 +177,9 @@ public interface Edge extends Element {
 
     ///////////////
 
+    /**
+     * Common exceptions to use with an edge.
+     */
     public static class Exceptions extends Element.Exceptions {
         public static IllegalArgumentException edgeLabelCanNotBeNull() {
             return new IllegalArgumentException("Edge label can not be null");

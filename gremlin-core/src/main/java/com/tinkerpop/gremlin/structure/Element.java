@@ -22,11 +22,15 @@ public abstract interface Element {
 
     /**
      * Gets the unique identifier for the graph {@code Element}.
+     *
+     * @return The id of the element
      */
     public Object id();
 
     /**
      * Gets the label for the graph {@code Element} which helps categorize it.
+     *
+     * @return The label of the element
      */
     public String label();
 
@@ -37,6 +41,8 @@ public abstract interface Element {
 
     /**
      * Get the keys from non-hidden properties.
+     *
+     * @return The non-hidden key set
      */
     public default Set<String> keys() {
         return this.properties().keySet();
@@ -44,6 +50,8 @@ public abstract interface Element {
 
     /**
      * Get the keys of hidden properties.
+     *
+     * @return The hidden key set
      */
     public default Set<String> hiddenKeys() {
         return this.hiddens().keySet();
@@ -115,6 +123,9 @@ public abstract interface Element {
         return property.orElse(orElse);
     }
 
+    /**
+     * Common exceptions to use with an element.
+     */
     public static class Exceptions {
 
         public static IllegalArgumentException providedKeyValuesMustBeAMultipleOfTwo() {
