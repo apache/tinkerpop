@@ -25,6 +25,7 @@ import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import com.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader;
 import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
@@ -1549,27 +1550,18 @@ public class IoTest extends AbstractGremlinTest {
         }
     }
 
-    public static void assertModernGraph(final Graph g1) {
-        if (g1.getFeatures().graph().memory().supportsVariables()) {
-            final Map<String, Object> m = g1.variables().asMap();
-            if (g1.getFeatures().graph().memory().supportsStringValues())
-                assertEquals("modern", m.get("name"));
-            if (g1.getFeatures().graph().memory().supportsIntegerValues())
-                assertEquals(2014, m.get("year"));
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    public void shouldReadLegacyGraphSON() throws IOException {
+        final GraphReader reader = LegacyGraphSONReader.create().build();
+        try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHSON_RESOURCE_PATH_PREFIX + "tinkerpop-classic-legacy.json")) {
+            reader.readGraph(stream, g);
         }
 
-        assertEquals(new Long(6), g1.V().count().next());
-        assertEquals(new Long(8), g1.E().count().next());
-
-        final Iterator<Vertex> itty1 = g1.V().has("name", "marko");
-        final Vertex v1 = itty1.next();
-        assertFalse(itty1.hasNext());
-        assertEquals("person", v1.label());
-        assertEquals(1, v1.keys().size());
-        assertEquals(1, v1.hiddenKeys().size());
-        assertEquals("rw", v1.hiddens().get("acl").value());
-        if (g1.getFeatures().vertex().supportsUserSuppliedIds())
-            assertEquals(1, v1.id());
+        // the id is lossy in migration because TP2 treated ID as String
+        assertClassicGraph(g, false, true);
     }
 
     public static void assertClassicGraph(final Graph g1, final boolean lossyForFloat, final boolean lossyForId) {
