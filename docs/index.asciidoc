@@ -380,13 +380,13 @@ gremlin> g.variables().keys()
 ==>systemAdmins
 ==>systemUsers
 gremlin> g.variables().get('systemUsers')
+==>Optional[[matthias, marko, josh]]
+gremlin> g.variables().get('systemUsers').get()
 ==>matthias
 ==>marko
 ==>josh
 gremlin> g.variables().remove('systemAdmins')
-==>stephen
-==>peter
-==>pavel
+==>null
 gremlin> g.variables().keys()
 ==>systemUsers
 

@@ -62,16 +62,6 @@ public interface Graph extends AutoCloseable {
         public static boolean isHidden(final String key) {
             return key.startsWith(HIDDEN_PREFIX);
         }
-
-        /**
-         * Provides a consistent String representation of a key (hidden or not)
-         *
-         * @param key The key to make a string
-         * @return The toString() of the key
-         */
-        public String toString(final String key) {
-            return isHidden(key) ? "hidden[" + key + "]" : key;
-        }
     }
 
     /**
