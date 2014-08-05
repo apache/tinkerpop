@@ -19,7 +19,7 @@ public interface TraversalStrategy extends Serializable, Comparable<TraversalStr
 
     public interface NoDependencies extends TraversalStrategy {
         public default int compareTo(final TraversalStrategy traversalStrategy) {
-            return traversalStrategy instanceof NoDependencies ? 0 : -1 * traversalStrategy.compareTo(this);
+            return traversalStrategy instanceof NoDependencies ? -1 : -1 * traversalStrategy.compareTo(this);
         }
     }
 

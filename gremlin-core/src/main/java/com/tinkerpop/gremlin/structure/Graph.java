@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * An {@link Graph} is a container object for a collection of {@link Vertex}, {@link Edge}, and {@link Property}
+ * A {@link Graph} is a container object for a collection of {@link Vertex}, {@link Edge}, and {@link Property}
  * objects.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
