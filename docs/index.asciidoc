@@ -1791,6 +1791,78 @@ List<Item> results = client.submit(new RemoteTraversal()).all().get();
 
 The code above shows that a `Traversal` instance can be sent for remote execution in Gremlin Server.  This feature is *highly experimental*, but has some interesting implications in that it provides a way to avoid maintaining "fat strings" of Gremlin in the application code base.  While the "fat string" approach can also be avoided by developing a server-side DSL, the sending of an actual `Traversal` provides another method that might provide new and better patterns for developing graph-based applications.
 
+Configuring
+~~~~~~~~~~~
+
+As mentioned earlier, Gremlin Server is configured though a YAML file.  By default, Gremlin Server will look for a file called `config/gremlin-server.yaml` to configure itself on startup.  To override this default, supply the file to use to ``bin/gremlin-server.sh` as in:
+
+[source,text]
+----
+bin/gremlin-server.sh conf/gremlin-server-min.yaml
+----
+
+The following table describes the various configuration options that Gremlin Server expects:
+
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Key |Description |Default
+|channelizer |Defines the `Channelizer` implementation to use.  A `Channelizer` is a "channel initializer" which Gremlin Server uses to define the type of processing pipeline to use.  By allowing different `Channelizer` implementations, Gremlin Server can support different communication protocols (e.g. Websockets, Java NIO, etc.). |WebSocketChannelizer
+|graphs |A `Map` of `Graph` configuration files where the key of the `Map` becomes the name to which the `Graph` will be bound and the value is the file name of a `Graph` configuration file. |_none_
+|gremlinPool |The number of "Gremlin" threads available to execute actual scripts in a `ScriptEngine`. This pool represents the workers available to handle blocking operations in Gremlin Server. |8
+|host |The name of the host to bind the server to. |localhost
+|metrics.consoleReporter.enabled |Turns on console reporting of metrics. |false
+|metrics.consoleReporter.interval |Time in milliseconds between reports of metrics to cosole. |180000
+|metrics.csvReporter.enabled |Turns on CSV reporting of metrics. |false
+|metrics.csvReporter.fileName |The file to write metrics to. |_none_
+|metrics.csvReporter.interval |Time in milliseconds between reports of metrics to file. |180000
+|metrics.gangliaReporter.addressingMode |Set to `MULTICAST` or `UNICAST`. |_none_
+|metrics.gangliaReporter.enabled |Turns on Ganglia reporting of metrics. |false
+|metrics.gangliaReporter.host |Define the Ganglia host to report Metrics to. |localhost
+|metrics.gangliaReporter.interval |Time in milliseconds between reports of metrics for Ganglia. |180000
+|metrics.gangliaReporter.port |Define the Ganglia port to report Metrics to. |8649
+|metrics.graphiteReporter.enabled |Turns on Graphite reporting of metrics. |false
+|metrics.graphiteReporter.host |Define the Graphite host to report Metrics to. |localhost
+|metrics.graphiteReporter.interval |Time in milliseconds between reports of metrics for Graphite. |180000
+|metrics.graphiteReporter.port |Define the Graphite port to report Metrics to. |2003
+|metrics.graphiteReporter.prefix |Define a "prefix" to append to metrics keys reported to Graphite. |_none_
+|metrics.jmxReporter.enabled |Turns on JMX reporting of metrics. |false
+|metrics.slf4jReporter.enabled |Turns on SLF4j reporting of metrics. |false
+|metrics.slf4jReporter.interval |Time in milliseconds between reports of metrics to SLF4j. |180000
+|port |The port to bind the server to. |8182
+|processors |A `List` of `Map` settings, where each `Map` represents a `OpProcessor` implementation to use along with its configuration. |_none_
+|processors[X].className |The full class name of the `OpProcessor` implementation. |_none_
+|processors[X].config |A `Map` containing `OpProcessor` specific configurations. |_none_
+|resultIterationBatchSize |Defines the size in which the result of a request is "batched" back to the client.  In other words, if set to `1`, then a result that had ten items in it would get each result sent back individually.  If set to `2` the same ten results would come back in five batches of two each. |64
+|scriptEngines |A `Map` of `ScriptEngine` implementations to expose through Gremlin Server, where the key is the name given by the `ScriptEngine` implementation.  The key must match the name exactly for the `ScriptEngine` to be constructed.  The value paired with this key is itself a `Map` of configuration for that `ScriptEngine`.  |_none_
+|scriptEngines.<name>.imports |A comma separated list of classes/packages to make available to the `ScriptEngine`. |_none_
+|scriptEngines.<name>.staticImports |A comma separated list of "static" imports to make available to the `ScriptEngine`. |_none_
+|scriptEngines.<name>.scripts |A comma separated list of script files to execute on `ScriptEngine` initialization. |_none_
+|scriptEngines.<name>.config |A `Map` of configuration settings for the `ScriptEngine`.  These settings are dependent on the `ScriptEngine` implementation being used. |_none_
+|scriptEvaluationTimeout |The amount of time in milliseconds before a script evaluation times out. The notion of "script evaluation" refers to the time it takes for the `ScriptEngine` to do its work and *not* any additional time it takes for the result of the evaluation to be iterated and serialized. |30000
+|serializers |A `List` of `Map` settings, where each `Map` represents a `MessageSerializer` implementation to use along with its configuration. |_none_
+|serializers[X].className |The full class name of the `MessageSerializer` implementation. |_none_
+|serializers[X].config |A `Map` containing `MessageSerializer` specific configurations. |_none_
+|serializedResponseTimeout |The amount of time in milliseconds before a response serialization times out.  The notion of "response serialization" refers to the time it takes for Gremlin Server to iterate an entire result after the script is evaluated in the `ScriptEngine`. |30000
+|ssl.enabled |Determines if SSL is turned on or not. |false
+|threadPoolBoss |The number of threads available to Gremlin Server for accepting connections. Should always be set to `1`. |1
+|threadPoolWorker |The number of threads available to Gremlin Server for processing non-blocking reads and writes. |1
+|use |A list of Maven coordinates that represent external libraries to be made available to the `ScriptEngine`.  Alternatively, dependencies may be copied directly to the Gremlin Server path. |_none_
+|=========================================================
+
+Tuning
+~~~~~~
+
+Tuning Gremlin Server for a particular environment may require some simple trial-and-error, but the following represent some basic guidelines that might be useful:
+
+* A "good" setting for `threadPoolWorker` is `2*number of cores`.  If a smaller setting can be used there while still achieving performance needs, then choose the smaller setting.  If a larger setting is needed, then consider a server with more cores.
+* The "right" size of the `gremlinPool` setting is somewhat dependent on the type of scripts that will be processed by Gremlin Server.  As requests arrive to Gremlin Server they are decoded and queued to be processed by threads in this pool.  When this pool is exhausted of threads, Gremlin Server will continue to accept incoming requests, but the queue will continue to grow.  If left to grow too large, the server will begin to slow.  When tuning around this setting, consider whether the bulk of the scripts being processed will be "fast" or "slow", where "fast" generally means being measured in the low hundreds of milliseconds and "slow" means anything longer than that.
+** If the bulk of the scripts being processed are expected to be "fast", then a good starting point for this setting is `2*threadPoolWorker`.
+** If the bulk of the scripts being processed are expected to be "slow", then a good starting point for this setting is `4*threadPoolWorker`.
+* Scripts that are "slow" can really hurt Gremlin Server if they are not properly accounted for.  `ScriptEngine` evaluations are blocking operations that aren't easily interrupted, so once a "slow" script is being evaluated in the context of a `ScriptEngine` it must finish its work.  Lots of "slow" scripts will eventually consume the `gremlinPool` preventing other scripts from getting processed from the queue.
+** To limit the impact of this problem consider properly setting the `scriptEvaluationTimeout` and the `serializedResponseTimeout` to something "sane".
+** Test the traversals being sent to Gremlin Server and determine the maximum time they take to evaluate and iterate over results, then set these configurations accordingly.
+** Note that `scriptEvaluationTimeout` does not interrupt the evaluation on timeout.  It merely allows Gremlin Server to "ignore" the result of that evaluation, which means the thread in the `gremlinPool` will still be consumed after the timeout.
+** The more powerful setting is the `serializedResponseTimeout`, which will actually kill the result iteration process and prevent additional processing.  In most situations, the iteration and serialization process is the more costly step in this process as an errant script that retuns a million or more results could send Gremlin Server into a long streaming cycle.  Script evaluation on the other hand is usually very fast, occurring on the order of milliseconds, but that is entirely dependent on the contents of the script itself.
 
 Implementations
 ===============
