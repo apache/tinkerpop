@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -20,21 +21,12 @@ public class DefaultMemory implements Traversal.Memory {
         this.memory.put(key, value);
     }
 
-    public <T> T get(final String key) {
-        if (null == this.memory)
-            throw Traversal.Memory.Exceptions.variableValueDoesNotExist(key);
-        else {
-            final T t = (T) this.memory.get(key);
-            if (null == t)
-                throw Traversal.Memory.Exceptions.variableValueDoesNotExist(key);
-            else
-                return t;
-
-        }
+    public <T> Optional<T> get(final String key) {
+        return null == this.memory ? Optional.empty() : Optional.ofNullable((T) this.memory.get(key));
     }
 
-    public <T> T remove(final String key) {
-        return null == this.memory ? null : (T) this.memory.remove(key);
+    public void remove(final String key) {
+        if (null != this.memory) this.memory.remove(key);
     }
 
     public Set<String> keys() {

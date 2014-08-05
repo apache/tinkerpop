@@ -11,9 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 
 /**
@@ -33,7 +31,7 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
         final Traversal<Vertex, String> traversal = get_g_v1_sideEffectXstore_aX_valueXnameX(convertToVertexId("marko"));
         assertEquals(traversal.next(), "marko");
         assertFalse(traversal.hasNext());
-        assertEquals(convertToVertexId("marko"), traversal.memory().<List<Vertex>>get("a").get(0).id());
+        assertEquals(convertToVertexId("marko"), traversal.memory().<List<Vertex>>get("a").get().get(0).id());
     }
 
     @Test
@@ -41,7 +39,7 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
     public void g_v1_out_sideEffectXincr_cX_valueXnameX() {
         final Traversal<Vertex, String> traversal = get_g_v1_out_sideEffectXincr_cX_valueXnameX(convertToVertexId("marko"));
         assert_g_v1_out_sideEffectXincr_cX_valueXnameX(traversal);
-        assertEquals(new Integer(3), traversal.memory().<List<Integer>>get("c").get(0));
+        assertEquals(new Integer(3), traversal.memory().<List<Integer>>get("c").get().get(0));
     }
 
     private void assert_g_v1_out_sideEffectXincr_cX_valueXnameX(final Iterator<String> traversal) {
