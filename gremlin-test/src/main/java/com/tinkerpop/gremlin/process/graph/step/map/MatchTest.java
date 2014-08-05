@@ -38,6 +38,8 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_out_out_matchXa_0created_b__b_0knows_cX_selectXcX_outXcreatedX_name();
 
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_matchXa_created_b__b_0created_aX();
+
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_knows_b__b_created_lop__b_matchXa1_created_b1__b1_0created_c1X_selectXc1X_cX_selectXnameX();
 
     //TODO: with traversal.reversal()
@@ -130,6 +132,17 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         assertEquals("lop", traversal.next());
         assertEquals("lop", traversal.next());
         assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_matchXa_created_b__b_0created_aX() throws Exception {
+        try {
+            get_g_V_matchXa_created_b__b_0created_aX();
+            assertTrue(false);
+        } catch (IllegalArgumentException e) {
+            assertTrue(true);
+        }
     }
 
     @Test
@@ -238,6 +251,13 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         }
 
         @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_matchXa_created_b__b_0created_aX() {
+            return g.V().match("a",
+                    g.of().as("a").out("created").as("b"),
+                    g.of().as("b").in("created").as("a"));
+        }
+
+        @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_knows_b__b_created_lop__b_matchXa1_created_b1__b1_0created_c1X_selectXc1X_cX_selectXnameX() {
             return g.V().match("a",
                     g.of().as("a").out("knows").as("b"),
@@ -305,6 +325,13 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             return (Traversal) g.V().out().out().match("a",
                     g.of().as("a").in("created").as("b"),
                     g.of().as("b").in("knows").as("c")).select("c").out("created").value("name").submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_matchXa_created_b__b_0created_aX() {
+            return g.V().match("a",
+                    g.of().as("a").out("created").as("b"),
+                    g.of().as("b").in("created").as("a")).submit(g.compute());
         }
 
         @Override

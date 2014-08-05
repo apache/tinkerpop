@@ -28,6 +28,7 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
 
     public void register(final TraversalStrategy traversalStrategy) {
         this.traversalStrategies.add(traversalStrategy);
+        // todo: make this a LinkedHashSet so repeats are not allowed? Or check for repeats first?
     }
 
     public void unregister(final Class<? extends TraversalStrategy> optimizerClass) {

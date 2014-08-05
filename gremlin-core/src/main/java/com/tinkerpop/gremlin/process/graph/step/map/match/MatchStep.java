@@ -184,7 +184,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
                         countTraversals++;
                         String inAs = tw.inAs;
                         if (pathSet.contains(inAs)) {
-                            throw new IllegalStateException("query contains a cycle");
+                            throw new IllegalArgumentException("The provided traversal set contains a cycle due to '" + inAs + "'");
                         }
                         stack.push(inAs);
                     }
@@ -198,7 +198,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         }
 
         if (countTraversals < totalTraversals) {
-            throw new IllegalStateException("query contains unreachable 'as' label(s)");
+            throw new IllegalArgumentException("The provided traversal set contains unreachable as-label(s)");
         }
     }
 
