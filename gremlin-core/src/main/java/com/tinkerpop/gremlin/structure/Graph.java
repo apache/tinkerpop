@@ -341,32 +341,54 @@ public interface Graph extends AutoCloseable {
             }
         }
 
+        /**
+         * Features that are related to {@link Edge} operations.
+         */
         public interface EdgeFeatures extends FeatureSet {
             public static final String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
             public static final String FEATURE_ADD_EDGES = "AddEdges";
 
+            /**
+             * Determines if an {@link Edge} can have a user defined identifier.  Implementation that do not support
+             * this feature will be expected to auto-generate unique identifiers.
+             */
             @FeatureDescriptor(name = FEATURE_USER_SUPPLIED_IDS)
             public default boolean supportsUserSuppliedIds() {
                 return true;
             }
 
+            /**
+             * Determines if an {@link Edge} can be added to the {@code Graph}.
+             */
             @FeatureDescriptor(name = FEATURE_ADD_EDGES)
             public default boolean supportsAddEdges() {
                 return true;
             }
 
+            /**
+             * Gets features related to "properties" on an {@link Edge}.
+             */
             public default EdgePropertyFeatures properties() {
                 return new EdgePropertyFeatures() {
                 };
             }
         }
 
+        /**
+         * Features that are related to {@link Vertex} {@link Property} objects.
+         */
         public interface VertexPropertyFeatures extends PropertyFeatures {
         }
 
+        /**
+         * Features that are related to {@link Edge} {@link Property} objects.
+         */
         public interface EdgePropertyFeatures extends PropertyFeatures {
         }
 
+        /**
+         * A base interface for {@link Edge} or {@link Vertex} {@link Property} features.
+         */
         public interface PropertyFeatures extends DataTypeFeatures {
             public static final String FEATURE_PROPERTIES = "Properties";
 
@@ -384,11 +406,15 @@ public interface Graph extends AutoCloseable {
             }
         }
 
+        /**
+         * Features for {@link com.tinkerpop.gremlin.structure.Graph.Variables}.
+         */
         public interface VariableFeatures extends DataTypeFeatures {
             public static final String FEATURE_VARIABLES = "Variables";
 
             /**
-             * If any of the features on {@link com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures} is true then this value must be true.
+             * If any of the features on {@link com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures} is
+             * true then this value must be true.
              */
             @FeatureDescriptor(name = FEATURE_VARIABLES)
             public default boolean supportsVariables() {
@@ -401,6 +427,9 @@ public interface Graph extends AutoCloseable {
             }
         }
 
+        /**
+         * Base interface for features that relate to supporting different data types.
+         */
         public interface DataTypeFeatures extends FeatureSet {
             public static final String FEATURE_BOOLEAN_VALUES = "BooleanValues";
             public static final String FEATURE_BYTE_VALUES = "ByteValues";
