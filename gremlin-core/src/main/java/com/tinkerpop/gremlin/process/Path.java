@@ -11,6 +11,11 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
+ * A Path denotes a particular walk through a {@link com.tinkerpop.gremlin.structure.Graph} as defined by a {@link Traverser}.
+ * Internal to a Path are two lists: a list of labels and a list of objects.
+ * The list of labels are the as-labels of the steps traversed.
+ * The list of objects are the objects traversed.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class Path {
@@ -57,20 +62,8 @@ public class Path {
         return (T) this.objects.get(index);
     }
 
-    public List<String> getAsLabels() {
-        return new ArrayList<>(this.asLabels);
-    }
-
     public boolean hasAs(final String as) {
         return this.asLabels.contains(as);
-    }
-
-    public Object remove(final int index) {
-        Object removed = this.objects.remove(index);
-        if (null != removed) {
-            asLabels.remove(index);
-        }
-        return removed;
     }
 
     // TODO: why does this have to exist. I hate this.
@@ -78,6 +71,12 @@ public class Path {
         this.asLabels.set(this.asLabels.size() - 1, as);
     }
 
+    /**
+     * Determines whether the path is a simple or not.
+     * A simple path has no cycles and thus, no repeated objects.
+     *
+     * @return Whether the path is simple or not
+     */
     public boolean isSimple() {
         return new HashSet<>(this.objects).size() == this.objects.size();
     }

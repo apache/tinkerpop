@@ -5,6 +5,8 @@ import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.util.function.SBiPredicate;
 
 /**
+ * A collection of (T)okens which allows for more concise Traversal definitions.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public enum T {
