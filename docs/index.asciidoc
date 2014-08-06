@@ -1062,7 +1062,7 @@ gremlin> g.V.match('a',
 ==>[a:peter, c:marko]
 
 
-MatchStep brings functionality similar to link:http://en.wikipedia.org/wiki/SPARQL[SPARQL] to Gremlin. A few of the the differentiating qualities include:
+MatchStep brings functionality similar to link:http://en.wikipedia.org/wiki/SPARQL[SPARQL] to Gremlin. A few of the differentiating qualities include:
 
 [source,groovy]
 gremlin> g.V.match('a',
@@ -1168,7 +1168,7 @@ gremlin> g.V.as('x').timeLimit(750).both.groupCount.as('m').jump('x',16).cap('m'
 gremlin> clock(1){g.V.as('x').timeLimit(750).both.groupCount.as('m').jump('x',16).cap('m').next().sort{-it.value}}
 ==>750.03
 
-In essence, the relative order is respected, even through the number traversers at each vertex is not. The primary benefit being that the calculation is guaranteed to complete at the specified time limit (in milliseconds). Finally, note that the internal clock of `timeLimit()`-step starts when the first traverser enters it. When the the time limit is reached, any `next()` evaluation of the step will yield a `NoSuchElementException` and any `hasNext()` evaluation will yield `false`.
+In essence, the relative order is respected, even through the number traversers at each vertex is not. The primary benefit being that the calculation is guaranteed to complete at the specified time limit (in milliseconds). Finally, note that the internal clock of `timeLimit()`-step starts when the first traverser enters it. When the time limit is reached, any `next()` evaluation of the step will yield a `NoSuchElementException` and any `hasNext()` evaluation will yield `false`.
 
 [[traversalstrategy]]
 Traversal Strategy
