@@ -1157,7 +1157,9 @@ gremlin> g.V.out.out.path{
 ==>[[lop], [ripple, lop], [josh]]
 ==>[[lop], [ripple, lop], [marko, josh, peter]]
 
-[[subgraph-step]]∂
+WARNING: Generating path information is expensive as the history of the traverser is stored into a Java list. With numerous traversers, there are numerous lists. Moreover, in an OLAP <<graphcomputer,`GraphComputer`>> environment this becomes exceedingly prohibitive as there are traversers emanating from all vertices in the graph in parallel. In OLAP there are optimizations provided for traverser populations, but when paths are calculated (and each traverser is unique due to its history), then these optimizations are no longer possible.
+
+[[subgraph-step]]
 Subgraph Step
 ~~~~~~~~~~~~~
 
@@ -1245,7 +1247,7 @@ image:traversal-strategy.png[width=125,float=right] A `TraversalStrategy` can an
 A simple TraversalStrategy is the `IdentityReductionStrategy` and it is a type-1 strategy defined as follows:
 
 [source,java]
-public class IdentityReductionStrategy implements TraversalStrategy.FinalTraversalStrategy {
+public class IdentityReductionStrategy implements TraversalStrategy.NoDependencies {
     public void apply(final Traversal traversal) {
         ((List<Step>) traversal.getSteps()).stream()
                 .filter(step -> step instanceof IdentityStep
@@ -1255,15 +1257,27 @@ public class IdentityReductionStrategy implements TraversalStrategy.FinalTravers
     }
 }
 
-This strategy simply removes any unlabeled `IdentityStep` steps in the Traversal as `aStep().identity().identity().bStep()` is equivalent to `aStep().bStep()`. More common are type-2 strategies which are defined by graph vendors who implement TinkerPop3.
+This strategy simply removes any unlabeled `IdentityStep` steps in the Traversal as `aStep().identity().identity().bStep()` is equivalent to `aStep().bStep()`. The `NoDepedencies` interface is a marker interface that states that this strategy does not require the execution of another strategy before or after it. For those that do have dependencies, TraversalStrategy implements Comparable<TraversalStrategy> to allow a sort order of strategies prior to their evaluation.
 
-[source,java]
-g.V().has("name","marko")
+[source,groovy]
+gremlin> t = g.V.identity.identity.out; null
+==>null
+gremlin> t.toString()
+==>[TinkerGraphStep, IdentityStep, IdentityStep, VertexStep(OUT)]
+gremlin> t.strategies().apply()         // never required by the user (automatically executed prior to evaluation)
+==>null
+gremlin> t.toString()
+==>[TinkerGraphStep, VertexStep(OUT)]
+
+Type-2 strategies are defined by graph vendors who implement TinkerPop3.
+
+[source,groovy]
+g.V.has('name','marko')
 
 The expression above can be executed in a `O(|V|)` or `O(log(|V|)` fashion in <<tinkergraph-gremlin,TinkerGraph>> depending on whether there is or is not an index defined for "name."
 
 [source,java]
-TinkerGraphStepStrategy implements TraversalStrategy.FinalTraversalStrategy {
+TinkerGraphStepStrategy implements TraversalStrategy.NoDependency {
     public void apply(final Traversal traversal) {
         if (traversal.getSteps().get(0) instanceof TinkerGraphStep) {
             final TinkerGraphStep tinkerGraphStep = (TinkerGraphStep) traversal.getSteps().get(0);
@@ -1293,92 +1307,65 @@ TinkerGraphStepStrategy implements TraversalStrategy.FinalTraversalStrategy {
 
 The traversal is redefined by simply taking a chain of `has()`-steps and `interval()`-steps after `g.V()` (`TinkerGraphStep`) and providing them to `TinkerGraphStep`. Then its up to TinkerGraphStep to determine if an appropriate index exists. In the code below, review the `vertices()` method and note how if an index exists, for a particular `HasContainer`, then that index is first queried before the remaining `HasContainer` filters are serially applied.
 
-[source,java]
-----
-public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
-
-    private TinkerGraph graph;
-    public List<HasContainer> hasContainers = new ArrayList<>();
-
-    public TinkerGraphStep(Traversal traversal, Class<E> returnClass, TinkerGraph graph) {
-        super(traversal, returnClass);
-        this.graph = graph;
-        this.generateHolderIterator(false);
-    }
-
-    public void generateHolderIterator(boolean trackPaths) {
-        this.starts.clear();
-        if (trackPaths)
-          this.starts.add(new HolderIterator(this, this.vertices()));
-        else
-          this.starts.add(new HolderIterator(this.vertices()));
-    }
-
-    public void clear() {
-        this.starts.clear();
-    }
-
-    private Iterator<Vertex> vertices() {
-        HasContainer indexedContainer = getIndexKey(Vertex.class);
-        return (Iterator) ((null == indexedContainer) ?
-                TinkerHelper.getVertices(this.graph).parallelStream() :
-                TinkerHelper.queryVertexIndex(this.graph, indexedContainer.key, indexedContainer.value).parallelStream())
-                .filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers))
-                .collect(Collectors.toList()).iterator();
-    }
-
-    private HasContainer getIndexKey(Class<? extends Element> indexedClass) {
-        Set<String> indexedKeys = this.graph.getIndexedKeys(indexedClass);
-        return this.hasContainers.stream()
-                .filter(c -> indexedKeys.contains(c.key) && c.predicate.equals(Compare.EQUAL))
-                .findFirst()
-                .orElseGet(() -> null);
-    }
-}
-----
+[source,groovy]
+gremlin> t = g.V.has('name','marko'); null
+==>null
+gremlin> t.toString()
+==>[TinkerGraphStep, HasStep([name,EQUAL,marko])]
+gremlin> t.strategies().apply()
+==>null
+gremlin> t.toString()
+==>[TinkerGraphStep([[name,EQUAL,marko]])]
 
 Domain Specific Languages
 -------------------------
 
-The super interface of GraphTraversal is `Traversal`. It is possible for developers to create domain specific traversals by extending Traversal. For example, a `SocialTraversal` example is provided below.
+image:gremlin-quill.png[width=200,float=right] The super interface of GraphTraversal is `Traversal`. It is possible for developers to create domain specific traversals by extending Traversal. For example, a `SocialTraversal` example is provided below.
 
 [source,java]
 ----
 public interface SocialTraversal<S, E> extends Traversal<S, E> {
-   public default SocialTraversal<S, Vertex> people() {
-     return (SocialTraversal) this.addStep(
-       new StartStep<Vertex>(this, this.memory().<Graph>get("g").V().has("age")));
-   }
 
-   public default SocialTraversal<S, Vertex> people(String name) {
-     return (SocialTraversal) this.addStep(
-       new StartStep<Vertex>(this, this.memory().<Graph>get("g").V().has("name", name)));
-   }
+        public default SocialTraversal<S, Vertex> people() {
+            return (SocialTraversal) this.addStep(new StartStep<>(this, this.memory().<Graph>get("g").get().V().has("age")));
+        }
 
-  public default SocialTraversal<S, Vertex> knows() {
-    FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
-    flatMapStep.setFunction(v -> v.get().out("knows"));
-    return (SocialTraversal) this.addStep(flatMapStep);
-  }
+        public default SocialTraversal<S, Vertex> people(String name) {
+            return (SocialTraversal) this.addStep(new StartStep<>(this, this.memory().<Graph>get("g").get().V().has("name", name)));
+        }
 
-  public default SocialTraversal<S,String> name() {
-    MapStep<Vertex,String> mapStep = new MapStep<>(this);
-    mapStep.setFunction(v -> v.get().<String>getValue("name"));
-    return (SocialTraversal) this.addStep(mapStep);
-  }
+        public default SocialTraversal<S, Vertex> knows() {
+            final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
+            flatMapStep.setFunction(v -> v.get().out("knows"));
+            return (SocialTraversal) this.addStep(flatMapStep);
+        }
 
-  public static SocialTraversal of() {
-    return new DefaultSocialTraversal();
-  }
+        public default SocialTraversal<S, Vertex> created() {
+            final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
+            flatMapStep.setFunction(v -> v.get().out("created"));
+            return (SocialTraversal) this.addStep(flatMapStep);
+        }
 
-  public class DefaultSocialTraversal extends DefaultTraversal implements SocialTraversal {}
-}
+        public default SocialTraversal<S, String> name() {
+            MapStep<Vertex, String> mapStep = new MapStep<>(this);
+            mapStep.setFunction(v -> v.get().<String>value("name"));
+            return (SocialTraversal) this.addStep(mapStep);
+        }
+
+        public static <S> SocialTraversal<S, S> of(final Graph graph) {
+            final SocialTraversal traversal = new DefaultSocialTraversal();
+            traversal.memory().set("g", graph);
+            return traversal;
+        }
+
+        public class DefaultSocialTraversal extends DefaultTraversal implements SocialTraversal { }
+    }
 ----
 
 This traversal definition can now be used as follows.
 
 [source,java]
-g.traversal(SocialTraversal.class).people("marko").knows().name()
+g.of(SocialTraversal.class).people("marko").knows().name()
 
 By extending Traversal, users can create a DSL that is respective of the semantics of their data. Instead of querying in terms of vertices/edges/properties, they can query in terms of, for example, people, their friends, and their names.
 
@@ -2242,10 +2229,10 @@ gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 In-Depth Implementations
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-image:gremlin-handdrawn.png[width=125,float=right] The vendor implementation details presented thus far are minimum requirements necessary to yield a valid TinkerPop3 implementation. However, there are other areas that a vendor can tweak to provide an implementation more optimized for their underlying graph engine. Typical areas of focus include:
+image:gremlin-painting.png[width=200,float=right] The vendor implementation details presented thus far are minimum requirements necessary to yield a valid TinkerPop3 implementation. However, there are other areas that a vendor can tweak to provide an implementation more optimized for their underlying graph engine. Typical areas of focus include:
 
-* Traversal Strategies: A <<traversalstrategy,TraversalStrategy>> can be used to alter a traversal prior to its execution. A typical example is converting a pattern of `g.V().has('name','marko')` into a global index lookup for all vertices with name "marko". In this way, a `O(|V|)` lookup becomes an `O(log(|V|))` Please review `TinkerGraphStepStrategy` for ideas.
-* Step Implementations: Every <<graph-traversal-steps,step>> if reference via the `GraphTraversal` interface. It is possible to extend `GraphTraversal` to use a vendor-specific step implementation.
+* Traversal Strategies: A <<traversalstrategy,TraversalStrategy>> can be used to alter a traversal prior to its execution. A typical example is converting a pattern of `g.V().has('name','marko')` into a global index lookup for all vertices with name "marko". In this way, a `O(|V|)` lookup becomes an `O(log(|V|))`. Please review `TinkerGraphStepStrategy` for ideas.
+* Step Implementations: Every <<graph-traversal-steps,step>> is ultimately referenced by the `GraphTraversal` interface. It is possible to extend `GraphTraversal` to use a vendor-specific step implementation.
 
 
 [[tinkergraph-gremlin]]

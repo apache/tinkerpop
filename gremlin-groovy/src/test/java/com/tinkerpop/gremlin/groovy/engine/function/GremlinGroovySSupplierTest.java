@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.groovy.engine.function;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.step.map.ElementValueStep;
+import com.tinkerpop.gremlin.process.graph.step.map.ValueStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
 import com.tinkerpop.gremlin.util.Serializer;
@@ -23,7 +23,7 @@ public class GremlinGroovySSupplierTest {
         Traversal traversal = traversalSSupplier.get();
         assertEquals(TinkerGraphStep.class, traversal.getSteps().get(0).getClass());
         assertEquals(VertexStep.class, traversal.getSteps().get(1).getClass());
-        assertEquals(ElementValueStep.class, traversal.getSteps().get(2).getClass());
+        assertEquals(ValueStep.class, traversal.getSteps().get(2).getClass());
         assertEquals(traversal.getSteps().size(), 3);
     }
 }
