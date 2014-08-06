@@ -25,7 +25,7 @@ public abstract class UnfoldTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_mapXoutEX_unfold() {
         final Traversal<Vertex, Edge> traversal = get_g_V_mapXoutEX_unfold();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         int counter = 0;
         final Set<Edge> edges = new HashSet<>();
         while (traversal.hasNext()) {

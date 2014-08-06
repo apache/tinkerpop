@@ -16,6 +16,7 @@ import org.javatuples.Pair;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -153,6 +154,10 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
         return (List<E>) this.fill(new ArrayList<>());
     }
 
+    public default Set<E> toSet() {
+        return (Set<E>) this.fill(new HashSet<>());
+    }
+
     public default Collection<E> fill(final Collection<E> collection) {
         try {
             while (this.hasNext()) {
@@ -165,7 +170,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public default Traversal iterate() {
         try {
-            while (this.hasNext()) {
+            while (true) {
                 this.next();
             }
         } catch (final NoSuchElementException ignored) {

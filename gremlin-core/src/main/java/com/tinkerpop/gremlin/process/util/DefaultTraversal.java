@@ -20,7 +20,6 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     protected final List<Step> steps = new ArrayList<>();
     protected final TraversalStrategies traversalStrategies = new DefaultTraversalStrategies(this);
     protected final Memory memory = new DefaultMemory();
-    protected boolean firstNext = true;
 
     public DefaultTraversal() {
         this.traversalStrategies.register(TraverserSourceStrategy.instance());
@@ -72,10 +71,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     }
 
     private void applyStrategies() {
-        if (this.firstNext) {
-            this.strategies().apply();
-            this.firstNext = false;
-        }
+        if (!this.traversalStrategies.complete()) this.traversalStrategies.apply();
     }
 
 }

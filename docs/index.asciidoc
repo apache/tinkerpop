@@ -1123,6 +1123,8 @@ Path Step
 
 A traverser is transformed as it moves through a series of steps within a `Traversal`. The history of the traverser is realized by examining its `path()`.
 
+image::path-step.png[width=650]
+
 [source,groovy]
 gremlin> g.V.out.out.name
 ==>ripple
@@ -1131,6 +1133,13 @@ gremlin> g.V.out.out.name.path
 ==>[v[1], v[4], v[5], ripple]
 ==>[v[1], v[4], v[3], lop]
 
+If edges are required in the path, then be sure to traverser those edges explicitly.
+
+[source,groovy]
+gremlin> g.V.outE.inV.outE.inV.path
+==>[v[1], e[8][1-knows->4], v[4], e[10][4-created->5], v[5]]
+==>[v[1], e[8][1-knows->4], v[4], e[11][4-created->3], v[3]]
+
 It is possible to provide a var args of lamdas to post-process the elements of the path in a round-robin fashion.
 
 [source,groovy]
@@ -1138,7 +1147,17 @@ gremlin> g.V.out.out.path{it.value('name')}{it.value('age')}
 ==>[marko, 32, ripple]
 ==>[marko, 32, lop]
 
-[[subgraph-step]]
+Finally, because of lambda post-processing, nothing prevents the lamda from tiggering yet another traversal. In the traversal below, for each element of the path traversed thus far, if its a person (as determined by having an `age`-property), then get all of their creations, else if its a creation, get all the people that created it.
+
+[source,groovy]
+gremlin> g.V.out.out.path{
+  it.choose({it.get().has('age').hasNext()}, 
+    g.of().out('created').name,
+    g.of().in('created').name).toList()}
+==>[[lop], [ripple, lop], [josh]]
+==>[[lop], [ripple, lop], [marko, josh, peter]]
+
+[[subgraph-step]]∂
 Subgraph Step
 ~~~~~~~~~~~~~
 

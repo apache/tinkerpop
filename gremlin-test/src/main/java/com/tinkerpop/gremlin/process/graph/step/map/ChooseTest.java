@@ -32,7 +32,7 @@ public abstract class ChooseTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_chooseXname_length_5XoutXinX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_chooseXname_length_5XoutXinX_name();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         Map<String, Long> counts = new HashMap<>();
         int counter = 0;
         while (traversal.hasNext()) {
@@ -54,7 +54,7 @@ public abstract class ChooseTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_v1_chooseX0XoutX_name() {
         final Traversal<Vertex, String> traversal = get_g_v1_chooseX0XoutX_name(convertToVertexId("marko"));
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         Map<String, Long> counts = new HashMap<>();
         int counter = 0;
         while (traversal.hasNext()) {
@@ -73,7 +73,7 @@ public abstract class ChooseTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_hasXageX_chooseXname_lengthX5_in_4_outX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_hasXageX_chooseXname_lengthX5_in_4_out_3_bothX_name();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         Map<String, Long> counts = new HashMap<>();
         int counter = 0;
         while (traversal.hasNext()) {
@@ -92,7 +92,7 @@ public abstract class ChooseTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_chooseXout_count_nextX2L_valueXnameX_3L_valuesX() {
         final Traversal<Vertex, Object> traversal = get_g_V_chooseXout_count_nextX2L_valueXnameX_3L_valuesX();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         Map<String, Long> counts = new HashMap<>();
         int counter = 0;
         while (traversal.hasNext()) {

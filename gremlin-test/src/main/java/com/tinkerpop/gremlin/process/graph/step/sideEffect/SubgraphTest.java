@@ -32,7 +32,9 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
         final Configuration config = graphProvider.newGraphConfiguration("subgraph");
         graphProvider.clear(config);
         final Graph subgraph = graphProvider.openTestGraph(config);
-        get_g_v1_outE_subgraphXknowsX(convertToVertexId("marko"), subgraph).iterate();
+        Traversal<Vertex, String> traversal = get_g_v1_outE_subgraphXknowsX(convertToVertexId("marko"), subgraph);
+        printTraversalForm(traversal);
+        traversal.iterate();
 
         AbstractGremlinSuite.assertVertexEdgeCounts(3, 2).accept(subgraph);
         subgraph.E().forEach(e -> {
@@ -60,7 +62,9 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
         final Configuration config = graphProvider.newGraphConfiguration("subgraph");
         graphProvider.clear(config);
         final Graph subgraph = graphProvider.openTestGraph(config);
-        get_g_E_subgraphXcreatedX(subgraph).iterate();
+        Traversal<Vertex, String> traversal = get_g_E_subgraphXcreatedX(subgraph);
+        printTraversalForm(traversal);
+        traversal.iterate();
 
         AbstractGremlinSuite.assertVertexEdgeCounts(5, 4).accept(subgraph);
 

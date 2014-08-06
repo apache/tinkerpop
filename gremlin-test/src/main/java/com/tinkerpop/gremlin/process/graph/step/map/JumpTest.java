@@ -12,7 +12,6 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -58,7 +57,7 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
         traversals.add(get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(convertToVertexId("marko")));
         traversals.add(get_g_v1_asXaX_jumpXb_loops_gt_1X_out_jumpXaX_asXbX_name(convertToVertexId("marko")));
         traversals.forEach(traversal -> {
-            System.out.println("Testing: " + traversal);
+            printTraversalForm(traversal);
             List<String> names = new ArrayList<>();
             while (traversal.hasNext()) {
                 names.add(traversal.next());
@@ -76,7 +75,7 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
         traversals.add(get_g_V_asXxX_out_jumpXx_loops_lt_2_trueX_path());
         traversals.add(get_g_V_asXxX_out_jumpXx_2_trueX_path());
         traversals.forEach(traversal -> {
-            System.out.println("Testing: " + traversal);
+            printTraversalForm(traversal);
             final Map<Integer, Long> pathLengths = new HashMap<>();
             int counter = 0;
             while (traversal.hasNext()) {
@@ -97,7 +96,7 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
         traversals.add(get_g_V_asXxX_out_jumpXx_loops_lt_2X_asXyX_in_jumpXy_loops_lt_2X_name());
         traversals.add(get_g_V_asXxX_out_jumpXx_2X_asXyX_in_jumpXy_2X_name());
         traversals.forEach(traversal -> {
-            System.out.println("Testing: " + traversal);
+            printTraversalForm(traversal);
             int count = 0;
             while (traversal.hasNext()) {
                 assertEquals("marko", traversal.next());
@@ -114,10 +113,8 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
         final List<Traversal<Vertex, Vertex>> traversals = new ArrayList<>();
         traversals.add(get_g_V_asXxX_out_jumpXx_2X());
         traversals.add(get_g_V_asXxX_out_jumpXx_loops_lt_2X());
-
         traversals.forEach(traversal -> {
-
-            System.out.println("Testing: " + traversal);
+            printTraversalForm(traversal);
             int counter = 0;
             while (traversal.hasNext()) {
                 counter++;
@@ -135,9 +132,8 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
         final List<Traversal<Vertex, Vertex>> traversals = new ArrayList<>();
         traversals.add(get_g_V_asXxX_out_jumpXx_2_trueX());
         traversals.add(get_g_V_asXxX_out_jumpXx_loops_lt_2_trueX());
-
         traversals.forEach(traversal -> {
-            System.out.println("Testing: " + traversal);
+            printTraversalForm(traversal);
             Map<String, Long> map = new HashMap<>();
             while (traversal.hasNext()) {
                 Vertex vertex = traversal.next();
@@ -158,8 +154,8 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_jumpXx_t_out_hasNextX_in_jumpXyX_asXxX_out_asXyX_path() {
-        Iterator<Path> traversal = get_g_v1_out_jumpXx_t_out_hasNextX_in_jumpXyX_asXxX_out_asXyX_path(convertToVertexId("marko"));
-        System.out.println("Testing: " + traversal);
+        Traversal<Vertex, Path> traversal = get_g_v1_out_jumpXx_t_out_hasNextX_in_jumpXyX_asXxX_out_asXyX_path(convertToVertexId("marko"));
+        printTraversalForm(traversal);
         final List<Path> paths = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(6, paths.size());
         assertFalse(traversal.hasNext());
@@ -168,8 +164,8 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_jumpXxX_out_out_asXxX() {
-        Iterator<Vertex> traversal = get_g_V_jumpXxX_out_out_asXxX();
-        System.out.println("Testing: " + traversal);
+        Traversal<Vertex, Vertex> traversal = get_g_V_jumpXxX_out_out_asXxX();
+        printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         int counter = 0;
         Set<Vertex> vertices = new HashSet<>();

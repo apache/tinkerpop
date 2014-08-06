@@ -29,7 +29,7 @@ public abstract class FoldTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_fold() {
         final Traversal<Vertex, List<Vertex>> traversal = get_g_V_fold();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         List<Vertex> list = traversal.next();
         assertFalse(traversal.hasNext());
         Set<Vertex> vertices = new HashSet<>(list);
@@ -40,7 +40,7 @@ public abstract class FoldTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_fold_unfold() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_fold_unfold();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         int count = 0;
         Set<Vertex> vertices = new HashSet<>();
         while (traversal.hasNext()) {
@@ -56,7 +56,7 @@ public abstract class FoldTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_hasXageX_foldX0_plusX() {
         final Traversal<Vertex, Integer> traversal = get_g_V_hasXageX_foldX0_plusX();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         final Integer ageSum = traversal.next();
         assertFalse(traversal.hasNext());
         assertEquals(Integer.valueOf(123), ageSum);

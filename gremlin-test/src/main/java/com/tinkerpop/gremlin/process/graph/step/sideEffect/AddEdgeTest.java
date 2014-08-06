@@ -9,7 +9,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
@@ -30,12 +29,12 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     @FeatureRequirement(featureClass = EdgeFeatures.class, feature = FEATURE_ADD_EDGES)
     public void g_v1_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX() {
-        final Iterator<Vertex> step = get_g_v1_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(convertToVertexId("marko"));
-        System.out.println("Testing: " + step);
+        final Traversal<Vertex, Vertex> traversal = get_g_v1_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
         final List<Vertex> cocreators = new ArrayList<>();
         final List<Object> ids = new ArrayList<>();
-        while (step.hasNext()) {
-            final Vertex vertex = step.next();
+        while (traversal.hasNext()) {
+            final Vertex vertex = traversal.next();
             cocreators.add(vertex);
             ids.add(vertex.id());
         }
@@ -59,11 +58,11 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     @FeatureRequirement(featureClass = EdgeFeatures.class, feature = FEATURE_ADD_EDGES)
     public void g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_aX() {
-        final Iterator<Vertex> step = get_g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_aX(convertToVertexId("marko"));
-        System.out.println("Testing: " + step);
+        final Traversal<Vertex, Vertex> traversal = get_g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_aX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
         int count = 0;
-        while (step.hasNext()) {
-            final Vertex vertex = step.next();
+        while (traversal.hasNext()) {
+            final Vertex vertex = traversal.next();
             assertEquals(convertToVertexId("lop"), vertex.id());
             assertEquals(Long.valueOf(1l), vertex.out("createdBy").count().next());
             assertEquals(convertToVertexId("marko"), vertex.out("createdBy").id().next());

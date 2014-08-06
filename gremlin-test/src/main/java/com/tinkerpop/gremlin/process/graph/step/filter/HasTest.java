@@ -52,8 +52,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_hasXkeyX() {
-        Iterator<Vertex> traversal = get_g_v1_hasXkeyX(convertToVertexId("marko"), "name");
-        System.out.println("Testing: " + traversal);
+        Traversal<Vertex, Vertex> traversal = get_g_v1_hasXkeyX(convertToVertexId("marko"), "name");
+        printTraversalForm(traversal);
         assertEquals("marko", traversal.next().<String>value("name"));
         assertFalse(traversal.hasNext());
         traversal = get_g_v1_hasXkeyX(convertToVertexId("marko"), "circumference");
@@ -64,8 +64,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_hasXname_markoX() {
-        Iterator<Vertex> traversal = get_g_v1_hasXname_markoX(convertToVertexId("marko"));
-        System.out.println("Testing: " + traversal);
+        Traversal<Vertex, Vertex> traversal = get_g_v1_hasXname_markoX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
         assertEquals("marko", traversal.next().<String>value("name"));
         assertFalse(traversal.hasNext());
         traversal = get_g_v1_hasXname_markoX(convertToVertexId("vadas"));
@@ -76,8 +76,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_hasXname_markoX() {
-        final Iterator<Vertex> traversal = get_g_V_hasXname_markoX();
-        System.out.println("Testing: " + traversal);
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_markoX();
+        printTraversalForm(traversal);
         assertEquals("marko", traversal.next().<String>value("name"));
         assertFalse(traversal.hasNext());
     }
@@ -85,16 +85,16 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_hasXname_blahX() {
-        final Iterator<Vertex> traversal = get_g_V_hasXname_blahX();
-        System.out.println("Testing: " + traversal);
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_blahX();
+        printTraversalForm(traversal);
         assertFalse(traversal.hasNext());
     }
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_hasXage_gt_30X() {
-        final Iterator<Vertex> traversal = get_g_V_hasXage_gt_30X();
-        System.out.println("Testing: " + traversal);
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXage_gt_30X();
+        printTraversalForm(traversal);
         final List<Element> list = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(2, list.size());
         for (final Element v : list) {
@@ -105,19 +105,19 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_hasXage_gt_30X() {
-        Iterator<Vertex> traversal = get_g_v1_hasXage_gt_30X(convertToVertexId("marko"));
-        System.out.println("Testing: " + traversal);
+        Traversal<Vertex, Vertex> traversal = get_g_v1_hasXage_gt_30X(convertToVertexId("marko"));
+        printTraversalForm(traversal);
         assertFalse(traversal.hasNext());
         traversal = get_g_v1_hasXage_gt_30X(convertToVertexId("josh"));
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
     }
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_hasXid_2X() {
-        final Iterator<Vertex> traversal = get_g_v1_out_hasXid_2X(convertToVertexId("marko"), convertToVertexId("vadas"));
-        System.out.println("Testing: " + traversal);
+        final Traversal<Vertex, Vertex> traversal = get_g_v1_out_hasXid_2X(convertToVertexId("marko"), convertToVertexId("vadas"));
+        printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         assertEquals(convertToVertexId("vadas"), traversal.next().id());
     }
@@ -126,8 +126,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_hasXblahX() {
         assumeTrue(graphMeetsTestRequirements());
-        final Iterator<Vertex> traversal = get_g_V_hasXblahX();
-        System.out.println("Testing: " + traversal);
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXblahX();
+        printTraversalForm(traversal);
         assertFalse(traversal.hasNext());
     }
 
@@ -136,8 +136,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(CLASSIC)
     public void g_e7_hasXlabelXknowsX() {
         //System.out.println(convertToEdgeId("marko", "knows", "vadas"));
-        Iterator<Edge> traversal = get_g_e7_hasXlabelXknowsX(convertToEdgeId("marko", "knows", "vadas"));
-        System.out.println("Testing: " + traversal);
+        Traversal<Edge, Edge> traversal = get_g_e7_hasXlabelXknowsX(convertToEdgeId("marko", "knows", "vadas"));
+        printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
@@ -149,8 +149,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_E_hasXlabelXknowsX() {
-        final Iterator<Edge> traversal = get_g_E_hasXlabelXknowsX();
-        System.out.println("Testing: " + traversal);
+        final Traversal<Edge, Edge> traversal = get_g_E_hasXlabelXknowsX();
+        printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
@@ -162,8 +162,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_E_hasXlabelXknows_createdX() {
-        final Iterator<Edge> traversal = get_g_E_hasXlabelXknows_createdX();
-        System.out.println("Testing: " + traversal);
+        final Traversal<Edge, Edge> traversal = get_g_E_hasXlabelXknows_createdX();
+        printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
@@ -176,8 +176,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_hasXname_equalspredicate_markoX() {
-        final Iterator<Vertex> traversal = get_g_V_hasXname_equalspredicate_markoX();
-        System.out.println("Testing: " + traversal);
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_equalspredicate_markoX();
+        printTraversalForm(traversal);
         assertEquals("marko", traversal.next().<String>value("name"));
         assertFalse(traversal.hasNext());
     }

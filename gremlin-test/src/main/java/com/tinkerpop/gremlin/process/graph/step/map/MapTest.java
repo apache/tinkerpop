@@ -27,7 +27,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(CLASSIC)
     public void g_v1_mapXnameX() {
         final Traversal<Vertex, String> traversal = get_g_v1_mapXnameX(convertToVertexId("marko"));
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         assertEquals(traversal.next(), "marko");
         assertFalse(traversal.hasNext());
     }
@@ -36,7 +36,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(CLASSIC)
     public void g_v1_outE_label_mapXlengthX() {
         final Traversal<Vertex, Integer> traversal = get_g_v1_outE_label_mapXlengthX(convertToVertexId("marko"));
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         List<Integer> lengths = traversal.toList();
         assertTrue(lengths.contains("created".length()));
         assertTrue(lengths.contains("knows".length()));
@@ -48,7 +48,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_mapXnameX_mapXlengthX() {
         final Traversal<Vertex, Integer> traversal = get_g_v1_out_mapXnameX_mapXlengthX(convertToVertexId("marko"));
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         final List<Integer> lengths = traversal.toList();
         assertTrue(lengths.contains("josh".length()));
         assertTrue(lengths.contains("vadas".length()));
@@ -65,7 +65,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
         int other = 0;
 
         final Traversal<Vertex, String> traversal = get_g_V_asXaX_out_mapXa_nameX();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         while (traversal.hasNext()) {
             final String name = traversal.next();
             if (name.equals("marko")) marko++;

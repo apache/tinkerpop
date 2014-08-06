@@ -28,7 +28,7 @@ public abstract class CountTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_count() {
         final Traversal<Vertex, Long> traversal = get_g_V_count();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         assertEquals(new Long(6), traversal.next());
         assertFalse(traversal.hasNext());
     }
@@ -37,7 +37,7 @@ public abstract class CountTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_out_count() {
         final Traversal<Vertex, Long> traversal = get_g_V_out_count();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         assertEquals(new Long(6), traversal.next());
         assertFalse(traversal.hasNext());
     }
@@ -46,7 +46,7 @@ public abstract class CountTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_both_both_count() {
         final Traversal<Vertex, Long> traversal = get_g_V_both_both_count();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         assertEquals(new Long(30), traversal.next());
         assertFalse(traversal.hasNext());
     }
@@ -55,7 +55,7 @@ public abstract class CountTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_filterXfalseX_count() {
         final Traversal<Vertex, Long> traversal = get_g_V_filterXfalseX_count();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         assertEquals(new Long(0), traversal.next());
         assertFalse(traversal.hasNext());
     }

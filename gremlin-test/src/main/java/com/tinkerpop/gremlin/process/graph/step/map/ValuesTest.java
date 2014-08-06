@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
-import java.util.Iterator;
 import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
@@ -30,12 +29,12 @@ public abstract class ValuesTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_values() {
-        final Iterator<Map<String, Object>> step = get_g_V_values();
-        System.out.println("Testing: " + step);
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_values();
+        printTraversalForm(traversal);
         int counter = 0;
-        while (step.hasNext()) {
+        while (traversal.hasNext()) {
             counter++;
-            final Map<String, Object> values = step.next();
+            final Map<String, Object> values = traversal.next();
             final String name = (String) values.get("name");
             assertEquals(2, values.size());
             if (name.equals("marko")) {
@@ -60,12 +59,12 @@ public abstract class ValuesTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_valuesXname_ageX() {
-        final Iterator<Map<String, Object>> step = get_g_V_valuesXname_ageX();
-        System.out.println("Testing: " + step);
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_valuesXname_ageX();
+        printTraversalForm(traversal);
         int counter = 0;
-        while (step.hasNext()) {
+        while (traversal.hasNext()) {
             counter++;
-            final Map<String, Object> values = step.next();
+            final Map<String, Object> values = traversal.next();
             final String name = (String) values.get("name");
             if (name.equals("marko")) {
                 assertEquals(29, values.get("age"));
@@ -95,13 +94,13 @@ public abstract class ValuesTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_E_valuesXid_label_weightX() {
-        final Iterator<Map<String, Object>> step = get_g_E_valuesXid_label_weightX();
-        System.out.println("Testing: " + step);
+        final Traversal<Edge, Map<String, Object>> traversal = get_g_E_valuesXid_label_weightX();
+        printTraversalForm(traversal);
         int counter = 0;
         int counter2 = 0;
-        while (step.hasNext()) {
+        while (traversal.hasNext()) {
             counter++;
-            final Map<String, Object> values = step.next();
+            final Map<String, Object> values = traversal.next();
             if (values.get("label").equals("knows") && values.get("weight").equals(0.5f) && values.size() == 3)
                 counter2++;
             else if (values.get("label").equals("knows") && values.get("weight").equals(1.0f) && values.size() == 3)
@@ -122,11 +121,11 @@ public abstract class ValuesTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXcreatedX_values() {
-        final Iterator<Map<String, Object>> step = get_g_v1_outXcreatedX_values(convertToVertexId("marko"));
-        System.out.println("Testing: " + step);
-        assertTrue(step.hasNext());
-        final Map<String, Object> values = step.next();
-        assertFalse(step.hasNext());
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_v1_outXcreatedX_values(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        final Map<String, Object> values = traversal.next();
+        assertFalse(traversal.hasNext());
         assertEquals("lop", values.get("name"));
         assertEquals("java", values.get("lang"));
         assertEquals(2, values.size());

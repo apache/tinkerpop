@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Collection;
-import java.util.Iterator;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.*;
@@ -21,8 +20,9 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_storeXa_nameX_out_capXaX() {
-        final Iterator<Collection> step = get_g_V_storeXnameX_asXaX_out_capXaX();
-        Collection names = step.next();
+        final Traversal<Vertex, Collection> traversal = get_g_V_storeXnameX_asXaX_out_capXaX();
+        printTraversalForm(traversal);
+        Collection names = traversal.next();
         assertEquals(6, names.size());
         assertTrue(names.contains("marko"));
         assertTrue(names.contains("josh"));
@@ -30,7 +30,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         assertTrue(names.contains("lop"));
         assertTrue(names.contains("ripple"));
         assertTrue(names.contains("vadas"));
-        assertFalse(step.hasNext());
+        assertFalse(traversal.hasNext());
     }
 
     public static class JavaStoreTest extends StoreTest {

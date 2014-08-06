@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,9 +28,9 @@ public abstract class OrderTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_name_order() {
-        final Iterator<String> step = get_g_V_name_order();
-        System.out.println("Testing: " + step);
-        final List<String> names = StreamFactory.stream(step).collect(Collectors.toList());
+        final Traversal<Vertex, String> traversal = get_g_V_name_order();
+        printTraversalForm(traversal);
+        final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(names.size(), 6);
         assertEquals("josh", names.get(0));
         assertEquals("lop", names.get(1));
@@ -44,9 +43,9 @@ public abstract class OrderTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_name_orderXabX() {
-        final Iterator<String> step = get_g_V_name_orderXabX();
-        System.out.println("Testing: " + step);
-        final List<String> names = StreamFactory.stream(step).collect(Collectors.toList());
+        final Traversal<Vertex, String> traversal = get_g_V_name_orderXabX();
+        printTraversalForm(traversal);
+        final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(names.size(), 6);
         assertEquals("josh", names.get(5));
         assertEquals("lop", names.get(4));
@@ -59,9 +58,9 @@ public abstract class OrderTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_orderXa_nameXb_nameX_name() {
-        final Iterator<String> step = get_g_V_orderXa_nameXb_nameX_name();
-        System.out.println("Testing: " + step);
-        final List<String> names = StreamFactory.stream(step).collect(Collectors.toList());
+        final Traversal<Vertex, String> traversal = get_g_V_orderXa_nameXb_nameX_name();
+        printTraversalForm(traversal);
+        final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(names.size(), 6);
         assertEquals("josh", names.get(0));
         assertEquals("lop", names.get(1));

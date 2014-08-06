@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,8 +29,8 @@ public abstract class DedupTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_both_dedup_name() {
-        final Iterator<String> traversal = get_g_V_both_dedup_name();
-        System.out.println("Testing: " + traversal);
+        final Traversal<Vertex, String> traversal = get_g_V_both_dedup_name();
+        printTraversalForm(traversal);
         final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(6, names.size());
         assertTrue(names.contains("marko"));
@@ -46,8 +45,8 @@ public abstract class DedupTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_both_dedupXlangX_name() {
-        final Iterator<String> traversal = get_g_V_both_dedupXlangX_name();
-        System.out.println("Testing: " + traversal);
+        final Traversal<Vertex, String> traversal = get_g_V_both_dedupXlangX_name();
+        printTraversalForm(traversal);
         final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(2, names.size());
         assertTrue(names.contains("marko") || names.contains("peter") || names.contains("josh") || names.contains("vadas"));
@@ -58,8 +57,8 @@ public abstract class DedupTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_both_name_orderXa_bX_dedup() {
-        final Iterator<String> traversal = get_g_V_both_name_orderXa_bX_dedup();
-        System.out.println("Testing: " + traversal);
+        final Traversal<Vertex, String> traversal = get_g_V_both_name_orderXa_bX_dedup();
+        printTraversalForm(traversal);
         final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(6, names.size());
         assertEquals("josh", names.get(0));

@@ -37,7 +37,7 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_outXcreatedX_groupCountXnameX() {
         final Traversal<Vertex, Map<Object, Long>> traversal = get_g_V_outXcreatedX_groupCountXnameX();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         final Map<Object, Long> map = traversal.next();
         assertEquals(map.size(), 2);
         assertEquals(map.get("lop"), Long.valueOf(3l));
@@ -49,7 +49,7 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_outXcreatedX_name_groupCount() {
         Arrays.asList(get_g_V_outXcreatedX_name_groupCount(), get_g_V_outXcreatedX_name_groupCount_asXaX()).forEach(traversal -> {
-            System.out.println("Testing: " + traversal);
+            printTraversalForm(traversal);
             final Map<Object, Long> map = traversal.next();
             assertEquals(map.size(), 2);
             assertEquals(map.get("lop").longValue(), 3l);
@@ -62,7 +62,7 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_filterXfalseX_groupCount() {
         final Traversal<Vertex, Map<Object, Long>> traversal = get_g_V_filterXfalseX_groupCount();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         final Map<Object, Long> map = traversal.next();
         assertEquals(map.size(), 0);
         assertFalse(traversal.hasNext());
@@ -75,7 +75,7 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
         traversals.add(get_g_V_asXxX_out_groupCountXnameX_asXaX_jumpXx_2X_capXaX());
         traversals.add(get_g_V_asXxX_out_groupCountXnameX_asXaX_jumpXx_loops_lt_2X_capXaX());
         traversals.forEach(traversal -> {
-            System.out.println("Testing: " + traversal);
+            printTraversalForm(traversal);
             final Map<Object, Long> map = traversal.next();
             assertFalse(traversal.hasNext());
             assertEquals(map.size(), 4);
