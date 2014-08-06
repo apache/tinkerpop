@@ -1986,7 +1986,64 @@ Gremlin Server is distributed with a configuration that utilizes link:http://en.
 
 The diagram shows an incoming request to process the Gremlin script of `g.V`.  Gremlin Server evaluates that script getting an `Iterator` of vertices as a result.  Gremlin Server recognizes that the `Iterator` and steps through each `Vertex` within it.  The vertices are batched together given the `resultIterationBatchSize` configuration.  In this case, that value must be `2` given that each "response" contains two vertices.  Each response is serialized given the requested serializer type (JSON is likely best for non-JVM languages) and written back to the requesting client immediately.  Gremlin Server does not wait for the entire result to be iterated, before sending back a response.  It will send the responses as they are realized.
 
-This approach allows for the processing of large results, without having to serializes the entire result into memory for the response.  It places a bit of a burden on the developer of the driver however, because it becomes necessary to provide a way to reconstruct the entire result on the client side from all of the individual responses that Gremlin Server returns for a single request.  Again, this description of Gremlin Server's "flow" is related to the out-of-the-box configuration.  It is quite possible to construct other flows, that might be more amenable to a particular language or style of processing.
+This approach allows for the processing of large result sets without having to serialize the entire result into memory for the response.  It places a bit of a burden on the developer of the driver however, because it becomes necessary to provide a way to reconstruct the entire result on the client side from all of the individual responses that Gremlin Server returns for a single request.  Again, this description of Gremlin Server's "flow" is related to the out-of-the-box configuration.  It is quite possible to construct other flows, that might be more amenable to a particular language or style of processing.
+
+To formulate a request to Gremlin Server, a `RequestMessage` needs to be constructed.  The `RequestMessage` is a generalized representation of a request that carries a set of "standard" values in addition to optional ones that are dependent on the operation being performed.  A `RequestMessage` has these fields:
+
+[width="100%",cols="3,10",options="header"]
+|=========================================================
+|Key |Description
+|requestId |A link:http://en.wikipedia.org/wiki/Globally_unique_identifier[UUID] representing the unique identification for the request.
+|op |The name of the "operation" to execute based on the available `OpProcessor` configured in the Gremlin Server.  To evaluate a script, use `eval`.
+|processor |The name of the `OpProcessor` to utilize. The default `OpProcessor` for evaluating scripts is unamed and therefore script evaluation purposes, this value can be an empty string.
+|args |A `Map` of arbitrary parameters to pass to Gremlin Server.  The requirements for the contents of this `Map` are dependent on the `op` selected.
+|=========================================================
+
+This message can be serialized in any fashion that is supported by Gremlin Server.  New serialization methods can be plugged in by implementing a `ServiceLoader` enabled `MessageSerializer`, however Gremlin Server provides for JSON serialization by default which will be good enough for purposes of most developers building drivers. A `RequestMessage` to evaluate a script with variable bindings looks like this in JSON:
+
+[source,js]
+----
+{ "requestId":"1d6d02bd-8e56-421d-9438-3bd6d0079ff1",
+  "op":"eval",
+  "processor":"",
+  "args":{"gremlin":"g.v(x).out",
+          "bindings":{"x":1},
+          "language":"gremlin-groovy"}}
+----
+
+The above JSON represents the "body" of the request to send to Gremlin Server.  There is also a "header".  The "header" basically consists of a "mime type" so that Gremlin Server knows how to deserialize the `RequestMessage`. So, the actual byte array sent to Gremlin Server would be formatted as follows:
+
+image::gremlin-server-request.png[]
+
+The first byte represents the total length of the entire message (excluding this initial byte). The next byte is the length of the "mime type" string value that follows.  Given the default configuration of Gremlin Server, this value should be set to `application/json`.  The "payload" represents the JSON message above encoded as bytes. 
+
+When Gremlin Server receives that request, it will decode it given the "mime type", pass it to the requested `OpProcessor` which will execute the `op` defined in the message.  In this case, it will evaluate the script `g.v(x).out` using the `bindings` supplied in the `args` and stream back the results in a series of `ResponseMessages`.  A `ResponseMessage` looks like this:
+
+[width="100%",cols="3,10",options="header"]
+|=========================================================
+|Key |Description
+|requestId |The identifier of the `RequestMessage` that generated this `ResponseMessage`.
+|code |A `ResultCode` that is somewhat analagous to an link:http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html[HTTP status code].
+|resultType |Helps identify the "type" of value in the `result` - will be an integer value where "0" signifies an "object", "1" signifies a "collection", and "2" signifies an "empty" result.
+|result |The return value as classified by the `resultType`.
+|========================================================= 
+
+Assuming that Gremlin Server is configured to return one result at a time, the first `ResponseMessage` returned to the client would look something like this:
+
+[source,js]
+----
+{"result":{"id":2,"label":"vertex","type":"vertex","hiddens":{},"properties":{"name":"vadas","age":27}},
+ "code":200,
+ "requestId":"1d6d02bd-8e56-421d-9438-3bd6d0079ff1",
+ "type":0}
+----
+
+As Gremlin Server is streaming results, additional responses will arrive over the WebSocket until the iteration of the result on the server is complete.  The response stream is always marked as "complete" by a terminating message.  The "terminator" will look like this:
+
+[source,js]
+{"result":null,"code":299,"requestId":"1d6d02bd-8e56-421d-9438-3bd6d0079ff1","type":0}
+
+The `299` code signifies stream termination which means that all processing for the request `1d6d02bd-8e56-421d-9438-3bd6d0079ff1` is complete.  Please see the link:http://www.tinkerpop.com/javadocs/current/com/tinkerpop/gremlin/driver/message/ResultCode.html[javadoc] for more information on the various `code` values that are available.
 
 Implementations
 ===============
