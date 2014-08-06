@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -12,7 +13,6 @@ import java.util.NoSuchElementException;
  */
 public abstract class AbstractStep<S, E> implements Step<S, E> {
 
-    private static final String UNDERSCORE = "_";
     protected String as;
     protected Traversal traversal;
     public ExpandableStepIterator<S> starts;
@@ -25,7 +25,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     public AbstractStep(final Traversal traversal) {
         this.traversal = traversal;
         this.starts = new ExpandableStepIterator<S>((Step) this);
-        this.as = UNDERSCORE + this.traversal.getSteps().size();
+        this.as = Graph.Key.hide(Integer.toString(this.traversal.getSteps().size()));
     }
 
     public void addStarts(final Iterator<Traverser<S>> starts) {
