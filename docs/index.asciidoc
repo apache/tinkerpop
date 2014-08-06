@@ -983,6 +983,26 @@ g.V.has("age").choose(v -> v.get().value("name").length(), new HashMap() {{
   put(4,g.of().out); 
 }}).value("name")
 
+[[groupby-step]]
+GroupBy Step
+~~~~~~~~~~~~
+
+As traversers propagate across a graph as defined by a traversal, sideEffect computations are sometimes required. That is, the actually path taken or the current location of a traverser is not the ultimate output of the computation, but some other representation of the traversal. The `groupBy`-step is one such sideEffect that organizes the objects according to some function of the object. Then, if required, that organization (a list) is reduced. An example is provided below.
+
+[source,groovy]
+gremlin> g.V.groupBy{it.value('name')[1]}   // group the vertices by the first letter of their name
+==>[a:[v[1], v[2]], e:[v[6]], i:[v[5]], o:[v[3], v[4]]]
+gremlin> g.V.groupBy{it.value('name')[1]}{it.value('name')}   // for each vertex in the group, get their name (now the name[1] is apparent)
+==>[a:[marko, vadas], e:[peter], i:[ripple], o:[lop, josh]]
+gremlin> g.V.groupBy{it.value('name')[1]}{it.value('name')}{it.size()}   // for each grouping, what is it's size?
+==>[a:2, e:1, i:1, o:2]
+
+The three lambda parameters of `groupBy` are discussed below.
+
+. Key-lambda: What feature of the object to group on (a function that yields the map key)?
+. Value-lambda: What feature of the group to store in the key-list?
+. Reduce-lambda: What feature of the key-list to ultimately return?
+
 [[groupcount-step]]
 GroupCount Step
 ~~~~~~~~~~~~~~~
@@ -1013,7 +1033,7 @@ The above is interesting in that it demonstrates the use of referencing the inte
 Jump Step
 ~~~~~~~~~
 
-TinkerPop3 introduces the `jump()`-step. This step allows the propagating traverser object to jump to any arbitrary section of the `Traversal`. Typically, this is determined by means of a predicate. In particular, with jump(), the Gremlin is no longer constrained to *do-while* semantics, but can as well support *while-do* (see link:http://docs.oracle.com/javase/tutorial/java/nutsandbolts/while.html[Java Documentation on While]). Below are some examples of jump() in action in Gremlin-Groovy.
+TinkerPop3 introduces the `jump`-step. This step allows the propagating traverser object to jump to any arbitrary section of the `Traversal`. Typically, this is determined by means of a predicate. In particular, with `jump`, the Gremlin is no longer constrained to *do-while* semantics, but can as well support *while-do* (see link:http://docs.oracle.com/javase/tutorial/java/nutsandbolts/while.html[Java Documentation on While]). Below are some examples of `jump` in action in Gremlin-Groovy.
 
 [source,groovy]
 gremlin> g.v(1).as('a').out.jump('a'){it.loops<2}.name <1>
@@ -1234,6 +1254,37 @@ gremlin> clock(1){g.V.as('x').timeLimit(750).both.groupCount.as('m').jump('x',16
 ==>750.03
 
 In essence, the relative order is respected, even through the number traversers at each vertex is not. The primary benefit being that the calculation is guaranteed to complete at the specified time limit (in milliseconds). Finally, note that the internal clock of `timeLimit()`-step starts when the first traverser enters it. When the time limit is reached, any `next()` evaluation of the step will yield a `NoSuchElementException` and any `hasNext()` evaluation will yield `false`.
+
+[[tree-step]]
+Tree Step
+~~~~~~~~~
+
+From any one element (i.e. vertex or edge), the emanating paths from that element can be aggregated to form a link:http://en.wikipedia.org/wiki/Tree_(data_structure)[tree]. Gremlin provides `tree`-step for such this situation.
+
+image::tree-step.png[width=450]
+
+[source,groovy]
+gremlin> tree = g.V.out.out.tree.next()
+==>v[1]={v[4]={v[3]={}, v[5]={}}}
+
+It is important to see how the paths of all the emanating traversers are united to form the tree.
+
+image::tree-step2.png[width=500]
+
+The resultant tree data structure can then be manipulated (see link:http://www.tinkerpop.com/javadocs/current/com/tinkerpop/gremlin/process/graph/step/util/Tree.html[Tree JavaDoc]). For the sake of demonstration, a post-processing lambda is applied in the running example below.
+
+[source,groovy]
+gremlin> tree = g.V.out.out.tree{it.value('name')}.next()
+==>marko={josh={ripple={}, lop={}}}
+gremlin> tree['marko']
+==>josh={ripple={}, lop={}}
+gremlin> tree['marko']['josh']
+==>ripple={}
+==>lop={}
+gremlin> tree.getObjectsAtDepth(3)
+==>ripple
+==>lop
+
 
 [[traversalstrategy]]
 Traversal Strategy
