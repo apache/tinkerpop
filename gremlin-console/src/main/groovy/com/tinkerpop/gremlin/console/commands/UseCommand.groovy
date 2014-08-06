@@ -31,7 +31,7 @@ class UseCommand extends ComplexCommandSupport {
         if (pluginsThatNeedRestart.size() > 0) {
             msgs << "The following plugins may not function properly unless they are 'installed':"
             msgs.addAll(pluginsThatNeedRestart)
-            msgs << "Try :use with the 'install' option then restart the console"
+            msgs << "Try :use with the 'install' option and then restart the console"
         }
 
         return msgs

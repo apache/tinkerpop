@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
+import com.tinkerpop.gremlin.structure.Element
 import com.tinkerpop.gremlin.structure.Graph
-import com.tinkerpop.gremlin.structure.Vertex
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader
@@ -24,15 +24,7 @@ class GraphLoader {
             }
         }
 
-        Graph.metaClass.methodMissing = { final String name, final def args ->
-            if (GremlinLoader.isStep(name)) {
-                return delegate."$name"(*args);
-            } else {
-                throw new MissingMethodException(name, delegate.getClass());
-            }
-        }
-
-        Vertex.metaClass.propertyMissing = { final String name ->
+        Element.metaClass.propertyMissing = { final String name ->
             if (GremlinLoader.isStep(name)) {
                 return delegate."$name"();
             } else {

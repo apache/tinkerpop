@@ -2,8 +2,10 @@ package com.tinkerpop.gremlin.groovy.loaders
 
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
 import com.tinkerpop.gremlin.process.Step
+import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.GraphTraversal
 import com.tinkerpop.gremlin.structure.Edge
+import com.tinkerpop.gremlin.structure.Element
 import com.tinkerpop.gremlin.structure.Graph
 import com.tinkerpop.gremlin.structure.Vertex
 
@@ -13,19 +15,19 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 class GremlinLoader {
 
-    private static final Set<String> steps = new HashSet<String>()
     private static final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine()
-
-    public static void load() {
-
-        [GraphTraversal, Graph, Vertex, Edge].forEach {
+    private static final Set<String> steps = new HashSet<String>()
+    static {
+        [GraphTraversal, Graph, Vertex, Edge, Element].forEach {
             it.getMethods().findAll {
-                it.getReturnType().equals(GraphTraversal.class)
+                Traversal.class.isAssignableFrom(it.getReturnType());
             }.each {
                 addStep(it.getName())
             }
         }
+    }
 
+    public static void load() {
         GraphLoader.load()
         ObjectLoader.load()
         StepLoader.load()
