@@ -84,7 +84,6 @@ public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped 
 
     @Override
     public String toString() {
-        final GraphStrategy strategy = this.strategyWrappedGraph.strategy().getGraphStrategy().orElse(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-        return String.format("[%s[%s]]", strategy, baseProperty.toString());
+        return baseProperty.toString();
     }
 }

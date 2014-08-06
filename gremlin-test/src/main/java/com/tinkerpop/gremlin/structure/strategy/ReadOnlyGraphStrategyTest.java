@@ -1,20 +1,12 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.FeatureRequirement;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.*;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
-import java.util.Optional;
-
-import static com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -129,6 +121,29 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy().setGraphStrategy(readOnlyGraphStrategy);
         swg.variables().asMap().put("will", "not work");
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    public void testShouldReturnWrappedElementToString() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        Vertex v1 = swg.addVertex(Element.LABEL, "Person", "age", 1);
+        Vertex v2 = swg.addVertex(Element.LABEL, "Person", "age", 1);
+        Property age = v2.property("age");
+        Edge e1 = v1.addEdge("friend", v2, "weight", "fifty");
+        Vertex originalVertex = ((StrategyWrappedVertex) v1).getBaseVertex();
+        Edge originalEdge = ((StrategyWrappedEdge) e1).getBaseEdge();
+        Property originalProperty = originalVertex.property("age");
+        assertEquals(originalVertex.toString(), v1.toString());
+        assertEquals(originalEdge.toString(), e1.toString());
+        assertEquals(originalProperty.toString(), age.toString());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    public void testGraphShouldReturnWrappedToString() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        assertNotEquals(g.toString(), swg.toString());
     }
 
     private void assertException(final ConsumerThatThrows stt) {

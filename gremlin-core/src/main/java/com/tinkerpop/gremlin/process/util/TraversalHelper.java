@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -20,11 +21,11 @@ public class TraversalHelper {
     private static final String UNDERSCORE = "_";
 
     public static boolean isLabeled(final Step step) {
-        return !step.getAs().startsWith(UNDERSCORE);
+        return !Graph.Key.isHidden(step.getAs());
     }
 
     public static boolean isLabeled(final String as) {
-        return !as.startsWith(UNDERSCORE);
+        return !Graph.Key.isHidden(as);
     }
 
     public static boolean isReversible(final Traversal traversal) {
@@ -115,7 +116,7 @@ public class TraversalHelper {
         final List<Step> steps = traversal.getSteps();
         for (int i = 0; i < steps.size(); i++) {
             if (!TraversalHelper.isLabeled(steps.get(i)))
-                steps.get(i).setAs(UNDERSCORE + i);
+                steps.get(i).setAs(Graph.Key.hide(Integer.toString(i)));
         }
     }
 
