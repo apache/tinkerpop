@@ -131,8 +131,7 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
 
     @Override
     public String toString() {
-        final GraphStrategy strategy = this.strategyWrappedGraph.strategy().getGraphStrategy().orElse(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-        return String.format("[%s[%s]]", strategy, baseElement.toString());
+        return baseElement.toString();
     }
 
     @Override
