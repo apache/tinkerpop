@@ -20,6 +20,7 @@ public class JumpComputerStep<S> extends AbstractStep<S, S> {
     public String jumpAs;
     public Queue<Traverser<S>> queue = new LinkedList<>();
     public SPredicate<Traverser<S>> ifPredicate;
+    public int loops = -1;
     public SPredicate<Traverser<S>> emitPredicate;
     private AtomicBoolean jumpBack = null;
 
@@ -27,12 +28,12 @@ public class JumpComputerStep<S> extends AbstractStep<S, S> {
         super(traversal);
         this.jumpAs = jumpStep.jumpAs;
         this.ifPredicate = jumpStep.ifPredicate;
+        this.loops = jumpStep.loops;
         this.emitPredicate = jumpStep.emitPredicate;
         if (TraversalHelper.isLabeled(jumpStep))
             this.setAs(jumpStep.getAs());
     }
 
-    // TODO: Add loop checking
     protected Traverser<S> processNextStart() {
         final String loopFuture = TraversalHelper.getAs(this.jumpAs, this.traversal).getNextStep().getAs();
         if (null == this.jumpBack)
@@ -43,7 +44,7 @@ public class JumpComputerStep<S> extends AbstractStep<S, S> {
             } else {
                 final Traverser<S> traverser = this.starts.next();
                 if (this.jumpBack.get()) traverser.incrLoops();
-                if (this.ifPredicate.test(traverser)) {
+                if (doJump(traverser)) {
                     traverser.setFuture(loopFuture);
                     this.queue.add(traverser);
                     if (null != this.emitPredicate && this.emitPredicate.test(traverser)) {
@@ -59,6 +60,10 @@ public class JumpComputerStep<S> extends AbstractStep<S, S> {
                 }
             }
         }
+    }
+
+    private boolean doJump(final Traverser traverser) {
+        return null == this.ifPredicate ? traverser.getLoops() < this.loops : this.ifPredicate.test(traverser);
     }
 
     public Traverser<S> next() {
