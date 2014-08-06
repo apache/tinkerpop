@@ -2358,8 +2358,8 @@ INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
 ==>ripple
 ==>lop
-gremlin> :> g.V.groupBy{it.value('name')[1]}{it.value('name')}
-INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, GroupByStep]
+gremlin> :> g.V.groupBy{it.value('name')[1]}{it.value('name')}.as('a')
+INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, GroupByStep@a]
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0039
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
@@ -2381,13 +2381,13 @@ gremlin> hdfs.ls()
 ==>rwxr-xr-x marko supergroup 0 (D) output
 ==>rw-r--r-- marko supergroup 891 tinkerpop-classic-vertices.gio
 gremlin> hdfs.ls('output')
-==>rwxr-xr-x marko supergroup 0 (D) ~cap
+==>rwxr-xr-x marko supergroup 0 (D) a
 ==>rwxr-xr-x marko supergroup 0 (D) ~g
-gremlin> hdfs.ls('output/~cap')
+gremlin> hdfs.ls('output/a')
 ==>rw-r--r-- marko supergroup 0 _SUCCESS
 ==>rwxr-xr-x marko supergroup 0 (D) _logs
 ==>rw-r--r-- marko supergroup 332 part-r-00000
-gremlin> hdfs.head('output/~cap',KryoWritable.class)
+gremlin> hdfs.head('output/a',KryoWritable.class)
 ==>[a, [marko, vadas]]
 ==>[e, [peter]]
 ==>[i, [ripple]]

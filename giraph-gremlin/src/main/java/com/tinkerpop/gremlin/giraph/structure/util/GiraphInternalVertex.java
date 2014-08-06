@@ -107,7 +107,7 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
             this.tinkerGraph = TinkerGraph.open();
             reader.readGraph(bis, this.tinkerGraph);
             bis.close();
-            this.tinkerVertex = (TinkerVertex) this.tinkerGraph.v(this.tinkerGraph.variables().get(VERTEX_ID));
+            this.tinkerVertex = (TinkerVertex) this.tinkerGraph.v(this.tinkerGraph.variables().get(VERTEX_ID).get());
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
