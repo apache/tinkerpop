@@ -1973,6 +1973,21 @@ image:gremlin-handdrawn.png[width=120,float=right] Tuning Gremlin Server for a p
 ** Note that `scriptEvaluationTimeout` does not interrupt the evaluation on timeout.  It merely allows Gremlin Server to "ignore" the result of that evaluation, which means the thread in the `gremlinPool` will still be consumed after the timeout.
 ** The more powerful setting is the `serializedResponseTimeout`, which will actually kill the result iteration process and prevent additional processing.  In most situations, the iteration and serialization process is the more costly step in this process as an errant script that retuns a million or more results could send Gremlin Server into a long streaming cycle.  Script evaluation on the other hand is usually very fast, occurring on the order of milliseconds, but that is entirely dependent on the contents of the script itself.
 
+Developing a Driver
+~~~~~~~~~~~~~~~~~~~
+
+image::gremlin-server-protocol.png[width=325]
+
+One of the roles for Gremlin Server is to provide a bridge from TinkerPop to non-JVM languages (e.g. Go, Python, etc.).  Developers can build language bindings (or driver) that provide a way to submit Gremlin scripts to Gremlin Server and get back results.  Given the exstensible nature of Gremlin Server, it is difficult to provide an authoritative guide to developing a driver.  It is however possible to describe the core communication protocal using the standard out-of-the-box configuration which should provide enough information to develop a driver for a specific language.
+
+image::gremlin-server-flow.png[width=300,float=right] 
+
+Gremlin Server is distributed with a configuration that utilizes link:http://en.wikipedia.org/wiki/WebSocket[WebSockets] with a custom sub-protocol.  Under this configuration, Gremlin Server accepts requests containing a Gremlin script, evaluates that script and then strems back the results.  The notion of "streaming" is depicted in the diagram to the right.  
+
+The diagram shows an incoming request to process the Gremlin script of `g.V`.  Gremlin Server evaluates that script getting an `Iterator` of vertices as a result.  Gremlin Server recognizes that the `Iterator` and steps through each `Vertex` within it.  The vertices are batched together given the `resultIterationBatchSize` configuration.  In this case, that value must be `2` given that each "response" contains two vertices.  Each response is serialized given the requested serializer type (JSON is likely best for non-JVM languages) and written back to the requesting client immediately.  Gremlin Server does not wait for the entire result to be iterated, before sending back a response.  It will send the responses as they are realized.
+
+This approach allows for the processing of large results, without having to serializes the entire result into memory for the response.  It places a bit of a burden on the developer of the driver however, because it becomes necessary to provide a way to reconstruct the entire result on the client side from all of the individual responses that Gremlin Server returns for a single request.  Again, this description of Gremlin Server's "flow" is related to the out-of-the-box configuration.  It is quite possible to construct other flows, that might be more amenable to a particular language or style of processing.
+
 Implementations
 ===============
 
