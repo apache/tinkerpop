@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
-import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasNotTest;
@@ -86,7 +85,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             ValuesTest.JavaComputerValuesTest.class,
 
             // sideEffect
-            // TODO: REMOVE?  AddEdgeTest.JavaAddEdgeTest.class,
+            // TODO: REMOVE?  AddEdgeTest.JavaAddEdgeTest.class,*/
             AggregateTest.JavaComputerAggregateTest.class,
             CountTest.JavaComputerCountTest.class,
             GroupByTest.JavaComputerGroupByTest.class,
@@ -99,7 +98,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             TreeTest.JavaComputerTreeTest.class,
 
             // algorithms
-            PageRankVertexProgramTest.class
+            // PageRankVertexProgramTest.class
     };
 
     /**
@@ -149,7 +148,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
 
 
             // algorithms
-            PageRankVertexProgramTest.class
+            // PageRankVertexProgramTest.class
     };
 
     public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {

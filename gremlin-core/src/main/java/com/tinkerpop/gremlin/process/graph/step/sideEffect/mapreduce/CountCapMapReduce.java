@@ -1,8 +1,9 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountCapStep;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountCapStep;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.javatuples.Pair;
 
@@ -14,11 +15,14 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class CountCapMapReduce implements MapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
 
+    private String sideEffectKey;
+
     public CountCapMapReduce() {
 
     }
 
     public CountCapMapReduce(final CountCapStep step) {
+        this.sideEffectKey = step.getAs();
     }
 
     @Override
@@ -28,7 +32,7 @@ public class CountCapMapReduce implements MapReduce<MapReduce.NullObject, Long, 
 
     @Override
     public void map(Vertex vertex, MapEmitter<MapReduce.NullObject, Long> emitter) {
-        final AtomicLong count = vertex.<AtomicLong>property(SideEffectCapable.CAP_KEY).orElse(new AtomicLong(0));
+        final AtomicLong count = vertex.<AtomicLong>property(Graph.Key.hide(this.sideEffectKey)).orElse(new AtomicLong(0));
         emitter.emit(NullObject.get(), count.get());
     }
 
@@ -53,6 +57,6 @@ public class CountCapMapReduce implements MapReduce<MapReduce.NullObject, Long, 
 
     @Override
     public String getSideEffectKey() {
-        return SideEffectCapable.CAP_KEY;
+        return this.sideEffectKey;
     }
 }

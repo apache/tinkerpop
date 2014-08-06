@@ -67,7 +67,7 @@ public class SideEffectCapMapReduce implements MapReduce {
                 .filter(step -> step instanceof MapReducer)
                 .filter(step -> !(step instanceof SideEffectCapComputerStep))
                 .filter(step -> step instanceof SideEffectCapable)
-                .filter(step -> ((SideEffectCapable) step).getVariable().equals(this.sideEffectKey))
+                .filter(step -> step.getAs().equals(this.sideEffectKey))
                 .findFirst().get())
                 .getMapReduce()
                 .generateSideEffect(keyValues);

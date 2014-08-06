@@ -9,7 +9,6 @@ import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.util.Tree;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.function.SFunction;
 
 /**
@@ -19,14 +18,11 @@ public class TreeStep<S> extends FilterStep<S> implements Reversible, PathConsum
 
     public Tree tree;
     public FunctionRing functionRing;
-    public String variable;
 
-    public TreeStep(final Traversal traversal, final String variable, final SFunction... branchFunctions) {
+    public TreeStep(final Traversal traversal, final SFunction... branchFunctions) {
         super(traversal);
-        this.variable = variable;
         this.functionRing = new FunctionRing(branchFunctions);
-        this.tree = traversal.memory().getOrCreate(variable, Tree::new);
-        this.traversal.memory().set(this.variable, this.tree);
+        this.tree = traversal.memory().getOrCreate(this.getAs(), Tree::new);
 
         this.setPredicate(traverser -> {
             Tree depth = this.tree;
@@ -41,18 +37,14 @@ public class TreeStep<S> extends FilterStep<S> implements Reversible, PathConsum
         });
     }
 
+    @Override
+    public void setAs(final String as) {
+        this.traversal.memory().move(this.getAs(), as, Tree::new);
+        super.setAs(as);
+    }
+
     public void setCurrentBulkCount(final long count) {
         // do nothing as repeated elements is not important for tree, only unique paths.
         // this is more of an optimization for not running the same path over and over again.
-    }
-
-    public String toString() {
-        return this.variable.equals(SideEffectCapable.CAP_KEY) ?
-                super.toString() :
-                TraversalHelper.makeStepString(this, this.variable);
-    }
-
-    public String getVariable() {
-        return this.variable;
     }
 }

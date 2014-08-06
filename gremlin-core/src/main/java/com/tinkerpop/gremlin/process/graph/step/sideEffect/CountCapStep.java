@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.CountCapMapReduce;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -25,7 +26,7 @@ public class CountCapStep<S> extends FilterStep<S> implements SideEffectCapable,
         super(traversal);
         this.setPredicate(traverser -> {
             this.count.set(this.count.get() + this.bulkCount);
-            if (!vertexCentric) this.traversal.memory().set(CAP_KEY, this.count.get());
+            if (!this.vertexCentric) this.traversal.memory().set(this.getAs(), this.count.get());
             return true;
         });
 
@@ -37,16 +38,14 @@ public class CountCapStep<S> extends FilterStep<S> implements SideEffectCapable,
 
     public void setCurrentVertex(final Vertex vertex) {
         this.vertexCentric = true;
-        this.count = vertex.<AtomicLong>property(CAP_KEY).orElse(new AtomicLong(0));
-        if (!vertex.property(CAP_KEY).isPresent())
-            vertex.property(CAP_KEY, this.count);
+        final String hiddenAs = Graph.Key.hide(this.getAs());
+        this.count = vertex.<AtomicLong>property(hiddenAs).orElse(new AtomicLong(0));
+        if (!vertex.property(hiddenAs).isPresent())
+            vertex.property(hiddenAs, this.count);
     }
 
     public MapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> getMapReduce() {
         return new CountCapMapReduce(this);
     }
 
-    public String getVariable() {
-        return CAP_KEY;
-    }
 }

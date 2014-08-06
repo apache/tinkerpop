@@ -16,19 +16,19 @@ class GroovyGroupCountTestImpl extends GroupCountTest {
         g.V.out('created').name.groupCount
     }
 
-    public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCountXaX() {
-        g.V.out('created').name.groupCount("a")
+    public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCount_asXaX() {
+        g.V.out('created').name.groupCount.as('a')
     }
 
     public Traversal<Vertex, Map<Object, Long>> get_g_V_filterXfalseX_groupCount() {
         g.V.filter { false }.groupCount;
     }
 
-    public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_capXaX() {
-        g.V.as('x').out.groupCount('a') { it.value('name') }.jump('x') { it.loops < 2 }.cap('a')
+    public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXnameX_asXaX_jumpXx_loops_lt_2X_capXaX() {
+        g.V.as('x').out.groupCount{ it.value('name') }.as('a').jump('x') { it.loops < 2 }.cap('a')
     }
 
-    public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_2X_capXaX() {
-        g.V.as('x').out.groupCount('a') { it.value('name') }.jump('x', 2).cap('a')
+    public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXnameX_asXaX_jumpXx_2X_capXaX() {
+        g.V.as('x').out.groupCount{ it.value('name') }.as('a').jump('x', 2).cap('a')
     }
 }

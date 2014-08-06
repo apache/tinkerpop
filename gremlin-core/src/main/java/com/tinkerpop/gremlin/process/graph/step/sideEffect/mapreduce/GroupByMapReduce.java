@@ -32,7 +32,7 @@ public class GroupByMapReduce implements MapReduce<Object, Collection, Object, O
     }
 
     public GroupByMapReduce(final GroupByStep step) {
-        this.sideEffectKey = step.getVariable();
+        this.sideEffectKey = step.getAs();
         this.reduceFunction = step.reduceFunction;
     }
 

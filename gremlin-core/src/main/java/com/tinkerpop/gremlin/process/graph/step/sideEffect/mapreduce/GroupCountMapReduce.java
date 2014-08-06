@@ -26,7 +26,7 @@ public class GroupCountMapReduce implements MapReduce<Object, Long, Object, Long
     }
 
     public GroupCountMapReduce(final GroupCountStep step) {
-        this.sideEffectKey = step.getVariable();
+        this.sideEffectKey = step.getAs();
     }
 
     @Override

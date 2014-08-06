@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SPredicate;
 import org.javatuples.Pair;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class SubgraphStep<S> extends FilterStep<S> implements SideEffectCapable,
         this.edgesAdded = Optional.ofNullable(edgeIdHolder).orElse(new HashSet<>());
         this.idMap = Optional.ofNullable(vertexMap).orElse(new HashMap<>());
         this.subgraph = subgraph;
-        this.traversal.memory().set(CAP_KEY, this.subgraph);
+        this.traversal.memory().set(this.getAs(), this.subgraph);
         this.setPredicate(traverser -> {
             traverser.getPath().stream().map(Pair::getValue1)
                     .filter(i -> i instanceof Edge)
@@ -55,6 +56,12 @@ public class SubgraphStep<S> extends FilterStep<S> implements SideEffectCapable,
                     });
             return true;
         });
+    }
+
+    @Override
+    public void setAs(final String as) {
+        this.traversal.memory().move(this.getAs(), as, ArrayList::new);
+        super.setAs(as);
     }
 
     private Vertex getOrCreateVertex(final Vertex v) {
@@ -79,6 +86,6 @@ public class SubgraphStep<S> extends FilterStep<S> implements SideEffectCapable,
     }
 
     public String getVariable() {
-        return CAP_KEY;
+        return "BLAH";
     }
 }

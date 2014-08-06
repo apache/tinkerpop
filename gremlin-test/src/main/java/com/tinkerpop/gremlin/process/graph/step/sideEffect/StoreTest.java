@@ -16,12 +16,12 @@ import static org.junit.Assert.*;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class StoreTest extends AbstractGremlinProcessTest {
-    public abstract Traversal<Vertex, Collection> get_g_V_storeXa_nameX_out_capXaX();
+    public abstract Traversal<Vertex, Collection> get_g_V_storeXnameX_asXaX_out_capXaX();
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_storeXa_nameX_out_capXaX() {
-        final Iterator<Collection> step = get_g_V_storeXa_nameX_out_capXaX();
+        final Iterator<Collection> step = get_g_V_storeXnameX_asXaX_out_capXaX();
         Collection names = step.next();
         assertEquals(6, names.size());
         assertTrue(names.contains("marko"));
@@ -38,8 +38,8 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = false;
         }
 
-        public Traversal<Vertex, Collection> get_g_V_storeXa_nameX_out_capXaX() {
-            return g.V().store("a", v -> v.value("name")).out().cap("a");
+        public Traversal<Vertex, Collection> get_g_V_storeXnameX_asXaX_out_capXaX() {
+            return g.V().store(v -> v.value("name")).as("a").out().cap("a");
         }
     }
 
@@ -48,8 +48,8 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = true;
         }
 
-        public Traversal<Vertex, Collection> get_g_V_storeXa_nameX_out_capXaX() {
-            return g.V().store("a", v -> v.value("name")).out().<Collection>cap("a").submit(g.compute());
+        public Traversal<Vertex, Collection> get_g_V_storeXnameX_asXaX_out_capXaX() {
+            return g.V().store(v -> v.value("name")).as("a").out().<Collection>cap("a").submit(g.compute());
         }
     }
 

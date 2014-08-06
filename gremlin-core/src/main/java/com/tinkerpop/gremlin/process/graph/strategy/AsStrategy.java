@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AsStrategy implements TraversalStrategy.NoDependencies {
+public class AsStrategy implements TraversalStrategy {
 
     private static final AsStrategy INSTANCE = new AsStrategy();
 
@@ -26,4 +26,7 @@ public class AsStrategy implements TraversalStrategy.NoDependencies {
         return INSTANCE;
     }
 
+    public int compareTo(final TraversalStrategy traversalStrategy) {
+        return traversalStrategy instanceof TraverserSourceStrategy ? -1 : 1;
+    }
 }

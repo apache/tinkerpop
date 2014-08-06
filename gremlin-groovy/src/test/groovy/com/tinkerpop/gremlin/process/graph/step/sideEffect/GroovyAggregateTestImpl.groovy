@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 class GroovyAggregateTestImpl extends AggregateTest {
 
     public Traversal<Vertex, Vertex> get_g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX(final Object v1Id) {
-        g.v(v1Id).aggregate('a').out('created').in('created').except('a')
+        g.v(v1Id).aggregate.as('a').out('created').in('created').except('a')
     }
 
     public Traversal<Vertex, List<String>> get_g_V_valueXnameX_aggregate() {
@@ -21,7 +21,7 @@ class GroovyAggregateTestImpl extends AggregateTest {
         g.V.aggregate() { it.value('name') }
     }
 
-    public Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path() {
-        return g.V().out().aggregate("a").path();
+    public Traversal<Vertex, Path> get_g_V_out_aggregate_asXaX_path() {
+        return g.V().out().aggregate.as('a').path();
     }
 }

@@ -4,12 +4,12 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.filter.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.javatuples.Pair;
 
@@ -72,6 +72,13 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
             }
         }
 
+        public default <V> void move(final String oldKey, final String newKey, final Supplier<V> orCreate) {
+            final Optional<V> old = this.get(oldKey);
+            this.set(newKey, old.isPresent() ? old.get() : orCreate.get());
+            if (!oldKey.equals(newKey))
+                this.remove(oldKey);
+        }
+
         public static class Exceptions {
 
             public static IllegalArgumentException variableKeyCanNotBeEmpty() {
@@ -107,7 +114,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
     }
 
     public default <E2> Traversal<S, E2> cap() {
-        return this.cap(SideEffectCapable.CAP_KEY);
+        return this.cap(TraversalHelper.getEnd(this).getAs());
     }
 
     public default Traversal<S, Long> count() {

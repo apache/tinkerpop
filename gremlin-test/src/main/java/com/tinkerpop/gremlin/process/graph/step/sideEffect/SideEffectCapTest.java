@@ -17,12 +17,12 @@ import static org.junit.Assert.assertFalse;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class SideEffectCapTest extends AbstractGremlinTest {
-    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXa_nameX_out_capXaX();
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXnameX_asXaX_out_capXaX();
 
     @Test
     @LoadGraphWith(CLASSIC)
-    public void g_V_hasXageX_groupCountXa_nameX_out_capXaX() {
-        final Iterator<Map<String, Long>> step = get_g_V_hasXageX_groupCountXa_nameX_out_capXaX();
+    public void g_V_hasXageX_groupCountXnameX_asXaX_out_capXaX() {
+        final Iterator<Map<String, Long>> step = get_g_V_hasXageX_groupCountXnameX_asXaX_out_capXaX();
         System.out.println("Testing: " + step);
         Map<String, Long> map = step.next();
         assertFalse(step.hasNext());
@@ -35,14 +35,14 @@ public abstract class SideEffectCapTest extends AbstractGremlinTest {
 
     public static class JavaSideEffectCapTest extends SideEffectCapTest {
 
-        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXa_nameX_out_capXaX() {
-            return g.V().<Vertex>has("age").groupCount("a", v -> v.value("name")).out().cap("a");
+        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXnameX_asXaX_out_capXaX() {
+            return g.V().<Vertex>has("age").groupCount(v -> v.value("name")).as("a").out().cap("a");
         }
     }
 
     public static class JavaComputerSideEffectCapTest extends SideEffectCapTest {
-        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXa_nameX_out_capXaX() {
-            return g.V().<Vertex>has("age").groupCount("a", v -> v.value("name")).out().<Map<String, Long>>cap("a").submit(g.compute());
+        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXnameX_asXaX_out_capXaX() {
+            return g.V().<Vertex>has("age").groupCount(v -> v.value("name")).as("a").out().<Map<String, Long>>cap("a").submit(g.compute());
         }
     }
 }

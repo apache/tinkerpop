@@ -27,7 +27,7 @@ public class AggregateMapReduce implements MapReduce<MapReduce.NullObject, Objec
     }
 
     public AggregateMapReduce(final AggregateStep step) {
-        this.sideEffectKey = step.getVariable();
+        this.sideEffectKey = step.getAs();
     }
 
     @Override

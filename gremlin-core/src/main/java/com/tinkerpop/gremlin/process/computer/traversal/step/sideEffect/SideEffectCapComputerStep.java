@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCap;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -21,7 +20,7 @@ public class SideEffectCapComputerStep<S> extends FilterStep<S> implements Rever
 
     public SideEffectCapComputerStep(final Traversal traversal, final SideEffectCapStep sideEffectCapStep) {
         super(traversal);
-        this.variable = sideEffectCapStep.variable;
+        this.variable = sideEffectCapStep.sideEffectAs;
         this.setPredicate(traverser -> false);
     }
 
@@ -33,9 +32,7 @@ public class SideEffectCapComputerStep<S> extends FilterStep<S> implements Rever
     }
 
     public String toString() {
-        return this.variable.equals(SideEffectCapable.CAP_KEY) ?
-                super.toString() :
-                TraversalHelper.makeStepString(this, this.variable);
+        return TraversalHelper.makeStepString(this, this.variable);
     }
 
     public String getVariable() {

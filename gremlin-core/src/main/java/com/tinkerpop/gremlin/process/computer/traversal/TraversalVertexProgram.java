@@ -79,9 +79,6 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                 this.computeKeys.put(Graph.Key.hide(mapReduce.getSideEffectKey()), KeyType.CONSTANT);
             });
 
-            // TODO: This is LAME!
-            this.computeKeys.put(SideEffectCapable.CAP_KEY, KeyType.CONSTANT);
-
             if (!(TraversalHelper.getEnd(traversal) instanceof SideEffectCapComputerStep))
                 this.mapReducers.add(new TraversalResultMapReduce());
 

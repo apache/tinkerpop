@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.AggregateMapReduce;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SFunction;
@@ -31,27 +30,32 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCa
     Collection aggregate;
     final Queue<Traverser<S>> aggregateTraversers = new LinkedList<>();
     private long bulkCount = 1l;
-    public String variable;
 
-    public AggregateStep(final Traversal traversal, final String variable, final SFunction<S, ?> preAggregateFunction) {
+    public AggregateStep(final Traversal traversal, final SFunction<S, ?> preAggregateFunction) {
         super(traversal);
-        this.variable = variable;
         this.preAggregateFunction = preAggregateFunction;
-        this.aggregate = this.traversal.memory().getOrCreate(this.variable, ArrayList::new);
+        this.aggregate = this.traversal.memory().getOrCreate(this.getAs(), ArrayList::new);
     }
 
-    public AggregateStep(final Traversal traversal, final String variable) {
-        this(traversal, variable, null);
+    public AggregateStep(final Traversal traversal) {
+        this(traversal, null);
     }
 
     public void setCurrentBulkCount(final long bulkCount) {
         this.bulkCount = bulkCount;
     }
 
+    @Override
+    public void setAs(final String as) {
+        this.traversal.memory().move(this.getAs(), as, ArrayList::new);
+        super.setAs(as);
+    }
+
     public void setCurrentVertex(final Vertex vertex) {
-        this.aggregate = vertex.<Collection>property(Graph.Key.hide(this.variable)).orElse(new ArrayList());
-        if (!vertex.property(Graph.Key.hide(this.variable)).isPresent())
-            vertex.property(Graph.Key.hide(this.variable), this.aggregate);
+        final String hiddenAs = Graph.Key.hide(this.getAs());
+        this.aggregate = vertex.<Collection>property(hiddenAs).orElse(new ArrayList());
+        if (!vertex.property(hiddenAs).isPresent())
+            vertex.property(hiddenAs, this.aggregate);
     }
 
     public MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> getMapReduce() {
@@ -77,15 +81,5 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCa
                     throw FastNoSuchElementException.instance();
             }
         }
-    }
-
-    public String toString() {
-        return this.variable.equals(SideEffectCapable.CAP_KEY) ?
-                super.toString() :
-                TraversalHelper.makeStepString(this, this.variable);
-    }
-
-    public String getVariable() {
-        return this.variable;
     }
 }

@@ -31,7 +31,7 @@ public class GiraphGraphProvider extends AbstractGraphProvider {
             put(GiraphConstants.MIN_WORKERS, 1);
             put(GiraphConstants.MAX_WORKERS, 1);
             put(GiraphConstants.SPLIT_MASTER_WORKER.getKey(), false);
-            //baseConfiguration.setProperty("giraph.localTestMode", "true");
+            //put("giraph.localTestMode", true);
             put(GiraphConstants.ZOOKEEPER_JAR, GiraphGremlinInputFormat.class.getResource("zookeeper-3.3.3.jar").getPath());
             put(Constants.GREMLIN_INPUT_LOCATION, KryoInputFormat.class.getResource("tinkerpop-classic-vertices.gio").getPath());
             put(Constants.GREMLIN_OUTPUT_LOCATION, "giraph-gremlin/target/test-output");
