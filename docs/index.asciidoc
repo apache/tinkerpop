@@ -913,6 +913,29 @@ Graph Traversal Steps
 
 A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, or an Edge. A list of all the steps are provided in the TinkerPop3 link:http://www.tinkerpop.com/javadocs/current/com/tinkerpop/gremlin/process/graph/GraphTraversal.html[GraphTraversal JavaDoc]. A few of the more interesting/complex steps are discussed in the following subsections.
 
+[[back-step]]
+Back Step
+~~~~~~~~~
+
+link:http://en.wikipedia.org/wiki/Functional_programming[Functional languages] make use of function composition and lazy evaluation to create complex computations from primitive operations. This is exactly what Gremlin `GraphTraversal` does. One of the differentiating aspects of Gremlin's data flow approach to graph processing is that the flow need not always go "forward," but in fact, can go back to a previously seen area of computation. Examples include <<jump-step,`jump()`>> as well as the `back()`-step.
+
+[source,groovy]
+gremlin> g.V.out.out
+==>v[5]
+==>v[3]
+gremlin> g.V.out.out.path
+==>[v[1], v[4], v[5]]
+==>[v[1], v[4], v[3]]
+gremlin> g.V.as('x').out.out.back('x')
+==>v[1]
+==>v[1]
+gremlin> g.V.out.as('x').out.back('x')
+==>v[4]
+==>v[4]
+gremlin> g.V.out.out.as('x').back('x') // pointless
+==>v[5]
+==>v[3]
+
 [[choose-step]]
 Choose Step
 ~~~~~~~~~~~
@@ -1093,6 +1116,27 @@ gremlin> g.V.match('a',
 ==>josh
 
 WARNING: Currently `match()` can not operate within a multi-JVM <<graphcomputer,GraphComputer>> OLAP environment. Future work includes a linearization <<traversalstrategy,TraversalStrategy>> for `match()`.
+
+[[path-step]]
+Path Step
+~~~~~~~~~
+
+A traverser is transformed as it moves through a series of steps within a `Traversal`. The history of the traverser is realized by examining its `path()`.
+
+[source,groovy]
+gremlin> g.V.out.out.name
+==>ripple
+==>lop
+gremlin> g.V.out.out.name.path
+==>[v[1], v[4], v[5], ripple]
+==>[v[1], v[4], v[3], lop]
+
+It is possible to provide a var args of lamdas to post-process the elements of the path in a round-robin fashion.
+
+[source,groovy]
+gremlin> g.V.out.out.path{it.value('name')}{it.value('age')}
+==>[marko, 32, ripple]
+==>[marko, 32, lop]
 
 [[subgraph-step]]
 Subgraph Step

@@ -28,4 +28,8 @@ public class FunctionRing<A, B> implements Serializable {
     public boolean hasFunctions() {
         return this.functions.length > 0;
     }
+
+    public void reset() {
+        this.currentFunction = -1;
+    }
 }

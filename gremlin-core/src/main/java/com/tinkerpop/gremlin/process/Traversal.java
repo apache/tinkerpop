@@ -73,10 +73,24 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
         }
 
         public default <V> void move(final String oldKey, final String newKey, final Supplier<V> orCreate) {
-            final Optional<V> old = this.get(oldKey);
-            this.set(newKey, old.isPresent() ? old.get() : orCreate.get());
-            if (!oldKey.equals(newKey))
+            if (!oldKey.equals(newKey)) {
+                final Optional<V> old = this.get(oldKey);
+                this.set(newKey, old.isPresent() ? old.get() : orCreate.get());
                 this.remove(oldKey);
+            }
+        }
+
+        public default <V> void copy(final String oldKey, final String newKey, final Supplier<V> orCreate) {
+            if (!oldKey.equals(newKey)) {
+                final Optional<V> old = this.get(oldKey);
+                if (old.isPresent())
+                    this.set(newKey, old.get());
+                else {
+                    final V newValue = orCreate.get();
+                    this.set(oldKey, newValue);
+                    this.set(newKey, newValue);
+                }
+            }
         }
 
         public static class Exceptions {

@@ -33,6 +33,7 @@ public class TreeStep<S> extends FilterStep<S> implements Reversible, PathConsum
                     depth.put(object, new Tree<>());
                 depth = (Tree) depth.get(object);
             }
+            this.functionRing.reset();
             return true;
         });
     }

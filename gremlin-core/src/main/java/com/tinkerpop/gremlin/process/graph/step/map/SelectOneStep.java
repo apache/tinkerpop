@@ -33,6 +33,7 @@ public class SelectOneStep<E> extends MapStep<Object, E> {
                 if (start instanceof Map && ((Map) start).containsKey(as))
                     return (E) ((Map) start).get(as);
             }
+            this.functionRing.reset();
             return (E) NO_OBJECT;
         });
     }
