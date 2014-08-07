@@ -2,8 +2,6 @@ package com.tinkerpop.gremlin.console
 
 import com.tinkerpop.gremlin.console.plugin.PluggedIn
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
-import org.codehaus.groovy.tools.shell.Groovysh
-import org.codehaus.groovy.tools.shell.IO
 
 import java.util.concurrent.CompletableFuture
 
@@ -14,6 +12,10 @@ class Mediator {
     public final Map<String, PluggedIn> availablePlugins = [:]
     public final List<RemoteAcceptor> remotes = []
     public int position
+
+    private static String FILE_SEP = System.getProperty("file.separator")
+    private static String LINE_SEP = System.getProperty("line.separator")
+    private static final String PLUGIN_CONFIG_FILE = System.getProperty("user.dir") + FILE_SEP + "ext" + FILE_SEP + "plugins.txt"
 
     public RemoteAcceptor currentRemote() { return remotes.get(position) }
 
@@ -44,21 +46,16 @@ class Mediator {
     def submit(final List<String> args) throws Exception { return currentRemote().submit(args) }
 
     def writePluginState() {
-        def fileSep = System.getProperty("file.separator")
-        def lineSep = System.getProperty("line.separator")
-        def extPath = System.getProperty("user.dir") + fileSep + "ext" + fileSep + "plugins.txt"
-        def file = new File(extPath)
+        def file = new File(PLUGIN_CONFIG_FILE)
         if (file.exists()) file.delete()
 
-        new File(extPath).withWriter { out ->
-            availablePlugins.findAll{it.value.activated}.each{ k, v -> out << (k + lineSep)}
+        new File(PLUGIN_CONFIG_FILE).withWriter { out ->
+            availablePlugins.findAll{it.value.activated}.each{ k, v -> out << (k + LINE_SEP)}
         }
     }
 
     static def readPluginState() {
-        def fileSep = System.getProperty("file.separator")
-        def extPath = System.getProperty("user.dir") + fileSep + "ext" + fileSep + "plugins.txt"
-        def file = new File(extPath)
+        def file = new File(PLUGIN_CONFIG_FILE)
         return file.exists() ? file.readLines() : []
     }
 
