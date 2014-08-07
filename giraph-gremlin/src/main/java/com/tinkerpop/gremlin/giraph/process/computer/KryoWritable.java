@@ -3,8 +3,6 @@ package com.tinkerpop.gremlin.giraph.process.computer;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.tinkerpop.gremlin.process.PathTraverser;
-import com.tinkerpop.gremlin.process.SimpleTraverser;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableUtils;
 
@@ -18,14 +16,13 @@ import java.io.DataOutput;
  */
 public class KryoWritable<T> implements WritableComparable<KryoWritable> {
 
-    public final Kryo KRYO = new Kryo();
+    private static final Kryo KRYO = new Kryo();
 
     T t;
 
     public KryoWritable() {
-        KRYO.register(SimpleTraverser.class);
-        KRYO.register(PathTraverser.class);
-        // TODO: We may need to create concrete ID numbers in cross JVM situations.
+        //KRYO.register(SimpleTraverser.class);
+        //KRYO.register(PathTraverser.class);
     }
 
     public KryoWritable(final T t) {

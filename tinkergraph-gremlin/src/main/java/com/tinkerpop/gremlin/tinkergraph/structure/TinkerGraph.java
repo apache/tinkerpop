@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -79,7 +80,7 @@ public class TinkerGraph implements Graph, Serializable {
     ////////////// STRUCTURE API METHODS //////////////////
 
     public Vertex v(final Object id) {
-        if (null == id) throw Graph.Exceptions.elementNotFound(Vertex.class, id);
+        if (null == id) throw Graph.Exceptions.elementNotFound(Vertex.class, null);
         final Vertex vertex = this.vertices.get(id);
         if (null == vertex)
             throw Graph.Exceptions.elementNotFound(Vertex.class, id);
@@ -88,7 +89,7 @@ public class TinkerGraph implements Graph, Serializable {
     }
 
     public Edge e(final Object id) {
-        if (null == id) throw Graph.Exceptions.elementNotFound(Edge.class, id);
+        if (null == id) throw Graph.Exceptions.elementNotFound(Edge.class, null);
         final Edge edge = this.edges.get(id);
         if (null == edge)
             throw Graph.Exceptions.elementNotFound(Edge.class, id);
@@ -126,16 +127,12 @@ public class TinkerGraph implements Graph, Serializable {
         return vertex;
     }
 
-    public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass) {
-        if (graphComputerClass.length > 1)
-            throw Graph.Exceptions.onlyOneOrNoGraphComputerClass();
-
-        if (graphComputerClass.length == 0) {
-            return (C) new TinkerGraphComputer(this);
-        } else {
-            // TODO: non-default implementation call
-            return (C) new TinkerGraphComputer(this);
-        }
+    public GraphComputer compute(final Class... graphComputerClass) {
+        GraphComputerHelper.validateComputeArguments(graphComputerClass);
+        if (graphComputerClass.length == 0 || graphComputerClass[0].equals(TinkerGraphComputer.class))
+            return new TinkerGraphComputer(this);
+        else
+            throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass[0]);
     }
 
 

@@ -136,10 +136,9 @@ public interface Graph extends AutoCloseable {
      * The provided arguments can be of either length 0 or 1. A graph can support multiple graph computers.
      *
      * @param graphComputerClass The graph computer class to use (if no argument, then a default is selected by the graph)
-     * @param <C>                The class of the graph computer
      * @return A graph computer for processing this graph
      */
-    public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass);
+    public GraphComputer compute(final Class... graphComputerClass);
 
     /**
      * Configure and control the transactions for those graphs that support this feature.
@@ -658,6 +657,10 @@ public interface Graph extends AutoCloseable {
 
         public static UnsupportedOperationException graphComputerNotSupported() {
             return new UnsupportedOperationException("Graph does not support graph computer");
+        }
+
+        public static IllegalArgumentException graphDoesNotSupportProvidedGraphComputer(final Class graphComputerClass) {
+            return new IllegalArgumentException("Graph does not support the provided graph computer: " + graphComputerClass.getSimpleName());
         }
 
         public static UnsupportedOperationException vertexLookupsNotSupported() {

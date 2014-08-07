@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
 import com.tinkerpop.gremlin.giraph.process.graph.step.map.GiraphGraphStep;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
@@ -87,8 +88,12 @@ public class GiraphGraph implements Graph, Serializable {
         throw Exceptions.vertexAdditionsNotSupported();
     }
 
-    public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass) {
-        return (C) new GiraphGraphComputer(this);
+    public GraphComputer compute(final Class... graphComputerClass) {
+        GraphComputerHelper.validateComputeArguments(graphComputerClass);
+        if (graphComputerClass.length == 0 || graphComputerClass[0].equals(GiraphGraphComputer.class))
+            return new GiraphGraphComputer(this);
+        else
+            throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass[0]);
     }
 
 
