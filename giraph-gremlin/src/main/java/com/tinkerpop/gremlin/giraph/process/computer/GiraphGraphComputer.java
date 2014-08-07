@@ -11,7 +11,9 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.FileConfiguration;
@@ -90,7 +92,12 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
         throw new UnsupportedOperationException("GiraphGraphComputer does not support merge computed view as this does not make sense in a Hadoop environment where the graph is fully copied");
     }
 
+    public String toString() {
+        return StringFactory.computerString(this);
+    }
+
     public Future<Pair<Graph, SideEffects>> submit() {
+        GraphComputerHelper.validateProgramOnComputer(this, vertexProgram);
         final long startTime = System.currentTimeMillis();
         return CompletableFuture.<Pair<Graph, SideEffects>>supplyAsync(() -> {
             try {

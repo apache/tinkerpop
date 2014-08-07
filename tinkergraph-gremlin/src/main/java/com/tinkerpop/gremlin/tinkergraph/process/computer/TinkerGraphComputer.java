@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -117,6 +118,10 @@ public class TinkerGraphComputer implements GraphComputer {
             });
         });
         TinkerHelper.dropView((TinkerGraph) originalGraph);
+    }
+
+    public String toString() {
+        return StringFactory.computerString(this);
     }
 
 }
