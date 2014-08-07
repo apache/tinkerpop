@@ -1856,7 +1856,9 @@ In addition to the standard commands of the link:http://groovy.codehaus.org/Groo
 |import |:i |Import a class into the Console session.
 |:clear |:c |Sometimes the Console can get into a state where the command buffer no longer understands input (e.g. a misplaced `(` or `}`).  Use this command to clear that buffer.
 |:load |:l |Load a file or URL into the command buffer for execution.
-|:use |:u |Imports a maven library and its dependencies into the Console.  When all dependencies are in place, it will scan for plugins and attempt to load them.
+|:install |:+ |Imports a maven library and its dependencies into the Console.
+|:uninstall |:- |Removes a maven library and its dependencies. A restart of the console is required for removal to fully take effect.
+|:plugin |:pin |Plugin management functions to list, activate and deactivate available plugins.
 |:remote |:rem |Configures a "remote" context where Gremlin or results of Gremlin will be processed via usage of `:submit`.
 |:submit |:> |Submit Gremlin to the currently active context defined by `:remote`.
 |=========================================================
@@ -1913,14 +1915,14 @@ Gremlin Server is configured by the provided link:http://www.yaml.org/[YAML] fil
 * The Gremlin `ScriptEngine` instances to expose and external dependencies to inject into them
 * `Graph` instances to expose
 
-The log messages that printed above show a number of things, but most importantly, there is a `Graph` instance named `g` that is exposed in Gremlin Server.  This graph is an in-memory TinkerGraph and was empty at the start of the server.  An initialization script at `scripts/generate-sample.groovy` was executed during startup.  It's contents are as follows:
+The log messages that printed above show a number of things, but most importantly, there is a `Graph` instance named `g` that is exposed in Gremlin Server.  This graph is an in-memory TinkerGraph and was empty at the start of the server.  An initialization script at `scripts/generate-classic.groovy` was executed during startup.  It's contents are as follows:
 
 [source,groovy]
 ----
-include::../gremlin-server/scripts/generate-modern.groovy[]
+include::../gremlin-server/scripts/generate-classic.groovy[]
 ----
 
-This script loads the "modern" graph into the empty TinkerGraph instance, preparing it for use.  With Gremlin Server running it is now possible to issue some scripts to it for processing.  Start Gremlin Console as follows:
+This script loads the "classic" graph into the empty TinkerGraph instance, preparing it for use.  With Gremlin Server running it is now possible to issue some scripts to it for processing.  Start Gremlin Console as follows:
 
 [source,text]
 ----
@@ -2221,10 +2223,10 @@ include::../neo4j-gremlin/src/main/resources/META-INF/services/com.tinkerpop.gre
 
 Once the plugin is packaged, there are two ways to test it out:
 
-. Copy the jar and its dependencies to the Gremlin Console path and start it.  The plugin should show its name as one of the ones that was loaded at startup.
-. Start Gremlin Console and try the `:use` command.  For the case of the Neo4j plugin, it would look like this: `:use now com.tinkerpop neo4j-gremlin 3.y.z`.
+. Copy the jar and its dependencies to the Gremlin Console path and start it.
+. Start Gremlin Console and try the `:install` command.  For the case of the Neo4j plugin, it would look like this: `:install com.tinkerpop neo4j-gremlin 3.y.z`.
 
-In either case, once one of these two approaches is taken, the Neo4j classes should be available for use within the console.
+In either case, once one of these two approaches is taken, the jars and their dependencies are available to the Console.  The next step is to "activate" the plugin by doing `:plugin use neo4j`, where "neo4j" refers to the name of the plugin to activate.
 
 A plugin can do much more than just import classes.  One can expand the Gremlin language with new functions or steps, provide useful commands to make repetitive or complex tasks easier to execute, or do helpful integrations with other systems.  The secret to doing so lies in the `PluginAcceptor`.  As mentioned earlier, the `PluginAcceptor` provides access to the host of the plugin.  It provides several important methods for doing so:
 
@@ -2254,8 +2256,10 @@ Sugar Plugin
 image:gremlin-sugar.png[width=120,float=left] In previous versions of Gremlin-Groovy, there were numerous link:http://en.wikipedia.org/wiki/Syntactic_sugar[syntactic sugars] that users could rely on to make their traversals more succinct. Unfortunately, many of these conventions made use of link:http://docs.oracle.com/javase/tutorial/reflect/[Java reflection] and thus, were not performant. In TinkerPop3, these conveniences have been removed in support of the standard Gremlin-Groovy syntax being both inline with Gremlin-Java8 syntax as well as always being the most performant representation. However, for those users that would like to use the previous syntactic sugars (as well as new ones), there is `SugarGremlinPlugin`.
 
 [source,groovy]
-gremlin> :use sugar
-plugin loaded: sugar
+gremlin> :plugin use sugar
+==>class com.tinkerpop.gremlin.groovy.loaders.SugarLoader
+...
+==>sugar activated
 gremlin> g.v(1).value('name')  // conventional 
 ==>marko
 gremlin> g.v(1).name  // sugar
@@ -2480,9 +2484,11 @@ CAUTION: Unless under a commercial agreement with Neo Technology, Neo4j is licen
 
 [source,groovy]
 ----
-gremlin> :use now com.tinkerpop neo4j-gremlin x.y.z
-==>groovy.grape.Grape, org.apache.commons.configuration.*, com.tinkerpop.gremlin.structure.*, ... com.tinkerpop.gremlin.neo4j.structure.*
-==>loaded: {disableChecksums=false, module=neo4j-gremlin, autoDownload=true, calleeDepth=4, changing=false, version=3.0.0-SNAPSHOT, group=com.tinkerpop.tinkerpop3}
+gremlin> :install com.tinkerpop neo4j-gremlin 3.0.0-SNAPSHOT
+==>loaded: [com.tinkerpop, neo4j-gremlin, 3.0.0-SNAPSHOT]
+gremlin> :plugin use neo4j
+==>...
+==>neo4j activated
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
 ----
@@ -2545,10 +2551,9 @@ $ bin/gremlin.sh
          \,,,/
          (o o)
 -----oOOo-(3)-oOOo-----
-plugin loaded: server
-plugin loaded: gephi
-plugin loaded: utilities
-gremlin> :use install com.tinkerpop giraph-gremlin 3.0.0
+plugin activated: server
+plugin activated: utilities
+gremlin> :install com.tinkerpop giraph-gremlin 3.0.0
 ==>loaded: [com.tinkerpop, giraph-gremlin, 3.0.0] - restart the console to use [giraph]
 gremlin> :q
 $ bin/gremlin.sh
@@ -2556,11 +2561,12 @@ $ bin/gremlin.sh
          \,,,/
          (o o)
 -----oOOo-(3)-oOOo-----
-plugin loaded: server
-plugin loaded: gephi
-plugin loaded: utilities
-plugin loaded: giraph
-gremlin>
+plugin activated: server
+plugin activated: utilities
+gremlin> :plugin use giraph
+...
+==>giraph activated
+gremlin> 
 ----
 
 Properties Files
