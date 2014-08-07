@@ -37,7 +37,7 @@ public class TinkerGraphView implements Serializable {
     }
 
     public void completeIteration() {
-        //  todo: is this if statement needed?
+        //  TODO: is this if statement needed?
         if (this.isolation.equals(GraphComputer.Isolation.BSP)) {
             this.getMap = this.setMap;
             this.setMap = new HashMap<>();
@@ -56,7 +56,6 @@ public class TinkerGraphView implements Serializable {
             return property;
         } else {
             throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
-            //element.properties.put(key, new TinkerProperty<>(element, key, value));
         }
     }
 
@@ -75,7 +74,6 @@ public class TinkerGraphView implements Serializable {
             this.removeValue(element.id(), key);
         } else {
             throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
-            //element.properties.remove(key);
         }
     }
 

@@ -104,8 +104,8 @@ public class TinkerHelper {
         return graph.graphView;
     }
 
-    public static void createGraphView(final TinkerGraph graph, final GraphComputer.Isolation isolation, final Map<String, VertexProgram.KeyType> computeKeys) {
-        graph.graphView = new TinkerGraphView(isolation, computeKeys);
+    public static TinkerGraphView createGraphView(final TinkerGraph graph, final GraphComputer.Isolation isolation, final Map<String, VertexProgram.KeyType> computeKeys) {
+        return graph.graphView = new TinkerGraphView(isolation, computeKeys);
     }
 
     public static Map<String, Property> getProperties(final TinkerElement element) {
