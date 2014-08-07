@@ -915,11 +915,41 @@ image::step-types.png[width=650]
 
 A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, or an Edge. A graph traversal is composed of a ordered list of steps. Each step is of particular general form as diagrammed above. A list of all the steps (and their descriptions) are provided in the TinkerPop3 link:http://www.tinkerpop.com/javadocs/current/com/tinkerpop/gremlin/process/graph/GraphTraversal.html[GraphTraversal JavaDoc]. A few of the more interesting/complex steps are presented in the following subsections.
 
+[[aggregate-step]]
+Aggregate Step
+~~~~~~~~~~~~~~
+
+image::aggregate-step.png[width=800]
+
+The `aggregate()`-step (*sideEffect*) is used to aggregate all the objects at a particular point of traversal into a Collection. The step uses link:http://en.wikipedia.org/wiki/Eager_evaluation[eager evaluation] in that no objects continue on until all previous objects have been fully aggregated (as opposed to <<store-step,`store()`>> which link:http://en.wikipedia.org/wiki/Lazy_evaluation[lazily] fills a collection). The eager evaluation nature is crucial in situations where everything at a particular point is required for future computation. An example is provided below.
+
+[source,groovy]
+gremlin> g.v(1).out('created') // what has marko created?
+==>v[3]
+gremlin> g.v(1).out('created').aggregate.as('x') // aggregate all his creations
+==>[v[3]]
+gremlin> g.v(1).out('created').aggregate.as('x').in('created') // who are marko's collaborators
+==>v[1]
+==>v[4]
+==>v[6]
+gremlin> g.v(1).out('created').aggregate.as('x').in('created').out('created') // what have marko's collaborators created?
+==>v[3]
+==>v[5]
+==>v[3]
+==>v[3]
+gremlin> g.v(1).out('created').aggregate.as('x').in('created').out('created').except('x').name // what have marko's collaborators created that he hasn't created?
+==>ripple
+
+In link:http://en.wikipedia.org/wiki/Recommender_system[recommendation systems], the above pattern is used:
+	
+	"What has userA liked? Who else has liked those things? What have they liked that userA hasn't already liked?"
+
+
 [[back-step]]
 Back Step
 ~~~~~~~~~
 
-link:http://en.wikipedia.org/wiki/Functional_programming[Functional languages] make use of function composition and lazy evaluation to create complex computations from primitive operations. This is exactly what Gremlin `GraphTraversal` does. One of the differentiating aspects of Gremlin's data flow approach to graph processing is that the flow need not always go "forward," but in fact, can go back to a previously seen area of computation. Examples include <<jump-step,`jump()`>> as well as the `back()`-step.
+link:http://en.wikipedia.org/wiki/Functional_programming[Functional languages] make use of function composition and lazy evaluation to create complex computations from primitive operations. This is exactly what Gremlin `GraphTraversal` does. One of the differentiating aspects of Gremlin's data flow approach to graph processing is that the flow need not always go "forward," but in fact, can go back to a previously seen area of computation. Examples include <<jump-step,`jump()`>> as well as the `back()`-step (*branch*).
 
 [source,groovy]
 gremlin> g.V.out.out
@@ -942,7 +972,7 @@ gremlin> g.V.out.out.as('x').back('x') // pointless
 Choose Step
 ~~~~~~~~~~~
 
-The `choose()`-step allows for the current `Traverser<T>` to select which traversal branch to take. With `choose()`, it is possible to implement if/else-based semantics.
+The `choose()`-step (*branch*) allows for the current `Traverser<T>` to select which traversal branch to take. With `choose()`, it is possible to implement if/else-based semantics.
 
 [source,groovy]
 gremlin> g.V.has('age').name.map{[it.get(), it.get().length()]}
@@ -989,7 +1019,7 @@ g.V.has("age").choose(v -> v.get().value("name").length(), new HashMap() {{
 GroupBy Step
 ~~~~~~~~~~~~
 
-As traversers propagate across a graph as defined by a traversal, sideEffect computations are sometimes required. That is, the actually path taken or the current location of a traverser is not the ultimate output of the computation, but some other representation of the traversal. The `groupBy`-step is one such sideEffect that organizes the objects according to some function of the object. Then, if required, that organization (a list) is reduced. An example is provided below.
+As traversers propagate across a graph as defined by a traversal, sideEffect computations are sometimes required. That is, the actually path taken or the current location of a traverser is not the ultimate output of the computation, but some other representation of the traversal. The `groupBy()`-step (*sideEffect*) is one such sideEffect that organizes the objects according to some function of the object. Then, if required, that organization (a list) is reduced. An example is provided below.
 
 [source,groovy]
 gremlin> g.V.groupBy{it.value('name')[1]}   // group the vertices by the first letter of their name
@@ -1009,7 +1039,7 @@ The three lambda parameters of `groupBy` are discussed below.
 GroupCount Step
 ~~~~~~~~~~~~~~~
 
-When it is important to know how many times a particular object has been at a particular part of a traversal, `groupCount`-step is used.
+When it is important to know how many times a particular object has been at a particular part of a traversal, `groupCount()`-step (*sideEffect*) is used.
 
 	"What is the distribution of ages in the graph?"
 
@@ -1035,7 +1065,7 @@ The above is interesting in that it demonstrates the use of referencing the inte
 Jump Step
 ~~~~~~~~~
 
-TinkerPop3 introduces the `jump`-step. This step allows the propagating traverser object to jump to any arbitrary section of the `Traversal`. Typically, this is determined by means of a predicate. In particular, with `jump`, the Gremlin is no longer constrained to *do-while* semantics, but can as well support *while-do* (see link:http://docs.oracle.com/javase/tutorial/java/nutsandbolts/while.html[Java Documentation on While]). Below are some examples of `jump` in action in Gremlin-Groovy.
+TinkerPop3 introduces the `jump()`-step (*branch*). This step allows the propagating traverser object to jump to any arbitrary section of the `Traversal`. Typically, this is determined by means of a predicate. In particular, with `jump`, the Gremlin is no longer constrained to *do-while* semantics, but can as well support *while-do* (see link:http://docs.oracle.com/javase/tutorial/java/nutsandbolts/while.html[Java Documentation on While]). Below are some examples of `jump` in action in Gremlin-Groovy.
 
 [source,groovy]
 gremlin> g.v(1).as('a').out.jump('a'){it.loops<2}.name <1>
@@ -1078,7 +1108,7 @@ The jump()-step highlights one of the major benefits of `Traverser<T>` in Tinker
 Match Step
 ~~~~~~~~~~
 
-`MatchStep` was introduced into TinkerPop3 to support a more link:http://en.wikipedia.org/wiki/Declarative_programming[declarative] form of link:http://en.wikipedia.org/wiki/Pattern_matching[pattern matching]. Similar constructs were available in previous TinkerPop versions via the `table()`-step, but that has since been removed in favor of the `match().select()`-pattern. With MatchStep in TinkerPop, a query optimizer exists based on the link:http://www.knowledgefrominformation.com/2011/04/16/budget-match-cost-effective-subgraph-matching-on-large-networks/[budget match algorithm]. For very large graphs, where the developer is uncertain of the statistics of the graph (e.g. how many `knows`-edges vs. `worksFor`-edges exist in the graph), it is best to use `match()` as the optimal traversal path will be determined automatically.
+The `match()`-step (*map*) is introduced into TinkerPop3 to support a more link:http://en.wikipedia.org/wiki/Declarative_programming[declarative] form of link:http://en.wikipedia.org/wiki/Pattern_matching[pattern matching]. Similar constructs were available in previous TinkerPop versions via the `table()`-step, but that has since been removed in favor of the `match().select()`-pattern. With MatchStep in TinkerPop, a query optimizer exists based on the link:http://www.knowledgefrominformation.com/2011/04/16/budget-match-cost-effective-subgraph-matching-on-large-networks/[budget match algorithm]. For very large graphs, where the developer is uncertain of the statistics of the graph (e.g. how many `knows`-edges vs. `worksFor`-edges exist in the graph), it is best to use `match()` as the optimal traversal path will be determined automatically.
 
 	"Who created a project named 'lop' that was also created by someone who is 29 years old? Return the two creators."
 
@@ -1143,7 +1173,7 @@ WARNING: Currently `match()` can not operate within a multi-JVM <<graphcomputer,
 Path Step
 ~~~~~~~~~
 
-A traverser is transformed as it moves through a series of steps within a `Traversal`. The history of the traverser is realized by examining its `path()`.
+A traverser is transformed as it moves through a series of steps within a `Traversal`. The history of the traverser is realized by examining its path with `path()`-step (*map*).
 
 image::path-step.png[width=650]
 
@@ -1181,11 +1211,74 @@ gremlin> g.V.out.out.path{
 
 WARNING: Generating path information is expensive as the history of the traverser is stored into a Java list. With numerous traversers, there are numerous lists. Moreover, in an OLAP <<graphcomputer,`GraphComputer`>> environment this becomes exceedingly prohibitive as there are traversers emanating from all vertices in the graph in parallel. In OLAP there are optimizations provided for traverser populations, but when paths are calculated (and each traverser is unique due to its history), then these optimizations are no longer possible.
 
+[[select-step]]
+Select Step
+~~~~~~~~~~~
+
+There are two use cases for `select`-step (*map*).
+
+. Select named steps within a path (as defined by `as()` in a traversal).
+. Select objects out of a `Map<String,Object>` flow (i.e. a sub-map).
+
+The first use case is demonstrated via example below.
+
+[source,groovy]
+gremlin> g.V.as('a').out.as('b').out.as('c') // no select
+==>v[5]
+==>v[3]
+gremlin> g.V.as('a').out.as('b').out.as('c').select
+==>[a:v[1], b:v[4], c:v[5]]
+==>[a:v[1], b:v[4], c:v[3]]
+gremlin> g.V.as('a').out.as('b').out.as('c').select(['a','b'])
+==>[a:v[1], b:v[4]]
+==>[a:v[1], b:v[4]]
+gremlin> g.V.as('a').out.as('b').out.as('c').select(['a','b']){it.value('name')}
+==>[a:marko, b:josh]
+==>[a:marko, b:josh]
+gremlin> g.V.as('a').out.as('b').out.as('c').select('a') // if the selection is one step, no map is returned
+==>v[1]
+==>v[1]
+
+The second use case is best understood in terms of <<match-step,`match`-step>> where the result of `match()` is a `Map<String,Object>` of variable bindings. However, any step that emits a `Map<String,Object>` can be selected. A contrived example is presented below.
+
+[source,groovy]
+gremlin> g.V[0..1].as('a').map{[b:1,c:2]} <1>
+==>[b:1, c:2]
+==>[b:1, c:2]
+gremlin> g.V[0..1].as('a').map{[b:1,c:2]}.select <2>
+==>[a:v[1], b:1, c:2]
+==>[a:v[2], b:1, c:2]
+gremlin> g.V[0..1].as('a').map{[b:1,c:2]}.select(['a','c']) <3>
+==>[a:v[1], c:2]
+==>[a:v[2], c:2]
+gremlin> g.V[0..1].as('a').map{[b:1,c:2]}.select('c') <4>
+==>2
+==>2
+
+<1> A contrived example to create a `Map<String,Object>` flow as a foundation for the examples to follow.
+<2> Select will grab both as-named steps and `Map<String,Object>` entries.
+<3> The same `List<String>` selectivity can be used as demonstrated in the previous example.
+<4> If a single selection is used, then the object is emitted not wrapped in a map. Useful for continuing the traversal process without having to do a map projection.
+
+[[store-step]]
+Store Step
+~~~~~~~~~~
+
+When link:http://en.wikipedia.org/wiki/Lazy_evaluation[lazy] aggregation is needed, `store()`-step (*sideEffect*) should be used over <<aggregate-step,`aggregate()`>>. The two steps differ in that `store()` does not block and only stores objects in its side-effect collection as they pass through.
+
+[source,groovy]
+gremlin> g.V.aggregate.as('x')[0..1].cap('x')
+==>[v[1], v[2], v[3], v[4], v[5], v[6]]
+gremlin> g.V.store.as('x')[0..1].cap('x')
+==>[v[1], v[2], v[3]]
+
+It is interesting to note that there are three results in the `store()` side-effect even though the interval selection is for 2 objects. Realize that when the third object is on its way to the `range()` filter (i.e. `[0..1]`), it passes through `store()` and thus, stored before filtered.
+
 [[subgraph-step]]
 Subgraph Step
 ~~~~~~~~~~~~~
 
-Extracting a portion of a graph from a larger one for analysis, visualization or other purposes is a fairly common use case for graph analysts and developers. The Subgraph Step provides a way to produce an edge-induced subgraph from virtually any traversal.  The following code shows how to produce the "knows" subgraph:
+Extracting a portion of a graph from a larger one for analysis, visualization or other purposes is a fairly common use case for graph analysts and developers. The `subgraph()`-step (*map*) provides a way to produce an edge-induced subgraph from virtually any traversal.  The following code shows how to produce the "knows" subgraph:
 
 [source,groovy]
 ----
@@ -1227,7 +1320,7 @@ gremlin> sg.E
 TimeLimit Step
 ~~~~~~~~~~~~~~
 
-In many situations, a graph traversal is not about getting an exact answer as its about getting a relative ranking. A classic example is link:http://en.wikipedia.org/wiki/Recommender_system[recommendation]. What is desired is a relative ranking of vertices, not their absolute rank. Next, it may be desirable to have the traversal execute for no more than 750 milliseconds. In such situations, `timeLimit()`-step can be used.
+In many situations, a graph traversal is not about getting an exact answer as its about getting a relative ranking. A classic example is link:http://en.wikipedia.org/wiki/Recommender_system[recommendation]. What is desired is a relative ranking of vertices, not their absolute rank. Next, it may be desirable to have the traversal execute for no more than 750 milliseconds. In such situations, `timeLimit()`-step (*filter*) can be used.
 
 NOTE: The method `clock(int runs, Closure code)` is a utility preloaded in the <<gremlin-console,Gremlin Console>> that can be used to time execution of a body of code.
 
@@ -1261,7 +1354,7 @@ In essence, the relative order is respected, even through the number traversers 
 Tree Step
 ~~~~~~~~~
 
-From any one element (i.e. vertex or edge), the emanating paths from that element can be aggregated to form a link:http://en.wikipedia.org/wiki/Tree_(data_structure)[tree]. Gremlin provides `tree`-step for such this situation.
+From any one element (i.e. vertex or edge), the emanating paths from that element can be aggregated to form a link:http://en.wikipedia.org/wiki/Tree_(data_structure)[tree]. Gremlin provides `tree()`-step (*sideEffect*) for such this situation.
 
 image::tree-step.png[width=450]
 
