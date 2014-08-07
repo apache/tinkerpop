@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class Mediator {
-    public final Map<String, PluggedIn> loadedPlugins = [:]
+    public final Map<String, PluggedIn> availablePlugins = [:]
     public final List<RemoteAcceptor> remotes = []
     public int position
 
@@ -40,6 +40,25 @@ class Mediator {
     }
 
     def submit(final List<String> args) throws Exception { return currentRemote().submit(args) }
+
+    def writePluginState() {
+        def fileSep = System.getProperty("file.separator")
+        def lineSep = System.getProperty("line.separator")
+        def extPath = System.getProperty("user.dir") + fileSep + "ext" + fileSep + "plugins.txt"
+        def file = new File(extPath)
+        if (file.exists()) file.delete()
+
+        new File(extPath).withWriter { out ->
+            availablePlugins.findAll{it.value.activated}.each{ k, v -> out << (k + lineSep)}
+        }
+    }
+
+    static def readPluginState() {
+        def fileSep = System.getProperty("file.separator")
+        def extPath = System.getProperty("user.dir") + fileSep + "ext" + fileSep + "plugins.txt"
+        def file = new File(extPath)
+        return file.exists() ? file.readLines() : []
+    }
 
     def CompletableFuture<Void> close() {
         remotes.each { remote ->

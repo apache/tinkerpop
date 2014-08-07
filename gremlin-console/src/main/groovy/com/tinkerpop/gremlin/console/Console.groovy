@@ -1,9 +1,10 @@
 package com.tinkerpop.gremlin.console
 
+import com.tinkerpop.gremlin.console.commands.InstallCommand
+import com.tinkerpop.gremlin.console.commands.PluginCommand
 import com.tinkerpop.gremlin.console.commands.RemoteCommand
 import com.tinkerpop.gremlin.console.commands.SubmitCommand
-import com.tinkerpop.gremlin.console.commands.UseCommand
-import com.tinkerpop.gremlin.console.plugin.ConsolePluginAcceptor
+import com.tinkerpop.gremlin.console.commands.UninstallCommand
 import com.tinkerpop.gremlin.console.plugin.PluggedIn
 import com.tinkerpop.gremlin.console.util.ArrayIterator
 import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader
@@ -45,7 +46,9 @@ class Console {
         io.out.println("-----oOOo-(3)-oOOo-----")
 
         final Mediator mediator = new Mediator()
-        groovy.register(new UseCommand(groovy, mediator))
+        groovy.register(new UninstallCommand(groovy, mediator))
+        groovy.register(new InstallCommand(groovy, mediator))
+        groovy.register(new PluginCommand(groovy, mediator))
         groovy.register(new RemoteCommand(groovy, mediator))
         groovy.register(new SubmitCommand(groovy, mediator))
 
@@ -70,13 +73,17 @@ class Console {
 
         GremlinLoader.load()
 
-        // if plugins were added via :use command (or manually copied to the path) then this will try to find
-        // plugins and load them
+        // check for available plugins.  if they are in the "active" plugins list then "activate" them
+        def activePlugins = Mediator.readPluginState()
         ServiceLoader.load(GremlinPlugin.class, groovy.getInterp().getClassLoader()).each { plugin ->
-            if (!mediator.loadedPlugins.containsKey(plugin.getName())) {
-                plugin.pluginTo(new ConsolePluginAcceptor(groovy, io))
-                mediator.loadedPlugins.put(plugin.getName(), new PluggedIn(plugin, true))
-                io.out.println("plugin loaded: " + plugin.getName())
+            if (!mediator.availablePlugins.containsKey(plugin.name)) {
+                def pluggedIn = new PluggedIn(plugin, false)
+                mediator.availablePlugins.put(plugin.getName(), pluggedIn)
+
+                if (activePlugins.contains(plugin.name)) {
+                    pluggedIn.activate(groovy, io)
+                    io.out.println("plugin loaded: " + plugin.getName())
+                }
             }
         }
 

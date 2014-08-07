@@ -1,12 +1,11 @@
 package com.tinkerpop.gremlin.console.commands
 
-import com.tinkerpop.gremlin.console.plugin.ConsolePluginAcceptor
 import com.tinkerpop.gremlin.console.Mediator
 import com.tinkerpop.gremlin.console.plugin.PluggedIn
 import com.tinkerpop.gremlin.groovy.plugin.Artifact
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
 import groovy.grape.Grape
-import org.codehaus.groovy.tools.shell.ComplexCommandSupport
+import org.codehaus.groovy.tools.shell.CommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
 
 import java.nio.file.FileSystems
@@ -14,51 +13,23 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
 /**
+ * Install a dependency into the console.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class UseCommand extends ComplexCommandSupport {
+class InstallCommand extends CommandSupport {
+
     private final Mediator mediator
 
-    public UseCommand(final Groovysh shell, final Mediator mediator) {
-        super(shell, ":use", ":u", ["install", "now", "list", "uninstall"], "now")
+    public InstallCommand(final Groovysh shell, final Mediator mediator) {
+        super(shell, ":install", ":+")
         this.mediator = mediator
     }
 
-    def Object do_now = { List<String> arguments ->
+    @Override
+    def Object execute(final List<String> arguments) {
         final def dep = createDependencyRecord(arguments)
-        final def pluginsThatNeedRestart = grabDeps(dep, false)
-        final def msgs = ["loaded: " + arguments]
-        if (pluginsThatNeedRestart.size() > 0) {
-            msgs << "The following plugins may not function properly unless they are 'installed':"
-            msgs.addAll(pluginsThatNeedRestart)
-            msgs << "Try :use with the 'install' option and then restart the console"
-        }
-
-        return msgs
-    }
-
-    def do_list = { List<String> arguments ->
-        return mediator.loadedPlugins.collect { k, v -> k + (v.installed ? "[installed]" : "") }
-    }
-
-    def Object do_uninstall = { List<String> arguments ->
-        final String module = arguments.size() >= 1 ? arguments.get(0) : null
-        if (module == null || module.isEmpty()) return "specify the name of the module containing plugins to uninstall"
-
-        final String extClassPath = getPathFromDependency([module:module])
-
-        final File f = new File(extClassPath)
-        if (!f.exists())
-            return "there is no module with the name $module to remove - $extClassPath"
-        else {
-            f.deleteDir()
-            return "uninstalled $module - restart the console for removal to take effect"
-        }
-    }
-
-    def Object do_install = { List<String> arguments ->
-        final def dep = createDependencyRecord(arguments)
-        final def pluginsThatNeedRestart = grabDeps(dep, true)
+        final def pluginsThatNeedRestart = grabDeps(dep)
 
         final String extClassPath = getPathFromDependency(dep)
         final File f = new File(extClassPath)
@@ -86,7 +57,7 @@ class UseCommand extends ComplexCommandSupport {
         return extClassPath
     }
 
-    private def grabDeps(final Map<String, Object> map, final boolean installed) {
+    private def grabDeps(final Map<String, Object> map) {
         Grape.grab(map)
 
         def pluginsThatNeedRestart = [] as Set
@@ -95,13 +66,10 @@ class UseCommand extends ComplexCommandSupport {
         // note that the service loader utilized the classloader from the groovy shell as shell class are available
         // from within there given loading through Grape.
         ServiceLoader.load(GremlinPlugin.class, shell.getInterp().getClassLoader()).forEach { plugin ->
-            if (!mediator.loadedPlugins.containsKey(plugin.name)) {
+            if (!mediator.availablePlugins.containsKey(plugin.name)) {
+                mediator.availablePlugins.put(plugin.name, new PluggedIn(plugin, false))
                 if (plugin.requireRestart())
                     pluginsThatNeedRestart << plugin.name
-                else {
-                    plugin.pluginTo(new ConsolePluginAcceptor(shell, io))
-                    mediator.loadedPlugins.put(plugin.name, new PluggedIn(plugin, installed))
-                }
 
                 if (plugin.additionalDependencies().isPresent())
                     additionalDeps.addAll(plugin.additionalDependencies().get().flatten())
