@@ -11,9 +11,14 @@ class PluggedIn {
     private final GremlinPlugin plugin
     private boolean activated = false
 
-    public PluggedIn(final GremlinPlugin plugin, final boolean activated) {
+    private final Groovysh shell
+    private final IO io
+
+    public PluggedIn(final GremlinPlugin plugin, final Groovysh shell, final IO io, final boolean activated) {
         this.plugin = plugin
         this.activated = activated
+        this.shell = shell
+        this.io = io
     }
 
     GremlinPlugin getPlugin() {
@@ -24,7 +29,7 @@ class PluggedIn {
         return activated
     }
 
-    void activate(final Groovysh shell, final IO io) {
+    void activate() {
         plugin.pluginTo(new ConsolePluginAcceptor(shell, io))
         this.activated = true
     }

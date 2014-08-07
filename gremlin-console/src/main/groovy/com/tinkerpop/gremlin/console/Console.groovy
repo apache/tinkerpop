@@ -77,12 +77,12 @@ class Console {
         def activePlugins = Mediator.readPluginState()
         ServiceLoader.load(GremlinPlugin.class, groovy.getInterp().getClassLoader()).each { plugin ->
             if (!mediator.availablePlugins.containsKey(plugin.name)) {
-                def pluggedIn = new PluggedIn(plugin, false)
+                def pluggedIn = new PluggedIn(plugin, groovy, io, false)
                 mediator.availablePlugins.put(plugin.getName(), pluggedIn)
 
                 if (activePlugins.contains(plugin.name)) {
-                    pluggedIn.activate(groovy, io)
-                    io.out.println("plugin loaded: " + plugin.getName())
+                    pluggedIn.activate()
+                    io.out.println("plugin activated: " + plugin.getName())
                 }
             }
         }

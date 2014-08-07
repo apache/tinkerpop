@@ -33,7 +33,7 @@ class PluginCommand extends ComplexCommandSupport {
         if (!mediator.availablePlugins.containsKey(pluginName))
             return "$pluginName could not be found - use ':plugin list' to see available plugins"
 
-        mediator.availablePlugins.get(pluginName).activate(shell, io)
+        mediator.availablePlugins.get(pluginName).activate()
         mediator.writePluginState()
 
         return "$pluginName activated"

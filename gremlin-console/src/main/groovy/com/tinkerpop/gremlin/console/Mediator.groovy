@@ -2,6 +2,8 @@ package com.tinkerpop.gremlin.console
 
 import com.tinkerpop.gremlin.console.plugin.PluggedIn
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
+import org.codehaus.groovy.tools.shell.Groovysh
+import org.codehaus.groovy.tools.shell.IO
 
 import java.util.concurrent.CompletableFuture
 
