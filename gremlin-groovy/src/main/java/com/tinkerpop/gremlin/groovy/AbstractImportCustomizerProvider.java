@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.groovy;
 
 import com.tinkerpop.gremlin.algorithm.generator.AbstractGenerator;
+import com.tinkerpop.gremlin.groovy.engine.function.GremlinGroovySSupplier;
 import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
@@ -61,6 +62,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(Gremlin.class.getPackage().getName() + DOT_STAR);
         imports.add(GremlinLoader.class.getPackage().getName() + DOT_STAR);
         imports.add(FunctionUtils.class.getPackage().getName() + DOT_STAR);
+        imports.add(GremlinGroovySSupplier.class.getPackage().getName() + DOT_STAR);
 
         // tinkergraph
         imports.add(TinkerGraph.class.getPackage().getName() + DOT_STAR);

@@ -1550,8 +1550,8 @@ gremlin> result.graph.V.map{[it.get().value('name'), it.get().value(PageRankVert
 ==>[josh, 0.19250000000000003]
 ==>[ripple, 0.23181250000000003]
 ==>[peter, 0.15000000000000002]
-gremlin> result.sideEffects.getRuntime()
-==>49
+gremlin> result.sideEffects.runtime
+==>35
 
 NOTE: This model of "vertex-centric graph computing" was made popular by Google's link:http://googleresearch.blogspot.com/2009/06/large-scale-graph-computing-at-google.html[Pregel] graph engine. In the open source world, this model is found in OLAP graph computing systems such as link:https://giraph.apache.org/[Giraph], link:https://hama.apache.org/[Hama], and link:http://faunus.thinkaurelius.com[Faunus]. TinkerPop3 extends the popularized model with integrated post-processing <<mapreduce,MapReduce>> jobs over the vertex set.
 
@@ -1648,16 +1648,17 @@ NOTE: This model of graph traversal in a BSP system was made popular by the link
 The same OLAP traversal can be executed using the standard `g.compute()` model, though at the expense of verbosity.
 
 [source,groovy]
-gremlin> import com.tinkerpop.gremlin.groovy.engine.function.GremlinGroovySSupplier
-...
-gremlin> result = g.compute().program(TraversalVertexProgram.build().traversal(new GremlinGroovySSupplier("TinkerGraph.open().V.both.has('age').age.groupCount")).create()).submit().get()
-==>tinkergraph[vertices:6 edges:6]
-==>sideEffects[size:3]
-gremlin> result.sideEffects.get(Graph.Key.hide('cap'))
+gremlin> result = g.compute().program(TraversalVertexProgram.build().traversal(new GremlinGroovySSupplier("TinkerGraph.open().V.both.has('age').age.groupCount.as('a')")).create()).submit().get()
+==>result[tinkergraph[vertices:6 edges:6],sideEffects[size:3]]
+gremlin> result.sideEffects.get('a')
 ==>32=3
 ==>35=1
 ==>27=1
 ==>29=3
+gremlin> result.sideEffects.iteration
+==>6
+gremlin> result.sideEffects.runtime
+==>19
 
 [[pagerankvertexprogram]]
 PageRankVertexProgram
