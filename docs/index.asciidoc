@@ -1906,6 +1906,8 @@ gremlin> :plugin list <6>
 <5> Again, to use the "neo4j" plugin, it must be made "active" with `:plugin use`.
 <6> Now when the plugin list is displayed, the "neo4j" plugin is displayed as "active".
 
+NOTE: The Gremlin Console comes configured with the "server" and "utilities" plugins configured as "active" by default.  These plugins and other pre-packaged plugins cannot be removed from the Console as they are a part of the `gremlin-console.jar` itself.  These plugins can only be deactivated.
+
 [[gremlin-server]]
 Gremlin Server
 --------------
