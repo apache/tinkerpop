@@ -53,6 +53,6 @@ class PluginCommand extends ComplexCommandSupport {
     }
 
     def do_list = { List<String> arguments ->
-        return mediator.availablePlugins.collect { k, v -> k + (v.activated ? "[active]" : "") }
+        return mediator.availablePlugins.collect { k, v -> v.plugin.name + (v.activated ? "[active]" : "") }
     }
 }
