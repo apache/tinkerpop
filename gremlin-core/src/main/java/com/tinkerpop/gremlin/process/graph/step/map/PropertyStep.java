@@ -17,7 +17,6 @@ public class PropertyStep<E> extends MapStep<Element, Property<E>> implements Re
     }
 
     public void reverse() {
-        final int stepIndex = TraversalHelper.removeStep(this, this.traversal);
-        TraversalHelper.insertStep(new PropertyElementStep(this.traversal), stepIndex, this.traversal);
+        TraversalHelper.replaceStep(this, new PropertyElementStep(this.traversal), this.traversal);
     }
 }
