@@ -1880,8 +1880,8 @@ gremlin> :plugin list  <1>
 gremlin> :plugin use sugar  <2>
 ==>...
 ==>sugar activated
-gremlin> :install com.tinkerpop neo4j-gremlin 3.0.0-SNAPSHOT  <3>
-==>loaded: [com.tinkerpop, neo4j-gremlin, 3.0.0-SNAPSHOT]
+gremlin> :install com.tinkerpop neo4j-gremlin x.y.z  <3>
+==>loaded: [com.tinkerpop, neo4j-gremlin, x.y.z]
 gremlin> :plugin list <4>
 ==>server[active]
 ==>gephi
