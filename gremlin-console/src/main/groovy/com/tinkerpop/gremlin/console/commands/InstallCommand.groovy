@@ -66,8 +66,8 @@ class InstallCommand extends CommandSupport {
         // note that the service loader utilized the classloader from the groovy shell as shell class are available
         // from within there given loading through Grape.
         ServiceLoader.load(GremlinPlugin.class, shell.getInterp().getClassLoader()).forEach { plugin ->
-            if (!mediator.availablePlugins.containsKey(plugin.name)) {
-                mediator.availablePlugins.put(plugin.name, new PluggedIn(plugin, shell, io, false))
+            if (!mediator.availablePlugins.containsKey(plugin.class.name)) {
+                mediator.availablePlugins.put(plugin.class.name, new PluggedIn(plugin, shell, io, false))
                 if (plugin.requireRestart())
                     pluginsThatNeedRestart << plugin.name
 

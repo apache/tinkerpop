@@ -76,16 +76,20 @@ class Console {
         // check for available plugins.  if they are in the "active" plugins list then "activate" them
         def activePlugins = Mediator.readPluginState()
         ServiceLoader.load(GremlinPlugin.class, groovy.getInterp().getClassLoader()).each { plugin ->
-            if (!mediator.availablePlugins.containsKey(plugin.name)) {
+            if (!mediator.availablePlugins.containsKey(plugin.class.name)) {
                 def pluggedIn = new PluggedIn(plugin, groovy, io, false)
-                mediator.availablePlugins.put(plugin.getName(), pluggedIn)
+                mediator.availablePlugins.put(plugin.class.name, pluggedIn)
 
-                if (activePlugins.contains(plugin.name)) {
+                if (activePlugins.contains(plugin.class.name)) {
                     pluggedIn.activate()
                     io.out.println("plugin activated: " + plugin.getName())
                 }
             }
         }
+
+        // remove any "uninstalled" plugins from plugin state as it means they were installed, activated, but not
+        // deactivated, and are thus hanging about
+        mediator.writePluginState()
 
         // start iterating results to show as output
         groovy.setResultHook(handleResultIterate)

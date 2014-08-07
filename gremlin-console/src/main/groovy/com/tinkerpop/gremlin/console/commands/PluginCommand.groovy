@@ -30,10 +30,10 @@ class PluginCommand extends ComplexCommandSupport {
         final pluginName = arguments.size() == 1 ? arguments[0] : null
         if (pluginName == null || pluginName.isEmpty()) return "specify the name of the plugin to use"
 
-        if (!mediator.availablePlugins.containsKey(pluginName))
+        if (!mediator.availablePlugins.values().any{it.plugin.name==pluginName})
             return "$pluginName could not be found - use ':plugin list' to see available plugins"
 
-        mediator.availablePlugins.get(pluginName).activate()
+        mediator.availablePlugins.values().find{it.plugin.name==pluginName}.activate()
         mediator.writePluginState()
 
         return "$pluginName activated"
@@ -43,10 +43,10 @@ class PluginCommand extends ComplexCommandSupport {
         final pluginName = arguments.size() == 1 ? arguments[0] : null
         if (pluginName == null || pluginName.isEmpty()) return "specify the name of the plugin to deactivate"
 
-        if (!mediator.availablePlugins.containsKey(pluginName))
+        if (!mediator.availablePlugins.values().any{it.plugin.name==pluginName})
             return "$pluginName could not be found - use ':plugin list' to see available plugins"
 
-        mediator.availablePlugins.get(pluginName).deactivate()
+        mediator.availablePlugins.values().find{it.plugin.name==pluginName}.deactivate()
         mediator.writePluginState()
 
         return "$pluginName deactivated - restart your console for this to take effect"
