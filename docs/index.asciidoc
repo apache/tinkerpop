@@ -1863,6 +1863,48 @@ In addition to the standard commands of the link:http://groovy.codehaus.org/Groo
 |:submit |:> |Submit Gremlin to the currently active context defined by `:remote`.
 |=========================================================
 
+Dependencies and Plugin Usage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Gremlin Console can dynamically load external code libraries and make them available to the user.  Furthermore, those dependencies may contain Gremlin plugins which can expand the language, provide useful functions, etc.  These important console features are managed by the `:install` and `:plugin` commands.
+
+The following Gremlin Console session demonstrates the basics of these features:
+
+[source,groovy]
+----
+gremlin> :plugin list  <1>
+==>server[active]
+==>gephi
+==>sugar
+==>utilities[active]
+gremlin> :plugin use sugar  <2>
+==>...
+==>sugar activated
+gremlin> :install com.tinkerpop neo4j-gremlin 3.0.0-SNAPSHOT  <3>
+==>loaded: [com.tinkerpop, neo4j-gremlin, 3.0.0-SNAPSHOT]
+gremlin> :plugin list <4>
+==>server[active]
+==>gephi
+==>sugar[active]
+==>utilities[active]
+==>neo4j
+gremlin> :plugin use neo4j <5>
+==>...
+==>neo4j activated
+gremlin> :plugin list <6>
+==>server[active]
+==>gephi
+==>sugar[active]
+==>utilities[active]
+==>neo4j[active]
+----
+
+<1> Show a list of "available" plugins.  The list of "available" plugins is determined by the classes available on the Console classpath.  Plugins need to be "active" for their features to be available.
+<2> To make a plugin "active" execute the `:plugin use` command and specify the name of the plugin to enable.
+<3> Sometimes there are external dependencies that would be useful within the Console.  To bring those in, execute `:install` and specify the Maven coordinates for the dependency.  
+<4> Note that there is a "neo4j" plugin available, but it is not yet "active".
+<5> Again, to use the "neo4j" plugin, it must be made "active" with `:plugin use`.
+<6> Now when the plugin list is displayed, the "neo4j" plugin is displayed as "active".
 
 [[gremlin-server]]
 Gremlin Server
