@@ -35,8 +35,4 @@ public class SelectOneStep<E> extends MapStep<Object, E> {
             return (E) NO_OBJECT;
         });
     }
-
-    public SelectOneStep(final Traversal traversal, final String as) {
-        this(traversal, as, null);
-    }
 }
