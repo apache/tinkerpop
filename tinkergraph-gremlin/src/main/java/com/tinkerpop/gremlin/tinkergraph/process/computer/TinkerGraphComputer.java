@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.tinkergraph.structure;
+package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
@@ -7,8 +7,8 @@ import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerMapEmitter;
-import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerReduceEmitter;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Pair;
 
@@ -26,7 +26,7 @@ public class TinkerGraphComputer implements GraphComputer {
     private Isolation isolation = Isolation.BSP;
     private VertexProgram vertexProgram;
     private final TinkerGraph graph;
-    private final TinkerGraphComputerSideEffects sideEffects = new TinkerGraphComputerSideEffects();
+    private final TinkerSideEffects sideEffects = new TinkerSideEffects();
     private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
     private final List<MapReduce> mapReduces = new ArrayList<>();
@@ -62,15 +62,15 @@ public class TinkerGraphComputer implements GraphComputer {
             final long time = System.currentTimeMillis();
 
             final TinkerGraph g = this.graph;
-            g.graphView = new TinkerGraphView(this.isolation, this.vertexProgram.getElementComputeKeys());
-            g.useGraphView = true;
+            TinkerHelper.createGraphView(g, this.isolation, this.vertexProgram.getElementComputeKeys());
+            TinkerHelper.getGraphView(g).setInUse(true);
             // execute the vertex program
             this.vertexProgram.setup(this.sideEffects);
 
             while (true) {
                 StreamFactory.parallelStream(g.V()).forEach(vertex -> this.vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard, this.vertexProgram.getMessageCombiner()), this.sideEffects));
                 this.sideEffects.incrIteration();
-                g.graphView.completeIteration();
+                TinkerHelper.getGraphView(g).completeIteration();
                 this.messageBoard.completeIteration();
                 if (this.vertexProgram.terminate(this.sideEffects)) break;
             }
@@ -108,9 +108,9 @@ public class TinkerGraphComputer implements GraphComputer {
             keyMapping.forEach((key1, key2) -> {
                 if (v1.property(key1).isPresent()) {
                     final Object value = v1.property(key1).value();
-                    ((TinkerGraph) originalGraph).useGraphView = false;
+                    TinkerHelper.getGraphView(((TinkerGraph) originalGraph)).setInUse(false);
                     v2.property(key2, value);
-                    ((TinkerGraph) originalGraph).useGraphView = true;
+                    TinkerHelper.getGraphView(((TinkerGraph) originalGraph)).setInUse(true);
                 }
             });
         });

@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.tinkergraph.structure;
+package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import java.util.HashMap;
 import java.util.Map;

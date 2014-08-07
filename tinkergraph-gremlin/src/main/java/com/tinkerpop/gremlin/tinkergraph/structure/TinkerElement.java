@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-abstract class TinkerElement implements Element, Serializable {
+public abstract class TinkerElement implements Element, Serializable {
 
     protected Map<String, Property> properties = new HashMap<>();
     protected final Object id;
@@ -43,8 +43,8 @@ abstract class TinkerElement implements Element, Serializable {
             if (Graph.Key.isHidden(key))
                 temp.put(Graph.Key.unHide(key), property);
         });
-        if (this.graph.useGraphView) {
-            this.graph.graphView.computeKeys.keySet().forEach(key -> {
+        if (this.graph.graphView != null && this.graph.graphView.getInUse()) {
+            this.graph.graphView.getComputeKeys().keySet().forEach(key -> {
                 if (Graph.Key.isHidden(key)) {
                     final Property property = this.graph.graphView.getProperty(this, key);
                     if (property.isPresent()) temp.put(Graph.Key.unHide(key), property);
@@ -60,8 +60,8 @@ abstract class TinkerElement implements Element, Serializable {
             if (!Graph.Key.isHidden(key))
                 temp.put(key, property);
         });
-        if (this.graph.useGraphView) {
-            this.graph.graphView.computeKeys.keySet().forEach(key -> {
+        if (this.graph.graphView != null && this.graph.graphView.getInUse()) {
+            this.graph.graphView.getComputeKeys().keySet().forEach(key -> {
                 if (!Graph.Key.isHidden(key)) {
                     final Property property = this.graph.graphView.getProperty(this, key);
                     if (property.isPresent()) temp.put(key, property);
@@ -73,7 +73,7 @@ abstract class TinkerElement implements Element, Serializable {
 
 
     public <V> Property<V> property(final String key) {
-        if (this.graph.useGraphView) {
+        if (this.graph.graphView != null && this.graph.graphView.getInUse()) {
             return this.graph.graphView.getProperty(this, key);
         } else {
             return this.properties.getOrDefault(key, Property.empty());
