@@ -38,7 +38,7 @@ public interface GraphComputer {
 
     public GraphComputer mapReduce(final MapReduce mapReduce);
 
-    public Future<Pair<Graph, SideEffects>> submit();
+    public Future<ComputerResult> submit();
 
     public static void mergeComputedView(final Graph original, final Graph computed, Map<String, String> keyMapping) {
         throw new IllegalStateException("The mergeComputedView method must be defined by the implementing GraphComputer class");

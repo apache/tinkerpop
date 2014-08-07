@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
+import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -13,10 +14,9 @@ import java.util.Set;
 public class GiraphGraphShellComputerSideEffects implements SideEffects {
 
     private static final String COMPLETE_AND_IMMUTABLE = "The graph computation sideEffects are complete and immutable";
-    protected static final String RUNTIME = "runtime";
-    protected static final String ITERATION = "iteration";
-
-    final Map<String, Object> sideEffects = new HashMap<>();
+    private long runtime = 0l;
+    private int iteration = -1;
+    private final Map<String, Object> sideEffects = new HashMap<>();
 
     public Set<String> keys() {
         return this.sideEffects.keySet();
@@ -31,11 +31,17 @@ public class GiraphGraphShellComputerSideEffects implements SideEffects {
     }
 
     public int getIteration() {
-        return (Integer) this.sideEffects.get(ITERATION);
+        return this.iteration;
     }
 
     public long getRuntime() {
-        return (Long) this.sideEffects.get(RUNTIME);
+        return this.runtime;
+    }
+
+    protected void complete(final long runtime) {
+        this.runtime = runtime;
+        if (this.sideEffects.containsKey(Constants.ITERATION))
+            this.iteration = (int) this.sideEffects.remove(Constants.ITERATION);
     }
 
     public void setIfAbsent(final String key, final Object value) {

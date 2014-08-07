@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
+import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 import com.tinkerpop.gremlin.util.StreamFactory;
-import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +50,7 @@ public class TinkerGraphComputer implements GraphComputer {
         return this;
     }
 
-    public Future<Pair<Graph, SideEffects>> submit() {
+    public Future<ComputerResult> submit() {
         if (this.executed)
             throw Exceptions.computerHasAlreadyBeenSubmittedAVertexProgram();
         else
@@ -59,7 +58,7 @@ public class TinkerGraphComputer implements GraphComputer {
 
         GraphComputerHelper.validateProgramOnComputer(this, vertexProgram);
 
-        return CompletableFuture.<Pair<Graph, SideEffects>>supplyAsync(() -> {
+        return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
             TinkerGraphView graphView = TinkerHelper.createGraphView(this.graph, this.isolation, this.vertexProgram.getElementComputeKeys());
 
@@ -75,6 +74,7 @@ public class TinkerGraphComputer implements GraphComputer {
                 this.messageBoard.completeIteration();
                 if (this.vertexProgram.terminate(this.sideEffects)) break;
             }
+            this.sideEffects.complete();
 
             // execute mapreduce jobs
             this.mapReduces.addAll(this.vertexProgram.getMapReducers());
@@ -95,7 +95,7 @@ public class TinkerGraphComputer implements GraphComputer {
 
             // update runtime and return the newly computed graph
             this.sideEffects.setRuntime(System.currentTimeMillis() - time);
-            return new Pair<>(this.graph, this.sideEffects);
+            return new ComputerResult(this.graph, this.sideEffects);
         });
     }
 

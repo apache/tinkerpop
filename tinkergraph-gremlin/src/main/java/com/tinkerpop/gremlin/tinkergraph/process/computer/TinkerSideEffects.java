@@ -47,6 +47,10 @@ public class TinkerSideEffects implements SideEffects.Administrative {
         return this.runtime.get();
     }
 
+    protected void complete() {
+        this.iteration.decrementAndGet();
+    }
+
     public boolean isInitialIteration() {
         return this.getIteration() == 0;
     }

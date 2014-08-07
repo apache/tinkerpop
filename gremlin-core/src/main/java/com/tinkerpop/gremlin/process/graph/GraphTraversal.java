@@ -5,8 +5,8 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.filter.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathStep;
@@ -70,7 +70,6 @@ import com.tinkerpop.gremlin.util.function.SBiPredicate;
 import com.tinkerpop.gremlin.util.function.SConsumer;
 import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SPredicate;
-import org.javatuples.Pair;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -90,9 +89,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, E> submit(final GraphComputer computer) {
         try {
             TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> this).create();
-            final Pair<Graph, SideEffects> result = computer.program(vertexProgram).submit().get();
+            final ComputerResult result = computer.program(vertexProgram).submit().get();
             final GraphTraversal traversal = new DefaultGraphTraversal<>(); // TODO: of() with resultant graph?
-            traversal.addStep(new ComputerResultStep<>(traversal, result.getValue0(), result.getValue1(), vertexProgram));
+            traversal.addStep(new ComputerResultStep<>(traversal, result.getGraph(), result.getSideEffects(), vertexProgram));
             return traversal;
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);

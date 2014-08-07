@@ -27,9 +27,13 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
         CONSTANT
     }
 
-    public void loadState(final Configuration configuration);
+    public default void loadState(final Configuration configuration) {
 
-    public void storeState(final Configuration configuration);
+    }
+
+    public default void storeState(final Configuration configuration) {
+        configuration.setProperty(GraphComputer.VERTEX_PROGRAM, this.getClass().getName());
+    }
 
     /**
      * The method is called at the beginning of the computation. The method is global to the {@link GraphComputer}

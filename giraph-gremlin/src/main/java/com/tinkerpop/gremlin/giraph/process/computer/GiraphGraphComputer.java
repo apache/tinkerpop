@@ -7,9 +7,9 @@ import com.tinkerpop.gremlin.giraph.process.computer.util.SideEffectsMapReduce;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
+import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -30,7 +30,6 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
-import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +52,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
 
     protected final GiraphGraph giraphGraph;
     protected GiraphConfiguration giraphConfiguration = new GiraphConfiguration();
+    private boolean executed = false;
 
     private final List<MapReduce> mapReduces = new ArrayList<>();
     private VertexProgram vertexProgram;
@@ -96,10 +96,15 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
         return StringFactory.computerString(this);
     }
 
-    public Future<Pair<Graph, SideEffects>> submit() {
+    public Future<ComputerResult> submit() {
+        if (this.executed)
+            throw Exceptions.computerHasAlreadyBeenSubmittedAVertexProgram();
+        else
+            this.executed = true;
         GraphComputerHelper.validateProgramOnComputer(this, vertexProgram);
+
         final long startTime = System.currentTimeMillis();
-        return CompletableFuture.<Pair<Graph, SideEffects>>supplyAsync(() -> {
+        return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             try {
                 final String bspDirectory = "_bsp"; // "temp-" + UUID.randomUUID().toString();
                 final FileSystem fs = FileSystem.get(this.giraphConfiguration);
@@ -134,8 +139,8 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
                 e.printStackTrace();
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            this.sideEffects.set(GiraphGraphShellComputerSideEffects.RUNTIME, System.currentTimeMillis() - startTime);
-            return new Pair<>(this.giraphGraph.getOutputGraph(), this.sideEffects);
+            this.sideEffects.complete(System.currentTimeMillis() - startTime);
+            return new ComputerResult(this.giraphGraph.getOutputGraph(), this.sideEffects);
         });
     }
 
@@ -152,7 +157,6 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
             // calculate main vertex program sideEffects
             if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_DERIVE_COMPUTER_SIDE_EFFECTS, false)) {
                 final Set<String> sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectComputeKeys());
-                sideEffectKeys.add(Constants.RUNTIME);
                 sideEffectKeys.add(Constants.ITERATION);
                 this.giraphConfiguration.setStrings(Constants.GREMLIN_SIDE_EFFECT_KEYS, (String[]) sideEffectKeys.toArray(new String[sideEffectKeys.size()]));
                 this.mapReduces.add(new SideEffectsMapReduce(sideEffectKeys));

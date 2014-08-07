@@ -364,7 +364,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
                 }
 
                 @Override
-                public VariableFeatures memory() {
+                public VariableFeatures variables() {
                     return new Neo4jVariableFeatures();
                 }
 

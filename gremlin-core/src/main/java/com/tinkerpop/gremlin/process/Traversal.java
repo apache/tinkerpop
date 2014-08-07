@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.filter.PathIdentityStep;
@@ -10,8 +10,6 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.Graph;
-import org.javatuples.Pair;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -44,9 +42,9 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public default Traversal<S, E> submit(final GraphComputer computer) {
         try {
-            final Pair<Graph, SideEffects> result = computer.program(TraversalVertexProgram.build().traversal(() -> this).create()).submit().get();
+            final ComputerResult result = computer.program(TraversalVertexProgram.build().traversal(() -> this).create()).submit().get();
             final Traversal traversal = new DefaultTraversal<>();
-            traversal.addStarts(new SingleIterator(result.getValue1()));
+            traversal.addStarts(new SingleIterator(result.getSideEffects()));
             return traversal;
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);

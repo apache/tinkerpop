@@ -301,7 +301,7 @@ public interface Graph extends AutoCloseable {
             /**
              * Gets the features related to "graph memory" operation.
              */
-            public default VariableFeatures memory() {
+            public default VariableFeatures variables() {
                 return new VariableFeatures() {
                 };
             }
@@ -619,7 +619,7 @@ public interface Graph extends AutoCloseable {
             if (featureClass.equals(GraphFeatures.class))
                 instance = this.graph();
             else if (featureClass.equals(VariableFeatures.class))
-                instance = this.graph().memory();
+                instance = this.graph().variables();
             else if (featureClass.equals(VertexFeatures.class))
                 instance = this.vertex();
             else if (featureClass.equals(VertexPropertyFeatures.class))

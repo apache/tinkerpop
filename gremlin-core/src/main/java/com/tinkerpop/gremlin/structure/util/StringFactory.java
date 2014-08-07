@@ -89,7 +89,7 @@ public class StringFactory {
         sb.append(LINE_SEPARATOR);
 
         Stream.of(Pair.with(Graph.Features.GraphFeatures.class, features.graph()),
-                Pair.with(Graph.Features.VariableFeatures.class, features.graph().memory()),
+                Pair.with(Graph.Features.VariableFeatures.class, features.graph().variables()),
                 Pair.with(Graph.Features.VertexFeatures.class, features.vertex()),
                 Pair.with(Graph.Features.VertexPropertyFeatures.class, features.vertex().properties()),
                 Pair.with(Graph.Features.EdgeFeatures.class, features.edge()),

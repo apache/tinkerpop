@@ -49,7 +49,7 @@ class GraphSONGraph {
             final Graph g = graphSONGraph.getGraphToSerialize();
             jsonGenerator.writeStartObject();
 
-            if (g.getFeatures().graph().memory().supportsVariables())
+            if (g.getFeatures().graph().variables().supportsVariables())
                 jsonGenerator.writeObjectField(GraphSONTokens.PROPERTIES, new HashMap<>(g.variables().asMap()));
 
             jsonGenerator.writeArrayFieldStart(GraphSONTokens.VERTICES);
