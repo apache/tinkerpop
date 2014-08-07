@@ -471,7 +471,7 @@ As shown above, the `submit` method takes a `Function<Graph, R>` which is the un
 Gremlin I/O
 -----------
 
-The task of getting data in and out of `Graph` instances is the job of the Gremlin I/O packages.  Gremlin I/O provides two interfaces that for reading and writing `Graph` instances: `GraphReader` and `GraphWriter`.  These interfaces expose methods that support:
+image:gremlin-io.png[width=250,float=right] The task of getting data in and out of `Graph` instances is the job of the Gremlin I/O packages.  Gremlin I/O provides two interfaces that for reading and writing `Graph` instances: `GraphReader` and `GraphWriter`.  These interfaces expose methods that support:
 
 * Reading and writing an entire `Graph`
 * Reading and writing a `Traversal<Vertex>` as adjacency list format
