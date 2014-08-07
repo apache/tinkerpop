@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.tinkergraph.structure;
+package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -7,7 +7,7 @@ import java.util.Queue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerMessageBoard<M> {
+class TinkerMessageBoard<M> {
 
     // Map<VertexId, MessageQueue>
     public Map<Object, Queue<M>> sendMessages = new HashMap<>();

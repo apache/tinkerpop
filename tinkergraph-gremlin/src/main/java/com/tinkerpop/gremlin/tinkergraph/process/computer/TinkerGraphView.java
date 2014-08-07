@@ -1,9 +1,12 @@
-package com.tinkerpop.gremlin.tinkergraph.structure;
+package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -19,6 +22,7 @@ public class TinkerGraphView implements Serializable {
     private Map<Object, Map<String, Object>> getMap;
     private Map<Object, Map<String, Object>> setMap;
     private Map<Object, Map<String, Object>> constantMap;
+    private boolean inUse = true;
 
     public TinkerGraphView(final GraphComputer.Isolation isolation, final Map<String, VertexProgram.KeyType> computeKeys) {
         this.isolation = isolation;
@@ -33,7 +37,7 @@ public class TinkerGraphView implements Serializable {
     }
 
     public void completeIteration() {
-        //  todo: is this if statement needed?
+        //  TODO: is this if statement needed?
         if (this.isolation.equals(GraphComputer.Isolation.BSP)) {
             this.getMap = this.setMap;
             this.setMap = new HashMap<>();
@@ -52,7 +56,6 @@ public class TinkerGraphView implements Serializable {
             return property;
         } else {
             throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
-            //element.properties.put(key, new TinkerProperty<>(element, key, value));
         }
     }
 
@@ -61,7 +64,7 @@ public class TinkerGraphView implements Serializable {
         if (isComputeKey(key)) {
             return this.getValue(element.id(), key);
         } else {
-            return element.properties.getOrDefault(key, Property.empty());
+            return TinkerHelper.getProperties(element).getOrDefault(key, Property.empty());
         }
     }
 
@@ -71,8 +74,15 @@ public class TinkerGraphView implements Serializable {
             this.removeValue(element.id(), key);
         } else {
             throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
-            //element.properties.remove(key);
         }
+    }
+
+    public void setInUse(final boolean inUse) {
+        this.inUse = inUse;
+    }
+
+    public boolean getInUse() {
+        return this.inUse;
     }
 
     //////////////////////
@@ -108,6 +118,10 @@ public class TinkerGraphView implements Serializable {
 
     public boolean isConstantKey(final String key) {
         return VertexProgram.KeyType.CONSTANT.equals(this.computeKeys.get(key));
+    }
+
+    public Map<String, VertexProgram.KeyType> getComputeKeys() {
+        return this.computeKeys;
     }
 
     /*public boolean isVariableKey(final String key) {

@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.tinkergraph.structure;
+package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
@@ -7,8 +7,8 @@ import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerMapEmitter;
-import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerReduceEmitter;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Pair;
 
@@ -26,7 +26,7 @@ public class TinkerGraphComputer implements GraphComputer {
     private Isolation isolation = Isolation.BSP;
     private VertexProgram vertexProgram;
     private final TinkerGraph graph;
-    private final TinkerGraphComputerSideEffects sideEffects = new TinkerGraphComputerSideEffects();
+    private final TinkerSideEffects sideEffects = new TinkerSideEffects();
     private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
     private final List<MapReduce> mapReduces = new ArrayList<>();
@@ -60,26 +60,27 @@ public class TinkerGraphComputer implements GraphComputer {
 
         return CompletableFuture.<Pair<Graph, SideEffects>>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
+            TinkerGraphView graphView = TinkerHelper.createGraphView(this.graph, this.isolation, this.vertexProgram.getElementComputeKeys());
 
-            final TinkerGraph g = this.graph;
-            g.graphView = new TinkerGraphView(this.isolation, this.vertexProgram.getElementComputeKeys());
-            g.useGraphView = true;
             // execute the vertex program
             this.vertexProgram.setup(this.sideEffects);
-
             while (true) {
-                StreamFactory.parallelStream(g.V()).forEach(vertex -> this.vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard, this.vertexProgram.getMessageCombiner()), this.sideEffects));
+                StreamFactory.parallelStream(this.graph.V()).forEach(vertex ->
+                        this.vertexProgram.execute(vertex,
+                                new TinkerMessenger(vertex, this.messageBoard, this.vertexProgram.getMessageCombiner()),
+                                this.sideEffects));
                 this.sideEffects.incrIteration();
-                g.graphView.completeIteration();
+                graphView.completeIteration();
                 this.messageBoard.completeIteration();
                 if (this.vertexProgram.terminate(this.sideEffects)) break;
             }
 
+            // execute mapreduce jobs
             this.mapReduces.addAll(this.vertexProgram.getMapReducers());
             for (final MapReduce mapReduce : this.mapReduces) {
                 if (mapReduce.doStage(MapReduce.Stage.MAP)) {
                     final TinkerMapEmitter mapEmitter = new TinkerMapEmitter(mapReduce.doStage(MapReduce.Stage.REDUCE));
-                    StreamFactory.parallelStream(g.V()).forEach(vertex -> mapReduce.map(vertex, mapEmitter));
+                    StreamFactory.parallelStream(this.graph.V()).forEach(vertex -> mapReduce.map(vertex, mapEmitter));
                     // no need to run combiners as this is single machine
                     if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
                         final TinkerReduceEmitter reduceEmitter = new TinkerReduceEmitter();
@@ -103,14 +104,15 @@ public class TinkerGraphComputer implements GraphComputer {
         if (viewGraph.getClass() != TinkerGraph.class)
             throw new IllegalArgumentException("The computed graph provided is not a TinkerGraph: " + viewGraph.getClass());
 
+        final TinkerGraphView graphView = TinkerHelper.getGraphView(((TinkerGraph) originalGraph));
         StreamFactory.parallelStream(viewGraph.V()).forEach(v1 -> {
-            Vertex v2 = originalGraph.v(v1.id());
+            final Vertex v2 = originalGraph.v(v1.id());
             keyMapping.forEach((key1, key2) -> {
                 if (v1.property(key1).isPresent()) {
                     final Object value = v1.property(key1).value();
-                    ((TinkerGraph) originalGraph).useGraphView = false;
+                    graphView.setInUse(false);
                     v2.property(key2, value);
-                    ((TinkerGraph) originalGraph).useGraphView = true;
+                    graphView.setInUse(true);
                 }
             });
         });

@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {
+class TinkerMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {
 
     public Map<K, List<V>> reduceMap = new HashMap<>();
     public List<Pair<K, V>> mapList = new ArrayList();

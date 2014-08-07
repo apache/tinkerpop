@@ -9,6 +9,8 @@ import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
+import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerTraversal;
 import org.apache.commons.configuration.Configuration;
@@ -31,7 +33,6 @@ public class TinkerGraph implements Graph, Serializable {
     protected Map<Object, Edge> edges = new HashMap<>();
     protected TinkerGraphVariables variables = new TinkerGraphVariables();
     protected TinkerGraphView graphView = null;
-    protected boolean useGraphView = false;
 
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
