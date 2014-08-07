@@ -1899,7 +1899,7 @@ $bin/gremlin-server.sh config/gremlin-server-min.yaml
 [INFO] GremlinServer$WebSocketServerInitializer - Configured application/vnd.gremlin-v1.0+kryo-stringd with com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0
 [INFO] Graphs - Graph [g] was successfully configured via [config/tinkergraph-empty.properties].
 [INFO] GremlinExecutor - Getting dependencies for [[org.apache.commons, commons-math3, 3.2]]
-[INFO] GremlinExecutor - Initialized gremlin-groovy ScriptEngine with scripts/generate-modern.groovy
+[INFO] GremlinExecutor - Initialized gremlin-groovy ScriptEngine with scripts/generate-classic.groovy
 [INFO] GremlinServer$WebSocketServerInitializer - Initialized GremlinExecutor and configured ScriptEngines.
 [INFO] GremlinServer$WebSocketServerInitializer - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
 [INFO] GremlinServer - Gremlin Server configured with worker thread pool of 1 and boss thread pool of 1
@@ -1948,16 +1948,15 @@ The `:remote` command shown above displays the current status of the remote conn
 ----
 gremlin> :> g.V.name
 ==>Item{resultItem=marko class=java.lang.String}
-==>Item{resultItem=stephen class=java.lang.String}
-==>Item{resultItem=matthias class=java.lang.String}
-==>Item{resultItem=daniel class=java.lang.String}
-==>Item{resultItem=gremlin class=java.lang.String}
-==>Item{resultItem=blueprints class=java.lang.String}
-gremlin> :> g.V.has('name','gremlin').in('uses').name
-==>Item{resultItem=marko class=java.lang.String}
-==>Item{resultItem=daniel class=java.lang.String}
+==>Item{resultItem=vadas class=java.lang.String}
+==>Item{resultItem=lop class=java.lang.String}
+==>Item{resultItem=josh class=java.lang.String}
+==>Item{resultItem=ripple class=java.lang.String}
+==>Item{resultItem=peter class=java.lang.String}
+gremlin> :> g.V.has('name','marko').out('created').name
+==>Item{resultItem=lop class=java.lang.String}
 gremlin> :> g.E.label.groupCount()
-==>Item{resultItem={dependsOn=1, created=5, uses=2} class=java.lang.String}
+==>Item{resultItem={created=4, knows=2} class=java.lang.String}
 ----
 
 The `:>` command, which is a shorthand for `:submit`, sends the script to the server to execute there.  Results are wrapped in an `Item` object which is a just a holder for each individual result.  The `class` shows the data type for the containing value.  Note that the last script sent was supposed to return a `Map`, but its `class` is `java.lang.String`.  By default, the connection is configured to only return text results.  In other words, Gremlin Server is using `toString` to serialize all results back to the console.  This enables virtually any object on the server to be returned to the console, but it doesn't allow the opportunity to work with this data in any way in the console itself.  A different configuration of the `:remote` is required to get the results back as "objects":
@@ -1970,15 +1969,13 @@ gremlin> :remote list <2>
 ==>0 - gremlin server - [localhost/127.0.0.1:8182]
 ==>*1 - gremlin server - [localhost/127.0.0.1:8182]
 gremlin> :> g.E.label.groupCount() <3>
-==>Item{resultItem={dependsOn=1, created=5, uses=2} class=java.util.HashMap}
+==>Item{resultItem={created=4, knows=2} class=java.util.HashMap}
 gremlin> m = _l[0].get(Map.class) <4>
-==>dependsOn=1
-==>created=5
-==>uses=2
-gremlin> m.sort{-it.value}
-==>created=5
-==>uses=2
-==>dependsOn=1
+==>created=4
+==>knows=2
+gremlin> m.sort{it.value}
+==>knows=2
+==>created=4
 ----
 
 <1> This configuration file specifies that results should be deserialized back into an `Object` in the Console with the caveat being that the server and console both know how to serialize and deserialize the result to be returned.
