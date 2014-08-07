@@ -20,7 +20,7 @@ class UseCommand extends ComplexCommandSupport {
     private final Mediator mediator
 
     public UseCommand(final Groovysh shell, final Mediator mediator) {
-        super(shell, ":use", ":u", ["install", "now", "list"], "now")
+        super(shell, ":use", ":u", ["install", "now", "list", "uninstall"], "now")
         this.mediator = mediator
     }
 
@@ -41,16 +41,33 @@ class UseCommand extends ComplexCommandSupport {
         return mediator.loadedPlugins.collect { k, v -> k + (v.installed ? "[installed]" : "") }
     }
 
+    def Object do_uninstall = { List<String> arguments ->
+        final String module = arguments.size() >= 1 ? arguments.get(0) : null
+        if (module == null || module.isEmpty()) return "specify the name of the module containing plugins to uninstall"
+
+        final String extClassPath = getPathFromDependency([module:module])
+
+        final File f = new File(extClassPath)
+        if (!f.exists())
+            return "there is no module with the name $module to remove - $extClassPath"
+        else {
+            f.deleteDir()
+            return "uninstalled $module - restart the console for removal to take effect"
+        }
+    }
+
     def Object do_install = { List<String> arguments ->
         final def dep = createDependencyRecord(arguments)
         final def pluginsThatNeedRestart = grabDeps(dep, true)
 
+        final String extClassPath = getPathFromDependency(dep)
+        final File f = new File(extClassPath)
+        if (f.exists())
+            return "a module with the name ${dep.module} is already installed"
+        else
+            f.mkdirs()
+
         final def dependencyLocations = Grape.resolve([classLoader: shell.getInterp().getClassLoader()], null, dep)
-
-        def fileSep = System.getProperty("file.separator")
-        def extClassPath = System.getProperty("user.dir") + fileSep + "ext" + fileSep + (String) dep.module
-
-        new File(extClassPath).mkdirs()
 
         def fs = FileSystems.default
         def target = fs.getPath(extClassPath)
@@ -61,6 +78,12 @@ class UseCommand extends ComplexCommandSupport {
         }
 
         return "loaded: " + arguments + (pluginsThatNeedRestart.size() == 0 ? "" : " - restart the console to use $pluginsThatNeedRestart")
+    }
+
+    private static String getPathFromDependency(final Map<String, Object> dep) {
+        def fileSep = System.getProperty("file.separator")
+        def extClassPath = System.getProperty("user.dir") + fileSep + "ext" + fileSep + (String) dep.module
+        return extClassPath
     }
 
     private def grabDeps(final Map<String, Object> map, final boolean installed) {
@@ -91,9 +114,9 @@ class UseCommand extends ComplexCommandSupport {
     }
 
     private def createDependencyRecord(final List<String> arguments) {
-        final String group = arguments.get(0)
-        final String module = arguments.get(1)
-        final String version = arguments.get(2)
+        final String group = arguments.size() >= 1 ? arguments.get(0) : null
+        final String module = arguments.size() >= 2 ? arguments.get(1) : null
+        final String version = arguments.size() >=3 ? arguments.get(2) : null
 
         if (group == null || group.isEmpty())
             throw new IllegalArgumentException("Group cannot be null or empty")
