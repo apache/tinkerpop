@@ -15,6 +15,7 @@ import java.util.Map;
  */
 public abstract class AbstractGremlinPlugin implements GremlinPlugin {
     protected static final String IMPORT_SPACE = "import ";
+    protected static final String IMPORT_STATIC_SPACE = "import static ";
     protected static final String DOT_STAR = ".*";
 
     protected IO io;

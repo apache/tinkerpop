@@ -32,6 +32,16 @@
             <artifactId>gremlin-driver</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.gperfutils</groupId>
+            <artifactId>gbench</artifactId>
+            <version>0.4.2-groovy-2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.gperfutils</groupId>
+            <artifactId>gprof</artifactId>
+            <version>0.3.0-groovy-2.3</version>
+        </dependency>
     </dependencies>
     <build>
         <directory>${basedir}/target</directory>
