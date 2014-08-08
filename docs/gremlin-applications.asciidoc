@@ -516,8 +516,6 @@ image:gremlin-sugar.png[width=120,float=left] In previous versions of Gremlin-Gr
 
 [source,groovy]
 gremlin> :plugin use sugar
-==>class com.tinkerpop.gremlin.groovy.loaders.SugarLoader
-...
 ==>sugar activated
 gremlin> g.v(1).value('name')  // conventional 
 ==>marko
@@ -543,3 +541,96 @@ The examples above are generalized below:
 . Missing element fields: if a vertex or edge's instance field is selected and that field does not exist, then it is assumed the user means `value('fieldName')`.
 . Missing traverser method: if a traverser method is called and that method doesn't exist, then it is assumed that the method is on the wrapped object of the traverser.
 . Missing traverser field: if a traverser field is called and that field doesn't exist, then it is assumed that the field is on the wrapped object of the traverser.
+
+[utilities-plugin]
+Utilities Plugin
+~~~~~~~~~~~~~~~~
+
+The Utilities Plugin provides various functions, helper methods and imports of external classes that are useful in the console.  
+
+[[clock]]
+Clock
+^^^^^
+
+The `clock` function provides a simple way to time how long it takes to execute a traversal (or any other code within the closure passed to it). By default, the `clock` function will execute the contents of the closure one hundred times and calculate the average time taken per execution.  `clock` can take an optional integer parameter to override number of times to execute the closure contents.
+
+[source,groovy]
+----
+gremlin> :plugin use utilities 
+==>sugar activated
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> clock{g.V.both.both.both.iterate()}
+==>0.6182899999999999
+gremlin> clock(1000){g.V.both.both.both.iterate()}
+==>0.23745999999999978
+----
+
+Benchmarking and Profiling
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The link:https://code.google.com/p/gperfutils/[GPerfUtils] library provides a number of performance utilities for Groovy.  Specifically, these tools cover benchmarking and profiling.  
+
+Benchmarking allows execution time comparisons of different pieces of code. While such a feature is generally useful, in the context of Gremlin, benchmarking can help compare traversal performance times to determine the optimal approach.  Profiling helps determine the parts of a program which are taking the most execution time, yielding low-level insight into the code being examined. 
+
+[source,groovy]
+----
+gremlin> :plugin use sugar // activate sugar plugin for use in benchmark
+==>sugar activated
+gremlin> benchmark{ 
+gremlin>   'sugar' {g.v(1).name.next()}
+gremlin>   'nosugar' {g.v(1).value("name").next()}}.prettyPrint()
+Environment
+===========
+* Groovy: 2.3.6
+* JVM: Java HotSpot(TM) 64-Bit Server VM (25.5-b02, Oracle Corporation)
+    * JRE: 1.8.0_05
+    * Total Memory: 161 MB
+    * Maximum Memory: 1774.5 MB
+* OS: Linux (3.13.0-32-generic, amd64)
+
+Options
+=======
+* Warm Up: Auto (- 60 sec)
+* CPU Time Measurement: On
+
+         user  system   cpu  real
+
+sugar    4135       0  4135  4143
+nosugar  1223       0  1223  1226
+==>null
+gremlin> profile { g.V.iterate() }.prettyPrint()
+Flat:
+
+ %    cumulative   self            self     total    self    total   self    total                                                                              
+time   seconds    seconds  calls  ms/call  ms/call  min ms  min ms  max ms  max ms  name                                                                        
+61.8        0.02     0.02      1    22.60    22.60   22.60   22.60   22.60   22.60  com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal.iterate
+23.5        0.03     0.00      1     8.62     8.62    8.62    8.62    8.62    8.62  com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.V                   
+13.4        0.03     0.00      1     4.93    36.57    4.93   36.57    4.93   36.57  groovysh_evaluate$_run_closure1.doCall                                      
+ 1.0        0.03     0.00      1     0.38     0.40    0.38    0.40    0.38    0.40  com.tinkerpop.gremlin.groovy.loaders.GremlinLoader.isStep                   
+ 0.0        0.03     0.00      1     0.01     0.01    0.01    0.01    0.01    0.01  java.util.HashSet.contains                                                  
+
+Call graph:
+
+index  % time  self  children  calls  name                                                                                
+               0.00      0.03    1/1      <spontaneous>                                                                   
+[1]     100.0  0.00      0.03      1  groovysh_evaluate$_run_closure1.doCall [1]                                          
+               0.02      0.00    1/1      com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal.iterate [2]
+               0.00      0.00    1/1      com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.V [3]                   
+               0.00      0.00    1/1      com.tinkerpop.gremlin.groovy.loaders.GremlinLoader.isStep [4]                   
+--------------------------------------------------------------------------------------------------------------------------
+               0.02      0.00    1/1      groovysh_evaluate$_run_closure1.doCall [1]                                      
+[2]      61.8  0.02      0.00      1  com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal.iterate [2]    
+--------------------------------------------------------------------------------------------------------------------------
+               0.00      0.00    1/1      groovysh_evaluate$_run_closure1.doCall [1]                                      
+[3]      23.5  0.00      0.00      1  com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.V [3]                       
+--------------------------------------------------------------------------------------------------------------------------
+               0.00      0.00    1/1      groovysh_evaluate$_run_closure1.doCall [1]                                      
+[4]       1.1  0.00      0.00      1  com.tinkerpop.gremlin.groovy.loaders.GremlinLoader.isStep [4]                       
+               0.00      0.00    1/1      java.util.HashSet.contains [5]                                                  
+--------------------------------------------------------------------------------------------------------------------------
+               0.00      0.00    1/1      com.tinkerpop.gremlin.groovy.loaders.GremlinLoader.isStep [4]                   
+[5]       0.0  0.00      0.00      1  java.util.HashSet.contains [5]                                                      
+--------------------------------------------------------------------------------------------------------------------------
+==>null
+----
