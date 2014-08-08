@@ -353,6 +353,8 @@ gremlin> g.V.groupBy{it.value('name')[1]}{it.value('name')}.next()
 ==>i=[ripple]
 ==>o=[lop, josh]
 
+NOTE: When executing a <<vertexprogram,`VertexProgram`> via `g.compute().program(...).submit()`, it is important that `g` is created with `GiraphGraph.open()`.  
+
 OLAP Giraph-Gremlin
 ~~~~~~~~~~~~~~~~~~~
 
@@ -461,7 +463,7 @@ The classic link:http://en.wikipedia.org/wiki/PageRank[PageRank] centrality algo
 NOTE: The extension `ldjson` in `giraph-graphson.properties` refers to link:http://en.wikipedia.org/wiki/Line_Delimited_JSON[line-delimitated JSON] which is the file format used by `GraphSONWriter` when writing an link:http://en.wikipedia.org/wiki/Adjacency_list[adjacency list] representation of a graph.
 
 [source,text]
-$ hadoop fs -copyFromLocal ../data/tinkergraph-classic-vertices.ldjson tinkergraph-classic-vertices.ldjson
+$ hadoop fs -copyFromLocal ../data/tinkerpop-classic-vertices.ldjson tinkerpop-classic-vertices.ldjson
 $ hadoop fs -ls
 Found 2 items
 -rw-r--r--   1 marko supergroup        891 2014-07-28 13:00 /user/marko/tinkerpop-classic-vertices.gio
