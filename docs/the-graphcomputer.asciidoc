@@ -276,7 +276,7 @@ TraversalVertexProgram
 
 image:traversal-vertex-program.png[width=250,float=left] The `TraversalVertexProgram` is a "special" VertexProgram in that it can be executed via `GraphTraversal.submit()`. In Gremlin, it is possible to have the same traversal executed using either the standard OTLP-engine or the GraphComputer OLAP-engine. The difference being where the traversal is submitted.
 
-NOTE: This model of graph traversal in a BSP system was made popular by the link:http://faunus.thinkaurelius.com[Faunus] graph analytics engine and originally described in link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engines/[Local and Distributed Traversal Engines].
+NOTE: This model of graph traversal in a BSP system was first implemented by the link:http://faunus.thinkaurelius.com[Faunus] graph analytics engine and originally described in link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engines/[Local and Distributed Traversal Engines].
 
 [source,groovy]
 gremlin> g = TinkerFactory.createClassic()
@@ -315,3 +315,4 @@ gremlin> result.sideEffects.iteration
 gremlin> result.sideEffects.runtime
 ==>19
 
+CAUTION: When evaluating traversals that rely on path information (i.e. the history of the traversal), practical computational limits can be easily reached due the link:http://en.wikipedia.org/wiki/Combinatorial_explosion[combinatoric explosion] of data. With path computing enabled, every traverser is unique and thus, must be enumerated as opposed to counted. The difference being a collection of paths vs. a single 64-bit long at a single vertex. For more information on this concept, please see link:http://thinkaurelius.com/2012/11/11/faunus-provides-big-graph-data-analytics/[Faunus Provides Big Graph Data].
