@@ -137,11 +137,30 @@ results.getGraph().V().value("counter").forEach(System.out::println);
 // 10
 // 10
 
+Finally, there also exists `LambdaMapReduce` to compliment `LambdaVertexProgram`. In essence, the `map`, `combine`, `reduce`, etc. methods of <<mapreduce,MapReduce>> can be described by lambdas. An example is provided below in Gremlin-Groovy that expands on the example previous that simply sums up all the counters on the vertices and stores them into a graph computer sideEffect called `counter`.
+
+[source,groovy]
+gremlin> result = g.compute().
+                      program(LambdaVertexProgram.build().        // vertex program from previous example
+                        execute(new GSTriConsumer("a.property('counter', c.isInitialIteration() ? 1 : ++a.value('counter'))")).
+                        terminate(new GSPredicate('a.iteration > 9')).
+                        elementComputeKeys('counter',VARIABLE).create()). 
+                      mapReduce(LambdaMapReduce.build().         // map reduce declaration
+                        map(new GSBiConsumer("b.emit(MapReduce.NullObject.instance(), a.value('counter'))")).
+                        reduce(new GSTriConsumer("c.emit(a,b.sum())")).
+                        sideEffect(new GSFunction('a.next().value1')).
+                        sideEffectKey('sum').create()).submit().get()
+==>result[tinkergraph[vertices:6 edges:6],sideEffects[size:1]]
+gremlin> result.sideEffects.sum.get()
+==>60
+
+NOTE: The examples presented are simple. For more complex examples within Gremlin Console, it may be important to either develop a `VertexProgram` class or make use of Groovy link:http://groovy.codehaus.org/Strings+and+GString[multi-line strings].
+
 [[pagerankvertexprogram]]
 PageRankVertexProgram
 ~~~~~~~~~~~~~~~~~~~~~
 
-image:gremlin-pagerank.png[width=400,float=right] link:http://en.wikipedia.org/wiki/PageRank[PageRank] is perhaps the most popular OLAP-oriented graph algorithm. This link:http://en.wikipedia.org/wiki/Centrality[eigenvector centrality] variant was developed by Brin and Page of Google. PageRank defines a centrality value for all vertices in the graph, where centrality is defined recursively where a vertex is central if it is connected to central vertices. PageRank is an iterative algorithm that converges to a link:http://en.wikipedia.org/wiki/Ergodicity[steady state distribution]. If the pageRank values are normalized to 1.0, then the pageRank value of a vertex is the probability that a random walker will be seen that that vertex in the graph at any arbitrary moment in time. In order to help developers understand the components of a `VertexProgram`, the PageRankVertexProgram code is analyzed below.
+image:gremlin-pagerank.png[width=400,float=right] link:http://en.wikipedia.org/wiki/PageRank[PageRank] is perhaps the most popular OLAP-oriented graph algorithm. This link:http://en.wikipedia.org/wiki/Centrality[eigenvector centrality] variant was developed by Brin and Page of Google. PageRank defines a centrality value for all vertices in the graph, where centrality is defined recursively where a vertex is central if it is connected to central vertices. PageRank is an iterative algorithm that converges to a link:http://en.wikipedia.org/wiki/Ergodicity[steady state distribution]. If the pageRank values are normalized to 1.0, then the pageRank value of a vertex is the probability that a random walker will be seen that that vertex in the graph at any arbitrary moment in time. In order to help developers understand the methods of a `VertexProgram`, the PageRankVertexProgram code is analyzed below.
 
 [source,java]
 ----

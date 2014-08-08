@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.computer.lambda.mapreduce;
+package com.tinkerpop.gremlin.process.computer.lambda;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;

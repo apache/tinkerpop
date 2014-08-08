@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 class GroovyChooseTestImpl extends ChooseTest {
 
     public Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name() {
-        return g.V().choose({ it.get().value('name').length() == 5 },
+        return g.V().choose({ it.instance().value('name').length() == 5 },
                 g.of().out(),
                 g.of().in()).name;
     }
@@ -20,14 +20,14 @@ class GroovyChooseTestImpl extends ChooseTest {
     }
 
     public Traversal<Vertex, String> get_g_V_hasXageX_chooseXname_lengthX5_in_4_out_3_bothX_name() {
-        return g.V().has('age').choose({ it.get().value('name').length() },
+        return g.V().has('age').choose({ it.instance().value('name').length() },
                 [5: g.of().in(),
                  4: g.of().out(),
                  3: g.of().both()]).name;
     }
 
     public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_valueXnameX_3L_valuesX() {
-        return g.V.choose({it.get().out().count().next();},[
+        return g.V.choose({it.instance().out().count().next();},[
             2L:g.of().value("name"),
             3L:g.of().values()])
     }

@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.computer.ranking.pagerank.mapreduce;
+package com.tinkerpop.gremlin.process.computer.ranking.pagerank;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;

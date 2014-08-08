@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.computer.clustering.peerpressure.mapreduce;
+package com.tinkerpop.gremlin.process.computer.clustering.peerpressure;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
@@ -50,7 +50,7 @@ public class ClusterCountMapReduce implements MapReduce<MapReduce.NullObject, Se
     public void map(final Vertex vertex, final MapEmitter<NullObject, Serializable> emitter) {
         final Property<Serializable> cluster = vertex.property(PeerPressureVertexProgram.CLUSTER);
         if (cluster.isPresent()) {
-            emitter.emit(NullObject.get(), cluster.value());
+            emitter.emit(NullObject.instance(), cluster.value());
         }
     }
 
@@ -63,7 +63,7 @@ public class ClusterCountMapReduce implements MapReduce<MapReduce.NullObject, Se
     public void reduce(final NullObject key, final Iterator<Serializable> values, final ReduceEmitter<NullObject, Integer> emitter) {
         final Set<Serializable> set = new HashSet<>();
         values.forEachRemaining(set::add);
-        emitter.emit(NullObject.get(), set.size());
+        emitter.emit(NullObject.instance(), set.size());
 
     }
 

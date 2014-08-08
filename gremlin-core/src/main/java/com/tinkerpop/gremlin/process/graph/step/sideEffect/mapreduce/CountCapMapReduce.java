@@ -46,7 +46,7 @@ public class CountCapMapReduce implements MapReduce<MapReduce.NullObject, Long, 
     @Override
     public void map(Vertex vertex, MapEmitter<MapReduce.NullObject, Long> emitter) {
         final AtomicLong count = vertex.<AtomicLong>property(Graph.Key.hide(this.sideEffectKey)).orElse(new AtomicLong(0));
-        emitter.emit(NullObject.get(), count.get());
+        emitter.emit(NullObject.instance(), count.get());
     }
 
     @Override
@@ -55,7 +55,7 @@ public class CountCapMapReduce implements MapReduce<MapReduce.NullObject, Long, 
         while (values.hasNext()) {
             count = values.next() + count;
         }
-        emitter.emit(NullObject.get(), count);
+        emitter.emit(NullObject.instance(), count);
     }
 
     @Override

@@ -58,7 +58,7 @@ public interface MapReduce<MK, MV, RK, RV, R> {
         private static final NullObject INSTANCE = new NullObject();
         private static final String NULL_OBJECT = "MapReduce$NullObject";
 
-        public static NullObject get() {
+        public static NullObject instance() {
             return INSTANCE;
         }
 

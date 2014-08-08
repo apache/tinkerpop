@@ -80,7 +80,7 @@ public class StringFactory {
     }
 
     public static String computerString(final GraphComputer graphComputer) {
-        return "computer" + L_BRACKET + "size:" + graphComputer.getClass().getSimpleName().toLowerCase() + R_BRACKET;
+        return graphComputer.getClass().getSimpleName().toLowerCase();
     }
 
     public static String featureString(final Graph.Features features) {

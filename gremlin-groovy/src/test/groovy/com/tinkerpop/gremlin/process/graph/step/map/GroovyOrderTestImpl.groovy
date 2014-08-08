@@ -13,10 +13,10 @@ class GroovyOrderTestImpl extends OrderTest {
     }
 
     public Traversal<Vertex, String> get_g_V_name_orderXabX() {
-        g.V.name.order { a, b -> b.get() <=> a.get() }
+        g.V.name.order { a, b -> b.instance() <=> a.instance() }
     }
 
     public Traversal<Vertex, String> get_g_V_orderXa_nameXb_nameX_name() {
-        g.V.order { a, b -> a.get().value('name') <=> b.get().value('name') }.name
+        g.V.order { a, b -> a.instance().value('name') <=> b.instance().value('name') }.name
     }
 }

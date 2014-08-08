@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.computer.clustering.peerpressure.mapreduce;
+package com.tinkerpop.gremlin.process.computer.clustering.peerpressure;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
