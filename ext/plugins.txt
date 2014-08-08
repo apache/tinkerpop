@@ -1,2 +1,0 @@
-com.tinkerpop.gremlin.console.plugin.DriverGremlinPlugin
-com.tinkerpop.gremlin.console.plugin.UtilitiesGremlinPlugin
