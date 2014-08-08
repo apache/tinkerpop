@@ -142,6 +142,7 @@ NOTE: Gremlin Server is essentially the replacement for link:http://rexster.tink
 
 Communication with Gremlin Server occurs over link:http://en.wikipedia.org/wiki/WebSocket[WebSockets] and exposes a custom subprotocol for interacting with the server.
 
+[[connecting-via-console]]
 Connecting via Console
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -508,6 +509,14 @@ Gephi Plugin
 
 image:gephi-logo.png[width=200] link:http://gephi.github.io/[Gephi] is an interactive visualization and exploration platform for graphs.
 
+[[server-plugin]]
+Server Plugin
+~~~~~~~~~~~~~
+
+image:gremlin-server.png[width=200,float=left] xref:gremlin-server[Gremlin Server] remotely executes Gremlin scripts that are submitted to it.  The Server Plugin provides a way to submit scripts to Gremlin Server for remote processing.  Read more about the plugin and how it works in the Gremlin Server section on xref:connecting-via-console[Connecting via Console]. 
+
+NOTE: The Server Plugin is enabled in the Gremlin Console by default.
+
 [sugar-plugin]
 Sugar Plugin
 ~~~~~~~~~~~~
@@ -547,6 +556,8 @@ Utilities Plugin
 ~~~~~~~~~~~~~~~~
 
 The Utilities Plugin provides various functions, helper methods and imports of external classes that are useful in the console.  
+
+NOTE: The Utilities Plugin is enabled in the Gremlin Console by default.
 
 [[clock]]
 Clock
