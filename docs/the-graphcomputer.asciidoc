@@ -141,13 +141,13 @@ results.getGraph().V().value("counter").forEach(System.out::println);
 PageRankVertexProgram
 ~~~~~~~~~~~~~~~~~~~~~
 
-Perhaps the most popular OLAP-oriented graph algorithm is link:http://en.wikipedia.org/wiki/PageRank[PageRank]. This eigenvector centrality variant was developed by Brin and Page of Google. the `VertexProgram` representation of the algorithm is presented below.
+image:gremlin-pagerank.png[width=400,float=right] link:http://en.wikipedia.org/wiki/PageRank[PageRank] is perhaps the most popular OLAP-oriented graph algorithm. This link:http://en.wikipedia.org/wiki/Centrality[eigenvector centrality] variant was developed by Brin and Page of Google. PageRank defines a centrality value for all vertices in the graph, where centrality is defined recursively where a vertex is central if it is connected to central vertices. PageRank is an iterative algorithm that converges to a link:http://en.wikipedia.org/wiki/Ergodicity[steady state distribution]. If the pageRank values are normalized to 1.0, then the pageRank value of a vertex is the probability that a random walker will be seen that that vertex in the graph at any arbitrary moment in time. In order to help developers understand the components of a `VertexProgram`, the PageRankVertexProgram code is analyzed below.
 
 [source,java]
 ----
 public class PageRankVertexProgram implements VertexProgram<Double> { <1>
 
-    private MessageType.Local messageType = MessageType.Local.of(() -> new DefaultGraphTraversal().outE()); <2>
+    private MessageType.Local messageType = MessageType.Local.of(() -> GraphTraversal.<Vertex>of().outE()); <2>
 
     public static final String PAGE_RANK = Graph.Key.hide("gremlin.pageRank"); <3>
     public static final String EDGE_COUNT = Graph.Key.hide("gremlin.edgeCount");
