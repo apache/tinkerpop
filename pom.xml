@@ -474,8 +474,9 @@
             </activation>
 
             <properties>
-                <asciidoc.input.dir>${project.basedir}/docs</asciidoc.input.dir>
-                <asciidoctor.style.dir>${project.basedir}/docs/stylesheets</asciidoctor.style.dir>
+                <asciidoc.source.dir>${project.basedir}/docs</asciidoc.source.dir>
+                <asciidoc.input.dir>${project.basedir}/target/doc-source</asciidoc.input.dir>
+                <asciidoctor.style.dir>${asciidoc.input.dir}/stylesheets</asciidoctor.style.dir>
                 <htmlsingle.output.dir>${project.basedir}/target/docs/htmlsingle</htmlsingle.output.dir>
             </properties>
 
@@ -494,6 +495,28 @@
                         <configuration>
                             <skip>true</skip>
                         </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.github.goldin</groupId>
+                        <artifactId>copy-maven-plugin</artifactId>
+                        <version>0.2.5</version>
+                        <executions>
+                            <execution>
+                                <id>copy-docs</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                                <configuration>
+                                    <resource>
+                                        <directory>${asciidoc.source.dir}</directory>
+                                        <targetPath>${asciidoc.input.dir}</targetPath>
+                                        <preservePath>true</preservePath>
+                                        <failIfNotFound>false</failIfNotFound>
+                                    </resource>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                     <plugin>
                         <groupId>org.asciidoctor</groupId>
@@ -521,6 +544,7 @@
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>
+                                        <basedir>${project.basedir}</basedir>
                                     </attributes>
                                 </configuration>
                             </execution>

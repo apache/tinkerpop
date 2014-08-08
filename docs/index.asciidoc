@@ -1961,7 +1961,7 @@ The log messages that printed above show a number of things, but most importantl
 
 [source,groovy]
 ----
-include::../gremlin-server/scripts/generate-classic.groovy[]
+include::{basedir}/gremlin-server/scripts/generate-classic.groovy[]
 ----
 
 This script loads the "classic" graph into the empty TinkerGraph instance, preparing it for use.  With Gremlin Server running it is now possible to issue some scripts to it for processing.  Start Gremlin Console as follows:
@@ -2241,14 +2241,14 @@ Plugins provide a way to expand the features of Gremlin Console and Gremlin Serv
 
 [source,java]
 ----
-include::../gremlin-groovy/src/main/java/com/tinkerpop/gremlin/groovy/plugin/GremlinPlugin.java[]
+include::{basedir}/gremlin-groovy/src/main/java/com/tinkerpop/gremlin/groovy/plugin/GremlinPlugin.java[]
 ----
 
 The most simple plugin and the one most commonly implemented will likely be one that just provides a list of classes to import to the Gremlin Console.  This type of plugin is the easiest way for implementers of the TinkerPop Structure and Process APIs to make their implementations available to users.  The Neo4j implementation currently maintained by TinkerPop has just such a plugin:
 
 [source,java]
 ----
-include::../neo4j-gremlin/src/main/java/com/tinkerpop/gremlin/neo4j/groovy/plugin/Neo4jGremlinPlugin.java[]
+include::{basedir}/neo4j-gremlin/src/main/java/com/tinkerpop/gremlin/neo4j/groovy/plugin/Neo4jGremlinPlugin.java[]
 ----
 
 Note that the plugin provides a unique name for the plugin. No other plugin in the default TinkerPop namespace (i.e. the TinkerPop namespace is top-level and thus not prefixed) can be named "neo4j".  To make Neo4j classes available to the Console, the `PluginAcceptor` is given a `Set` of imports to provide to the plugin host.  The `PluginAcceptor` essentially behaves as an abstraction to the "host" that is handling the `GremlinPlugin`.  `GremlinPlugin` implementations maybe hosted by the Console as well as the `ScriptEngine` in Gremlin Server.  Obviously, registering new commands and other operations that are specific to the Groovy Shell don't make sense there.  Write the code for the plugin defensively by checking the `GremlinPlugin.env` key in the `PluginAcceptor.environment()` to understand which environment the plugin is being used in.
@@ -2257,7 +2257,7 @@ There is one other step to follow to ensure that the `GremlinPlugin` is visible 
 
 [source,java]
 ----
-include::../neo4j-gremlin/src/main/resources/META-INF/services/com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin[]
+include::{basedir}/neo4j-gremlin/src/main/resources/META-INF/services/com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin[]
 ----
 
 Once the plugin is packaged, there are two ways to test it out:
@@ -2277,7 +2277,7 @@ Plugins can also tie into the `:remote` and `:submit` commands.  Recall that a `
 
 [source,java]
 ----
-include::../gremlin-groovy/src/main/java/com/tinkerpop/gremlin/groovy/plugin/RemoteAcceptor.java[]
+include::{basedir}/gremlin-groovy/src/main/java/com/tinkerpop/gremlin/groovy/plugin/RemoteAcceptor.java[]
 ----
 
 The `RemoteAcceptor` implementation ties to a `GremlinPlugin` and will only be executed when in use with the Gremlin Console plugin host.  Simply instantiate and return a `RemoteAcceptor` in the `GremlinPlugin.remoteAcceptor()` method of the plugin implementation.  Generally speaking, each call to `remoteAcceptor()` should produce a new instance of a `RemoteAcceptor`.  It will likely be necessary that you provide context from the `GremlinPlugin` to the `RemoteAcceptor` plugin.  For example, the `RemoteAcceptor` implementation might require an instance of `Groovysh` to provide a way to dynamically evaluate a script provided to it so that it can process the results in a different way.
