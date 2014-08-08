@@ -23,11 +23,11 @@ import java.util.Set;
  */
 public class LambdaVertexProgram<M extends Serializable> implements VertexProgram<M> {
 
-    private static final String SETUP_LAMBDA_KEY = "gremlin.setupLambdaKey";
-    private static final String EXECUTE_LAMBDA_KEY = "gremlin.executeLambdaKey";
-    private static final String TERMINATE_LAMBDA_KEY = "gremlin.terminateLambdaKey";
-    private static final String ELEMENT_COMPUTE_KEYS_KEY = "gremlin.elementComputeKeys";
-    private static final String SIDE_EFFECT_KEYS_KEY = "gremlin.sideEffectKeys";
+    private static final String SETUP_LAMBDA_KEY = "gremlin.lambdaVertexProgram.setupLambdaKey";
+    private static final String EXECUTE_LAMBDA_KEY = "gremlin.lambdaVertexProgram.executeLambdaKey";
+    private static final String TERMINATE_LAMBDA_KEY = "gremlin.lambdaVertexProgram.terminateLambdaKey";
+    private static final String ELEMENT_COMPUTE_KEYS_KEY = "gremlin.lambdaVertexProgram.elementComputeKeys";
+    private static final String SIDE_EFFECT_KEYS_KEY = "gremlin.lambdaVertexProgram.sideEffectKeys";
 
     private SConsumer<SideEffects> setupLambda;
     private STriConsumer<Vertex, Messenger<M>, SideEffects> executeLambda;

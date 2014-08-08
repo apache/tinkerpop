@@ -1,11 +1,14 @@
 package com.tinkerpop.gremlin.groovy;
 
 import com.tinkerpop.gremlin.algorithm.generator.AbstractGenerator;
-import com.tinkerpop.gremlin.groovy.engine.function.GremlinGroovySSupplier;
+import com.tinkerpop.gremlin.groovy.engine.function.GLambda;
 import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
 import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.mapreduce.ClusterPopulationMapReduce;
+import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
 import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import com.tinkerpop.gremlin.process.computer.ranking.pagerank.mapreduce.PageRankMapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
@@ -57,12 +60,15 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
 
         // graph process
         imports.add(Traversal.class.getPackage().getName() + DOT_STAR);
+        imports.add(GraphComputer.class.getPackage().getName() + DOT_STAR);
+        staticImports.add(VertexProgram.KeyType.class.getCanonicalName() + DOT_STAR);
+
 
         // utils
         imports.add(Gremlin.class.getPackage().getName() + DOT_STAR);
         imports.add(GremlinLoader.class.getPackage().getName() + DOT_STAR);
         imports.add(FunctionUtils.class.getPackage().getName() + DOT_STAR);
-        imports.add(GremlinGroovySSupplier.class.getPackage().getName() + DOT_STAR);
+        imports.add(GLambda.class.getPackage().getName() + DOT_STAR);
 
         // tinkergraph
         imports.add(TinkerGraph.class.getPackage().getName() + DOT_STAR);
@@ -81,6 +87,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(PageRankVertexProgram.class.getPackage().getName() + DOT_STAR);
         imports.add(PageRankMapReduce.class.getPackage().getName() + DOT_STAR);
         imports.add(TraversalVertexProgram.class.getPackage().getName() + DOT_STAR);
+        imports.add(LambdaVertexProgram.class.getPackage().getName() + DOT_STAR);
 
         // groovy extras
         imports.add(Grape.class.getCanonicalName());

@@ -916,8 +916,8 @@ image::step-types.png[width=650]
 A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, or an Edge. A graph traversal is composed of a ordered list of steps. Each step is of particular general form as diagrammed above. A list of all the steps (and their descriptions) are provided in the TinkerPop3 link:http://www.tinkerpop.com/javadocs/current/com/tinkerpop/gremlin/process/graph/GraphTraversal.html[GraphTraversal JavaDoc]. A few of the more interesting/complex steps are presented in the following subsections.
 
 [[aggregate-step]]
-Aggregate Step
-~~~~~~~~~~~~~~
+AggregateStep
+~~~~~~~~~~~~~
 
 image::aggregate-step.png[width=800]
 
@@ -946,8 +946,8 @@ In link:http://en.wikipedia.org/wiki/Recommender_system[recommendation systems],
 
 
 [[back-step]]
-Back Step
-~~~~~~~~~
+BackStep
+~~~~~~~~
 
 link:http://en.wikipedia.org/wiki/Functional_programming[Functional languages] make use of function composition and lazy evaluation to create complex computations from primitive operations. This is exactly what Gremlin `GraphTraversal` does. One of the differentiating aspects of Gremlin's data flow approach to graph processing is that the flow need not always go "forward," but in fact, can go back to a previously seen area of computation. Examples include <<jump-step,`jump()`>> as well as the `back()`-step (*branch*).
 
@@ -969,8 +969,8 @@ gremlin> g.V.out.out.as('x').back('x') // pointless
 ==>v[3]
 
 [[choose-step]]
-Choose Step
-~~~~~~~~~~~
+ChooseStep
+~~~~~~~~~~
 
 The `choose()`-step (*branch*) allows for the current `Traverser<T>` to select which traversal branch to take. With `choose()`, it is possible to implement if/else-based semantics.
 
@@ -1016,8 +1016,8 @@ g.V.has("age").choose(v -> v.get().value("name").length(), new HashMap() {{
 }}).value("name")
 
 [[groupby-step]]
-GroupBy Step
-~~~~~~~~~~~~
+GroupByStep
+~~~~~~~~~~~
 
 As traversers propagate across a graph as defined by a traversal, sideEffect computations are sometimes required. That is, the actually path taken or the current location of a traverser is not the ultimate output of the computation, but some other representation of the traversal. The `groupBy()`-step (*sideEffect*) is one such sideEffect that organizes the objects according to some function of the object. Then, if required, that organization (a list) is reduced. An example is provided below.
 
@@ -1036,8 +1036,8 @@ The three lambda parameters of `groupBy` are discussed below.
 . Reduce-lambda: What feature of the key-list to ultimately return?
 
 [[groupcount-step]]
-GroupCount Step
-~~~~~~~~~~~~~~~
+GroupCountStep
+~~~~~~~~~~~~~~
 
 When it is important to know how many times a particular object has been at a particular part of a traversal, `groupCount()`-step (*sideEffect*) is used.
 
@@ -1062,8 +1062,8 @@ gremlin> g.V.as('x').both.groupCount{it.value('name')[1]}.as('m').jump('x',10).c
 The above is interesting in that it demonstrates the use of referencing the internal `Map<Object,Long>` of `groupCount` with a string variable. Given that `groupCount` is a sideEffect-step, it simply passes the object it received to its output. Internal to `groupCount`, the object's count is incremented. If `groupCount` is the last step in the traversal, the `SideEffectCapStrategy` (see <<traversalstrategy,Traversal Strategy>>) automatically returns the internal map. However, if the `groupCount` is not the last step, then the sideEffect data structure (i.e. the internal map of `groupCount`) can be accessed with `cap`-step by referencing the desired variable.
 
 [[jump-step]]
-Jump Step
-~~~~~~~~~
+JumpStep
+~~~~~~~~
 
 TinkerPop3 introduces the `jump()`-step (*branch*). This step allows the propagating traverser object to jump to any arbitrary section of the `Traversal`. Typically, this is determined by means of a predicate. In particular, with `jump`, the Gremlin is no longer constrained to *do-while* semantics, but can as well support *while-do* (see link:http://docs.oracle.com/javase/tutorial/java/nutsandbolts/while.html[Java Documentation on While]). Below are some examples of `jump` in action in Gremlin-Groovy.
 
@@ -1105,8 +1105,8 @@ The first time through the jump-sequence, the vertices lop, vadas, and josh are 
 The jump()-step highlights one of the major benefits of `Traverser<T>` in TinkerPop3: the ability to take a traverser and place it anywhere in the Traversal step-sequence. Because a traverser maintains all the metadata associated with its particular walk, and no step maintains state information about a traverser, traversers can be arbitrarily relocated without ill-effects.
 
 [[match-step]]
-Match Step
-~~~~~~~~~~
+MatchStep
+~~~~~~~~~
 
 The `match()`-step (*map*) is introduced into TinkerPop3 to support a more link:http://en.wikipedia.org/wiki/Declarative_programming[declarative] form of link:http://en.wikipedia.org/wiki/Pattern_matching[pattern matching]. Similar constructs were available in previous TinkerPop versions via the `table()`-step, but that has since been removed in favor of the `match().select()`-pattern. With MatchStep in TinkerPop, a query optimizer exists based on the link:http://www.knowledgefrominformation.com/2011/04/16/budget-match-cost-effective-subgraph-matching-on-large-networks/[budget match algorithm]. For very large graphs, where the developer is uncertain of the statistics of the graph (e.g. how many `knows`-edges vs. `worksFor`-edges exist in the graph), it is best to use `match()` as the optimal traversal path will be determined automatically.
 
@@ -1170,8 +1170,8 @@ gremlin> g.V.match('a',
 WARNING: Currently `match()` can not operate within a multi-JVM <<graphcomputer,GraphComputer>> OLAP environment. Future work includes a linearization <<traversalstrategy,TraversalStrategy>> for `match()`.
 
 [[path-step]]
-Path Step
-~~~~~~~~~
+PathStep
+~~~~~~~~
 
 A traverser is transformed as it moves through a series of steps within a `Traversal`. The history of the traverser is realized by examining its path with `path()`-step (*map*).
 
@@ -1212,8 +1212,8 @@ gremlin> g.V.out.out.path{
 WARNING: Generating path information is expensive as the history of the traverser is stored into a Java list. With numerous traversers, there are numerous lists. Moreover, in an OLAP <<graphcomputer,`GraphComputer`>> environment this becomes exceedingly prohibitive as there are traversers emanating from all vertices in the graph in parallel. In OLAP there are optimizations provided for traverser populations, but when paths are calculated (and each traverser is unique due to its history), then these optimizations are no longer possible.
 
 [[select-step]]
-Select Step
-~~~~~~~~~~~
+SelectStep
+~~~~~~~~~~
 
 There are two use cases for `select`-step (*map*).
 
@@ -1261,8 +1261,8 @@ gremlin> g.V[0..1].as('a').map{[b:1,c:2]}.select('c') <4>
 <4> If a single selection is used, then the object is emitted not wrapped in a map. Useful for continuing the traversal process without having to do a map projection.
 
 [[store-step]]
-Store Step
-~~~~~~~~~~
+StoreStep
+~~~~~~~~~
 
 When link:http://en.wikipedia.org/wiki/Lazy_evaluation[lazy] aggregation is needed, `store()`-step (*sideEffect*) should be used over <<aggregate-step,`aggregate()`>>. The two steps differ in that `store()` does not block and only stores objects in its side-effect collection as they pass through.
 
@@ -1275,8 +1275,8 @@ gremlin> g.V.store.as('x')[0..1].cap('x')
 It is interesting to note that there are three results in the `store()` side-effect even though the interval selection is for 2 objects. Realize that when the third object is on its way to the `range()` filter (i.e. `[0..1]`), it passes through `store()` and thus, stored before filtered.
 
 [[subgraph-step]]
-Subgraph Step
-~~~~~~~~~~~~~
+SubgraphStep
+~~~~~~~~~~~~
 
 Extracting a portion of a graph from a larger one for analysis, visualization or other purposes is a fairly common use case for graph analysts and developers. The `subgraph()`-step (*map*) provides a way to produce an edge-induced subgraph from virtually any traversal.  The following code shows how to produce the "knows" subgraph:
 
@@ -1317,8 +1317,8 @@ gremlin> sg.E
 <1> Starting at vertex `3`, traverse 3 steps away on in-edges, outputting all of that into the subgraph.
 
 [[timelimit-step]]
-TimeLimit Step
-~~~~~~~~~~~~~~
+TimeLimitStep
+~~~~~~~~~~~~~
 
 In many situations, a graph traversal is not about getting an exact answer as its about getting a relative ranking. A classic example is link:http://en.wikipedia.org/wiki/Recommender_system[recommendation]. What is desired is a relative ranking of vertices, not their absolute rank. Next, it may be desirable to have the traversal execute for no more than 750 milliseconds. In such situations, `timeLimit()`-step (*filter*) can be used.
 
@@ -1351,8 +1351,8 @@ gremlin> clock(1){g.V.as('x').timeLimit(750).both.groupCount.as('m').jump('x',16
 In essence, the relative order is respected, even through the number traversers at each vertex is not. The primary benefit being that the calculation is guaranteed to complete at the specified time limit (in milliseconds). Finally, note that the internal clock of `timeLimit()`-step starts when the first traverser enters it. When the time limit is reached, any `next()` evaluation of the step will yield a `NoSuchElementException` and any `hasNext()` evaluation will yield `false`.
 
 [[tree-step]]
-Tree Step
-~~~~~~~~~
+TreeStep
+~~~~~~~~
 
 From any one element (i.e. vertex or edge), the emanating paths from that element can be aggregated to form a link:http://en.wikipedia.org/wiki/Tree_(data_structure)[tree]. Gremlin provides `tree()`-step (*sideEffect*) for such this situation.
 
@@ -1382,8 +1382,8 @@ gremlin> tree.getObjectsAtDepth(3)
 
 
 [[traversalstrategy]]
-Traversal Strategy
-------------------
+TraversalStrategy
+-----------------
 
 image:traversal-strategy.png[width=125,float=right] A `TraversalStrategy` can analyze a `Traversal` and mutate the traversal as it deems fit. This is useful in two situations:
 
@@ -1613,52 +1613,46 @@ A Collection of VertexPrograms
 
 TinkerPop3 provides a collection of VertexPrograms that implement common algorithms. This section discusses the various implementations.
 
-[[traversalvertexprogram]]
-TraversalVertexProgram
-~~~~~~~~~~~~~~~~~~~~~~
+[[lambdavertexprogram]]
+LambdaVertexProgram
+~~~~~~~~~~~~~~~~~~~
 
-The `TraversalVertexProgram` is a "special" VertexProgram in that it can be executed via `GraphTraversal.submit()`. In Gremlin, it is possible to have the same traversal executed using either the standard OTLP-engine or the GraphComputer OLAP-engine. The difference being where the query is submitted.
+image:lambda-vertex-program.png[width=200,float=left] `LambdaVertexProgram` is the most generic of all vertex programs as it requires the user to define, by way of lambdas, the meaning of `setup`, `execute`, and `terminate`. This vertex program is convenient for:
 
-[source,groovy]
-gremlin> g = TinkerFactory.createClassic()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> g.V.both.has('age').age.groupCount.next() // OLTP
-==>32=3
-==>35=1
-==>27=1
-==>29=3
-gremlin> g.V.both.has('age').age.groupCount.submit(g.compute()).next() // OLAP
-==>32=3
-==>35=1
-==>27=1
-==>29=3
+* Creating "one line" vertex programs
+* Submitting a "one off" vertex program without having to build a class and distribute jars
+* Testing for vendors of `GraphComputer` implementations
 
-In the OLAP traversal above, the traversal is put into a newly constructed `TraversalVertexProgram` and that program is sent to each vertex in the graph. There are 5 BSP iterations and each iterations is interpreted as such:
-
- . Put a counter on each vertex of the graph.
- . Propagate counters to all vertices both-adjacent.
- . If the vertex doesn't have an `age` property, remove its counters.
- . Propagate all counters to each vertex's `age` property.
- . Create a hidden `Map` property which indexes how many times the particular age has been seen.
-
-The counters that are propagated around the graph are stored in a hidden property called `gremlin.traversalTracker`. When the computation is complete a MapReduce job executes which aggregates all the `groupCount` hidden `Map` properties on each vertex and generates a local copy of the Map (thus, turning the distributed Map representation into a local Map representation).
-
-NOTE: This model of graph traversal in a BSP system was made popular by the link:http://faunus.thinkaurelius.com[Faunus] graph analytics engine and originally described in link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engines/[Local and Distributed Traversal Engines].
-
-The same OLAP traversal can be executed using the standard `g.compute()` model, though at the expense of verbosity.
+WARNING: `GraphComputer` makes extensive use of link:http://docs.oracle.com/javase/tutorial/jndi/objects/serial.html[serialization] as it always assumes that the `VertexProgram` will be executed across multiple JVMs (i.e. a machine cluster). This is true even if the vertex program is executed on a single machine to ensure consistency between all graph computer implementations. As such, when using `GraphComputer` from the <<gremlin-console,Gremlin Console>>, link:http://groovy.codehaus.org/Closures+-+Formal+Definition[Groovy closures] can not be used. As a remedy, Gremlin-Groovy provides serializable lambdas that take a String with respective Gremlin-Groovy code. Note that this is *not* required in Gremlin-Java8 as lambdas are forced serializable in TinkerPop3.
 
 [source,groovy]
-gremlin> result = g.compute().program(TraversalVertexProgram.build().traversal(new GremlinGroovySSupplier("TinkerGraph.open().V.both.has('age').age.groupCount.as('a')")).create()).submit().get()
-==>result[tinkergraph[vertices:6 edges:6],sideEffects[size:3]]
-gremlin> result.sideEffects.get('a')
-==>32=3
-==>35=1
-==>27=1
-==>29=3
-gremlin> result.sideEffects.iteration
-==>6
-gremlin> result.sideEffects.runtime
-==>19
+gremlin> result = g.compute().program(LambdaVertexProgram.build().
+                      execute(new GSTriConsumer("a.property('counter', c.isInitialIteration() ? 1 : ++a.value('counter'))")).
+                      terminate(new GSPredicate('a.iteration > 9')).
+                      elementComputeKeys('counter',VARIABLE).create()).submit().get()
+==>result[tinkergraph[vertices:6 edges:6],sideEffects[size:0]]
+gremlin> result.graph.V.counter
+==>10
+==>10
+==>10
+==>10
+==>10
+==>10
+
+The same example is presented below in Java8 using native lambda syntax.
+
+[source,java]
+ComputerResult results = g.compute().program(LambdaVertexProgram.build().
+                        execute((v, m, s) -> v.<Integer>property("counter", s.isInitialIteration() ? 1 : v.<Integer>value("counter") + 1)).
+                        terminate(s -> s.getIteration() > 9).
+                        elementComputeKeys("counter", VertexProgram.KeyType.VARIABLE).create()).submit().get();
+results.getGraph().V().value("counter").forEach(System.out::println);
+// 10
+// 10
+// 10
+// 10
+// 10
+// 10
 
 [[pagerankvertexprogram]]
 PageRankVertexProgram
@@ -1722,10 +1716,6 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
         return VertexProgram.createElementKeys(PAGE_RANK, KeyType.VARIABLE, EDGE_COUNT, KeyType.CONSTANT);
     }
 
-    @Override
-    public Class<Double> getMessageClass() {
-        return Double.class;
-    }
 
     @Override
     public void setup(final SideEffects sideEffects) {
@@ -1758,7 +1748,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
 <1> `PageRankVertexProgram` implements `VertexProgram<Double>` because the messages it sends are Java doubles.
 <2> The default path of energy propagation is via outgoing edges from the current vertex.
 <3> The resulting PageRank values for the vertices are stored as a hidden property.
-<4> A vertex program is contracted using an Apache `Configuration` to ensure easy dissemination across a cluster of JVMs.
+<4> A vertex program is constructed using an Apache `Configuration` to ensure easy dissemination across a cluster of JVMs.
 <5> A vertex program must define the "compute keys" that are the properties being operated on during the computation.
 <6> The "while(true)"-loop of the vertex program.
 <7> Initially, each vertex is provided an equal amount of energy represented as a double.
@@ -1778,6 +1768,52 @@ The `PeerPressureVertexProgram` is a clustering algorithm that assigns a nominal
   .. If there is a tie, then the cluster with the lowest `toString()` comparison is selected.
  . Steps 3 and 4 repeat until either a max number of iterations has occurred or no vertex has adjusted its cluster anymore.
 
+[[traversalvertexprogram]]
+TraversalVertexProgram
+~~~~~~~~~~~~~~~~~~~~~~
+
+The `TraversalVertexProgram` is a "special" VertexProgram in that it can be executed via `GraphTraversal.submit()`. In Gremlin, it is possible to have the same traversal executed using either the standard OTLP-engine or the GraphComputer OLAP-engine. The difference being where the query is submitted.
+
+[source,groovy]
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> g.V.both.has('age').age.groupCount.next() // OLTP
+==>32=3
+==>35=1
+==>27=1
+==>29=3
+gremlin> g.V.both.has('age').age.groupCount.submit(g.compute()).next() // OLAP
+==>32=3
+==>35=1
+==>27=1
+==>29=3
+
+In the OLAP traversal above, the traversal is put into a newly constructed `TraversalVertexProgram` and that program is sent to each vertex in the graph. There are 5 BSP iterations and each iterations is interpreted as such:
+
+ . Put a counter on each vertex of the graph.
+ . Propagate counters to all vertices both-adjacent.
+ . If the vertex doesn't have an `age` property, remove its counters.
+ . Propagate all counters to each vertex's `age` property.
+ . Create a hidden `Map` property which indexes how many times the particular age has been seen.
+
+The counters that are propagated around the graph are stored in a hidden property called `gremlin.traversalTracker`. When the computation is complete a MapReduce job executes which aggregates all the `groupCount` hidden `Map` properties on each vertex and generates a local copy of the Map (thus, turning the distributed Map representation into a local Map representation).
+
+NOTE: This model of graph traversal in a BSP system was made popular by the link:http://faunus.thinkaurelius.com[Faunus] graph analytics engine and originally described in link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engines/[Local and Distributed Traversal Engines].
+
+The same OLAP traversal can be executed using the standard `g.compute()` model, though at the expense of verbosity.
+
+[source,groovy]
+gremlin> result = g.compute().program(TraversalVertexProgram.build().traversal(new GSSupplier("TinkerGraph.open().V.both.has('age').age.groupCount.as('a')")).create()).submit().get()
+==>result[tinkergraph[vertices:6 edges:6],sideEffects[size:3]]
+gremlin> result.sideEffects.get('a')
+==>32=3
+==>35=1
+==>27=1
+==>29=3
+gremlin> result.sideEffects.iteration
+==>6
+gremlin> result.sideEffects.runtime
+==>19
 
 Gremlin Applications
 ====================

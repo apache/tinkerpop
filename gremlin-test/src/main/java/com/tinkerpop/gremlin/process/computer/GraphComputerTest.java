@@ -75,14 +75,17 @@ public class GraphComputerTest extends AbstractGremlinTest {
         }
     }
 
-    /*@Test
+    @Test
     @LoadGraphWith(CLASSIC)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldProvideOptionalEmptySideEffects() throws Exception {
-        GraphComputer computer = g.compute();
-        ComputerResult results = computer.program(new LambdaVertexProgram()).submit().get();
+        ComputerResult results = g.compute().program(LambdaVertexProgram.build().
+                        execute((v, m, s) -> v.<Integer>property("counter", s.isInitialIteration() ? 1 : v.<Integer>value("counter") + 1)).
+                        terminate(s -> s.getIteration() > 9).
+                        elementComputeKeys("counter", VertexProgram.KeyType.VARIABLE).create()).submit().get();
+        results.getGraph().V().value("counter").forEach(System.out::println);
 
-    }*/
+    }
 
     class BadGraphComputer implements GraphComputer {
         public GraphComputer isolation(final Isolation isolation) {

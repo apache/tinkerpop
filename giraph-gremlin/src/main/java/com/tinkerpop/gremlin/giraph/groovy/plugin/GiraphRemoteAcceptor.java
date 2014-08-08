@@ -2,20 +2,17 @@ package com.tinkerpop.gremlin.giraph.groovy.plugin;
 
 import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
-import com.tinkerpop.gremlin.groovy.engine.function.GremlinGroovySSupplier;
+import com.tinkerpop.gremlin.groovy.engine.function.GSSupplier;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import com.tinkerpop.gremlin.process.computer.ComputerResult;
-import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.filter.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
-import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.FileConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.codehaus.groovy.tools.shell.Groovysh;
-import org.javatuples.Pair;
 
 import java.io.File;
 import java.io.IOException;
@@ -85,7 +82,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object submit(final List<String> args) {
         try {
-            TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(new GremlinGroovySSupplier<>(PREFIX_SCRIPT + args.get(0) + POSTFIX_SCRIPT)).create();
+            TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(new GSSupplier<>(PREFIX_SCRIPT + args.get(0) + POSTFIX_SCRIPT)).create();
             final ComputerResult result = this.giraphGraph.compute().program(vertexProgram).submit().get();
             this.shell.getInterp().getContext().setProperty("g", result.getGraph());
             this.shell.getInterp().getContext().setProperty("sideEffects", result.getSideEffects());
