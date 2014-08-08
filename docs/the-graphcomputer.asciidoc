@@ -1,0 +1,300 @@
+[[graphcomputer]]
+The GraphComputer
+=================
+
+image:graphcomputer-puffers.png[width=350,float=right] TinkerPop3 provides two primary means of interacting with a graph: link:http://en.wikipedia.org/wiki/Online_transaction_processing[online transaction processing] (OLTP) and link:http://en.wikipedia.org/wiki/Online_analytical_processing[online analytical processing] (OLAP). OTLP-based graph systems allow the user to query the graph in real-time. However, typically, real-time performance is only possible when a local traversal is enacted. A local traversal is one that starts at a particular vertex (or small set of vertices) and touches a small set of connected vertices (by any arbitrary path of arbitrary length). In short, OLTP queries interact with a limited set of data and respond on the order of milliseconds or seconds. On the other hand, with OLAP graph processing, the entire graph is processed and thus, every vertex and edge is analyzed (some times more than once for iterative-based algorithms). Due to the amount of data being processed, the results are typically not returned in real-time and for massive graphs (i.e. graphs represented across a cluster of machines), results can take on the order of minutes or hours.
+
+ * *OLTP*: real-time, limited data accessed, random data access, sequential processing, querying
+ * *OLAP*: long running, entire data set accessed, sequential data access, parallel processing, batch processing
+
+image::oltp-vs-olap.png[width=600]
+
+The image above demonstrates the difference between Gremlin OLTP and Gremlin OLAP. With Gremlin OLTP, the graph is walked by moving from vertex-to-vertex via incident edges. With Gremlin OLAP, all vertices are provided a `VertexProgram`. The programs send messages to one another with the topological structure of the graph acting as the communication network (though random message passing possible). In many respects, the messages passed are like the OLTP traversers moving from vertex-to-vertex. However, all messages are moving independent of one another, in parallel. Once a vertex program is finished computing, TinkerPop3's OLAP engine supports any number link:http://en.wikipedia.org/wiki/MapReduce[`MapReduce`] jobs over the resultant graph.
+
+[[vertexprogram]]
+VertexProgram
+-------------
+
+image:bsp-diagram.png[width=400,float=right] GraphComputer takes a `VertexProgram`. A VertexProgram can be thought of as a piece of code that is executed at each vertex in logically parallel manner until some termination condition is met (e.g. a number of iterations have occurred, no more data is changing in the graph, etc.). A submitted VertexProgram is copied to all the vertices in the graph. Then the GraphComputer orchestrates the execution of the `VertexProgram.execute()` method on all the vertices in an link:http://en.wikipedia.org/wiki/Bulk_synchronous_parallel[bulk synchronous parallel] (BSP) fashion. The vertices are able to communicate with one another via messages. There are two types of messages in Gremlin OLAP: `LocalMessage` and `GlobalMessage`. A local message is a message to an incident edge or adjacent vertex. A global message is a message to any arbitrary element in the graph. Once the VertexProgram has completed its execution, any number of `MapReduce` jobs are evaluated afterwards. MapReduce jobs are provided by the user via `GraphComputer.mapReduce()` or by the VertexProgram via `VertexProgram.getMapReducers()`.
+
+image::graphcomputer.png[width=500]
+
+The example below demonstrates how to submit a VertexProgram to a graph's GraphComputer. The result is of `submit()` is a `Future<Pair<Graph,SideEffect>>`. The `Pair<Graph,SideEffect>` result has the resultant computed graph which can be a full copy of the orginal graph (see <<giraph-gremlin,Giraph-Gremlin>>) or a view over the original graph (see <<tinkergraph,TinkerGraph>>). The pair result also provides access to computational side-effects (e.g. runtime, number of iterations, results of MapReduce jobs, and VertexProgram-specific side-effects).
+
+[source,groovy]
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> result = g.compute().program(PageRankVertexProgram.build().create()).submit().get()
+==>result[tinkergraph[vertices:6 edges:6],sideEffects[size:0]]
+gremlin> result.graph.V.map{[it.get().value('name'), it.get().value(PageRankVertexProgram.PAGE_RANK)]}
+==>[marko, 0.15000000000000002]
+==>[vadas, 0.19250000000000003]
+==>[lop, 0.4018125]
+==>[josh, 0.19250000000000003]
+==>[ripple, 0.23181250000000003]
+==>[peter, 0.15000000000000002]
+gremlin> result.sideEffects.runtime
+==>35
+
+NOTE: This model of "vertex-centric graph computing" was made popular by Google's link:http://googleresearch.blogspot.com/2009/06/large-scale-graph-computing-at-google.html[Pregel] graph engine. In the open source world, this model is found in OLAP graph computing systems such as link:https://giraph.apache.org/[Giraph], link:https://hama.apache.org/[Hama], and link:http://faunus.thinkaurelius.com[Faunus]. TinkerPop3 extends the popularized model with integrated post-processing <<mapreduce,MapReduce>> jobs over the vertex set.
+
+[[mapreduce]]
+MapReduce
+---------
+
+The BSP model proposed by Pregel stores the results of the computation in a distributed manner as properties on the vertices in the graph. In many situations, it is necessary to aggregate those resultant properties into a single result set (i.e. a statistic). For instance, assume a VertexProgram that computes a nominal cluster for each vertex (i.e. link:http://en.wikipedia.org/wiki/Community_structure[a graph clustering algorithm]). At the end of the computation, each vertex will have an hidden property denoting the cluster it was assigned to. TinkerPop3 provides the ability to answer questions about the results of the graph clusters using `MapReduce`. For instance, in order to answer the following questions, MapReduce jobs are required:
+
+ * How many vertices are in each cluster? (*presented below*)
+ * How many unique clusters are there? (*presented below*)
+ * What is the average age of each vertex in each cluster?
+ * What is the degree distribution of the vertices in each cluster?
+
+A compressed representation of the `MapReduce` API in TinkerPop3 is provided below. The key idea is that the `map`-stage processes all vertices to emit key/value pairs. Those values are aggregated on their respective key for the `reduce`-stage to do its processing to ultimately yield more key/value pairs.
+
+[source,java]
+public interface MapReduce<MK, MV, RK, RV, R> {
+  public void map(final Vertex vertex, final MapEmitter<MK, MV> emitter);
+  public void reduce(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter);
+  // there are more methods
+}
+
+image::mapreduce.png[width=650]
+
+The `MapReduce` extension to GraphComputer is made explicit when examining the <<peerpressurevertexprogram,`PeerPressureVertexProgram`>> and corresponding `ClusterPopulationMapReduce`. In the code below, the GraphComputer result returns the computed on `Graph` as well as the `SideEffects` of the computation (`Pair<Graph,SideEffects>`). The sideEffects maintain the results of any MapReduce jobs. The cluster population MapReduce result states that there are 5 vertices in cluster 1 and 1 vertex in cluster 6. This can be verified (in a serial manner) by looking at the hidden `PeerPressureVertexProgram.CLUSTER` property of the resultant graph. In essence, the serial process of the final Gremlin traversal is done in a parallel MapReduce fashion using `ClusterPopulationMapReduce`.
+
+[source,groovy]
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> result = g.compute().program(PeerPressureVertexProgram.build().create()).mapReduce(new ClusterPopulationMapReduce()).submit().get()
+==>result[tinkergraph[vertices:6 edges:6],sideEffects[size:2]]
+gremlin> result.sideEffects.get('clusterPopulation').get()
+==>1=5
+==>6=1
+gremlin> result.graph.V().value(PeerPressureVertexProgram.CLUSTER).groupCount.next()
+==>1=5
+==>6=1
+
+If there are numerous statistics desired, then its possible to register as many MapReduce jobs as needed. For instance, the `ClusterCountMapReduce` determines how many unique clusters were created by the peer pressure algorithm. Below both `ClusterCountMapReduce` and `ClusterPopulationMapReduce` are computed over the resultant graph.
+
+[source,groovy]
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> result = g.compute().program(PeerPressureVertexProgram.build().create()).
+ mapReduce(new ClusterPopulationMapReduce()).
+ mapReduce(new ClusterCountMapReduce()).submit().get()
+==>result[tinkergraph[vertices:6 edges:6],sideEffects[size:3]]
+gremlin> result.sideEffects.get('clusterPopulation').get()
+==>1=5
+==>6=1
+gremlin> result.sideEffects.get('clusterCount').get()
+==>2
+
+IMPORTANT: The MapReduce model of TinkerPop3 does not support MapReduce chaining. Thus, the order in which the MapReduce jobs are executed is irrelevant. This is made apparent when realizing that the `map()`-stage takes a `Vertex` as its input and the `reduce()`-stage yields key/value pairs.
+
+A Collection of VertexPrograms
+------------------------------
+
+TinkerPop3 provides a collection of VertexPrograms that implement common algorithms. This section discusses the various implementations.
+
+[[lambdavertexprogram]]
+LambdaVertexProgram
+~~~~~~~~~~~~~~~~~~~
+
+image:lambda-vertex-program.png[width=200,float=left] `LambdaVertexProgram` is the most generic of all vertex programs as it requires the user to define, by way of lambdas, the meaning of `setup`, `execute`, and `terminate`. This vertex program is convenient for:
+
+* Creating "one line" vertex programs
+* Submitting a "one off" vertex program without having to build a class and distribute jars
+* Testing for vendors of `GraphComputer` implementations
+
+WARNING: `GraphComputer` makes extensive use of link:http://docs.oracle.com/javase/tutorial/jndi/objects/serial.html[serialization] as it always assumes that the `VertexProgram` will be executed across multiple JVMs (i.e. a machine cluster). This is true even if the vertex program is executed on a single machine to ensure consistency between all graph computer implementations. As such, when using `GraphComputer` from the <<gremlin-console,Gremlin Console>>, link:http://groovy.codehaus.org/Closures+-+Formal+Definition[Groovy closures] can not be used. As a remedy, Gremlin-Groovy provides serializable lambdas that take a String with respective Gremlin-Groovy code. Note that this is *not* required in Gremlin-Java8 as lambdas are forced serializable in TinkerPop3.
+
+[source,groovy]
+gremlin> result = g.compute().program(LambdaVertexProgram.build().
+                      execute(new GSTriConsumer("a.property('counter', c.isInitialIteration() ? 1 : ++a.value('counter'))")).
+                      terminate(new GSPredicate('a.iteration > 9')).
+                      elementComputeKeys('counter',VARIABLE).create()).submit().get()
+==>result[tinkergraph[vertices:6 edges:6],sideEffects[size:0]]
+gremlin> result.graph.V.counter
+==>10
+==>10
+==>10
+==>10
+==>10
+==>10
+
+The same example is presented below in Java8 using native lambda syntax.
+
+[source,java]
+ComputerResult results = g.compute().program(LambdaVertexProgram.build().
+                        execute((v, m, s) -> v.<Integer>property("counter", s.isInitialIteration() ? 1 : v.<Integer>value("counter") + 1)).
+                        terminate(s -> s.getIteration() > 9).
+                        elementComputeKeys("counter", VertexProgram.KeyType.VARIABLE).create()).submit().get();
+results.getGraph().V().value("counter").forEach(System.out::println);
+// 10
+// 10
+// 10
+// 10
+// 10
+// 10
+
+[[pagerankvertexprogram]]
+PageRankVertexProgram
+~~~~~~~~~~~~~~~~~~~~~
+
+Perhaps the most popular OLAP-oriented graph algorithm is link:http://en.wikipedia.org/wiki/PageRank[PageRank]. This eigenvector centrality variant was developed by Brin and Page of Google. the `VertexProgram` representation of the algorithm is presented below.
+
+[source,java]
+----
+public class PageRankVertexProgram implements VertexProgram<Double> { <1>
+
+    private MessageType.Local messageType = MessageType.Local.of(() -> new DefaultGraphTraversal().outE()); <2>
+
+    public static final String PAGE_RANK = Graph.Key.hide("gremlin.pageRank"); <3>
+    public static final String EDGE_COUNT = Graph.Key.hide("gremlin.edgeCount");
+
+    private static final String VERTEX_COUNT = "gremlin.pageRankVertexProgram.vertexCount";
+    private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";
+    private static final String TOTAL_ITERATIONS = "gremlin.pageRankVertexProgram.totalIterations";
+    private static final String INCIDENT_TRAVERSAL = "gremlin.pageRankVertexProgram.incidentTraversal";
+
+    private double vertexCountAsDouble = 1;
+    private double alpha = 0.85d;
+    private int totalIterations = 30;
+
+    private PageRankVertexProgram() {
+
+    }
+
+    @Override
+    public void loadState(final Configuration configuration) { <4>
+        this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
+        this.alpha = configuration.getDouble(ALPHA, 0.85d);
+        this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
+        try {
+            if (configuration.containsKey(INCIDENT_TRAVERSAL)) {
+                final SSupplier<Traversal> traversalSupplier = VertexProgramHelper.deserialize(configuration, INCIDENT_TRAVERSAL);
+                VertexProgramHelper.verifyReversibility(traversalSupplier.get());
+                this.messageType = MessageType.Local.of((SSupplier) traversalSupplier);
+            }
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void storeState(final Configuration configuration) {
+        configuration.setProperty(GraphComputer.VERTEX_PROGRAM, PageRankVertexProgram.class.getName());
+        configuration.setProperty(VERTEX_COUNT, this.vertexCountAsDouble);
+        configuration.setProperty(ALPHA, this.alpha);
+        configuration.setProperty(TOTAL_ITERATIONS, this.totalIterations);
+        try {
+            VertexProgramHelper.serialize(this.messageType.getIncidentTraversal(), configuration, INCIDENT_TRAVERSAL);
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Map<String, KeyType> getElementComputeKeys() { <5>
+        return VertexProgram.createElementKeys(PAGE_RANK, KeyType.VARIABLE, EDGE_COUNT, KeyType.CONSTANT);
+    }
+
+
+    @Override
+    public void setup(final SideEffects sideEffects) {
+
+    }
+
+    @Override
+    public void execute(final Vertex vertex, Messenger<Double> messenger, final SideEffects sideEffects) { <6>
+        if (sideEffects.isInitialIteration()) { <7>
+            double initialPageRank = 1.0d / this.vertexCountAsDouble;
+            double edgeCount = Double.valueOf((Long) this.messageType.edges(vertex).count().next());
+            vertex.property(PAGE_RANK, initialPageRank);
+            vertex.property(EDGE_COUNT, edgeCount);
+            messenger.sendMessage(this.messageType, initialPageRank / edgeCount);
+        } else { <8>
+            double newPageRank = StreamFactory.stream(messenger.receiveMessages(this.messageType)).reduce(0.0d, (a, b) -> a + b);
+            newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
+            vertex.property(PAGE_RANK, newPageRank);
+            messenger.sendMessage(this.messageType, newPageRank / vertex.<Double>property(EDGE_COUNT).orElse(0.0d));
+        }
+    }
+
+    @Override
+    public boolean terminate(final SideEffects sideEffects) { <9>
+        return sideEffects.getIteration() >= this.totalIterations;
+    }
+}
+----
+
+<1> `PageRankVertexProgram` implements `VertexProgram<Double>` because the messages it sends are Java doubles.
+<2> The default path of energy propagation is via outgoing edges from the current vertex.
+<3> The resulting PageRank values for the vertices are stored as a hidden property.
+<4> A vertex program is constructed using an Apache `Configuration` to ensure easy dissemination across a cluster of JVMs.
+<5> A vertex program must define the "compute keys" that are the properties being operated on during the computation.
+<6> The "while(true)"-loop of the vertex program.
+<7> Initially, each vertex is provided an equal amount of energy represented as a double.
+<8> Energy is aggregated, computed on according to the PageRank algorithm, and then disseminated according to the defined `MessageType.Local`.
+<9> The computation is terminated after a pre-defined number of iterations.
+
+[[peerpressurevertexprogram]]
+PeerPressureVertexProgram
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The `PeerPressureVertexProgram` is a clustering algorithm that assigns a nominal value to each vertex in the graph. The nominal value represents the vertex's cluster. If two vertices have the same nominal value, then they are in the same cluster. The algorithm proceeds in the following manner.
+
+ . Every vertex assigns itself to a unique cluster ID (initially, its vertex ID).
+ . Every vertex determines its per neighbor vote strength as 1.0d / incident edges count.
+ . Every vertex sends its cluster ID and vote strength to its adjacent vertices as a `Pair<Serializable,Double>`
+ . Every vertex generates a vote energy distribution of received cluster IDs and changes its current cluster ID to the most frequent cluster ID.
+  .. If there is a tie, then the cluster with the lowest `toString()` comparison is selected.
+ . Steps 3 and 4 repeat until either a max number of iterations has occurred or no vertex has adjusted its cluster anymore.
+
+[[traversalvertexprogram]]
+TraversalVertexProgram
+~~~~~~~~~~~~~~~~~~~~~~
+
+The `TraversalVertexProgram` is a "special" VertexProgram in that it can be executed via `GraphTraversal.submit()`. In Gremlin, it is possible to have the same traversal executed using either the standard OTLP-engine or the GraphComputer OLAP-engine. The difference being where the query is submitted.
+
+[source,groovy]
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> g.V.both.has('age').age.groupCount.next() // OLTP
+==>32=3
+==>35=1
+==>27=1
+==>29=3
+gremlin> g.V.both.has('age').age.groupCount.submit(g.compute()).next() // OLAP
+==>32=3
+==>35=1
+==>27=1
+==>29=3
+
+In the OLAP traversal above, the traversal is put into a newly constructed `TraversalVertexProgram` and that program is sent to each vertex in the graph. There are 5 BSP iterations and each iterations is interpreted as such:
+
+ . Put a counter on each vertex of the graph.
+ . Propagate counters to all vertices both-adjacent.
+ . If the vertex doesn't have an `age` property, remove its counters.
+ . Propagate all counters to each vertex's `age` property.
+ . Create a hidden `Map` property which indexes how many times the particular age has been seen.
+
+The counters that are propagated around the graph are stored in a hidden property called `gremlin.traversalTracker`. When the computation is complete a MapReduce job executes which aggregates all the `groupCount` hidden `Map` properties on each vertex and generates a local copy of the Map (thus, turning the distributed Map representation into a local Map representation).
+
+NOTE: This model of graph traversal in a BSP system was made popular by the link:http://faunus.thinkaurelius.com[Faunus] graph analytics engine and originally described in link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engines/[Local and Distributed Traversal Engines].
+
+The same OLAP traversal can be executed using the standard `g.compute()` model, though at the expense of verbosity.
+
+[source,groovy]
+gremlin> result = g.compute().program(TraversalVertexProgram.build().traversal(new GSSupplier("TinkerGraph.open().V.both.has('age').age.groupCount.as('a')")).create()).submit().get()
+==>result[tinkergraph[vertices:6 edges:6],sideEffects[size:3]]
+gremlin> result.sideEffects.get('a')
+==>32=3
+==>35=1
+==>27=1
+==>29=3
+gremlin> result.sideEffects.iteration
+==>6
+gremlin> result.sideEffects.runtime
+==>19
+

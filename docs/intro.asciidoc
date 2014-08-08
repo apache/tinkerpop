@@ -1,0 +1,251 @@
+[[intro]]
+Introduction to Graph Computing
+===============================
+
+[source,xml]
+<dependency>
+  <groupId>com.tinkerpop</groupId>
+  <artifactId>gremlin-core</artifactId>
+  <version>x.y.z</version>
+</dependency>
+
+A link:http://en.wikipedia.org/wiki/Graph_(data_structure)[graph] is a data structure composed of vertices (nodes, dots) and edges (arcs, lines). When modeling a graph in a computer and applying it to modern data sets and practices, the generic mathematically-oriented, binary graph is extended to support both labels and key/value properties. This structure is known as a property graph. More formally, it is a directed, binary, attributed multi-graph. An example property graph is diagrammed below. This graph example will be used extensively throughout the documentation and is called "TinkerPop Classic" as it is the original demo graph distributed with TinkerPop0 back in 2009 (i.e. the good ol' days -- it was the best of times and it was the worst of times).
+
+TIP: The TinkerPop classic graph is available with <<tinkergraph-gremlin,TinkerGraph>> via `TinkerFactory.createClassic()`. TinkerGraph is the reference implementation of TinkerPop3 and is used in nearly all the examples in this documentation.
+
+.TinkerPop Classic
+image::tinkerpop-classic.png[width=500]
+
+TinkerPop3 is the third incarnation of the TinkerPop graph computing framework. Similar to computing in general, graph computing makes a distinction between *structure* (graph) and *process* (traversal). The structure of the graph is the data model defined by a vertex/edge/property link:http://en.wikipedia.org/wiki/Network_topology[topology]. The process of the graph is the means by which the structure is analyzed. The typical form of graph processing is called a link:http://en.wikipedia.org/wiki/Graph_traversal[traversal].
+
+.Primary components of the TinkerPop3 *structure* API 
+ * `Graph`: maintains a set of vertices and edges, and access to database functions such as transactions.
+ * `Element`: maintains a collection of properties and a string label denoting the element type.
+  ** `Vertex`: extends Element and maintains a set of incoming and outgoing edges.
+  ** `Edge`: extends Element and maintains an incoming and outgoing vertex.
+ * `Property<V>`: a string key associated with a `V` value.
+
+.Primary components of the TinkerPop3 *process* API
+ * `Traversal<S,E>`: a functional data flow process transforming objects of type `S` to type `E`.
+  ** `GraphTraversal`: a traversal that is oriented towards the semantics of the raw graph (i.e. vertices, edges, etc.).
+ * `VertexProgram`: code executed at all vertices in a logically parallel fashion migrating the movement of messages. 
+
+IMPORTANT: TinkerPop3 is licensed under the popular link:http://www.apache.org/licenses/LICENSE-2.0.html[Apache2] free software license. However, note that the underlying graph engine used with TinkerPop3 may have a difference license and thus, be sure to respect the license caveats of the vendor product.
+
+image:tinkerpop-enabled.png[width=135,float=left] When a graph vendor implements the TinkerPop3 structure and process link:http://en.wikipedia.org/wiki/Application_programming_interface[APIs], their technology is considered _TinkerPop3-enabled_ and becomes nearly indistinguishable from any other TinkerPop-enabled graph system save for their respective time and space complexity. The purpose of this documentation is to describe the structure/process dichotomy at length and in doing so, explain how to leverage TinkerPop3 for the sole purpose of vendor-agnostic graph computing. Before deep-diving into the various structure/process APIs, a short introductory review of both APIs is provided.
+
+The Graph Structure
+-------------------
+
+image:gremlin-standing.png[width=125,float=left] A graph's structure is the topology formed by the explicit references between its vertices, edges, and properties. A vertex has incident edges. A vertex is adjacent to another vertex if they share an incident edge. A property is attached to an element and an element has a set of properties. A property is a key/value pair, where the key is always a character `String`. The graph structure API of TinkerPop3 provides the methods necessary to create such a structure. The classic TinkerPop graph previously diagrammed can be created with the following Java8 code. Note that this graph is available as an in-memory TinkerGraph using `TinkerFactory.createClassic()`.
+
+[source,java]
+Graph g = TinkerGraph.open(); <1>
+Vertex marko = g.addVertex(Element.ID, 1, "name", "marko", "age", 29); <2>
+Vertex vadas = g.addVertex(Element.ID, 2, "name", "vadas", "age", 27);
+Vertex lop = g.addVertex(Element.ID, 3, "name", "lop", "lang", "java");
+Vertex josh = g.addVertex(Element.ID, 4, "name", "josh", "age", 32);
+Vertex ripple = g.addVertex(Element.ID, 5, "name", "ripple", "lang", "java");
+Vertex peter = g.addVertex(Element.ID, 6, "name", "peter", "age", 35);
+marko.addEdge("knows", vadas, Element.ID, 7, "weight", 0.5f); <3>
+marko.addEdge("knows", josh, Element.ID, 8, "weight", 1.0f);
+marko.addEdge("created", lop, Element.ID, 9, "weight", 0.4f);
+josh.addEdge("created", ripple, Element.ID, 10, "weight", 1.0f);
+josh.addEdge("created", lop, Element.ID, 11, "weight", 0.4f);
+peter.addEdge("created", lop, Element.ID, 12, "weight", 0.2f);
+
+<1> Create a new in-memory `TinkerGraph` and assign it to the variable `g`.
+<2> Create a vertex along with a set of key/value pairs with `Element.ID` referring to the desired id for the vertex.
+<3> Create an edge along with a  set of key/value pairs with the edge label being specified as the first argument.
+
+In the above code all the vertices are created first and then their respective edges. There are two reserved keys: id (`Element.ID`) and label (`Element.LABEL`). When any of these, along with a set of other key value pairs is provided to `Graph.addVertex(Object...)` or `Vertex.addEdge(String,Vertex,Object...)`, the respective element is created along with the provided key/value pair properties appended to it. 
+
+CAUTION: Many graph vendors do not allow the user to specify an element ID and in such cases, an `IllegalArgumentException` is thrown.
+
+NOTE: In TinkerPop3, vertices are allowed a single immutable string label (similar to an edge label). This functionality did not exist in TinkerPop2. Likewise, element id's are immutable as they were in TinkerPop2.
+
+Mutating the Graph
+~~~~~~~~~~~~~~~~~~
+
+Below is a sequence of basic graph mutation operations represented in Java8. One of the major differences between TinkerPop2 and TinkerPop3 is that in TinkerPop3, the Java convention of using setters and getters has been abandoned in favor of a syntax that is more aligned with the syntax of Gremlin-Groovy in TinkerPop2. Given that Gremlin-Java8 and Gremlin-Groovy are nearly identical due to the inclusion of Java8 lambdas, a big efforts was made to ensure that both languages are as similar as possible. 
+
+TIP: image:groovy-logo.png[width=175,float=left] Gremlin-Groovy leverages the link:http://groovy.codehaus.org/[Groovy 2.x language] to express Gremlin traversals. One of the major benefits of Groovy is the inclusion of a runtime console that makes it easy for developers to practice with the Gremlin language and for production users to connect to their graph and execute traversals in an interactive manner. Moreover, Gremlin-Groovy provides various syntax simplifications.
+
+CAUTION: In the code examples presented throughout this documentation, either Gremlin-Java8 or Gremlin-Groovy is used. Usually which derivative of Gremlin is being used is made explicit in the text, however, if not, a simple mouse over on the code block will state the language as either "JAVA" or "GROOVY."
+
+image:basic-mutation.png[width=240,float=right] 
+[source,java]
+// create a new graph
+Graph g = TinkerGraph.open();
+// add a software vertex with a name property
+Vertex gremlin = g.addVertex(Element.LABEL, "software", 
+                             "name", "gremlin"); <1>
+// only one vertex should exist
+assert(g.V().count() == 1)
+// no edges should exist as none have been created
+assert(g.E().count() == 0)
+// add a new property
+gremlin.property("created",2009) <2>
+// add a new software vertex to the graph
+Vertex blueprints = g.addVertex(Element.LABEL, "software", 
+                                "name", "blueprints"); <3>
+// connect gremlin to blueprints via a dependsOn-edge
+gremlin.addEdge("dependsOn",blueprints); <4>
+// now there are two vertices and one edge
+assert(g.V().count() == 2)
+assert(g.E().count() == 1)
+// add a property to blueprints
+blueprints.property("created",2010) <5>
+// remove that property
+blueprints.property("created").remove() <6>
+// connect gremlin to blueprints via encapsulates
+gremlin.addEdge("encapsulates",blueprints) <7>
+assert(g.V().count() == 2)
+assert(g.E().count() == 2)
+// removing a vertex removes all its incident edges as well
+blueprints.remove() <8>
+gremlin.remove() <9>
+// the graph is now empty
+assert(g.V().count() == 0)
+assert(g.E().count() == 0)
+// tada!
+
+Here is the same code, but using Gremlin-Groovy in the <<gremlin-console,Gremlin Console>>.
+
+[source,groovy]
+----
+$ bin/gremlin.sh
+
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+gremlin> g = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> gremlin = g.addVertex(Element.LABEL,'software','name','gremlin')
+==>v[0]
+gremlin> gremlin.property('created',2009)
+==>p[created->2009]
+gremlin> blueprints = g.addVertex(Element.LABEL,'software','name','blueprints')
+==>v[1]
+gremlin> gremlin.addEdge('dependsOn',blueprints)
+==>e[2][0-dependsOn->1]
+gremlin> blueprints.property('created',2010)
+==>p[created->2010]
+gremlin> blueprints.property('created').remove()
+==>null
+gremlin> gremlin.addEdge('encapsulates',blueprints)
+==>e[3][0-encapsulates->1]
+gremlin> blueprints.remove()
+==>null
+gremlin> gremlin.remove()
+==>null
+----
+
+IMPORTANT: TinkerGraph is not a transactional graph. For more information on transaction handling (for those graph systems that support them) see the section dedicated to <<transactions,transactions>>.
+
+The Graph Process
+-----------------
+
+image:gremlin-running.png[width=125,float=left] The primary way in which graphs are processed are via graph traversals. The TinkerPop3 process API is focused on allowing users to create graph traversals in a syntacticly-friendly way over the structures defined in the previous section. A traversal is an algorithmic walk across the elements of a graph according to the referential structure explicit within the graph data structure. For example: _"What are the names of the companies that vertex 1's friends work for?"_ This English-statement can be represented in the following algorithmic/traversal fashion:
+
+ . Start at vertex 1.
+ . Walk the incident friendship-edges to the respective adjacent friend vertices of 1. 
+ . Move from those friend-vertices to company-vertices via worksFor-edges.
+ . Finally, select the name-property value of the current company-vertices. 
+
+Traversals in Gremlin are spawned from either a `Graph`, `Vertex`, or `Edge`. The Graph interface provides two traversal methods.
+
+ . `Graph.V()`: generates a traversal starting at all vertices in the graph. 
+ . `Graph.E()`: generates a traversal starting at all edges in the graph.
+
+The return type of `V()` and `E()` is `GraphTraversal`. A GraphTraversal maintains numerous methods that return GraphTraversal. In this way, a GraphTraversal supports function composition. Each method of GraphTraversal is called a step and each step modulates the results of the previous step in one of three general ways.
+
+ . `map`: transform the incoming object to another object (S &rarr; E).
+ . `flatMap`: transform the incoming object to an iterator of other objects (S &rarr; E^*^).
+ . `filter`: allow or disallow the object from proceeding to the next step (S &rarr; S &cup; &empty;).
+
+In fact, all steps in GraphTraversal either extend `MapStep`, `FlatMapStep`, or `FilterStep`.
+
+TIP: `GraphTraversal` is a link:http://en.wikipedia.org/wiki/Monoid[monoid] in that it is an algebraic structure that has a single binary operation that is associative. The binary operation is function composition (i.e. method chaining) and its identity is the step `identity()`. This is related to a link:http://en.wikipedia.org/wiki/Monad_(functional_programming)[monad] as popularized by the functional programming community. 
+
+NOTE: Both map and filter can be represented as flatMap. Map can return an iterator with a single object in it. Filter can return an iterator with a single object in it or no object at all. Thus, flatMap is the most general construct -- "turn the incoming object into an iterator of objects."
+
+Given the classic TinkerPop graph, the following query will return the names of all the people that Marko knows. The following query is demonstrated using Gremlin-Groovy.
+
+[source,groovy]
+----
+$ bin/gremlin.sh
+
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> g.V().has('name','marko').out('knows').name
+==>vadas
+==>josh
+----
+
+Or, if the vertex marko is already realized with a direct reference pointer, then the traversal can be spawned off that vertex. This illustrates that vertex (as well as edge) also have `GraphTraversal`-return methods and an exploration of their respective JavaDocs will demonstrate what is available.
+
+[source,groovy]
+gremlin> marko = g.v(1)
+==>v[1]
+gremlin> marko.out('knows') <1>
+==>v[2]
+==>v[4]
+gremlin> marko.out('knows').name <2>
+==>vadas
+==>josh
+
+.The Name of The People That Marko Knows
+image::tinkerpop-classic-ex1.png[width=500]
+
+Again, all steps extend either map, flatMap, or filter. Thus, the traversal above can be written in its generic form below. In the next section, the `it.get()` will be explained as this is an important feature of TinkerPop3 that is not available in previous versions of TinkerPop. 
+
+IMPORTANT: The steps map, flatMap, and filter take a link:http://en.wikipedia.org/wiki/Anonymous_function[lambda function] (i.e. an anonymous function or closure). For map, the function must return an object. For flatMap, the function must return an iterator of objects. For filter, the function is a predicate that returns either true or false. The lambdas introduced by Java8 are supported in TinkerPop3.
+
+[source,groovy]
+marko
+  .filter{it.get().value('name') == 'marko'}
+  .flatMap{it.get().out('knows')}
+  .map{it.get().value('name')}
+==>vadas
+==>josh
+
+Finally, as a strictly academic exercise, the traversal can be written completely using flatMap.
+
+[source,groovy]
+marko
+  .flatMap{it.get().value('name') == 'marko' ? [it.get()].iterator() : [].iterator()}
+  .flatMap{it.get().out('knows')}
+  .flatMap{[it.get().value('name')].iterator()}
+==>vadas
+==>josh
+
+NOTE: Gremlin-Java is much more aligned with Gremlin-Groovy in TinkerPop3 than it ever was before. In TinkerPop0 through TinkerPop2, Gremlin-Java was extremely verbose due to the simulation of lambdas via anonymous inner classes.  
+
+The Traverser
+~~~~~~~~~~~~~
+
+When a traversal is executed, the source of the traversal is on the left of the expression (e.g. vertex 1), the steps are the middle of the traversal (e.g. `out("knows")` and `value("name")`), and the results are "traversal.next()'d" out of the right of the traversal (e.g. "vadas" and "josh").
+
+image::traversal-mechanics.png[width=500]
+
+In TinkerPop3, the objects propagating through the traversal are wrapped in a `Traverser<T>`. The traverser concept is new to TinkerPop3 and provides the means by which steps remain stateless. A traverser maintains all the metadata about the traversal -- e.g., how many times the traverser has gone through a loop, the path history of the traverser, the current object being traversed, etc. Traverser metadata may be accessed by a step. A classic example is the `path()`-step.
+
+[source,groovy]
+marko.out('knows').name.path
+==>[v[1], v[2], vadas]
+==>[v[1], v[4], josh]
+
+CAUTION: Path calculation is costly in terms of space as an array of previously seen objects is stored in each path of the respective traverser. Thus, traversal optimizers analyze the traversal to determine if path metadata is accessed. If not, then path calculations are turned off.
+
+Another example is the `jump()`-step which takes into account the number of times the traverser has gone through a particular section of the traversal expression.
+
+[source,groovy]
+marko.as('a').out.jump('a',2).name
+==>ripple
+==>lop
+
+IMPORTANT: In TinkerPop2, the `jump()`-step was called `loop()`. Jump has been generalized to support both do-while and while-do semantics which is explained in <<jump-step,Jump Step>>.
