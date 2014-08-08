@@ -1,7 +1,7 @@
 #!/bin/bash
 
 git checkout publish-docs
-git pull
+git fetch origin
 git merge origin/master
 git push origin publish-docs
 git checkout master
