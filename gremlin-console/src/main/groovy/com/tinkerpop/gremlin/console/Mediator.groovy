@@ -13,9 +13,15 @@ class Mediator {
     public final List<RemoteAcceptor> remotes = []
     public int position
 
+    private final Console console
+
     private static String FILE_SEP = System.getProperty("file.separator")
     private static String LINE_SEP = System.getProperty("line.separator")
     private static final String PLUGIN_CONFIG_FILE = System.getProperty("user.dir") + FILE_SEP + "ext" + FILE_SEP + "plugins.txt"
+
+    public Mediator(final Console console) {
+        this.console = console
+    }
 
     public RemoteAcceptor currentRemote() { return remotes.get(position) }
 
@@ -41,6 +47,10 @@ class Mediator {
         position--
         if (position < 0) position = remotes.size() - 1
         return currentRemote()
+    }
+
+    def showShellEvaluationOutput(final boolean show) {
+        console.showShellEvaluationOutput(show)
     }
 
     def submit(final List<String> args) throws Exception { return currentRemote().submit(args) }

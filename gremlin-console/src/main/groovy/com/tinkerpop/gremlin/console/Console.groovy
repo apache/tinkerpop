@@ -45,7 +45,7 @@ class Console {
         io.out.println("         (o o)")
         io.out.println("-----oOOo-(3)-oOOo-----")
 
-        final Mediator mediator = new Mediator()
+        final Mediator mediator = new Mediator(this)
         groovy.register(new UninstallCommand(groovy, mediator))
         groovy.register(new InstallCommand(groovy, mediator))
         groovy.register(new PluginCommand(groovy, mediator))
@@ -53,7 +53,7 @@ class Console {
         groovy.register(new SubmitCommand(groovy, mediator))
 
         // hide output temporarily while imports execute
-        groovy.setResultHook(handleResultShowNothing)
+        showShellEvaluationOutput(false)
 
         // add the default imports
         new ConsoleImportCustomizerProvider().getCombinedImports().stream()
@@ -92,7 +92,7 @@ class Console {
         mediator.writePluginState()
 
         // start iterating results to show as output
-        groovy.setResultHook(handleResultIterate)
+        showShellEvaluationOutput(true)
         if (initScriptFile != null) initializeShellWithScript(initScriptFile)
 
         try {
@@ -110,6 +110,13 @@ class Console {
                 System.exit(0)
             }
         }
+    }
+
+    def showShellEvaluationOutput(final boolean show) {
+        if (show)
+            groovy.setResultHook(handleResultIterate)
+        else
+            groovy.setResultHook(handleResultShowNothing)
     }
 
     private def handlePrompt = { STANDARD_INPUT_PROMPT }

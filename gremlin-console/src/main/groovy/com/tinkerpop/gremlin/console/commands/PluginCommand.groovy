@@ -33,7 +33,9 @@ class PluginCommand extends ComplexCommandSupport {
         if (!mediator.availablePlugins.values().any{it.plugin.name==pluginName})
             return "$pluginName could not be found - use ':plugin list' to see available plugins"
 
+        mediator.showShellEvaluationOutput(false)
         mediator.availablePlugins.values().find{it.plugin.name==pluginName}.activate()
+        mediator.showShellEvaluationOutput(true)
         mediator.writePluginState()
 
         return "$pluginName activated"
