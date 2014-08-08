@@ -497,45 +497,75 @@
                         </configuration>
                     </plugin>
                     <plugin>
-                        <groupId>com.github.goldin</groupId>
-                        <artifactId>copy-maven-plugin</artifactId>
-                        <version>0.2.5</version>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <inherited>false</inherited>
                         <executions>
                             <execution>
-                                <id>copy-docs</id>
+                                <id>copy-docs-to-work-area</id>
                                 <phase>generate-resources</phase>
                                 <goals>
-                                    <goal>copy</goal>
+                                    <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
+                                    <outputDirectory>${asciidoc.input.dir}</outputDirectory>
                                     <resources>
                                         <resource>
                                             <directory>${asciidoc.source.dir}</directory>
-                                            <targetPath>${asciidoc.input.dir}</targetPath>
-                                            <preservePath>true</preservePath>
-                                            <failIfNotFound>false</failIfNotFound>
-                                        </resource>
-                                        <resource>
-                                            <directory>${asciidoc.input.dir}</directory>
-                                            <targetPath>${asciidoc.input.dir}</targetPath>
-                                            <include>*.asciidoc</include>
-                                            <preservePath>true</preservePath>
-                                            <failIfNotFound>false</failIfNotFound>
-                                            <replaces>
-                                                <replace>
-                                                    <from>x\.y\.z</from>
-                                                    <to>${project.version}</to>
-                                                </replace>
-                                            </replaces>
+                                            <filtering>false</filtering>
                                         </resource>
                                     </resources>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-static-assets-to-htmlsingle</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${htmlsingle.output.dir}</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${asciidoc.input.dir}/static</directory>
+                                            <filtering>false</filtering>
+                                        </resource>
+                                    </resources>
+                                    <nonFilteredFileExtensions>
+                                        <nonFilteredFileExtension>png</nonFilteredFileExtension>
+                                    </nonFilteredFileExtensions>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
                     <plugin>
+                        <groupId>com.google.code.maven-replacer-plugin</groupId>
+                        <artifactId>replacer</artifactId>
+                        <version>1.5.3</version>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>replace</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <includes>
+                                <include>${asciidoc.input.dir}/*.asciidoc</include>
+                            </includes>
+                            <replacements>
+                                <replacement>
+                                    <token>x\.y\.z</token>
+                                    <value>${project.version}</value>
+                                </replacement>
+                            </replacements>
+                        </configuration>
+                    </plugin>
+                    <plugin>
                         <groupId>org.asciidoctor</groupId>
                         <artifactId>asciidoctor-maven-plugin</artifactId>
+                        <inherited>false</inherited>
                         <executions>
                             <execution>
                                 <id>asciidoc-to-docbook</id>
@@ -543,7 +573,6 @@
                                 <goals>
                                     <goal>process-asciidoc</goal>
                                 </goals>
-                                <inherited>false</inherited>
                                 <configuration>
                                     <sourceDirectory>${asciidoc.input.dir}</sourceDirectory>
                                     <sourceDocumentName>index.asciidoc</sourceDocumentName>
@@ -566,30 +595,9 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>copy-static-assets-to-htmlsingle</id>
-                                <phase>process-resources</phase>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <inherited>false</inherited>
-                                <configuration>
-                                    <outputDirectory>${htmlsingle.output.dir}</outputDirectory>
-                                    <resources>
-                                        <resource>
-                                            <directory>${asciidoc.input.dir}/static</directory>
-                                            <filtering>false</filtering>
-                                        </resource>
-                                    </resources>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>wagon-maven-plugin</artifactId>
+                        <inherited>false</inherited>
                         <executions>
                             <execution>
                                 <id>upload-asciidocs-to-s3-versioned</id>
@@ -597,7 +605,6 @@
                                 <goals>
                                     <goal>upload</goal>
                                 </goals>
-                                <inherited>false</inherited>
                                 <configuration>
                                     <fromDir>${htmlsingle.output.dir}</fromDir>
                                     <serverId>tinkerpop.s3</serverId>
