@@ -458,6 +458,8 @@ The `299` code signifies stream termination which means that all processing for 
 Gremlin Plugins
 ---------------
 
+image:gremlin-plugin.png[width=125]
+
 Plugins provide a way to expand the features of Gremlin Console and Gremlin Server. The first step to developing a plugin is to implement the `GremlinPlugin` interface:
 
 [source,java]
