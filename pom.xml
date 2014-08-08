@@ -508,12 +508,27 @@
                                     <goal>copy</goal>
                                 </goals>
                                 <configuration>
-                                    <resource>
-                                        <directory>${asciidoc.source.dir}</directory>
-                                        <targetPath>${asciidoc.input.dir}</targetPath>
-                                        <preservePath>true</preservePath>
-                                        <failIfNotFound>false</failIfNotFound>
-                                    </resource>
+                                    <resources>
+                                        <resource>
+                                            <directory>${asciidoc.source.dir}</directory>
+                                            <targetPath>${asciidoc.input.dir}</targetPath>
+                                            <preservePath>true</preservePath>
+                                            <failIfNotFound>false</failIfNotFound>
+                                        </resource>
+                                        <resource>
+                                            <directory>${asciidoc.input.dir}</directory>
+                                            <targetPath>${asciidoc.input.dir}</targetPath>
+                                            <include>*.asciidoc</include>
+                                            <preservePath>true</preservePath>
+                                            <failIfNotFound>false</failIfNotFound>
+                                            <replaces>
+                                                <replace>
+                                                    <from>x\.y\.z</from>
+                                                    <to>${project.version}</to>
+                                                </replace>
+                                            </replaces>
+                                        </resource>
+                                    </resources>
                                 </configuration>
                             </execution>
                         </executions>
