@@ -21,22 +21,22 @@ class GroovyFilterTestImpl extends FilterTest {
 
     @Override
     public Traversal<Vertex, Vertex> get_g_V_filterXlang_eq_javaX() {
-        g.V.filter { it.instance().value('lang', null) == 'java' }
+        g.V.filter { it.get().value('lang', null) == 'java' }
     }
 
     @Override
     public Traversal<Vertex, Vertex> get_g_v1_filterXage_gt_30X(final Object v1Id) {
-        g.v(v1Id).filter { it.instance().value('age', 0) > 30 }
+        g.v(v1Id).filter { it.get().value('age', 0) > 30 }
     }
 
     @Override
     public Traversal<Vertex, Vertex> get_g_v1_out_filterXage_gt_30X(final Object v1Id) {
-        g.v(v1Id).out.filter { it.instance().value('age', 0) > 30 }
+        g.v(v1Id).out.filter { it.get().value('age', 0) > 30 }
     }
 
     @Override
     public Traversal<Vertex, Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
-        g.V.filter { it.instance().value('name').startsWith('m') || it.instance().value('name').startsWith('p') }
+        g.V.filter { it.get().value('name').startsWith('m') || it.get().value('name').startsWith('p') }
     }
 
     @Override
