@@ -7,8 +7,8 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import com.tinkerpop.gremlin.util.function.QuintFunction;
-import com.tinkerpop.gremlin.util.function.TriFunction;
+import com.tinkerpop.gremlin.util.function.SQuintFunction;
+import com.tinkerpop.gremlin.util.function.STriFunction;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -119,8 +119,8 @@ public class VertexStreamIterator implements Iterator<Vertex> {
             if (terminated) {
                 Graph gLocal = TinkerGraph.open();
 
-                TriFunction<Object, String, Object[], Vertex> vertexMaker = (id, label, props) -> createVertex(gLocal, id, label, props);
-                QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker = (id, outId, inId, label, props) -> createEdge(gLocal, id, outId, inId, label, props);
+                STriFunction<Object, String, Object[], Vertex> vertexMaker = (id, label, props) -> createVertex(gLocal, id, label, props);
+                SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker = (id, outId, inId, label, props) -> createEdge(gLocal, id, outId, inId, label, props);
 
                 try (InputStream in = new ByteArrayInputStream(output.toByteArray())) {
                     return reader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);

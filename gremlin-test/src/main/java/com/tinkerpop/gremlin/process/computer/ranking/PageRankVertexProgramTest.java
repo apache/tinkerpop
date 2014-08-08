@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process.computer.ranking;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.computer.ComputerResult;
-import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
@@ -20,10 +19,8 @@ public class PageRankVertexProgramTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void testPageRank() throws Exception {
-        final ComputerResult pair = g.compute().program(PageRankVertexProgram.build().create()).submit().get();
-        final Graph graph = pair.getGraph();
-        final SideEffects sideEffects = pair.getSideEffects();
-        graph.V().forEach(v -> {
+        final ComputerResult result = g.compute().program(PageRankVertexProgram.build().create()).submit().get();
+        result.getGraph().V().forEach(v -> {
             assertTrue(v.keys().contains("name"));
             assertTrue(v.hiddenKeys().contains(Graph.Key.unHide(PageRankVertexProgram.PAGE_RANK)));
             //System.out.println(v.value("name") + ":" + v.value(PageRankVertexProgram.PAGE_RANK));
@@ -44,7 +41,8 @@ public class PageRankVertexProgramTest extends AbstractGremlinTest {
             else
                 throw new IllegalStateException("The following vertex should not exist in the graph: " + name);
         });
-        assertEquals(sideEffects.getIteration(), 30);
+        assertEquals(result.getSideEffects().getIteration(), 29);
+        assertEquals(result.getSideEffects().asMap().size(), 0);
     }
 
 }

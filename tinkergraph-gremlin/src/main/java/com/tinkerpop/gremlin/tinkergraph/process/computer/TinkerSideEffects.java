@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.structure.util.GraphVariableHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,7 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class TinkerSideEffects implements SideEffects.Administrative {
 
-    public final Map<String, Object> globals;
+    public final Map<String, Object> sideEffectsMap;
     private final AtomicInteger iteration = new AtomicInteger(0);
     private final AtomicLong runtime = new AtomicLong(0l);
 
@@ -24,11 +25,11 @@ public class TinkerSideEffects implements SideEffects.Administrative {
     }
 
     public TinkerSideEffects(final Map<String, Object> state) {
-        this.globals = state;
+        this.sideEffectsMap = state;
     }
 
     public Set<String> keys() {
-        return this.globals.keySet();
+        return this.sideEffectsMap.keySet();
     }
 
     public void incrIteration() {
@@ -55,39 +56,39 @@ public class TinkerSideEffects implements SideEffects.Administrative {
         return this.getIteration() == 0;
     }
 
-    public <R> R get(final String key) {
-        return (R) this.globals.get(key);
+    public <R> Optional<R> get(final String key) {
+        return Optional.ofNullable((R) this.sideEffectsMap.get(key));
     }
 
     public long incr(final String key, final long delta) {
-        final Object value = this.globals.get(key);
+        final Object value = this.sideEffectsMap.get(key);
         final long incremented = value == null ? delta : (Long) value + delta;
         this.set(key, incremented);
         return incremented;
     }
 
     public boolean and(final String key, final boolean bool) {
-        final boolean value = (Boolean) this.globals.getOrDefault(key, bool);
+        final boolean value = (Boolean) this.sideEffectsMap.getOrDefault(key, bool);
         final boolean returnValue = value && bool;
         this.set(key, returnValue);
         return returnValue;
     }
 
     public boolean or(final String key, final boolean bool) {
-        final boolean value = (Boolean) this.globals.getOrDefault(key, bool);
+        final boolean value = (Boolean) this.sideEffectsMap.getOrDefault(key, bool);
         final boolean returnValue = value || bool;
         this.set(key, returnValue);
         return returnValue;
     }
 
     public void setIfAbsent(final String key, final Object value) {
-        if (!this.globals.containsKey(key))
+        if (!this.sideEffectsMap.containsKey(key))
             this.set(key, value);
     }
 
     public void set(final String key, final Object value) {
         GraphVariableHelper.validateVariable(key, value);
-        this.globals.put(key, value);
+        this.sideEffectsMap.put(key, value);
     }
 
     public String toString() {

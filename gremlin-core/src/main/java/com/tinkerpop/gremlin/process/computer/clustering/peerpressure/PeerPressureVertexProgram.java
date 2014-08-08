@@ -81,11 +81,6 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
     }
 
     @Override
-    public Class<Pair<Serializable, Double>> getMessageClass() {
-        return (Class) Pair.class;
-    }
-
-    @Override
     public void setup(final SideEffects sideEffects) {
         sideEffects.set(VOTE_TO_HALT, false);
     }
@@ -112,7 +107,7 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
 
     @Override
     public boolean terminate(final SideEffects sideEffects) {
-        final boolean voteToHalt = sideEffects.<Boolean>get(VOTE_TO_HALT) || sideEffects.getIteration() >= this.maxIterations;
+        final boolean voteToHalt = sideEffects.<Boolean>get(VOTE_TO_HALT).get() || sideEffects.getIteration() >= this.maxIterations;
         if (voteToHalt) {
             return true;
         } else {

@@ -2,11 +2,15 @@ package com.tinkerpop.gremlin.process.computer;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.process.computer.ranking.SimpleVertexProgram;
+import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
 import com.tinkerpop.gremlin.structure.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.concurrent.Future;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.*;
@@ -39,15 +43,26 @@ public class GraphComputerTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
-    public void shouldExecuteSimpleVertexProgram() throws Exception {
+    public void shouldHaveConsistentSideEffectsAndExceptions() throws Exception {
         GraphComputer computer = g.compute();
-        ComputerResult results = computer.program(new SimpleVertexProgram()).submit().get();
+        ComputerResult results = computer.program(LambdaVertexProgram.build().
+                execute((v, m, s) -> {
+                    if (s.isInitialIteration()) {
+                        v.property("nameLengthCounter", v.<String>value("name").length());
+                        s.incr("counter", 1l);
+                    } else
+                        v.property("nameLengthCounter", v.<String>value("name").length() + v.<Integer>value("nameLengthCounter"));
+                }).
+                terminate(s -> s.getIteration() >= 2).
+                elementComputeKeys("nameLengthCounter", VertexProgram.KeyType.VARIABLE).
+                sideEffectKeys(new HashSet<>(Arrays.asList("counter"))).create()).submit().get();
         assertEquals(1, results.getSideEffects().getIteration());
-        assertEquals(results.getSideEffects().asMap().size(), 0);
+        assertEquals(1, results.getSideEffects().asMap().size());
+        assertEquals(Long.valueOf(6), results.getSideEffects().<Long>get("counter").get());
         assertEquals(Long.valueOf(6), results.getGraph().V().count().next());
         results.getGraph().V().forEach(v -> {
-            assertTrue(v.property(SimpleVertexProgram.COUNTER).isPresent());
-            assertEquals(Integer.valueOf(v.<String>value("name").length() * 2), Integer.valueOf(v.<Integer>value(SimpleVertexProgram.COUNTER)));
+            assertTrue(v.property("nameLengthCounter").isPresent());
+            assertEquals(Integer.valueOf(v.<String>value("name").length() * 2), Integer.valueOf(v.<Integer>value("nameLengthCounter")));
         });
         // test no rerun of graph computer
         try {
@@ -58,7 +73,32 @@ public class GraphComputerTest extends AbstractGremlinTest {
         } catch (Exception e) {
             fail("Should yield an illegal state exception for graph computer being executed twice");
         }
+    }
 
+    /*@Test
+    @LoadGraphWith(CLASSIC)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
+    public void shouldProvideOptionalEmptySideEffects() throws Exception {
+        GraphComputer computer = g.compute();
+        ComputerResult results = computer.program(new LambdaVertexProgram()).submit().get();
 
+    }*/
+
+    class BadGraphComputer implements GraphComputer {
+        public GraphComputer isolation(final Isolation isolation) {
+            return null;
+        }
+
+        public GraphComputer program(final VertexProgram vertexProgram) {
+            return null;
+        }
+
+        public GraphComputer mapReduce(final MapReduce mapReduce) {
+            return null;
+        }
+
+        public Future<ComputerResult> submit() {
+            return null;
+        }
     }
 }

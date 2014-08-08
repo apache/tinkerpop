@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -72,16 +73,16 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
     }
 
     public long getRuntime() {
-        return System.currentTimeMillis() - this.<Long>get(Constants.RUNTIME);
+        return System.currentTimeMillis() - this.<Long>get(Constants.RUNTIME).get();
     }
 
     public Set<String> keys() {
         return this.sideEffectKeys;
     }
 
-    public <R> R get(final String key) {
+    public <R> Optional<R> get(final String key) {
         final RuleWritable rule = (null == this.giraphInternalVertex) ? this.getAggregatedValue(key) : this.giraphInternalVertex.getAggregatedValue(key);
-        return (R) rule.getObject();
+        return Optional.ofNullable(rule.getObject());
     }
 
     public void set(final String key, Object value) {

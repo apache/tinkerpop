@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
-import com.tinkerpop.gremlin.util.function.TriFunction;
+import com.tinkerpop.gremlin.util.function.STriFunction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,7 +67,7 @@ public class IdGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+    public UnaryOperator<STriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
         return (f) -> (label, v, keyValues) -> {
             throwIfIdKeyIsSet(Edge.class, ElementHelper.getKeys(keyValues));
             return f.apply(label, v, this.injectId(supportsEdgeId, keyValues, edgeIdSupplier).toArray());

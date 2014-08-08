@@ -77,11 +77,6 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     }
 
     @Override
-    public Class<Double> getMessageClass() {
-        return Double.class;
-    }
-
-    @Override
     public void setup(final SideEffects sideEffects) {
 
     }

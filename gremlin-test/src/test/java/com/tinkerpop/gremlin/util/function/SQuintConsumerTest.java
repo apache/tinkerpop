@@ -11,12 +11,12 @@ import static org.junit.Assert.fail;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class QuintConsumerTest {
+public class SQuintConsumerTest {
     @Test
     public void shouldApplyCurrentFunctionAndThenAnotherSuppliedOne() {
         final List<String> l = new ArrayList<>();
-        final QuintConsumer<String, String, String, String, String> f = (a, b, c, d, e) -> l.add("first");
-        final QuintConsumer<String, String, String, String, String> after = (a, b, c, d, e) -> l.add("second");
+        final SQuintConsumer<String, String, String, String, String> f = (a, b, c, d, e) -> l.add("first");
+        final SQuintConsumer<String, String, String, String, String> after = (a, b, c, d, e) -> l.add("second");
 
         f.andThen(after).accept("a", "b", "c", "d", "e");
 
@@ -28,17 +28,17 @@ public class QuintConsumerTest {
     @Test(expected = NullPointerException.class)
     public void shouldThrowIfAfterFunctionIsNull() {
         final List<String> l = new ArrayList<>();
-        final QuintConsumer<String, String, String, String, String> f = (a, b, c, d, e) -> l.add("second");
+        final SQuintConsumer<String, String, String, String, String> f = (a, b, c, d, e) -> l.add("second");
         f.andThen(null);
     }
 
     @Test
     public void shouldNotApplySecondIfFirstFails() {
         final List<String> l = new ArrayList<>();
-        final QuintConsumer<String, String, String, String, String> f = (a, b, c, d, e) -> {
+        final SQuintConsumer<String, String, String, String, String> f = (a, b, c, d, e) -> {
             throw new RuntimeException();
         };
-        final QuintConsumer<String, String, String, String, String> after = (a, b, c, d, e) -> l.add("second");
+        final SQuintConsumer<String, String, String, String, String> after = (a, b, c, d, e) -> l.add("second");
 
         try {
             f.andThen(after).accept("a", "b", "c", "d", "e");

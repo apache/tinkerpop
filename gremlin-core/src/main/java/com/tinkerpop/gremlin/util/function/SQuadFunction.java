@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.util.function;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -13,13 +14,11 @@ import java.util.function.Function;
  * @param <B> the type of the second argument in the function
  * @param <C> the type of the third argument in the function
  * @param <D> the type of the fourth argument in the function
- * @param <E> the type of the fifth argument in the function
- * @param <F> the type of the sixth argument in the function
  * @param <R> the type of the result of the function
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @FunctionalInterface
-public interface HexFunction<A, B, C, D, E, F, R> {
+public interface SQuadFunction<A, B, C, D, R> extends Serializable {
 
     /**
      * Applies this function to the given arguments.
@@ -28,11 +27,9 @@ public interface HexFunction<A, B, C, D, E, F, R> {
      * @param b the second argument to the function
      * @param c the third argument to the function
      * @param d the fourth argument to the function
-     * @param e the fifth argument to the function
-     * @param f the sixth argument to the function
      * @return the function result
      */
-    public R apply(final A a, final B b, final C c, final D d, final E e, final F f);
+    public R apply(final A a, final B b, final C c, final D d);
 
     /**
      * Returns a composed function that first applies this function to its input, and then applies the after function
@@ -44,8 +41,8 @@ public interface HexFunction<A, B, C, D, E, F, R> {
      * @return a composed function that first applies this function and then applies the {@code after} function.
      * @throws NullPointerException if {@code after} is null
      */
-    public default <V> HexFunction<A, B, C, D, E, F, V> andThen(final Function<? super R, ? extends V> after) {
+    public default <V> SQuadFunction<A, B, C, D, V> andThen(final Function<? super R, ? extends V> after) {
         Objects.requireNonNull(after);
-        return (A a, B b, C c, D d, E e, F f) -> after.apply(apply(a, b, c, d, e, f));
+        return (A a, B b, C c, D d) -> after.apply(apply(a, b, c, d));
     }
 }

@@ -44,7 +44,7 @@ public class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements SideE
         return Graph.Key.isHidden(this.sideEffectAs) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectAs);
     }
 
-    public String getVariable() {
+    public String getSideEffectAs() {
         return this.sideEffectAs;
     }
 }

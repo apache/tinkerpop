@@ -9,17 +9,17 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class TriFunctionTest {
+public class SQuadFunctionTest {
     @Test
     public void shouldApplyCurrentFunctionAndThenAnotherSuppliedOne() {
-        final TriFunction<String, String, String, String> f = (a, b, c) -> a + b + c;
+        final SQuadFunction<String, String, String, String, String> f = (a, b, c, d) -> a + b + c + d;
         final UnaryOperator<String> after = (s) -> s + "last";
-        assertEquals("123last", f.andThen(after).apply("1", "2", "3"));
+        assertEquals("1234last", f.andThen(after).apply("1", "2", "3", "4"));
     }
 
     @Test(expected = NullPointerException.class)
     public void shouldThrowIfAfterFunctionIsNull() {
-        final TriFunction<String, String, String, String> f = (a, b, c) -> a + b + c;
+        final SQuadFunction<String, String, String, String, String> f = (a, b, c, d) -> a + b + c;
         f.andThen(null);
     }
 }

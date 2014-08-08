@@ -9,17 +9,17 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class HexFunctionTest {
+public class SQuintFunctionTest {
     @Test
     public void shouldApplyCurrentFunctionAndThenAnotherSuppliedOne() {
-        final HexFunction<String, String, String, String, String, String, String> f = (a, b, c, d, e, g) -> a + b + c + d + e + g;
+        final SQuintFunction<String, String, String, String, String, String> f = (a, b, c, d, e) -> a + b + c + d + e;
         final UnaryOperator<String> after = (s) -> s + "last";
-        assertEquals("123456last", f.andThen(after).apply("1", "2", "3", "4", "5", "6"));
+        assertEquals("12345last", f.andThen(after).apply("1", "2", "3", "4", "5"));
     }
 
     @Test(expected = NullPointerException.class)
     public void shouldThrowIfAfterFunctionIsNull() {
-        final HexFunction<String, String, String, String, String, String, String> f = (a, b, c, d, e, g) -> a + b + c + e + g;
+        final SQuintFunction<String, String, String, String, String, String> f = (a, b, c, d, e) -> a + b + c + e;
         f.andThen(null);
     }
 }

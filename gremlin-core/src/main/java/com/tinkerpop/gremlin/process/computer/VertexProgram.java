@@ -61,8 +61,6 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
      */
     public boolean terminate(final SideEffects sideEffects);
 
-    public Class<M> getMessageClass();
-
     public Map<String, KeyType> getElementComputeKeys();
 
     public default Set<String> getSideEffectComputeKeys() {

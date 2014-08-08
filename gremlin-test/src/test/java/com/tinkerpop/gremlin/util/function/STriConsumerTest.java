@@ -11,12 +11,12 @@ import static org.junit.Assert.fail;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class TriConsumerTest {
+public class STriConsumerTest {
     @Test
     public void shouldApplyCurrentFunctionAndThenAnotherSuppliedOne() {
         final List<String> l = new ArrayList<>();
-        final TriConsumer<String, String, String> f = (a, b, c) -> l.add("first");
-        final TriConsumer<String, String, String> after = (a, b, c) -> l.add("second");
+        final STriConsumer<String, String, String> f = (a, b, c) -> l.add("first");
+        final STriConsumer<String, String, String> after = (a, b, c) -> l.add("second");
 
         f.andThen(after).accept("a", "b", "c");
 
@@ -28,17 +28,17 @@ public class TriConsumerTest {
     @Test(expected = NullPointerException.class)
     public void shouldThrowIfAfterFunctionIsNull() {
         final List<String> l = new ArrayList<>();
-        final TriConsumer<String, String, String> f = (a, b, c) -> l.add("second");
+        final STriConsumer<String, String, String> f = (a, b, c) -> l.add("second");
         f.andThen(null);
     }
 
     @Test
     public void shouldNotApplySecondIfFirstFails() {
         final List<String> l = new ArrayList<>();
-        final TriConsumer<String, String, String> f = (a, b, c) -> {
+        final STriConsumer<String, String, String> f = (a, b, c) -> {
             throw new RuntimeException();
         };
-        final TriConsumer<String, String, String> after = (a, b, c) -> l.add("second");
+        final STriConsumer<String, String, String> after = (a, b, c) -> l.add("second");
 
         try {
             f.andThen(after).accept("a", "b", "c");

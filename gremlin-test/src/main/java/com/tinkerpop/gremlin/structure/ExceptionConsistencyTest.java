@@ -610,11 +610,6 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public Class getMessageClass() {
-            return Object.class;
-        }
-
-        @Override
         public void setup(final SideEffects sideEffects) {
         }
 
@@ -658,11 +653,6 @@ public class ExceptionConsistencyTest {
 
         @Override
         public void loadState(final Configuration configuration) {
-        }
-
-        @Override
-        public Class getMessageClass() {
-            return Object.class;
         }
 
         @Override
