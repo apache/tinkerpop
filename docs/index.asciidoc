@@ -1541,7 +1541,7 @@ The example below demonstrates how to submit a VertexProgram to a graph's GraphC
 [source,groovy]
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> result = g.compute().program(new PageRankVertexProgram()).submit().get()
+gremlin> result = g.compute().program(PageRankVertexProgram.build().create()).submit().get()
 ==>result[tinkergraph[vertices:6 edges:6],sideEffects[size:0]]
 gremlin> result.graph.V.map{[it.get().value('name'), it.get().value(PageRankVertexProgram.PAGE_RANK)]}
 ==>[marko, 0.15000000000000002]
@@ -1582,9 +1582,9 @@ The `MapReduce` extension to GraphComputer is made explicit when examining the <
 [source,groovy]
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> result = g.compute().program(new PeerPressureVertexProgram()).mapReduce(new ClusterPopulationMapReduce()).submit().get()
+gremlin> result = g.compute().program(PeerPressureVertexProgram.build().create()).mapReduce(new ClusterPopulationMapReduce()).submit().get()
 ==>result[tinkergraph[vertices:6 edges:6],sideEffects[size:2]]
-gremlin> result.sideEffects.get('clusterPopulation')
+gremlin> result.sideEffects.get('clusterPopulation').get()
 ==>1=5
 ==>6=1
 gremlin> result.graph.V().value(PeerPressureVertexProgram.CLUSTER).groupCount.next()
@@ -1596,14 +1596,14 @@ If there are numerous statistics desired, then its possible to register as many 
 [source,groovy]
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> result = g.compute().program(new PeerPressureVertexProgram()).
+gremlin> result = g.compute().program(PeerPressureVertexProgram.build().create()).
  mapReduce(new ClusterPopulationMapReduce()).
  mapReduce(new ClusterCountMapReduce()).submit().get()
 ==>result[tinkergraph[vertices:6 edges:6],sideEffects[size:3]]
-gremlin> result.sideEffects.get('clusterPopulation')
+gremlin> result.sideEffects.get('clusterPopulation').get()
 ==>1=5
 ==>6=1
-gremlin> result.sideEffects.get('clusterCount')
+gremlin> result.sideEffects.get('clusterCount').get()
 ==>2
 
 IMPORTANT: The MapReduce model of TinkerPop3 does not support MapReduce chaining. Thus, the order in which the MapReduce jobs are executed is irrelevant. This is made apparent when realizing that the `map()`-stage takes a `Vertex` as its input and the `reduce()`-stage yields key/value pairs.
@@ -1678,7 +1678,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
     private double alpha = 0.85d;
     private int totalIterations = 30;
 
-    public PageRankVertexProgram() {
+    private PageRankVertexProgram() {
 
     }
 

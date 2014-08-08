@@ -43,7 +43,7 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
     private int maxIterations = 30;
     private boolean distributeVote = false;
 
-    public PeerPressureVertexProgram() {
+    private PeerPressureVertexProgram() {
 
     }
 
@@ -143,7 +143,7 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
         return new Builder();
     }
 
-    public static class Builder extends AbstractBuilder {
+    public static class Builder extends AbstractBuilder<Builder> {
 
 
         private Builder() {

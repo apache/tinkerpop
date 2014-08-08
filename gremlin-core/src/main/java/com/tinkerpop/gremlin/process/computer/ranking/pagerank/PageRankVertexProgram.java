@@ -38,7 +38,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     private double alpha = 0.85d;
     private int totalIterations = 30;
 
-    public PageRankVertexProgram() {
+    private PageRankVertexProgram() {
 
     }
 
@@ -108,7 +108,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         return new Builder();
     }
 
-    public static class Builder extends AbstractBuilder {
+    public static class Builder extends AbstractBuilder<Builder> {
 
         private Builder() {
             super(PageRankVertexProgram.class);

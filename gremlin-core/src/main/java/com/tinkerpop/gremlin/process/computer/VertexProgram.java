@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -88,7 +89,11 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
     public static <V extends VertexProgram> V createVertexProgram(final Configuration configuration) {
         try {
             final Class<V> vertexProgramClass = (Class) Class.forName(configuration.getString(GraphComputer.VERTEX_PROGRAM));
-            final V vertexProgram = vertexProgramClass.getConstructor().newInstance();
+            //final V vertexProgram = vertexProgramClass.getConstructor().newInstance();
+            final Constructor<V> constructor = vertexProgramClass.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            final V vertexProgram = constructor.newInstance();
+
             vertexProgram.loadState(configuration);
             return vertexProgram;
         } catch (final Exception e) {

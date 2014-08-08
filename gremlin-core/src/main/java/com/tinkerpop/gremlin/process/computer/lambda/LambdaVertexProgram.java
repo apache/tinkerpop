@@ -36,7 +36,7 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
     private Set<String> sideEffectKeys;
 
 
-    public LambdaVertexProgram() {
+    private LambdaVertexProgram() {
     }
 
     public void loadState(final Configuration configuration) {
@@ -98,7 +98,7 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
         return new Builder();
     }
 
-    public static class Builder extends AbstractBuilder {
+    public static class Builder extends AbstractBuilder<Builder> {
 
 
         private Builder() {

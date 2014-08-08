@@ -8,7 +8,7 @@ import org.apache.commons.configuration.Configuration;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class AbstractBuilder implements VertexProgram.Builder {
+public abstract class AbstractBuilder<B extends VertexProgram.Builder> implements VertexProgram.Builder {
 
     protected final Configuration configuration = new BaseConfiguration();
 
@@ -17,12 +17,12 @@ public abstract class AbstractBuilder implements VertexProgram.Builder {
     }
 
     @Override
-    public VertexProgram.Builder configure(final Object... keyValues) {
+    public B configure(final Object... keyValues) {
         VertexProgramHelper.legalConfigurationKeyValueArray(keyValues);
         for (int i = 0; i < keyValues.length; i = i + 2) {
             this.configuration.setProperty((String) keyValues[i], keyValues[i + 1]);
         }
-        return this;
+        return (B) this;
     }
 
     @Override

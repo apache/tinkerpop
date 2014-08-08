@@ -56,7 +56,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         put(TRAVERSER_TRACKER, KeyType.CONSTANT);
     }};
 
-    public TraversalVertexProgram() {
+    private TraversalVertexProgram() {
     }
 
     @Override
@@ -213,7 +213,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         return new Builder();
     }
 
-    public static class Builder extends AbstractBuilder {
+    public static class Builder extends AbstractBuilder<Builder> {
 
         public Builder() {
             super(TraversalVertexProgram.class);

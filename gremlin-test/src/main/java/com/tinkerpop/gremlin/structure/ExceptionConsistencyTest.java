@@ -579,7 +579,7 @@ public class ExceptionConsistencyTest {
     private static class MockVertexProgramBuilder implements VertexProgram.Builder {
         @Override
         public <P extends VertexProgram> P create() {
-            return (P) new PageRankVertexProgram();
+            return (P) PageRankVertexProgram.build().create();
         }
 
         @Override
