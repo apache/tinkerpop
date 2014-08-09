@@ -168,7 +168,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
 
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException(e.getMessage(), e);
+            throw new IllegalStateException(e.getMessage(), e);
         }
         return 0;
     }

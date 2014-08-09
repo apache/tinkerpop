@@ -93,7 +93,7 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
 
     //////////////////
 
-    public static <MK, MV, RK, RV, R> Builder build() {
+    public static <MK, MV, RK, RV, R> Builder<MK, MV, RK, RV, R> build() {
         return new Builder<MK, MV, RK, RV, R>();
     }
 
@@ -101,27 +101,27 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
 
         private Configuration configuration = new BaseConfiguration();
 
-        public Builder<MK, MV, RK, RV, R> map(final SBiConsumer<Vertex, MapEmitter<MK, MV>> mapLambda) {
+        public Builder<MK, MV, RK, RV, R> map(final SBiConsumer<Vertex, MapReduce.MapEmitter<MK, MV>> mapLambda) {
             try {
-                VertexProgramHelper.serialize(mapLambda, configuration, LAMBDA_MAP_REDUCE_MAP_LAMBDA);
+                VertexProgramHelper.serialize(mapLambda, configuration, LambdaMapReduce.LAMBDA_MAP_REDUCE_MAP_LAMBDA);
             } catch (Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
             return this;
         }
 
-        public Builder<MK, MV, RK, RV, R> combine(STriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>> combineLambda) {
+        public Builder<MK, MV, RK, RV, R> combine(STriConsumer<MK, Iterator<MV>, MapReduce.ReduceEmitter<RK, RV>> combineLambda) {
             try {
-                VertexProgramHelper.serialize(combineLambda, configuration, LAMBDA_MAP_REDUCE_COMBINE_LAMBDA);
+                VertexProgramHelper.serialize(combineLambda, configuration, LambdaMapReduce.LAMBDA_MAP_REDUCE_COMBINE_LAMBDA);
             } catch (Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
             return this;
         }
 
-        public Builder<MK, MV, RK, RV, R> reduce(STriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>> reduceLambda) {
+        public Builder<MK, MV, RK, RV, R> reduce(STriConsumer<MK, Iterator<MV>, MapReduce.ReduceEmitter<RK, RV>> reduceLambda) {
             try {
-                VertexProgramHelper.serialize(reduceLambda, configuration, LAMBDA_MAP_REDUCE_REDUCE_LAMBDA);
+                VertexProgramHelper.serialize(reduceLambda, configuration, LambdaMapReduce.LAMBDA_MAP_REDUCE_REDUCE_LAMBDA);
             } catch (Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -130,7 +130,7 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
 
         public Builder<MK, MV, RK, RV, R> sideEffect(SFunction<Iterator<Pair<RK, RV>>, R> sideEffectLambda) {
             try {
-                VertexProgramHelper.serialize(sideEffectLambda, configuration, LAMBDA_MAP_REDUCE_SIDE_EFFECT_LAMBDA);
+                VertexProgramHelper.serialize(sideEffectLambda, configuration, LambdaMapReduce.LAMBDA_MAP_REDUCE_SIDE_EFFECT_LAMBDA);
             } catch (Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -138,12 +138,12 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
         }
 
         public Builder<MK, MV, RK, RV, R> sideEffectKey(final String sideEffectKey) {
-            this.configuration.setProperty(LAMBDA_MAP_REDUCE_SIDE_EFFECT_KEY, sideEffectKey);
+            this.configuration.setProperty(LambdaMapReduce.LAMBDA_MAP_REDUCE_SIDE_EFFECT_KEY, sideEffectKey);
             return this;
         }
 
-        public LambdaMapReduce create() {
-            LambdaMapReduce lambdaMapReduce = new LambdaMapReduce();
+        public LambdaMapReduce<MK, MV, RK, RV, R> create() {
+            LambdaMapReduce<MK, MV, RK, RV, R> lambdaMapReduce = new LambdaMapReduce<>();
             lambdaMapReduce.loadState(this.configuration);
             return lambdaMapReduce;
         }

@@ -78,9 +78,9 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
             inflateTinkerVertex();
         this.vertexProgram.execute(this.tinkerVertex, new GiraphMessenger(this, messages), this.sideEffects);
         if (this.getConf().getBoolean(Constants.GREMLIN_DERIVE_COMPUTER_SIDE_EFFECTS, false)) {
-            this.sideEffects.keys().forEach(key -> {
-                this.tinkerVertex.property(Graph.Key.hide(key), this.sideEffects.get(key));
-            });
+            this.sideEffects.keys().forEach(key ->
+                    this.sideEffects.get(key).ifPresent(v ->
+                            this.tinkerVertex.<Object>property(Graph.Key.hide(key), v)));
             this.tinkerVertex.property(Graph.Key.hide(Constants.ITERATION), this.sideEffects.getIteration());
         }
     }

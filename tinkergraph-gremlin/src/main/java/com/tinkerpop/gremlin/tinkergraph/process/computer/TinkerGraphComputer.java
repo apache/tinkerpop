@@ -26,7 +26,7 @@ public class TinkerGraphComputer implements GraphComputer {
     private Isolation isolation = Isolation.BSP;
     private VertexProgram vertexProgram;
     private final TinkerGraph graph;
-    private final TinkerSideEffects sideEffects = new TinkerSideEffects();
+    private TinkerSideEffects sideEffects;
     private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
     private final List<MapReduce> mapReduces = new ArrayList<>();
@@ -56,8 +56,8 @@ public class TinkerGraphComputer implements GraphComputer {
         else
             this.executed = true;
 
-        GraphComputerHelper.validateProgramOnComputer(this, vertexProgram);
-
+        GraphComputerHelper.validateProgramOnComputer(this, this.vertexProgram);
+        this.sideEffects = new TinkerSideEffects(this.vertexProgram.getSideEffectComputeKeys());
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
             TinkerGraphView graphView = TinkerHelper.createGraphView(this.graph, this.isolation, this.vertexProgram.getElementComputeKeys());

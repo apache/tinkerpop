@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.util.Iterator;
 
 /**
@@ -22,7 +23,10 @@ public class GiraphReduce extends Reducer<KryoWritable, KryoWritable, KryoWritab
     @Override
     public void setup(final Reducer<KryoWritable, KryoWritable, KryoWritable, KryoWritable>.Context context) {
         try {
-            this.mapReduce = context.getConfiguration().getClass(Constants.MAP_REDUCE_CLASS, MapReduce.class, MapReduce.class).getConstructor().newInstance();
+            final Class<? extends MapReduce> mapReduceClass = context.getConfiguration().getClass(Constants.MAP_REDUCE_CLASS, MapReduce.class, MapReduce.class);
+            final Constructor<? extends MapReduce> constructor = mapReduceClass.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            this.mapReduce = constructor.newInstance();
             this.mapReduce.loadState(ConfUtil.makeApacheConfiguration(context.getConfiguration()));
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
