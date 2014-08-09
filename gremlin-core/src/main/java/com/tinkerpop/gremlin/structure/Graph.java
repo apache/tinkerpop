@@ -679,7 +679,7 @@ public interface Graph extends AutoCloseable {
             return new IllegalArgumentException(String.format("Vertex with id already exists: %s", id));
         }
 
-        public static IllegalArgumentException edgeWithIdAlreadyExist(final Object id) {
+        public static IllegalArgumentException edgeWithIdAlreadyExists(final Object id) {
             return new IllegalArgumentException(String.format("Edge with id already exists: %s", id));
         }
 

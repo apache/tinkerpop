@@ -48,7 +48,7 @@ public class TinkerHelper {
         final Edge edge;
         if (null != idValue) {
             if (graph.edges.containsKey(idValue))
-                throw Graph.Exceptions.edgeWithIdAlreadyExist(idValue);
+                throw Graph.Exceptions.edgeWithIdAlreadyExists(idValue);
         } else {
             idValue = TinkerHelper.getNextId(graph);
         }

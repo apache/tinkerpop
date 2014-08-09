@@ -391,7 +391,7 @@ public class ExceptionConsistencyTest {
      */
     @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
             "vertexWithIdAlreadyExists",
-            "edgeWithIdAlreadyExist"
+            "edgeWithIdAlreadyExists"
     })
     public static class SameIdUsageTest extends AbstractGremlinTest {
         @Test
@@ -419,7 +419,7 @@ public class ExceptionConsistencyTest {
                 v.addEdge("label", v, Element.ID, 1000l);
                 fail("Assigning the same ID to an Element should throw an exception");
             } catch (Exception ex) {
-                final Exception expectedException = Graph.Exceptions.edgeWithIdAlreadyExist(1000l);
+                final Exception expectedException = Graph.Exceptions.edgeWithIdAlreadyExists(1000l);
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }
