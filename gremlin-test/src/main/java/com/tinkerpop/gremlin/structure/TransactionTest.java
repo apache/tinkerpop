@@ -570,7 +570,9 @@ public class TransactionTest extends AbstractGremlinTest {
                     throw new RuntimeException(ie);
                 }
 
-                // tx in other thread is committed...should have one vertex
+                // tx in other thread is committed...should have one vertex.  rollback first to start a new tx
+                // to get a fresh read given the commit
+                graph.tx().rollback();
                 afterCommitInOtherThread.set(graph.V().count().next());
             }
         };
