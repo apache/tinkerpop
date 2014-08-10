@@ -1,6 +1,8 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.graph.strategy.CountCapStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.JumpComputerStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapComputerStrategy;
@@ -10,8 +12,10 @@ import com.tinkerpop.gremlin.process.util.MultiIterator;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
+import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerGraphStepStrategy;
 
@@ -21,6 +25,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -43,7 +48,7 @@ public class TinkerHelper {
         final Edge edge;
         if (null != idValue) {
             if (graph.edges.containsKey(idValue))
-                throw Graph.Exceptions.edgeWithIdAlreadyExist(idValue);
+                throw Graph.Exceptions.edgeWithIdAlreadyExists(idValue);
         } else {
             idValue = TinkerHelper.getNextId(graph);
         }
@@ -76,7 +81,6 @@ public class TinkerHelper {
     }
 
     public static void dropView(final TinkerGraph graph) {
-        graph.useGraphView = false;
         graph.graphView = null;
     }
 
@@ -94,6 +98,18 @@ public class TinkerHelper {
 
     public static List<TinkerEdge> queryEdgeIndex(final TinkerGraph graph, final String key, final Object value) {
         return graph.edgeIndex.get(key, value);
+    }
+
+    public static TinkerGraphView getGraphView(final TinkerGraph graph) {
+        return graph.graphView;
+    }
+
+    public static TinkerGraphView createGraphView(final TinkerGraph graph, final GraphComputer.Isolation isolation, final Map<String, VertexProgram.KeyType> computeKeys) {
+        return graph.graphView = new TinkerGraphView(isolation, computeKeys);
+    }
+
+    public static Map<String, Property> getProperties(final TinkerElement element) {
+        return element.properties;
     }
 
     public static Iterator<TinkerEdge> getEdges(final TinkerVertex vertex, final Direction direction, final int branchFactor, final String... labels) {

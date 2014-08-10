@@ -1,10 +1,12 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
+import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -13,29 +15,34 @@ import java.util.Set;
 public class GiraphGraphShellComputerSideEffects implements SideEffects {
 
     private static final String COMPLETE_AND_IMMUTABLE = "The graph computation sideEffects are complete and immutable";
-    protected static final String RUNTIME = "runtime";
-    protected static final String ITERATION = "iteration";
-
-    final Map<String, Object> sideEffects = new HashMap<>();
+    private long runtime = 0l;
+    private int iteration = -1;
+    private final Map<String, Object> sideEffectsMap = new HashMap<>();
 
     public Set<String> keys() {
-        return this.sideEffects.keySet();
+        return this.sideEffectsMap.keySet();
     }
 
-    public <R> R get(final String key) {
-        return (R) this.sideEffects.get(key);
+    public <R> Optional<R> get(final String key) {
+        return Optional.ofNullable((R) this.sideEffectsMap.get(key));
     }
 
     public void set(final String key, Object value) {
-        this.sideEffects.put(key, value);
+        this.sideEffectsMap.put(key, value);
     }
 
     public int getIteration() {
-        return (Integer) this.sideEffects.get(ITERATION);
+        return this.iteration;
     }
 
     public long getRuntime() {
-        return (Long) this.sideEffects.get(RUNTIME);
+        return this.runtime;
+    }
+
+    protected void complete(final long runtime) {
+        this.runtime = runtime;
+        if (this.sideEffectsMap.containsKey(Constants.ITERATION))
+            this.iteration = (int) this.sideEffectsMap.remove(Constants.ITERATION);
     }
 
     public void setIfAbsent(final String key, final Object value) {

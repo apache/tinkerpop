@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.process.graph.step.util.As;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
-import java.util.Iterator;
 import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
@@ -31,12 +30,12 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXaX_outXknowsX_asXbX_select() {
-        final Iterator<Map<String, Vertex>> step = get_g_v1_asXaX_outXknowsX_asXbX_select(convertToVertexId("marko"));
-        System.out.println("Testing: " + step);
+        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_v1_asXaX_outXknowsX_asXbX_select(convertToVertexId("marko"));
+        printTraversalForm(traversal);
         int counter = 0;
-        while (step.hasNext()) {
+        while (traversal.hasNext()) {
             counter++;
-            Map<String, Vertex> bindings = step.next();
+            Map<String, Vertex> bindings = traversal.next();
             assertEquals(2, bindings.size());
             assertEquals(convertToVertexId("marko"), (bindings.get("a")).id());
             assertTrue((bindings.get("b")).id().equals(convertToVertexId("vadas")) || bindings.get("b").id().equals(convertToVertexId("josh")));
@@ -47,12 +46,12 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXaX_outXknowsX_asXbX_selectXnameX() {
-        final Iterator<Map<String, String>> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(convertToVertexId("marko"));
-        System.out.println("Testing: " + step);
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
         int counter = 0;
-        while (step.hasNext()) {
+        while (traversal.hasNext()) {
             counter++;
-            Map<String, String> bindings = step.next();
+            Map<String, String> bindings = traversal.next();
             assertEquals(2, bindings.size());
             assertEquals("marko", bindings.get("a"));
             assertTrue(bindings.get("b").equals("josh") || bindings.get("b").equals("vadas"));
@@ -63,12 +62,12 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXaX_outXknowsX_asXbX_selectXaX() {
-        final Iterator<Map<String, Vertex>> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(convertToVertexId("marko"));
-        System.out.println("Testing: " + step);
+        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
         int counter = 0;
-        while (step.hasNext()) {
+        while (traversal.hasNext()) {
             counter++;
-            Map<String, Vertex> bindings = step.next();
+            Map<String, Vertex> bindings = traversal.next();
             assertEquals(1, bindings.size());
             assertEquals(convertToVertexId("marko"), bindings.get("a").id());
         }
@@ -78,12 +77,12 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX() {
-        final Iterator<Map<String, String>> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(convertToVertexId("marko"));
-        System.out.println("Testing: " + step);
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
         int counter = 0;
-        while (step.hasNext()) {
+        while (traversal.hasNext()) {
             counter++;
-            Map<String, String> bindings = step.next();
+            Map<String, String> bindings = traversal.next();
             assertEquals(1, bindings.size());
             assertEquals("marko", bindings.get("a"));
         }

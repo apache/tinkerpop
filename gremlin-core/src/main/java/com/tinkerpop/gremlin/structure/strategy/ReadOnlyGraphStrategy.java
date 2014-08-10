@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.structure.strategy;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.function.TriFunction;
+import com.tinkerpop.gremlin.util.function.STriFunction;
 
 import java.util.Collections;
 import java.util.Map;
@@ -27,7 +27,7 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+    public UnaryOperator<STriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
         return readOnlyTriFunction();
     }
 
@@ -88,7 +88,7 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
         };
     }
 
-    public static <T, U, V, W> UnaryOperator<TriFunction<T, U, V, W>> readOnlyTriFunction() {
+    public static <T, U, V, W> UnaryOperator<STriFunction<T, U, V, W>> readOnlyTriFunction() {
         return (f) -> (t, u, v) -> {
             throw Exceptions.graphUsesReadOnlyStrategy();
         };

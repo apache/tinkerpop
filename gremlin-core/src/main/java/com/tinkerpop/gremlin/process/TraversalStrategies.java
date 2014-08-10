@@ -8,8 +8,6 @@ import java.util.List;
  */
 public interface TraversalStrategies extends Serializable {
 
-    public List<TraversalStrategy> get();
-
     public void register(final TraversalStrategy traversalStrategy);
 
     public void unregister(final Class<? extends TraversalStrategy> optimizerClass);
@@ -17,4 +15,6 @@ public interface TraversalStrategies extends Serializable {
     public void clear();
 
     public void apply();
+
+    public boolean complete();
 }

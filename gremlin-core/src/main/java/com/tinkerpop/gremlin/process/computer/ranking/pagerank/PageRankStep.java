@@ -39,7 +39,7 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
     public Traverser<Pair<Vertex, Double>> processNextStart() {
         try {
             if (this.firstNext) {
-                this.resultantGraph = this.graph.compute().program(PageRankVertexProgram.build().alpha(this.alpha).incidentTraversal(this.incidentTraversal).create()).submit().get().getValue0();
+                this.resultantGraph = this.graph.compute().program(PageRankVertexProgram.build().alpha(this.alpha).incidentTraversal(this.incidentTraversal).create()).submit().get().getGraph();
                 this.firstNext = false;
             }
         } catch (Exception e) {

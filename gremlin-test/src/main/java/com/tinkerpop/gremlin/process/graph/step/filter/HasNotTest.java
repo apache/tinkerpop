@@ -8,15 +8,12 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
@@ -30,20 +27,20 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void get_g_v1_hasNotXprop() {
-        Iterator<Vertex> traversal = get_g_v1_hasNotXprop(convertToVertexId("marko"), "circumference");
-        System.out.println("Testing: " + traversal);
+        Traversal<Vertex, Vertex> traversal = get_g_v1_hasNotXprop(convertToVertexId("marko"), "circumference");
+        printTraversalForm(traversal);
         assertEquals("marko", traversal.next().<String>value("name"));
         assertFalse(traversal.hasNext());
         traversal = get_g_v1_hasNotXprop(convertToVertexId("marko"), "name");
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         assertFalse(traversal.hasNext());
     }
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void get_g_V_hasNotXprop() {
-        Iterator<Vertex> traversal = get_g_V_hasNotXprop("circumference");
-        System.out.println("Testing: " + traversal);
+        Traversal<Vertex, Vertex> traversal = get_g_V_hasNotXprop("circumference");
+        printTraversalForm(traversal);
         final List<Element> list = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(6, list.size());
     }

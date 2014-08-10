@@ -12,7 +12,7 @@ scriptEngines: {
   gremlin-groovy: {
     imports: [java.lang.Math, org.apache.commons.math3.util.FastMath],
     staticImports: [java.lang.Math.PI],
-    scripts: [scripts/generate-modern.groovy]}}
+    scripts: [scripts/generate-classic.groovy]}}
 serializers:
   - { className: com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0 }
   - { className: com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0, config: { serializeResultToString: true }}

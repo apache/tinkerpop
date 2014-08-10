@@ -20,8 +20,10 @@ public class PathStep<S> extends MapStep<S, Path> implements PathConsumer {
             final Path path = new Path();
             if (null == this.functionRing)
                 path.add(traverser.getPath());
-            else
+            else {
                 traverser.getPath().forEach((a, b) -> path.add(a, this.functionRing.next().apply(b)));
+                this.functionRing.reset();
+            }
             return path;
         });
     }

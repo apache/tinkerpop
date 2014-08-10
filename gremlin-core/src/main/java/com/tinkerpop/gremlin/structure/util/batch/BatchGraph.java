@@ -231,7 +231,7 @@ public class BatchGraph<T extends Graph> implements Graph {
     }
 
     @Override
-    public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass) {
+    public GraphComputer compute(final Class... graphComputerClass) {
         throw Exceptions.graphComputerNotSupported();
     }
 

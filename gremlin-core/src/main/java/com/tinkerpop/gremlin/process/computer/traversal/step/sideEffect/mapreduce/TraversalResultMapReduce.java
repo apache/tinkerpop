@@ -31,24 +31,24 @@ public class TraversalResultMapReduce implements MapReduce<MapReduce.NullObject,
                 TraverserCountTracker tracker = (TraverserCountTracker) mapProperty.value();
                 tracker.getDoneObjectTracks().forEach((traverser, count) -> {
                     for (int i = 0; i < count; i++) {
-                        emitter.emit(NullObject.get(), traverser);
+                        emitter.emit(NullObject.instance(), traverser);
                     }
                 });
                 tracker.getDoneGraphTracks().forEach((traverser, count) -> {
                     for (int i = 0; i < count; i++) {
-                        emitter.emit(NullObject.get(), traverser);
+                        emitter.emit(NullObject.instance(), traverser);
                     }
                 });
             } else {
                 TraverserPathTracker tracker = (TraverserPathTracker) mapProperty.value();
                 tracker.getDoneObjectTracks().forEach((object, traversers) -> {
                     for (Traverser traverser : traversers) {
-                        emitter.emit(NullObject.get(), traverser);
+                        emitter.emit(NullObject.instance(), traverser);
                     }
                 });
                 tracker.getDoneGraphTracks().forEach((object, traversers) -> {
                     for (Traverser traverser : traversers) {
-                        emitter.emit(NullObject.get(), traverser);
+                        emitter.emit(NullObject.instance(), traverser);
                     }
                 });
             }

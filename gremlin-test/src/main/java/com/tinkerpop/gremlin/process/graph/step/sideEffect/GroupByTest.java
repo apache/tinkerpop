@@ -33,7 +33,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_groupByXa_nameX() {
         final Traversal<Vertex, Map<String, List<Vertex>>> traversal = get_g_V_groupByXnameX();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         final Map<String, List<Vertex>> map = traversal.next();
         assertEquals(6, map.size());
         map.forEach((key, values) -> {
@@ -47,7 +47,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_hasXlangX_groupByXlang_nameX_asXaX_out_capXaX() {
         final Traversal<Vertex, Map<String, List<String>>> traversal = get_g_V_hasXlangX_groupByXlang_nameX_asXaX_out_capXaX();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         final Map<String, List<String>> map = traversal.next();
         assertFalse(traversal.hasNext());
         assertEquals(1, map.size());
@@ -61,7 +61,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_hasXlangX_groupByXlang_1_sizeX() {
         final Traversal<Vertex, Map<String, Integer>> traversal = get_g_V_hasXlangX_groupByXlang_1_sizeX();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         final Map<String, Integer> map = traversal.next();
         assertEquals(1, map.size());
         assertTrue(map.containsKey("java"));
@@ -76,7 +76,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
         traversals.add(get_g_V_asXxX_out_groupByXname_sizeX_asXaX_jumpXx_2X_capXaX());
         traversals.add(get_g_V_asXxX_out_groupByXname_sizeX_asXaX_jumpXx_loops_lt_2X_capXaX());
         traversals.forEach(traversal -> {
-            System.out.println("Testing: " + traversal);
+            printTraversalForm(traversal);
             final Map<String, Integer> map = traversal.next();
             assertFalse(traversal.hasNext());
             assertEquals(4, map.size());

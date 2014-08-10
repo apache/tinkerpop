@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
-import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -24,7 +24,7 @@ import java.util.Map;
  */
 public class PageRankVertexProgram implements VertexProgram<Double> {
 
-    private MessageType.Local messageType = MessageType.Local.of(() -> new DefaultGraphTraversal().outE());
+    private MessageType.Local messageType = MessageType.Local.of(() -> GraphTraversal.<Vertex>of().outE());
 
     public static final String PAGE_RANK = Graph.Key.hide("gremlin.pageRank");
     public static final String EDGE_COUNT = Graph.Key.hide("gremlin.edgeCount");
@@ -38,7 +38,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     private double alpha = 0.85d;
     private int totalIterations = 30;
 
-    public PageRankVertexProgram() {
+    private PageRankVertexProgram() {
 
     }
 
@@ -77,11 +77,6 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     }
 
     @Override
-    public Class<Double> getMessageClass() {
-        return Double.class;
-    }
-
-    @Override
     public void setup(final SideEffects sideEffects) {
 
     }
@@ -113,7 +108,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         return new Builder();
     }
 
-    public static class Builder extends AbstractBuilder {
+    public static class Builder extends AbstractBuilder<Builder> {
 
         private Builder() {
             super(PageRankVertexProgram.class);

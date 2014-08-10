@@ -9,7 +9,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -33,20 +32,20 @@ public abstract class AggregateTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_valueXnameX_aggregate() {
-        Traversal<Vertex, List<String>> step = get_g_V_valueXnameX_aggregate();
-        System.out.println("Testing: " + step);
-        final List<String> names = step.next();
-        assertFalse(step.hasNext());
+        Traversal<Vertex, List<String>> traversal = get_g_V_valueXnameX_aggregate();
+        printTraversalForm(traversal);
+        final List<String> names = traversal.next();
+        assertFalse(traversal.hasNext());
         checkListOfNames(names);
     }
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_aggregateXnameX() {
-        Traversal<Vertex, List<String>> step = get_g_V_aggregateXnameX();
-        System.out.println("Testing: " + step);
-        final List<String> names = step.next();
-        assertFalse(step.hasNext());
+        Traversal<Vertex, List<String>> traversal = get_g_V_aggregateXnameX();
+        printTraversalForm(traversal);
+        final List<String> names = traversal.next();
+        assertFalse(traversal.hasNext());
         checkListOfNames(names);
     }
 
@@ -63,13 +62,14 @@ public abstract class AggregateTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_out_aggregate_asXaX_path() {
-        final Iterator<Path> paths = get_g_V_out_aggregate_asXaX_path();
+        final Traversal<Vertex, Path> traversal = get_g_V_out_aggregate_asXaX_path();
+        printTraversalForm(traversal);
         int count = 0;
         final Map<String, Long> firstStepCounts = new HashMap<>();
         final Map<String, Long> secondStepCounts = new HashMap<>();
-        while (paths.hasNext()) {
+        while (traversal.hasNext()) {
             count++;
-            Path path = paths.next();
+            Path path = traversal.next();
             String first = path.get(0).toString();
             String second = path.get(1).toString();
             assertNotEquals(first, second);

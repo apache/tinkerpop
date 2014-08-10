@@ -10,9 +10,9 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
-import com.tinkerpop.gremlin.util.function.QuadConsumer;
-import com.tinkerpop.gremlin.util.function.QuintFunction;
-import com.tinkerpop.gremlin.util.function.TriFunction;
+import com.tinkerpop.gremlin.util.function.SQuadConsumer;
+import com.tinkerpop.gremlin.util.function.SQuintFunction;
+import com.tinkerpop.gremlin.util.function.STriFunction;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -64,16 +64,16 @@ public class KryoReader implements GraphReader {
     @Override
     public Vertex readVertex(final InputStream inputStream,
                              final Direction directionRequested,
-                             final TriFunction<Object, String, Object[], Vertex> vertexMaker,
-                             final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
+                             final STriFunction<Object, String, Object[], Vertex> vertexMaker,
+                             final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
         final Input input = new Input(inputStream);
         return readVertex(directionRequested, vertexMaker, edgeMaker, input);
     }
 
     @Override
     public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
-                                         final TriFunction<Object, String, Object[], Vertex> vertexMaker,
-                                         final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
+                                         final STriFunction<Object, String, Object[], Vertex> vertexMaker,
+                                         final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
         final Input input = new Input(inputStream);
         return new Iterator<Vertex>() {
             @Override
@@ -98,12 +98,12 @@ public class KryoReader implements GraphReader {
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final TriFunction<Object, String, Object[], Vertex> vertexMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final STriFunction<Object, String, Object[], Vertex> vertexMaker) throws IOException {
         return readVertex(inputStream, null, vertexMaker, null);
     }
 
     @Override
-    public Edge readEdge(final InputStream inputStream, final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
+    public Edge readEdge(final InputStream inputStream, final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
         final Input input = new Input(inputStream);
         this.headerReader.read(kryo, input);
         final Object outId = kryo.readClassAndObject(input);
@@ -140,7 +140,7 @@ public class KryoReader implements GraphReader {
                 // to advance the reader forward.  if the graph being read into doesn't support the memory
                 // then we just setting the data to memory.
                 final Map<String, Object> memMap = (Map<String, Object>) kryo.readObject(input, HashMap.class);
-                if (graphToWriteTo.getFeatures().graph().memory().supportsVariables()) {
+                if (graphToWriteTo.getFeatures().graph().variables().supportsVariables()) {
                     final Graph.Variables variables = graphToWriteTo.variables();
                     memMap.forEach(variables::set);
                 }
@@ -201,8 +201,8 @@ public class KryoReader implements GraphReader {
         }
     }
 
-    private Vertex readVertex(final Direction directionRequested, final TriFunction<Object, String, Object[], Vertex> vertexMaker,
-                              final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker, final Input input) throws IOException {
+    private Vertex readVertex(final Direction directionRequested, final STriFunction<Object, String, Object[], Vertex> vertexMaker,
+                              final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker, final Input input) throws IOException {
         if (null != directionRequested && null == edgeMaker)
             throw new IllegalArgumentException("If a directionRequested is specified then an edgeAdder function should also be specified");
 
@@ -251,7 +251,7 @@ public class KryoReader implements GraphReader {
         return v;
     }
 
-    private void readEdges(final Input input, final QuadConsumer<Object, Object, String, Object[]> edgeMaker) {
+    private void readEdges(final Input input, final SQuadConsumer<Object, Object, String, Object[]> edgeMaker) {
         if (input.readBoolean()) {
             Object inOrOutVId = kryo.readClassAndObject(input);
             while (!inOrOutVId.equals(EdgeTerminator.INSTANCE)) {

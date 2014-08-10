@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.function.TriFunction;
+import com.tinkerpop.gremlin.util.function.STriFunction;
 
 import java.util.Map;
 import java.util.Optional;
@@ -112,7 +112,7 @@ public interface GraphStrategy {
     }
 
     /**
-     * Construct a {@link com.tinkerpop.gremlin.util.function.TriFunction} that enhances the features of
+     * Construct a {@link com.tinkerpop.gremlin.util.function.STriFunction} that enhances the features of
      * {@link com.tinkerpop.gremlin.structure.Vertex#addEdge(String, com.tinkerpop.gremlin.structure.Vertex, Object...)}.
      *
      * @param ctx the context within which this strategy function is called
@@ -120,7 +120,7 @@ public interface GraphStrategy {
      * {@link com.tinkerpop.gremlin.structure.Vertex#addEdge(String, com.tinkerpop.gremlin.structure.Vertex, Object...)} signature
      * and returns an enhanced strategy {@link java.util.function.Function} with the same signature
      */
-    public default UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+    public default UnaryOperator<STriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
         return UnaryOperator.identity();
     }
 

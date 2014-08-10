@@ -29,6 +29,7 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_v1_sideEffectXstore_aX_valueXnameX() {
         final Traversal<Vertex, String> traversal = get_g_v1_sideEffectXstore_aX_valueXnameX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
         assertEquals(traversal.next(), "marko");
         assertFalse(traversal.hasNext());
         assertEquals(convertToVertexId("marko"), traversal.memory().<List<Vertex>>get("a").get().get(0).id());
@@ -38,6 +39,7 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_sideEffectXincr_cX_valueXnameX() {
         final Traversal<Vertex, String> traversal = get_g_v1_out_sideEffectXincr_cX_valueXnameX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
         assert_g_v1_out_sideEffectXincr_cX_valueXnameX(traversal);
         assertEquals(new Integer(3), traversal.memory().<List<Integer>>get("c").get().get(0));
     }
@@ -56,8 +58,9 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_sideEffectXX_valueXnameX() {
-        final Iterator<String> step = get_g_v1_out_sideEffectXX_valueXnameX(convertToVertexId("marko"));
-        assert_g_v1_out_sideEffectXincr_cX_valueXnameX(step);
+        final Traversal<Vertex, String> traversal = get_g_v1_out_sideEffectXX_valueXnameX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        assert_g_v1_out_sideEffectXincr_cX_valueXnameX(traversal);
     }
 
     public static class JavaSideEffectTest extends SideEffectTest {

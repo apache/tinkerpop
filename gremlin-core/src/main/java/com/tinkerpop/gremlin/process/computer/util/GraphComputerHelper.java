@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.computer.util;
 
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.structure.Graph;
 
 import java.lang.reflect.Method;
 
@@ -28,6 +29,11 @@ public class GraphComputerHelper {
                     throw new IllegalStateException("The vertex program can not be executed on the graph computer: " + method.getName());
             }
         }
+    }
+
+    public static void validateComputeArguments(Class... graphComputerClass) {
+        if (graphComputerClass.length > 1)
+            throw Graph.Exceptions.onlyOneOrNoGraphComputerClass();
     }
 
 }

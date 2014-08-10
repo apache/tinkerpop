@@ -28,7 +28,7 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
     public void g_v1_out_out_treeXnameX() {
         List<Traversal<Vertex, Tree>> traversals = Arrays.asList(get_g_v1_out_out_treeXnameX(convertToVertexId("marko")), get_g_v1_out_out_treeXnameX_asXaX_both_both_capXaX(convertToVertexId("marko")));
         traversals.forEach(traversal -> {
-            System.out.println("Testing: " + traversal);
+            printTraversalForm(traversal);
             final Tree tree = traversal.next();
             assertFalse(traversal.hasNext());
             assertEquals(1, tree.size());

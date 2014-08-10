@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
+import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasNotTest;
@@ -25,6 +26,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeTest;
+import com.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -57,6 +59,9 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
+            // basic api semantics testing
+            GraphComputerTest.class,
+
             // filter
             CyclicPathTest.JavaComputerCyclicPathTest.class,
             // TODO: REMOVE? DedupTest.JavaComputerDedupTest.class
@@ -98,13 +103,16 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             TreeTest.JavaComputerTreeTest.class,
 
             // algorithms
-            // PageRankVertexProgramTest.class
+            PageRankVertexProgramTest.class
     };
 
     /**
      * Tests that will be enforced by the suite where instances of them should be in the list of testsToExecute.
      */
     protected static final Class<?>[] testsToEnforce = new Class<?>[]{
+            // basic api semantics testing
+            GraphComputerTest.class,
+
             // filter
             CyclicPathTest.class,
             // DedupTest.class,
@@ -148,7 +156,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
 
 
             // algorithms
-            // PageRankVertexProgramTest.class
+            PageRankVertexProgramTest.class
     };
 
     public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {

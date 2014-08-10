@@ -25,7 +25,7 @@ public abstract class SimplePathTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXcreatedX_inXcreatedX_simplePath() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_outXcreatedX_inXcreatedX_simplePath(convertToVertexId("marko"));
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
@@ -40,7 +40,7 @@ public abstract class SimplePathTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_asXxX_both_simplePath_jumpXx_loops_lt_3X_path() {
         final Traversal<Vertex, Path> traversal = get_g_V_asXxX_both_simplePath_jumpXx_loops_lt_3X_path();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
@@ -54,7 +54,7 @@ public abstract class SimplePathTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_asXxX_both_simplePath_jumpXx_3X_path() {
         final Traversal<Vertex, Path> traversal = get_g_V_asXxX_both_simplePath_jumpXx_3X_path();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;

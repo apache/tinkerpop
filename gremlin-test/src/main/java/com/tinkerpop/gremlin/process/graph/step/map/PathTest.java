@@ -26,31 +26,33 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX();
 
-    public abstract Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_2X_pathXit__name__langX();
+    public abstract Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_2X_pathXit_name_langX();
+
+    public abstract Traversal<Vertex, Path> get_g_V_out_out_pathXname_ageX();
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_valueXnameX_path() {
-        final Iterator<Path> step = get_g_v1_valueXnameX_path(convertToVertexId("marko"));
-        System.out.println("Testing: " + step);
-        final Path path = step.next();
-        assertFalse(step.hasNext());
+        final Traversal<Vertex, Path> traversal = get_g_v1_valueXnameX_path(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        final Path path = traversal.next();
+        assertFalse(traversal.hasNext());
         assertEquals(2, path.size());
         assertEquals(convertToVertexId("marko"), ((Vertex) path.get(0)).<String>id());
         assertEquals("marko", path.<String>get(1));
-        assertFalse(step.hasNext());
+        assertFalse(traversal.hasNext());
     }
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_pathXage_nameX() {
-        final Iterator<Path> step = get_g_v1_out_pathXage_nameX(convertToVertexId("marko"));
-        System.out.println("Testing: " + step);
+        final Traversal<Vertex, Path> traversal = get_g_v1_out_pathXage_nameX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
         int counter = 0;
         final Set<String> names = new HashSet<>();
-        while (step.hasNext()) {
+        while (traversal.hasNext()) {
             counter++;
-            final Path path = step.next();
+            final Path path = traversal.next();
             assertEquals(Integer.valueOf(29), path.<Integer>get(0));
             assertTrue(path.get(1).equals("josh") || path.get(1).equals("vadas") || path.get(1).equals("lop"));
             names.add(path.get(1));
@@ -62,12 +64,12 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_asXxX_out_loopXx_loops_lt_2X_pathXit__name__langX() {
-        final Iterator<Path> step = get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX();
-        System.out.println("Testing: " + step);
+        final Traversal<Vertex, Path> traversal = get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX();
+        printTraversalForm(traversal);
         int counter = 0;
-        while (step.hasNext()) {
+        while (traversal.hasNext()) {
             counter++;
-            final Path path = step.next();
+            final Path path = traversal.next();
             assertEquals(3, path.size());
             assertEquals("marko", ((Vertex) path.get(0)).<String>value("name"));
             assertEquals("josh", path.<String>get(1));
@@ -78,17 +80,34 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    public void g_V_asXxX_out_loopXx_2X_pathXit__name__langX() {
-        final Iterator<Path> step = get_g_V_asXxX_out_jumpXx_2X_pathXit__name__langX();
-        System.out.println("Testing: " + step);
+    public void g_V_asXxX_out_loopXx_2X_pathXit_name_langX() {
+        final Traversal<Vertex, Path> traversal = get_g_V_asXxX_out_jumpXx_2X_pathXit_name_langX();
+        printTraversalForm(traversal);
         int counter = 0;
-        while (step.hasNext()) {
+        while (traversal.hasNext()) {
             counter++;
-            final Path path = step.next();
+            final Path path = traversal.next();
             assertEquals(3, path.size());
             assertEquals("marko", ((Vertex) path.get(0)).<String>value("name"));
             assertEquals("josh", path.<String>get(1));
             assertEquals("java", path.<String>get(2));
+        }
+        assertEquals(2, counter);
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_out_out_pathXname_ageX() {
+        final Traversal<Vertex, Path> traversal = get_g_V_out_out_pathXname_ageX();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            final Path path = traversal.next();
+            assertEquals(3, path.size());
+            assertEquals("marko", path.<String>get(0));
+            assertEquals(Integer.valueOf(32), path.<Integer>get(1));
+            assertTrue(path.get(2).equals("lop") || path.get(2).equals("ripple"));
         }
         assertEquals(2, counter);
     }
@@ -112,10 +131,14 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
                     .path(v -> v, v -> ((Vertex) v).value("name"), v -> ((Vertex) v).value("lang"));
         }
 
-        public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_2X_pathXit__name__langX() {
+        public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_2X_pathXit_name_langX() {
             return g.V().as("x").out()
                     .jump("x", 2)
                     .path(v -> v, v -> ((Vertex) v).value("name"), v -> ((Vertex) v).value("lang"));
+        }
+
+        public Traversal<Vertex, Path> get_g_V_out_out_pathXname_ageX() {
+            return g.V().out().out().path(v -> ((Vertex) v).value("name"), v -> ((Vertex) v).value("age"));
         }
     }
 
@@ -140,11 +163,16 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
                     .path(v -> v, v -> ((Vertex) v).value("name"), v -> ((Vertex) v).value("lang")); // .submit(g.compute());
         }
 
-        public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_2X_pathXit__name__langX() {
+        public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_2X_pathXit_name_langX() {
             // TODO: Detached elements do not store properties (attach)
             return g.V().as("x").out()
                     .jump("x", 2)
                     .path(v -> v, v -> ((Vertex) v).value("name"), v -> ((Vertex) v).value("lang"));
+        }
+
+        public Traversal<Vertex, Path> get_g_V_out_out_pathXname_ageX() {
+            // TODO: Detached elements do not store properties (attach)
+            return g.V().out().out().path(v -> ((Vertex) v).value("name"), v -> ((Vertex) v).value("age"));
         }
     }
 }

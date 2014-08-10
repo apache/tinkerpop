@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -27,9 +28,13 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
         CONSTANT
     }
 
-    public void loadState(final Configuration configuration);
+    public default void loadState(final Configuration configuration) {
 
-    public void storeState(final Configuration configuration);
+    }
+
+    public default void storeState(final Configuration configuration) {
+        configuration.setProperty(GraphComputer.VERTEX_PROGRAM, this.getClass().getName());
+    }
 
     /**
      * The method is called at the beginning of the computation. The method is global to the {@link GraphComputer}
@@ -56,8 +61,6 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
      * @return whether or not to halt the computation
      */
     public boolean terminate(final SideEffects sideEffects);
-
-    public Class<M> getMessageClass();
 
     public Map<String, KeyType> getElementComputeKeys();
 
@@ -86,7 +89,9 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
     public static <V extends VertexProgram> V createVertexProgram(final Configuration configuration) {
         try {
             final Class<V> vertexProgramClass = (Class) Class.forName(configuration.getString(GraphComputer.VERTEX_PROGRAM));
-            final V vertexProgram = vertexProgramClass.getConstructor().newInstance();
+            final Constructor<V> constructor = vertexProgramClass.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            final V vertexProgram = constructor.newInstance();
             vertexProgram.loadState(configuration);
             return vertexProgram;
         } catch (final Exception e) {

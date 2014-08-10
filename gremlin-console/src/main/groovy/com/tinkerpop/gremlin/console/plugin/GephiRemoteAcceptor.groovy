@@ -75,7 +75,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         if (o instanceof Graph) {
             clearGraph()
             def g = (Graph) o
-            g.V().sideEffect { addVertexToGephi(it.get()) }.iterate()
+            g.V().sideEffect { addVertexToGephi(it.instance()) }.iterate()
         }
     }
 
@@ -94,7 +94,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
 
         if (!ignoreEdges) {
             v.outE().sideEffect {
-                addEdgeToGephi(it.get())
+                addEdgeToGephi(it.instance())
             }.iterate()
         }
     }

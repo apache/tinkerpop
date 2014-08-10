@@ -31,12 +31,12 @@ public class SideEffectCapMapReduce implements MapReduce {
     }
 
     public SideEffectCapMapReduce(final SideEffectCapComputerStep step) {
-        this.sideEffectKey = step.getVariable();
+        this.sideEffectKey = step.getSideEffectAs();
         this.traversal = step.getTraversal();
     }
 
     public SideEffectCapMapReduce(final SideEffectCapStep step) {
-        this.sideEffectKey = step.getVariable();
+        this.sideEffectKey = step.getSideEffectAs();
         this.traversal = step.getTraversal();
     }
 

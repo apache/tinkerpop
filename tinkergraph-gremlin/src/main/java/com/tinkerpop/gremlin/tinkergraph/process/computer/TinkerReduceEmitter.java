@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerReduceEmitter<OK, OV> implements MapReduce.ReduceEmitter<OK, OV> {
+class TinkerReduceEmitter<OK, OV> implements MapReduce.ReduceEmitter<OK, OV> {
 
     public List<Pair<OK, OV>> resultList = new ArrayList<>();
 

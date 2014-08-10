@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.computer.util.MemoryAggregator;
 import com.tinkerpop.gremlin.giraph.process.computer.util.RuleWritable;
 import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -59,6 +61,8 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
         }
     }
 
+    // TODO: Perhaps wait for setConfiguration? ^^^^^^^
+
     public void compute() {
         if (!this.isInitialIteration()) {
             if (this.vertexProgram.terminate(this)) {
@@ -72,19 +76,21 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
     }
 
     public long getRuntime() {
-        return System.currentTimeMillis() - this.<Long>get(Constants.RUNTIME);
+        return System.currentTimeMillis() - this.<Long>get(Constants.RUNTIME).get();
     }
 
     public Set<String> keys() {
         return this.sideEffectKeys;
     }
 
-    public <R> R get(final String key) {
+    public <R> Optional<R> get(final String key) {
+        this.checkKey(key);
         final RuleWritable rule = (null == this.giraphInternalVertex) ? this.getAggregatedValue(key) : this.giraphInternalVertex.getAggregatedValue(key);
-        return (R) rule.getObject();
+        return Optional.ofNullable(rule.getObject());
     }
 
     public void set(final String key, Object value) {
+        this.checkKey(key);
         if (null == this.giraphInternalVertex)
             this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.SET, value));
         else
@@ -92,6 +98,7 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
     }
 
     public void setIfAbsent(final String key, final Object value) {
+        this.checkKey(key);
         if (null == this.giraphInternalVertex)
             this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.SET_IF_ABSENT, value));
         else
@@ -99,32 +106,38 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
     }
 
     public boolean and(final String key, final boolean bool) {
+        this.checkKey(key);
         if (null == this.giraphInternalVertex) {
             this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.AND, ((RuleWritable) this.getAggregatedValue(key)).<Boolean>getObject() && bool));
             return ((RuleWritable) this.getAggregatedValue(key)).getObject();
         } else {
             this.giraphInternalVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.AND, bool));
-            return ((RuleWritable) this.giraphInternalVertex.getAggregatedValue(key)).getObject();
+            final Boolean result = ((RuleWritable) this.giraphInternalVertex.getAggregatedValue(key)).getObject();
+            return null == result ? bool : result;
         }
     }
 
     public boolean or(final String key, final boolean bool) {
+        this.checkKey(key);
         if (null == this.giraphInternalVertex) {
             this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.OR, ((RuleWritable) this.getAggregatedValue(key)).<Boolean>getObject() || bool));
             return ((RuleWritable) this.getAggregatedValue(key)).getObject();
         } else {
             this.giraphInternalVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.OR, bool));
-            return ((RuleWritable) this.giraphInternalVertex.getAggregatedValue(key)).getObject();
+            final Boolean result = ((RuleWritable) this.giraphInternalVertex.getAggregatedValue(key)).getObject();
+            return null == result ? bool : result;
         }
     }
 
     public long incr(final String key, final long delta) {
+        this.checkKey(key);
         if (null == this.giraphInternalVertex) {
             this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.INCR, ((RuleWritable) this.getAggregatedValue(key)).<Long>getObject() + delta));
             return ((RuleWritable) this.getAggregatedValue(key)).getObject();
         } else {
             this.giraphInternalVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.INCR, delta));
-            return ((RuleWritable) this.giraphInternalVertex.getAggregatedValue(key)).getObject();
+            final Long result = ((RuleWritable) this.giraphInternalVertex.getAggregatedValue(key)).getObject();
+            return null == result ? delta : result;
         }
     }
 
@@ -136,5 +149,10 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
 
     public String toString() {
         return StringFactory.computerSideEffectsString(this);
+    }
+
+    private void checkKey(final String key) {
+        if (!key.equals(Constants.RUNTIME) && !this.sideEffectKeys.contains(key))
+            throw GraphComputer.Exceptions.providedKeyIsNotASideEffectKey(key);
     }
 }

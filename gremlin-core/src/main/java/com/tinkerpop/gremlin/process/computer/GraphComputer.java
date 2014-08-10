@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process.computer;
 
 import com.tinkerpop.gremlin.structure.Graph;
-import org.javatuples.Pair;
 
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -38,7 +37,7 @@ public interface GraphComputer {
 
     public GraphComputer mapReduce(final MapReduce mapReduce);
 
-    public Future<Pair<Graph, SideEffects>> submit();
+    public Future<ComputerResult> submit();
 
     public static void mergeComputedView(final Graph original, final Graph computed, Map<String, String> keyMapping) {
         throw new IllegalStateException("The mergeComputedView method must be defined by the implementing GraphComputer class");
@@ -111,6 +110,10 @@ public interface GraphComputer {
 
         public static IllegalArgumentException providedKeyIsNotAComputeKey(final String key) {
             return new IllegalArgumentException("The provided key is not a compute key: " + key);
+        }
+
+        public static IllegalArgumentException providedKeyIsNotASideEffectKey(final String key) {
+            return new IllegalArgumentException("The provided key is not a sideEffect key: " + key);
         }
 
         public static IllegalStateException constantComputeKeyHasAlreadyBeenSet(final String key, final Object id) {

@@ -23,7 +23,7 @@ public abstract class RandomTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_randomX1X() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_randomX1X();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
@@ -37,7 +37,7 @@ public abstract class RandomTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_randomX0X() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_randomX0X();
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;

@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.function.SFunction;
@@ -61,6 +60,7 @@ public class SelectStep<E> extends MapStep<Object, Map<String, E>> {
                         });
                 }
             }
+            this.functionRing.reset();
             return temp;
         });
     }

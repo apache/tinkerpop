@@ -6,8 +6,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
-import java.util.Iterator;
-
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -25,8 +23,8 @@ public abstract class RetainTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_retainXg_v2X() {
-        final Iterator<Vertex> traversal = get_g_v1_out_retainXg_v2X(convertToVertexId("marko"), convertToVertexId("vadas"));
-        System.out.println("Testing: " + traversal);
+        final Traversal<Vertex, Vertex> traversal = get_g_v1_out_retainXg_v2X(convertToVertexId("marko"), convertToVertexId("vadas"));
+        printTraversalForm(traversal);
         assertEquals("vadas", traversal.next().<String>value("name"));
         assertFalse(traversal.hasNext());
     }
@@ -34,8 +32,8 @@ public abstract class RetainTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_aggregateXxX_out_retainXxX() {
-        final Iterator<Vertex> traversal = get_g_v1_out_aggregateXxX_out_retainXxX(convertToVertexId("marko"));
-        System.out.println("Testing: " + traversal);
+        final Traversal<Vertex, Vertex> traversal = get_g_v1_out_aggregateXxX_out_retainXxX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
         assertEquals("lop", traversal.next().<String>value("name"));
         assertFalse(traversal.hasNext());
     }

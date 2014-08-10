@@ -12,3 +12,4 @@ build_output.txt
 .settings
 _bsp/
 doc/out
+ext/

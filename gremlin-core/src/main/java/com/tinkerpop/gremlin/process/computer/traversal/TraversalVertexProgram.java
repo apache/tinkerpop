@@ -16,7 +16,6 @@ import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduc
 import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.map.GraphStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -57,7 +56,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         put(TRAVERSER_TRACKER, KeyType.CONSTANT);
     }};
 
-    public TraversalVertexProgram() {
+    private TraversalVertexProgram() {
     }
 
     @Override
@@ -159,18 +158,13 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     @Override
     public boolean terminate(final SideEffects sideEffects) {
-        final boolean voteToHalt = sideEffects.get(VOTE_TO_HALT);
+        final boolean voteToHalt = sideEffects.<Boolean>get(VOTE_TO_HALT).get();
         if (voteToHalt) {
             return true;
         } else {
             sideEffects.or(VOTE_TO_HALT, true);
             return false;
         }
-    }
-
-    @Override
-    public Class<M> getMessageClass() {
-        return (Class) (this.trackPaths ? TraversalPathMessage.class : TraversalCounterMessage.class);
     }
 
     @Override
@@ -219,7 +213,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         return new Builder();
     }
 
-    public static class Builder extends AbstractBuilder {
+    public static class Builder extends AbstractBuilder<Builder> {
 
         public Builder() {
             super(TraversalVertexProgram.class);

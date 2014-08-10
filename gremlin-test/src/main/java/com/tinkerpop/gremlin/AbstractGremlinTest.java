@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin;
 
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -159,5 +160,11 @@ public abstract class AbstractGremlinTest {
         }
 
         return methodName;
+    }
+
+    protected void printTraversalForm(final Traversal traversal) {
+        System.out.println("Testing: " + traversal);
+        traversal.strategies().apply();
+        System.out.println("         " + traversal);
     }
 }

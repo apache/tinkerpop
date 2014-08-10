@@ -8,7 +8,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
@@ -33,12 +32,12 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXhereX_out_backXhereX() {
-        final Iterator<Vertex> step = get_g_v1_asXhereX_out_backXhereX(convertToVertexId("marko"));
-        System.out.println("Testing: " + step);
+        final Traversal<Vertex, Vertex> traversal = get_g_v1_asXhereX_out_backXhereX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
         int counter = 0;
-        while (step.hasNext()) {
+        while (traversal.hasNext()) {
             counter++;
-            assertEquals("marko", step.next().<String>value("name"));
+            assertEquals("marko", traversal.next().<String>value("name"));
         }
         assertEquals(3, counter);
     }
@@ -47,12 +46,12 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v4_out_asXhereX_hasXlang_javaX_backXhereX() {
-        final Iterator<Vertex> step = get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX(convertToVertexId("josh"));
-        System.out.println("Testing: " + step);
+        final Traversal<Vertex, Vertex> traversal = get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX(convertToVertexId("josh"));
+        printTraversalForm(traversal);
         int counter = 0;
-        while (step.hasNext()) {
+        while (traversal.hasNext()) {
             counter++;
-            final Vertex vertex = step.next();
+            final Vertex vertex = traversal.next();
             assertEquals("java", vertex.<String>value("lang"));
             assertTrue(vertex.value("name").equals("ripple") || vertex.value("name").equals("lop"));
         }
@@ -62,26 +61,26 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX() {
-        final Iterator<Edge> step = get_g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX(convertToVertexId("marko"));
-        System.out.println("Testing: " + step);
-        final Edge edge = step.next();
+        final Traversal<Vertex, Edge> traversal = get_g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        final Edge edge = traversal.next();
         assertEquals("knows", edge.label());
         assertEquals(convertToVertexId("vadas"), edge.inV().id().next());
         assertEquals(convertToVertexId("marko"), edge.outV().id().next());
         assertEquals(0.5f, edge.<Float>value("weight"), 0.0001f);
-        assertFalse(step.hasNext());
+        assertFalse(traversal.hasNext());
     }
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX() {
-        final Iterator<String> step = get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(convertToVertexId("josh"));
-        System.out.println("Testing: " + step);
+        final Traversal<Vertex, String> traversal = get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(convertToVertexId("josh"));
+        printTraversalForm(traversal);
         int counter = 0;
         final Set<String> names = new HashSet<>();
-        while (step.hasNext()) {
+        while (traversal.hasNext()) {
             counter++;
-            names.add(step.next());
+            names.add(traversal.next());
         }
         assertEquals(2, counter);
         assertEquals(2, names.size());
@@ -92,15 +91,15 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX() {
-        final Iterator<Edge> step = get_g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(convertToVertexId("marko"));
-        System.out.println("Testing: " + step);
-        assertTrue(step.hasNext());
-        assertTrue(step.hasNext());
-        final Edge edge = step.next();
+        final Traversal<Vertex, Edge> traversal = get_g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        assertTrue(traversal.hasNext());
+        final Edge edge = traversal.next();
         assertEquals("knows", edge.label());
         assertEquals(Float.valueOf(1.0f), edge.<Float>value("weight"));
-        assertFalse(step.hasNext());
-        assertFalse(step.hasNext());
+        assertFalse(traversal.hasNext());
+        assertFalse(traversal.hasNext());
     }
 
     public static class JavaBackTest extends BackTest {

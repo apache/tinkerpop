@@ -102,7 +102,7 @@ class DriverRemoteAcceptor implements RemoteAcceptor {
         try {
             return currentClient.submit(gremlin).all().get(timeout, TimeUnit.MILLISECONDS);
         } catch (TimeoutException ignored) {
-            throw new RuntimeException("request timed out while processing - increase the timeout with the :remote command");
+            throw new RuntimeException("Request timed out while processing - increase the timeout with the :remote command");
         }
     }
 

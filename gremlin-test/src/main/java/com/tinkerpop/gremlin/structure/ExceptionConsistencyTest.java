@@ -391,7 +391,7 @@ public class ExceptionConsistencyTest {
      */
     @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
             "vertexWithIdAlreadyExists",
-            "edgeWithIdAlreadyExist"
+            "edgeWithIdAlreadyExists"
     })
     public static class SameIdUsageTest extends AbstractGremlinTest {
         @Test
@@ -419,7 +419,7 @@ public class ExceptionConsistencyTest {
                 v.addEdge("label", v, Element.ID, 1000l);
                 fail("Assigning the same ID to an Element should throw an exception");
             } catch (Exception ex) {
-                final Exception expectedException = Graph.Exceptions.edgeWithIdAlreadyExist(1000l);
+                final Exception expectedException = Graph.Exceptions.edgeWithIdAlreadyExists(1000l);
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }
@@ -579,7 +579,7 @@ public class ExceptionConsistencyTest {
     private static class MockVertexProgramBuilder implements VertexProgram.Builder {
         @Override
         public <P extends VertexProgram> P create() {
-            return (P) new PageRankVertexProgram();
+            return (P) PageRankVertexProgram.build().create();
         }
 
         @Override
@@ -607,11 +607,6 @@ public class ExceptionConsistencyTest {
 
         @Override
         public void storeState(final Configuration configuration) {
-        }
-
-        @Override
-        public Class getMessageClass() {
-            return Object.class;
         }
 
         @Override
@@ -658,11 +653,6 @@ public class ExceptionConsistencyTest {
 
         @Override
         public void loadState(final Configuration configuration) {
-        }
-
-        @Override
-        public Class getMessageClass() {
-            return Object.class;
         }
 
         @Override

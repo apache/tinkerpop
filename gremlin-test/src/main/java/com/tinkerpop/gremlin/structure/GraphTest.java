@@ -345,22 +345,22 @@ public class GraphTest extends AbstractGremlinTest {
         final Edge cHateB = c.addEdge(labelHate, b);
 
         List<Edge> results = a.outE(labelFriend, labelHate).toList();
-        assertEquals(results.size(), 3);
+        assertEquals(3, results.size());
         assertTrue(results.contains(aFriendB));
         assertTrue(results.contains(aFriendC));
         assertTrue(results.contains(aHateC));
 
         results = a.inE(labelFriend, labelHate).toList();
-        assertEquals(results.size(), 1);
+        assertEquals(1, results.size());
         assertTrue(results.contains(cHateA));
 
         results = b.inE(labelFriend, labelHate).toList();
-        assertEquals(results.size(), 2);
+        assertEquals(2, results.size());
         assertTrue(results.contains(aFriendB));
         assertTrue(results.contains(cHateB));
 
         results = b.inE(graphProvider.convertLabel("blah1"), graphProvider.convertLabel("blah2")).toList();
-        assertEquals(results.size(), 0);
+        assertEquals(0, results.size());
     }
 
     @Test

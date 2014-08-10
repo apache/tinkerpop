@@ -6,8 +6,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
-import java.util.Iterator;
-
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -23,8 +21,8 @@ public abstract class IntervalTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outE_intervalXweight_0_06X_inV() {
-        final Iterator<Vertex> traversal = get_g_v1_outE_intervalXweight_0_06X_inV(convertToVertexId("marko"));
-        System.out.println("Testing: " + traversal);
+        final Traversal<Vertex, Vertex> traversal = get_g_v1_outE_intervalXweight_0_06X_inV(convertToVertexId("marko"));
+        printTraversalForm(traversal);
         while (traversal.hasNext()) {
             Vertex vertex = traversal.next();
             assertTrue(vertex.value("name").equals("vadas") || vertex.value("name").equals("lop"));

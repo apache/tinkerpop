@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.filter.PathIdentityStep;
@@ -10,12 +10,11 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.Graph;
-import org.javatuples.Pair;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -43,9 +42,9 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public default Traversal<S, E> submit(final GraphComputer computer) {
         try {
-            final Pair<Graph, SideEffects> result = computer.program(TraversalVertexProgram.build().traversal(() -> this).create()).submit().get();
+            final ComputerResult result = computer.program(TraversalVertexProgram.build().traversal(() -> this).create()).submit().get();
             final Traversal traversal = new DefaultTraversal<>();
-            traversal.addStarts(new SingleIterator(result.getValue1()));
+            traversal.addStarts(new SingleIterator(result.getSideEffects()));
             return traversal;
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -73,10 +72,24 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
         }
 
         public default <V> void move(final String oldKey, final String newKey, final Supplier<V> orCreate) {
-            final Optional<V> old = this.get(oldKey);
-            this.set(newKey, old.isPresent() ? old.get() : orCreate.get());
-            if (!oldKey.equals(newKey))
+            if (!oldKey.equals(newKey)) {
+                final Optional<V> old = this.get(oldKey);
+                this.set(newKey, old.isPresent() ? old.get() : orCreate.get());
                 this.remove(oldKey);
+            }
+        }
+
+        public default <V> void copy(final String oldKey, final String newKey, final Supplier<V> orCreate) {
+            if (!oldKey.equals(newKey)) {
+                final Optional<V> old = this.get(oldKey);
+                if (old.isPresent())
+                    this.set(newKey, old.get());
+                else {
+                    final V newValue = orCreate.get();
+                    this.set(oldKey, newValue);
+                    this.set(newKey, newValue);
+                }
+            }
         }
 
         public static class Exceptions {
@@ -139,6 +152,10 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
         return (List<E>) this.fill(new ArrayList<>());
     }
 
+    public default Set<E> toSet() {
+        return (Set<E>) this.fill(new HashSet<>());
+    }
+
     public default Collection<E> fill(final Collection<E> collection) {
         try {
             while (this.hasNext()) {
@@ -151,7 +168,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public default Traversal iterate() {
         try {
-            while (this.hasNext()) {
+            while (true) {
                 this.next();
             }
         } catch (final NoSuchElementException ignored) {

@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure.io.graphson;
 
 import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
-import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -9,8 +8,8 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
-import com.tinkerpop.gremlin.util.function.QuintFunction;
-import com.tinkerpop.gremlin.util.function.TriFunction;
+import com.tinkerpop.gremlin.util.function.SQuintFunction;
+import com.tinkerpop.gremlin.util.function.STriFunction;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
@@ -49,8 +48,8 @@ public class GraphSONRecordReader extends RecordReader<NullWritable, GiraphInter
 
         final TinkerGraph g = TinkerGraph.open();
 
-        final TriFunction<Object, String, Object[], Vertex> vertexMaker = (id, label, props) -> createVertex(g, id, label, props);
-        final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker = (id, outId, inId, label, props) -> createEdge(g, id, outId, inId, label, props);
+        final STriFunction<Object, String, Object[], Vertex> vertexMaker = (id, label, props) -> createVertex(g, id, label, props);
+        final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker = (id, outId, inId, label, props) -> createEdge(g, id, outId, inId, label, props);
 
         final TinkerVertex v;
         try (InputStream in = new ByteArrayInputStream(this.lineRecordReader.getCurrentValue().getBytes())) {

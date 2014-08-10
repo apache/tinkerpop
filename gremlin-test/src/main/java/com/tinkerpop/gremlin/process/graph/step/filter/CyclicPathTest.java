@@ -24,7 +24,7 @@ public abstract class CyclicPathTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXcreatedX_inXcreatedX_cyclicPath() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(convertToVertexId("marko"));
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
@@ -39,7 +39,7 @@ public abstract class CyclicPathTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXcreatedX_inXcreatedX_cyclicPath_path() {
         final Traversal<Vertex, Path> traversal = get_g_v1_outXcreatedX_inXcreatedX_cyclicPath_path(convertToVertexId("marko"));
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;

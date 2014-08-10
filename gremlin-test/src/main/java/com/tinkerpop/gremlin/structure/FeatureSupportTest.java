@@ -274,7 +274,7 @@ public class FeatureSupportTest {
             edgeFeatures = f.edge();
             edgePropertyFeatures = edgeFeatures.properties();
             graphFeatures = f.graph();
-            variableFeatures = graphFeatures.memory();
+            variableFeatures = graphFeatures.variables();
             vertexFeatures = f.vertex();
             vertexPropertyFeatures = vertexFeatures.properties();
         }

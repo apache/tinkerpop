@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.graph.marker.SideEffectCap;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.NoSuchElementException;
 
@@ -40,10 +41,10 @@ public class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements SideE
     }
 
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.sideEffectAs);
+        return Graph.Key.isHidden(this.sideEffectAs) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectAs);
     }
 
-    public String getVariable() {
+    public String getSideEffectAs() {
         return this.sideEffectAs;
     }
 }

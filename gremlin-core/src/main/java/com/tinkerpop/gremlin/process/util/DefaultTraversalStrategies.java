@@ -16,19 +16,15 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
 
     private final List<TraversalStrategy> traversalStrategies = new ArrayList<>();
     private final Traversal traversal;
+    private boolean complete = false;
 
     public DefaultTraversalStrategies(final Traversal traversal) {
         this.traversal = traversal;
     }
 
-    public List<TraversalStrategy> get() {
-        return this.traversalStrategies;
-    }
-
-
     public void register(final TraversalStrategy traversalStrategy) {
         this.traversalStrategies.add(traversalStrategy);
-        // todo: make this a LinkedHashSet so repeats are not allowed? Or check for repeats first?
+        // TODO: make this a LinkedHashSet so repeats are not allowed? Or check for repeats first?
     }
 
     public void unregister(final Class<? extends TraversalStrategy> optimizerClass) {
@@ -38,12 +34,17 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     }
 
     public void apply() {
+        this.complete = true;
         Collections.sort(this.traversalStrategies);
         this.traversalStrategies.forEach(ts -> ts.apply(this.traversal));
     }
 
     public void clear() {
         this.traversalStrategies.clear();
+    }
+
+    public boolean complete() {
+        return this.complete;
     }
 
 

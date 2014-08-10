@@ -189,7 +189,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     }
 
     @Override
-    public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass) {
+    public GraphComputer compute(final Class... graphComputerClass) {
         throw Graph.Exceptions.graphComputerNotSupported();
     }
 
@@ -364,7 +364,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
                 }
 
                 @Override
-                public VariableFeatures memory() {
+                public VariableFeatures variables() {
                     return new Neo4jVariableFeatures();
                 }
 

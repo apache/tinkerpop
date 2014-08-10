@@ -136,10 +136,9 @@ public interface Graph extends AutoCloseable {
      * The provided arguments can be of either length 0 or 1. A graph can support multiple graph computers.
      *
      * @param graphComputerClass The graph computer class to use (if no argument, then a default is selected by the graph)
-     * @param <C>                The class of the graph computer
      * @return A graph computer for processing this graph
      */
-    public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass);
+    public GraphComputer compute(final Class... graphComputerClass);
 
     /**
      * Configure and control the transactions for those graphs that support this feature.
@@ -302,7 +301,7 @@ public interface Graph extends AutoCloseable {
             /**
              * Gets the features related to "graph memory" operation.
              */
-            public default VariableFeatures memory() {
+            public default VariableFeatures variables() {
                 return new VariableFeatures() {
                 };
             }
@@ -620,7 +619,7 @@ public interface Graph extends AutoCloseable {
             if (featureClass.equals(GraphFeatures.class))
                 instance = this.graph();
             else if (featureClass.equals(VariableFeatures.class))
-                instance = this.graph().memory();
+                instance = this.graph().variables();
             else if (featureClass.equals(VertexFeatures.class))
                 instance = this.vertex();
             else if (featureClass.equals(VertexPropertyFeatures.class))
@@ -660,6 +659,10 @@ public interface Graph extends AutoCloseable {
             return new UnsupportedOperationException("Graph does not support graph computer");
         }
 
+        public static IllegalArgumentException graphDoesNotSupportProvidedGraphComputer(final Class graphComputerClass) {
+            return new IllegalArgumentException("Graph does not support the provided graph computer: " + graphComputerClass.getSimpleName());
+        }
+
         public static UnsupportedOperationException vertexLookupsNotSupported() {
             return new UnsupportedOperationException("Graph does not support vertex lookups by id");
         }
@@ -676,7 +679,7 @@ public interface Graph extends AutoCloseable {
             return new IllegalArgumentException(String.format("Vertex with id already exists: %s", id));
         }
 
-        public static IllegalArgumentException edgeWithIdAlreadyExist(final Object id) {
+        public static IllegalArgumentException edgeWithIdAlreadyExists(final Object id) {
             return new IllegalArgumentException(String.format("Edge with id already exists: %s", id));
         }
 

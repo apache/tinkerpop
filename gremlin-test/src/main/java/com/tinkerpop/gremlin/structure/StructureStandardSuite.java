@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure;
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.algorithm.generator.CommunityGeneratorTest;
 import com.tinkerpop.gremlin.algorithm.generator.DistributionGeneratorTest;
+import com.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import com.tinkerpop.gremlin.structure.strategy.IdGraphStrategyTest;
 import com.tinkerpop.gremlin.structure.strategy.PartitionGraphStrategyTest;
 import com.tinkerpop.gremlin.structure.strategy.ReadOnlyGraphStrategyTest;
@@ -50,7 +51,6 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             ExceptionConsistencyTest.class,
             FeatureSupportTest.class,
             GraphTest.class,
-            GraphComputerTest.class,
             GraphConstructionTest.class,
             IdGraphStrategyTest.class,
             IoTest.class,

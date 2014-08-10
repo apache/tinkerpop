@@ -1,9 +1,10 @@
 package com.tinkerpop.gremlin.console
 
+import com.tinkerpop.gremlin.console.commands.InstallCommand
+import com.tinkerpop.gremlin.console.commands.PluginCommand
 import com.tinkerpop.gremlin.console.commands.RemoteCommand
 import com.tinkerpop.gremlin.console.commands.SubmitCommand
-import com.tinkerpop.gremlin.console.commands.UseCommand
-import com.tinkerpop.gremlin.console.plugin.ConsolePluginAcceptor
+import com.tinkerpop.gremlin.console.commands.UninstallCommand
 import com.tinkerpop.gremlin.console.plugin.PluggedIn
 import com.tinkerpop.gremlin.console.util.ArrayIterator
 import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader
@@ -44,13 +45,15 @@ class Console {
         io.out.println("         (o o)")
         io.out.println("-----oOOo-(3)-oOOo-----")
 
-        final Mediator mediator = new Mediator()
-        groovy.register(new UseCommand(groovy, mediator))
+        final Mediator mediator = new Mediator(this)
+        groovy.register(new UninstallCommand(groovy, mediator))
+        groovy.register(new InstallCommand(groovy, mediator))
+        groovy.register(new PluginCommand(groovy, mediator))
         groovy.register(new RemoteCommand(groovy, mediator))
         groovy.register(new SubmitCommand(groovy, mediator))
 
         // hide output temporarily while imports execute
-        groovy.setResultHook(handleResultShowNothing)
+        showShellEvaluationOutput(false)
 
         // add the default imports
         new ConsoleImportCustomizerProvider().getCombinedImports().stream()
@@ -70,18 +73,26 @@ class Console {
 
         GremlinLoader.load()
 
-        // if plugins were added via :use command (or manually copied to the path) then this will try to find
-        // plugins and load them
+        // check for available plugins.  if they are in the "active" plugins list then "activate" them
+        def activePlugins = Mediator.readPluginState()
         ServiceLoader.load(GremlinPlugin.class, groovy.getInterp().getClassLoader()).each { plugin ->
-            if (!mediator.loadedPlugins.containsKey(plugin.getName())) {
-                plugin.pluginTo(new ConsolePluginAcceptor(groovy, io))
-                mediator.loadedPlugins.put(plugin.getName(), new PluggedIn(plugin, true))
-                io.out.println("plugin loaded: " + plugin.getName())
+            if (!mediator.availablePlugins.containsKey(plugin.class.name)) {
+                def pluggedIn = new PluggedIn(plugin, groovy, io, false)
+                mediator.availablePlugins.put(plugin.class.name, pluggedIn)
+
+                if (activePlugins.contains(plugin.class.name)) {
+                    pluggedIn.activate()
+                    io.out.println("plugin activated: " + plugin.getName())
+                }
             }
         }
 
+        // remove any "uninstalled" plugins from plugin state as it means they were installed, activated, but not
+        // deactivated, and are thus hanging about
+        mediator.writePluginState()
+
         // start iterating results to show as output
-        groovy.setResultHook(handleResultIterate)
+        showShellEvaluationOutput(true)
         if (initScriptFile != null) initializeShellWithScript(initScriptFile)
 
         try {
@@ -99,6 +110,13 @@ class Console {
                 System.exit(0)
             }
         }
+    }
+
+    def showShellEvaluationOutput(final boolean show) {
+        if (show)
+            groovy.setResultHook(handleResultIterate)
+        else
+            groovy.setResultHook(handleResultShowNothing)
     }
 
     private def handlePrompt = { STANDARD_INPUT_PROMPT }

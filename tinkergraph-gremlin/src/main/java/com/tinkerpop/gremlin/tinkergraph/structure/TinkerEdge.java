@@ -29,7 +29,7 @@ public class TinkerEdge extends TinkerElement implements Edge {
     }
 
     public <V> Property<V> property(final String key, final V value) {
-        if (this.graph.useGraphView) {
+        if (this.graph.graphView != null && this.graph.graphView.getInUse()) {
             return this.graph.graphView.setProperty(this, key, value);
         } else {
             ElementHelper.validateProperty(key, value);

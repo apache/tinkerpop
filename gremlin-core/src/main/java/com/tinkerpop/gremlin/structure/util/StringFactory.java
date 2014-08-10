@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.util;
 
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -78,13 +79,17 @@ public class StringFactory {
         return "sideEffects" + L_BRACKET + "size:" + sideEffects.keys().size() + R_BRACKET;
     }
 
+    public static String computerString(final GraphComputer graphComputer) {
+        return graphComputer.getClass().getSimpleName().toLowerCase();
+    }
+
     public static String featureString(final Graph.Features features) {
         final StringBuilder sb = new StringBuilder("FEATURES");
         final Predicate<Method> supportMethods = (m) -> m.getModifiers() == Modifier.PUBLIC && m.getName().startsWith(featuresStartWith) && !m.getName().equals(featuresStartWith);
         sb.append(LINE_SEPARATOR);
 
         Stream.of(Pair.with(Graph.Features.GraphFeatures.class, features.graph()),
-                Pair.with(Graph.Features.VariableFeatures.class, features.graph().memory()),
+                Pair.with(Graph.Features.VariableFeatures.class, features.graph().variables()),
                 Pair.with(Graph.Features.VertexFeatures.class, features.vertex()),
                 Pair.with(Graph.Features.VertexPropertyFeatures.class, features.vertex().properties()),
                 Pair.with(Graph.Features.EdgeFeatures.class, features.edge()),

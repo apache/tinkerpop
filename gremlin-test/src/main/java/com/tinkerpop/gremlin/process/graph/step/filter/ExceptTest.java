@@ -11,7 +11,6 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,8 +40,8 @@ public abstract class ExceptTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_exceptXg_v2X() {
-        final Iterator<Vertex> traversal = get_g_v1_out_exceptXg_v2X(convertToVertexId("marko"), convertToVertexId("vadas"));
-        System.out.println("Testing: " + traversal);
+        final Traversal<Vertex, Vertex> traversal = get_g_v1_out_exceptXg_v2X(convertToVertexId("marko"), convertToVertexId("vadas"));
+        printTraversalForm(traversal);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<>();
         while (traversal.hasNext()) {
@@ -58,8 +57,8 @@ public abstract class ExceptTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_aggregateXxX_out_exceptXxX() {
-        Iterator<Vertex> traversal = get_g_v1_out_aggregate_asXxX_out_exceptXxX(convertToVertexId("marko"));
-        System.out.println("Testing: " + traversal);
+        Traversal<Vertex, Vertex> traversal = get_g_v1_out_aggregate_asXxX_out_exceptXxX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
         assertEquals("ripple", traversal.next().<String>value("name"));
         assertFalse(traversal.hasNext());
     }
@@ -67,8 +66,8 @@ public abstract class ExceptTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX() {
-        Iterator<String> traversal = get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX(convertToVertexId("marko"));
-        System.out.println("Testing: " + traversal);
+        Traversal<Vertex, String> traversal = get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
         List<String> names = Arrays.asList(traversal.next(), traversal.next());
         assertFalse(traversal.hasNext());
         assertEquals(2, names.size());
@@ -79,8 +78,8 @@ public abstract class ExceptTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_exceptXg_VX() {
-        Iterator<Vertex> traversal = get_g_V_exceptXg_VX();
-        System.out.println("Testing: " + traversal);
+        Traversal<Vertex, Vertex> traversal = get_g_V_exceptXg_VX();
+        printTraversalForm(traversal);
         final List<Vertex> vertices = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(0, vertices.size());
         assertFalse(traversal.hasNext());
@@ -89,8 +88,8 @@ public abstract class ExceptTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_exceptXX() {
-        Iterator<Vertex> traversal = get_g_V_exceptXX();
-        System.out.println("Testing: " + traversal);
+        Traversal<Vertex, Vertex> traversal = get_g_V_exceptXX();
+        printTraversalForm(traversal);
         final List<Vertex> vertices = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(6, vertices.size());
         assertFalse(traversal.hasNext());
@@ -99,8 +98,8 @@ public abstract class ExceptTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXxX_bothEXcreatedX_exceptXeX_aggregateXeX_otherV_jumpXx_true_trueX_path() {
-        Iterator<Path> traversal = get_g_v1_asXxX_bothEXcreatedX_exceptXeX_aggregate_asXeX_otherV_jumpXx_true_trueX_path(convertToVertexId("marko"));
-        System.out.println("Testing: " + traversal);
+        Traversal<Vertex, Path> traversal = get_g_v1_asXxX_bothEXcreatedX_exceptXeX_aggregate_asXeX_otherV_jumpXx_true_trueX_path(convertToVertexId("marko"));
+        printTraversalForm(traversal);
         final List<Path> paths = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(4, paths.size());
         assertEquals(1, paths.stream().filter(path -> path.size() == 3).count());

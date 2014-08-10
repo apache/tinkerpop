@@ -36,18 +36,21 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
     public static final String VOTE_STRENGTH = Graph.Key.hide("gremlin.voteStrength");
 
     private static final String MAX_ITERATIONS = "gremlin.peerPressureVertexProgram.maxIterations";
+    private static final String DISTRIBUTE_VOTE = "gremlin.peerPressureVertexProgram.distributeVote";
     private static final String INCIDENT_TRAVERSAL = "gremlin.peerPressureVertexProgram.incidentTraversal";
     private static final String VOTE_TO_HALT = "gremlin.peerPressureVertexProgram.voteToHalt";
 
     private int maxIterations = 30;
+    private boolean distributeVote = false;
 
-    public PeerPressureVertexProgram() {
+    private PeerPressureVertexProgram() {
 
     }
 
     @Override
     public void loadState(final Configuration configuration) {
         this.maxIterations = configuration.getInt(MAX_ITERATIONS, 30);
+        this.distributeVote = configuration.getBoolean(DISTRIBUTE_VOTE, false);
         try {
             if (configuration.containsKey(INCIDENT_TRAVERSAL)) {
                 final SSupplier<Traversal> traversalSupplier = VertexProgramHelper.deserialize(configuration, INCIDENT_TRAVERSAL);
@@ -63,6 +66,7 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
     public void storeState(final Configuration configuration) {
         configuration.setProperty(GraphComputer.VERTEX_PROGRAM, PeerPressureVertexProgram.class.getName());
         configuration.setProperty(MAX_ITERATIONS, this.maxIterations);
+        configuration.setProperty(DISTRIBUTE_VOTE, this.distributeVote);
         try {
             VertexProgramHelper.serialize(this.messageType.getIncidentTraversal(), configuration, INCIDENT_TRAVERSAL);
         } catch (Exception e) {
@@ -81,11 +85,6 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
     }
 
     @Override
-    public Class<Pair<Serializable, Double>> getMessageClass() {
-        return (Class) Pair.class;
-    }
-
-    @Override
     public void setup(final SideEffects sideEffects) {
         sideEffects.set(VOTE_TO_HALT, false);
     }
@@ -93,7 +92,7 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
     @Override
     public void execute(final Vertex vertex, Messenger<Pair<Serializable, Double>> messenger, final SideEffects sideEffects) {
         if (sideEffects.isInitialIteration()) {
-            double voteStrength = 1.0d / Double.valueOf((Long) this.messageType.edges(vertex).count().next());
+            double voteStrength = this.distributeVote ? (1.0d / Double.valueOf((Long) this.messageType.edges(vertex).count().next())) : 1.0d;
             vertex.property(CLUSTER, vertex.id());
             vertex.property(VOTE_STRENGTH, voteStrength);
             messenger.sendMessage(this.messageType, new Pair<>((Serializable) vertex.id(), voteStrength));
@@ -112,7 +111,7 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
 
     @Override
     public boolean terminate(final SideEffects sideEffects) {
-        final boolean voteToHalt = sideEffects.<Boolean>get(VOTE_TO_HALT) || sideEffects.getIteration() >= this.maxIterations;
+        final boolean voteToHalt = sideEffects.<Boolean>get(VOTE_TO_HALT).get() || sideEffects.getIteration() >= this.maxIterations;
         if (voteToHalt) {
             return true;
         } else {
@@ -144,7 +143,7 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
         return new Builder();
     }
 
-    public static class Builder extends AbstractBuilder {
+    public static class Builder extends AbstractBuilder<Builder> {
 
 
         private Builder() {
@@ -153,6 +152,11 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
 
         public Builder maxIterations(final int iterations) {
             this.configuration.setProperty(MAX_ITERATIONS, iterations);
+            return this;
+        }
+
+        public Builder distributeVote(final boolean distributeVote) {
+            this.configuration.setProperty(DISTRIBUTE_VOTE, distributeVote);
             return this;
         }
 

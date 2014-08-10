@@ -4,6 +4,7 @@ import org.javatuples.Pair;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -14,13 +15,13 @@ public interface SideEffects {
 
     public Set<String> keys();
 
-    public <R> R get(final String key);
+    public <R> Optional<R> get(final String key);
 
     public void set(final String key, Object value);
 
     public default Map<String, Object> asMap() {
         final Map<String, Object> map = keys().stream()
-                .map(key -> Pair.with(key, get(key)))
+                .map(key -> Pair.with(key, get(key).get()))
                 .collect(Collectors.toMap(kv -> kv.getValue0(), Pair::getValue1));
         return Collections.unmodifiableMap(map);
     }

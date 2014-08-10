@@ -176,7 +176,7 @@ public final class GremlinKryo {
 
         /**
          * Note that the following are pre-registered boolean, Boolean, byte, Byte, char, Character, double, Double,
-         * int, Integer, float, Float, long, Long, short, Short, String, void. Current max is DetachedPath=60.
+         * int, Integer, float, Float, long, Long, short, Short, String, void. Current max is Optional=62.
          */
         private final List<Triplet<Class, Serializer, Integer>> serializationList = new ArrayList<Triplet<Class, Serializer, Integer>>() {{
             add(Triplet.<Class, Serializer, Integer>with(byte[].class, null, 25));
@@ -234,6 +234,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(DetachedPath.class, null, 60));
             // TODO: Move to GiraphGremlin if cool.
             add(Triplet.<Class, Serializer, Integer>with(AtomicLong.class, null, 61));
+            add(Triplet.<Class, Serializer, Integer>with(Optional.class, null, 62));
         }};
 
         private static final byte major = 1;

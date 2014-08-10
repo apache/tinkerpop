@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
-import java.util.Iterator;
 import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
@@ -22,10 +21,10 @@ public abstract class SideEffectCapTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_hasXageX_groupCountXnameX_asXaX_out_capXaX() {
-        final Iterator<Map<String, Long>> step = get_g_V_hasXageX_groupCountXnameX_asXaX_out_capXaX();
-        System.out.println("Testing: " + step);
-        Map<String, Long> map = step.next();
-        assertFalse(step.hasNext());
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_hasXageX_groupCountXnameX_asXaX_out_capXaX();
+        printTraversalForm(traversal);
+        Map<String, Long> map = traversal.next();
+        assertFalse(traversal.hasNext());
         assertEquals(map.get("marko"), new Long(1l));
         assertEquals(map.get("vadas"), new Long(1l));
         assertEquals(map.get("peter"), new Long(1l));

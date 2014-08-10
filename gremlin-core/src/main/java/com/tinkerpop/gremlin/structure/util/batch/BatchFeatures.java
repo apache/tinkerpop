@@ -97,7 +97,7 @@ class BatchFeatures implements Graph.Features {
         }
 
         @Override
-        public VariableFeatures memory() {
+        public VariableFeatures variables() {
             return new BatchVariableFeatures();
         }
     }
@@ -105,94 +105,94 @@ class BatchFeatures implements Graph.Features {
     class BatchVariableFeatures extends BatchDataTypeFeature implements VariableFeatures {
         @Override
         public boolean supportsVariables() {
-            return baseFeatures.graph().memory().supportsVariables();
+            return baseFeatures.graph().variables().supportsVariables();
         }
     }
 
     class BatchDataTypeFeature implements DataTypeFeatures {
         @Override
         public boolean supportsBooleanValues() {
-            return baseFeatures.graph().memory().supportsBooleanValues();
+            return baseFeatures.graph().variables().supportsBooleanValues();
         }
 
         @Override
         public boolean supportsDoubleValues() {
-            return baseFeatures.graph().memory().supportsDoubleValues();
+            return baseFeatures.graph().variables().supportsDoubleValues();
         }
 
         @Override
         public boolean supportsFloatValues() {
-            return baseFeatures.graph().memory().supportsFloatValues();
+            return baseFeatures.graph().variables().supportsFloatValues();
         }
 
         @Override
         public boolean supportsIntegerValues() {
-            return baseFeatures.graph().memory().supportsIntegerValues();
+            return baseFeatures.graph().variables().supportsIntegerValues();
         }
 
         @Override
         public boolean supportsLongValues() {
-            return baseFeatures.graph().memory().supportsLongValues();
+            return baseFeatures.graph().variables().supportsLongValues();
         }
 
         @Override
         public boolean supportsMapValues() {
-            return baseFeatures.graph().memory().supportsMapValues();
+            return baseFeatures.graph().variables().supportsMapValues();
         }
 
         @Override
         public boolean supportsByteValues() {
-            return baseFeatures.graph().memory().supportsByteValues();
+            return baseFeatures.graph().variables().supportsByteValues();
         }
 
         @Override
         public boolean supportsMixedListValues() {
-            return baseFeatures.graph().memory().supportsMixedListValues();
+            return baseFeatures.graph().variables().supportsMixedListValues();
         }
 
         @Override
         public boolean supportsBooleanArrayValues() {
-            return baseFeatures.graph().memory().supportsBooleanArrayValues();
+            return baseFeatures.graph().variables().supportsBooleanArrayValues();
         }
 
         @Override
         public boolean supportsByteArrayValues() {
-            return baseFeatures.graph().memory().supportsByteArrayValues();
+            return baseFeatures.graph().variables().supportsByteArrayValues();
         }
 
         @Override
         public boolean supportsDoubleArrayValues() {
-            return baseFeatures.graph().memory().supportsDoubleArrayValues();
+            return baseFeatures.graph().variables().supportsDoubleArrayValues();
         }
 
         @Override
         public boolean supportsFloatArrayValues() {
-            return baseFeatures.graph().memory().supportsFloatArrayValues();
+            return baseFeatures.graph().variables().supportsFloatArrayValues();
         }
 
         @Override
         public boolean supportsIntegerArrayValues() {
-            return baseFeatures.graph().memory().supportsIntegerArrayValues();
+            return baseFeatures.graph().variables().supportsIntegerArrayValues();
         }
 
         @Override
         public boolean supportsLongArrayValues() {
-            return baseFeatures.graph().memory().supportsLongArrayValues();
+            return baseFeatures.graph().variables().supportsLongArrayValues();
         }
 
         @Override
         public boolean supportsSerializableValues() {
-            return baseFeatures.graph().memory().supportsSerializableValues();
+            return baseFeatures.graph().variables().supportsSerializableValues();
         }
 
         @Override
         public boolean supportsStringValues() {
-            return baseFeatures.graph().memory().supportsStringValues();
+            return baseFeatures.graph().variables().supportsStringValues();
         }
 
         @Override
         public boolean supportsUniformListValues() {
-            return baseFeatures.graph().memory().supportsUniformListValues();
+            return baseFeatures.graph().variables().supportsUniformListValues();
         }
     }
 }

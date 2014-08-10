@@ -62,7 +62,7 @@ public class TinkerFactory {
             return (SocialTraversal) this.addStep(mapStep);
         }
 
-        public static <S, E> SocialTraversal<S, E> of(final Graph graph) {
+        public static <S> SocialTraversal<S, S> of(final Graph graph) {
             final SocialTraversal traversal = new DefaultSocialTraversal();
             traversal.memory().set("g", graph);
             return traversal;

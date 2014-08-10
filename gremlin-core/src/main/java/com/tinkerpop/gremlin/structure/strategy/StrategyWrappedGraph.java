@@ -82,12 +82,12 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
     }
 
     @Override
-    public <T extends Traversal<S,S>,S> T of(final Class<T> traversalClass) {
+    public <T extends Traversal<S, S>, S> T of(final Class<T> traversalClass) {
         return this.baseGraph.of(traversalClass);
     }
 
     @Override
-    public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass) {
+    public GraphComputer compute(final Class... graphComputerClass) {
         return this.baseGraph.compute(graphComputerClass);
     }
 
