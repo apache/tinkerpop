@@ -10,9 +10,9 @@ import java.util.function.BiConsumer;
 
 /**
  * An Enumerator which joins the solutions of a base Enumerator according to repeated variables
- *
+ * <p>
  * Note: this Enumerator requires random access to its base Enumerator, as it maintains a list of indices at which valid
- *       solutions are found, and visits only those indices
+ * solutions are found, and visits only those indices
  *
  * @author Joshua Shinavier (http://fortytwo.net)
  */
@@ -24,21 +24,23 @@ public class InnerJoinEnumerator<T> implements Enumerator<T> {
     private final Map<String, T> map;
     private final BiConsumer<String, T> joinVisitor;
 
+    private int joinCount;
+
     public InnerJoinEnumerator(final Enumerator<T> baseEnumerator,
                                final Set<String> joinVariables) {
+
         this.baseEnumerator = baseEnumerator;
         this.joinIndices = new ArrayList<>();
 
-        final int size = getVariables().size();
-
         map = new HashMap<>();
+        // TODO: allow for more than two instances of a variable
         joinVisitor = (name, newValue) -> {
             if (joinVariables.contains(name)) {
                 T value = map.get(name);
                 if (null == value) {
                     map.put(name, newValue);
-                } else if (!value.equals(newValue)) {
-                    map.clear();
+                } else if (value.equals(newValue)) {
+                    joinCount++;
                 }
             } else {
                 map.put(name, newValue);
@@ -65,11 +67,12 @@ public class InnerJoinEnumerator<T> implements Enumerator<T> {
             private void advanceToNext() {
                 while (++currentIndex < baseEnumerator.size() || !baseEnumerator.isComplete()) {
                     map.clear();
+                    joinCount = 0;
 
                     if (!baseEnumerator.visitSolution(currentIndex, joinVisitor)) {
                         throw new IllegalStateException();
                     }
-                    if (map.size() == size) {
+                    if (joinVariables.size() == joinCount) {
                         joinIndices.add(currentIndex);
                         return;
                     }
@@ -78,10 +81,6 @@ public class InnerJoinEnumerator<T> implements Enumerator<T> {
                 currentIndex = -1;
             }
         };
-    }
-
-    public Set<String> getVariables() {
-        return baseEnumerator.getVariables();
     }
 
     public int size() {
@@ -100,18 +99,15 @@ public class InnerJoinEnumerator<T> implements Enumerator<T> {
     }
 
     public boolean visitSolution(int i, BiConsumer<String, T> visitor) {
-        int index;
-        if (i < size()) {
-            index = joinIndices.get(i);
-        } else do {
+        while (i >= joinIndices.size()) {
             if (isComplete()) {
                 return false;
             }
 
-            index = iterator.next();
-        } while (i >= size());
+            iterator.next();
+        }
 
-        visit(index);
+        visit(joinIndices.get(i));
 
         for (Map.Entry<String, T> entry : map.entrySet()) {
             visitor.accept(entry.getKey(), entry.getValue());

@@ -39,7 +39,8 @@ public class IteratorEnumerator<T> implements Enumerator<T> {
         return !iterator.hasNext();
     }
 
-    public boolean visitSolution(int index, BiConsumer<String, T> visitor) {
+    public boolean visitSolution(final int index,
+                                 final BiConsumer<String, T> visitor) {
         T value;
 
         if (index < memory.size()) {

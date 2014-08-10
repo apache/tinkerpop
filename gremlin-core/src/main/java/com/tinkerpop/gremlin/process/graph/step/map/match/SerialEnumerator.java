@@ -9,8 +9,9 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
- * An Enumerator which consumes values from an iterator and maps each value to a secondary enumerator (for example, a join)
- * Enumerated indices cover all solutions in the secondary enumerators, in ascending order according to the value iterator and the enumerators' own indices.
+ * An enumerator which consumes values from an iterator and maps each value to a secondary enumerator (for example, a join)
+ * Enumerated indices cover all solutions in the secondary enumerators,
+ * in ascending order according to the value iterator and the enumerators' own indices.
  *
  * @author Joshua Shinavier (http://fortytwo.net)
  */
@@ -21,7 +22,7 @@ public class SerialEnumerator<T> implements Enumerator<T> {
     private final Function<T, Enumerator<T>> constructor;
     private final List<Enumerator<T>> memory = new ArrayList<>();
     private final List<T> values = new ArrayList<>();
-    private int completedEnumsSize = 0; // TODO, why is this not being accessed (only assigned)
+    private int completedEnumsSize = 0; // TODO: this only assigned, not accessed until the efficient implementation of size() is restored
 
     public SerialEnumerator(final String name,
                             final Iterator<T> iterator,
@@ -69,6 +70,7 @@ public class SerialEnumerator<T> implements Enumerator<T> {
                 Enumerator<T> e = memory.get(index);
 
                 if ((!e.isComplete() || e.isComplete() && i < totalSize + e.size()) && e.visitSolution(i - totalSize, visitor)) {
+                    // additionally, bind the value stored in this enumerator
                     MatchStep.visit(name, values.get(index), visitor);
 
                     return true;

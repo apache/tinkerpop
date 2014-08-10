@@ -12,11 +12,6 @@ import java.util.function.BiConsumer;
 public interface Enumerator<T> {
 
     /**
-     * @return the set of variable names bound to values in each solution
-     */
-    Set<String> getVariables();
-
-    /**
      * @return the number of solutions so far computed
      */
     int size();

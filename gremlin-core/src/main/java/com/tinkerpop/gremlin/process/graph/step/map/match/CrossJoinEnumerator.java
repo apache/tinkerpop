@@ -10,19 +10,11 @@ import java.util.function.BiConsumer;
  */
 public class CrossJoinEnumerator<T> implements Enumerator<T> {
     private final Enumerator<T> xEnum, yEnum;
-    private final Set<String> variables;
 
     public CrossJoinEnumerator(final Enumerator<T> xEnum,
                                final Enumerator<T> yEnum) {
         this.xEnum = xEnum;
         this.yEnum = yEnum;
-        this.variables = new HashSet<>();
-        this.variables.addAll(xEnum.getVariables());
-        this.variables.addAll(yEnum.getVariables());
-    }
-
-    public Set<String> getVariables() {
-        return variables;
     }
 
     public int size() {
