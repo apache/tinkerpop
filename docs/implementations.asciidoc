@@ -125,8 +125,10 @@ With the above plugin implementations, users can now download respective binarie
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 No such property: Neo4jGraph for class: groovysh_evaluate
 Display stack trace? [yN]
-gremlin> :use now com.tinkerpop neo4j-gremlin x.y.z
-…
+gremlin> :install com.tinkerpop neo4j-gremlin x.y.z
+==>loaded: [com.tinkerpop, neo4j-gremlin, …]
+gremlin> :plugin use neo4j
+==>neo4j activated
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
 
@@ -193,7 +195,7 @@ Neo4j-Gremlin
 
 image:neotechnology-logo.png[width=150,float=left] link:http://neotechnology.com[Neo Technology] are the developers of the OLTP-based link:http://neo4j.org[Neo4j graph database].
 
-CAUTION: Unless under a commercial agreement with Neo Technology, Neo4j is licensed as link:http://en.wikipedia.org/wiki/Affero_General_Public_License[AGPL]. Thus, `gremlin-neo4j` (source and binaries) are licensed as such due to their dependency on the Neo4j library. Note that neither the <<gremlin-console,Gremlin Console>> nor <<gremlin-server,Gremlin Server>> distribute with the Neo4j binaries. To access the Neo4j binaries, use the `:use` command to download binaries from link:http://search.maven.org/[Maven Central Repository].
+CAUTION: Unless under a commercial agreement with Neo Technology, Neo4j is licensed as link:http://en.wikipedia.org/wiki/Affero_General_Public_License[AGPL]. Thus, `gremlin-neo4j` (source and binaries) are licensed as such due to their dependency on the Neo4j library. Note that neither the <<gremlin-console,Gremlin Console>> nor <<gremlin-server,Gremlin Server>> distribute with the Neo4j binaries. To access the Neo4j binaries, use the `:install` command to download binaries from link:http://search.maven.org/[Maven Central Repository].
 
 [source,groovy]
 ----
