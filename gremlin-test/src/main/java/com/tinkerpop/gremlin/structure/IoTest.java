@@ -190,6 +190,7 @@ public class IoTest extends AbstractGremlinTest {
      */
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = VertexPropertyFeatures.FEATURE_SERIALIZABLE_VALUES)
     public void shouldProperlySerializeDeserializeCustomIdWithGraphSON() throws Exception {
         final UUID id = UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305");
         g.addVertex(Element.ID, new CustomId("vertex", id));
@@ -235,6 +236,7 @@ public class IoTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = VertexPropertyFeatures.FEATURE_SERIALIZABLE_VALUES)
     public void shouldProperlySerializeCustomIdWithKryo() throws Exception {
         g.addVertex(Element.ID, new CustomId("vertex", UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305")));
         final GremlinKryo kryo = GremlinKryo.create().addCustom(CustomId.class).build();
