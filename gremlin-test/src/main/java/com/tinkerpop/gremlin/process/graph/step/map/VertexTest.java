@@ -51,6 +51,8 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Edge> get_g_v4_bothEX1_createdX(final Object v4Id);
 
+    public abstract Traversal<Vertex, Edge> get_g_v4_bothEX1_knows_createdX(final Object v4Id);
+
     public abstract Traversal<Vertex, String> get_g_v4_bothX1X_name(final Object v4Id);
 
     public abstract Traversal<Vertex, String> get_g_v4_bothX2X_name(final Object v4Id);
@@ -278,6 +280,17 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         printTraversalForm(traversal);
         final Edge edge = traversal.next();
         assertEquals("created", edge.label());
+        assertTrue(edge.value("weight").equals(1.0f) || edge.value("weight").equals(0.4f));
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_v4_bothEX1_knows_createdX() {
+        final Traversal<Vertex, Edge> traversal = get_g_v4_bothEX1_knows_createdX(convertToVertexId("josh"));
+        printTraversalForm(traversal);
+        final Edge edge = traversal.next();
+        assertTrue(edge.label().equals("created") || edge.label().equals("knows"));
         assertTrue(edge.value("weight").equals(1.0f) || edge.value("weight").equals(0.4f));
         assertFalse(traversal.hasNext());
     }
@@ -612,6 +625,10 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
             return g.v(v4Id).bothE(1, "created");
         }
 
+        public Traversal<Vertex, Edge> get_g_v4_bothEX1_knows_createdX(final Object v4Id) {
+            return g.v(v4Id).bothE(1, "knows", "created");
+        }
+
         public Traversal<Vertex, String> get_g_v4_bothX1X_name(final Object v4Id) {
             return g.v(v4Id).both(1).value("name");
         }
@@ -751,6 +768,11 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Edge> get_g_v4_bothEX1_createdX(final Object v4Id) {
             return g.v(v4Id).bothE(1, "created").submit(g.compute());
         }
+
+        public Traversal<Vertex, Edge> get_g_v4_bothEX1_knows_createdX(final Object v4Id) {
+            return g.v(v4Id).bothE(1, "knows", "created").submit(g.compute());
+        }
+
 
         public Traversal<Vertex, String> get_g_V_inEX2_knowsX_outV_name() {
             return g.V().inE(2, "knows").outV().<String>value("name").submit(g.compute());

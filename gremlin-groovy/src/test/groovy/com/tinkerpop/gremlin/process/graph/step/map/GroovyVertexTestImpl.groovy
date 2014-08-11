@@ -59,6 +59,10 @@ class GroovyVertexTestImpl extends VertexTest {
         g.v(v4Id).bothE(1, 'created')
     }
 
+    public Traversal<Vertex, Edge> get_g_v4_bothEX1_knows_createdX(final Object v4Id) {
+        g.v(v4Id).bothE(1, 'knows', 'created')
+    }
+
     public Traversal<Vertex, String> get_g_v4_bothX1X_name(final Object v4Id) {
         g.v(v4Id).both(1).name
     }
