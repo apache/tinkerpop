@@ -56,28 +56,37 @@ public class TinkerGraphComputer implements GraphComputer {
         else
             this.executed = true;
 
-        GraphComputerHelper.validateProgramOnComputer(this, this.vertexProgram);
-        this.sideEffects = new TinkerSideEffects(this.vertexProgram.getSideEffectComputeKeys());
+        // it is not possible execute a computer if it has no vertex program nor mapreducers
+        if (null == this.vertexProgram && this.mapReduces.isEmpty())
+            throw GraphComputer.Exceptions.computerHasNoVertexProgramNorMapReducers();
+        // it is possible to run mapreducers without a vertex program
+        if (null != this.vertexProgram) {
+            GraphComputerHelper.validateProgramOnComputer(this, this.vertexProgram);
+            this.mapReduces.addAll(this.vertexProgram.getMapReducers());
+        }
+
+        this.sideEffects = new TinkerSideEffects(this.vertexProgram, this.mapReduces);
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
-            TinkerGraphView graphView = TinkerHelper.createGraphView(this.graph, this.isolation, this.vertexProgram.getElementComputeKeys());
-
-            // execute the vertex program
-            this.vertexProgram.setup(this.sideEffects);
-            while (true) {
-                StreamFactory.parallelStream(this.graph.V()).forEach(vertex ->
-                        this.vertexProgram.execute(vertex,
-                                new TinkerMessenger(vertex, this.messageBoard, this.vertexProgram.getMessageCombiner()),
-                                this.sideEffects));
-                this.sideEffects.incrIteration();
-                graphView.completeIteration();
-                this.messageBoard.completeIteration();
-                if (this.vertexProgram.terminate(this.sideEffects)) break;
+            if (null != this.vertexProgram) {
+                TinkerGraphView graphView = TinkerHelper.createGraphView(this.graph, this.isolation, this.vertexProgram.getElementComputeKeys());
+                // execute the vertex program
+                this.vertexProgram.setup(this.sideEffects);
+                while (true) {
+                    StreamFactory.parallelStream(this.graph.V()).forEach(vertex ->
+                            this.vertexProgram.execute(vertex,
+                                    new TinkerMessenger(vertex, this.messageBoard, this.vertexProgram.getMessageCombiner()),
+                                    this.sideEffects));
+                    this.sideEffects.incrIteration();
+                    graphView.completeIteration();
+                    this.messageBoard.completeIteration();
+                    if (this.vertexProgram.terminate(this.sideEffects)) break;
+                }
+                this.sideEffects.complete();
             }
-            this.sideEffects.complete();
 
             // execute mapreduce jobs
-            this.mapReduces.addAll(this.vertexProgram.getMapReducers());
+
             for (final MapReduce mapReduce : this.mapReduces) {
                 if (mapReduce.doStage(MapReduce.Stage.MAP)) {
                     final TinkerMapEmitter mapEmitter = new TinkerMapEmitter(mapReduce.doStage(MapReduce.Stage.REDUCE));

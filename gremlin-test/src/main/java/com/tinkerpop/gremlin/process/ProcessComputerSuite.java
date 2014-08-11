@@ -15,7 +15,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MatchTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
-import com.tinkerpop.gremlin.process.graph.step.map.TraversalTest;
+import com.tinkerpop.gremlin.process.graph.step.map.VertexTest;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.UnionTest;
 import com.tinkerpop.gremlin.process.graph.step.map.ValuesTest;
@@ -84,7 +84,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // TODO: REMOVE? OrderTest.JavaOrderTest.class
             PathTest.JavaComputerPathTest.class,
             SelectTest.JavaComputerSelectTest.class,
-            TraversalTest.JavaComputerTraversalTest.class,
+            VertexTest.JavaComputerVertexTest.class,
             UnfoldTest.JavaComputerUnfoldTest.class,
             // UnionTest.JavaComputerUnionTest.class,
             ValuesTest.JavaComputerValuesTest.class,

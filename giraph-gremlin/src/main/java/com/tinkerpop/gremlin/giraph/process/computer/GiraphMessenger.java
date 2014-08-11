@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
+import com.tinkerpop.gremlin.giraph.process.computer.util.KryoWritable;
 import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;

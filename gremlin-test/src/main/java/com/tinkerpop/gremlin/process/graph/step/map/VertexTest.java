@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
  * @author Stephen Mallette (http://traversalhen.genoprime.com)
  * @author Daniel Kuppitz (daniel at thinkaurelius.com)
  */
-public abstract class TraversalTest extends AbstractGremlinProcessTest {
+public abstract class VertexTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V();
 
@@ -47,7 +47,13 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Edge> get_g_v4_bothE(final Object v4Id);
 
+    public abstract Traversal<Vertex, Edge> get_g_v4_bothEXcreatedX(final Object v4Id);
+
     public abstract Traversal<Vertex, Edge> get_g_v4_bothEX1_createdX(final Object v4Id);
+
+    public abstract Traversal<Vertex, String> get_g_v4_bothX1X_name(final Object v4Id);
+
+    public abstract Traversal<Vertex, String> get_g_v4_bothX2X_name(final Object v4Id);
 
     public abstract Traversal<Vertex, String> get_g_V_inEX2_knowsX_outV_name();
 
@@ -232,6 +238,24 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
+    public void g_v4_bothEXcreateX() {
+        final Traversal<Vertex, Edge> traversal = get_g_v4_bothEXcreatedX(convertToVertexId("josh"));
+        printTraversalForm(traversal);
+        int counter = 0;
+        Set<Edge> edges = new HashSet<>();
+        while (traversal.hasNext()) {
+            counter++;
+            Edge edge = traversal.next();
+            edges.add(edge);
+            assertTrue(edge.label().equals("created"));
+            assertEquals(edge.outV().id().next(), convertToVertexId("josh"));
+        }
+        assertEquals(2, counter);
+        assertEquals(2, edges.size());
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
     public void g_v4_bothE() {
         final Traversal<Vertex, Edge> traversal = get_g_v4_bothE(convertToVertexId("josh"));
         printTraversalForm(traversal);
@@ -257,6 +281,38 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
         assertTrue(edge.value("weight").equals(1.0f) || edge.value("weight").equals(0.4f));
         assertFalse(traversal.hasNext());
     }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_v4_bothX1X_name() {
+        final Traversal<Vertex, String> traversal = get_g_v4_bothX1X_name(convertToVertexId("josh"));
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            final String name = traversal.next();
+            assertTrue(name.equals("marko") || name.equals("ripple") || name.equals("lop"));
+        }
+        assertEquals(1, counter);
+        assertFalse(traversal.hasNext());
+
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_v4_bothX2X_name() {
+        final Traversal<Vertex, String> traversal = get_g_v4_bothX2X_name(convertToVertexId("josh"));
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            final String name = traversal.next();
+            assertTrue(name.equals("marko") || name.equals("ripple") || name.equals("lop"));
+        }
+        assertEquals(2, counter);
+        assertFalse(traversal.hasNext());
+    }
+
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -503,8 +559,8 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
 
     }
 
-    public static class JavaTraversalTest extends TraversalTest {
-        public JavaTraversalTest() {
+    public static class JavaVertexTest extends VertexTest {
+        public JavaVertexTest() {
             requiresGraphComputer = false;
         }
 
@@ -548,8 +604,20 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
             return g.v(v4Id).bothE();
         }
 
+        public Traversal<Vertex, Edge> get_g_v4_bothEXcreatedX(final Object v4Id) {
+            return g.v(v4Id).bothE("created");
+        }
+
         public Traversal<Vertex, Edge> get_g_v4_bothEX1_createdX(final Object v4Id) {
             return g.v(v4Id).bothE(1, "created");
+        }
+
+        public Traversal<Vertex, String> get_g_v4_bothX1X_name(final Object v4Id) {
+            return g.v(v4Id).both(1).value("name");
+        }
+
+        public Traversal<Vertex, String> get_g_v4_bothX2X_name(final Object v4Id) {
+            return g.v(v4Id).both(2).value("name");
         }
 
         public Traversal<Vertex, String> get_g_V_inEX2_knowsX_outV_name() {
@@ -623,8 +691,8 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
 
     // todo: some of the graph computer tests do not pass
 
-    public static class JavaComputerTraversalTest extends TraversalTest {
-        public JavaComputerTraversalTest() {
+    public static class JavaComputerVertexTest extends VertexTest {
+        public JavaComputerVertexTest() {
             requiresGraphComputer = true;
         }
 
@@ -652,6 +720,14 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
             return g.V().both(1, "created").<String>value("name").submit(g.compute());
         }
 
+        public Traversal<Vertex, String> get_g_v4_bothX1X_name(final Object v4Id) {
+            return g.v(v4Id).both(1).<String>value("name").submit(g.compute());
+        }
+
+        public Traversal<Vertex, String> get_g_v4_bothX2X_name(final Object v4Id) {
+            return g.v(v4Id).both(2).<String>value("name").submit(g.compute());
+        }
+
         public Traversal<Edge, Edge> get_g_E() {
             return g.E().submit(g.compute());
         }
@@ -666,6 +742,10 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex, Edge> get_g_v4_bothE(final Object v4Id) {
             return g.v(v4Id).bothE().submit(g.compute());
+        }
+
+        public Traversal<Vertex, Edge> get_g_v4_bothEXcreatedX(final Object v4Id) {
+            return g.v(v4Id).bothE("created").submit(g.compute());
         }
 
         public Traversal<Vertex, Edge> get_g_v4_bothEX1_createdX(final Object v4Id) {

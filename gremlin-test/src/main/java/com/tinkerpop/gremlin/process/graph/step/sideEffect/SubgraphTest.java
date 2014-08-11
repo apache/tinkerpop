@@ -17,13 +17,12 @@ import static org.junit.Assert.fail;
 
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class SubgraphTest extends AbstractGremlinTest {
-    public abstract Traversal<Vertex, String> get_g_v1_outE_subgraphXknowsX(final Object v1Id, final Graph subgraph);
+    public abstract Traversal<Vertex, String> get_g_v1_outE_subgraphXknowsX_name(final Object v1Id, final Graph subgraph);
 
-    public abstract Traversal<Vertex, String> get_g_E_subgraphXcreatedX(final Graph subgraph);
+    public abstract Traversal<Vertex, String> get_g_V_inE_subgraphXcreatedX_name(final Graph subgraph);
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -32,7 +31,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
         final Configuration config = graphProvider.newGraphConfiguration("subgraph");
         graphProvider.clear(config);
         final Graph subgraph = graphProvider.openTestGraph(config);
-        Traversal<Vertex, String> traversal = get_g_v1_outE_subgraphXknowsX(convertToVertexId("marko"), subgraph);
+        Traversal<Vertex, String> traversal = get_g_v1_outE_subgraphXknowsX_name(convertToVertexId("marko"), subgraph);
         printTraversalForm(traversal);
         traversal.iterate();
 
@@ -58,11 +57,11 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
-    public void get_g_V_inE_subgraphXcreatedX() throws Exception {
+    public void get_g_V_inE_subgraphXcreatedX_name() throws Exception {
         final Configuration config = graphProvider.newGraphConfiguration("subgraph");
         graphProvider.clear(config);
         final Graph subgraph = graphProvider.openTestGraph(config);
-        Traversal<Vertex, String> traversal = get_g_E_subgraphXcreatedX(subgraph);
+        Traversal<Vertex, String> traversal = get_g_V_inE_subgraphXcreatedX_name(subgraph);
         printTraversalForm(traversal);
         traversal.iterate();
 
@@ -71,12 +70,12 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
         graphProvider.clear(subgraph, config);
     }
 
-    public static class JavaSideEffectTest extends SubgraphTest {
-        public Traversal<Vertex, String> get_g_v1_outE_subgraphXknowsX(final Object v1Id, final Graph subgraph) {
+    public static class JavaSubgraphTest extends SubgraphTest {
+        public Traversal<Vertex, String> get_g_v1_outE_subgraphXknowsX_name(final Object v1Id, final Graph subgraph) {
             return g.v(v1Id).outE().subgraph(subgraph, e -> e.label().equals("knows")).value("name");
         }
 
-        public Traversal<Vertex, String> get_g_E_subgraphXcreatedX(final Graph subgraph) {
+        public Traversal<Vertex, String> get_g_V_inE_subgraphXcreatedX_name(final Graph subgraph) {
             return g.V().inE().subgraph(subgraph, e -> e.label().equals("created")).value("name");
         }
     }

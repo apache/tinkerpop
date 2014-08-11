@@ -313,12 +313,21 @@ The code above shows that a `Traversal` instance can be sent for remote executio
 Configuring
 ~~~~~~~~~~~
 
-As mentioned earlier, Gremlin Server is configured though a YAML file.  By default, Gremlin Server will look for a file called `config/gremlin-server.yaml` to configure itself on startup.  To override this default, supply the file to use to ``bin/gremlin-server.sh` as in:
+As mentioned earlier, Gremlin Server is configured though a YAML file.  By default, Gremlin Server will look for a file called `config/gremlin-server.yaml` to configure itself on startup.  To override this default, supply the file to use to `bin/gremlin-server.sh` as in:
 
 [source,text]
 ----
 bin/gremlin-server.sh conf/gremlin-server-min.yaml
 ----
+
+The `gremlin-server.sh` file also serves a second purpose.  It can be used to "install" dependencies to the Gremlin Server path.  For example, to be able to configure and use other `Graph` implementations, the dependencies must be made available to Gremlin Server.  To do this, use the `-i` switch and supply the Maven coordinates for the dependency to "install".  For example, to use Neo4j in Gremlin Server:
+
+[source,text]
+----
+bin/gremlin-server.sh -i com.tinkerpop neo4j-gremlin x.y.z
+----
+
+This command will "grab" the appropriate dependencies and copy them to the `ext` directory of Gremlin Server, which will then allow them to be "used" the next time the server is started.  To uninstall dependencies, simply delete them from the `ext` directory.
 
 The following table describes the various configuration options that Gremlin Server expects:
 

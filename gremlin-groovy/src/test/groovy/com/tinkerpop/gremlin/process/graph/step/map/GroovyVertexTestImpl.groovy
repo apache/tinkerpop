@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GroovyTraversalTestImpl extends TraversalTest {
+class GroovyVertexTestImpl extends VertexTest {
 
     public Traversal<Vertex, Vertex> get_g_V() {
         g.V
@@ -51,8 +51,20 @@ class GroovyTraversalTestImpl extends TraversalTest {
         g.v(v4Id).bothE
     }
 
+    public Traversal<Vertex, Edge> get_g_v4_bothEXcreatedX(final Object v4Id) {
+        g.v(v4Id).bothE('created')
+    }
+
     public Traversal<Vertex, Edge> get_g_v4_bothEX1_createdX(final Object v4Id) {
         g.v(v4Id).bothE(1, 'created')
+    }
+
+    public Traversal<Vertex, String> get_g_v4_bothX1X_name(final Object v4Id) {
+        g.v(v4Id).both(1).name
+    }
+
+    public Traversal<Vertex, String> get_g_v4_bothX2X_name(final Object v4Id) {
+        g.v(v4Id).both(2).name
     }
 
     public Traversal<Vertex, String> get_g_V_inEX2_knowsX_outV_name() {

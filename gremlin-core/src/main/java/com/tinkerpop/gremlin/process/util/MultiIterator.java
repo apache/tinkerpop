@@ -11,12 +11,25 @@ public class MultiIterator<T> implements Iterator<T> {
 
     private final List<Iterator<T>> iterators = new ArrayList<>();
     private int current = 0;
+    private int limit;
+    private int count = 0;
+
+    public MultiIterator() {
+        this(Integer.MAX_VALUE);
+    }
+
+    public MultiIterator(final int limit) {
+        this.limit = limit;
+    }
 
     public void addIterator(final Iterator<T> iterator) {
         this.iterators.add(iterator);
     }
 
     public boolean hasNext() {
+        if(this.count >= this.limit)
+            return false;
+
         if (this.current >= this.iterators.size())
             return false;
 
@@ -36,9 +49,13 @@ public class MultiIterator<T> implements Iterator<T> {
     }
 
     public T next() {
+        if(this.count >= this.limit)
+            throw FastNoSuchElementException.instance();
+
         Iterator<T> currentIterator = iterators.get(this.current);
         while (true) {
             if (currentIterator.hasNext()) {
+                this.count++;
                 return currentIterator.next();
             } else {
                 this.current++;
