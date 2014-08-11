@@ -143,7 +143,7 @@ public class TinkerHelper {
         if (direction != Direction.BOTH) {
             return new TinkerVertexIterator(TinkerHelper.getEdges(vertex, direction, branchFactor, labels), direction);
         } else {
-            final MultiIterator<TinkerVertex> vertices = new MultiIterator<>();
+            final MultiIterator<TinkerVertex> vertices = new MultiIterator<>(branchFactor);
             vertices.addIterator(new TinkerVertexIterator(TinkerHelper.getEdges(vertex, Direction.OUT, branchFactor, labels), Direction.OUT));
             vertices.addIterator(new TinkerVertexIterator(TinkerHelper.getEdges(vertex, Direction.IN, branchFactor, labels), Direction.IN));
             return vertices;

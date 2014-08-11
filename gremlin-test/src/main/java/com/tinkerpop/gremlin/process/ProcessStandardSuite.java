@@ -21,11 +21,10 @@ import com.tinkerpop.gremlin.process.graph.step.map.MatchTest;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
-import com.tinkerpop.gremlin.process.graph.step.map.TraversalTest;
+import com.tinkerpop.gremlin.process.graph.step.map.VertexTest;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.UnionTest;
 import com.tinkerpop.gremlin.process.graph.step.map.ValuesTest;
-import com.tinkerpop.gremlin.process.graph.step.map.VertexTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest;
@@ -91,11 +90,10 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             OrderTest.JavaOrderTest.class,
             PathTest.JavaPathTest.class,
             SelectTest.JavaSelectTest.class,
-            TraversalTest.JavaTraversalTest.class,
+            VertexTest.JavaVertexTest.class,
             UnfoldTest.JavaUnfoldTest.class,
             // UnionTest.JavaUnionTest.class,
             ValuesTest.JavaValuesTest.class,
-            VertexTest.JavaVertexTest.class,
 
             // sideEffect
             AddEdgeTest.JavaAddEdgeTest.class,
@@ -106,7 +104,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             SideEffectCapTest.JavaSideEffectCapTest.class,
             SideEffectTest.JavaSideEffectTest.class,
             StoreTest.JavaStoreTest.class,
-            SubgraphTest.JavaSideEffectTest.class,
+            SubgraphTest.JavaSubgraphTest.class,
             TreeTest.JavaTreeTest.class,
 
             // util
@@ -144,11 +142,10 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             OrderTest.class,
             PathTest.class,
             SelectTest.class,
-            TraversalTest.class,
+            VertexTest.class,
             UnfoldTest.class,
             UnionTest.class,
             ValuesTest.class,
-            VertexTest.class,
 
             // sideEffect
             AddEdgeTest.class,

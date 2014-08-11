@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.NoSuchElementException;
@@ -18,7 +19,11 @@ import static org.junit.Assert.assertEquals;
  */
 public class SubgraphStrategyTest extends AbstractGremlinTest {
 
+    //TODO: You can't use direct ID references as each vendor will have its own ID space.
+    //TODO: Also, you can't do >= on IDs as not all vendor's will have IDs implement comparable.
+
     @Test
+    @Ignore
     @LoadGraphWith(CLASSIC)
     public void testVertexCriterion() throws Exception {
         Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
@@ -99,7 +104,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @org.junit.Ignore   // todo: get test to pass
+    @Ignore
     public void testEdgeCriterion() throws Exception {
 
         Predicate<Vertex> vertexCriterion = vertex -> true;
@@ -185,7 +190,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @org.junit.Ignore  // todo: get test to pass
+    @Ignore
     public void testMixedCriteria() throws Exception {
 
         Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
@@ -259,6 +264,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
 
     @Test(expected = NoSuchElementException.class)
     @LoadGraphWith(CLASSIC)
+    @Ignore
     public void testGetExcludedVertex() throws Exception {
 
         Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
@@ -273,6 +279,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
 
     @Test(expected = NoSuchElementException.class)
     @LoadGraphWith(CLASSIC)
+    @Ignore
     public void testGetExcludedEdge() throws Exception {
 
         Predicate<Vertex> vertexCriterion = vertex -> true;
