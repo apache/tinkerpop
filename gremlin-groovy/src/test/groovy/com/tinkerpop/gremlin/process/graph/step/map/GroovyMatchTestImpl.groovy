@@ -88,11 +88,11 @@ class GroovyMatchTestImpl extends MatchTest {
     }
 
     @Override
-    public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_hasXname_GarciaX__a_inXwritten_byX_b__a_inXsung_byX_bX() {
+    public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_hasXname_GarciaX__a_inXwrittenByX_b__a_inXsungByX_bX() {
         return g.V().match('a',
                 g.of().as('a').has('name', 'Garcia'),
-                g.of().as('a').in('written_by').as('b'),
-                g.of().as('a').in('sung_by').as('b'));
+                g.of().as('a').in('writtenBy').as('b'),
+                g.of().as('a').in('sungBy').as('b'));
     }
     
     /*@Override

@@ -31,10 +31,7 @@ import java.util.function.Function;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
@@ -64,7 +61,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_knows_b__b_created_lop__b_matchXa1_created_b1__b1_0created_c1X_selectXc1X_cX_selectXnameX();
 
-    public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_hasXname_GarciaX__a_inXwritten_byX_b__a_inXsung_byX_bX();
+    public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_hasXname_GarciaX__a_inXwrittenByX_b__a_inXsungByX_bX();
 
     //TODO: with traversal.reversal()
     //public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__c_created_bX_selectXnameX();
@@ -248,10 +245,10 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(GRATEFUL)
-    public void g_V_matchXa_hasXname_GarciaX__a_inXwritten_byX_b__a_inXsung_byX_bX() throws Exception {
+    public void g_V_matchXa_hasXname_GarciaX__a_inXwrittenByX_b__a_inXsungByX_bX() throws Exception {
         // this query contains a pair of traversals which connect the same labels, together with a predicate traversal
-        Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_hasXname_GarciaX__a_inXwritten_byX_b__a_inXsung_byX_bX();
-        System.out.println("Testing: " + traversal);
+        Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_hasXname_GarciaX__a_inXwrittenByX_b__a_inXsungByX_bX();
+        printTraversalForm(traversal);
         assertResults(vertexToStr, traversal,
                 new Bindings<Vertex>().put("a", convertToVertex(g, "Garcia")).put("b", convertToVertex(g, "CREAM PUFF WAR")),
                 new Bindings<Vertex>().put("a", convertToVertex(g, "Garcia")).put("b", convertToVertex(g, "CRYPTICAL ENVELOPMENT")));
@@ -514,8 +511,8 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                 new Bindings<String>().put("letter", "c").put("number", "4"));
     }
 
-    public static class JavaMapTest extends MatchTest {
-        public JavaMapTest() {
+    public static class JavaMatchTest extends MatchTest {
+        public JavaMatchTest() {
             requiresGraphComputer = false;
         }
 
@@ -598,11 +595,11 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_hasXname_GarciaX__a_inXwritten_byX_b__a_inXsung_byX_bX() {
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_hasXname_GarciaX__a_inXwrittenByX_b__a_inXsungByX_bX() {
             return g.V().match("a",
                     g.of().as("a").has("name", "Garcia"),
-                    g.of().as("a").in("written_by").as("b"),
-                    g.of().as("a").in("sung_by").as("b"));
+                    g.of().as("a").in("writtenBy").as("b"),
+                    g.of().as("a").in("sungBy").as("b"));
         }
 
         /*@Override
@@ -621,8 +618,8 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     }
 
-    public static class JavaComputerMapTest extends MatchTest {
-        public JavaComputerMapTest() {
+    public static class JavaComputerMatchTest extends MatchTest {
+        public JavaComputerMatchTest() {
             requiresGraphComputer = true;
         }
 
@@ -705,12 +702,12 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_hasXname_GarciaX__a_inXwritten_byX_b__a_inXsung_byX_bX() {
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_hasXname_GarciaX__a_inXwrittenByX_b__a_inXsungByX_bX() {
             // TODO: use GraphComputer
             return (Traversal) g.V().match("a",
                     g.of().as("a").has("name", "Garcia"),
-                    g.of().as("a").in("written_by").as("b"),
-                    g.of().as("a").in("sung_by").as("b"));//.submit(g.compute());
+                    g.of().as("a").in("writtenBy").as("b"),
+                    g.of().as("a").in("sungBy").as("b"));//.submit(g.compute());
         }
 
         /*@Override

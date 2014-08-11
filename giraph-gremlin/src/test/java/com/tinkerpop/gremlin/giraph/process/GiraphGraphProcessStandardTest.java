@@ -10,6 +10,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(ProcessStandardSuite.class)
 @Ignore
+// TODO: Make it so individual tests can be ignored
 @ProcessStandardSuite.GraphProviderClass(GiraphGraphProvider.class)
 public class GiraphGraphProcessStandardTest {
 }

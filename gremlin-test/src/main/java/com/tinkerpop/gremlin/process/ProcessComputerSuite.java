@@ -80,7 +80,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // TODO: REMOVE? FoldTest.JavaComputerFoldTest.class,
             JumpTest.JavaComputerJumpTest.class,
             MapTest.JavaComputerMapTest.class,
-            MatchTest.JavaComputerMapTest.class,
+            MatchTest.JavaComputerMatchTest.class,
             // TODO: REMOVE? OrderTest.JavaOrderTest.class
             PathTest.JavaComputerPathTest.class,
             SelectTest.JavaComputerSelectTest.class,
