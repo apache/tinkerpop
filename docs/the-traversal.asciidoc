@@ -227,8 +227,8 @@ gremlin> g.V.match('a',
             g.of().as('b').in('created').as('c'),
             g.of().as('c').has('age', 29)).
           select(['a', 'c']){it.value('name')} 
-==>[a:josh, c:marko]
 ==>[a:marko, c:marko]
+==>[a:josh, c:marko]
 ==>[a:peter, c:marko]
 
 Note that the above can also be more concisely written as below which demonstrates that imperative inner-traversals can be arbitrarily defined.
@@ -238,8 +238,8 @@ gremlin> g.V.match('a',
             g.of().as('a').out('created').has('name', 'lop').as('b'),
             g.of().as('b').in('created').has('age', 29).as('c')).
           select(['a', 'c']){it.value('name')} 
-==>[a:josh, c:marko]
 ==>[a:marko, c:marko]
+==>[a:josh, c:marko]
 ==>[a:peter, c:marko]
 
 
@@ -250,7 +250,7 @@ gremlin> g.V.match('a',
             g.of().as('a').out('created').has('name','lop').as('b'), <1>
             g.of().as('b').in('created').has('age', 29).as('c'),
             g.of().as('c').out().jump('c',2)). <2>
-           select('c').out('knows').name <3>
+           select('c').out('knows').dedup.name <3>
 ==>vadas
 ==>josh
 
