@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(ProcessStandardSuite.class)
+@Ignore
 @ProcessStandardSuite.GraphProviderClass(GiraphGraphProvider.class)
 public class GiraphGraphProcessStandardTest {
 }

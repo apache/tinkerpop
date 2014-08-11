@@ -24,7 +24,7 @@ public class FilterStep<S> extends AbstractStep<S, S> {
     }
 
     protected Traverser<S> processNextStart() {
-        while (this.starts.hasNext()) {
+        while (true) {
             final Traverser<S> traverser = this.starts.next();
             if (this.predicate.test(traverser)) {
                 // TODO: we can remove this and say that you can't as-label filter steps ??
@@ -33,7 +33,5 @@ public class FilterStep<S> extends AbstractStep<S, S> {
                 return traverser;
             }
         }
-
-        throw FastNoSuchElementException.instance();
     }
 }
