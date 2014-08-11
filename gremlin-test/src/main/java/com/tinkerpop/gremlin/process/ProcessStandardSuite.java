@@ -25,6 +25,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.TraversalTest;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.UnionTest;
 import com.tinkerpop.gremlin.process.graph.step.map.ValuesTest;
+import com.tinkerpop.gremlin.process.graph.step.map.VertexTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest;
@@ -94,6 +95,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             UnfoldTest.JavaUnfoldTest.class,
             // UnionTest.JavaUnionTest.class,
             ValuesTest.JavaValuesTest.class,
+            VertexTest.JavaVertexTest.class,
 
             // sideEffect
             AddEdgeTest.JavaAddEdgeTest.class,
@@ -146,6 +148,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             UnfoldTest.class,
             UnionTest.class,
             ValuesTest.class,
+            VertexTest.class,
 
             // sideEffect
             AddEdgeTest.class,
