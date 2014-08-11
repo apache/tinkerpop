@@ -180,6 +180,8 @@ g.createIndex("name",Vertex.class)
 
 Each graph vendor will have different mechanism by which indices and schemas are defined. TinkerPop3 does not require any conformance in this area. In TinkerGraph, the only definitions are around indices. With other vendors, property value types, indices, edge labels, etc. may be required to be defined _a priori_ to adding data to the graph.
 
+NOTE: TinkerGraph is distributed with Gremlin Server and is therefore automatically available to it for configuration.
+
 [[neo4j-gremlin]]
 Neo4j-Gremlin
 -------------
