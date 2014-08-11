@@ -1,10 +1,8 @@
 package com.tinkerpop.gremlin.process.graph.step.map.match;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.function.BiConsumer;
 
 /**
@@ -14,18 +12,11 @@ public class IteratorEnumerator<T> implements Enumerator<T> {
     private final String name;
     private final Iterator<T> iterator;
     private final List<T> memory = new ArrayList<>();
-    private final Set<String> variables;
 
     public IteratorEnumerator(final String name,
                               final Iterator<T> iterator) {
         this.name = name;
         this.iterator = iterator;
-        this.variables = new HashSet<>();
-        this.variables.add(name);
-    }
-
-    public Set<String> getVariables() {
-        return variables;
     }
 
     public int size() {

@@ -219,7 +219,10 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         List<TraversalWrapper<S, S>> outs = traversalsByStartAs.get(localStartAs);
         if (null == outs) {
             // no out-traversals from here; just enumerate the values bound to localStartAs
-            return new IteratorEnumerator<>(localStartAs, inputs);
+            return //isAnonymousAs(localStartAs)
+                //? new SimpleEnumerator<>(localStartAs, inputs)
+                //:
+                    new IteratorEnumerator<>(localStartAs, inputs);
         } else {
             // for each value bound to localStartAs, feed it into all out-traversals in parallel and join the results
             return new SerialEnumerator<>(localStartAs, inputs, o -> {

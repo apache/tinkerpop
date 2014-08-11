@@ -88,7 +88,7 @@ class GroovyMatchTestImpl extends MatchTest {
     }
 
     @Override
-    public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_hasXname_GarciaX__a_0written_by_b__a_0sung_by_bX() {
+    public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_hasXname_GarciaX__a_inXwritten_byX_b__a_inXsung_byX_bX() {
         return g.V().match('a',
                 g.of().as('a').has('name', 'Garcia'),
                 g.of().as('a').in('written_by').as('b'),
