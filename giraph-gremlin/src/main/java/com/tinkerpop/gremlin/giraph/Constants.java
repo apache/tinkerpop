@@ -8,6 +8,11 @@ import com.esotericsoftware.kryo.Kryo;
 public class Constants {
 
     public static final Kryo KRYO = new Kryo();
+
+    /*static {
+        KRYO.register(RuleWritable.Rule.class, 9991);
+        // KRYO.register(TraversalMessage.class, 9993);
+    }*/
     // Do we need a static with class loading here?
 
     public static final String CONFIGURATION = "configuration";

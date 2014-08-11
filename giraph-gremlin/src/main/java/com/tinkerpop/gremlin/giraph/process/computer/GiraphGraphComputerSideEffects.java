@@ -35,29 +35,27 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
         this.initialize();
     }
 
-    public GiraphGraphComputerSideEffects(final GiraphInternalVertex giraphInternalVertex) {
+    public GiraphGraphComputerSideEffects(final GiraphInternalVertex giraphInternalVertex, final VertexProgram vertexProgram) {
         this.giraphInternalVertex = giraphInternalVertex;
-        this.initialize();
+        this.vertexProgram = vertexProgram;
+        this.sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectComputeKeys());
     }
 
     public void initialize() {
-        if (null == this.giraphInternalVertex) {  // master compute node
-            try {
+        // master compute node
+        try {
+            if (null == this.vertexProgram)
                 this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getConf()));
-                this.sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectComputeKeys());
-                for (final String key : (Set<String>) this.vertexProgram.getSideEffectComputeKeys()) {
-                    this.registerAggregator(key, MemoryAggregator.class); // TODO: Why does PersistentAggregator not work?
-                }
-                this.registerPersistentAggregator(Constants.RUNTIME, MemoryAggregator.class);
-                this.setIfAbsent(Constants.RUNTIME, System.currentTimeMillis());
-                this.vertexProgram.setup(this);
-            } catch (final Exception e) {
-                LOGGER.error(e.getMessage(), e);
-                // do nothing as Giraph has a hard time starting up with random exceptions until ZooKeeper comes online
-            }
-        } else {  // local vertex aggregator
-            this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.giraphInternalVertex.getConf()));
             this.sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectComputeKeys());
+            for (final String key : (Set<String>) this.vertexProgram.getSideEffectComputeKeys()) {
+                this.registerAggregator(key, MemoryAggregator.class); // TODO: Why does PersistentAggregator not work?
+            }
+            this.registerPersistentAggregator(Constants.RUNTIME, MemoryAggregator.class);
+            this.setIfAbsent(Constants.RUNTIME, System.currentTimeMillis());
+            this.vertexProgram.setup(this);
+        } catch (final Exception e) {
+            LOGGER.error(e.getMessage(), e);
+            // do nothing as Giraph has a hard time starting up with random exceptions until ZooKeeper comes online
         }
     }
 

@@ -34,9 +34,11 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     }
 
     public void apply() {
-        this.complete = true;
-        Collections.sort(this.traversalStrategies);
-        this.traversalStrategies.forEach(ts -> ts.apply(this.traversal));
+        if (!this.complete) {
+            this.complete = true;
+            Collections.sort(this.traversalStrategies);
+            this.traversalStrategies.forEach(ts -> ts.apply(this.traversal));
+        }
     }
 
     public void clear() {

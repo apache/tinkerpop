@@ -3,8 +3,8 @@ package com.tinkerpop.gremlin.giraph.structure.util;
 import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputerSideEffects;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphMessenger;
-import com.tinkerpop.gremlin.giraph.process.computer.util.KryoWritable;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
+import com.tinkerpop.gremlin.giraph.process.computer.util.KryoWritable;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Element;
@@ -61,13 +61,6 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
         // TODO? this.tinkerVertex = vertex;
     }
 
-    @Override
-    public void setConf(final org.apache.giraph.conf.ImmutableClassesGiraphConfiguration configuration) {
-        super.setConf(configuration);
-        this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(configuration));
-        this.sideEffects = new GiraphGraphComputerSideEffects(this);
-    }
-
     public TinkerVertex getTinkerVertex() {
         return this.tinkerVertex;
     }
@@ -76,6 +69,11 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
     public void compute(final Iterable<KryoWritable> messages) {
         if (null == this.tinkerVertex)
             inflateTinkerVertex();
+        if (null == this.vertexProgram)
+            this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getConf()));
+        if (null == this.sideEffects)
+            this.sideEffects = new GiraphGraphComputerSideEffects(this, this.vertexProgram);
+
         this.vertexProgram.execute(this.tinkerVertex, new GiraphMessenger(this, messages), this.sideEffects);
         if (this.getConf().getBoolean(Constants.GREMLIN_DERIVE_COMPUTER_SIDE_EFFECTS, false)) {
             this.sideEffects.keys().forEach(key ->
