@@ -55,6 +55,7 @@ public class ExceptionCoverageTest {
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#isolationNotSupported");
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#computerHasAlreadyBeenSubmittedAVertexProgram");
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#providedKeyIsNotASideEffectKey");
+            add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#computerHasNoVertexProgramNorMapReducers");
 
             add("com.tinkerpop.gremlin.structure.Graph$Exceptions#vertexAdditionsNotSupported");
             add("com.tinkerpop.gremlin.structure.Element$Exceptions#propertyAdditionNotSupported");

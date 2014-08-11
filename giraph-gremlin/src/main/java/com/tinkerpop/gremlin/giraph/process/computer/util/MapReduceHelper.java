@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphMap;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphReduce;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import org.apache.commons.configuration.BaseConfiguration;
@@ -59,7 +60,10 @@ public class MapReduceHelper {
             job.setOutputValueClass(KryoWritable.class);
             job.setInputFormatClass(ConfUtil.getInputFormatFromVertexInputFormat((Class) newConfiguration.getClass(Constants.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class)));
             job.setOutputFormatClass(newConfiguration.getClass(Constants.GREMLIN_SIDE_EFFECT_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class, OutputFormat.class)); // TODO: Make this configurable
-            final Path graphPath = new Path(newConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + Constants.TILDA_G);
+            // if there is no vertex program, then grab the graph from the input location
+            final Path graphPath = configuration.get(GraphComputer.VERTEX_PROGRAM, null) != null ?
+                    new Path(newConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + Constants.TILDA_G) :
+                    new Path(newConfiguration.get(Constants.GREMLIN_INPUT_LOCATION));
             final Path sideEffectPath = new Path(newConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + KeyHelper.makeDirectory(mapReduce.getSideEffectKey()));
             FileInputFormat.setInputPaths(job, graphPath);
             FileOutputFormat.setOutputPath(job, sideEffectPath);

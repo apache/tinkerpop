@@ -35,7 +35,6 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
     private Map<String, KeyType> elementComputeKeys;
     private Set<String> sideEffectKeys;
 
-
     private LambdaVertexProgram() {
     }
 

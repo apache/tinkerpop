@@ -40,6 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -101,12 +102,18 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
             throw Exceptions.computerHasAlreadyBeenSubmittedAVertexProgram();
         else
             this.executed = true;
-        GraphComputerHelper.validateProgramOnComputer(this, vertexProgram);
+
+        // it is not possible execute a computer if it has no vertex program nor mapreducers
+        if (null == this.vertexProgram && this.mapReduces.isEmpty())
+            throw GraphComputer.Exceptions.computerHasNoVertexProgramNorMapReducers();
+        // it is possible to run mapreducers without a vertex program
+        if (null != this.vertexProgram)
+            GraphComputerHelper.validateProgramOnComputer(this, vertexProgram);
 
         final long startTime = System.currentTimeMillis();
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             try {
-                final String bspDirectory = "_bsp"; // "temp-" + UUID.randomUUID().toString();
+                final String bspDirectory = "bsp_" + UUID.randomUUID().toString();
                 final FileSystem fs = FileSystem.get(this.giraphConfiguration);
                 fs.delete(new Path(this.giraphConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION)), true);
                 final String giraphGremlinHome = System.getenv(Constants.GIRAPH_GREMLIN_HOME);
@@ -146,26 +153,27 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
 
     public int run(final String[] args) {
         try {
-            final GiraphJob job = new GiraphJob(this.giraphConfiguration, Constants.GIRAPH_GREMLIN_JOB_PREFIX + this.vertexProgram);
-            // job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
-            FileInputFormat.setInputPaths(job.getInternalJob(), new Path(this.giraphConfiguration.get(Constants.GREMLIN_INPUT_LOCATION)));
-            FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + Constants.TILDA_G));
-            LOGGER.info(Constants.GIRAPH_GREMLIN_JOB_PREFIX + this.vertexProgram);
-            job.run(true);
-
-            this.mapReduces.addAll(this.vertexProgram.getMapReducers());
-            // calculate main vertex program sideEffects
-            if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_DERIVE_COMPUTER_SIDE_EFFECTS, false)) {
-                final Set<String> sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectComputeKeys());
-                sideEffectKeys.add(Constants.ITERATION);
-                this.giraphConfiguration.setStrings(Constants.GREMLIN_SIDE_EFFECT_KEYS, (String[]) sideEffectKeys.toArray(new String[sideEffectKeys.size()]));
-                this.mapReduces.add(new SideEffectsMapReduce(sideEffectKeys));
+            // it is possible to run graph computer without a vertex program (and thus, only map reduce jobs if they exist)
+            if (null != this.vertexProgram) {
+                final GiraphJob job = new GiraphJob(this.giraphConfiguration, Constants.GIRAPH_GREMLIN_JOB_PREFIX + this.vertexProgram);
+                FileInputFormat.setInputPaths(job.getInternalJob(), new Path(this.giraphConfiguration.get(Constants.GREMLIN_INPUT_LOCATION)));
+                FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + Constants.TILDA_G));
+                // job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
+                LOGGER.info(Constants.GIRAPH_GREMLIN_JOB_PREFIX + this.vertexProgram);
+                job.run(true);
+                this.mapReduces.addAll(this.vertexProgram.getMapReducers());
+                // calculate main vertex program sideEffects if desired (costs one mapreduce job)
+                if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_DERIVE_COMPUTER_SIDE_EFFECTS, false)) {
+                    final Set<String> sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectComputeKeys());
+                    sideEffectKeys.add(Constants.ITERATION);
+                    this.giraphConfiguration.setStrings(Constants.GREMLIN_SIDE_EFFECT_KEYS, (String[]) sideEffectKeys.toArray(new String[sideEffectKeys.size()]));
+                    this.mapReduces.add(new SideEffectsMapReduce(sideEffectKeys));
+                }
             }
-            // do all extra map reduce jobs
+            // do map reduce jobs
             for (final MapReduce mapReduce : this.mapReduces) {
                 MapReduceHelper.executeMapReduceJob(mapReduce, this.sideEffects, this.giraphConfiguration);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
             throw new IllegalStateException(e.getMessage(), e);

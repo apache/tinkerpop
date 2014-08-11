@@ -131,6 +131,10 @@ public interface GraphComputer {
         public static IllegalStateException computerHasAlreadyBeenSubmittedAVertexProgram() {
             return new IllegalStateException("This computer has already had a vertex program submitted to it");
         }
+
+        public static IllegalStateException computerHasNoVertexProgramNorMapReducers() {
+            return new IllegalStateException("The computer has no vertex program or map reducers to execute");
+        }
     }
 
 }
