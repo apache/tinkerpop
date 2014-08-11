@@ -35,20 +35,6 @@ public class GraphComputerTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
-    public void shouldNotAllowWithNoVertexProgramNorMapReducers() throws Exception {
-        try {
-            g.compute().submit().get();
-            fail("Should throw an IllegalStateException when there is no vertex program nor map reducers");
-        } catch (IllegalStateException e) {
-            assertTrue(true);
-        } catch (Exception e) {
-            fail("Should throw an IllegalStateException when there is no vertex program nor map reducers");
-        }
-    }
-
-    @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldNotAllowBadGraphComputers() {
         try {

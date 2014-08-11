@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
@@ -20,12 +21,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -528,9 +531,24 @@ public class ExceptionConsistencyTest {
      * {@link com.tinkerpop.gremlin.process.computer.GraphComputer}.
      */
     @ExceptionCoverage(exceptionClass = GraphComputer.Exceptions.class, methods = {
-            "providedKeyIsNotAComputeKey"
+            "providedKeyIsNotAComputeKey",
+            "computerHasNoVertexProgramNorMapReducers"
     })
-    public static class PropertyValidationOnSetGraphComputerTest extends AbstractGremlinTest {
+    public static class GraphComputerTest extends AbstractGremlinTest {
+
+        @Test
+        @LoadGraphWith(CLASSIC)
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
+        public void shouldNotAllowWithNoVertexProgramNorMapReducers() throws Exception {
+            try {
+                g.compute().submit().get();
+                fail("Should throw an IllegalStateException when there is no vertex program nor map reducers");
+            } catch (Exception ex) {
+                final Exception expectedException = GraphComputer.Exceptions.computerHasNoVertexProgramNorMapReducers();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
 
         @Test
         @Ignore
