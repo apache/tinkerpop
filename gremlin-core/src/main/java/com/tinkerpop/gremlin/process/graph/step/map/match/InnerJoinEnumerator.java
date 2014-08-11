@@ -72,6 +72,7 @@ public class InnerJoinEnumerator<T> implements Enumerator<T> {
                     if (!baseEnumerator.visitSolution(currentIndex, joinVisitor)) {
                         throw new IllegalStateException();
                     }
+
                     if (joinVariables.size() == joinCount) {
                         joinIndices.add(currentIndex);
                         return;

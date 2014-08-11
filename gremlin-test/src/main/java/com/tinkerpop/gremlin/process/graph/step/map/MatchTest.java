@@ -158,12 +158,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         assertResults(Function.identity(), traversal,
                 new Bindings<String>().put("a", "marko").put("b", "lop").put("c", "marko"),
                 new Bindings<String>().put("a", "josh").put("b", "lop").put("c", "marko"),
-                new Bindings<String>().put("a", "peter").put("b", "lop").put("c", "marko"),
-                // TODO: Below 3 results are being repeated twice
-                new Bindings<String>().put("a", "marko").put("b", "lop").put("c", "marko"),
-                new Bindings<String>().put("a", "josh").put("b", "lop").put("c", "marko"),
                 new Bindings<String>().put("a", "peter").put("b", "lop").put("c", "marko"));
-        // TODO: Above 3 results should not be needed
     }
 
     @Test
