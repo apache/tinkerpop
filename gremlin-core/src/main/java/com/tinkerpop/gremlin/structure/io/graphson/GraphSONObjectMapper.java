@@ -37,7 +37,7 @@ public class GraphSONObjectMapper extends ObjectMapper {
         _jsonFactory.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
     }
 
-    public static Builder create() {
+    public static Builder build() {
         return new Builder();
     }
 

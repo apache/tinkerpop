@@ -36,7 +36,7 @@ public class NioGremlinResponseEncoder extends MessageToByteEncoder<ResponseMess
                     byteBuf.writeBytes(serializer.serializeResponseAsBinary(responseMessage, channelHandlerContext.alloc()));
                 else {
                     byteBuf.writeBytes(serializer.serializeResponseAsBinary(responseMessage, channelHandlerContext.alloc()));
-                    final ResponseMessage terminator = ResponseMessage.create(responseMessage.getRequestId()).code(ResultCode.SUCCESS_TERMINATOR).build();
+                    final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).code(ResultCode.SUCCESS_TERMINATOR).create();
                     byteBuf.writeBytes(serializer.serializeResponseAsBinary(terminator, channelHandlerContext.alloc()));
                     errorMeter.mark();
                 }
@@ -48,7 +48,7 @@ public class NioGremlinResponseEncoder extends MessageToByteEncoder<ResponseMess
                     byteBuf.writeBytes(textSerializer.serializeResponseAsString(responseMessage).getBytes(UTF8));
                 else {
                     byteBuf.writeBytes(textSerializer.serializeResponseAsString(responseMessage).getBytes(UTF8));
-                    final ResponseMessage terminator = ResponseMessage.create(responseMessage.getRequestId()).code(ResultCode.SUCCESS_TERMINATOR).build();
+                    final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).code(ResultCode.SUCCESS_TERMINATOR).create();
                     byteBuf.writeBytes(textSerializer.serializeResponseAsString(terminator).getBytes(UTF8));
                     errorMeter.mark();
                 }
@@ -58,17 +58,17 @@ public class NioGremlinResponseEncoder extends MessageToByteEncoder<ResponseMess
             logger.warn("The result [{}] in the request {} could not be serialized and returned.", responseMessage.getResult(), responseMessage.getRequestId(), ex);
             final String errorMessage = String.format("Error during serialization: %s",
                     ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
-            final ResponseMessage error = ResponseMessage.create(responseMessage.getRequestId())
+            final ResponseMessage error = ResponseMessage.build(responseMessage.getRequestId())
                     .result(errorMessage)
-                    .code(ResultCode.SERVER_ERROR_SERIALIZATION).build();
+                    .code(ResultCode.SERVER_ERROR_SERIALIZATION).create();
             if (useBinary) {
                 channelHandlerContext.write(serializer.serializeResponseAsBinary(error, channelHandlerContext.alloc()));
-                final ResponseMessage terminator = ResponseMessage.create(responseMessage.getRequestId()).code(ResultCode.SUCCESS_TERMINATOR).build();
+                final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).code(ResultCode.SUCCESS_TERMINATOR).create();
                 channelHandlerContext.writeAndFlush(serializer.serializeResponseAsBinary(terminator, channelHandlerContext.alloc()));
             } else {
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
                 channelHandlerContext.write(textSerializer.serializeResponseAsString(error));
-                final ResponseMessage terminator = ResponseMessage.create(responseMessage.getRequestId()).code(ResultCode.SUCCESS_TERMINATOR).build();
+                final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).code(ResultCode.SUCCESS_TERMINATOR).create();
                 channelHandlerContext.writeAndFlush(textSerializer.serializeResponseAsString(terminator));
             }
         }

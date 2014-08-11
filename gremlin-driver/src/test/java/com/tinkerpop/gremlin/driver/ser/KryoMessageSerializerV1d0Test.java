@@ -34,7 +34,7 @@ import static org.junit.Assert.assertNull;
  */
 public class KryoMessageSerializerV1d0Test {
     private UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
-    private ResponseMessage.Builder responseMessageBuilder = ResponseMessage.create(requestId);
+    private ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
     private static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
     public MessageSerializer serializer = new KryoMessageSerializerV1d0();
@@ -192,7 +192,7 @@ public class KryoMessageSerializerV1d0Test {
     }
 
     private ResponseMessage convert(final Object toSerialize) throws SerializationException {
-        final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).build(), allocator);
+        final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).create(), allocator);
         return serializer.deserializeResponse(bb);
     }
 }

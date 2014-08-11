@@ -101,14 +101,14 @@ public final class GremlinKryo {
     /**
      * Use a specific version of Gremlin Kryo.
      */
-    public static Builder create(final Version version) {
+    public static Builder build(final Version version) {
         return version.getBuilder();
     }
 
     /**
      * Use the most current version of Gremlin Kryo.
      */
-    public static Builder create() {
+    public static Builder build() {
         return Version.V_1_0_0.getBuilder();
     }
 
@@ -142,7 +142,7 @@ public final class GremlinKryo {
          */
         public Builder compliant(final BiPredicate<Byte, Byte> compliant);
 
-        public GremlinKryo build();
+        public GremlinKryo create();
     }
 
     public enum Version {
@@ -300,7 +300,7 @@ public final class GremlinKryo {
         }
 
         @Override
-        public GremlinKryo build() {
+        public GremlinKryo create() {
             return new GremlinKryo(serializationList, this::writeHeader, this::readHeader);
         }
 

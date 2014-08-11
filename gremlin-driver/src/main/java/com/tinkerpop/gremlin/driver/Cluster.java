@@ -69,15 +69,15 @@ public class Cluster {
         return manager.toString();
     }
 
-    public static Builder create() {
+    public static Builder build() {
         return new Builder();
     }
 
-    public static Builder create(final String address) {
+    public static Builder build(final String address) {
         return new Builder(address);
     }
 
-    public static Builder create(final File configurationFile) throws FileNotFoundException {
+    public static Builder build(final File configurationFile) throws FileNotFoundException {
         final Settings settings = Settings.read(new FileInputStream(configurationFile));
         final List<String> addresses = settings.hosts;
         if (addresses.size() == 0)
@@ -110,7 +110,7 @@ public class Cluster {
      * Create a {@code Cluster} with all default settings which will connect to one contact point at {@code localhost}.
      */
     public static Cluster open() {
-        return create("localhost").build();
+        return build("localhost").create();
     }
 
     /**
@@ -121,7 +121,7 @@ public class Cluster {
         if (!file.exists())
             throw new IllegalArgumentException(String.format("Configuration file at %s does not exist", configurationFile));
 
-        return create(file).build();
+        return build(file).create();
     }
 
     public void close() { closeAsync().join(); }
@@ -314,7 +314,7 @@ public class Cluster {
             return addresses.stream().map(addy -> new InetSocketAddress(addy, port)).collect(Collectors.toList());
         }
 
-        public Cluster build() {
+        public Cluster create() {
             if (addresses.size() == 0) addContactPoint("localhost");
             final Settings.ConnectionPoolSettings connectionPoolSettings = new Settings.ConnectionPoolSettings();
             connectionPoolSettings.maxInProcessPerConnection = this.maxInProcessPerConnection;

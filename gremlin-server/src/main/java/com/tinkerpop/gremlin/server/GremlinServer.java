@@ -1,10 +1,7 @@
 package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
-import com.tinkerpop.gremlin.groovy.plugin.Artifact;
-import com.tinkerpop.gremlin.groovy.util.DependencyGrabber;
 import com.tinkerpop.gremlin.server.util.MetricManager;
-import groovy.grape.Grape;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -18,15 +15,7 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
@@ -121,7 +110,7 @@ public class GremlinServer {
 
         logger.info("Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*");
 
-        final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.create()
+        final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.build()
                 .scriptEvaluationTimeout(settings.scriptEvaluationTimeout)
                 .afterFailure((b, e) -> graphs.get().rollbackAll())
                 .afterSuccess(b -> graphs.get().commitAll())
@@ -133,7 +122,7 @@ public class GremlinServer {
                 .scheduledExecutorService(scheduledExecutorService);
 
         settings.scriptEngines.forEach((k, v) -> gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config));
-        final GremlinExecutor gremlinExecutor = gremlinExecutorBuilder.build();
+        final GremlinExecutor gremlinExecutor = gremlinExecutorBuilder.create();
 
         logger.info("Initialized GremlinExecutor and configured ScriptEngines.");
 

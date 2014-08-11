@@ -264,7 +264,7 @@ public class BatchGraph<T extends Graph> implements Graph {
         remainingBufferSize = 0;
     }
 
-    public static <T extends Graph> Builder create(final T g) {
+    public static <T extends Graph> Builder build(final T g) {
         return new Builder<>(g);
     }
 
@@ -641,7 +641,7 @@ public class BatchGraph<T extends Graph> implements Graph {
             return this;
         }
 
-        public BatchGraph<T> build() {
+        public BatchGraph<T> create() {
             return new BatchGraph<>(graphToLoad, vertexIdType, bufferSize, vertexIdKey, edgeIdKey,
                     incrementalLoading, this.existingVertexStrategy, this.existingEdgeStrategy);
         }

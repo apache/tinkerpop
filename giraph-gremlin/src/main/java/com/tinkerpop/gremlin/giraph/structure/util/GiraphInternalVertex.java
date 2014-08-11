@@ -90,7 +90,7 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
     private Text deflateTinkerVertex() {
         try {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            final KryoWriter writer = KryoWriter.create().build();
+            final KryoWriter writer = KryoWriter.build().create();
             writer.writeGraph(bos, this.tinkerGraph);
             bos.flush();
             bos.close();
@@ -103,7 +103,7 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
     private void inflateTinkerVertex() {
         try {
             final ByteArrayInputStream bis = new ByteArrayInputStream(this.getValue().getBytes());
-            final KryoReader reader = KryoReader.create().build();
+            final KryoReader reader = KryoReader.build().create();
             this.tinkerGraph = TinkerGraph.open();
             reader.readGraph(bis, this.tinkerGraph);
             bis.close();

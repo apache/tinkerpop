@@ -63,10 +63,10 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter {
                         // send back a page of results if batch size is met or if it's the end of the results being
                         // iterated
                         if (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
-                            ctx.writeAndFlush(ResponseMessage.create(requestMessage)
+                            ctx.writeAndFlush(ResponseMessage.build(requestMessage)
                                     .code(ResultCode.SUCCESS)
                                     .result(aggregate)
-                                    .contents(ResultType.COLLECTION).build());
+                                    .contents(ResultType.COLLECTION).create());
                             aggregate = new ArrayList<>(resultIterationBatchSize);
                         }
 
@@ -86,10 +86,10 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter {
                     if (!f.isSuccess()) {
                         final String errorMessage = String.format("Response iteration and serialization exceeded the configured threshold for request [%s] - %s", msg, f.cause().getMessage());
                         logger.warn(errorMessage);
-                        ctx.writeAndFlush(ResponseMessage.create(requestMessage).code(ResultCode.SERVER_ERROR_TIMEOUT).result(errorMessage).build());
+                        ctx.writeAndFlush(ResponseMessage.build(requestMessage).code(ResultCode.SERVER_ERROR_TIMEOUT).result(errorMessage).create());
                     }
 
-                    ctx.writeAndFlush(ResponseMessage.create(requestMessage).code(ResultCode.SUCCESS_TERMINATOR).build());
+                    ctx.writeAndFlush(ResponseMessage.build(requestMessage).code(ResultCode.SUCCESS_TERMINATOR).create());
                 });
             } finally {
                 ReferenceCountUtil.release(msg);

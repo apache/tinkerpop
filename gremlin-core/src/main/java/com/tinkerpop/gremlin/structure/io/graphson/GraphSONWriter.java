@@ -80,7 +80,7 @@ public class GraphSONWriter implements GraphWriter {
         writer.flush();
     }
 
-    public static Builder create() {
+    public static Builder build() {
         return new Builder();
     }
 
@@ -127,8 +127,8 @@ public class GraphSONWriter implements GraphWriter {
             return this;
         }
 
-        public GraphSONWriter build() {
-            final GraphSONObjectMapper mapper = GraphSONObjectMapper.create()
+        public GraphSONWriter create() {
+            final GraphSONObjectMapper mapper = GraphSONObjectMapper.build()
                     .customModule(custom)
                     .loadCustomModules(loadCustomModules)
                     .normalize(normalize)

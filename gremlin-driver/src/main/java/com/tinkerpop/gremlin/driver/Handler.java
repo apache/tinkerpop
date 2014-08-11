@@ -41,8 +41,8 @@ class Handler {
                         final List<Object> listToUnroll = (List<Object>) response.getResult();
                         final ResponseQueue queue = pending.get(response.getRequestId());
                         listToUnroll.forEach(item -> queue.add(
-                                ResponseMessage.create(response.getRequestId())
-                                        .result(item).build()));
+                                ResponseMessage.build(response.getRequestId())
+                                        .result(item).create()));
                     } else if (response.getResultType() == ResultType.EMPTY) {
                         // there is nothing to do with ResultType.EMPTY - it will simply be marked complete with
                         // a success terminator

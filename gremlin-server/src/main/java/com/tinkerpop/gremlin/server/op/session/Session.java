@@ -9,14 +9,12 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -62,7 +60,7 @@ public class Session {
                 .findFirst().orElse(SessionOpProcessor.DEFAULT_SETTINGS);
         this.configuredSessionTimeout = Long.parseLong(processorSettings.config.get(SessionOpProcessor.CONFIG_SESSION_TIMEOUT).toString());
 
-        this.gremlinExecutor =  initializeGremlinExecutor().build();
+        this.gremlinExecutor =  initializeGremlinExecutor().create();
     }
 
     public GremlinExecutor getGremlinExecutor() {
@@ -87,7 +85,7 @@ public class Session {
     }
 
     private GremlinExecutor.Builder initializeGremlinExecutor() {
-        final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.create()
+        final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.build()
                 .scriptEvaluationTimeout(settings.scriptEvaluationTimeout)
                 .afterTimeout(b -> {
                     graphs.rollbackAll();

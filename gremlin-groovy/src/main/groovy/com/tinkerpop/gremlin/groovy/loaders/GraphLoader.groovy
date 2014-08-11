@@ -34,7 +34,7 @@ class GraphLoader {
 
         // GraphML loading and saving
         Graph.metaClass.loadGraphML = { final def fileObject ->
-            final GraphMLReader reader = GraphMLReader.create().build();
+            final GraphMLReader reader = GraphMLReader.build().create();
             try {
                 reader.readGraph(new URL(fileObject).openStream(), (Graph) delegate);
             } catch (final MalformedURLException e) {
@@ -43,12 +43,12 @@ class GraphLoader {
         }
 
         Graph.metaClass.saveGraphML = { final def fileObject ->
-            GraphMLWriter.create().build().writeGraph(new FileOutputStream(fileObject), (Graph) delegate)
+            GraphMLWriter.build().create().writeGraph(new FileOutputStream(fileObject), (Graph) delegate)
         }
 
         // GraphSON loading and saving
         Graph.metaClass.loadGraphSON = { final def fileObject ->
-            final GraphSONReader reader = GraphSONReader.create().build();
+            final GraphSONReader reader = GraphSONReader.build().create();
             try {
                 reader.readGraph(new URL(fileObject).openStream(), (Graph) delegate);
             } catch (final MalformedURLException e) {
@@ -57,12 +57,12 @@ class GraphLoader {
         }
 
         Graph.metaClass.saveGraphSON = { final def fileObject ->
-            GraphSONWriter.create().build().writeGraph(new FileOutputStream(fileObject), (Graph) delegate)
+            GraphSONWriter.build().create().writeGraph(new FileOutputStream(fileObject), (Graph) delegate)
         }
 
         // Kryo loading and saving
         Graph.metaClass.loadKryo = { final def fileObject ->
-            final KryoReader reader = KryoReader.create().build();
+            final KryoReader reader = KryoReader.build().create();
             try {
                 reader.readGraph(new URL(fileObject).openStream(), (Graph) delegate);
             } catch (final MalformedURLException e) {
@@ -71,7 +71,7 @@ class GraphLoader {
         }
 
         Graph.metaClass.saveKryo = { final def fileObject ->
-            KryoWriter.create().build().writeGraph(new FileOutputStream(fileObject), (Graph) delegate)
+            KryoWriter.build().create().writeGraph(new FileOutputStream(fileObject), (Graph) delegate)
         }
 
 

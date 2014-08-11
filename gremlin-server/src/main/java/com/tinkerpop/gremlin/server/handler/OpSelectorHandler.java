@@ -61,7 +61,7 @@ public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
             else {
                 // invalid op processor selected so write back an error by way of OpProcessorException.
                 final String errorMessage = String.format("Invalid OpProcessor requested [%s]", msg.getProcessor());
-                throw new OpProcessorException(errorMessage, ResponseMessage.create(msg).code(ResultCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(errorMessage).build());
+                throw new OpProcessorException(errorMessage, ResponseMessage.build(msg).code(ResultCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(errorMessage).create());
             }
         } catch (OpProcessorException ope) {
             errorMeter.mark();

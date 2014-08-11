@@ -55,7 +55,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
      * will be overriden by {@link #configure} is called.
      */
     public KryoMessageSerializerV1d0() {
-        gremlinKryo = GremlinKryo.create(GremlinKryo.Version.V_1_0_0).build();
+        gremlinKryo = GremlinKryo.build(GremlinKryo.Version.V_1_0_0).create();
     }
 
     /**
@@ -76,7 +76,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
                     config.getOrDefault(TOKEN_EXTENDED_VERSION, ""), TOKEN_EXTENDED_VERSION, this.getClass().getName()), ex);
         }
 
-        final GremlinKryo.Builder builder = GremlinKryo.create(GremlinKryo.Version.V_1_0_0).extendedVersion(extendedVersion);
+        final GremlinKryo.Builder builder = GremlinKryo.build(GremlinKryo.Version.V_1_0_0).extendedVersion(extendedVersion);
 
         final List<String> classNameList;
         try {
@@ -125,7 +125,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
 
         this.serializeToString = Boolean.parseBoolean(config.getOrDefault(TOKEN_SERIALIZE_RESULT_TO_STRING, "false").toString());
 
-        this.gremlinKryo = builder.build();
+        this.gremlinKryo = builder.create();
     }
 
     @Override
@@ -141,11 +141,11 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
             msg.readBytes(payload);
             try (final Input input = new Input(payload)) {
                 final Map<String, Object> responseData = (Map<String, Object>) kryo.readClassAndObject(input);
-                return ResponseMessage.create(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
+                return ResponseMessage.build(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
                         .code(ResultCode.getFromValue((Integer) responseData.get(SerTokens.TOKEN_CODE)))
                         .result(responseData.get(SerTokens.TOKEN_RESULT))
                         .contents(ResultType.getFromValue((Integer) responseData.get(SerTokens.TOKEN_TYPE)))
-                        .build();
+                        .create();
             }
         } catch (Exception ex) {
             logger.warn("Response [{}] could not be deserialized by {}.", msg, KryoMessageSerializerV1d0.class.getName());
@@ -193,12 +193,12 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
             msg.readBytes(payload);
             try (final Input input = new Input(payload)) {
                 final Map<String, Object> requestData = (Map<String, Object>) kryo.readClassAndObject(input);
-                final RequestMessage.Builder builder = RequestMessage.create((String) requestData.get(SerTokens.TOKEN_OP))
+                final RequestMessage.Builder builder = RequestMessage.build((String) requestData.get(SerTokens.TOKEN_OP))
                         .overrideRequestId((UUID) requestData.get(SerTokens.TOKEN_REQUEST))
                         .processor((String) requestData.get(SerTokens.TOKEN_PROCESSOR));
                 final Map<String, Object> args = (Map<String, Object>) requestData.get(SerTokens.TOKEN_ARGS);
                 args.forEach(builder::addArg);
-                return builder.build();
+                return builder.create();
             }
         } catch (Exception ex) {
             logger.warn("Request [{}] could not be deserialized by {}.", msg, KryoMessageSerializerV1d0.class.getName());

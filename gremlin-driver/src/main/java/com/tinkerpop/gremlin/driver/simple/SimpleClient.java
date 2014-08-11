@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 public interface SimpleClient extends Closeable {
 
     public default void submit(final String gremlin, final Consumer<ResponseMessage> callback) throws Exception {
-        submit(RequestMessage.create(Tokens.OPS_EVAL).addArg(Tokens.ARGS_GREMLIN, gremlin).build(), callback);
+        submit(RequestMessage.build(Tokens.OPS_EVAL).addArg(Tokens.ARGS_GREMLIN, gremlin).create(), callback);
     }
 
     public void submit(final RequestMessage requestMessage, final Consumer<ResponseMessage> callback) throws Exception;

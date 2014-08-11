@@ -80,9 +80,9 @@ public class GraphMLReader implements GraphReader {
         final BatchGraph graph;
         try {
             // will throw an exception if not constructed properly
-            graph = BatchGraph.create(graphToWriteTo)
+            graph = BatchGraph.build(graphToWriteTo)
                     .vertexIdKey(vertexIdKey)
-                    .bufferSize(batchSize).build();
+                    .bufferSize(batchSize).create();
         } catch (Exception ex) {
             throw new IOException("Could not instantiate BatchGraph wrapper", ex);
         }
@@ -225,7 +225,7 @@ public class GraphMLReader implements GraphReader {
             return value;
     }
 
-    public static Builder create() {
+    public static Builder build() {
         return new Builder();
     }
 
@@ -267,7 +267,7 @@ public class GraphMLReader implements GraphReader {
             return this;
         }
 
-        public GraphMLReader build() {
+        public GraphMLReader create() {
             return new GraphMLReader(vertexIdKey, edgeIdKey, edgeLabelKey, vertexLabelKey, batchSize);
         }
     }

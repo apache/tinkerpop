@@ -21,7 +21,7 @@ public class KryoRecordWriter extends RecordWriter<NullWritable, GiraphInternalV
 
     public KryoRecordWriter(final DataOutputStream out) {
         this.out = out;
-        this.kryoWriter = KryoWriter.create().build();
+        this.kryoWriter = KryoWriter.build().create();
     }
 
     @Override

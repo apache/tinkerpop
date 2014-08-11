@@ -30,12 +30,12 @@ import static org.junit.Assert.assertNotNull;
 public class JsonMessageSerializerV1d0Test {
 
     public static final JsonMessageSerializerV1d0 SERIALIZER = new JsonMessageSerializerV1d0();
-    private static final RequestMessage msg = RequestMessage.create("op")
-            .overrideRequestId(UUID.fromString("2D62161B-9544-4F39-AF44-62EC49F9A595")).build();
+    private static final RequestMessage msg = RequestMessage.build("op")
+            .overrideRequestId(UUID.fromString("2D62161B-9544-4F39-AF44-62EC49F9A595")).create();
 
     @Test
     public void serializeToJsonNullResultReturnsNull() throws Exception {
-        final ResponseMessage message = ResponseMessage.create(msg).build();
+        final ResponseMessage message = ResponseMessage.build(msg).create();
         final String results = SERIALIZER.serializeResponseAsString(message);
         final JSONObject json = new JSONObject(results);
         assertNotNull(json);
@@ -49,7 +49,7 @@ public class JsonMessageSerializerV1d0Test {
         funList.add(new FunObject("x"));
         funList.add(new FunObject("y"));
 
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.create(msg).result(funList).build());
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(funList).create());
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -68,7 +68,7 @@ public class JsonMessageSerializerV1d0Test {
         funList.add(new FunObject("x"));
         funList.add(new FunObject("y"));
 
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.create(msg).result(funList.iterator()).build());
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(funList.iterator()).create());
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -89,7 +89,7 @@ public class JsonMessageSerializerV1d0Test {
         funList.add(null);
         funList.add(new FunObject("y"));
 
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.create(msg).result(funList.iterator()).build());
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(funList.iterator()).create());
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -113,7 +113,7 @@ public class JsonMessageSerializerV1d0Test {
         map.put("y", "some");
         map.put("z", innerMap);
 
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.create(msg).result(map).build());
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(map).create());
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -136,7 +136,7 @@ public class JsonMessageSerializerV1d0Test {
         v.property(Graph.Key.hide("hidden"), "stephen");
 
         final Iterable iterable = g.V().toList();
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.create(msg).result(iterable).build());
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(iterable).create());
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -174,7 +174,7 @@ public class JsonMessageSerializerV1d0Test {
         e.property("abc", 123);
 
         final Iterable<Edge> iterable = g.E().toList();
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.create(msg).result(iterable).build());
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(iterable).create());
 
         final JSONObject json = new JSONObject(results);
 
@@ -216,7 +216,7 @@ public class JsonMessageSerializerV1d0Test {
         v.property("friends", friends);
 
         final Iterable iterable = g.V().toList();
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.create(msg).result(iterable).build());
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(iterable).create());
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -253,7 +253,7 @@ public class JsonMessageSerializerV1d0Test {
         final Map<Vertex, Integer> map = new HashMap<>();
         map.put(g.V().<Vertex>has("name", Compare.EQUAL, "marko").next(), 1000);
 
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.create(msg).result(map).build());
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(map).create());
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);

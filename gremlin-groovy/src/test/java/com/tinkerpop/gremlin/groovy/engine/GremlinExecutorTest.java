@@ -1,19 +1,12 @@
 package com.tinkerpop.gremlin.groovy.engine;
 
-import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
-import com.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
-import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTest;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import groovy.lang.Closure;
-import groovy.lang.Script;
 import org.junit.Test;
 import org.kohsuke.groovy.sandbox.GroovyInterceptor;
-import org.kohsuke.groovy.sandbox.GroovyValueFilter;
 
 import javax.script.Bindings;
-import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.io.File;
 import java.util.Arrays;
@@ -41,13 +34,13 @@ import static org.junit.Assert.fail;
 public class GremlinExecutorTest {
     @Test
     public void shouldEvalScript() throws Exception {
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.create().build();
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
         assertEquals(2, gremlinExecutor.eval("1+1").get());
     }
 
     @Test
     public void shouldEvalMultipleScripts() throws Exception {
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.create().build();
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
         assertEquals(2, gremlinExecutor.eval("1+1").get());
         assertEquals(3, gremlinExecutor.eval("1+2").get());
         assertEquals(4, gremlinExecutor.eval("1+3").get());
@@ -58,7 +51,7 @@ public class GremlinExecutorTest {
 
     @Test
     public void shouldEvalScriptWithBindings() throws Exception {
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.create().build();
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
         final Bindings b = new SimpleBindings();
         b.put("x", 1);
         assertEquals(2, gremlinExecutor.eval("1+x", b).get());
@@ -68,7 +61,7 @@ public class GremlinExecutorTest {
     public void shouldEvalScriptWithGlobalBindings() throws Exception {
         final Bindings b = new SimpleBindings();
         b.put("x", 1);
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.create().globalBindings(b).build();
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().globalBindings(b).create();
         assertEquals(2, gremlinExecutor.eval("1+x").get());
     }
 
@@ -76,7 +69,7 @@ public class GremlinExecutorTest {
     public void shouldEvalScriptWithGlobalAndLocalBindings() throws Exception {
         final Bindings g = new SimpleBindings();
         g.put("x", 1);
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.create().globalBindings(g).build();
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().globalBindings(g).create();
         final Bindings b = new SimpleBindings();
         b.put("y", 1);
         assertEquals(2, gremlinExecutor.eval("y+x", b).get());
@@ -86,7 +79,7 @@ public class GremlinExecutorTest {
     public void shouldEvalScriptWithLocalOverridingGlobalBindings() throws Exception {
         final Bindings g = new SimpleBindings();
         g.put("x", 1);
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.create().globalBindings(g).build();
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().globalBindings(g).create();
         final Bindings b = new SimpleBindings();
         b.put("x", 10);
         assertEquals(11, gremlinExecutor.eval("x+1", b).get());
@@ -97,11 +90,11 @@ public class GremlinExecutorTest {
         final AtomicBoolean timeoutCalled = new AtomicBoolean(false);
         final AtomicBoolean successCalled = new AtomicBoolean(false);
         final AtomicBoolean failureCalled = new AtomicBoolean(false);
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.create()
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .scriptEvaluationTimeout(500)
                 .afterFailure((b, e) -> failureCalled.set(true))
                 .afterSuccess((b) -> successCalled.set(true))
-                .afterTimeout((b) -> timeoutCalled.set(true)).build();
+                .afterTimeout((b) -> timeoutCalled.set(true)).create();
         try {
             gremlinExecutor.eval("Thread.sleep(1000);10").get();
             fail();
@@ -122,10 +115,10 @@ public class GremlinExecutorTest {
         final AtomicBoolean timeoutCalled = new AtomicBoolean(false);
         final AtomicBoolean successCalled = new AtomicBoolean(false);
         final AtomicBoolean failureCalled = new AtomicBoolean(false);
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.create()
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .afterFailure((b, e) -> failureCalled.set(true))
                 .afterSuccess((b) -> successCalled.set(true))
-                .afterTimeout((b) -> timeoutCalled.set(true)).build();
+                .afterTimeout((b) -> timeoutCalled.set(true)).create();
         try {
             gremlinExecutor.eval("10/0").get();
             fail();
@@ -146,10 +139,10 @@ public class GremlinExecutorTest {
         final AtomicBoolean timeoutCalled = new AtomicBoolean(false);
         final AtomicBoolean successCalled = new AtomicBoolean(false);
         final AtomicBoolean failureCalled = new AtomicBoolean(false);
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.create()
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .afterFailure((b, e) -> failureCalled.set(true))
                 .afterSuccess((b) -> successCalled.set(true))
-                .afterTimeout((b) -> timeoutCalled.set(true)).build();
+                .afterTimeout((b) -> timeoutCalled.set(true)).create();
         assertEquals(2, gremlinExecutor.eval("1+1").get());
 
         // need to wait long enough for the script to complete
@@ -162,7 +155,7 @@ public class GremlinExecutorTest {
 
     @Test
     public void shouldEvalInMultipleThreads() throws Exception {
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.create().build();
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
 
         final CyclicBarrier barrier = new CyclicBarrier(2);
         final AtomicInteger i1 = new AtomicInteger(0);
@@ -204,9 +197,9 @@ public class GremlinExecutorTest {
         // this is not representative of how the GremlinExecutor should be configured.  A single thread executor
         // shared will create odd behaviors, but it's good for this test.
         final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.create()
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .executorService(executorService)
-                .scheduledExecutorService(executorService).build();
+                .scheduledExecutorService(executorService).create();
 
         final AtomicInteger count = new AtomicInteger(0);
         assertTrue(IntStream.range(0, 1000).mapToObj(i -> gremlinExecutor.eval("1+1")).allMatch(f -> {
@@ -224,7 +217,7 @@ public class GremlinExecutorTest {
 
     @Test
     public void shouldFailUntilImportExecutes() throws Exception {
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.create().build();
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
 
         final Set<String> imports = new HashSet<String>() {{
             add("import java.awt.Color");
@@ -264,13 +257,13 @@ public class GremlinExecutorTest {
 
     @Test
     public void shouldInitializeWithScript() throws Exception {
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.create()
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .addEngineSettings("gremlin-groovy",
                         Collections.emptyList(),
                         Collections.emptyList(),
                         Arrays.asList(new File(GremlinExecutorTest.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()),
                         Collections.emptyMap())
-                .build();
+                .create();
 
         assertEquals(2, gremlinExecutor.eval("sum(1,1)").get());
     }
@@ -280,13 +273,13 @@ public class GremlinExecutorTest {
         GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
         final Map<String,Object> config = new HashMap<>();
         config.put("sandbox", GremlinGroovyScriptEngineTest.DenyAll.class.getName());
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.create()
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .addEngineSettings("gremlin-groovy",
                         Collections.emptyList(),
                         Collections.emptyList(),
                         Arrays.asList(new File(GremlinExecutorTest.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()),
                         config)
-                .build();
+                .create();
         try {
             gremlinExecutor.eval("g = new TinkerGraph()").get();
             fail("Should have failed security");
@@ -302,13 +295,13 @@ public class GremlinExecutorTest {
         GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
         final Map<String,Object> config = new HashMap<>();
         config.put("sandbox", GremlinGroovyScriptEngineTest.AllowSome.class.getName());
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.create()
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .addEngineSettings("gremlin-groovy",
                         Collections.emptyList(),
                         Collections.emptyList(),
                         Arrays.asList(new File(GremlinExecutorTest.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()),
                         config)
-                .build();
+                .create();
         try {
             gremlinExecutor.eval("g = 'new TinkerGraph()'").get();
             fail("Should have failed security");
@@ -329,13 +322,13 @@ public class GremlinExecutorTest {
 
     @Test
     public void shouldInitializeWithScriptAndWorkAfterRest() throws Exception {
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.create()
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .addEngineSettings("gremlin-groovy",
                         Collections.emptyList(),
                         Collections.emptyList(),
                         Arrays.asList(new File(GremlinExecutorTest.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()),
                         Collections.emptyMap())
-                .build();
+                .create();
 
         assertEquals(2, gremlinExecutor.eval("sum(1,1)").get());
 

@@ -31,7 +31,7 @@ public class GraphSONRecordWriter extends RecordWriter<NullWritable, GiraphInter
 
     public GraphSONRecordWriter(final DataOutputStream out) {
         this.out = out;
-        this.graphSONWriter = GraphSONWriter.create().build();
+        this.graphSONWriter = GraphSONWriter.build().create();
     }
 
     @Override

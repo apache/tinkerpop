@@ -49,11 +49,11 @@ public class ResponseMessage {
                 '}';
     }
 
-    public static Builder create(final RequestMessage requestMessage) {
+    public static Builder build(final RequestMessage requestMessage) {
         return new Builder(requestMessage);
     }
 
-    public static Builder create(final UUID requestId) {
+    public static Builder build(final UUID requestId) {
         return new Builder(requestId);
     }
 
@@ -87,7 +87,7 @@ public class ResponseMessage {
             return this;
         }
 
-        public ResponseMessage build() {
+        public ResponseMessage create() {
             return new ResponseMessage(requestId, code, result, contents);
         }
     }

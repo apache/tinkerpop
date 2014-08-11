@@ -185,10 +185,10 @@ The following code shows how to write a `Graph` instance to file called `tinkerp
 ----
 final Graph g = TinkerFactory.createClassic();
 try (final OutputStream os = new FileOutputStream("tinkerpop-classic.xml")) {
-    GraphMLWriter.create().build().writeGraph(os, g);
+    GraphMLWriter.build().create().writeGraph(os, g);
 }
 
-final GraphReader reader = GraphMLReader.create().build();
+final GraphReader reader = GraphMLReader.build().create();
 try (final InputStream stream = new FileInputStream("tinkerpop-classic.xml")) {
     reader.readGraph(stream, g);
 }
@@ -208,10 +208,10 @@ GraphSON supports all of the `GraphReader` and `GraphWriter` interface methods a
 ----
 final Graph g = TinkerFactory.createClassic();
 try (final OutputStream os = new FileOutputStream("tinkerpop-classic.json")) {
-    GraphSONWriter.create().build().writeGraph(os, g);
+    GraphSONWriter.build().create().writeGraph(os, g);
 }
 
-final GraphReader reader = GraphSONReader.create().build();
+final GraphReader reader = GraphSONReader.build().create();
 try (final InputStream stream = new FileInputStream("tinkerpop-classic.json")) {
     reader.readGraph(stream, g);
 }
@@ -223,7 +223,7 @@ The `GraphSONReader` and `GraphSONWriter` have a number of options that they can
 ----
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> w = GraphSONWriter.create().build()
+gremlin> w = GraphSONWriter.build().create()
 ==>com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter@1af146
 gremlin> f = new FileOutputStream('test.txt')
 ==>java.io.FileOutputStream@5c8eee0f
@@ -292,7 +292,7 @@ With a minor change to the construction of the `GraphSONWriter` the lossy nature
 
 [source,groovy]
 ----
-gremlin> w = GraphSONWriter.create().embedTypes(true).build()
+gremlin> w = GraphSONWriter.build().embedTypes(true).create()
 ==>com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter@350ec41e
 ----
 
@@ -393,10 +393,10 @@ Kryo supports all of the `GraphReader` and `GraphWriter` interface methods and c
 ----
 final Graph g = TinkerFactory.createClassic();
 try (final OutputStream os = new FileOutputStream("tinkerpop-classic.gio")) {
-    KryoWriter.create().build().writeGraph(os, g);
+    KryoWriter.build().create().writeGraph(os, g);
 }
 
-final GraphReader reader = KryoReader.create().build();
+final GraphReader reader = KryoReader.build().create();
 try (final InputStream stream = new FileInputStream("tinkerpop-classic.gio")) {
     reader.readGraph(stream, g);
 }
@@ -431,7 +431,7 @@ gremlin> Gremlin.version()
 ==>x.y.z
 gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> r = LegacyGraphSONReader.create().build()
+gremlin> r = LegacyGraphSONReader.build().create()
 ==>com.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader@64337702
 gremlin> r.readGraph(new FileInputStream('/tmp/tp2.json'),g)
 ==>null

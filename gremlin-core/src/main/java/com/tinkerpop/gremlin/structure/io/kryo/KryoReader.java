@@ -125,10 +125,10 @@ public class KryoReader implements GraphReader {
         final BatchGraph graph;
         try {
             // will throw an exception if not constructed properly
-            graph = BatchGraph.create(graphToWriteTo)
+            graph = BatchGraph.build(graphToWriteTo)
                     .vertexIdKey(vertexIdKey)
                     .edgeIdKey(edgeIdKey)
-                    .bufferSize(batchSize).build();
+                    .bufferSize(batchSize).create();
         } catch (Exception ex) {
             throw new IOException("Could not instantiate BatchGraph wrapper", ex);
         }
@@ -398,7 +398,7 @@ public class KryoReader implements GraphReader {
         }
     }
 
-    public static Builder create() {
+    public static Builder build() {
         return new Builder();
     }
 
@@ -411,7 +411,7 @@ public class KryoReader implements GraphReader {
         /**
          * Always use the most recent kryo version by default
          */
-        private GremlinKryo gremlinKryo = GremlinKryo.create().build();
+        private GremlinKryo gremlinKryo = GremlinKryo.build().create();
 
         private Builder() {
             this.tempFile = new File(UUID.randomUUID() + ".tmp");
@@ -450,7 +450,7 @@ public class KryoReader implements GraphReader {
             return this;
         }
 
-        public KryoReader build() {
+        public KryoReader create() {
             return new KryoReader(tempFile, batchSize, this.vertexIdKey, this.edgeIdKey, this.gremlinKryo);
         }
     }

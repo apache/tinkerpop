@@ -58,11 +58,11 @@ public class DistributionGeneratorTest {
 
                 try {
                     prepareGraph(g1);
-                    final DistributionGenerator generator = makeGenerator(g1).build();
+                    final DistributionGenerator generator = makeGenerator(g1).create();
                     distributionGeneratorTest(g1, generator);
 
                     prepareGraph(g2);
-                    final DistributionGenerator generator1 = makeGenerator(g2).build();
+                    final DistributionGenerator generator1 = makeGenerator(g2).create();
                     distributionGeneratorTest(g2, generator1);
 
                     same = same(g1, g2);
@@ -77,7 +77,7 @@ public class DistributionGeneratorTest {
         }
 
         private DistributionGenerator.Builder makeGenerator(final Graph g) {
-            return DistributionGenerator.create(g)
+            return DistributionGenerator.build(g)
                     .label("knows")
                     .outDistribution(outDistribution)
                     .inDistribution(inDistribution)
@@ -89,11 +89,11 @@ public class DistributionGeneratorTest {
             final Configuration configuration = graphProvider.newGraphConfiguration("g1");
             final Graph g1 = graphProvider.openTestGraph(configuration);
             try {
-                final DistributionGenerator generator = makeGenerator(g).seedGenerator(() -> 123456789l).build();
+                final DistributionGenerator generator = makeGenerator(g).seedGenerator(() -> 123456789l).create();
                 distributionGeneratorTest(g, generator);
 
                 prepareGraph(g1);
-                final DistributionGenerator generator1 = makeGenerator(g1).seedGenerator(() -> 123456789l).build();
+                final DistributionGenerator generator1 = makeGenerator(g1).seedGenerator(() -> 123456789l).create();
                 distributionGeneratorTest(g1, generator1);
 
                 // ensure that every vertex has the same number of edges between graphs.
@@ -125,12 +125,12 @@ public class DistributionGeneratorTest {
         @Test
         public void shouldProcessEdges() {
             final Distribution dist = new NormalDistribution(2);
-            final DistributionGenerator generator = DistributionGenerator.create(g)
+            final DistributionGenerator generator = DistributionGenerator.build(g)
                     .label("knows")
                     .edgeProcessor(e -> e.<String>property("data", "test"))
                     .outDistribution(dist)
                     .inDistribution(dist)
-                    .expectedNumEdges(100).build();
+                    .expectedNumEdges(100).create();
             final int edgesGenerated = generator.generate();
             assertTrue(edgesGenerated > 0);
             tryCommit(g, g -> {

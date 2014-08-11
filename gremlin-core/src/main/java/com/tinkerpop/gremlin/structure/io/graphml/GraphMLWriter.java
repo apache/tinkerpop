@@ -342,7 +342,7 @@ public class GraphMLWriter implements GraphWriter {
             return GraphMLTokens.STRING;
     }
 
-    public static Builder create() {
+    public static Builder build() {
         return new Builder();
     }
 
@@ -411,7 +411,7 @@ public class GraphMLWriter implements GraphWriter {
             return this;
         }
 
-        public GraphMLWriter build() {
+        public GraphMLWriter create() {
             return new GraphMLWriter(normalize, vertexKeyTypes, edgeKeyTypes, xmlSchemaLocation, edgeLabelKey, vertexLabelKey);
         }
     }

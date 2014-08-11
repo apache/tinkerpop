@@ -9,7 +9,6 @@ import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.ser.JsonBuilderKryoSerializer;
 import com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.util.TimeUtil;
 import com.tinkerpop.gremlin.util.function.SFunction;
@@ -216,7 +215,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final KryoMessageSerializerV1d0 serializer = new KryoMessageSerializerV1d0();
         serializer.configure(m);
 
-        final Cluster cluster = Cluster.create().serializer(serializer).build();
+        final Cluster cluster = Cluster.build().serializer(serializer).create();
         final Client client = cluster.connect();
 
         final ResultSet results = client.submit("TinkerFactory.createClassic()");
@@ -234,7 +233,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final KryoMessageSerializerV1d0 serializer = new KryoMessageSerializerV1d0();
         serializer.configure(m);
 
-        final Cluster cluster = Cluster.create().serializer(serializer).build();
+        final Cluster cluster = Cluster.build().serializer(serializer).create();
         final Client client = cluster.connect();
 
         final List<Item> json = client.submit("b = new JsonBuilder();b.people{person {fname 'stephen'\nlname 'mallette'}};b").all().join();
@@ -245,7 +244,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldEventuallySucceedWithRoundRobin() throws Exception {
         final String noGremlinServer = "74.125.225.19";
-        final Cluster cluster = Cluster.create(noGremlinServer).addContactPoint("localhost").build();
+        final Cluster cluster = Cluster.build(noGremlinServer).addContactPoint("localhost").create();
         final Client client = cluster.connect();
 
         // the first host is dead on init.  request should succeed on localhost
@@ -263,7 +262,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldFailClientSideWithTooLargeAResponse() {
         // todo: maybe a netty issue to look into - test won't pass
 
-        final Cluster cluster = Cluster.create().maxContentLength(1).build();
+        final Cluster cluster = Cluster.build().maxContentLength(1).create();
         final Client client = cluster.connect();
 
         try {
@@ -282,7 +281,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldExecuteScriptInSession() throws Exception {
-        final Cluster cluster = Cluster.create().build();
+        final Cluster cluster = Cluster.build().create();
         final Client client = cluster.connect(name.getMethodName());
 
         final ResultSet results1 = client.submit("x = [1,2,3,4,5,6,7,8,9]");
@@ -300,7 +299,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldExecuteScriptsInMultipleSession() throws Exception {
-        final Cluster cluster = Cluster.create().build();
+        final Cluster cluster = Cluster.build().create();
         final Client client1 = cluster.connect(name.getMethodName() + "1");
         final Client client2 = cluster.connect(name.getMethodName() + "2");
         final Client client3 = cluster.connect(name.getMethodName() + "3");

@@ -21,7 +21,7 @@ public class ItemTest {
 
     @Test
     public void shouldGetString() {
-        final ResponseMessage msg = ResponseMessage.create(id).result("string").build();
+        final ResponseMessage msg = ResponseMessage.build(id).result("string").create();
         final Item item = new Item(msg);
 
         assertEquals("string", item.getString());
@@ -30,7 +30,7 @@ public class ItemTest {
 
     @Test
     public void shouldGetInt() {
-        final ResponseMessage msg = ResponseMessage.create(id).result(100).build();
+        final ResponseMessage msg = ResponseMessage.build(id).result(100).create();
         final Item item = new Item(msg);
 
         assertEquals(100, item.getInt());
@@ -39,7 +39,7 @@ public class ItemTest {
 
     @Test
     public void shouldGetByte() {
-        final ResponseMessage msg = ResponseMessage.create(id).result((byte) 100).build();
+        final ResponseMessage msg = ResponseMessage.build(id).result((byte) 100).create();
         final Item item = new Item(msg);
 
         assertEquals((byte) 100, item.getByte());
@@ -48,7 +48,7 @@ public class ItemTest {
 
     @Test
     public void shouldGetShort() {
-        final ResponseMessage msg = ResponseMessage.create(id).result((short) 100).build();
+        final ResponseMessage msg = ResponseMessage.build(id).result((short) 100).create();
         final Item item = new Item(msg);
 
         assertEquals((short) 100, item.getShort());
@@ -57,7 +57,7 @@ public class ItemTest {
 
     @Test
     public void shouldGetLong() {
-        final ResponseMessage msg = ResponseMessage.create(id).result(100l).build();
+        final ResponseMessage msg = ResponseMessage.build(id).result(100l).create();
         final Item item = new Item(msg);
 
         assertEquals((long) 100, item.getLong());
@@ -66,7 +66,7 @@ public class ItemTest {
 
     @Test
     public void shouldGetFloat() {
-        final ResponseMessage msg = ResponseMessage.create(id).result(100.001f).build();
+        final ResponseMessage msg = ResponseMessage.build(id).result(100.001f).create();
         final Item item = new Item(msg);
 
         assertEquals(100.001f, item.getFloat(), 0.0001f);
@@ -75,7 +75,7 @@ public class ItemTest {
 
     @Test
     public void shouldGetDouble() {
-        final ResponseMessage msg = ResponseMessage.create(id).result(100.001d).build();
+        final ResponseMessage msg = ResponseMessage.build(id).result(100.001d).create();
         final Item item = new Item(msg);
 
         assertEquals(100.001d, item.getDouble(), 0.0001d);
@@ -84,7 +84,7 @@ public class ItemTest {
 
     @Test
     public void shouldGetBoolean() {
-        final ResponseMessage msg = ResponseMessage.create(id).result(true).build();
+        final ResponseMessage msg = ResponseMessage.build(id).result(true).create();
         final Item item = new Item(msg);
 
         assertEquals(true, item.getBoolean());
@@ -94,7 +94,7 @@ public class ItemTest {
     @Test
     public void shouldGetVertex() {
         final Vertex v = g.v(1);
-        final ResponseMessage msg = ResponseMessage.create(id).result(v).build();
+        final ResponseMessage msg = ResponseMessage.build(id).result(v).create();
         final Item item = new Item(msg);
 
         assertEquals(v, item.getVertex());
@@ -106,7 +106,7 @@ public class ItemTest {
     @Test
     public void shouldGetEdge() {
         final Edge e = g.e(11);
-        final ResponseMessage msg = ResponseMessage.create(id).result(e).build();
+        final ResponseMessage msg = ResponseMessage.build(id).result(e).create();
         final Item item = new Item(msg);
 
         assertEquals(e, item.getEdge());

@@ -36,7 +36,7 @@ public class GremlinAdditionPerformanceTest extends AbstractGremlinServerPerform
     public final static int DEFAULT_CONCURRENT_BENCHMARK_ROUNDS = 500;
     public final static int DEFAULT_CONCURRENT_WARMUP_ROUNDS = 10;
 
-    private final static Cluster cluster = Cluster.create("localhost").build();
+    private final static Cluster cluster = Cluster.build("localhost").create();
     private final static Random rand = new Random();
 
     @Rule
@@ -60,9 +60,9 @@ public class GremlinAdditionPerformanceTest extends AbstractGremlinServerPerform
         final Serializers[] mimes = new Serializers[]{Serializers.JSON, Serializers.JSON_V1D0, Serializers.KRYO_V1D0};
         final Serializers mimeType = mimes[rand.nextInt(3)];
         System.out.println(mimeType);
-        final Cluster cluster = Cluster.create("localhost")
+        final Cluster cluster = Cluster.build("localhost")
                 .serializer(mimeType)
-                .build();
+                .create();
         final Client client = cluster.connect();
         assertEquals("2", client.submit("1+1").stream().map(Item::getString).findFirst().orElse("invalid"));
     }

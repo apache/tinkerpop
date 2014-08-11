@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -39,11 +38,11 @@ public abstract class Client {
     /**
      * Makes any final changes to the builder and returns the constructed {@link RequestMessage}.  Implementers
      * may choose to override this message to append data to the request before sending.  By default, this method
-     * will simply call the {@link com.tinkerpop.gremlin.driver.message.RequestMessage.Builder#build()} and return
+     * will simply call the {@link com.tinkerpop.gremlin.driver.message.RequestMessage.Builder#create()} and return
      * the {@link RequestMessage}.
      */
     public RequestMessage buildMessage(final RequestMessage.Builder builder) {
-        return builder.build();
+        return builder.create();
     }
 
     /**
@@ -105,7 +104,7 @@ public abstract class Client {
     public CompletableFuture<ResultSet> submitAsync(final String graph, final SFunction<Graph, Traversal> traversal) {
         try {
             final byte[] bytes = Serializer.serializeObject(traversal);
-            final RequestMessage request = buildMessage(RequestMessage.create(Tokens.OPS_TRAVERSE)
+            final RequestMessage request = buildMessage(RequestMessage.build(Tokens.OPS_TRAVERSE)
                     .add(Tokens.ARGS_GREMLIN, bytes)
                     .add(Tokens.ARGS_GRAPH_NAME, graph)
                     .add(Tokens.ARGS_BATCH_SIZE, cluster.connectionPoolSettings().resultIterationBatchSize));
@@ -122,7 +121,7 @@ public abstract class Client {
     }
 
     public CompletableFuture<ResultSet> submitAsync(final String gremlin, final Map<String, Object> parameters) {
-        final RequestMessage.Builder request = RequestMessage.create(Tokens.OPS_EVAL)
+        final RequestMessage.Builder request = RequestMessage.build(Tokens.OPS_EVAL)
                 .add(Tokens.ARGS_GREMLIN, gremlin)
                 .add(Tokens.ARGS_BATCH_SIZE, cluster.connectionPoolSettings().resultIterationBatchSize);
 
@@ -222,7 +221,7 @@ public abstract class Client {
         public RequestMessage buildMessage(final RequestMessage.Builder builder) {
             builder.processor("session");
             builder.addArg(Tokens.ARGS_SESSION, sessionId);
-            return builder.build();
+            return builder.create();
         }
 
         @Override

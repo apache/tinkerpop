@@ -82,7 +82,7 @@ public class DistributionGenerator extends AbstractGenerator {
         return addedEdges;
     }
 
-    public static Builder create(final Graph g) {
+    public static Builder build(final Graph g) {
         return new Builder(g);
     }
 
@@ -142,7 +142,7 @@ public class DistributionGenerator extends AbstractGenerator {
             return this;
         }
 
-        public DistributionGenerator build() {
+        public DistributionGenerator create() {
             if (null == outDistribution)
                 throw new IllegalStateException("Must set out-distribution before generating edges");
             final Distribution outDist = outDistribution.initialize(SizableIterable.sizeOf(out), expectedNumEdges);

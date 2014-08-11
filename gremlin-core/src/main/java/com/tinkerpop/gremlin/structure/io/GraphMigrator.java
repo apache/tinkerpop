@@ -17,8 +17,8 @@ import java.io.PipedOutputStream;
  */
 public final class GraphMigrator {
 
-    private static final KryoReader defaultKryoReader = KryoReader.create().build();
-    private static final KryoWriter defaultKryoWriter = KryoWriter.create().build();
+    private static final KryoReader defaultKryoReader = KryoReader.build().create();
+    private static final KryoWriter defaultKryoWriter = KryoWriter.build().create();
 
     /**
      * Use Kryo to pipe the data from one graph to another graph.  Uses all default settings for reader/writers.

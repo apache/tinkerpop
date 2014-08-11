@@ -109,14 +109,14 @@ public class CommunityGeneratorTest {
             double localCrossPcent = crossPcent;
             while (!generated) {
                 try {
-                    final CommunityGenerator generator = CommunityGenerator.create(graph)
+                    final CommunityGenerator generator = CommunityGenerator.build(graph)
                             .label("knows")
                             .communityDistribution(communityDistribution)
                             .degreeDistribution(degreeDistribution)
                             .crossCommunityPercentage(localCrossPcent)
                             .expectedNumCommunities(numberOfVertices / 10)
                             .expectedNumEdges(numberOfVertices * 10)
-                            .seedGenerator(seedGenerator).build();
+                            .seedGenerator(seedGenerator).create();
                     final int numEdges = generator.generate();
                     assertTrue(numEdges > 0);
                     tryCommit(graph, g -> assertEquals(new Long(numEdges), g.E().count().next()));
@@ -143,7 +143,7 @@ public class CommunityGeneratorTest {
         @Test
         public void shouldProcessVerticesEdges() {
             final Distribution dist = new NormalDistribution(2);
-            final CommunityGenerator generator = CommunityGenerator.create(g)
+            final CommunityGenerator generator = CommunityGenerator.build(g)
                     .label("knows")
                     .edgeProcessor(e -> e.<String>property("data", "test"))
                     .vertexProcessor((v, m) -> {
@@ -154,7 +154,7 @@ public class CommunityGeneratorTest {
                     .degreeDistribution(dist)
                     .crossCommunityPercentage(0.0d)
                     .expectedNumCommunities(2)
-                    .expectedNumEdges(1000).build();
+                    .expectedNumEdges(1000).create();
             final long edgesGenerated = generator.generate();
             assertTrue(edgesGenerated > 0);
             tryCommit(g, g -> {

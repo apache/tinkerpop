@@ -26,12 +26,12 @@ public class VertexStreamIteratorTest {
         Graph g = TinkerFactory.createClassic();
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.create().build();
+            final KryoWriter writer = KryoWriter.build().create();
             writer.writeVertices(os, g.V(), Direction.BOTH);
 
             final AtomicInteger called = new AtomicInteger(0);
-            final KryoReader reader = KryoReader.create()
-                    .setWorkingDirectory(File.separator + "tmp").build();
+            final KryoReader reader = KryoReader.build()
+                    .setWorkingDirectory(File.separator + "tmp").create();
 
             VertexStreamIterator vsi = new VertexStreamIterator(new ByteArrayInputStream(os.toByteArray()), reader);
 

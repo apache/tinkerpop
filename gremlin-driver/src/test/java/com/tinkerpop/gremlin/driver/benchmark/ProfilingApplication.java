@@ -21,11 +21,11 @@ public class ProfilingApplication {
 
             final int clients = 2;
             final int requests = 10000;
-            final Cluster cluster = Cluster.create(host)
+            final Cluster cluster = Cluster.build(host)
                     .minConnectionPoolSize(64)
                     .maxConnectionPoolSize(128)
                     .nioPoolSize(clients)
-                    .workerPoolSize(clients * 4).build();
+                    .workerPoolSize(clients * 4).create();
 
             // let all the clients fully init before starting to send messages
             final CyclicBarrier barrier = new CyclicBarrier(clients);

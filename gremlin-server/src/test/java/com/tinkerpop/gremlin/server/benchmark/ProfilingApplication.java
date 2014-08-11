@@ -103,8 +103,8 @@ public class ProfilingApplication {
                     final ExecutorService executor = Executors.newSingleThreadExecutor();
                     CompletableFuture.runAsync(() -> {
                         IntStream.range(0, numberOfMessages).forEach(i -> {
-                            final RequestMessage msg = RequestMessage.create(Tokens.OPS_EVAL).add(
-                                    Tokens.ARGS_GREMLIN, "1+1").build();
+                            final RequestMessage msg = RequestMessage.build(Tokens.OPS_EVAL).add(
+                                    Tokens.ARGS_GREMLIN, "1+1").create();
                             final MessageTextSerializer textSerializer = (MessageTextSerializer) Serializers.DEFAULT_REQUEST_SERIALIZER;
                             try {
                                 ch.writeAndFlush(new TextWebSocketFrame(textSerializer.serializeRequestAsString(msg)));

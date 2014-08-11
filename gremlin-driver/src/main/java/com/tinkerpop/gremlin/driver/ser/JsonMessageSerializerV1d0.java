@@ -27,7 +27,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
      * ObjectMapper instance for JSON serialization via Jackson databind.  Uses custom serializers to write
      * out {@link com.tinkerpop.gremlin.structure.Graph} objects and {@code toString} for unknown objects.
      */
-    protected static final ObjectMapper mapper = GraphSONObjectMapper.create()
+    protected static final ObjectMapper mapper = GraphSONObjectMapper.build()
             .customModule(new GremlinServerModule())
             .embedTypes(false)
             .build();
@@ -60,11 +60,11 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
     public ResponseMessage deserializeResponse(final String msg) throws SerializationException {
         try {
             final Map<String, Object> responseData = obtainMapper().readValue(msg, mapTypeReference);
-            return ResponseMessage.create(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
+            return ResponseMessage.build(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
                     .code(ResultCode.getFromValue((Integer) responseData.get(SerTokens.TOKEN_CODE)))
                     .result(responseData.get(SerTokens.TOKEN_RESULT))
                     .contents(ResultType.getFromValue((Integer) responseData.get(SerTokens.TOKEN_TYPE)))
-                    .build();
+                    .create();
         } catch (Exception ex) {
             logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractJsonMessageSerializerV1d0.class.getName());
             throw new SerializationException(ex);

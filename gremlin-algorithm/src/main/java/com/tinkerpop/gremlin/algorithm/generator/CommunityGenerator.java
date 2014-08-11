@@ -137,7 +137,7 @@ public class CommunityGenerator extends AbstractGenerator {
         return addedEdges;
     }
 
-    public static Builder create(final Graph g) {
+    public static Builder build(final Graph g) {
         return new Builder(g);
     }
 
@@ -202,7 +202,7 @@ public class CommunityGenerator extends AbstractGenerator {
             return this;
         }
 
-        public CommunityGenerator build() {
+        public CommunityGenerator create() {
             if (null == communitySize)
                 throw new IllegalStateException("Need to initialize community size distribution");
             if (null == edgeDegree) throw new IllegalStateException("Need to initialize degree distribution");

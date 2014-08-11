@@ -77,7 +77,7 @@ public class RequestMessage {
         return o == null ? Optional.empty() : Optional.of((T) o);
     }
 
-    public static Builder create(final String op) {
+    public static Builder build(final String op) {
         return new Builder(op);
     }
 
@@ -128,7 +128,7 @@ public class RequestMessage {
         /**
          * Create the request message given the settings provided to the {@link Builder}.
          */
-        public RequestMessage build() {
+        public RequestMessage create() {
             return new RequestMessage(requestId, op, processor, args);
         }
     }

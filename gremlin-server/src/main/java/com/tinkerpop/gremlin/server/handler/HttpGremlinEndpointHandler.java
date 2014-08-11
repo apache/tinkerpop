@@ -71,10 +71,10 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             final MessageTextSerializer serializer = (MessageTextSerializer) serializers.getOrDefault("application/json", jsonSerializer);
 
             try {
-                final ResponseMessage responseMessage = ResponseMessage.create(UUID.randomUUID())
+                final ResponseMessage responseMessage = ResponseMessage.build(UUID.randomUUID())
                         .code(ResultCode.SUCCESS)
                         .contents(ResultType.COLLECTION)
-                        .result(gremlinExecutor.eval(script).get()).build();
+                        .result(gremlinExecutor.eval(script).get()).create();
 
                 final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(
                         serializer.serializeResponseAsString(responseMessage).getBytes(UTF8)));

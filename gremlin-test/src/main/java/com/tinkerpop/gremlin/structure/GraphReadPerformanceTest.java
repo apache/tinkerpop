@@ -52,12 +52,12 @@ public class GraphReadPerformanceTest {
 
             final Distribution inDist = new PowerLawDistribution(2.3);
             final Distribution outDist = new PowerLawDistribution(2.8);
-            final DistributionGenerator generator = DistributionGenerator.create(g)
+            final DistributionGenerator generator = DistributionGenerator.build(g)
                     .label("knows")
                     .seedGenerator(r::nextLong)
                     .outDistribution(outDist)
                     .inDistribution(inDist)
-                    .expectedNumEdges(numVertices * 3).build();
+                    .expectedNumEdges(numVertices * 3).create();
             generator.generate();
         }
 

@@ -78,8 +78,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldBatchResultsByTwos() throws Exception {
         try (SimpleClient client = new WebSocketClient()) {
-            final RequestMessage request = RequestMessage.create(Tokens.OPS_EVAL)
-                    .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]").build();
+            final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]").create();
             final AtomicInteger counter = new AtomicInteger(0);
             final AtomicInteger tries = new AtomicInteger(3);
             client.submit(request, r -> counter.incrementAndGet());
@@ -98,9 +98,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldBatchResultsByOnesByOverridingFromClientSide() throws Exception {
         try (SimpleClient client = new WebSocketClient()) {
-            final RequestMessage request = RequestMessage.create(Tokens.OPS_EVAL)
+            final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]")
-                    .addArg(Tokens.ARGS_BATCH_SIZE, 1).build();
+                    .addArg(Tokens.ARGS_BATCH_SIZE, 1).create();
             final AtomicInteger counter = new AtomicInteger(0);
             final AtomicInteger tries = new AtomicInteger(3);
             client.submit(request, r -> counter.incrementAndGet());
@@ -119,8 +119,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldWorkOverNioTransport() throws Exception {
         try (SimpleClient client = new NioClient()) {
-            final RequestMessage request = RequestMessage.create(Tokens.OPS_EVAL)
-                    .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]").build();
+            final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]").create();
             final AtomicInteger counter = new AtomicInteger(0);
             final AtomicInteger tries = new AtomicInteger(3);
             client.submit(request, r -> counter.incrementAndGet());
@@ -192,7 +192,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReceiveFailureOnBadSerialization() throws Exception {
-        final Cluster cluster = Cluster.create("localhost").serializer(Serializers.JSON_V1D0).build();
+        final Cluster cluster = Cluster.build("localhost").serializer(Serializers.JSON_V1D0).create();
         final Client client = cluster.connect();
 
         try {
@@ -228,7 +228,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldFailOnDeadHost() throws Exception {
-        final Cluster cluster = Cluster.create("localhost").serializer(Serializers.JSON_V1D0).build();
+        final Cluster cluster = Cluster.build("localhost").serializer(Serializers.JSON_V1D0).create();
         final Client client = cluster.connect();
 
         // ensure that connection to server is good
@@ -250,7 +250,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldHaveTheSessionTimeout() throws Exception {
-        final Cluster cluster = Cluster.create().build();
+        final Cluster cluster = Cluster.build().create();
         final Client client = cluster.connect(name.getMethodName());
 
         final ResultSet results1 = client.submit("x = [1,2,3,4,5,6,7,8,9]");

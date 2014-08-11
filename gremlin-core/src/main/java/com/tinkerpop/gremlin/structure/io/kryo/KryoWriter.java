@@ -165,7 +165,7 @@ public class KryoWriter implements GraphWriter {
         kryo.writeClassAndObject(output, val.value());
     }
 
-    public static Builder create() {
+    public static Builder build() {
         return new Builder();
     }
 
@@ -173,7 +173,7 @@ public class KryoWriter implements GraphWriter {
         /**
          * Always creates the most current version available.
          */
-        private GremlinKryo gremlinKryo = GremlinKryo.create().build();
+        private GremlinKryo gremlinKryo = GremlinKryo.build().create();
 
         private Builder() {
         }
@@ -183,7 +183,7 @@ public class KryoWriter implements GraphWriter {
             return this;
         }
 
-        public KryoWriter build() {
+        public KryoWriter create() {
             return new KryoWriter(this.gremlinKryo);
         }
     }

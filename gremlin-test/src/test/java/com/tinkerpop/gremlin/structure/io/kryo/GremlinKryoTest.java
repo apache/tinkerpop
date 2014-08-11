@@ -10,7 +10,7 @@ import static org.junit.Assert.assertNotSame;
 public class GremlinKryoTest {
     @Test
     public void shouldGetMostRecentVersion() {
-        final GremlinKryo.Builder b = GremlinKryo.create();
-        assertNotSame(b, GremlinKryo.create());
+        final GremlinKryo.Builder b = GremlinKryo.build();
+        assertNotSame(b, GremlinKryo.build());
     }
 }

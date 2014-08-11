@@ -45,7 +45,7 @@ public class KryoRecordReader extends RecordReader<NullWritable, GiraphInternalV
         FileSystem fs = file.getFileSystem(job);
         inputStream = fs.open(split.getPath());
         inputStream.seek(start);
-        vertexStreamIterator = new VertexStreamIterator(inputStream, KryoReader.create().build());
+        vertexStreamIterator = new VertexStreamIterator(inputStream, KryoReader.build().create());
     }
 
     @Override

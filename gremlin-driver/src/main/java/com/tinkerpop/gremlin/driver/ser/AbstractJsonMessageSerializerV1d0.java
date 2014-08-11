@@ -98,11 +98,11 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
             final byte[] payload = new byte[msg.readableBytes()];
             msg.readBytes(payload);
             final Map<String, Object> responseData = obtainMapper().readValue(payload, mapTypeReference);
-            return ResponseMessage.create(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
+            return ResponseMessage.build(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
                     .code(ResultCode.getFromValue((Integer) responseData.get(SerTokens.TOKEN_CODE)))
                     .result(responseData.get(SerTokens.TOKEN_RESULT))
                     .contents(ResultType.getFromValue((Integer) responseData.get(SerTokens.TOKEN_TYPE)))
-                    .build();
+                    .create();
         } catch (Exception ex) {
             logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractJsonMessageSerializerV1d0.class.getName());
             throw new SerializationException(ex);

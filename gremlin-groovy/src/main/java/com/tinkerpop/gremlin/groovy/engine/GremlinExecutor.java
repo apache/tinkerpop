@@ -240,16 +240,16 @@ public class GremlinExecutor implements AutoCloseable {
     /**
      * Create a {@code Builder} with the gremlin-groovy ScriptEngine configured.
      */
-    public static Builder create() {
+    public static Builder build() {
         return new Builder().addEngineSettings("gremlin-groovy", new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new HashMap<>());
     }
 
     /**
      * Create a {@code Builder} and specify the first ScriptEngine to be included.
      */
-    public static Builder create(final String engineName, final List<String> imports,
-                                 final List<String> staticImports, final List<String> scripts,
-                                 final Map<String,Object> config) {
+    public static Builder build(final String engineName, final List<String> imports,
+                                final List<String> staticImports, final List<String> scripts,
+                                final Map<String, Object> config) {
         return new Builder().addEngineSettings(engineName, imports, staticImports, scripts, config);
     }
 
@@ -378,7 +378,7 @@ public class GremlinExecutor implements AutoCloseable {
             return this;
         }
 
-        public GremlinExecutor build() {
+        public GremlinExecutor create() {
             return new GremlinExecutor(settings, use, scriptEvaluationTimeout, globalBindings, executorService,
                     scheduledExecutorService, beforeEval, afterSuccess, afterTimeout, afterFailure);
         }

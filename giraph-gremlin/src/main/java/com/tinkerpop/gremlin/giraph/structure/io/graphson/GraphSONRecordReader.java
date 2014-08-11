@@ -32,7 +32,7 @@ public class GraphSONRecordReader extends RecordReader<NullWritable, GiraphInter
 
     public GraphSONRecordReader() {
         this.lineRecordReader = new LineRecordReader();
-        this.graphSONReader = GraphSONReader.create().build();
+        this.graphSONReader = GraphSONReader.build().create();
     }
 
     @Override
