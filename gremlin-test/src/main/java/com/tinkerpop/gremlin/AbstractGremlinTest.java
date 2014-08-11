@@ -13,8 +13,11 @@ import org.junit.Rule;
 import org.junit.rules.TestName;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -55,9 +58,19 @@ public abstract class AbstractGremlinTest {
         g = graphProvider.openTestGraph(config, strategyToTest);
 
         final Method testMethod = this.getClass().getMethod(cleanMethodName(name.getMethodName()));
+
+        final LoadGraphWith[] loadGraphWiths = testMethod.getAnnotationsByType(LoadGraphWith.class);
+
+        // get feature requirements on the test method and add them to the list of ones to check
         final FeatureRequirement[] featureRequirement = testMethod.getAnnotationsByType(FeatureRequirement.class);
-        final List<FeatureRequirement> frs = Arrays.asList(featureRequirement);
-        for (FeatureRequirement fr : frs) {
+        final List<FeatureRequirement> frs = new ArrayList<>(Arrays.asList(featureRequirement));
+
+        // if the graph is loading data then it will come with it's own requirements
+        if (loadGraphWiths.length > 0) frs.addAll(loadGraphWiths[0].value().featuresRequired());
+
+        // process the unique set of feature requirements
+        final Set<FeatureRequirement> featureRequirementSet = new HashSet<>(frs);
+        for (FeatureRequirement fr : featureRequirementSet) {
             try {
                 //System.out.println(String.format("Assume that %s meets Feature Requirement - %s - with %s", fr.featureClass().getSimpleName(), fr.feature(), fr.supported()));
                 assumeThat(g.getFeatures().supports(fr.featureClass(), fr.feature()), is(fr.supported()));
@@ -67,7 +80,6 @@ public abstract class AbstractGremlinTest {
         }
 
         // load a graph with sample data if the annotation is present on the test
-        final LoadGraphWith[] loadGraphWiths = testMethod.getAnnotationsByType(LoadGraphWith.class);
         if (loadGraphWiths.length > 0) graphProvider.loadGraphData(g, loadGraphWiths[0]);
 
         prepareGraph(g);

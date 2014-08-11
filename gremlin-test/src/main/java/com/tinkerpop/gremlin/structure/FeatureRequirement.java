@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
+import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
@@ -39,4 +40,35 @@ public @interface FeatureRequirement {
      * set to true.
      */
     boolean supported() default true;
+
+    public static class Factory {
+        public static FeatureRequirement create(final String feature, final Class<? extends Graph.Features.FeatureSet> featureClass) {
+            return create(feature, featureClass, true);
+        }
+
+        public static FeatureRequirement create(final String feature, final Class<? extends Graph.Features.FeatureSet> featureClass,
+                                                final boolean supported) {
+            return new FeatureRequirement() {
+                @Override
+                public String feature() {
+                    return feature;
+                }
+
+                @Override
+                public Class<? extends Graph.Features.FeatureSet> featureClass() {
+                    return featureClass;
+                }
+
+                @Override
+                public boolean supported() {
+                    return supported;
+                }
+
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return FeatureRequirement.class;
+                }
+            };
+        }
+    }
 }
