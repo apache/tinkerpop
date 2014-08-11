@@ -13,7 +13,6 @@ import com.tinkerpop.gremlin.process.graph.step.map.match.IteratorEnumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStep;
 import com.tinkerpop.gremlin.process.graph.step.util.As;
 import com.tinkerpop.gremlin.process.util.MapHelper;
-import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -47,7 +46,11 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Object> get_g_V_matchXa_out_bX_selectXb_idX();
 
-    public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_knows_b__b_created_cX();
+    public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_outXknowsX_b__b_outXcreatedX_cX();
+
+    public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_outXknowsX_b__a_outXcreatedX_cX();
+
+    public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXd_inXknowsX_a__d_hasXname_vadasX__a_outXknowsX_b__b_outXcreatedX_cX();
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_out_jump2_bX_selectXab_nameX();
 
@@ -109,11 +112,33 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_a_outXknowsX_b__b_outXcreatedX_c() throws Exception {
-        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_knows_b__b_created_cX();
+        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_outXknowsX_b__b_outXcreatedX_cX();
         printTraversalForm(traversal);
         assertResults(vertexToStr, traversal,
                 new Bindings<Vertex>().put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "josh")).put("c", convertToVertex(g, "lop")),
                 new Bindings<Vertex>().put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "josh")).put("c", convertToVertex(g, "ripple")));
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_a_outXknowsX_b__a_outXcreatedX_c() throws Exception {
+        // this query is a simple tree, as opposed to a linked list structure
+        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_outXknowsX_b__a_outXcreatedX_cX();
+        printTraversalForm(traversal);
+        assertResults(vertexToStr, traversal,
+                new Bindings<Vertex>().put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "vadas")).put("c", convertToVertex(g, "lop")),
+                new Bindings<Vertex>().put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "josh")).put("c", convertToVertex(g, "lop")));
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_matchXd_inXknowsX_a__d_hasXname_vadasX__a_outXknowsX_b__b_outXcreatedX_cX() throws Exception {
+        // this query is a tree with three leaves
+        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXd_inXknowsX_a__d_hasXname_vadasX__a_outXknowsX_b__b_outXcreatedX_cX();
+        printTraversalForm(traversal);
+        assertResults(vertexToStr, traversal,
+                new Bindings<Vertex>().put("d", convertToVertex(g, "vadas")).put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "josh")).put("c", convertToVertex(g, "lop")),
+                new Bindings<Vertex>().put("d", convertToVertex(g, "vadas")).put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "josh")).put("c", convertToVertex(g, "ripple")));
     }
 
     @Test
@@ -237,6 +262,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                 new Bindings<Vertex>().put("a", convertToVertex(g, "Garcia")).put("b", convertToVertex(g, "CRYPTICAL ENVELOPMENT")));
     }
 
+    /* TODO: is it necessary to implement each of these traversals three times?
     @Test
     @LoadGraphWith(CLASSIC)
     public void testTraversalUpdater() throws Exception {
@@ -260,6 +286,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                 g.of().as("a").outV().has("name", "marko").as("b"),
                 g.E());
     }
+    */
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -291,8 +318,8 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
         // apply the query to the graph, gathering non-trivial branch factors
         assertResults(query.solveFor(iter),
-                new Bindings<>().put("d", "v[2]").put("a", "v[1]").put("b", "v[4]").put("c", "v[3]"),
-                new Bindings<>().put("d", "v[2]").put("a", "v[1]").put("b", "v[4]").put("c", "v[5]"));
+                new Bindings<>().put("d", convertToVertex(g, "vadas")).put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "josh")).put("c", convertToVertex(g, "lop")),
+                new Bindings<>().put("d", convertToVertex(g, "vadas")).put("a", convertToVertex(g, "marko")).put("b", convertToVertex(g, "josh")).put("c", convertToVertex(g, "ripple")));
         query.optimize();
         System.out.println(query.summarize());
         // c still costs nothing (no outgoing traversals)
@@ -314,27 +341,6 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         assertEquals(11 / 36.0, query.findCost("d"), 0.001);
     }
 
-    @Test
-    @LoadGraphWith(GRATEFUL)
-    public void testPerformance() throws Exception {
-        long startTime, endTime;
-        startTime = System.currentTimeMillis();
-        MatchStep<Object, Object> query = new MatchStep<>(g.V().has("name", "Garcia"), "garcia",
-                g.of().as("garcia").in("sung_by").as("song"),
-                g.of().as("song").out("written_by", "writer"));
-        Enumerator<Object> solutions = query.solveFor(g.V().has("name", "Garcia"));
-        exhaust(solutions);
-        endTime = System.currentTimeMillis();
-        assertEquals(147, solutions.size());
-        System.out.println("finished in " + (endTime - startTime) + "ms");
-
-        startTime = System.currentTimeMillis();
-        long count = g.V().has("name", "Garcia").as("garcia").in("sung_by").as("song").out("written_by").as("writer").count().next();
-        endTime = System.currentTimeMillis();
-        assertEquals(147, count);
-        System.out.println("finished in " + (endTime - startTime) + "ms");
-    }
-
     // TODO: uncomment when query cycles are supported
     /*
     @Test
@@ -354,54 +360,16 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     }
     */
 
-    /*
-    @Test
-    @LoadGraphWith(GRATEFUL)
-    public void testStartsPerOptimize() throws Exception {
-        long startTime, endTime;
-        startTime = System.currentTimeMillis();
-        MatchStep<Object, Object> query = createQuery1(g);
-        query.setStartsPerOptimize(1);
-        Enumerator<Object> solutions = query.solveFor(g.V().has("name", "Garcia"));
-        exhaust(solutions);
-        endTime = System.currentTimeMillis();
-        assertEquals(147, solutions.size());
-        System.out.println("finished in " + (endTime - startTime) + "ms");
-
-        startTime = System.currentTimeMillis();
-        query = createQuery1(g);
-        query.setStartsPerOptimize(100);
-        solutions = query.solveFor(g.V().has("name", "Garcia"));
-        exhaust(solutions);
-        endTime = System.currentTimeMillis();
-        assertEquals(147, solutions.size());
-        System.out.println("finished in " + (endTime - startTime) + "ms");
-
-        startTime = System.currentTimeMillis();
-        query = createQuery1(g);
-        query.setStartsPerOptimize(1);
-        solutions = query.solveFor(g.V().has("name", "Garcia"));
-        exhaust(solutions);
-        endTime = System.currentTimeMillis();
-        assertEquals(147, solutions.size());
-        System.out.println("finished in " + (endTime - startTime) + "ms");
-    }
-
-    private MatchStep<Object, Object> createQuery1(final Graph g) {
-        return new MatchStep<>(g.V().has("name", "Garcia"), "garcia",
-                g.of().as("garcia").in("sung_by").as("song"),
-                g.of().as("song").out("written_by", "writer"));
-    }
-    */
-
     @Test
     public void testIteratorEnumerator() throws Exception {
         IteratorEnumerator<String> ie;
         final Map<String, String> map = new HashMap<>();
         BiConsumer<String, String> visitor = map::put;
 
-        ie = new IteratorEnumerator<>("a", new LinkedList<String>(){{
-            add("foo"); add("bar");}}.iterator());
+        ie = new IteratorEnumerator<>("a", new LinkedList<String>() {{
+            add("foo");
+            add("bar");
+        }}.iterator());
         assertEquals(0, ie.size());
         assertTrue(ie.visitSolution(0, visitor));
         assertEquals(1, ie.size());
@@ -423,7 +391,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         assertEquals("bar", map.get("a"));
 
         // empty enumerator
-        ie = new IteratorEnumerator<>("a", new LinkedList<String>(){{
+        ie = new IteratorEnumerator<>("a", new LinkedList<String>() {{
         }}.iterator());
         map.clear();
         assertEquals(0, ie.size());
@@ -567,8 +535,24 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_knows_b__b_created_cX() {
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_outXknowsX_b__b_outXcreatedX_cX() {
             return g.V().match("a",
+                    g.of().as("a").out("knows").as("b"),
+                    g.of().as("b").out("created").as("c"));
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_outXknowsX_b__a_outXcreatedX_cX() {
+            return g.V().match("a",
+                    g.of().as("a").out("knows").as("b"),
+                    g.of().as("a").out("created").as("c"));
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXd_inXknowsX_a__d_hasXname_vadasX__a_outXknowsX_b__b_outXcreatedX_cX() {
+            return g.V().match("d",
+                    g.of().as("d").in("knows").as("a"),
+                    g.of().as("d").has("name", "vadas"),
                     g.of().as("a").out("knows").as("b"),
                     g.of().as("b").out("created").as("c"));
         }
@@ -658,8 +642,24 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_knows_b__b_created_cX() {
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_outXknowsX_b__b_outXcreatedX_cX() {
             return (Traversal) g.V().match("a",
+                    g.of().as("a").out("knows").as("b"),
+                    g.of().as("b").out("created").as("c")).submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_outXknowsX_b__a_outXcreatedX_cX() {
+            return (Traversal) g.V().match("a",
+                    g.of().as("a").out("knows").as("b"),
+                    g.of().as("a").out("created").as("c")).submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXd_inXknowsX_a__d_hasXname_vadasX__a_outXknowsX_b__b_outXcreatedX_cX() {
+            return (Traversal) g.V().match("d",
+                    g.of().as("d").in("knows").as("a"),
+                    g.of().as("d").has("name", "vadas"),
                     g.of().as("a").out("knows").as("b"),
                     g.of().as("b").out("created").as("c")).submit(g.compute());
         }
@@ -711,7 +711,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_hasXname_GarciaX__a_0written_by_b__a_0sung_by_bX() {
-            return (Traversal)  g.V().match("a",
+            return (Traversal) g.V().match("a",
                     g.of().as("a").has("name", "Garcia"),
                     g.of().as("a").in("written_by").as("b"),
                     g.of().as("a").in("sung_by").as("b")).submit(g.compute());
