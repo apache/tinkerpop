@@ -9,6 +9,15 @@ public class Artifact {
     private final String version;
 
     public Artifact(final String group, final String artifact, final String version) {
+        if (group == null || group.isEmpty())
+            throw new IllegalArgumentException("group cannot be null or empty");
+
+        if (artifact == null || artifact.isEmpty())
+            throw new IllegalArgumentException("artifact cannot be null or empty");
+
+        if (version == null || version.isEmpty())
+            throw new IllegalArgumentException("version cannot be null or empty");
+
         this.group = group;
         this.artifact = artifact;
         this.version = version;
