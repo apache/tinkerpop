@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.giraph.hdfs;
 
-import com.tinkerpop.gremlin.giraph.process.computer.KryoWritable;
+import com.tinkerpop.gremlin.giraph.process.computer.util.KryoWritable;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;

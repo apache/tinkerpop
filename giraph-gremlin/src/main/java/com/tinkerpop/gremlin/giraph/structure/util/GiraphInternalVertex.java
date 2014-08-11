@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.giraph.structure.util;
 import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputerSideEffects;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphMessenger;
-import com.tinkerpop.gremlin.giraph.process.computer.KryoWritable;
+import com.tinkerpop.gremlin.giraph.process.computer.util.KryoWritable;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;

@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.giraph.process.computer.util;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.giraph.Constants;
-import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableUtils;
 
 import java.io.ByteArrayInputStream;
@@ -15,53 +15,53 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class RuleWritable implements Writable {
+public class KryoWritable<T> implements WritableComparable<KryoWritable> {
 
-    public enum Rule {
-        OR, AND, INCR, SET, SET_IF_ABSENT
+    T t;
+
+    public KryoWritable() {
     }
 
-    private Rule rule;
-    private Object object;
-
-    public RuleWritable() {
-
+    public KryoWritable(final T t) {
+        this();
+        this.t = t;
     }
 
-    public RuleWritable(final Rule rule, final Object object) {
-        this.rule = rule;
-        this.object = object;
+    public T get() {
+        return this.t;
     }
 
-    public <T> T getObject() {
-        return (T) this.object;
+    public void set(final T t) {
+        this.t = t;
     }
 
-    public Rule getRule() {
-        return this.rule;
+    @Override
+    public String toString() {
+        return this.t.toString();
     }
 
     public void readFields(final DataInput input) throws IOException {
-        this.rule = Rule.values()[WritableUtils.readVInt(input)];
-        int objectLength = WritableUtils.readVInt(input);
-        byte[] bytes = new byte[objectLength];
+        final int objectLength = WritableUtils.readVInt(input);
+        final byte[] objectBytes = new byte[objectLength];
         for (int i = 0; i < objectLength; i++) {
-            bytes[i] = input.readByte();
+            objectBytes[i] = input.readByte();
         }
-        final Input in = new Input(new ByteArrayInputStream(bytes));
-        this.object = Constants.KRYO.readClassAndObject(in);
+        final Input in = new Input(new ByteArrayInputStream(objectBytes));
+        this.t = (T) Constants.KRYO.readClassAndObject(in);
         in.close();
     }
 
     public void write(final DataOutput output) throws IOException {
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final Output out = new Output(outputStream);
-        Constants.KRYO.writeClassAndObject(out, this.object);
+        Constants.KRYO.writeClassAndObject(out, this.t);
         out.flush();
-        WritableUtils.writeVInt(output, this.rule.ordinal());
         WritableUtils.writeVInt(output, outputStream.toByteArray().length);
         output.write(outputStream.toByteArray());
         out.close();
     }
 
+    public int compareTo(final KryoWritable kryoWritable) {
+        return this.t instanceof Comparable ? ((Comparable) this.t).compareTo(kryoWritable.get()) : 1;
+    }
 }

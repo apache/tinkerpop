@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.ExceptionCoverage;
 import com.tinkerpop.gremlin.structure.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -34,6 +35,20 @@ public class GraphComputerTest extends AbstractGremlinTest {
     }
 
     @Test
+    @LoadGraphWith(CLASSIC)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
+    public void shouldNotAllowWithNoVertexProgramNorMapReducers() throws Exception {
+        try {
+            g.compute().submit().get();
+            fail("Should throw an IllegalStateException when there is no vertex program nor map reducers");
+        } catch (IllegalStateException e) {
+            assertTrue(true);
+        } catch (Exception e) {
+            fail("Should throw an IllegalStateException when there is no vertex program nor map reducers");
+        }
+    }
+
+    @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldNotAllowBadGraphComputers() {
         try {
@@ -43,6 +58,34 @@ public class GraphComputerTest extends AbstractGremlinTest {
             assertTrue(true);
         } catch (Exception e) {
             fail("Should provide an IllegalArgumentException");
+        }
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
+    public void shouldNotAllowTheSameComputerToExecutedTwice() throws Exception {
+        final GraphComputer computer = g.compute().program(identity());
+        computer.submit().get(); // this should work as its the first run of the graph computer
+
+        try {
+            computer.submit(); // this should fail as the computer has already been executed
+            fail("Using the same graph computer to compute again should not be possible");
+        } catch (IllegalStateException e) {
+            assertTrue(true);
+        } catch (Exception e) {
+            fail("Should yield an illegal state exception for graph computer being executed twice");
+        }
+
+        computer.program(identity());
+        // test no rerun of graph computer
+        try {
+            computer.submit(); // this should fail as the computer has already been executed even through new program submitted
+            fail("Using the same graph computer to compute again should not be possible");
+        } catch (IllegalStateException e) {
+            assertTrue(true);
+        } catch (Exception e) {
+            fail("Should yield an illegal state exception for graph computer being executed twice");
         }
     }
 
@@ -63,6 +106,19 @@ public class GraphComputerTest extends AbstractGremlinTest {
         } catch (Exception e) {
             fail("Should fail with an ExecutionException[IllegalArgumentException]: " + e);
         }
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
+    public void shouldAllowMapReduceWithNoVertexProgram() throws Exception {
+        final ComputerResult results = g.compute().mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()
+                .map((v, e) -> v.<Integer>property("age").ifPresent(age -> e.emit(MapReduce.NullObject.instance(), age)))
+                .reduce((k, vv, e) -> e.emit(MapReduce.NullObject.instance(), StreamFactory.stream(vv).mapToInt(i -> i).sum()))
+                .sideEffect(i -> i.next().getValue1())
+                .sideEffectKey("ageSum").create())
+                .submit().get();
+        assertEquals(123, results.getSideEffects().get("ageSum").get());
     }
 
     @Test
@@ -102,15 +158,6 @@ public class GraphComputerTest extends AbstractGremlinTest {
             assertTrue(v.property("nameLengthCounter").isPresent());
             assertEquals(Integer.valueOf(v.<String>value("name").length() * 2), Integer.valueOf(v.<Integer>value("nameLengthCounter")));
         });
-        // test no rerun of graph computer
-        try {
-            computer.submit();
-            fail("Using the same graph computer to compute again should not be possible");
-        } catch (IllegalStateException e) {
-            assertTrue(true);
-        } catch (Exception e) {
-            fail("Should yield an illegal state exception for graph computer being executed twice");
-        }
     }
 
     @Test
@@ -144,7 +191,15 @@ public class GraphComputerTest extends AbstractGremlinTest {
 
         assertEquals(60, results.getSideEffects().get("a").get());
         assertEquals(1, results.getSideEffects().get("b").get());
+    }
 
+    private static LambdaVertexProgram identity() {
+        return LambdaVertexProgram.build().
+                setup(s -> {
+                }).
+                execute((v, m, s) -> {
+                }).
+                terminate(s -> true).create();
     }
 
     class BadGraphComputer implements GraphComputer {

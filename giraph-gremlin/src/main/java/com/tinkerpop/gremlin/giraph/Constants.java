@@ -1,9 +1,14 @@
 package com.tinkerpop.gremlin.giraph;
 
+import com.esotericsoftware.kryo.Kryo;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class Constants {
+
+    public static final Kryo KRYO = new Kryo();
+    // Do we need a static with class loading here?
 
     public static final String CONFIGURATION = "configuration";
     public static final String GREMLIN_INPUT_LOCATION = "gremlin.inputLocation";

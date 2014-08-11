@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.giraph.hdfs.HDFSTools
 import com.tinkerpop.gremlin.giraph.hdfs.HiddenFileFilter
 import com.tinkerpop.gremlin.giraph.hdfs.KryoWritableIterator
 import com.tinkerpop.gremlin.giraph.hdfs.TextIterator
-import com.tinkerpop.gremlin.giraph.process.computer.KryoWritable
+import com.tinkerpop.gremlin.giraph.process.computer.util.KryoWritable
 import com.tinkerpop.gremlin.util.StreamFactory
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.*

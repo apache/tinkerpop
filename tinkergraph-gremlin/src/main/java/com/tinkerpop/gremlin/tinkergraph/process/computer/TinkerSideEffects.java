@@ -1,11 +1,14 @@
 package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
+import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.util.GraphVariableHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -18,15 +21,20 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class TinkerSideEffects implements SideEffects.Administrative {
 
-    public final Set<String> sideEffectKeys;
+    public final Set<String> sideEffectKeys = new HashSet<>();
     public final Map<String, Object> sideEffectsMap;
     private final AtomicInteger iteration = new AtomicInteger(0);
     private final AtomicLong runtime = new AtomicLong(0l);
-    private boolean validateKeys = true;
 
-    public TinkerSideEffects(final Set<String> sideEffectKeys) {
+
+    public TinkerSideEffects(final VertexProgram vertexProgram, final List<MapReduce> mapReducers) {
         this.sideEffectsMap = new ConcurrentHashMap<>();
-        this.sideEffectKeys = new HashSet<>(sideEffectKeys);
+        if (null != vertexProgram) {
+            this.sideEffectKeys.addAll(vertexProgram.getSideEffectComputeKeys());
+        }
+        for (final MapReduce mapReduce : mapReducers) {
+            this.sideEffectKeys.add(mapReduce.getSideEffectKey());
+        }
     }
 
     public Set<String> keys() {
@@ -51,7 +59,6 @@ public class TinkerSideEffects implements SideEffects.Administrative {
 
     protected void complete() {
         this.iteration.decrementAndGet();
-        this.validateKeys = false;
     }
 
     public boolean isInitialIteration() {
@@ -59,7 +66,6 @@ public class TinkerSideEffects implements SideEffects.Administrative {
     }
 
     public <R> Optional<R> get(final String key) {
-        this.checkKey(key);
         return Optional.ofNullable((R) this.sideEffectsMap.get(key));
     }
 
@@ -104,7 +110,7 @@ public class TinkerSideEffects implements SideEffects.Administrative {
     }
 
     private void checkKey(final String key) {
-        if (this.validateKeys && !this.sideEffectKeys.contains(key))
+        if (!this.sideEffectKeys.contains(key))
             throw GraphComputer.Exceptions.providedKeyIsNotASideEffectKey(key);
     }
 }
