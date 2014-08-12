@@ -10,6 +10,8 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
+ * A step which offers a choice of two or more Traversals to take
+ *
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

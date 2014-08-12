@@ -214,7 +214,7 @@ The jump()-step highlights one of the major benefits of `Traverser<T>` in Tinker
 MatchStep
 ~~~~~~~~~
 
-The `match()`-step (*map*) is introduced into TinkerPop3 to support a more link:http://en.wikipedia.org/wiki/Declarative_programming[declarative] form of link:http://en.wikipedia.org/wiki/Pattern_matching[pattern matching]. Similar constructs were available in previous TinkerPop versions via the `table()`-step, but that has since been removed in favor of the `match().select()`-pattern. With MatchStep in TinkerPop, a query optimizer exists based on the link:http://www.knowledgefrominformation.com/2011/04/16/budget-match-cost-effective-subgraph-matching-on-large-networks/[budget match algorithm]. For very large graphs, where the developer is uncertain of the statistics of the graph (e.g. how many `knows`-edges vs. `worksFor`-edges exist in the graph), it is best to use `match()` as the optimal traversal path will be determined automatically.
+The `match()`-step (*map*) is introduced into TinkerPop3 to support a more link:http://en.wikipedia.org/wiki/Declarative_programming[declarative] form of link:http://en.wikipedia.org/wiki/Pattern_matching[pattern matching]. Similar constructs were available in previous TinkerPop versions via the `table()`-step, but that has since been removed in favor of the `match().select()`-pattern. With MatchStep in TinkerPop, a query optimizer similar to the link:http://www.knowledgefrominformation.com/2011/04/16/budget-match-cost-effective-subgraph-matching-on-large-networks/[budget match algorithm] builds and revises query plans on the fly, while a query is in progress. For very large graphs, where the developer is uncertain of the statistics of the graph (e.g. how many `knows`-edges vs. `worksFor`-edges exist in the graph), it is advantageous to use `match()`, as an optimal plan will be determined automatically.  Furthermore, some queries are much easier to express via `match()` than with single-path traversals.
 
 	"Who created a project named 'lop' that was also created by someone who is 29 years old? Return the two creators."
 
@@ -243,7 +243,19 @@ gremlin> g.V.match('a',
 ==>[a:peter, c:marko]
 
 
-MatchStep brings functionality similar to link:http://en.wikipedia.org/wiki/SPARQL[SPARQL] to Gremlin. A few of the differentiating qualities include:
+Like SPARQL
+
+MatchStep brings functionality similar to link:http://en.wikipedia.org/wiki/SPARQL[SPARQL] to Gremlin. Like SPARQL, MatchStep conjoins a set of patterns applied to a graph.  For example, the following traversal finds exactly those songs which Jerry Garcia has both sung and written:  
+
+[source,groovy]
+gremlin> g.V().match('a',
+gremlin>     g.of().as('a').has('name', 'Garcia'),
+gremlin>     g.of().as('a').in('writtenBy').as('b'),
+gremlin>     g.of().as('a').in('sungBy').as('b')).select('b').name
+==>CREAM PUFF WAR
+==>CRYPTICAL ENVELOPMENT
+
+Among the features which differentiate MatchStep from SPARQL are:
 
 [source,groovy]
 gremlin> g.V.match('a',
@@ -254,8 +266,8 @@ gremlin> g.V.match('a',
 ==>vadas
 ==>josh
 
-<1> *Arbitrary length patterns*: `match()` is not restricted to triple patterns.
-<2> *Recursion support*: `match()` supports the branch-based steps within a pattern.
+<1> *Patterns of arbitrary complexity*: `match()` is not restricted to triple patterns or property paths.
+<2> *Recursion support*: `match()` supports the branch-based steps within a pattern, including `jump()`
 <3> *Imperative/declarative hybrid*: Pre and prior to a `match()`, it is possible to leverage classic Gremlin imperative.
 
 To extend point #3, it is possible to support going from imperative, to declarative, to imperative, ad infinitum.
