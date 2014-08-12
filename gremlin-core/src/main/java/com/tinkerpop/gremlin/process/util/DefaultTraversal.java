@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.strategy.AsStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
@@ -18,12 +17,12 @@ import java.util.List;
 public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     protected final List<Step> steps = new ArrayList<>();
-    protected final TraversalStrategies traversalStrategies = new DefaultTraversalStrategies(this);
+    protected final Strategies strategies = new DefaultStrategies(this);
     protected final Memory memory = new DefaultMemory();
 
     public DefaultTraversal() {
-        this.traversalStrategies.register(TraverserSourceStrategy.instance());
-        this.traversalStrategies.register(AsStrategy.instance());
+        this.strategies.register(TraverserSourceStrategy.instance());
+        this.strategies.register(AsStrategy.instance());
     }
 
     public DefaultTraversal(final Graph graph) {
@@ -39,8 +38,8 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
         return this.memory;
     }
 
-    public TraversalStrategies strategies() {
-        return this.traversalStrategies;
+    public Strategies strategies() {
+        return this.strategies;
     }
 
     public void addStarts(final Iterator<Traverser<S>> starts) {
@@ -71,7 +70,6 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     }
 
     private void applyStrategies() {
-        if (!this.traversalStrategies.complete()) this.traversalStrategies.apply();
+        if (!this.strategies.complete()) this.strategies.apply();
     }
-
 }

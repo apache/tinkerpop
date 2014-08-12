@@ -32,7 +32,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public Memory memory();
 
-    public TraversalStrategies strategies();
+    public Strategies strategies();
 
     public void addStarts(final Iterator<Traverser<S>> starts);
 
@@ -49,6 +49,19 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
+    }
+
+    public interface Strategies extends Serializable {
+
+        public void register(final TraversalStrategy traversalStrategy);
+
+        public void unregister(final Class<? extends TraversalStrategy> optimizerClass);
+
+        public void clear();
+
+        public void apply();
+
+        public boolean complete();
     }
 
     public interface Memory extends Serializable {

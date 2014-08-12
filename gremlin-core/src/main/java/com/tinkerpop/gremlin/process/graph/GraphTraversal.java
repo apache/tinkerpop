@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.process.computer.traversal.step.filter.ComputerResultStep;
+import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.ExceptStep;

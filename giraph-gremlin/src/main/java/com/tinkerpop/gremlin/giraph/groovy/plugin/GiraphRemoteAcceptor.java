@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.groovy.engine.function.GSSupplier;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.process.computer.traversal.step.filter.ComputerResultStep;
+import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import org.apache.commons.configuration.BaseConfiguration;

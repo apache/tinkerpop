@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 
@@ -17,7 +16,7 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
 
     private static final EmptyTraversal INSTANCE = new EmptyTraversal();
     private static final Memory MEMORY = new DefaultMemory();         // TODO: make "empty memory?"
-    private static final TraversalStrategies TRAVERSAL_STRATEGIES = new DefaultTraversalStrategies(new EmptyTraversal<>());
+    private static final Strategies TRAVERSAL_STRATEGIES = new DefaultStrategies(new EmptyTraversal<>());
 
     public static EmptyTraversal instance() {
         return INSTANCE;
@@ -35,7 +34,7 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
         return MEMORY;
     }
 
-    public TraversalStrategies strategies() {
+    public Strategies strategies() {
         return TRAVERSAL_STRATEGIES;
     }
 

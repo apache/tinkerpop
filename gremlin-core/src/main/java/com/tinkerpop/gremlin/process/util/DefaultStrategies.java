@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 
 import java.util.ArrayList;
@@ -12,13 +11,13 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DefaultTraversalStrategies implements TraversalStrategies {
+public class DefaultStrategies implements Traversal.Strategies {
 
     private final List<TraversalStrategy> traversalStrategies = new ArrayList<>();
     private final Traversal traversal;
     private boolean complete = false;
 
-    public DefaultTraversalStrategies(final Traversal traversal) {
+    public DefaultStrategies(final Traversal traversal) {
         this.traversal = traversal;
     }
 

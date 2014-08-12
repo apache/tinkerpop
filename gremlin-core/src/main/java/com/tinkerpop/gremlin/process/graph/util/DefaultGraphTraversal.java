@@ -15,10 +15,10 @@ public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implemen
 
     public DefaultGraphTraversal() {
         super();
-        this.traversalStrategies.register(DedupOptimizerStrategy.instance());
-        this.traversalStrategies.register(IdentityReductionStrategy.instance());
-        this.traversalStrategies.register(SideEffectCapStrategy.instance());
-        this.traversalStrategies.register(UnrollJumpStrategy.instance());
+        this.strategies.register(DedupOptimizerStrategy.instance());
+        this.strategies.register(IdentityReductionStrategy.instance());
+        this.strategies.register(SideEffectCapStrategy.instance());
+        this.strategies.register(UnrollJumpStrategy.instance());
     }
 
     public DefaultGraphTraversal(final Graph graph) {

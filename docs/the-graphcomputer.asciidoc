@@ -141,11 +141,11 @@ Finally, there also exists `LambdaMapReduce` to compliment `LambdaVertexProgram`
 
 [source,groovy]
 gremlin> result = g.compute().
-                      program(LambdaVertexProgram.build().        // vertex program from previous example
+                      program(LambdaVertexProgram.build().
                         execute(new GSTriConsumer("a.property('counter', c.isInitialIteration() ? 1 : ++a.value('counter'))")).
                         terminate(new GSPredicate('a.iteration > 9')).
                         elementComputeKeys('counter',VARIABLE).create()). 
-                      mapReduce(LambdaMapReduce.build().         // map reduce declaration
+                      mapReduce(LambdaMapReduce.build().
                         map(new GSBiConsumer("b.emit(MapReduce.NullObject.instance(), a.value('counter'))")).
                         reduce(new GSTriConsumer("c.emit(a,b.sum())")).
                         sideEffect(new GSFunction('a.next().value1')).

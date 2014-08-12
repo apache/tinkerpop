@@ -62,7 +62,6 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(GraphComputer.class.getPackage().getName() + DOT_STAR);
         staticImports.add(VertexProgram.KeyType.class.getCanonicalName() + DOT_STAR);
 
-
         // utils
         imports.add(Gremlin.class.getPackage().getName() + DOT_STAR);
         imports.add(GremlinLoader.class.getPackage().getName() + DOT_STAR);

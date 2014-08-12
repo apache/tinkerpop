@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.computer.traversal.step.filter;
+package com.tinkerpop.gremlin.process.computer.traversal.step.map;
 
 import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Step;
