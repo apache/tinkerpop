@@ -4,7 +4,6 @@ threadPoolWorker: 1
 gremlinPool: 8
 scriptEvaluationTimeout: 30000
 serializedResponseTimeout: 30000
-channelizer: com.tinkerpop.gremlin.server.channel.WebSocketChannelizer
 graphs: {
   g: config/tinkergraph-empty.properties}
 use:
@@ -13,23 +12,12 @@ scriptEngines: {
   gremlin-groovy: {
     imports: [java.lang.Math, org.apache.commons.math3.util.FastMath],
     staticImports: [java.lang.Math.PI],
-    scripts: [scripts/generate-classic.groovy]},
-  nashorn: {
-      imports: [java.lang.Math, org.apache.commons.math3.util.FastMath],
-      staticImports: [java.lang.Math.PI]}}
+    scripts: [scripts/generate-classic.groovy]}}
 serializers:
   - { className: com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0 }
   - { className: com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0, config: { serializeResultToString: true }}
-  - { className: com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerGremlinV1d0 }
-processors:
-  - { className: com.tinkerpop.gremlin.server.op.session.SessionOpProcessor, config: { sessionTimeout: 28800000 }}
 metrics: {
-  consoleReporter: {enabled: true, interval: 180000},
-  csvReporter: {enabled: true, interval: 180000, fileName: /tmp/gremlin-server-metrics.csv},
-  jmxReporter: {enabled: true},
-  slf4jReporter: {enabled: true, interval: 180000},
-  gangliaReporter: {enabled: true, interval: 180000, addressingMode: MULTICAST},
-  graphiteReporter: {enabled: true, interval: 180000}}
+  slf4jReporter: {enabled: true, interval: 180000}}
 threadPoolBoss: 1
 maxInitialLineLength: 4096
 maxHeaderSize: 8192
@@ -37,7 +25,3 @@ maxChunkSize: 8192
 maxContentLength: 65536
 maxAccumulationBufferComponents: 1024
 resultIterationBatchSize: 64
-writeBufferHighWaterMark: 32768
-writeBufferHighWaterMark: 65536
-ssl: {
-  enabled: false}

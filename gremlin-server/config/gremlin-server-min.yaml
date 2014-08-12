@@ -11,8 +11,7 @@ use:
 scriptEngines: {
   gremlin-groovy: {
     imports: [java.lang.Math, org.apache.commons.math3.util.FastMath],
-    staticImports: [java.lang.Math.PI],
-    scripts: [scripts/generate-classic.groovy]}}
+    staticImports: [java.lang.Math.PI]}}
 serializers:
   - { className: com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0 }
   - { className: com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0, config: { serializeResultToString: true }}
