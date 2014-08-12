@@ -255,7 +255,7 @@ gremlin> g.V.match('a',
 ==>josh
 
 <1> *Arbitrary length patterns*: `match()` is not restricted to triple patterns.
-<2> *Recursion support*: `match()` supports the `jump()`-step within a pattern.
+<2> *Recursion support*: `match()` supports the branch-based steps within a pattern.
 <3> *Imperative/declarative hybrid*: Pre and prior to a `match()`, it is possible to leverage classic Gremlin imperative.
 
 To extend point #3, it is possible to support going from imperative, to declarative, to imperative, ad infinitum.
@@ -272,6 +272,18 @@ gremlin> g.V.match('a',
           select('c').name
 ==>vadas
 ==>josh
+
+Finally, like all other steps in Gremlin, `match()` is a function and thus, `match()` within `match()` is a natural consequence of Gremlin's functional foundation (i.e. recursive matching).
+
+[source,groovy]
+gremlin> g.V.match('a',
+            g.of().as('a').out('knows').as('b'),
+            g.of().as('b').out('created').has('name','lop'),
+            g.of().as('b').match('x',
+                g.of().as('x').out('created').as('y'),
+                g.of().as('y').has('name','ripple')).select('y').as('c')).
+            select(['a','c']){it.value('name')}
+==>[a:marko, c:ripple]
 
 WARNING: Currently `match()` can not operate within a multi-JVM <<graphcomputer,GraphComputer>> OLAP environment. Future work includes a linearization <<traversalstrategy,TraversalStrategy>> for `match()`.
 
