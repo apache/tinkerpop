@@ -88,11 +88,11 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
             this.shell.getInterp().getContext().setProperty("sideEffects", result.getSideEffects());
 
             final GraphTraversal traversal1 = new DefaultGraphTraversal<>();
-            traversal1.addStep(new ComputerResultStep<>(traversal1, result.getGraph(), result.getSideEffects(), vertexProgram));
+            traversal1.addStep(new ComputerResultStep<>(traversal1, result.getSideEffects(), vertexProgram));
             this.shell.getInterp().getContext().setProperty("_l", traversal1);
 
             final GraphTraversal traversal2 = new DefaultGraphTraversal<>();
-            traversal2.addStep(new ComputerResultStep<>(traversal2, result.getGraph(), result.getSideEffects(), vertexProgram));
+            traversal2.addStep(new ComputerResultStep<>(traversal2, result.getSideEffects(), vertexProgram));
             traversal2.range(0, 19);
             return traversal2;
 

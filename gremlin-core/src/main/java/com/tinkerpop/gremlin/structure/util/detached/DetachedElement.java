@@ -19,8 +19,8 @@ public abstract class DetachedElement implements Element {
 
     Object id;
     String label;
-    Map<String, DetachedProperty> properties;
-    Map<String, DetachedProperty> hiddenProperties;
+    Map<String, DetachedProperty> properties = Collections.emptyMap();
+    Map<String, DetachedProperty> hiddenProperties = Collections.emptyMap();
 
     protected DetachedElement() {
 
@@ -38,9 +38,8 @@ public abstract class DetachedElement implements Element {
 
         this.id = id;
         this.label = label;
-        if (null == properties)
-            this.properties = null;
-        else {
+
+        if (null != properties)
             this.properties = properties.entrySet().stream()
                     .map(entry -> {
                         if (entry.getValue() instanceof Property)
@@ -48,11 +47,8 @@ public abstract class DetachedElement implements Element {
                         else
                             return Pair.with(entry.getKey(), new DetachedProperty(entry.getKey(), entry.getValue(), this));
                     }).collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
-        }
 
-        if (null == hiddenProperties)
-            this.hiddenProperties = null;
-        else {
+        if (null != hiddenProperties)
             this.hiddenProperties = hiddenProperties.entrySet().stream()
                     .map(entry -> {
                         if (entry.getValue() instanceof Property)
@@ -60,7 +56,7 @@ public abstract class DetachedElement implements Element {
                         else
                             return Pair.with(entry.getKey(), new DetachedProperty(entry.getKey(), entry.getValue(), this));
                     }).collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
-        }
+
     }
 
     protected DetachedElement(final Element element) {
@@ -80,17 +76,11 @@ public abstract class DetachedElement implements Element {
     }
 
     public <V> Property<V> property(final String key) {
-        if (null == this.properties)
-            return Property.empty();
-        else {
-            return this.properties.containsKey(key) ? this.properties.get(key) : Property.empty();
-        }
+        return this.properties.containsKey(key) ? this.properties.get(key) : Property.empty();
     }
 
     public Map<String, Property> properties() {
         final Map<String, Property> temp = new HashMap<>();
-        if (null == this.properties)
-            return Collections.EMPTY_MAP;
         this.properties.forEach((key, property) -> {
             if (!Graph.Key.isHidden(key))
                 temp.put(key, property);
@@ -100,8 +90,6 @@ public abstract class DetachedElement implements Element {
 
     public Map<String, Property> hiddens() {
         final Map<String, Property> temp = new HashMap<>();
-        if (null == this.properties)
-            return Collections.EMPTY_MAP;
         this.properties.forEach((key, property) -> {
             if (Graph.Key.isHidden(key))
                 temp.put(key, property);

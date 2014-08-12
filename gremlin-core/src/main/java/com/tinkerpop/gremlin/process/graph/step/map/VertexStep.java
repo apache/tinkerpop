@@ -36,7 +36,7 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
     }
 
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.direction);
+        return TraversalHelper.makeStepString(this, this.returnClass.getSimpleName().toLowerCase(), this.direction);
     }
 
 }

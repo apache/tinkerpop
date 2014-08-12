@@ -1,18 +1,21 @@
 package com.tinkerpop.gremlin.giraph;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.tinkerpop.gremlin.giraph.process.computer.util.RuleWritable;
+import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class Constants {
 
-    public static final Kryo KRYO = new Kryo();
+    public static final Kryo KRYO = GremlinKryo.build().create().createKryo();
 
-    /*static {
-        KRYO.register(RuleWritable.Rule.class, 9991);
-        // KRYO.register(TraversalMessage.class, 9993);
-    }*/
+    static {
+        KRYO.register(RuleWritable.Rule.class, 1000000);
+        KRYO.register(MapReduce.NullObject.class, 1000001);
+    }
     // Do we need a static with class loading here?
 
     public static final String CONFIGURATION = "configuration";
