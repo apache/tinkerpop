@@ -50,4 +50,5 @@ Release Process
 . Log into link:https://oss.sonatype.org/[SonaType], close and then release the release.
 . `mvn deploy -Darchives`
 . `bin/publish-docs.sh`
+. Update S3 redirects for "current" docs and alter "current" download links on home page.
 . Email gremlin-users mailing list and tweet.
