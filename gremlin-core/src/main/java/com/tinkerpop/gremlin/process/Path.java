@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process;
 
 import org.javatuples.Pair;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.stream.Stream;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Path {
+public class Path implements Serializable {
 
     protected List<String> asLabels = new ArrayList<>();
     protected List<Object> objects = new ArrayList<>();

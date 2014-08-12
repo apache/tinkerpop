@@ -15,7 +15,7 @@ import java.util.UUID;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphGraphRunnerTest {
+public class GiraphGraphComputerTest {
 
     public static class TraversalHolder implements SSupplier<Traversal> {
         public Traversal get() {
@@ -37,5 +37,29 @@ public class GiraphGraphRunnerTest {
         FileInputStream inputStream = new FileInputStream(tempFile);
         new DataInputStream(inputStream).readFully(bytes2);
         tempFile.delete();
+    }
+
+    @Test
+    public void shouldDoKryoCorrectly() throws Exception {
+        /*Graph g = TinkerFactory.createClassic();
+        SimpleTraverser<Vertex> traverser = new SimpleTraverser<>(DetachedVertex.detach(g.v(1)));
+        KryoWritable<SimpleTraverser<Vertex>> writable = new KryoWritable<>(traverser);
+
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        final DataOutput out = new DataOutputStream(outputStream);
+        writable.write(out);
+        outputStream.flush();
+        outputStream.close();
+        final DataInput in = new DataInputStream(new ByteArrayInputStream(outputStream.toByteArray()));
+        writable.readFields(in);
+
+        /*final File tempFile = new File("/tmp/test.bin");
+        final FileOutputStream outputStream = new FileOutputStream(tempFile);
+        final DataOutput out = new DataOutputStream(outputStream);
+        writable.write(out);
+        outputStream.flush();
+        outputStream.close();
+        final DataInput in = new DataInputStream(new FileInputStream(tempFile));
+        writable.readFields(in); */
     }
 }

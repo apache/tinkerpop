@@ -19,14 +19,11 @@ import com.tinkerpop.gremlin.process.computer.traversal.TraverserPathTracker;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.util.IoEdge;
 import com.tinkerpop.gremlin.structure.io.util.IoVertex;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
@@ -238,16 +235,13 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(TraverserCountTracker.class, null, 57));
             add(Triplet.<Class, Serializer, Integer>with(TraverserPathTracker.class, null, 58));
             add(Triplet.<Class, Serializer, Integer>with(Path.class, null, 59));
-            add(Triplet.<Class, Serializer, Integer>with(DetachedPath.class, null, 60));
+            add(Triplet.<Class, Serializer, Integer>with(DetachedPath.class, null, 60)); // is this needed?
             add(Triplet.<Class, Serializer, Integer>with(AtomicLong.class, null, 61));
             add(Triplet.<Class, Serializer, Integer>with(Optional.class, null, 62));
             add(Triplet.<Class, Serializer, Integer>with(TraversalCounterMessage.class, null, 63));
             add(Triplet.<Class, Serializer, Integer>with(TraversalPathMessage.class, null, 64));
             add(Triplet.<Class, Serializer, Integer>with(TraversalMessage.class, null, 65));
             add(Triplet.<Class, Serializer, Integer>with(DetachedProperty.class, null, 66));
-            add(Triplet.<Class, Serializer, Integer>with(DetachedVertex.class, null, 67));
-            add(Triplet.<Class, Serializer, Integer>with(DetachedEdge.class, null, 68));
-            add(Triplet.<Class, Serializer, Integer>with(Property.class, null, 69));
         }};
 
         private static final byte major = 1;
