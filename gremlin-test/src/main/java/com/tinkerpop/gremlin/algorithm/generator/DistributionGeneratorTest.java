@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.algorithm.generator;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -9,6 +10,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Collections;
 
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
@@ -89,11 +92,13 @@ public class DistributionGeneratorTest {
             final Configuration configuration = graphProvider.newGraphConfiguration("g1");
             final Graph g1 = graphProvider.openTestGraph(configuration);
             try {
-                final DistributionGenerator generator = makeGenerator(g).seedGenerator(() -> 123456789l).create();
+                final Iterable<Vertex> vordered = verticesByOid(g);
+                final DistributionGenerator generator = makeGenerator(g).seedGenerator(() -> 123456789l).inVertices(vordered).outVertices(vordered).create();
                 distributionGeneratorTest(g, generator);
 
                 prepareGraph(g1);
-                final DistributionGenerator generator1 = makeGenerator(g1).seedGenerator(() -> 123456789l).create();
+                final Iterable<Vertex> vordered1 = verticesByOid(g1);
+                final DistributionGenerator generator1 = makeGenerator(g1).seedGenerator(() -> 123456789l).inVertices(vordered1).outVertices(vordered1).create();
                 distributionGeneratorTest(g1, generator1);
 
                 // ensure that every vertex has the same number of edges between graphs.
@@ -110,6 +115,13 @@ public class DistributionGeneratorTest {
             final int numNodes = numberOfVertices;
             for (int i = 0; i < numNodes; i++) graph.addVertex("oid", i);
             tryCommit(graph);
+        }
+
+        protected Iterable<Vertex> verticesByOid(final Graph graph) {
+            List<Vertex> vertices = graph.V().toList();
+            Collections.sort(vertices,
+                (v1, v2) -> ((Integer)v1.value("oid")).compareTo((Integer)v2.value("oid")));
+            return vertices;
         }
 
         private void distributionGeneratorTest(final Graph graph, final DistributionGenerator generator) {

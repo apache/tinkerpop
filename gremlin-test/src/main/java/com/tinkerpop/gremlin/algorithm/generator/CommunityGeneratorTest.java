@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.algorithm.generator;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -9,6 +10,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Collections;
 import java.util.function.Supplier;
 
 import static org.junit.Assert.*;
@@ -104,6 +107,13 @@ public class CommunityGeneratorTest {
             tryCommit(graph);
         }
 
+        protected Iterable<Vertex> verticesByOid(final Graph graph) {
+            List<Vertex> vertices = graph.V().toList();
+            Collections.sort(vertices,
+                (v1, v2) -> ((Integer)v1.value("oid")).compareTo((Integer)v2.value("oid")));
+            return vertices;
+        }
+
         private void communityGeneratorTest(final Graph graph, final Supplier<Long> seedGenerator) throws Exception {
             boolean generated = false;
             double localCrossPcent = crossPcent;
@@ -116,7 +126,9 @@ public class CommunityGeneratorTest {
                             .crossCommunityPercentage(localCrossPcent)
                             .expectedNumCommunities(numberOfVertices / 10)
                             .expectedNumEdges(numberOfVertices * 10)
-                            .seedGenerator(seedGenerator).create();
+                            .seedGenerator(seedGenerator)
+                            .verticesToGenerateEdgesFor(verticesByOid(graph))
+                            .create();
                     final int numEdges = generator.generate();
                     assertTrue(numEdges > 0);
                     tryCommit(graph, g -> assertEquals(new Long(numEdges), g.E().count().next()));
