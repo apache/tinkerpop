@@ -243,9 +243,7 @@ gremlin> g.V.match('a',
 ==>[a:peter, c:marko]
 
 
-Like SPARQL
-
-MatchStep brings functionality similar to link:http://en.wikipedia.org/wiki/SPARQL[SPARQL] to Gremlin. Like SPARQL, MatchStep conjoins a set of patterns applied to a graph.  For example, the following traversal finds exactly those songs which Jerry Garcia has both sung and written:  
+MatchStep brings functionality similar to link:http://en.wikipedia.org/wiki/SPARQL[SPARQL] to Gremlin. Like SPARQL, MatchStep conjoins a set of patterns applied to a graph.  For example, the following traversal finds exactly those songs which Jerry Garcia has both sung and written (using the Grateful Dead graph distributed in the `data/` directory):  
 
 [source,groovy]
 gremlin> g.V().match('a',
@@ -255,7 +253,7 @@ gremlin>     g.of().as('a').in('sungBy').as('b')).select('b').name
 ==>CREAM PUFF WAR
 ==>CRYPTICAL ENVELOPMENT
 
-Among the features which differentiate MatchStep from SPARQL are:
+Among the features which differentiate `match()` from SPARQL are:
 
 [source,groovy]
 gremlin> g.V.match('a',
@@ -267,7 +265,7 @@ gremlin> g.V.match('a',
 ==>josh
 
 <1> *Patterns of arbitrary complexity*: `match()` is not restricted to triple patterns or property paths.
-<2> *Recursion support*: `match()` supports the branch-based steps within a pattern, including `jump()`
+<2> *Recursion support*: `match()` supports the branch-based steps within a pattern, including `jump()`.
 <3> *Imperative/declarative hybrid*: Pre and prior to a `match()`, it is possible to leverage classic Gremlin imperative.
 
 To extend point #3, it is possible to support going from imperative, to declarative, to imperative, ad infinitum.
