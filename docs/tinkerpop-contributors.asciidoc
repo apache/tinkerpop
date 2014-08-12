@@ -1,4 +1,4 @@
-[[tinkerpo-contributors]]
+[[tinkerpop-contributors]]
 TinkerPop Contributors
 ======================
 
