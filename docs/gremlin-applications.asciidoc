@@ -140,7 +140,7 @@ image:gremlin-server.png[width=400,float=right] Gremlin Server provides a way to
 
 NOTE: Gremlin Server is essentially the replacement for link:http://rexster.tinkerpop.com[Rexster].
 
-Communication with Gremlin Server occurs over link:http://en.wikipedia.org/wiki/WebSocket[WebSockets] and exposes a custom subprotocol for interacting with the server.
+By default, communication with Gremlin Server occurs over link:http://en.wikipedia.org/wiki/WebSocket[WebSockets] and exposes a custom subprotocol for interacting with the server.
 
 [[connecting-via-console]]
 Connecting via Console
@@ -150,13 +150,13 @@ The most direct way to get started with Gremlin Server is to issue it some remot
 
 [source,text]
 ----
-$bin/gremlin-server.sh config/gremlin-server-min.yaml
+$bin/gremlin-server.sh config/gremlin-server-classic.yaml
 [INFO] GremlinServer -
          \,,,/
          (o o)
 -----oOOo-(3)-oOOo-----
 
-[INFO] GremlinServer - Configuring Gremlin Server from config/gremlin-server-min.yaml
+[INFO] GremlinServer - Configuring Gremlin Server from config/gremlin-server-classic.yaml
 [INFO] MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=com.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
 [INFO] GremlinServer$WebSocketServerInitializer - Configured application/vnd.gremlin-v1.0+kryo with com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0
 [INFO] GremlinServer$WebSocketServerInitializer - Configured application/vnd.gremlin-v1.0+kryo-stringd with com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0
@@ -169,7 +169,7 @@ $bin/gremlin-server.sh config/gremlin-server-min.yaml
 [INFO] GremlinServer - Websocket channel started at port 8182.
 ----
 
-Gremlin Server is configured by the provided link:http://www.yaml.org/[YAML] file `config/gremlin-server-min.yaml`.  That file tells Gremlin Server many things such as:
+Gremlin Server is configured by the provided link:http://www.yaml.org/[YAML] file `config/gremlin-server-classic.yaml`.  That file tells Gremlin Server many things such as:
 
 * The host and port to serve on
 * Thread pool sizes

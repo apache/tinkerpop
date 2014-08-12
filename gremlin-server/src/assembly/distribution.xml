@@ -17,6 +17,10 @@
             <directory>config</directory>
         </fileSet>
         <fileSet>
+            <directory>target/${project.artifactId}-${project.version}-standalone/data</directory>
+            <outputDirectory>data</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>scripts</directory>
         </fileSet>
         <fileSet>
