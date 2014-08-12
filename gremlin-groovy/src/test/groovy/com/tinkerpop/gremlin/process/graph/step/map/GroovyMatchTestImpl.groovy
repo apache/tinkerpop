@@ -94,6 +94,27 @@ class GroovyMatchTestImpl extends MatchTest {
                 g.of().as('a').in('writtenBy').as('b'),
                 g.of().as('a').in('sungBy').as('b'));
     }
+
+    @Override
+    public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_inXsungByX_b__a_inXsungByX_c__b_outXwrittenByX_d__c_outXwrittenByX_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX() {
+        return g.V().match('a',
+                g.of().as('a').in('sungBy').as('b'),
+                g.of().as('a').in('sungBy').as('c'),
+                g.of().as('b').out('writtenBy').as('d'),
+                g.of().as('c').out('writtenBy').as('e'),
+                g.of().as('d').has('name', 'George_Harrison'),
+                g.of().as('e').has('name', 'Bob_Marley'));
+    }
+
+    @Override
+    public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_inXsungByX_b__a_inXwrittenByX_c__b_outXwrittenByX_d__c_outXsungByX_d__d_hasXname_GarciaXX() {
+        return g.V().match('a',
+                g.of().as('a').in('sungBy').as('b'),
+                g.of().as('a').in('writtenBy').as('c'),
+                g.of().as('b').out('writtenBy').as('d'),
+                g.of().as('c').out('sungBy').as('d'),
+                g.of().as('d').has('name', 'Garcia'));
+    }
     
     /*@Override
     public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__c_created_bX_selectXnameX() {

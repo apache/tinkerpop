@@ -69,8 +69,12 @@ public class InnerJoinEnumerator<T> implements Enumerator<T> {
                     map.clear();
                     joinCount = 0;
 
+                    // TODO: remove me
+                    boolean baseEnumeratorIsComplete = baseEnumerator.isComplete();
+
                     if (!baseEnumerator.visitSolution(currentIndex, joinVisitor)) {
-                        throw new IllegalStateException();
+                        currentIndex = -1;
+                        return;
                     }
 
                     if (joinVariables.size() == joinCount) {

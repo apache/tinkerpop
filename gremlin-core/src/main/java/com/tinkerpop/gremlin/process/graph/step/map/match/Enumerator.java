@@ -5,7 +5,8 @@ import java.util.function.BiConsumer;
 
 /**
  * An array of key/value maps accessible by index.
- * The total size of the enumerator may be unknown when it is created; it grows when successive solutions are requested, computing as many as necessary.
+ * The total size of the enumerator may be unknown when it is created;
+ * it grows when successive solutions are requested, computing as many as necessary.
  *
  * @author Joshua Shinavier (http://fortytwo.net)
  */

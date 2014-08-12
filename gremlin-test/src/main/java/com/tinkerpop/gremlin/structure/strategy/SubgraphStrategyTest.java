@@ -215,7 +215,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         assertEquals(6, g.V().count().next().longValue());
         assertEquals(3, sg.V().count().next().longValue());
 
-        // three edges are explicitly included, but one is missing its out-vertex due to the vertex criteria
+        // three edges are explicitly included, but one is missing its out-vertex due to the vertex criterion
         assertEquals(6, g.E().count().next().longValue());
         assertEquals(2, sg.E().count().next().longValue());
 
