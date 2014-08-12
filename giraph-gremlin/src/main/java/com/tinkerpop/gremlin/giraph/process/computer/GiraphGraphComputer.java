@@ -113,7 +113,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
         final long startTime = System.currentTimeMillis();
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             try {
-                final String bspDirectory = "bsp_" + UUID.randomUUID().toString();
+                final String bspDirectory = "_bsp-" + UUID.randomUUID().toString();
                 final FileSystem fs = FileSystem.get(this.giraphConfiguration);
                 fs.delete(new Path(this.giraphConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION)), true);
                 final String giraphGremlinHome = System.getenv(Constants.GIRAPH_GREMLIN_HOME);
