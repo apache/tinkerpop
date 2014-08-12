@@ -246,10 +246,14 @@ gremlin> g.V.match('a',
 MatchStep brings functionality similar to link:http://en.wikipedia.org/wiki/SPARQL[SPARQL] to Gremlin. Like SPARQL, MatchStep conjoins a set of patterns applied to a graph.  For example, the following traversal finds exactly those songs which Jerry Garcia has both sung and written (using the Grateful Dead graph distributed in the `data/` directory):  
 
 [source,groovy]
-gremlin> g.V().match('a',
-gremlin>     g.of().as('a').has('name', 'Garcia'),
-gremlin>     g.of().as('a').in('writtenBy').as('b'),
-gremlin>     g.of().as('a').in('sungBy').as('b')).select('b').name
+gremlin> g = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> g.loadGraphML('data/grateful-dead.xml')
+==>null
+gremlin> g.V.match('a',
+            g.of().as('a').has('name', 'Garcia'),
+            g.of().as('a').in('writtenBy').as('b'),
+            g.of().as('a').in('sungBy').as('b')).select('b').name
 ==>CREAM PUFF WAR
 ==>CRYPTICAL ENVELOPMENT
 
