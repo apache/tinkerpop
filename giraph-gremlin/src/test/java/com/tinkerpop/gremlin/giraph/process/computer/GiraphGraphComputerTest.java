@@ -1,12 +1,24 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
+import com.tinkerpop.gremlin.giraph.process.computer.util.KryoWritable;
+import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalMessage;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import com.tinkerpop.gremlin.util.Serializer;
 import com.tinkerpop.gremlin.util.function.SSupplier;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
 import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -41,9 +53,11 @@ public class GiraphGraphComputerTest {
 
     @Test
     public void shouldDoKryoCorrectly() throws Exception {
-        /*Graph g = TinkerFactory.createClassic();
-        SimpleTraverser<Vertex> traverser = new SimpleTraverser<>(DetachedVertex.detach(g.v(1)));
-        KryoWritable<SimpleTraverser<Vertex>> writable = new KryoWritable<>(traverser);
+        KryoWritable<TraversalMessage> writable = new KryoWritable<>();
+        Graph g = TinkerFactory.createClassic();
+        Traverser traverser = new SimpleTraverser<>(DetachedVertex.detach(g.v(1)));
+        TraversalMessage message = TraversalMessage.of(traverser);
+        writable.set(message);
 
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final DataOutput out = new DataOutputStream(outputStream);
@@ -53,13 +67,16 @@ public class GiraphGraphComputerTest {
         final DataInput in = new DataInputStream(new ByteArrayInputStream(outputStream.toByteArray()));
         writable.readFields(in);
 
-        /*final File tempFile = new File("/tmp/test.bin");
+        /*KryoWritable<TraversalMessage> writable2 = new KryoWritable<>();
+        final File tempFile = new File("/tmp/test.bin");
         final FileOutputStream outputStream = new FileOutputStream(tempFile);
         final DataOutput out = new DataOutputStream(outputStream);
         writable.write(out);
         outputStream.flush();
         outputStream.close();
         final DataInput in = new DataInputStream(new FileInputStream(tempFile));
-        writable.readFields(in); */
+        writable2.readFields(in);
+        TraversalMessage message2 = writable2.get();
+        System.out.println(message2.getTraverser().get().getClass());*/
     }
 }

@@ -36,7 +36,7 @@ public class DetachedProperty<V> implements Property, Serializable {
         this.key = key;
         this.value = value;
         this.element = element;
-        //TODO: this.hasCode?
+        this.hashCode = super.hashCode();
     }
 
     private DetachedProperty(final Property property) {

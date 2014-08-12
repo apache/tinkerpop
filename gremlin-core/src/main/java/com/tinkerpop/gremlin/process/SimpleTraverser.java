@@ -98,7 +98,7 @@ public class SimpleTraverser<T> implements Traverser<T> {
 
     }
 
-    public Traverser<T> deflate() {
+    public SimpleTraverser<T> deflate() {
         if (this.t instanceof Vertex) {
             this.t = (T) DetachedVertex.detach((Vertex) this.t);
         } else if (this.t instanceof Edge) {
@@ -109,7 +109,7 @@ public class SimpleTraverser<T> implements Traverser<T> {
         return this;
     }
 
-    public Traverser<T> inflate(final Vertex vertex) {
+    public SimpleTraverser<T> inflate(final Vertex vertex) {
         if (this.t instanceof DetachedVertex) {
             this.t = (T) ((DetachedVertex) this.t).attach(vertex);
         } else if (this.t instanceof DetachedEdge) {

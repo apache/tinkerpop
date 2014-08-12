@@ -1,13 +1,9 @@
 package com.tinkerpop.gremlin.giraph.process.computer.util;
 
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-import com.tinkerpop.gremlin.giraph.Constants;
+import com.tinkerpop.gremlin.util.Serializer;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableUtils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -46,19 +42,29 @@ public class KryoWritable<T> implements WritableComparable<KryoWritable> {
         for (int i = 0; i < objectLength; i++) {
             objectBytes[i] = input.readByte();
         }
-        final Input in = new Input(new ByteArrayInputStream(objectBytes));
-        this.t = (T) Constants.KRYO.readClassAndObject(in);
-        in.close();
+        try {
+            this.t = (T) Serializer.deserializeObject(objectBytes);
+        } catch (final ClassNotFoundException e) {
+            throw new IOException(e.getMessage(), e);
+        }
+
+        // TODO: Get Kryo to work
+        //final Input in = new Input(new ByteArrayInputStream(objectBytes));
+        //this.t = (T) Constants.KRYO.readClassAndObject(in);
+        //in.close();
     }
 
     public void write(final DataOutput output) throws IOException {
-        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        final Output out = new Output(outputStream);
-        Constants.KRYO.writeClassAndObject(out, this.t);
-        out.flush();
-        WritableUtils.writeVInt(output, outputStream.toByteArray().length);
-        output.write(outputStream.toByteArray());
-        out.close();
+        final byte[] objectBytes = Serializer.serializeObject(this.t);
+        WritableUtils.writeVInt(output, objectBytes.length);
+        output.write(objectBytes);
+        // TODO: Get Kryo to work
+        //final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        //final Output out = new Output(outputStream);
+        //Constants.KRYO.writeClassAndObject(out, this.t);
+        //out.flush();
+        //out.close();
+
     }
 
     public int compareTo(final KryoWritable kryoWritable) {

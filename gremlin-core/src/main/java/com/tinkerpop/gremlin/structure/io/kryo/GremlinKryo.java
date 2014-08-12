@@ -11,9 +11,6 @@ import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.PathTraverser;
 import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalCounterMessage;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalMessage;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalPathMessage;
 import com.tinkerpop.gremlin.process.computer.traversal.TraverserCountTracker;
 import com.tinkerpop.gremlin.process.computer.traversal.TraverserPathTracker;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -23,7 +20,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.util.IoEdge;
 import com.tinkerpop.gremlin.structure.io.util.IoVertex;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
@@ -180,7 +176,7 @@ public final class GremlinKryo {
 
         /**
          * Note that the following are pre-registered boolean, Boolean, byte, Byte, char, Character, double, Double,
-         * int, Integer, float, Float, long, Long, short, Short, String, void. Current max is TraversalPathMessage=64.
+         * int, Integer, float, Float, long, Long, short, Short, String, void. Current max is DetachedPath=60.
          */
         private final List<Triplet<Class, Serializer, Integer>> serializationList = new ArrayList<Triplet<Class, Serializer, Integer>>() {{
             add(Triplet.<Class, Serializer, Integer>with(byte[].class, null, 25));
@@ -236,12 +232,8 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(TraverserPathTracker.class, null, 58));
             add(Triplet.<Class, Serializer, Integer>with(Path.class, null, 59));
             add(Triplet.<Class, Serializer, Integer>with(DetachedPath.class, null, 60)); // is this needed?
-            add(Triplet.<Class, Serializer, Integer>with(AtomicLong.class, null, 61));
-            add(Triplet.<Class, Serializer, Integer>with(Optional.class, null, 62));
-            add(Triplet.<Class, Serializer, Integer>with(TraversalCounterMessage.class, null, 63));
-            add(Triplet.<Class, Serializer, Integer>with(TraversalPathMessage.class, null, 64));
-            add(Triplet.<Class, Serializer, Integer>with(TraversalMessage.class, null, 65));
-            add(Triplet.<Class, Serializer, Integer>with(DetachedProperty.class, null, 66));
+            add(Triplet.<Class, Serializer, Integer>with(Optional.class, null, 61));
+            add(Triplet.<Class, Serializer, Integer>with(AtomicLong.class, null, 62)); // this is all needed for serializing properties in TinkerGraph
         }};
 
         private static final byte major = 1;

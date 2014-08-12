@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.javatuples.Pair;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class DetachedElement implements Element {
+public abstract class DetachedElement implements Element, Serializable {
 
     Object id;
     String label;

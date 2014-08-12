@@ -3,14 +3,13 @@ package com.tinkerpop.gremlin.giraph;
 import com.esotericsoftware.kryo.Kryo;
 import com.tinkerpop.gremlin.giraph.process.computer.util.RuleWritable;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class Constants {
 
-    public static final Kryo KRYO = GremlinKryo.build().create().createKryo();
+    public static final Kryo KRYO = new Kryo();
 
     static {
         KRYO.register(RuleWritable.Rule.class, 1000000);
