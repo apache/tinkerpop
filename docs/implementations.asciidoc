@@ -256,7 +256,6 @@ Installing Giraph-Gremlin
 To the `.bash_profile` file, add the following environmental variables (of course, be sure the directories are respective of the local machine locations).
 
 [source,shell]
-export GIRAPH_HOME=/usr/local/giraph-1.0.0
 export GIRAPH_GREMLIN_HOME=/usr/local/giraph-gremlin-x.y.z
 
 If using the <<gremlin-console,Gremlin Console>>, it is important to install the Giraph-Gremlin plugin.

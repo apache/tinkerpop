@@ -150,6 +150,12 @@
                             <additionalparam>-Xdoclint:none</additionalparam>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>attach-javadoc</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -735,8 +741,10 @@
             </activation>
 
             <properties>
-                <server.artifact>gremlin-server/target/gremlin-server-${project.version}-distribution.zip</server.artifact>
-                <console.artifact>gremlin-console/target/gremlin-console-${project.version}-distribution.zip</console.artifact>
+                <server.artifact>gremlin-server/target/gremlin-server-${project.version}-distribution.zip
+                </server.artifact>
+                <console.artifact>gremlin-console/target/gremlin-console-${project.version}-distribution.zip
+                </console.artifact>
             </properties>
 
             <build>
