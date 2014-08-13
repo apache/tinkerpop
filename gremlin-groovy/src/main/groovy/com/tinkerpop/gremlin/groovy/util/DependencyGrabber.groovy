@@ -32,10 +32,11 @@ class DependencyGrabber {
         def fs = FileSystems.default
         def target = fs.getPath(extClassPath)
 
-        dependencyLocations.each {
-            def from = fs.getPath(it.path)
-            Files.copy(from, target.resolve(from.fileName), StandardCopyOption.REPLACE_EXISTING)
-        }
+        // ignore slf4j related jars.  they are already in the path and will create duplicate bindings which
+        // generate annoying log messages that make you think stuff is wrong
+        dependencyLocations.collect{fs.getPath(it.path)}
+                .findAll{!(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/)}
+                .each { Files.copy(it, target.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
     }
 
     def void copyDependenciesToPath(final String group, final String artifact, final String version) {
