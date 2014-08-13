@@ -12,7 +12,7 @@ import io.gatling.core.result.message.{RequestMessage, KO, OK}
 import io.gatling.core.result.writer.DataWriter
 import com.tinkerpop.gremlin.driver.{Client, Cluster}
 
-class GremlinServerSimulation extends Simulation {
+class GremlinServerAdditionSimulation extends Simulation {
   val host: String = System.getProperty("host", "localhost")
   val maxConnectionPoolSize: Integer = Integer.getInteger("maxConnectionPoolSize", 64)
   val cluster: Cluster = Cluster.create(host)
