@@ -132,7 +132,7 @@
 
             <properties>
                 <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-                <gatling.io.version>2.0.0-M3a</gatling.io.version>
+                <gatling.io.version>2.0.0-RC2</gatling.io.version>
                 <scala.version>2.10</scala.version>
             </properties>
 
@@ -211,6 +211,11 @@
                             <groupId>org.scala-lang</groupId>
                             <artifactId>scala-library</artifactId>
                         </exclusion>
+                        <!-- self-conflict -->
+                        <exclusion>
+                            <groupId>io.netty</groupId>
+                            <artifactId>netty</artifactId>
+                        </exclusion>
                     </exclusions>
                 </dependency>
                 <dependency>
@@ -261,7 +266,6 @@
                                     <goal>execute</goal>
                                 </goals>
                                 <configuration>
-                                    <!-- Default values -->
                                     <configDir>src/test/resources</configDir>
                                     <resultsFolder>target/gatling/results</resultsFolder>
                                     <simulationsFolder>src/test/scala</simulationsFolder>
