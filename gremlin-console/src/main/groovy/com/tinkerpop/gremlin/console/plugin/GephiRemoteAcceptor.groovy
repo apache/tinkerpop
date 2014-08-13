@@ -107,7 +107,6 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
 
 
     private Object configVizOptions(final List<String> vizConfigArgs) {
-        println("configVizOptions for: $vizConfigArgs")
         if (vizConfigArgs.size() >= 1)
             parseVizStepDelay(vizConfigArgs[0])
 
