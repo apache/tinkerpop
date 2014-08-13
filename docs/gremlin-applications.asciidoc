@@ -124,6 +124,8 @@ gremlin> :plugin list <6>
 
 NOTE: The Gremlin Console comes configured with the "server" and "utilities" plugins configured as "active" by default.  These plugins and other pre-packaged plugins cannot be removed from the Console as they are a part of the `gremlin-console.jar` itself.  These plugins can only be deactivated.
 
+CAUTION: Plugins must be compatible with the version of the Gremlin Console (or Gremlin Server) being used.  Attempts to use incompatible versions cannot be guaranteed to work.  Moreover, be prepared for dependency conflicts in third-party plugins, that may only be resolved via manual jar removal from the `ext/{plugin}` directory.
+
 TIP: It is possible to manage plugin activation and deactivation by manually editing the `ext/plugins.txt` file which contains the classnames of the "active" plugins.  It is also possible to clear dependencies added by `:install` by deleting them from the `ext` directory.
 
 [[gremlin-server]]
@@ -499,6 +501,8 @@ Once the plugin is packaged, there are two ways to test it out:
 
 In either case, once one of these two approaches is taken, the jars and their dependencies are available to the Console.  The next step is to "activate" the plugin by doing `:plugin use neo4j`, where "neo4j" refers to the name of the plugin to activate.
 
+NOTE: When `:install` is used logging dependencies related to link:http://www.slf4j.org/[SLF4J] are filtered out so as not to introduce multiple logger bindings (which generates warning messages to the logs).
+
 A plugin can do much more than just import classes.  One can expand the Gremlin language with new functions or steps, provide useful commands to make repetitive or complex tasks easier to execute, or do helpful integrations with other systems.  The secret to doing so lies in the `PluginAcceptor`.  As mentioned earlier, the `PluginAcceptor` provides access to the host of the plugin.  It provides several important methods for doing so:
 
 . `addBinding` - These two function allow the plugin to inject whatever context it wants to the host.  For example, doing `addBinding('x',1)` would place a variable of `x` with a value of 1 into the console at the time of the plugin load.
@@ -506,6 +510,10 @@ A plugin can do much more than just import classes.  One can expand the Gremlin 
 . `environment` - Provides context from the host environment.  For the console, the environment will return a `Map` containing a reference to the `IO` stream and the `Groovysh` instance.  These classes represent very low-level access to the underpinnings of the console.  Access to `Groovysh` allows for advanced features such as registering new commands (e.g. like the `:plugin` or `:remote` commands).
 
 Plugins can also tie into the `:remote` and `:submit` commands.  Recall that a `:remote` represents a different context within which Gremlin is executed, when issued with `:submit`.  It is encouraged to use this integration point when possible, as opposed to registering new commands that can otherwise follow the `:remote` and `:submit` pattern.  To expose this integration point as part of a plugin, implement the `RemoteAcceptor` interface:
+
+TIP: Be good to the users of plugins and prevent dependency conflicts. Maintaining a conflict free plugin is most easily done by using the link:http://maven.apache.org/enforcer/maven-enforcer-plugin/[Maven Enforcer Plugin].
+
+TIP: Consider binding the plugin's minor version to the TinkerPop minor version so that it's easy for users to figure out plugin compatibility.  Otherwise, clearly document a compatibility matrix for the plugin somewhere that users can find it.
 
 [source,java]
 ----
