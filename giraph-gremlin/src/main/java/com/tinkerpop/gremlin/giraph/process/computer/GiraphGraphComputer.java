@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.computer.util.MapReduceHelper;
 import com.tinkerpop.gremlin.giraph.process.computer.util.SideEffectsMapReduce;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
+import com.tinkerpop.gremlin.giraph.structure.GiraphHelper;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.computer.ComputerResult;
@@ -40,7 +41,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -113,41 +113,17 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
         final long startTime = System.currentTimeMillis();
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             try {
-                final String bspDirectory = "_bsp-" + UUID.randomUUID().toString();
                 final FileSystem fs = FileSystem.get(this.giraphConfiguration);
+                this.loadJars(fs);
                 fs.delete(new Path(this.giraphConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION)), true);
-                final String giraphGremlinHome = System.getenv(Constants.GIRAPH_GREMLIN_HOME);
-                if (null == giraphGremlinHome)
-                    throw new RuntimeException("Please set $GIRAPH_GREMLIN_HOME to the location of giraph-gremlin");
-                final File file = new File(giraphGremlinHome + "/lib");
-                if (file.exists()) {
-                    if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_JARS_IN_DISTRIBUTED_CACHE, true)) {
-                        Arrays.asList(file.listFiles()).stream().filter(f -> f.getName().endsWith(Constants.DOT_JAR)).forEach(f -> {
-                            try {
-                                fs.copyFromLocalFile(new Path(f.getPath()), new Path(fs.getHomeDirectory() + "/" + bspDirectory + "/" + f.getName()));
-                                LOGGER.debug("Loading: " + f.getPath());
-                                try {
-                                    DistributedCache.addArchiveToClassPath(new Path(fs.getHomeDirectory() + "/" + bspDirectory + "/" + f.getName()), this.giraphConfiguration, fs);
-                                } catch (final Exception e) {
-                                    throw new RuntimeException(e.getMessage(), e);
-                                }
-                            } catch (Exception e) {
-                                throw new IllegalStateException(e.getMessage(), e);
-                            }
-                        });
-                    }
-                } else {
-                    LOGGER.warn("No jars loaded from $GIRAPH_GREMLIN_HOME as there is no /lib directory. Attempting to proceed regardless.");
-                }
                 ToolRunner.run(this, new String[]{});
                 // sideEffects.keys().forEach(k -> LOGGER.error(k + "---" + sideEffects.get(k)));
-                fs.delete(new Path(bspDirectory), true);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new IllegalStateException(e.getMessage(), e);
             }
             this.sideEffects.complete(System.currentTimeMillis() - startTime);
-            return new ComputerResult(this.giraphGraph.getOutputGraph(), this.sideEffects);
+            return new ComputerResult(GiraphHelper.getOutputGraph(this.giraphGraph), this.sideEffects);
         });
     }
 
@@ -179,6 +155,35 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
             throw new IllegalStateException(e.getMessage(), e);
         }
         return 0;
+    }
+
+    private void loadJars(final FileSystem fs) {
+        final String giraphGremlinLibDirectory = "giraph-gremlin-lib";
+        if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_JARS_IN_DISTRIBUTED_CACHE, true)) {
+            final String giraphGremlinHome = System.getenv(Constants.GIRAPH_GREMLIN_LIBS);
+            if (null == giraphGremlinHome)
+                LOGGER.warn(Constants.GIRAPH_GREMLIN_LIBS + " is not set -- proceeding regardless.");
+            else {
+                final File file = new File(giraphGremlinHome);
+                if (file.exists()) {
+                    Arrays.asList(file.listFiles()).stream().filter(f -> f.getName().endsWith(Constants.DOT_JAR)).forEach(f -> {
+                        try {
+                            if (!fs.exists(new Path(fs.getHomeDirectory() + "/" + giraphGremlinLibDirectory + "/" + f.getName())))
+                                fs.copyFromLocalFile(new Path(f.getPath()), new Path(fs.getHomeDirectory() + "/" + giraphGremlinLibDirectory + "/" + f.getName()));
+                            try {
+                                DistributedCache.addArchiveToClassPath(new Path(fs.getHomeDirectory() + "/" + giraphGremlinLibDirectory + "/" + f.getName()), this.giraphConfiguration, fs);
+                            } catch (final Exception e) {
+                                throw new RuntimeException(e.getMessage(), e);
+                            }
+                        } catch (Exception e) {
+                            throw new IllegalStateException(e.getMessage(), e);
+                        }
+                    });
+                } else {
+                    LOGGER.warn(Constants.GIRAPH_GREMLIN_LIBS + " does not point to a valid director -- proceeding regardless.");
+                }
+            }
+        }
     }
 
     public static void main(final String[] args) throws Exception {

@@ -120,25 +120,6 @@ public class GiraphGraph implements Graph, Serializable {
         throw Exceptions.transactionsNotSupported();
     }
 
-    public GiraphGraph getOutputGraph() {
-        final Configuration conf = new BaseConfiguration();
-        this.variables().getConfiguration().getKeys().forEachRemaining(key -> {
-            try {
-                conf.setProperty(key, this.variables().getConfiguration().getString(key));
-            } catch (Exception e) {
-                // do nothing for serialization problems
-            }
-        });
-        if (this.variables().getConfiguration().containsKey(Constants.GREMLIN_OUTPUT_LOCATION)) {
-            conf.setProperty(Constants.GREMLIN_INPUT_LOCATION, this.variables().getConfiguration().getString(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + Constants.TILDA_G);
-        }
-        if (this.variables().getConfiguration().containsKey(Constants.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS)) {
-            // TODO: Is this sufficient?
-            conf.setProperty(Constants.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, this.variables().getConfiguration().getString(Constants.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS).replace("OutputFormat", "InputFormat"));
-        }
-        return GiraphGraph.open(conf);
-    }
-
     public Features getFeatures() {
         return new Features() {
             @Override

@@ -25,7 +25,7 @@ public class Constants {
     public static final String GREMLIN_JARS_IN_DISTRIBUTED_CACHE = "gremlin.jarsInDistributedCache";
     public static final String TILDA_G = "~g";
     public static final String GIRAPH_GREMLIN_JOB_PREFIX = "GiraphGremlin: ";
-    public static final String GIRAPH_GREMLIN_HOME = "GIRAPH_GREMLIN_HOME";
+    public static final String GIRAPH_GREMLIN_LIBS = "GIRAPH_GREMLIN_LIBS";
     public static final String DOT_JAR = ".jar";
     public static final String GREMLIN_DERIVE_COMPUTER_SIDE_EFFECTS = "gremlin.deriveComputerSideEffects";
     public static final String GREMLIN_SIDE_EFFECT_OUTPUT_FORMAT_CLASS = "gremlin.sideEffectOutputFormatClass";

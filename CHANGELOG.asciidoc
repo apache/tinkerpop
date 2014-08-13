@@ -9,6 +9,10 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Reworked `GiraphRemoteAcceptor` to provide a `result` variable back to the console with `ComputerResult`
+* `VertexProgram` no longer implements `Serializable` (use `loadState` and `storeState` for wire-propagation)
+* Moved `GiraphGraph.getOutputGraph()` to `GiraphHelper`
+* Changed `GIRAPH_GREMLIN_HOME` to `GIRAPH_GREMLIN_LIB` to reference directory where jars are to be loaded
 * Updated README with release instructions.
 
 TinkerPop 3.0.0.M1 (Release Date: August 12, 2014)

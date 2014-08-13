@@ -232,6 +232,8 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
             this.configuration.setProperty(TRAVERSAL_SUPPLIER_CLASS, traversalSupplierClass);
             return this;
         }
+
+        // TODO Builder resolveElements(boolean) to be fed to ComputerResultStep
     }
 
 }

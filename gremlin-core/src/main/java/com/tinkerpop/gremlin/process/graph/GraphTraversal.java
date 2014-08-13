@@ -91,7 +91,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> this).create();
             final ComputerResult result = computer.program(vertexProgram).submit().get();
             final GraphTraversal traversal = new DefaultGraphTraversal<>(); // TODO: of() with resultant graph?
-            traversal.addStep(new ComputerResultStep<>(traversal, result.getGraph(), result.getSideEffects(), vertexProgram));
+            traversal.addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
             return traversal;
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);

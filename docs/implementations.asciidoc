@@ -253,10 +253,10 @@ IMPORTANT: image:hadoop-logo-notext.png[width=100,float=left] This section assum
 Installing Giraph-Gremlin
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To the `.bash_profile` file, add the following environmental variables (of course, be sure the directories are respective of the local machine locations).
+To the `.bash_profile` file, add the following environmental variable (of course, be sure the directories are respective of the local machine locations). The `GIRAPH_GREMLIN_LIBS` folder is the location of all the Giraph-Gremlin jars. It is possible to place developer jars into this directory for loading into the Hadoop job's classpath.
 
 [source,shell]
-export GIRAPH_GREMLIN_HOME=/usr/local/giraph-gremlin-x.y.z
+export GIRAPH_GREMLIN_LIBS=/usr/local/gremlin-console/ext/giraph-gremlin/
 
 If using the <<gremlin-console,Gremlin Console>>, it is important to install the Giraph-Gremlin plugin.
 
@@ -294,6 +294,7 @@ Properties Files
 The `GiraphGraphComputer` makes use of a properties file much like any other `GraphComputer`. However, given the relationship to Hadoop which is property heavy, it is important to look at a particular properties file. The properties file below is located at `conf/giraph-kryo.properties'.
 
 [source,text]
+gremlin.graph=com.tinkerpop.gremlin.giraph.structure.GiraphGraph
 gremlin.inputLocation=tinkerpop-classic-vertices.gio
 giraph.vertexInputFormatClass=com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexInputFormat
 gremlin.outputLocation=output
@@ -311,6 +312,7 @@ A review of the properties above are presented in the table below.
 [width="100%",cols="2,10",options="header"]
 |=========================================================
 |Property |Description
+|gremlin.graph |The class of the graph to construct using GraphFactory
 |gremlin.inputLocation |The location of the input file(s) for Giraph to read the graph from.
 |giraph.vertexInputFormatClass |The format that the graph input file(s) are represented in.
 |gremlin.outputLocation |The location to write the computed Giraph graph to.
@@ -344,11 +346,7 @@ gremlin> hdfs.copyFromLocal('data/tinkerpop-classic-vertices.gio', 'tinkerpop-cl
 ==>null
 gremlin> hdfs.ls()
 ==>rw-r--r-- marko supergroup 891 tinkerpop-classic-vertices.gio
-gremlin> conf = new PropertiesConfiguration()
-==>org.apache.commons.configuration.PropertiesConfiguration@37d3d232
-gremlin> conf.load('../../../giraph-gremlin/conf/giraph-kryo.properties') // be conscious of where giraph-kryo.properties is
-==>null
-gremlin> g = GiraphGraph.open(conf)
+gremlin> g = GraphFactory.open('../../../giraph-gremlin/conf/giraph-kryo.properties')  // be conscious of where giraph-kryo.properties is
 ==>giraphgraph[kryovertexinputformat->kryovertexoutputformat]
 gremlin> g.V.count()
 ==>6
@@ -404,7 +402,15 @@ INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0040
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
 ==>[a:[marko, vadas], e:[peter], i:[ripple], o:[lop, josh]]
-gremlin> _l.next()
+gremlin> result
+==>result[giraphgraph[kryovertexinputformat->kryovertexoutputformat],sideEffects[size:1]]
+gremlin> result.sideEffects.runtime
+==>20356
+gremlin> result.sideEffects.keys()
+==>a
+gremlin> result.sideEffects.a
+==>Optional[{a=[marko, vadas], e=[peter], i=[ripple], o=[lop, josh]}]
+gremlin> result.sideEffects.a.get()
 ==>a=[marko, vadas]
 ==>e=[peter]
 ==>i=[ripple]

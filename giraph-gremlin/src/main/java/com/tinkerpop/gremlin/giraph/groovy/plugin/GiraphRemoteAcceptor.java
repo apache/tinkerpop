@@ -82,20 +82,19 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object submit(final List<String> args) {
         try {
-            TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(new GSSupplier<>(PREFIX_SCRIPT + args.get(0) + POSTFIX_SCRIPT)).create();
+            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(new GSSupplier<>(PREFIX_SCRIPT + args.get(0) + POSTFIX_SCRIPT)).create();
             final ComputerResult result = this.giraphGraph.compute().program(vertexProgram).submit().get();
-            this.shell.getInterp().getContext().setProperty("g", result.getGraph());
-            this.shell.getInterp().getContext().setProperty("sideEffects", result.getSideEffects());
+
+            this.shell.getInterp().getContext().setProperty("result", result);
 
             final GraphTraversal traversal1 = new DefaultGraphTraversal<>();
-            traversal1.addStep(new ComputerResultStep<>(traversal1, result.getSideEffects(), vertexProgram));
+            traversal1.addStep(new ComputerResultStep<>(traversal1, result, vertexProgram, false));
             this.shell.getInterp().getContext().setProperty("_l", traversal1);
 
             final GraphTraversal traversal2 = new DefaultGraphTraversal<>();
-            traversal2.addStep(new ComputerResultStep<>(traversal2, result.getSideEffects(), vertexProgram));
+            traversal2.addStep(new ComputerResultStep<>(traversal2, result, vertexProgram, false));
             traversal2.range(0, 19);
             return traversal2;
-
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

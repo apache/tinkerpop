@@ -21,7 +21,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-public interface VertexProgram<M extends Serializable> extends Serializable {
+public interface VertexProgram<M extends Serializable> {
 
     public enum KeyType {
         VARIABLE,
