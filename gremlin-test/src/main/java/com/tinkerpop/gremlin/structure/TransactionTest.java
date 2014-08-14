@@ -518,7 +518,6 @@ public class TransactionTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_FULLY_ISOLATED_TRANSACTIONS)
     public void shouldCountVerticesEdgesOnPreTransactionCommit() {
         // see a more complex version of this test at GraphTest.shouldProperlyCountVerticesAndEdgesOnAddRemove()
         final Graph graph = g;
@@ -529,7 +528,7 @@ public class TransactionTest extends AbstractGremlinTest {
 
         final Vertex v2 = graph.addVertex();
         v1 = graph.v(v1.id());
-        v1.addEdge("friend", v1, v2);
+        v1.addEdge("friend", v2);
 
         AbstractGremlinSuite.assertVertexEdgeCounts(2, 1);
 
@@ -572,6 +571,7 @@ public class TransactionTest extends AbstractGremlinTest {
         threadMod.start();
 
         final AtomicLong beforeCommitInOtherThread = new AtomicLong(0);
+        final AtomicLong afterCommitInOtherThreadButBeforeRollbackInCurrentThread = new AtomicLong(0);
         final AtomicLong afterCommitInOtherThread = new AtomicLong(0);
         final Thread threadRead = new Thread() {
             public void run() {
@@ -594,6 +594,7 @@ public class TransactionTest extends AbstractGremlinTest {
 
                 // tx in other thread is committed...should have one vertex.  rollback first to start a new tx
                 // to get a fresh read given the commit
+                afterCommitInOtherThreadButBeforeRollbackInCurrentThread.set(graph.V().count().next());
                 graph.tx().rollback();
                 afterCommitInOtherThread.set(graph.V().count().next());
             }
@@ -605,6 +606,7 @@ public class TransactionTest extends AbstractGremlinTest {
         threadRead.join();
 
         assertEquals(0l, beforeCommitInOtherThread.get());
+        assertEquals(0l, afterCommitInOtherThreadButBeforeRollbackInCurrentThread.get());
         assertEquals(1l, afterCommitInOtherThread.get());
     }
 }
