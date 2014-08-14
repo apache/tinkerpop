@@ -132,6 +132,7 @@ public abstract class AbstractGremlinSuite extends Suite {
         return annotation.value();
     }
 
+    // todo: is this the standard way to assert counts?
     public static Consumer<Graph> assertVertexEdgeCounts(final int expectedVertexCount, final int expectedEdgeCount) {
         return (g) -> {
             assertEquals(new Long(expectedVertexCount), g.V().count().next());
