@@ -29,6 +29,23 @@ import java.util.Optional;
  */
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest",
+        method = "g_V_matchXa_hasXname_GarciaX__a_inXwrittenByX_b__a_inXsungByX_bX",
+        reason = "Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest",
+        method = "g_V_matchXa_inXsungByX_b__a_inXsungByX_c__b_outXwrittenByX_d__c_outXwrittenByX_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX",
+        reason = "Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.computer.GraphComputerTest",
+        method = "shouldNotAllowBadSideEffectKeys",
+        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.computer.GraphComputerTest",
+        method = "shouldRequireRegisteringSideEffectKeys",
+        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+
 public class GiraphGraph implements Graph, Serializable {
 
     protected final GiraphGraphVariables variables;

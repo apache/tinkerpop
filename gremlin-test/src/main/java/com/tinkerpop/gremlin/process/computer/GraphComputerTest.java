@@ -94,7 +94,6 @@ public class GraphComputerTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldNotAllowBadSideEffectKeys() throws Exception {
         try {
@@ -156,7 +155,6 @@ public class GraphComputerTest extends AbstractGremlinTest {
     }
 
     @Test
-    @Ignore
     @LoadGraphWith(CLASSIC)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldRequireRegisteringSideEffectKeys() throws Exception {
