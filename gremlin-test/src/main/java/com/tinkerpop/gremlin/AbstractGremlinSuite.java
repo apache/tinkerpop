@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin;
 
 import com.tinkerpop.gremlin.structure.Graph;
+import org.javatuples.Pair;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.manipulation.NoTestsRemainException;
@@ -10,7 +11,6 @@ import org.junit.runners.model.RunnerBuilder;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -36,42 +36,16 @@ public abstract class AbstractGremlinSuite extends Suite {
     @Target(ElementType.TYPE)
     @Inherited
     public @interface GraphProviderClass {
-        public Class<? extends GraphProvider> value();
-    }
-
-    /**
-     * Defines a test in the suite that the implementer does not want to run.
-     */
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.TYPE)
-    @Repeatable(OptOuts.class)
-    @Inherited
-    public @interface OptOut {
         /**
-         * The test class to opt out of.
+         * The class of the {@link Graph} that will be returned by the {@link GraphProvider}
          */
-        public Class<?> test();
+        public Class<? extends Graph> graph();
 
         /**
-         * The specific name of the test method to opt out of.
+         * The class of the {@link GraphProvider} implementation to use to generate the {@link Graph} specified by
+         * {@link #graph()}
          */
-        public String method();
-
-        /**
-         * The reason the implementation is opting out of this test.
-         */
-        public String reason();
-    }
-
-    /**
-     * Holds a collection of {@link OptOut} enabling multiple {@link OptOut} to be applied to a
-     * single suite.
-     */
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.TYPE)
-    @Inherited
-    public @interface OptOuts {
-        OptOut[] value();
+        public Class<? extends GraphProvider> provider();
     }
 
     public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute) throws InitializationError {
@@ -81,22 +55,23 @@ public abstract class AbstractGremlinSuite extends Suite {
     public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce) throws InitializationError {
         super(builder, klass, enforce(testsToExecute, testsToEnforce));
 
-        // filter out tests ignored by the implementation
-        registerOptOuts(klass);
-
         // figures out what the implementer assigned as the GraphProvider class and make it available to tests.
         // the klass is the Suite that implements this suite (e.g. GroovyTinkerGraphProcessStandardTest).
         // this class should be annotated with GraphProviderClass.  Failure to do so will toss an InitializationError
-        final Class graphProviderClass = getGraphProviderClass(klass);
+        final Pair<Class<? extends GraphProvider>, Class<? extends Graph>> pair = getGraphProviderClass(klass);
+
+        // filter out tests ignored by the implementation
+        registerOptOuts(pair.getValue1());
+
         try {
-            GraphManager.set((GraphProvider) graphProviderClass.newInstance());
+            GraphManager.set(pair.getValue0().newInstance());
         } catch (Exception ex) {
             throw new InitializationError(ex);
         }
     }
 
     private void registerOptOuts(final Class<?> klass) throws InitializationError {
-        final OptOut[] optOuts = klass.getAnnotationsByType(OptOut.class);
+        final Graph.OptOut[] optOuts = klass.getAnnotationsByType(Graph.OptOut.class);
 
         if (optOuts != null && optOuts.length > 0) {
             // validate annotation - test class and reason must be set
@@ -125,11 +100,11 @@ public abstract class AbstractGremlinSuite extends Suite {
         return testsToExecute;
     }
 
-    public static Class<? extends GraphProvider> getGraphProviderClass(final Class<?> klass) throws InitializationError {
+    public static Pair<Class<? extends GraphProvider>,Class<? extends Graph>> getGraphProviderClass(final Class<?> klass) throws InitializationError {
         final GraphProviderClass annotation = klass.getAnnotation(GraphProviderClass.class);
         if (null == annotation)
             throw new InitializationError(String.format("class '%s' must have a GraphProviderClass annotation", klass.getName()));
-        return annotation.value();
+        return Pair.with(annotation.provider(), annotation.graph());
     }
 
     // todo: is this the standard way to assert counts?
@@ -141,13 +116,13 @@ public abstract class AbstractGremlinSuite extends Suite {
     }
 
     /**
-     * Filter for tests in the suite which is controlled by the {@link OptOut} annotation.
+     * Filter for tests in the suite which is controlled by the {@link Graph.OptOut} annotation.
      */
     public static class OptOutTestFilter extends Filter {
 
         private final List<Description> testsToIgnore;
 
-        public OptOutTestFilter(final OptOut[] optOuts) {
+        public OptOutTestFilter(final Graph.OptOut[] optOuts) {
             testsToIgnore = Arrays.stream(optOuts)
                     .<Description>map(ignoreTest -> Description.createTestDescription(ignoreTest.test(), ignoreTest.method()))
                     .collect(Collectors.toList());

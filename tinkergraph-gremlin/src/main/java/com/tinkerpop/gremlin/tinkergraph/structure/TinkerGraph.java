@@ -27,6 +27,8 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@Graph.OptOut(test = "com.tinkerpop.gremlin.structure.GraphTest", method = "shouldImplementAndExposeFeatures", reason = "cause i said so!")
+@Graph.OptOut(test = "com.tinkerpop.gremlin.structure.PropertyTest$BasicPropertyTest", method = "shouldHaveStandardStringRepresentation", reason = "cause i said so son!")
 public class TinkerGraph implements Graph, Serializable {
 
     protected Long currentId = -1l;

@@ -11,6 +11,6 @@ import org.junit.runner.RunWith;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(StructureStandardSuite.class)
-@StructureStandardSuite.GraphProviderClass(Neo4jGraphProvider.class)
+@StructureStandardSuite.GraphProviderClass(provider = Neo4jGraphProvider.class, graph = Neo4jGraph.class)
 public class Neo4jGraphStructureStandardTest {
 }

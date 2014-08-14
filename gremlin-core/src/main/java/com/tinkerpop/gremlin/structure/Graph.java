@@ -6,6 +6,12 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.javatuples.Pair;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Repeatable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Map;
@@ -696,5 +702,42 @@ public interface Graph extends AutoCloseable {
         public static IllegalArgumentException onlyOneOrNoGraphComputerClass() {
             return new IllegalArgumentException("Provide either one or no graph computer class");
         }
+    }
+
+
+
+    /**
+     * Defines a test in the suite that the implementer does not want to run.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @Repeatable(OptOuts.class)
+    @Inherited
+    public @interface OptOut {
+        /**
+         * The test class to opt out of.
+         */
+        public String test();
+
+        /**
+         * The specific name of the test method to opt out of.
+         */
+        public String method();
+
+        /**
+         * The reason the implementation is opting out of this test.
+         */
+        public String reason();
+    }
+
+    /**
+     * Holds a collection of {@link OptOut} enabling multiple {@link OptOut} to be applied to a
+     * single suite.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @Inherited
+    public @interface OptOuts {
+        OptOut[] value();
     }
 }
