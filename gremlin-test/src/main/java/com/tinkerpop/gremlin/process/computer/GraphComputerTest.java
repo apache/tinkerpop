@@ -41,10 +41,89 @@ public class GraphComputerTest extends AbstractGremlinTest {
         try {
             g.compute(BadGraphComputer.class);
             fail("Providing a bad graph computer class should fail");
-        } catch (IllegalArgumentException e) {
-            assertTrue(true);
-        } catch (Exception e) {
-            fail("Should provide an IllegalArgumentException");
+        } catch (Exception ex) {
+            final Exception expectedException = Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(BadGraphComputer.class);
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
+    public void shouldHaveImmutableComputeResultSideEffects() throws Exception {
+        final ComputerResult results = g.compute().program(LambdaVertexProgram.build().
+                setup(s -> {
+                }).
+                execute((v, m, s) -> {
+                }).
+                terminate(s -> true).sideEffectKeys(new HashSet<>(Arrays.asList("set", "incr", "and", "or"))).create()).submit().get();
+
+        try {
+            results.getSideEffects().set("set", "test");
+        } catch (Exception ex) {
+            final Exception expectedException = SideEffects.Exceptions.sideEffectsCompleteAndImmutable();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+
+        try {
+            results.getSideEffects().incr("incr", 1);
+        } catch (Exception ex) {
+            final Exception expectedException = SideEffects.Exceptions.sideEffectsCompleteAndImmutable();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+
+        try {
+            results.getSideEffects().and("and", true);
+        } catch (Exception ex) {
+            final Exception expectedException = SideEffects.Exceptions.sideEffectsCompleteAndImmutable();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+
+        try {
+            results.getSideEffects().or("or", false);
+        } catch (Exception ex) {
+            final Exception expectedException = SideEffects.Exceptions.sideEffectsCompleteAndImmutable();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    @Ignore
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
+    public void shouldNotAllowBadSideEffectKeys() throws Exception {
+        try {
+            g.compute().program(LambdaVertexProgram.build().
+                    setup(s -> s.set("", true)).
+                    execute((v, m, s) -> {
+                    }).
+                    terminate(s -> true).sideEffectKeys(new HashSet<>(Arrays.asList("")))
+                    .create()).submit().get();
+            fail("Providing empty sideEffect key should fail");
+        } catch (Exception ex) {
+            final Exception expectedException = SideEffects.Exceptions.sideEffectKeyCanNotBeEmpty();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+
+        try {
+            g.compute().program(LambdaVertexProgram.build().
+                    setup(s -> s.set("blah", null)).
+                    execute((v, m, s) -> {
+                    }).
+                    terminate(s -> true).sideEffectKeys(new HashSet<>(Arrays.asList(""))).
+                    sideEffectKeys(new HashSet<>(Arrays.asList("blah")))
+                    .create()).submit().get();
+            fail("Providing null sideEffect key should fail");
+        } catch (Exception ex) {
+            final Exception expectedException = SideEffects.Exceptions.sideEffectValueCanNotBeNull();
+            assertEquals(expectedException.getClass(), ex.getCause().getClass());
+            assertEquals(expectedException.getMessage(), ex.getCause().getMessage());
         }
     }
 

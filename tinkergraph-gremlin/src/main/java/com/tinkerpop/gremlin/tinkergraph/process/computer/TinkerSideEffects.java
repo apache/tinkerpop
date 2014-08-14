@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.structure.util.GraphVariableHelper;
+import com.tinkerpop.gremlin.process.computer.util.SideEffectsHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.HashSet;
@@ -25,12 +25,15 @@ public class TinkerSideEffects implements SideEffects.Administrative {
     public final Map<String, Object> sideEffectsMap;
     private final AtomicInteger iteration = new AtomicInteger(0);
     private final AtomicLong runtime = new AtomicLong(0l);
-
+    private boolean complete = false;
 
     public TinkerSideEffects(final VertexProgram vertexProgram, final List<MapReduce> mapReducers) {
         this.sideEffectsMap = new ConcurrentHashMap<>();
         if (null != vertexProgram) {
-            this.sideEffectKeys.addAll(vertexProgram.getSideEffectComputeKeys());
+            for (final String key : (Set<String>) vertexProgram.getSideEffectComputeKeys()) {
+                SideEffectsHelper.validateKey(key);
+                this.sideEffectKeys.add(key);
+            }
         }
         for (final MapReduce mapReduce : mapReducers) {
             this.sideEffectKeys.add(mapReduce.getSideEffectKey());
@@ -50,6 +53,7 @@ public class TinkerSideEffects implements SideEffects.Administrative {
     }
 
     public void setRuntime(final long runTime) {
+        if (this.complete) throw SideEffects.Exceptions.sideEffectsCompleteAndImmutable();
         this.runtime.set(runTime);
     }
 
@@ -59,6 +63,7 @@ public class TinkerSideEffects implements SideEffects.Administrative {
 
     protected void complete() {
         this.iteration.decrementAndGet();
+        this.complete = true;
     }
 
     public boolean isInitialIteration() {
@@ -70,32 +75,31 @@ public class TinkerSideEffects implements SideEffects.Administrative {
     }
 
     public long incr(final String key, final long delta) {
-        checkKey(key);
+        checkKeyValue(key, delta);
         final Object value = this.sideEffectsMap.get(key);
-        final long incremented = value == null ? delta : (Long) value + delta;
-        this.set(key, incremented);
-        return incremented;
+        final long returnValue = value == null ? delta : (Long) value + delta;
+        this.sideEffectsMap.put(key, returnValue);
+        return returnValue;
     }
 
     public boolean and(final String key, final boolean bool) {
-        checkKey(key);
+        checkKeyValue(key, bool);
         final boolean value = (Boolean) this.sideEffectsMap.getOrDefault(key, bool);
         final boolean returnValue = value && bool;
-        this.set(key, returnValue);
+        this.sideEffectsMap.put(key, returnValue);
         return returnValue;
     }
 
     public boolean or(final String key, final boolean bool) {
-        checkKey(key);
+        checkKeyValue(key, bool);
         final boolean value = (Boolean) this.sideEffectsMap.getOrDefault(key, bool);
         final boolean returnValue = value || bool;
-        this.set(key, returnValue);
+        this.sideEffectsMap.put(key, returnValue);
         return returnValue;
     }
 
     public void set(final String key, final Object value) {
-        checkKey(key);
-        GraphVariableHelper.validateVariable(key, value);
+        checkKeyValue(key, value);
         this.sideEffectsMap.put(key, value);
     }
 
@@ -103,8 +107,10 @@ public class TinkerSideEffects implements SideEffects.Administrative {
         return StringFactory.computerSideEffectsString(this);
     }
 
-    private void checkKey(final String key) {
+    private void checkKeyValue(final String key, final Object value) {
+        if (this.complete) throw SideEffects.Exceptions.sideEffectsCompleteAndImmutable();
         if (!this.sideEffectKeys.contains(key))
             throw GraphComputer.Exceptions.providedKeyIsNotASideEffectKey(key);
+        SideEffectsHelper.validateValue(value);
     }
 }

@@ -9,8 +9,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
-* @author Marko A. Rodriguez (http://markorodriguez.com)
-*/
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
+ */
 public interface SideEffects {
 
     public Set<String> keys();
@@ -29,8 +29,6 @@ public interface SideEffects {
     public int getIteration();
 
     public long getRuntime();
-
-    //public void setIfAbsent(final String key, final Object value);
 
     public long incr(final String key, final long delta);
 
@@ -53,15 +51,19 @@ public interface SideEffects {
     public static class Exceptions {
 
         public static IllegalArgumentException sideEffectKeyCanNotBeEmpty() {
-            return new IllegalArgumentException("Graph computer sideEffect key can not be the empty string");
+            return new IllegalArgumentException("Graph computer sideEffects key can not be the empty string");
         }
 
         public static IllegalArgumentException sideEffectKeyCanNotBeNull() {
-            return new IllegalArgumentException("Graph computer sideEffect key can not be null");
+            return new IllegalArgumentException("Graph computer sideEffects key can not be null");
         }
 
         public static IllegalArgumentException sideEffectValueCanNotBeNull() {
-            return new IllegalArgumentException("Graph computer sideEffect value can not be null");
+            return new IllegalArgumentException("Graph computer sideEffects value can not be null");
+        }
+
+        public static IllegalStateException sideEffectsCompleteAndImmutable() {
+            return new IllegalStateException("Graph computer sideEffects are complete and immutable");
         }
 
         public static UnsupportedOperationException dataTypeOfSideEffectValueNotSupported(final Object val) {

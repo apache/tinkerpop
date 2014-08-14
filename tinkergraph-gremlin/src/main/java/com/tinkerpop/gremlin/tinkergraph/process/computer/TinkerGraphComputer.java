@@ -82,7 +82,6 @@ public class TinkerGraphComputer implements GraphComputer {
                     this.messageBoard.completeIteration();
                     if (this.vertexProgram.terminate(this.sideEffects)) break;
                 }
-                this.sideEffects.complete();
             }
 
             // execute mapreduce jobs
@@ -101,9 +100,9 @@ public class TinkerGraphComputer implements GraphComputer {
                     }
                 }
             }
-
             // update runtime and return the newly computed graph
             this.sideEffects.setRuntime(System.currentTimeMillis() - time);
+            this.sideEffects.complete();
             return new ComputerResult(this.graph, this.sideEffects);
         });
     }

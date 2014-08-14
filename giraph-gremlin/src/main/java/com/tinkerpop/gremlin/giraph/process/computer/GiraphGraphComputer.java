@@ -57,13 +57,13 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
 
     private final List<MapReduce> mapReduces = new ArrayList<>();
     private VertexProgram vertexProgram;
-    final GiraphGraphShellComputerSideEffects sideEffects = new GiraphGraphShellComputerSideEffects();
+    final GiraphImmutableSideEffects sideEffects = new GiraphImmutableSideEffects();
 
     public GiraphGraphComputer(final GiraphGraph giraphGraph) {
         this.giraphGraph = giraphGraph;
         final Configuration configuration = giraphGraph.variables().getConfiguration();
         configuration.getKeys().forEachRemaining(key -> this.giraphConfiguration.set(key, configuration.getProperty(key).toString()));
-        this.giraphConfiguration.setMasterComputeClass(GiraphGraphComputerSideEffects.class);
+        this.giraphConfiguration.setMasterComputeClass(GiraphSideEffects.class);
         this.giraphConfiguration.setVertexClass(GiraphInternalVertex.class);
         this.giraphConfiguration.setOutEdgesClass(EmptyOutEdges.class);
         this.giraphConfiguration.setClass("giraph.vertexIdClass", LongWritable.class, LongWritable.class);

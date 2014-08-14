@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.giraph.structure.util;
 
 import com.tinkerpop.gremlin.giraph.Constants;
-import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputerSideEffects;
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphSideEffects;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphMessenger;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.computer.util.KryoWritable;
@@ -36,7 +36,7 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
     private TinkerGraph tinkerGraph;
     private TinkerVertex tinkerVertex;
 
-    private GiraphGraphComputerSideEffects sideEffects;
+    private GiraphSideEffects sideEffects;
 
     public GiraphInternalVertex() {
     }
@@ -72,7 +72,7 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
         if (null == this.vertexProgram)
             this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getConf()));
         if (null == this.sideEffects)
-            this.sideEffects = new GiraphGraphComputerSideEffects(this, this.vertexProgram);
+            this.sideEffects = new GiraphSideEffects(this, this.vertexProgram);
 
         this.vertexProgram.execute(this.tinkerVertex, new GiraphMessenger(this, messages), this.sideEffects);
         if (this.getConf().getBoolean(Constants.GREMLIN_DERIVE_COMPUTER_SIDE_EFFECTS, false)) {

@@ -12,12 +12,12 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphGraphShellComputerSideEffects implements SideEffects {
+public class GiraphImmutableSideEffects implements SideEffects {
 
-    private static final String COMPLETE_AND_IMMUTABLE = "The graph computation sideEffects are complete and immutable";
     private long runtime = 0l;
     private int iteration = -1;
     private final Map<String, Object> sideEffectsMap = new HashMap<>();
+    private boolean complete = false;
 
     public Set<String> keys() {
         return this.sideEffectsMap.keySet();
@@ -28,6 +28,7 @@ public class GiraphGraphShellComputerSideEffects implements SideEffects {
     }
 
     public void set(final String key, Object value) {
+        if (this.complete) throw SideEffects.Exceptions.sideEffectsCompleteAndImmutable();
         this.sideEffectsMap.put(key, value);
     }
 
@@ -40,21 +41,22 @@ public class GiraphGraphShellComputerSideEffects implements SideEffects {
     }
 
     protected void complete(final long runtime) {
+        this.complete = true;
         this.runtime = runtime;
         if (this.sideEffectsMap.containsKey(Constants.ITERATION))
             this.iteration = (int) this.sideEffectsMap.remove(Constants.ITERATION);
     }
 
     public long incr(final String key, final long delta) {
-        throw new IllegalStateException(COMPLETE_AND_IMMUTABLE);
+        throw SideEffects.Exceptions.sideEffectsCompleteAndImmutable();
     }
 
     public boolean and(final String key, final boolean bool) {
-        throw new IllegalStateException(COMPLETE_AND_IMMUTABLE);
+        throw SideEffects.Exceptions.sideEffectsCompleteAndImmutable();
     }
 
     public boolean or(final String key, final boolean bool) {
-        throw new IllegalStateException(COMPLETE_AND_IMMUTABLE);
+        throw SideEffects.Exceptions.sideEffectsCompleteAndImmutable();
     }
 
     public String toString() {

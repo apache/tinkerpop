@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.SideEffectsHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.giraph.master.MasterCompute;
 
@@ -20,17 +21,17 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphGraphComputerSideEffects extends MasterCompute implements SideEffects {
+public class GiraphSideEffects extends MasterCompute implements SideEffects {
 
     private VertexProgram vertexProgram;
     private GiraphInternalVertex giraphInternalVertex;
     private Set<String> sideEffectKeys;
     private boolean isMasterCompute = true;
 
-    public GiraphGraphComputerSideEffects() {
+    public GiraphSideEffects() {
     }
 
-    public GiraphGraphComputerSideEffects(final GiraphInternalVertex giraphInternalVertex, final VertexProgram vertexProgram) {
+    public GiraphSideEffects(final GiraphInternalVertex giraphInternalVertex, final VertexProgram vertexProgram) {
         this.giraphInternalVertex = giraphInternalVertex;
         this.vertexProgram = vertexProgram;
         this.sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectComputeKeys());
@@ -54,6 +55,7 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
             this.sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectComputeKeys());
             try {
                 for (final String key : this.sideEffectKeys) {
+                    SideEffectsHelper.validateKey(key);
                     this.registerPersistentAggregator(key, MemoryAggregator.class);
                     this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.NO_OP, null)); // for those sideEffects not defined during setup(), necessary to provide a default value
                 }
@@ -85,7 +87,7 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
     }
 
     public void set(final String key, Object value) {
-        this.checkKey(key);
+        this.checkKeyValue(key, value);
         if (this.isMasterCompute)
             this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.SET, value));
         else
@@ -93,7 +95,7 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
     }
 
     public boolean and(final String key, final boolean bool) {
-        this.checkKey(key);
+        this.checkKeyValue(key, bool);
         if (this.isMasterCompute) {  // only called on setup() and terminate()
             Boolean value = this.<RuleWritable>getAggregatedValue(key).<Boolean>getObject();
             value = null == value ? bool : bool && value;
@@ -107,7 +109,7 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
     }
 
     public boolean or(final String key, final boolean bool) {
-        this.checkKey(key);
+        this.checkKeyValue(key, bool);
         if (this.isMasterCompute) {   // only called on setup() and terminate()
             Boolean value = this.<RuleWritable>getAggregatedValue(key).<Boolean>getObject();
             value = null == value ? bool : bool || value;
@@ -121,7 +123,7 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
     }
 
     public long incr(final String key, final long delta) {
-        this.checkKey(key);
+        this.checkKeyValue(key, delta);
         if (this.isMasterCompute) {   // only called on setup() and terminate()
             Number value = this.<RuleWritable>getAggregatedValue(key).<Number>getObject();
             value = null == value ? delta : value.longValue() + delta;
@@ -148,8 +150,9 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
         return StringFactory.computerSideEffectsString(this);
     }
 
-    private void checkKey(final String key) {
+    private void checkKeyValue(final String key, final Object value) {
         if (!key.equals(Constants.RUNTIME) && !this.sideEffectKeys.contains(key))
             throw GraphComputer.Exceptions.providedKeyIsNotASideEffectKey(key);
+        SideEffectsHelper.validateValue(value);
     }
 }

@@ -2,10 +2,13 @@ package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
 import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Ignore;
@@ -20,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.function.Supplier;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
@@ -27,9 +31,7 @@ import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATU
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * Ensure that exception handling is consistent within Blueprints. It may be necessary to throw exceptions in an
@@ -248,7 +250,7 @@ public class ExceptionConsistencyTest {
             "variableKeyCanNotBeNull",
             "variableKeyCanNotBeEmpty"
     })
-    public static class MemoryTest extends AbstractGremlinTest {
+    public static class VariableTest extends AbstractGremlinTest {
         @Parameterized.Parameters(name = "{index}: expect - {2}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
@@ -532,9 +534,27 @@ public class ExceptionConsistencyTest {
      */
     @ExceptionCoverage(exceptionClass = GraphComputer.Exceptions.class, methods = {
             "providedKeyIsNotAComputeKey",
-            "computerHasNoVertexProgramNorMapReducers"
+            "computerHasNoVertexProgramNorMapReducers",
+            "computerHasAlreadyBeenSubmittedAVertexProgram"
+    })
+    @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
+            "graphDoesNotSupportProvidedGraphComputer",
+            "onlyOneOrNoGraphComputerClass"
     })
     public static class GraphComputerTest extends AbstractGremlinTest {
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
+        public void shouldOnlyAllowOneOrNoGraphComputerClass() throws Exception {
+            try {
+                g.compute(BadGraphComputer.class, BadGraphComputer.class).submit().get();
+                fail("Should throw an IllegalArgument when two graph computers are passed in");
+            } catch (Exception ex) {
+                final Exception expectedException = Graph.Exceptions.onlyOneOrNoGraphComputerClass();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
 
         @Test
         @LoadGraphWith(CLASSIC)
@@ -549,6 +569,54 @@ public class ExceptionConsistencyTest {
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }
         }
+
+        @Test
+        @LoadGraphWith(CLASSIC)
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
+        public void shouldNotAllowTheSameComputerToExecutedTwice() throws Exception {
+            final Supplier<VertexProgram> identity = () -> LambdaVertexProgram.build().
+                    setup(s -> {
+                    }).
+                    execute((v, m, s) -> {
+                    }).
+                    terminate(s -> true).create();
+            final GraphComputer computer = g.compute().program(identity.get());
+            computer.submit().get(); // this should work as its the first run of the graph computer
+
+            try {
+                computer.submit(); // this should fail as the computer has already been executed
+                fail("Using the same graph computer to compute again should not be possible");
+            } catch (IllegalStateException e) {
+                assertTrue(true);
+            } catch (Exception e) {
+                fail("Should yield an illegal state exception for graph computer being executed twice");
+            }
+
+            computer.program(identity.get());
+            // test no rerun of graph computer
+            try {
+                computer.submit(); // this should fail as the computer has already been executed even through new program submitted
+                fail("Using the same graph computer to compute again should not be possible");
+            } catch (IllegalStateException e) {
+                assertTrue(true);
+            } catch (Exception e) {
+                fail("Should yield an illegal state exception for graph computer being executed twice");
+            }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
+        public void shouldNotAllowBadGraphComputers() {
+            try {
+                g.compute(BadGraphComputer.class);
+                fail("Providing a bad graph computer class should fail");
+            } catch (IllegalArgumentException e) {
+                assertTrue(true);
+            } catch (Exception e) {
+                fail("Should provide an IllegalArgumentException");
+            }
+        }
+
 
         @Test
         @Ignore
@@ -590,6 +658,24 @@ public class ExceptionConsistencyTest {
                 final Exception expectedException = GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
                 assertEquals(expectedException.getClass(), inner.getClass());
                 assertEquals(expectedException.getMessage(), inner.getMessage());
+            }
+        }
+
+        class BadGraphComputer implements GraphComputer {
+            public GraphComputer isolation(final Isolation isolation) {
+                return null;
+            }
+
+            public GraphComputer program(final VertexProgram vertexProgram) {
+                return null;
+            }
+
+            public GraphComputer mapReduce(final MapReduce mapReduce) {
+                return null;
+            }
+
+            public Future<ComputerResult> submit() {
+                return null;
             }
         }
     }
