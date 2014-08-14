@@ -29,10 +29,9 @@ import java.util.stream.Stream;
  * implements StructureStandardSuite.GraphProvider as a convenience only...it could be implemented in a separate class
  * file):
  * <code>
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  * @RunWith(StructureStandardSuite.class)
- * @BlueprintsSuite.GraphProviderClass(MsAccessBlueprintsTest.class) public class MsAccessBlueprintsTest implements GraphProvider {
+ * @BlueprintsSuite.GraphProviderClass(MsAccessBlueprintsTest.class)
+ * public class MsAccessBlueprintsTest implements GraphProvider {
  * }
  * </code>
  * Implementing {@link com.tinkerpop.gremlin.GraphProvider} provides a way for the StructureStandardSuite to
@@ -41,6 +40,8 @@ import java.util.stream.Stream;
  * <br/>
  * Set the {@code gremlin.structure.tests} environment variable to a comma separated list of test classes to execute.
  * This setting can be helpful to restrict execution of tests to specific ones being focused on during development.
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class StructureStandardSuite extends AbstractGremlinSuite {
 
