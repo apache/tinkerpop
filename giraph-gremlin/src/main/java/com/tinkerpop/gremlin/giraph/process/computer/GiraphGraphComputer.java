@@ -168,8 +168,8 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
                 if (file.exists()) {
                     Arrays.asList(file.listFiles()).stream().filter(f -> f.getName().endsWith(Constants.DOT_JAR)).forEach(f -> {
                         try {
-                            if (!fs.exists(new Path(fs.getHomeDirectory() + "/" + giraphGremlinLibDirectory + "/" + f.getName())))
-                                fs.copyFromLocalFile(new Path(f.getPath()), new Path(fs.getHomeDirectory() + "/" + giraphGremlinLibDirectory + "/" + f.getName()));
+                            // if (!fs.exists(new Path(fs.getHomeDirectory() + "/" + giraphGremlinLibDirectory + "/" + f.getName())))
+                            fs.copyFromLocalFile(new Path(f.getPath()), new Path(fs.getHomeDirectory() + "/" + giraphGremlinLibDirectory + "/" + f.getName()));
                             try {
                                 DistributedCache.addArchiveToClassPath(new Path(fs.getHomeDirectory() + "/" + giraphGremlinLibDirectory + "/" + f.getName()), this.giraphConfiguration, fs);
                             } catch (final Exception e) {

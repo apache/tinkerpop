@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.giraph.structure.io.graphson;
 
-import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.giraph.structure.io.CommonOutputFormat;
+import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
