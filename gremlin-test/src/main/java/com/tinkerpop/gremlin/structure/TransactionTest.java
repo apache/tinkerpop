@@ -519,6 +519,28 @@ public class TransactionTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_FULLY_ISOLATED_TRANSACTIONS)
+    public void shouldCountVerticesEdgesOnPreTransactionCommit() {
+        // see a more complex version of this test at GraphTest.shouldProperlyCountVerticesAndEdgesOnAddRemove()
+        final Graph graph = g;
+        Vertex v1 = graph.addVertex();
+        graph.tx().commit();
+
+        AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+
+        final Vertex v2 = graph.addVertex();
+        v1 = graph.v(v1.id());
+        v1.addEdge("friend", v1, v2);
+
+        AbstractGremlinSuite.assertVertexEdgeCounts(2, 1);
+
+        graph.tx().commit();
+
+        AbstractGremlinSuite.assertVertexEdgeCounts(2, 1);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_FULLY_ISOLATED_TRANSACTIONS)
     public void shouldSupportTransactionIsolationWithSeparateThreads() throws Exception {
         // one thread modifies the graph and a separate thread reads before the transaction is committed.
         // the expectation is that the changes in the transaction are isolated to the thread that made the change
