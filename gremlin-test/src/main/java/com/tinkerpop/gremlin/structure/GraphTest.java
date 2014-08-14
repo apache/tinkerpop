@@ -446,4 +446,20 @@ public class GraphTest extends AbstractGremlinTest {
 
         graphProvider.clear(reopenedGraph, graphProvider.standardGraphConfiguration());
     }
+
+    @Test
+    public void shouldValidateOptInAnnotationsOnGraph() {
+        // sometimes test names change and since they are String representations they can easily break if a test
+        // is renamed. this test will validate such things.  it is not possible to @OptOut of this test.
+        final Class<? extends Graph> graphClass = g.getClass();
+        final Graph.OptOut[] optOuts = graphClass.getAnnotationsByType(Graph.OptOut.class);
+        Arrays.stream(optOuts).forEach(optOut -> {
+            try {
+                final Class testClass = Class.forName(optOut.test());
+                assertTrue(Arrays.stream(testClass.getMethods()).anyMatch(m -> m.getName().equals(optOut.method())));
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+    }
 }

@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin;
 
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.GraphTest;
 import org.javatuples.Pair;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
@@ -77,6 +78,10 @@ public abstract class AbstractGremlinSuite extends Suite {
             // validate annotation - test class and reason must be set
             if (!Arrays.stream(optOuts).allMatch(ignore -> ignore.test() != null && ignore.reason() != null && !ignore.reason().isEmpty()))
                 throw new InitializationError("Check @IgnoreTest annotations - all must have a 'test' and 'reason' set");
+
+            // do not allow use of @OptOut on @OptOut validation
+            if (Arrays.stream(optOuts).anyMatch(optOut -> optOut.test().equals(GraphTest.class.getCanonicalName()) && optOut.method().equals("shouldValidateOptInAnnotationsOnGraph")))
+                throw new InitializationError(String.format("A Graph cannot use @OptOut for %s - shouldValidateOptInAnnotationsOnGraph", GraphTest.class));
 
             try {
                 filter(new OptOutTestFilter(optOuts));
