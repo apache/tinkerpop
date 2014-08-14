@@ -30,6 +30,11 @@ import com.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * The ProcessComputerStandardSuite is a custom JUnit test runner that executes the Gremlin Test Suite over a Graph
  * implementation.  This specialized test suite and runner is for use by Blueprints implementers to test their
@@ -58,7 +63,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
      * This list of tests in the suite that will be executed.  Gremlin developers should add to this list
      * as needed to enforce tests upon implementations.
      */
-    private static final Class<?>[] testsToExecute = new Class<?>[]{
+    private static final Class<?>[] allTests = new Class<?>[]{
             // basic api semantics testing
             GraphComputerTest.class,
 
@@ -158,6 +163,25 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // algorithms
             PageRankVertexProgramTest.class
     };
+
+    /**
+     * This list of tests in the suite that will be executed.  Gremlin developers should add to this list
+     * as needed to enforce tests upon implementations.
+     */
+    private static final Class<?>[] testsToExecute;
+
+    static {
+        final String override = System.getenv().getOrDefault("gremlin.tests", "");
+        if (override.equals(""))
+            testsToExecute = allTests;
+        else {
+            final List<String> filters = Arrays.asList(override.split(","));
+            final List<Class<?>> allowed = Stream.of(allTests)
+                    .filter(c -> filters.contains(c.getName()))
+                    .collect(Collectors.toList());
+            testsToExecute = allowed.toArray(new Class<?>[allowed.size()]);
+        }
+    }
 
     public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
         super(klass, builder, testsToExecute, testsToEnforce);

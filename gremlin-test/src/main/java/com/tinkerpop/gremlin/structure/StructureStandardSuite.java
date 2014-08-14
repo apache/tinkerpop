@@ -81,12 +81,13 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
     private static final Class<?>[] testsToExecute;
 
     static {
-        final String override = System.getenv().getOrDefault("gremlin.structure.tests", "");
+        final String override = System.getenv().getOrDefault("gremlin.tests", "");
         if (override.equals(""))
             testsToExecute = allTests;
         else {
             final List<String> filters = Arrays.asList(override.split(","));
-            final List<Class<?>> allowed = Stream.of(allTests).filter(c -> filters.contains(c.getSimpleName()))
+            final List<Class<?>> allowed = Stream.of(allTests)
+                    .filter(c -> filters.contains(c.getName()))
                     .collect(Collectors.toList());
             testsToExecute = allowed.toArray(new Class<?>[allowed.size()]);
         }
