@@ -10,8 +10,6 @@ import com.tinkerpop.gremlin.process.computer.SideEffects;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.giraph.master.MasterCompute;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -24,53 +22,52 @@ import java.util.Set;
  */
 public class GiraphGraphComputerSideEffects extends MasterCompute implements SideEffects {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputerSideEffects.class);
     private VertexProgram vertexProgram;
     private GiraphInternalVertex giraphInternalVertex;
     private Set<String> sideEffectKeys;
+    private boolean isMasterCompute = true;
 
     public GiraphGraphComputerSideEffects() {
-        this.giraphInternalVertex = null;
-        this.vertexProgram = null;
-        this.initialize();
     }
 
     public GiraphGraphComputerSideEffects(final GiraphInternalVertex giraphInternalVertex, final VertexProgram vertexProgram) {
         this.giraphInternalVertex = giraphInternalVertex;
         this.vertexProgram = vertexProgram;
         this.sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectComputeKeys());
+        this.isMasterCompute = false;
     }
 
+    @Override
     public void initialize() {
-        // master compute node
-        try {
-            if (null == this.vertexProgram)
-                this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getConf()));
-            this.sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectComputeKeys());
-            for (final String key : (Set<String>) this.vertexProgram.getSideEffectComputeKeys()) {
-                this.registerAggregator(key, MemoryAggregator.class); // TODO: Why does PersistentAggregator not work?
-            }
-            this.registerPersistentAggregator(Constants.RUNTIME, MemoryAggregator.class);
-            this.setIfAbsent(Constants.RUNTIME, System.currentTimeMillis());
-            this.vertexProgram.setup(this);
-        } catch (final Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            // do nothing as Giraph has a hard time starting up with random exceptions until ZooKeeper comes online
-        }
+        // do not initialize aggregators here because the getConf() configuration is not available at this point
+        // use compute() initial iteration instead
     }
-
-    // TODO: Perhaps wait for setConfiguration? ^^^^^^^
 
     public void compute() {
-        if (!this.isInitialIteration()) {
+        this.isMasterCompute = true;
+        if (!this.isInitialIteration()) { // the master compute is the first evaluation, thus, don't check for termination at start
             if (this.vertexProgram.terminate(this)) {
                 this.haltComputation();
             }
+        } else {
+            this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getConf()));
+            this.sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectComputeKeys());
+            try {
+                for (final String key : this.sideEffectKeys) {
+                    this.registerPersistentAggregator(key, MemoryAggregator.class);
+                    this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.NO_OP, null)); // for those sideEffects not defined during setup(), necessary to provide a default value
+                }
+                this.registerPersistentAggregator(Constants.RUNTIME, MemoryAggregator.class);
+                this.set(Constants.RUNTIME, System.currentTimeMillis());
+            } catch (final Exception e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+            this.vertexProgram.setup(this);
         }
     }
 
     public int getIteration() {
-        return null == this.giraphInternalVertex ? (int) this.getSuperstep() : (int) this.giraphInternalVertex.getSuperstep();
+        return this.isMasterCompute ? (int) this.getSuperstep() : (int) this.giraphInternalVertex.getSuperstep();
     }
 
     public long getRuntime() {
@@ -82,32 +79,26 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
     }
 
     public <R> Optional<R> get(final String key) {
-        this.checkKey(key);
-        final RuleWritable rule = (null == this.giraphInternalVertex) ? this.getAggregatedValue(key) : this.giraphInternalVertex.getAggregatedValue(key);
-        return Optional.ofNullable(rule.getObject());
+        //this.checkKey(key);
+        final RuleWritable rule = this.isMasterCompute ? this.getAggregatedValue(key) : this.giraphInternalVertex.getAggregatedValue(key);
+        return null == rule ? Optional.empty() : Optional.ofNullable(rule.getObject());
     }
 
     public void set(final String key, Object value) {
         this.checkKey(key);
-        if (null == this.giraphInternalVertex)
+        if (this.isMasterCompute)
             this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.SET, value));
         else
             this.giraphInternalVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.SET, value));
     }
 
-    public void setIfAbsent(final String key, final Object value) {
-        this.checkKey(key);
-        if (null == this.giraphInternalVertex)
-            this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.SET_IF_ABSENT, value));
-        else
-            this.giraphInternalVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.SET_IF_ABSENT, value));
-    }
-
     public boolean and(final String key, final boolean bool) {
         this.checkKey(key);
-        if (null == this.giraphInternalVertex) {
-            this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.AND, ((RuleWritable) this.getAggregatedValue(key)).<Boolean>getObject() && bool));
-            return ((RuleWritable) this.getAggregatedValue(key)).getObject();
+        if (this.isMasterCompute) {  // only called on setup() and terminate()
+            Boolean value = this.<RuleWritable>getAggregatedValue(key).<Boolean>getObject();
+            value = null == value ? bool : bool && value;
+            this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.AND, value));
+            return value;
         } else {
             this.giraphInternalVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.AND, bool));
             final Boolean result = ((RuleWritable) this.giraphInternalVertex.getAggregatedValue(key)).getObject();
@@ -117,9 +108,11 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
 
     public boolean or(final String key, final boolean bool) {
         this.checkKey(key);
-        if (null == this.giraphInternalVertex) {
-            this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.OR, ((RuleWritable) this.getAggregatedValue(key)).<Boolean>getObject() || bool));
-            return ((RuleWritable) this.getAggregatedValue(key)).getObject();
+        if (this.isMasterCompute) {   // only called on setup() and terminate()
+            Boolean value = this.<RuleWritable>getAggregatedValue(key).<Boolean>getObject();
+            value = null == value ? bool : bool || value;
+            this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.OR, value));
+            return value;
         } else {
             this.giraphInternalVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.OR, bool));
             final Boolean result = ((RuleWritable) this.giraphInternalVertex.getAggregatedValue(key)).getObject();
@@ -129,9 +122,11 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
 
     public long incr(final String key, final long delta) {
         this.checkKey(key);
-        if (null == this.giraphInternalVertex) {
-            this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.INCR, ((RuleWritable) this.getAggregatedValue(key)).<Long>getObject() + delta));
-            return ((RuleWritable) this.getAggregatedValue(key)).getObject();
+        if (this.isMasterCompute) {   // only called on setup() and terminate()
+            Number value = this.<RuleWritable>getAggregatedValue(key).<Number>getObject();
+            value = null == value ? delta : value.longValue() + delta;
+            this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.INCR, value));
+            return value.longValue();
         } else {
             this.giraphInternalVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.INCR, delta));
             final Long result = ((RuleWritable) this.giraphInternalVertex.getAggregatedValue(key)).getObject();
@@ -140,9 +135,13 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Sid
     }
 
     public void write(final DataOutput output) {
+        // no need to serialize the master compute as it gets its data from aggregators
+        // is this true?
     }
 
     public void readFields(final DataInput input) {
+        // no need to serialize the master compute as it gets its data from aggregators
+        // is this true?
     }
 
     public String toString() {
