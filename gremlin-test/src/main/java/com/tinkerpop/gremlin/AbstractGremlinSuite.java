@@ -49,19 +49,32 @@ public abstract class AbstractGremlinSuite extends Suite {
         public Class<? extends GraphProvider> provider();
     }
 
+    /**
+     * Indicates that this suite is for testing a gremlin flavor and is therefore not responsible for validating
+     * the suite against what the Graph implementation opts-in for.
+     */
+    private final boolean gremlinFlavorSuite;
+
     public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute) throws InitializationError {
         this(klass, builder, testsToExecute, null);
     }
 
     public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce) throws InitializationError {
+        this(klass, builder, testsToExecute, testsToEnforce, false);
+    }
+
+    public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce, final boolean gremlinFlavorSuite) throws InitializationError {
         super(builder, klass, enforce(testsToExecute, testsToEnforce));
+
+        this.gremlinFlavorSuite = gremlinFlavorSuite;
 
         // figures out what the implementer assigned as the GraphProvider class and make it available to tests.
         // the klass is the Suite that implements this suite (e.g. GroovyTinkerGraphProcessStandardTest).
         // this class should be annotated with GraphProviderClass.  Failure to do so will toss an InitializationError
         final Pair<Class<? extends GraphProvider>, Class<? extends Graph>> pair = getGraphProviderClass(klass);
 
-        // filter out tests ignored by the implementation
+        // validate public acknowledgement of the test suite and filter out tests ignored by the implementation
+        validateOptInToSuite(pair.getValue1());
         registerOptOuts(pair.getValue1());
 
         try {
@@ -71,7 +84,13 @@ public abstract class AbstractGremlinSuite extends Suite {
         }
     }
 
-    private void registerOptOuts(final Class<?> klass) throws InitializationError {
+    private void validateOptInToSuite(final Class<? extends Graph> klass) throws InitializationError {
+        final Graph.OptIn[] optIns = klass.getAnnotationsByType(Graph.OptIn.class);
+        if (!gremlinFlavorSuite && !Arrays.stream(optIns).anyMatch(optIn -> optIn.value().equals(this.getClass().getCanonicalName())))
+            throw new InitializationError("The suite will not run for this Graph until it is publicly acknowledged with the @OptIn annotation on the Graph instance itself");
+    }
+
+    private void registerOptOuts(final Class<? extends Graph> klass) throws InitializationError {
         final Graph.OptOut[] optOuts = klass.getAnnotationsByType(Graph.OptOut.class);
 
         if (optOuts != null && optOuts.length > 0) {

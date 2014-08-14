@@ -27,6 +27,10 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
+@Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_PERFORMANCE)
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
 public class TinkerGraph implements Graph, Serializable {
 
     protected Long currentId = -1l;

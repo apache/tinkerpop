@@ -77,6 +77,6 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
 
 
     public GroovyProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToEnforce);
+        super(klass, builder, testsToExecute, testsToEnforce, true);
     }
 }

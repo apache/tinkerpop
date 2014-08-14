@@ -18,7 +18,7 @@ import java.util.Map;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(GroovyProcessStandardSuite.class)
-@ProcessStandardSuite.GraphProviderClass(GroovyTinkerGraphProcessStandardTest.class)
+@ProcessStandardSuite.GraphProviderClass(provider = GroovyTinkerGraphProcessStandardTest.class, graph = TinkerGraph.class)
 public class GroovyTinkerGraphProcessStandardTest extends AbstractGraphProvider {
 
     @Override

@@ -27,6 +27,8 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
 public class GiraphGraph implements Graph, Serializable {
 
     protected final GiraphGraphVariables variables;

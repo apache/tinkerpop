@@ -42,6 +42,8 @@ import java.util.function.Function;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Pieter Martin
  */
+@Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     private GraphDatabaseService baseGraph;
 

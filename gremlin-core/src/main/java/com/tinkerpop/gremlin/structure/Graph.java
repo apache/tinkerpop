@@ -704,7 +704,36 @@ public interface Graph extends AutoCloseable {
         }
     }
 
+    /**
+     * Defines the test suite that the implementer has decided to support and represents publically as "passing".
+     * Marking the {@link Graph} instance with this class allows that particular test suite to run.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @Repeatable(OptIns.class)
+    @Inherited
+    public @interface OptIn {
+        public static String SUITE_STRUCTURE_STANDARD = "com.tinkerpop.gremlin.structure.StructureStandardSuite";
+        public static String SUITE_STRUCTURE_PERFORMANCE = "com.tinkerpop.gremlin.structure.StructurePerformanceSuite";
+        public static String SUITE_PROCESS_COMPUTER = "com.tinkerpop.gremlin.process.ProcessComputerSuite";
+        public static String SUITE_PROCESS_STANDARD = "com.tinkerpop.gremlin.process.ProcessStandardSuite";
 
+        /**
+         * The test suite class to opt in to.
+         */
+        public String value();
+    }
+
+    /**
+     * Holds a collection of {@link OptIn} enabling multiple {@link OptIn} to be applied to a
+     * single suite.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @Inherited
+    public @interface OptIns {
+        OptIn[] value();
+    }
 
     /**
      * Defines a test in the suite that the implementer does not want to run.
