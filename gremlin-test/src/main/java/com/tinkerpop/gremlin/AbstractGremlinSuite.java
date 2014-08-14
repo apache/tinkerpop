@@ -44,23 +44,34 @@ public abstract class AbstractGremlinSuite extends Suite {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
-    @Repeatable(IgnoreTests.class)
+    @Repeatable(OptOuts.class)
     @Inherited
-    public @interface IgnoreTest {
+    public @interface OptOut {
+        /**
+         * The test class to opt out of.
+         */
         public Class<?> test();
+
+        /**
+         * The specific name of the test method to opt out of.
+         */
         public String method();
+
+        /**
+         * The reason the implementation is opting out of this test.
+         */
         public String reason();
     }
 
     /**
-     * Holds a collection of {@link IgnoreTest} enabling multiple {@link IgnoreTest} to be applied to a
+     * Holds a collection of {@link OptOut} enabling multiple {@link OptOut} to be applied to a
      * single suite.
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     @Inherited
-    public @interface IgnoreTests {
-        IgnoreTest[] value();
+    public @interface OptOuts {
+        OptOut[] value();
     }
 
     public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute) throws InitializationError {
@@ -71,7 +82,7 @@ public abstract class AbstractGremlinSuite extends Suite {
         super(builder, klass, enforce(testsToExecute, testsToEnforce));
 
         // filter out tests ignored by the implementation
-        registerIgnoredTests(klass);
+        registerOptOuts(klass);
 
         // figures out what the implementer assigned as the GraphProvider class and make it available to tests.
         // the klass is the Suite that implements this suite (e.g. GroovyTinkerGraphProcessStandardTest).
@@ -84,16 +95,16 @@ public abstract class AbstractGremlinSuite extends Suite {
         }
     }
 
-    private void registerIgnoredTests(final Class<?> klass) throws InitializationError {
-        final IgnoreTest[] ignoreTests = klass.getAnnotationsByType(IgnoreTest.class);
+    private void registerOptOuts(final Class<?> klass) throws InitializationError {
+        final OptOut[] optOuts = klass.getAnnotationsByType(OptOut.class);
 
-        if (ignoreTests != null && ignoreTests.length > 0) {
+        if (optOuts != null && optOuts.length > 0) {
             // validate annotation - test class and reason must be set
-            if (!Arrays.stream(ignoreTests).allMatch(ignore -> ignore.test() != null && ignore.reason() != null && !ignore.reason().isEmpty()))
+            if (!Arrays.stream(optOuts).allMatch(ignore -> ignore.test() != null && ignore.reason() != null && !ignore.reason().isEmpty()))
                 throw new InitializationError("Check @IgnoreTest annotations - all must have a 'test' and 'reason' set");
 
             try {
-                filter(new IgnoresFilter(ignoreTests));
+                filter(new OptOutTestFilter(optOuts));
             } catch (NoTestsRemainException ex) {
                 throw new InitializationError(ex);
             }
@@ -129,14 +140,14 @@ public abstract class AbstractGremlinSuite extends Suite {
     }
 
     /**
-     * Filter for tests in the suite which is controlled by the {@link IgnoreTest} annotation.
+     * Filter for tests in the suite which is controlled by the {@link OptOut} annotation.
      */
-    public static class IgnoresFilter extends Filter {
+    public static class OptOutTestFilter extends Filter {
 
         private final List<Description> testsToIgnore;
 
-        public IgnoresFilter(final IgnoreTest[] ignoreTests) {
-            testsToIgnore = Arrays.stream(ignoreTests)
+        public OptOutTestFilter(final OptOut[] optOuts) {
+            testsToIgnore = Arrays.stream(optOuts)
                     .<Description>map(ignoreTest -> Description.createTestDescription(ignoreTest.test(), ignoreTest.method()))
                     .collect(Collectors.toList());
         }
