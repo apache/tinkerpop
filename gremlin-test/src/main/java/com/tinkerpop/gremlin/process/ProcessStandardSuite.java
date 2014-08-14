@@ -48,16 +48,18 @@ import org.junit.runners.model.RunnerBuilder;
  * To use the ProcessStandardSuite define a class in a test module.  Simple naming would expect the name of the
  * implementation followed by "ProcessStandardSuite".  This class should be annotated as follows (note that the "Suite"
  * implements ProcessStandardSuite.GraphProvider as a convenience only...it could be implemented in a separate class file):
- * <code>
  *
- * @author Stephen Mallette (http://stephen.genoprime.com)
+ * <code>
  * @RunWith(ProcessStandardSuite.class)
  * @BlueprintsSuite.GraphProviderClass(MsAccessBlueprintsTest.class) public class MsAccessBlueprintsTest implements GraphProvider {
  * }
  * </code>
+ *
  * Implementing {@link com.tinkerpop.gremlin.GraphProvider} provides a way for the ProcessStandardSuite to
  * instantiate Graph instances from the implementation being tested to inject into tests in the suite.  The
  * ProcessStandardSuite will utilized Features defined in the suite to determine which tests will be executed.
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ProcessStandardSuite extends AbstractGremlinSuite {
 
