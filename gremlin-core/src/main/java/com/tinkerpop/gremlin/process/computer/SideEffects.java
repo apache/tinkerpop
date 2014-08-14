@@ -30,7 +30,7 @@ public interface SideEffects {
 
     public long getRuntime();
 
-    public void setIfAbsent(final String key, final Object value);
+    //public void setIfAbsent(final String key, final Object value);
 
     public long incr(final String key, final long delta);
 

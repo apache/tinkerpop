@@ -45,10 +45,6 @@ public class GiraphGraphShellComputerSideEffects implements SideEffects {
             this.iteration = (int) this.sideEffectsMap.remove(Constants.ITERATION);
     }
 
-    public void setIfAbsent(final String key, final Object value) {
-        throw new IllegalStateException();
-    }
-
     public long incr(final String key, final long delta) {
         throw new IllegalStateException(COMPLETE_AND_IMMUTABLE);
     }

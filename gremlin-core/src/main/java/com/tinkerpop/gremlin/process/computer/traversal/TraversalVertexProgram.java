@@ -102,7 +102,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     @Override
     public void setup(final SideEffects sideEffects) {
-        sideEffects.setIfAbsent(VOTE_TO_HALT, true);
+        sideEffects.set(VOTE_TO_HALT, true);
     }
 
     @Override
@@ -162,7 +162,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         if (voteToHalt) {
             return true;
         } else {
-            sideEffects.or(VOTE_TO_HALT, true);
+            sideEffects.set(VOTE_TO_HALT, true);
             return false;
         }
     }

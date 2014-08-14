@@ -18,7 +18,7 @@ import java.io.IOException;
 public class RuleWritable implements Writable {
 
     public enum Rule {
-        OR, AND, INCR, SET, SET_IF_ABSENT
+        OR, AND, INCR, SET, NO_OP
     }
 
     private Rule rule;
@@ -40,6 +40,8 @@ public class RuleWritable implements Writable {
     public Rule getRule() {
         return this.rule;
     }
+
+    // TODO: Don't use Kryo (its sin)
 
     public void readFields(final DataInput input) throws IOException {
         this.rule = Rule.values()[WritableUtils.readVInt(input)];

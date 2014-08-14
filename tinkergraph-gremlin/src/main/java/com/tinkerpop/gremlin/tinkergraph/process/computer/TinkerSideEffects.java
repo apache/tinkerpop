@@ -93,12 +93,6 @@ public class TinkerSideEffects implements SideEffects.Administrative {
         return returnValue;
     }
 
-    public void setIfAbsent(final String key, final Object value) {
-        checkKey(key);
-        if (!this.sideEffectsMap.containsKey(key))
-            this.set(key, value);
-    }
-
     public void set(final String key, final Object value) {
         checkKey(key);
         GraphVariableHelper.validateVariable(key, value);
