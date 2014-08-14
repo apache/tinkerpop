@@ -6,8 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Holds a collection of {@link FeatureRequirement} memory enabling multiple {@link FeatureRequirement}
- * memory to be applied to a single test method.
+ * Holds a collection of {@link FeatureRequirement} annotations enabling multiple {@link FeatureRequirement}
+ * definitions to be applied to a single test method.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
