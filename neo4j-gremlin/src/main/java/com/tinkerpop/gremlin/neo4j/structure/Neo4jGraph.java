@@ -5,9 +5,7 @@ import com.tinkerpop.gremlin.neo4j.process.graph.step.map.Neo4jCypherStartStep;
 import com.tinkerpop.gremlin.neo4j.process.graph.step.map.Neo4jGraphStep;
 import com.tinkerpop.gremlin.neo4j.process.graph.strategy.Neo4jGraphStepStrategy;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
-import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
@@ -131,22 +129,18 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> V() {
+    public Neo4jTraversal<Vertex, Vertex> V() {
         this.tx().readWrite();
-        final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>();
-        traversal.strategies().register(Neo4jGraphStepStrategy.instance());
+        final Neo4jTraversal<Vertex, Vertex> traversal = new Neo4jTraversal.DefaultNeo4jTraversal<>(this);
         traversal.addStep(new Neo4jGraphStep(traversal, Vertex.class, this));
-        traversal.memory().set(Key.hide("g"), this);
         return traversal;
     }
 
     @Override
-    public GraphTraversal<Edge, Edge> E() {
+    public Neo4jTraversal<Edge, Edge> E() {
         this.tx().readWrite();
-        final GraphTraversal traversal = new DefaultGraphTraversal<Object, Edge>();
-        traversal.strategies().register(Neo4jGraphStepStrategy.instance());
+        final Neo4jTraversal<Edge, Edge> traversal = new Neo4jTraversal.DefaultNeo4jTraversal<>(this);
         traversal.addStep(new Neo4jGraphStep(traversal, Edge.class, this));
-        traversal.memory().set(Key.hide("g"), this);
         return traversal;
     }
 
@@ -183,10 +177,8 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     }
 
     @Override
-    public <S> GraphTraversal<S, S> of() {
-        final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>();
-        traversal.memory().set(Graph.Key.hide("g"), this);
-        traversal.strategies().register(Neo4jGraphStepStrategy.instance());
+    public <S> Neo4jTraversal<S, S> of() {
+        final Neo4jTraversal<S, S> traversal = Neo4jTraversal.of(this);
         traversal.addStep(new StartStep<>(traversal));
         return traversal;
     }

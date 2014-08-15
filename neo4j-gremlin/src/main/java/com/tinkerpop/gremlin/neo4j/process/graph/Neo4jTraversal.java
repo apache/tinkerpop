@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.ExceptStep;
@@ -57,7 +58,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
-import com.tinkerpop.gremlin.process.util.DefaultTraversal;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -87,15 +88,12 @@ import java.util.function.Supplier;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Neo4jTraversal<S,E> extends Traversal<S,E> {
+public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 
     public static <S> Neo4jTraversal<S, S> of(final Graph graph) {
-        if (!(graph instanceof Neo4jGraph)) throw new IllegalArgumentException(String.format("graph must be of type %s", Neo4jGraph.class));
-
-        final Neo4jTraversal traversal = new DefaultNeo4jTraversal();
-        traversal.memory().set("g", graph);
-        traversal.memory().set("cypher", ((Neo4jGraph) graph).getCypher());
-        return traversal;
+        if (!(graph instanceof Neo4jGraph))
+            throw new IllegalArgumentException(String.format("graph must be of type %s", Neo4jGraph.class));
+        return new DefaultNeo4jTraversal<S, S>((Neo4jGraph) graph);
     }
 
     public static <S> Neo4jTraversal<S, S> of() {
@@ -106,8 +104,20 @@ public interface Neo4jTraversal<S,E> extends Traversal<S,E> {
         return (Neo4jTraversal) this.addStep(new Neo4jCypherStep<>(query, this));
     }
 
-    public default Neo4jTraversal<S, E> cypher(final String query, final Map<String,Object> params) {
+    public default Neo4jTraversal<S, E> cypher(final String query, final Map<String, Object> params) {
         return (Neo4jTraversal) this.addStep(new Neo4jCypherStep<>(query, params, this));
+    }
+
+    public class DefaultNeo4jTraversal<S, E> extends DefaultGraphTraversal<S, E> implements Neo4jTraversal<S, E> {
+        public DefaultNeo4jTraversal(final Neo4jGraph neo4jGraph) {
+            this();
+            this.memory().set(Graph.Key.hide("g"), neo4jGraph);
+        }
+
+        public DefaultNeo4jTraversal() {
+            super();
+            this.strategies.register(Neo4jGraphStepStrategy.instance());
+        }
     }
 
     /////////////////////////////////////////////////////////////
@@ -313,6 +323,7 @@ public interface Neo4jTraversal<S,E> extends Traversal<S,E> {
     public default <E2> Neo4jTraversal<S, E2> select(final String as) {
         return this.select(as, null);
     }
+
     public default <E2> Neo4jTraversal<S, E2> unfold() {
         return (Neo4jTraversal) this.addStep(new UnfoldStep<>(this));
     }
@@ -556,13 +567,4 @@ public interface Neo4jTraversal<S,E> extends Traversal<S,E> {
         return this;
     }
 
-    /////////////////////////////////////
-
-
-    public class DefaultNeo4jTraversal<S,E> extends DefaultTraversal<S,E> implements Neo4jTraversal<S,E> {
-        public DefaultNeo4jTraversal() {
-            super();
-            this.strategies.register(Neo4jGraphStepStrategy.instance());
-        }
-    }
 }
