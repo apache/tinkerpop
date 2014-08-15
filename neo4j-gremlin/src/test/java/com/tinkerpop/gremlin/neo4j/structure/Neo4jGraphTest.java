@@ -154,8 +154,9 @@ public class Neo4jGraphTest {
         final Vertex v = this.g.addVertex("name", "marko", "age", 30, "color", "orange");
         this.g.tx().commit();
 
-        final List result = g.cypher("MATCH n WHERE n.age=30 RETURN n").select("n")
-                .cypher("MATCH n WHERE id(n) IN {traversalIds} AND n.color = \"orange\" RETURN n").select("n").id().toList();
+        final List result = g.cypher("MATCH n WHERE n.age=30 RETURN n").select("n").id().fold()
+                             .cypher("MATCH n WHERE id(n) IN {start} AND n.color = \"orange\" RETURN n")
+                             .select("n").id().toList();
 
         assertEquals(1, result.size());
         assertTrue(result.contains(v.id()));
