@@ -518,7 +518,95 @@ The `RemoteAcceptor` implementation ties to a `GremlinPlugin` and will only be e
 Gephi Plugin
 ~~~~~~~~~~~~
 
-image:gephi-logo.png[width=200] link:http://gephi.github.io/[Gephi] is an interactive visualization and exploration platform for graphs.
+image:gephi-logo.png[width=200, float=left] link:http://gephi.github.io/[Gephi] is an interactive visualization, exploration, and analysis platform for graphs. The link:https://marketplace.gephi.org/plugin/graph-streaming/[Graph Streaming] plugin for Gephi provides an link:https://wiki.gephi.org/index.php/Graph_Streaming[API] that can be leveraged to stream graphs and visualize traversals interactively through the Gremlin Gephi Plugin.
+
+First launch Gephi and ensure that you've installed the Graph Streaming plugin (Tools > Plugins). Then create a new project (File > New Project).  In the lower left view, click the "Streaming" tab, open the Master drop down, and right click "Master Server" > Start.  You've now started the Graph Streaming server in Gephi, which by default accepts requests at http://localhost:8080/workspace0 and can be modified in the Settings... window:
+
+image:gephi-start-server.png[width=800]
+
+Now you can start the Gremlin console and activate the Gephi plugin:
+
+[source,groovy]
+gremlin> :plugin use gephi
+==>gephi activated
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> :remote connect gephi
+==>connection to Gephi - http://localhost:8080/workspace0 with stepDelay:1000, startRGBColor:[0.0, 1.0, 0.5], colorToFade:g, colorFadeRate:0.7
+gremlin> :> g
+==>tinkergraph[vertices:6 edges:6]
+
+The above Gremlin session activates the Gephi plugin, creates the classic TinkerGraph, uses the `:remote` command to setup a connection to the Graph Streaming server in Gephi (with default parameters that will be explained below), and `:submit` the classic TinkerGraph instance which will iterate through all the vertices and edges creating the corresponding "add" node/edge request to the link:https://wiki.gephi.org/index.php/Graph_Streaming#Supported_formats[Graph Streaming API]. The resulting graph appears in Gephi:
+
+image:gephi-submit-graph.png[width=500]
+
+At this point, a user will typically want to change their view of the graph in Gephi by link:https://gephi.github.io/users/tutorial-layouts/[applying a Layout algorithm], changing the size and/or color of nodes and edges, and display labels/attributes of interest.  You can learn more by reading Gephi's tutorial on link:https://gephi.github.io/users/tutorial-visualization/[Visualization].  After applying the Fruchterman Reingold layout, increasing the node size, decreasing the edge scale, and displaying the id, name, and weight attributes the graph looks like:
+
+image:gephi-labeled-graph.png[width=500]
+
+NOTE: It's recommended to choose a continously running layout algorithm like Fruchterman Reingold or Force Atlas, because ever update to color the visited vertices causes their positions to be reset, so these layouts will constantly adjust to account for these changes and make visualization of the traversals.  This also explains why the graph seems to rotate each store step in the screenshots below.
+
+Now we can visualize a graph traversal if we insert the appropriately named `store.as("n")` steps where n is an integer, and the vertices will be highlighted in ascending store step order. The example traversal below `g.v(2).in.out('knows').filter{it.get().value('age') > 30}.outE('created').filter{it.get().value('weight') > 0.5}.inV` answers for "vadas", getting who knows him, and who do they know that are older than 30 and what have they created more than half of.  The example below shows how to insert the appropriate `store.as("n")` steps, inspects the traversals memory, and then submits it which will update the vertices' colors at each store step:
+
+[source,groovy]
+gremlin> g.v(2).in('knows').out('knows').filter{it.get().value('age') > 30}.outE('created').filter{it.get().value('weight') > 0.5}.inV.name
+==>ripple
+gremlin> traversal = g.v(2).store.as('1').in('knows').store.as('2').out('knows').filter{it.get().value('age') > 30}.store.as('3').outE('created').filter{it.get().value('weight') > 0.5}.inV.store.as('4')
+==>[v[5]]
+gremlin> traversal.memory().get('1')
+==>Optional[[v[2]]]
+gremlin> traversal.memory().get('2')
+==>Optional[[v[1]]]
+gremlin> traversal.memory().get('3')
+==>Optional[[v[4]]]
+gremlin> traversal.memory().get('4')
+==>Optional[[v[5]]]
+gremlin> 
+gremlin> :> traversal
+Visualizing vertices at step: 1... visited: 1
+Visualizing vertices at step: 2... visited: 1
+Visualizing vertices at step: 3... visited: 1
+Visualizing vertices at step: 4... visited: 1
+gremlin>
+
+When `:> traversal` is called, it iterates through the memory of the traversal accessing the vertices stored at each corresponding step. It then updates the vertices' color with `startRGBColor`, which in this case is a lime-green blue: [0.0,1.0,0.5]. After the first step visualization, it sleeps for the configured `stepDelay` in milliseconds. On the second step, it decays the configured `colorToFade` of all the previously visited vertices in prior steps, by multiplying the current `colorToFade` value for each vertex with the `colorFadeRate`.  If you don't want colors to decay on prior steps, then provide a `colorFadeRate` value of 1.0.  The screenshots below show how the visualization evolves over the 4 steps:
+
+image:gephi-traversal-1.png[width=500]
+image:gephi-traversal-2.png[width=500]
+image:gephi-traversal-3.png[width=500]
+image:gephi-traversal-4.png[width=500]
+
+Once you've run a traversal visualization you can clear the colors in Gephi by selecting the grey square icon under the magnifying glass icon on the lower left tool bar next to the graph canvas.  You can run another traversal against the same graph and it will update the appropriate vertices.  To get a sense of how the visualization configuration parameters affect the output, see the example below:
+
+[source,groovy]
+gremlin> :remote config startRGBColor [0.0,0.3,1.0]
+==>connection to Gephi - http://localhost:8080/workspace0 with stepDelay:1000, startRGBColor:[0.0, 0.3, 1.0], colorToFade:g, colorFadeRate:0.7
+gremlin> :remote config colorToFade b
+==>connection to Gephi - http://localhost:8080/workspace0 with stepDelay:1000, startRGBColor:[0.0, 0.3, 1.0], colorToFade:b, colorFadeRate:0.7
+gremlin> :remote config colorFadeRate 0.5
+==>connection to Gephi - http://localhost:8080/workspace0 with stepDelay:1000, startRGBColor:[0.0, 0.3, 1.0], colorToFade:b, colorFadeRate:0.5
+gremlin> :> traversal
+Visualizing vertices at step: 1... visited: 1
+Visualizing vertices at step: 2... visited: 1
+Visualizing vertices at step: 3... visited: 1
+Visualizing vertices at step: 4... visited: 1
+gremlin>
+
+image:gephi-traversal-config.png[width=500]
+
+As you can see, we are starting with a blue color now (most recently visited), fading the blue color (so that dark green remains on oldest visited), and fading the blue color more quickly so that the gradient from dark green to blue across steps has higher contrast. Here is a more detailed description of Gephi plugin configuration parameters, in the order accepted on the `:remote connect gephi` command, or modified via the `:remote config` command:
+
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Parameter |Description |Default
+|workspace |The name of the workspace that your Graph Streaming server is started for. |workspace0
+|host |The host URL where the Graph Streaming server is configured for. |localhost
+|port |The port number of the URL that the Graph Streaming server is listening on. |8080
+|stepDelay |The amount of time in milliseconds to pause between step visualizations. |1000
+|startRGBColor |A size 3 float array of RGB color values which define the starting color to update most recently visited nodes with.  |[0.0,1.0,0.5]
+|colorToFade |A single char from the set {r,g,b,R,G,B} determining which color to fade for vertices visited in prior steps |g
+|colorFadeRate |A float value in the range (0.0,1.0] which is multiplied against the current `colorToFade` value for prior vertices; a 1.0 value effectively turns off the color fading of prior step visited vertices |0.7
+|=========================================================
 
 [[server-plugin]]
 Server Plugin
