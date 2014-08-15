@@ -290,11 +290,12 @@ gremlin> g.cypher('MATCH (a {name:"marko"}) RETURN a')
 gremlin> g.cypher('MATCH (a {name:"marko"}) RETURN a').select('a').out('knows').name
 ==>vadas
 ==>josh
-gremlin> g.cypher("MATCH (n{name:'marko'})-[:knows]->(m) RETURN m").select('m').id.fold.cypher("MATCH (m)-[:created]->(n) WHERE id(m) in {start} RETURN n").select("n").name
+gremlin> g.cypher("MATCH (n{name:'marko'})-[:knows]->(m) RETURN m").select('m').id.fold.
+             cypher("MATCH (m)-[:created]->(n) WHERE id(m) in {start} RETURN n").select("n").name
 ==>lop
 ==>ripple
 
-Thus, like <<match-step,`match()`>> in Gremlin, it is possible to do a declarative pattern match and then move back into imperative Gremlin.  The last query presented above shows that the `cypher` step can be used at the start of a traversal or in the middle.  When used in the middle of a traversal, the result from the previous step becomes bound to an argument named `start`, which can then be used in the Cypher query as an argument.  In the example above, the vertex identifiers from the Cypher query that starts the traversal are collected with `fold` and which in turn produces a single Cypher query using those identifiers.  Without `fold`, the second Cypher query would have executed once for each identifier in the traversal and the Cypher would have had to have changed to something like: `MATCH (m)-[:created]->(n) WHERE id(m) = {start} RETURN n' (where the `IN` is replaced by `=`).
+Thus, like <<match-step,`match()`>> in Gremlin, it is possible to do a declarative pattern match and then move back into imperative Gremlin.  The last query presented above shows that the `cypher` step can be used at the start of a traversal or in the middle.  When used in the middle of a traversal, the result from the previous step becomes bound to an argument named `start`, which can then be used in the Cypher query as an argument.  In the example above, the vertex identifiers from the Cypher query that starts the traversal are collected with `fold` and which in turn produces a single Cypher query using those identifiers.  Without `fold`, the second Cypher query would have executed once for each identifier in the traversal and the Cypher would have had to have changed to something like: `MATCH (m)-[:created]->(n) WHERE id(m) = {start} RETURN n` (where the `IN` is replaced by `=`).
 
 IMPORTANT: For those developers using <<gremlin-server,Gremlin Server>> against Neo4j, it is possible to do Cypher queries by simply placing the Cypher string in `g.cypher(...)` before submission to the server.
 
