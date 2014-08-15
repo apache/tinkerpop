@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.util;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,7 +11,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Tree<T> extends HashMap<T, Tree<T>> {
+public class Tree<T> extends HashMap<T, Tree<T>> implements Serializable {
 
     public Tree() {
         super();
@@ -90,12 +91,32 @@ public class Tree<T> extends HashMap<T, Tree<T>> {
     }
 
     public boolean isLeaf() {
-        Collection<Tree<T>> values = this.values();
+        final Collection<Tree<T>> values = this.values();
         return values.iterator().next().isEmpty();
 
     }
 
-    public static <T> Map.Entry<T, Tree<T>> createTree(T key, Tree<T> tree) {
-        return new SimpleEntry<>(key, tree);
+    public void addTree(final Tree<T> tree) {
+        tree.forEach((k, t) -> {
+            if (this.containsKey(k)) {
+                this.get(k).addTree(t);
+            } else {
+                this.put(k, t);
+            }
+        });
+    }
+
+    public List<Tree<T>> splitParents() {
+        if (this.keySet().size() == 1) {
+            return Arrays.asList(this);
+        } else {
+            final List<Tree<T>> parents = new ArrayList<>();
+            this.forEach((k, t) -> {
+                final Tree<T> parentTree = new Tree<>();
+                parentTree.put(k, t);
+                parents.add(parentTree);
+            });
+            return parents;
+        }
     }
 }

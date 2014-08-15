@@ -47,9 +47,9 @@ public class AggregateMapReduce implements MapReduce<MapReduce.NullObject, Objec
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<NullObject, Object> emitter) {
-        final Property<Collection> mapProperty = vertex.property(Graph.Key.hide(sideEffectKey));
-        if (mapProperty.isPresent())
-            mapProperty.value().forEach(object -> emitter.emit(NullObject.instance(), object));
+        final Property<Collection> aggregateProperty = vertex.property(Graph.Key.hide(sideEffectKey));
+        if (aggregateProperty.isPresent())
+            aggregateProperty.value().forEach(object -> emitter.emit(NullObject.instance(), object));
     }
 
     @Override

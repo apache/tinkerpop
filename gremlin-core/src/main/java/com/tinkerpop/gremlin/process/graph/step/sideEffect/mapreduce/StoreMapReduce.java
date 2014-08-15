@@ -47,9 +47,9 @@ public class StoreMapReduce implements MapReduce<MapReduce.NullObject, Object, M
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<NullObject, Object> emitter) {
-        final Property<Collection> mapProperty = vertex.property(Graph.Key.hide(this.variable));
-        if (mapProperty.isPresent())
-            mapProperty.value().forEach(object -> emitter.emit(NullObject.instance(), object));
+        final Property<Collection> storeProperty = vertex.property(Graph.Key.hide(this.variable));
+        if (storeProperty.isPresent())
+            storeProperty.value().forEach(object -> emitter.emit(NullObject.instance(), object));
     }
 
     @Override

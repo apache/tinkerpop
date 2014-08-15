@@ -64,8 +64,8 @@ public class GroupByMapReduce implements MapReduce<Object, Collection, Object, O
 
     @Override
     public void map(Vertex vertex, MapEmitter<Object, Collection> emitter) {
-        final HashMap<Object, Collection> tempMap = vertex.<HashMap<Object, Collection>>property(Graph.Key.hide(sideEffectKey)).orElse(new HashMap<>());
-        tempMap.forEach((k, v) -> emitter.emit(k, v));
+        final HashMap<Object, Collection> groupByProperty = vertex.<HashMap<Object, Collection>>property(Graph.Key.hide(sideEffectKey)).orElse(new HashMap<>());
+        groupByProperty.forEach((k, v) -> emitter.emit(k, v));
     }
 
     @Override

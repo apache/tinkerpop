@@ -46,9 +46,9 @@ public class GroupCountMapReduce implements MapReduce<Object, Long, Object, Long
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<Object, Long> emitter) {
-        final Property<Map<Object, Number>> mapProperty = vertex.property(Graph.Key.hide(this.sideEffectKey));
-        if (mapProperty.isPresent())
-            mapProperty.value().forEach((k, v) -> emitter.emit(k, v.longValue()));
+        final Property<Map<Object, Number>> groupCountProperty = vertex.property(Graph.Key.hide(this.sideEffectKey));
+        if (groupCountProperty.isPresent())
+            groupCountProperty.value().forEach((k, v) -> emitter.emit(k, v.longValue()));
     }
 
     @Override
