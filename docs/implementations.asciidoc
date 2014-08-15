@@ -219,7 +219,28 @@ Given the initial graph construction in the first code block, no index was defin
 Graph g = TinkerGraph.open();
 g.createIndex("name",Vertex.class)
 
-Each graph vendor will have different mechanism by which indices and schemas are defined. TinkerPop3 does not require any conformance in this area. In TinkerGraph, the only definitions are around indices. With other vendors, property value types, indices, edge labels, etc. may be required to be defined _a priori_ to adding data to the graph.
+The runtimes for a vertex lookup by property is provided below for both no-index and indexed version of TinkerGraph over the Grateful Dead graph.
+
+[source,groovy]
+gremlin> g = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> g.loadGraphML('data/grateful-dead.xml')
+==>null
+gremlin> clock(1000){g.V.has('name','Garcia').next()}
+==>0.11787599999999974  <1>
+gremlin> g = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> g.createIndex('name',Vertex.class)
+==>null
+gremlin> g.loadGraphML('data/grateful-dead.xml')
+==>null
+gremlin> clock(1000){g.V.has('name','Garcia').next()}
+==>0.03508100000000018 <2>
+
+<1> Average runtime of 1000 vertex lookups when no `name`-index is defined.
+<2> Average runtime of 1000 vertex lookups when a `name`-index is defined.
+
+IMPORTANT: Each graph vendor will have different mechanism by which indices and schemas are defined. TinkerPop3 does not require any conformance in this area. In TinkerGraph, the only definitions are around indices. With other vendors, property value types, indices, edge labels, etc. may be required to be defined _a priori_ to adding data to the graph.
 
 NOTE: TinkerGraph is distributed with Gremlin Server and is therefore automatically available to it for configuration.
 
