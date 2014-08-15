@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.neo4j.structure;
 
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.neo4j.Neo4jGraphProvider;
-import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jTraversal;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Element;
@@ -50,7 +49,7 @@ public class Neo4jGraphTest {
     public void before() throws Exception {
         // tests that involve legacy indices need legacy indices turned on at startup of the graph.
         if (name.getMethodName().contains("Legacy")) {
-            final Map<String,Object> neo4jSettings = new HashMap<>();
+            final Map<String, Object> neo4jSettings = new HashMap<>();
             neo4jSettings.put("gremlin.neo4j.conf.node_auto_indexing", "true");
             neo4jSettings.put("gremlin.neo4j.conf.relationship_auto_indexing", "true");
             this.conf = this.graphProvider.newGraphConfiguration("standard", neo4jSettings);
@@ -84,7 +83,7 @@ public class Neo4jGraphTest {
     public void shouldExecuteCypherWithArgs() throws Exception {
         this.g.addVertex("name", "marko");
         this.g.tx().commit();
-        final Map<String,Object> bindings = new HashMap<>();
+        final Map<String, Object> bindings = new HashMap<>();
         bindings.put("n", "marko");
         final Iterator<Map<String, Object>> result = g.cypher("MATCH (a {name:{n}}) RETURN a", bindings);
         assertNotNull(result);
@@ -97,7 +96,7 @@ public class Neo4jGraphTest {
         final List<Object> idList = Arrays.asList(v.id());
         this.g.tx().commit();
 
-        final Map<String,Object> bindings = new HashMap<>();
+        final Map<String, Object> bindings = new HashMap<>();
         bindings.put("ids", idList);
         final Iterator<String> result = g.cypher("START n=node({ids}) RETURN n", bindings).select("n").value("name");
         assertNotNull(result);
@@ -138,7 +137,7 @@ public class Neo4jGraphTest {
         this.g.addVertex("name", "marko", "age", 30, "color", "orange");
         this.g.tx().commit();
 
-        final List<Object> ids = Arrays.asList(v1.id(),v2.id());
+        final List<Object> ids = Arrays.asList(v1.id(), v2.id());
         final Map<String, Object> m = new HashMap<>();
         m.put("ids", ids);
         final List<Object> result = g.cypher("MATCH n WHERE id(n) IN {ids} RETURN n", m).select("n").id().toList();
@@ -149,18 +148,17 @@ public class Neo4jGraphTest {
     }
 
     @Test
-    @org.junit.Ignore
     public void shouldExecuteCypherWithVerticesInput() throws Exception {
         this.g.addVertex("name", "marko", "age", 29, "color", "yellow");
         this.g.addVertex("name", "marko", "age", 30, "color", "yellow");
         final Vertex v = this.g.addVertex("name", "marko", "age", 30, "color", "orange");
         this.g.tx().commit();
 
-        final Object result = g.cypher("MATCH n WHERE n.age=30 RETURN n").select("n")
-                               .cypher("MATCH n WHERE id(n) IN {traversalIds} AND n.color = \"orange\" RETURN n").select("n").toList();
-        System.out.println(result);
-        //assertEquals(1, result.size());
-        ///assertTrue(result.contains(v.id()));
+        final List result = g.cypher("MATCH n WHERE n.age=30 RETURN n").select("n")
+                .cypher("MATCH n WHERE id(n) IN {traversalIds} AND n.color = \"orange\" RETURN n").select("n").id().toList();
+
+        assertEquals(1, result.size());
+        assertTrue(result.contains(v.id()));
     }
 
     @Test
