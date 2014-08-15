@@ -237,14 +237,14 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         return cypher;
     }
 
-    public Neo4jTraversal<Object, Map<String, Object>> cypher(final String query) {
+    public Neo4jTraversal cypher(final String query) {
         return cypher(query, null);
     }
 
-    public Neo4jTraversal<Object, Map<String, Object>> cypher(final String query, final Map<String, Object> params) {
+    public Neo4jTraversal cypher(final String query, final Map<String, Object> params) {
         this.tx().readWrite();
 
-        final Neo4jTraversal<Object, Map<String, Object>> traversal = new Neo4jTraversal.DefaultNeo4jTraversal<>();
+        final Neo4jTraversal traversal = Neo4jTraversal.of(this);
         traversal.addStep(new Neo4jCypherStartStep<>(cypher.execute(query, null == params ? Collections.<String, Object>emptyMap() : params).iterator(), traversal, this));
 
         return traversal;

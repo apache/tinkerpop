@@ -5,12 +5,16 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
+import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
+import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.ResourceIterator;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +29,10 @@ public class Neo4jCypherStep<S, E extends Map<String,Object>> extends FlatMapSte
     private final Map<String,Object> params;
     private final ExecutionEngine cypher;
 
+    public Neo4jCypherStep(final String query, final Traversal traversal) {
+        this(query, new HashMap<>(), traversal);
+    }
+
     public Neo4jCypherStep(final String query, final Map<String,Object> params, final Traversal traversal) {
         super(traversal);
         this.query = query;
@@ -36,7 +44,9 @@ public class Neo4jCypherStep<S, E extends Map<String,Object>> extends FlatMapSte
             final List<Object> ids = new ArrayList<>();
             extractIds(s, ids);
             params.put("traversalIds", ids);
-            return new Neo4jCypherIterator(cypher.execute(query, params).iterator(), graph);
+            final ExecutionResult result = cypher.execute(query, params);
+            final ResourceIterator<Map<String,Object>> itty = result.iterator();
+            return itty.hasNext() ? new Neo4jCypherIterator(itty, graph) : new ArrayList().iterator();
         });
     }
 

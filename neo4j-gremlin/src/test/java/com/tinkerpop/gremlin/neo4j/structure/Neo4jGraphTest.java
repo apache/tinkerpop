@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.neo4j.structure;
 
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.neo4j.Neo4jGraphProvider;
+import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jTraversal;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Element;
@@ -145,6 +146,21 @@ public class Neo4jGraphTest {
         assertEquals(2, result.size());
         assertTrue(result.contains(v1.id()));
         assertTrue(result.contains(v2.id()));
+    }
+
+    @Test
+    @org.junit.Ignore
+    public void shouldExecuteCypherWithVerticesInput() throws Exception {
+        this.g.addVertex("name", "marko", "age", 29, "color", "yellow");
+        this.g.addVertex("name", "marko", "age", 30, "color", "yellow");
+        final Vertex v = this.g.addVertex("name", "marko", "age", 30, "color", "orange");
+        this.g.tx().commit();
+
+        final Object result = g.cypher("MATCH n WHERE n.age=30 RETURN n").select("n")
+                               .cypher("MATCH n WHERE id(n) IN {traversalIds} AND n.color = \"orange\" RETURN n").select("n").toList();
+        System.out.println(result);
+        //assertEquals(1, result.size());
+        ///assertTrue(result.contains(v.id()));
     }
 
     @Test
