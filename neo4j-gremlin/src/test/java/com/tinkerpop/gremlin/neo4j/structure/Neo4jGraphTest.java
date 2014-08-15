@@ -117,6 +117,37 @@ public class Neo4jGraphTest {
     }
 
     @Test
+    public void shouldExecuteMultiIdWhereCypher() throws Exception {
+        this.g.addVertex("name", "marko", "age", 29, "color", "red");
+        this.g.addVertex("name", "marko", "age", 30, "color", "yellow");
+        this.g.addVertex("name", "marko", "age", 30, "color", "orange");
+        this.g.tx().commit();
+
+        final List<Object> result = g.cypher("MATCH n WHERE id(n) IN [1,2] RETURN n").select("n").id().toList();
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertTrue(result.contains(1l));
+        assertTrue(result.contains(2l));
+    }
+
+    @Test
+    public void shouldExecuteMultiIdWhereWithParamCypher() throws Exception {
+        final Vertex v1 = this.g.addVertex("name", "marko", "age", 29, "color", "red");
+        final Vertex v2 = this.g.addVertex("name", "marko", "age", 30, "color", "yellow");
+        this.g.addVertex("name", "marko", "age", 30, "color", "orange");
+        this.g.tx().commit();
+
+        final List<Object> ids = Arrays.asList(v1.id(),v2.id());
+        final Map<String, Object> m = new HashMap<>();
+        m.put("ids", ids);
+        final List<Object> result = g.cypher("MATCH n WHERE id(n) IN {ids} RETURN n", m).select("n").id().toList();
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertTrue(result.contains(v1.id()));
+        assertTrue(result.contains(v2.id()));
+    }
+
+    @Test
     public void testNoConcurrentModificationException() {
         this.g.addVertex("name", "a");
         this.g.addVertex("name", "b");
