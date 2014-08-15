@@ -1,11 +1,11 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
+import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jTraversal;
+import com.tinkerpop.gremlin.neo4j.process.graph.util.DefaultNeo4jTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
-import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
@@ -43,7 +43,7 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
     }
 
     public GraphTraversal<Edge, Edge> start() {
-        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>(this.graph);
+        final Neo4jTraversal<Edge, Edge> traversal = new DefaultNeo4jTraversal<>(this.graph);
         return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 

@@ -100,7 +100,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public static <S> GraphTraversal<S, S> of(final Graph graph) {
         final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>();
-        traversal.memory().set("g", graph);
+        traversal.memory().setGraph(graph);
         return traversal;
     }
 

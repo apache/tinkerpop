@@ -605,11 +605,11 @@ image:gremlin-quill.png[width=200,float=right] The super interface of GraphTrave
 public interface SocialTraversal<S, E> extends Traversal<S, E> {
 
         public default SocialTraversal<S, Vertex> people() {
-            return (SocialTraversal) this.addStep(new StartStep<>(this, this.memory().<Graph>get("g").get().V().has("age")));
+            return (SocialTraversal) this.addStep(new StartStep<>(this, this.memory().getGraph().V().has("age")));
         }
 
         public default SocialTraversal<S, Vertex> people(String name) {
-            return (SocialTraversal) this.addStep(new StartStep<>(this, this.memory().<Graph>get("g").get().V().has("name", name)));
+            return (SocialTraversal) this.addStep(new StartStep<>(this, this.memory().getGraph().V().has("name", name)));
         }
 
         public default SocialTraversal<S, Vertex> knows() {
@@ -632,7 +632,7 @@ public interface SocialTraversal<S, E> extends Traversal<S, E> {
 
         public static <S> SocialTraversal<S, S> of(final Graph graph) {
             final SocialTraversal traversal = new DefaultSocialTraversal();
-            traversal.memory().set("g", graph);
+            traversal.memory().setGraph(graph);
             return traversal;
         }
 

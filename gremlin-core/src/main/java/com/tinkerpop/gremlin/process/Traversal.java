@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.structure.Graph;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -73,6 +74,18 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
         public void remove(final String key);
 
         public Set<String> keys();
+
+        public default void setGraph(final Graph graph) {
+            this.set(Graph.Key.hide("g"), graph);
+        }
+
+        public default Graph getGraph() {
+            return this.<Graph>get(Graph.Key.hide("g")).get();
+        }
+
+        public default void removeGraph() {
+            this.remove(Graph.Key.hide("g"));
+        }
 
         public default <V> V getOrCreate(final String key, final Supplier<V> orCreate) {
             if (this.keys().contains(key))

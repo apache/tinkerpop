@@ -1,17 +1,14 @@
 package com.tinkerpop.gremlin.neo4j.process.graph;
 
 import com.tinkerpop.gremlin.neo4j.process.graph.step.map.Neo4jCypherStep;
-import com.tinkerpop.gremlin.neo4j.process.graph.strategy.Neo4jGraphStepStrategy;
+import com.tinkerpop.gremlin.neo4j.process.graph.util.DefaultNeo4jTraversal;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
@@ -58,7 +55,6 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
-import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -108,31 +104,11 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
         return (Neo4jTraversal) this.addStep(new Neo4jCypherStep<>(query, params, this));
     }
 
-    public class DefaultNeo4jTraversal<S, E> extends DefaultGraphTraversal<S, E> implements Neo4jTraversal<S, E> {
-        public DefaultNeo4jTraversal(final Neo4jGraph neo4jGraph) {
-            this();
-            this.memory().set(Graph.Key.hide("g"), neo4jGraph);
-        }
-
-        public DefaultNeo4jTraversal() {
-            super();
-            this.strategies.register(Neo4jGraphStepStrategy.instance());
-        }
-    }
-
     /////////////////////////////////////////////////////////////
     // everything from here down is from GraphTraversal
 
     public default Neo4jTraversal<S, E> submit(final GraphComputer computer) {
-        try {
-            TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> this).create();
-            final ComputerResult result = computer.program(vertexProgram).submit().get();
-            final Neo4jTraversal traversal = new DefaultNeo4jTraversal<>(); // TODO: of() with resultant graph?
-            traversal.addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
-            return traversal;
-        } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+        throw Graph.Exceptions.graphComputerNotSupported();
     }
 
     public default Neo4jTraversal<S, E> trackPaths() {

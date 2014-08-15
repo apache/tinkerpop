@@ -27,7 +27,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     public DefaultTraversal(final Graph graph) {
         this();
-        this.memory().set(Graph.Key.hide("g"), graph);
+        this.memory().setGraph(graph);
     }
 
     public List<Step> getSteps() {

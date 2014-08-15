@@ -71,7 +71,7 @@ public class GiraphGraph implements Graph, Serializable {
             }
         };
         traversal.addStep(new GiraphGraphStep(traversal, Vertex.class, this));
-        traversal.memory().set(Key.hide("g"), this);
+        traversal.memory().setGraph(this);
         return traversal;
     }
 
@@ -83,14 +83,14 @@ public class GiraphGraph implements Graph, Serializable {
             }
         };
         traversal.addStep(new GiraphGraphStep(traversal, Edge.class, this));
-        traversal.memory().set(Key.hide("g"), this);
+        traversal.memory().setGraph(this);
         return traversal;
     }
 
     @Override
     public <S> GraphTraversal<S, S> of() {
         final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>();
-        traversal.memory().set(Graph.Key.hide("g"), this);
+        traversal.memory().setGraph(this);
         traversal.addStep(new StartStep<>(traversal));
         return traversal;
     }
