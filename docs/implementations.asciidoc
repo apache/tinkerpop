@@ -280,7 +280,7 @@ Cypher
 
 image::gremlin-loves-cypher.png[width=400]
 
-Neo4j are the creators of the graph pattern-match query language link:http://www.neo4j.org/learn/cypher[Cypher]. It is possible to leverage Cypher from within Gremlin by using the `Neo4jGraph.cypher()` graph traversal method.
+NeoTechnology are the creators of the graph pattern-match query language link:http://www.neo4j.org/learn/cypher[Cypher]. It is possible to leverage Cypher from within Gremlin by using the `Neo4jGraph.cypher()` graph traversal method.
 
 [source,groovy]
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
