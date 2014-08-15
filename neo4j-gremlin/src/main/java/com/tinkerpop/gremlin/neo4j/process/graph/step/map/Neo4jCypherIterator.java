@@ -29,8 +29,7 @@ public class Neo4jCypherIterator<T> implements Iterator<Map<String, T>> {
     }
 
     public Map<String, T> next() {
-        final Map<String, T> next = this.iterator.next();
-        final Map<String, T> transformed = next.entrySet().stream().collect(Collectors.toMap(
+        return this.iterator.next().entrySet().stream().collect(Collectors.toMap(
                 Map.Entry::getKey,
                 entry -> {
                     final T val = entry.getValue();
@@ -42,8 +41,6 @@ public class Neo4jCypherIterator<T> implements Iterator<Map<String, T>> {
                         return val;
                     }
                 }));
-
-        return transformed;
     }
 }
 
