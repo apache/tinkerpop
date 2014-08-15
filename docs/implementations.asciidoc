@@ -28,6 +28,7 @@ A collection of implementation notes:
 * Use `StringHelper` to ensuring that the `toString()` representation of classes are consistent with other implementations.
 * Ensure that your implementation's `Features` (Graph, Vertex, etc.) are correct so that test cases handle particulars accordingly.
 
+[[validating-with-gremlin-test]]
 Validating with Gremlin-Test
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -129,7 +130,7 @@ There are times when there may be a specific test in the suite that the implemen
 public class GiraphGraph implements Graph, Serializable {
 ----
 
-These annotations help provide users a level of transparancy into test suite compliance. It also allows implementers to have a lot of flexibility in terms of how they wish to support TinkerPop.  For example, maybe there is a single test case that prevents an implementer from claiming support of a `Feature`.  The implementer could choose to either not support the `Feature` or support it but "opt-out" of the test with a "reason" as to why so that users understand the limitation.
+These annotations help provide users a level of transparency into test suite compliance (via the xref:describe-graph[describeGraph()] utility function). It also allows implementers to have a lot of flexibility in terms of how they wish to support TinkerPop.  For example, maybe there is a single test case that prevents an implementer from claiming support of a `Feature`.  The implementer could choose to either not support the `Feature` or support it but "opt-out" of the test with a "reason" as to why so that users understand the limitation.
 
 Accessibility via GremlinPlugin
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

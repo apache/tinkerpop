@@ -466,6 +466,7 @@ As Gremlin Server is streaming results, additional responses will arrive over th
 
 The `299` code signifies stream termination which means that all processing for the request `1d6d02bd-8e56-421d-9438-3bd6d0079ff1` is complete.  Please see the link:http://www.tinkerpop.com/javadocs/current/com/tinkerpop/gremlin/driver/message/ResultCode.html[javadoc] for more information on the various `code` values that are available.
 
+[[gremlin-plugins]]
 Gremlin Plugins
 ---------------
 
@@ -522,7 +523,7 @@ include::{basedir}/gremlin-groovy/src/main/java/com/tinkerpop/gremlin/groovy/plu
 
 The `RemoteAcceptor` implementation ties to a `GremlinPlugin` and will only be executed when in use with the Gremlin Console plugin host.  Simply instantiate and return a `RemoteAcceptor` in the `GremlinPlugin.remoteAcceptor()` method of the plugin implementation.  Generally speaking, each call to `remoteAcceptor()` should produce a new instance of a `RemoteAcceptor`.  It will likely be necessary that you provide context from the `GremlinPlugin` to the `RemoteAcceptor` plugin.  For example, the `RemoteAcceptor` implementation might require an instance of `Groovysh` to provide a way to dynamically evaluate a script provided to it so that it can process the results in a different way.
 
-[gephi-plugin]
+[[gephi-plugin]]
 Gephi Plugin
 ~~~~~~~~~~~~
 
@@ -536,7 +537,7 @@ image:gremlin-server.png[width=200,float=left] xref:gremlin-server[Gremlin Serve
 
 NOTE: The Server Plugin is enabled in the Gremlin Console by default.
 
-[sugar-plugin]
+[[sugar-plugin]]
 Sugar Plugin
 ~~~~~~~~~~~~
 
@@ -570,7 +571,7 @@ The examples above are generalized below:
 . Missing traverser method: if a traverser method is called and that method doesn't exist, then it is assumed that the method is on the wrapped object of the traverser.
 . Missing traverser field: if a traverser field is called and that field doesn't exist, then it is assumed that the field is on the wrapped object of the traverser.
 
-[utilities-plugin]
+[[utilities-plugin]]
 Utilities Plugin
 ~~~~~~~~~~~~~~~~
 
@@ -596,6 +597,7 @@ gremlin> clock(1000){g.V.both.both.both.iterate()}
 ==>0.23745999999999978
 ----
 
+[[benchmarking-and-profiling]]
 Benchmarking and Profiling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -663,4 +665,38 @@ index  % time  self  children  calls  name
 [5]       0.0  0.00      0.00      1  java.util.HashSet.contains [5]                                                      
 --------------------------------------------------------------------------------------------------------------------------
 ==>null
+----
+
+[[describe-graph]]
+Describe Graph
+^^^^^^^^^^^^^^
+
+A good implementation of the Gremlin APIs will validate their features against the xref:validating-with-gremlin-test[Gremlin test suite].  To learn more about a specific implementation's compliance with the test suite, use the `describeGraph` function.  The following shows the output for `GiraphGraph`:
+
+[source,groovy]
+----
+gremlin> describeGraph(GiraphGraph)
+==>
+IMPLEMENTATION - com.tinkerpop.gremlin.giraph.structure.GiraphGraph
+TINKERPOP TEST SUITE
+- Compliant with (2 of 4 suites)
+> com.tinkerpop.gremlin.process.ProcessStandardSuite
+> com.tinkerpop.gremlin.process.ProcessComputerSuite
+- Opts out of 4 individual tests
+> com.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest#g_V_matchXa_hasXname_GarciaX__a_inXwrittenByX_b__a_inXsungByX_bX
+	"Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute."
+> com.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest#g_V_matchXa_inXsungByX_b__a_inXsungByX_c__b_outXwrittenByX_d__c_outXwrittenByX_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX
+	"Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute."
+> com.tinkerpop.gremlin.process.computer.GraphComputerTest#shouldNotAllowBadSideEffectKeys
+	"Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though."
+> com.tinkerpop.gremlin.process.computer.GraphComputerTest#shouldRequireRegisteringSideEffectKeys
+	"Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though."
+
+- NOTE -
+The describeGraph() function shows information about a Graph implementation.
+It uses information found in Java Annotations on the implementation itself to
+determine this output and does not assess the actual code of the test cases of
+the implementation itself.  Compliant implementations will faithfully and
+honestly supply these Annotations to provide the most accurate depiction of
+their support.
 ----
