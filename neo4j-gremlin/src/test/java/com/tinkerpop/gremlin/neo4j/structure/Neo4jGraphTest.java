@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import com.tinkerpop.gremlin.neo4j.BaseNeo4jGraphTest;
 import com.tinkerpop.gremlin.neo4j.Neo4jGraphProvider;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
@@ -36,34 +37,7 @@ import static org.junit.Assert.*;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Pieter Martin
  */
-public class Neo4jGraphTest {
-
-    private Configuration conf;
-    private final Neo4jGraphProvider graphProvider = new Neo4jGraphProvider();
-    private Neo4jGraph g;
-
-    @Rule
-    public TestName name = new TestName();
-
-    @Before
-    public void before() throws Exception {
-        // tests that involve legacy indices need legacy indices turned on at startup of the graph.
-        if (name.getMethodName().contains("Legacy")) {
-            final Map<String, Object> neo4jSettings = new HashMap<>();
-            neo4jSettings.put("gremlin.neo4j.conf.node_auto_indexing", "true");
-            neo4jSettings.put("gremlin.neo4j.conf.relationship_auto_indexing", "true");
-            this.conf = this.graphProvider.newGraphConfiguration("standard", neo4jSettings);
-        } else
-            this.conf = this.graphProvider.newGraphConfiguration("standard");
-
-        this.graphProvider.clear(this.conf);
-        this.g = Neo4jGraph.open(this.conf);
-    }
-
-    @After
-    public void after() throws Exception {
-        this.graphProvider.clear(this.g, this.conf);
-    }
+public class Neo4jGraphTest extends BaseNeo4jGraphTest {
 
     @Test
     public void shouldOpenWithOverriddenConfig() throws Exception {
