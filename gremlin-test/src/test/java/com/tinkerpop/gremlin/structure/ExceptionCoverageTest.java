@@ -91,7 +91,7 @@ public class ExceptionCoverageTest {
                 .flatMap(ec -> Stream.of(ec.methods()).map(m -> String.format("%s#%s", ec.exceptionClass().getName(), m)))
                 .collect(Collectors.<String>toSet());
 
-        // evaluate each of the blueprints exceptions and find the list of exception methods...assert them against
+        // evaluate each of the exceptions and find the list of exception methods...assert them against
         // the list of implementedExceptions to make sure they are covered.
         Stream.of(exceptionDefinitionClasses).flatMap(c -> Stream.of(c.getDeclaredMethods()).map((Method m) -> String.format("%s#%s", c.getName(), m.getName())))
                 .filter(s -> !ignore.contains(s))
