@@ -44,44 +44,6 @@ import static org.junit.Assert.*;
 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 public class ExceptionConsistencyTest {
 
-    /**
-     * Test exceptions around use of {@link com.tinkerpop.gremlin.structure.Element#value(String)}.
-     */
-    @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
-            "propertyDoesNotExist"
-    })
-    public static class ElementGetValueTest extends AbstractGremlinTest {
-        @Test
-        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
-        public void testGetValueThatIsNotPresentOnVertex() {
-            final Vertex v = g.addVertex();
-            try {
-                v.value("does-not-exist");
-                fail("Call to Element.value() with a key that is not present should throw an exception");
-            } catch (Exception ex) {
-                final Exception expectedException = Property.Exceptions.propertyDoesNotExist("does-not-exist");
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
-            }
-
-        }
-
-        @Test
-        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
-        public void testGetValueThatIsNotPresentOnEdge() {
-            final Vertex v = g.addVertex();
-            final Edge e = v.addEdge("label", v);
-            try {
-                e.value("does-not-exist");
-                fail("Call to Element.value() with a key that is not present should throw an exception");
-            } catch (Exception ex) {
-                final Exception expectedException = Property.Exceptions.propertyDoesNotExist("does-not-exist");
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
-            }
-
-        }
-    }
 
     /**
      * Tests specific to setting {@link com.tinkerpop.gremlin.structure.Element} properties with
