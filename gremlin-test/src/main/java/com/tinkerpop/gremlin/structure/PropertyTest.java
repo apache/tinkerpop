@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -17,8 +18,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_STRING_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
@@ -130,6 +133,66 @@ public class PropertyTest {
         }
     }
 
+
+    /**
+     * Checks that properties added to an {@link com.tinkerpop.gremlin.structure.Element} are validated in a consistent way when they are set after
+     * {@link com.tinkerpop.gremlin.structure.Vertex} or {@link com.tinkerpop.gremlin.structure.Edge} construction by throwing an appropriate exception.
+     */
+    @RunWith(Parameterized.class)
+    @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
+            "propertyValueCanNotBeNull",
+            "propertyKeyCanNotBeNull",
+            "propertyKeyIdIsReserved",
+            "propertyKeyLabelIsReserved",
+            "propertyKeyCanNotBeEmpty"
+    })
+    public static class PropertyValidationOnSetTest extends AbstractGremlinTest {
+
+        @Parameterized.Parameters(name = "{index}: expect - {2}")
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][]{
+                    {"k", null, Property.Exceptions.propertyValueCanNotBeNull()},
+                    {null, "v", Property.Exceptions.propertyKeyCanNotBeNull()},
+                    {Element.ID, "v", Property.Exceptions.propertyKeyIdIsReserved()},
+                    {Element.LABEL, "v", Property.Exceptions.propertyKeyLabelIsReserved()},
+                    {"", "v", Property.Exceptions.propertyKeyCanNotBeEmpty()}});
+        }
+
+        @Parameterized.Parameter(value = 0)
+        public String key;
+
+        @Parameterized.Parameter(value = 1)
+        public String val;
+
+        @Parameterized.Parameter(value = 2)
+        public Exception expectedException;
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
+        public void testGraphVertexSetPropertyStandard() throws Exception {
+            try {
+                final Vertex v = this.g.addVertex();
+                v.property(key, val);
+                fail(String.format("Call to Vertex.setProperty should have thrown an exception with these arguments [%s, %s]", key, val));
+            } catch (Exception ex) {
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_PROPERTIES)
+        public void testGraphEdgeSetPropertyStandard() throws Exception {
+            try {
+                final Vertex v = this.g.addVertex();
+                v.addEdge("label", v).property(key, val);
+                fail(String.format("Call to Edge.setProperty should have thrown an exception with these arguments [%s, %s]", key, val));
+            } catch (Exception ex) {
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
+    }
 
     /**
      * Tests for feature support on {@link com.tinkerpop.gremlin.structure.Property}.  The tests validate if {@link com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures}

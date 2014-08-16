@@ -16,10 +16,14 @@ import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FE
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@ExceptionCoverage(exceptionClass = Edge.Exceptions.class, methods = {
+        "edgeLabelCanNotBeNull"
+})
 public class EdgeTest extends AbstractGremlinTest {
     @Test
     public void shouldHaveStandardStringRepresentation() {
@@ -28,6 +32,19 @@ public class EdgeTest extends AbstractGremlinTest {
         final Edge e = v1.addEdge("friends", v2);
 
         assertEquals(StringFactory.edgeString(e), e.toString());
+    }
+
+    @Test
+    public void testNullEdgeLabel() {
+        final Vertex v = g.addVertex();
+        try {
+            v.addEdge(null, v);
+            fail("Call to Vertex.addEdge() should throw an exception when label is null");
+        } catch (Exception ex) {
+            final Exception expectedException = Edge.Exceptions.edgeLabelCanNotBeNull();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
     }
 
     @Test

@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -42,6 +43,46 @@ public class VariablesTest {
             variables.set("zo", "test3");
 
             tryCommit(g, graph -> assertEquals(StringFactory.graphVariablesString(variables), variables.toString()));
+        }
+    }
+
+    /**
+     * Test exceptions around {@link com.tinkerpop.gremlin.structure.Graph.Variables}.
+     */
+    @RunWith(Parameterized.class)
+    @ExceptionCoverage(exceptionClass = Graph.Variables.Exceptions.class, methods = {
+            "variableValueCanNotBeNull",
+            "variableKeyCanNotBeNull",
+            "variableKeyCanNotBeEmpty"
+    })
+    public static class VariableTest extends AbstractGremlinTest {
+        @Parameterized.Parameters(name = "{index}: expect - {2}")
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][]{
+                    {"k", null, Graph.Variables.Exceptions.variableValueCanNotBeNull()},
+                    {null, "v", Graph.Variables.Exceptions.variableKeyCanNotBeNull()},
+                    {"", "v", Graph.Variables.Exceptions.variableKeyCanNotBeEmpty()}});
+        }
+
+        @Parameterized.Parameter(value = 0)
+        public String key;
+
+        @Parameterized.Parameter(value = 1)
+        public String val;
+
+        @Parameterized.Parameter(value = 2)
+        public Exception expectedException;
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES)
+        public void testGraphAnnotationsSet() throws Exception {
+            try {
+                g.variables().set(key, val);
+                fail(String.format("Setting an annotation with these arguments [key: %s value: %s] should throw an exception", key, val));
+            } catch (Exception ex) {
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
         }
     }
 

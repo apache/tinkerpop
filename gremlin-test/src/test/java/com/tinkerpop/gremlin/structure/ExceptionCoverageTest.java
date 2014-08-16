@@ -75,11 +75,13 @@ public class ExceptionCoverageTest {
 
         // register test classes here that contain @ExceptionCoverage annotations
         final List<Class<?>> testClassesThatContainConsistencyChecks = new ArrayList<>();
+        testClassesThatContainConsistencyChecks.add(EdgeTest.class);
         testClassesThatContainConsistencyChecks.add(GraphTest.class);
         testClassesThatContainConsistencyChecks.add(GraphComputerTest.class);
         testClassesThatContainConsistencyChecks.addAll(Arrays.asList(ExceptionConsistencyTest.class.getDeclaredClasses()));
         testClassesThatContainConsistencyChecks.addAll(Arrays.asList(FeatureSupportTest.class.getDeclaredClasses()));
         testClassesThatContainConsistencyChecks.addAll(Arrays.asList(PropertyTest.class.getDeclaredClasses()));
+        testClassesThatContainConsistencyChecks.addAll(Arrays.asList(VariablesTest.class.getDeclaredClasses()));
         testClassesThatContainConsistencyChecks.add(VertexTest.class);
 
         // implemented exceptions are the classes that potentially contains exception consistency checks.
