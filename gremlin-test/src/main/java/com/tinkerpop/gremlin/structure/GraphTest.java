@@ -29,7 +29,8 @@ import static org.junit.Assert.*;
         "userSuppliedIdsNotSupported"
 })
 @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
-        "vertexWithIdAlreadyExists"
+        "vertexWithIdAlreadyExists",
+        "elementNotFound"
 })
 public class GraphTest extends AbstractGremlinTest {
 
@@ -63,6 +64,57 @@ public class GraphTest extends AbstractGremlinTest {
 
         // ensure that every method exposed was checked
         assertEquals(methods.size(), counter.get());
+    }
+    @Test
+    public void shouldHaveExceptionConsistencyWhenFindVertexByIdWithNull() {
+        try {
+            g.v(null);
+            fail("Call to g.v(null) should throw an exception");
+        } catch (Exception ex) {
+            final Exception expectedException = Graph.Exceptions.elementNotFound(Vertex.class, null);
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+
+    }
+
+    @Test
+    public void shouldHaveExceptionConsistencyWhenFindEdgeByIdWithNull() {
+        try {
+            g.e(null);
+            fail("Call to g.e(null) should throw an exception");
+        } catch (Exception ex) {
+            final Exception expectedException = Graph.Exceptions.elementNotFound(Edge.class, null);
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+
+    }
+
+    @Test
+    public void shouldHaveExceptionConsistencyWhenFindVertexByIdThatIsNonExistent() {
+        try {
+            g.v(10000l);
+            fail("Call to g.v(null) should throw an exception");
+        } catch (Exception ex) {
+            final Exception expectedException = Graph.Exceptions.elementNotFound(Vertex.class, 10000l);
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+
+    }
+
+    @Test
+    public void shouldHaveExceptionConsistencyWhenFindEdgeByIdThatIsNonExistent() {
+        try {
+            g.e(10000l);
+            fail("Call to g.e(null) should throw an exception");
+        } catch (Exception ex) {
+            final Exception expectedException = Graph.Exceptions.elementNotFound(Edge.class, 10000l);
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+
     }
 
     @Test
