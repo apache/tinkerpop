@@ -19,7 +19,25 @@ import static org.junit.Assert.*;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@ExceptionCoverage(exceptionClass = Edge.Exceptions.class, methods = {
+        "userSuppliedIdsNotSupported"
+})
 public class VertexTest extends AbstractGremlinTest {
+
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS, supported = false)
+    public void testGraphAddEdge() throws Exception {
+        try {
+            final Vertex v = this.g.addVertex();
+            v.addEdge("label", v, Element.ID, "");
+            fail("Call to addEdge should have thrown an exception when ID was specified as it is not supported");
+        } catch (Exception ex) {
+            final Exception expectedException = Edge.Exceptions.userSuppliedIdsNotSupported();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+    }
 
     @Test
     public void shouldHaveStandardStringRepresentation() {

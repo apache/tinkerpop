@@ -44,45 +44,6 @@ import static org.junit.Assert.*;
 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 public class ExceptionConsistencyTest {
 
-
-    /**
-     * Test for consistent exceptions for graphs not supporting user supplied identifiers.
-     */
-    @ExceptionCoverage(exceptionClass = Edge.Exceptions.class, methods = {
-            "userSuppliedIdsNotSupported"
-    })
-    @ExceptionCoverage(exceptionClass = Vertex.Exceptions.class, methods = {
-            "userSuppliedIdsNotSupported"
-    })
-    public static class AddElementWithIdTest extends AbstractGremlinTest {
-        @Test
-        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
-        public void testGraphAddVertex() throws Exception {
-            try {
-                this.g.addVertex(Element.ID, "");
-                fail("Call to addVertex should have thrown an exception when ID was specified as it is not supported");
-            } catch (Exception ex) {
-                final Exception expectedException = Vertex.Exceptions.userSuppliedIdsNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
-            }
-        }
-
-        @Test
-        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS, supported = false)
-        public void testGraphAddEdge() throws Exception {
-            try {
-                final Vertex v = this.g.addVertex();
-                v.addEdge("label", v, Element.ID, "");
-                fail("Call to addEdge should have thrown an exception when ID was specified as it is not supported");
-            } catch (Exception ex) {
-                final Exception expectedException = Edge.Exceptions.userSuppliedIdsNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
-            }
-        }
-    }
-
     /**
      * Checks that properties added to an {@link com.tinkerpop.gremlin.structure.Element} are validated in a consistent way when they are set after
      * {@link com.tinkerpop.gremlin.structure.Vertex} or {@link com.tinkerpop.gremlin.structure.Edge} construction by throwing an appropriate exception.

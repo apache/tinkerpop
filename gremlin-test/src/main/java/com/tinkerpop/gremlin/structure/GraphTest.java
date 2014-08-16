@@ -19,11 +19,15 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_PERSISTENCE;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@ExceptionCoverage(exceptionClass = Vertex.Exceptions.class, methods = {
+        "userSuppliedIdsNotSupported"
+})
 public class GraphTest extends AbstractGremlinTest {
 
     /**
@@ -56,6 +60,19 @@ public class GraphTest extends AbstractGremlinTest {
 
         // ensure that every method exposed was checked
         assertEquals(methods.size(), counter.get());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
+    public void testGraphAddVertex() throws Exception {
+        try {
+            this.g.addVertex(Element.ID, "");
+            fail("Call to addVertex should have thrown an exception when ID was specified as it is not supported");
+        } catch (Exception ex) {
+            final Exception expectedException = Vertex.Exceptions.userSuppliedIdsNotSupported();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
     }
 
     /**
