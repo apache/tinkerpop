@@ -52,37 +52,7 @@ public class ExceptionConsistencyTest {
             "edgeWithIdAlreadyExists"
     })
     public static class SameIdUsageTest extends AbstractGremlinTest {
-        @Test
-        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
-        public void testAssignSameIdOnVertex() {
-            g.addVertex(Element.ID, 1000l);
-            try {
-                g.addVertex(Element.ID, 1000l);
-                fail("Assigning the same ID to an Element should throw an exception");
-            } catch (Exception ex) {
-                final Exception expectedException = Graph.Exceptions.vertexWithIdAlreadyExists(1000l);
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
-            }
 
-        }
-
-        @Test
-        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
-        public void testAssignSameIdOnEdge() {
-            final Vertex v = g.addVertex();
-            v.addEdge("label", v, Element.ID, 1000l);
-
-            try {
-                v.addEdge("label", v, Element.ID, 1000l);
-                fail("Assigning the same ID to an Element should throw an exception");
-            } catch (Exception ex) {
-                final Exception expectedException = Graph.Exceptions.edgeWithIdAlreadyExists(1000l);
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
-            }
-
-        }
     }
 
     @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {

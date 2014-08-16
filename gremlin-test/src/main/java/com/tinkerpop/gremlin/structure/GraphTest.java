@@ -28,6 +28,9 @@ import static org.junit.Assert.*;
 @ExceptionCoverage(exceptionClass = Vertex.Exceptions.class, methods = {
         "userSuppliedIdsNotSupported"
 })
+@ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
+        "vertexWithIdAlreadyExists"
+})
 public class GraphTest extends AbstractGremlinTest {
 
     /**
@@ -60,6 +63,21 @@ public class GraphTest extends AbstractGremlinTest {
 
         // ensure that every method exposed was checked
         assertEquals(methods.size(), counter.get());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    public void shouldHaveExceptionConsistencyWhenAssigningSameIdOnVertex() {
+        g.addVertex(Element.ID, 1000l);
+        try {
+            g.addVertex(Element.ID, 1000l);
+            fail("Assigning the same ID to an Element should throw an exception");
+        } catch (Exception ex) {
+            final Exception expectedException = Graph.Exceptions.vertexWithIdAlreadyExists(1000l);
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+
     }
 
     @Test

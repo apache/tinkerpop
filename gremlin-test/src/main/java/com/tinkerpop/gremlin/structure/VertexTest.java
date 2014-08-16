@@ -22,8 +22,27 @@ import static org.junit.Assert.*;
 @ExceptionCoverage(exceptionClass = Edge.Exceptions.class, methods = {
         "userSuppliedIdsNotSupported"
 })
+@ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
+        "edgeWithIdAlreadyExists"
+})
 public class VertexTest extends AbstractGremlinTest {
 
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
+    public void shouldHaveExceptionConsistencyWhenAssigningSameIdOnEdge() {
+        final Vertex v = g.addVertex();
+        v.addEdge("label", v, Element.ID, 1000l);
+
+        try {
+            v.addEdge("label", v, Element.ID, 1000l);
+            fail("Assigning the same ID to an Element should throw an exception");
+        } catch (Exception ex) {
+            final Exception expectedException = Graph.Exceptions.edgeWithIdAlreadyExists(1000l);
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+
+    }
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS, supported = false)
