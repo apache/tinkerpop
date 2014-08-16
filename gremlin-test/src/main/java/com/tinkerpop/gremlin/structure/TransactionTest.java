@@ -15,13 +15,97 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
+import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.*;
 import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@ExceptionCoverage(exceptionClass = Transaction.Exceptions.class, methods = {
+        "transactionAlreadyOpen",
+        "threadedTransactionsNotSupported",
+        "openTransactionsOnClose",
+        "transactionMustBeOpenToReadWrite",
+        "onCloseBehaviorCannotBeNull",
+        "onReadWriteBehaviorCannotBeNull"
+})
 public class TransactionTest extends AbstractGremlinTest {
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void testTransactionAlreadyOpen() {
+        if (!g.tx().isOpen())
+            g.tx().open();
+
+        try {
+            g.tx().open();
+            fail("An exception should be thrown when a transaction is opened twice");
+        } catch (Exception ex) {
+            final Exception expectedException = Transaction.Exceptions.transactionAlreadyOpen();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void testTransactionOpenOnClose() {
+        g.tx().onClose(Transaction.CLOSE_BEHAVIOR.MANUAL);
+
+        if (!g.tx().isOpen())
+            g.tx().open();
+
+        try {
+            g.close();
+            fail("An exception should be thrown when close behavior is manual and the graph is close with an open transaction");
+        } catch (Exception ex) {
+            final Exception expectedException = Transaction.Exceptions.openTransactionsOnClose();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void testManualTransaction() {
+        g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
+
+        try {
+            g.addVertex();
+            fail("An exception should be thrown when read/write behavior is manual and no transaction is opened");
+        } catch (Exception ex) {
+            final Exception expectedException = Transaction.Exceptions.transactionMustBeOpenToReadWrite();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void testOnCloseToNull() {
+        try {
+            g.tx().onClose(null);
+            fail("An exception should be thrown when onClose behavior is set to null");
+        } catch (Exception ex) {
+            final Exception expectedException = Transaction.Exceptions.onCloseBehaviorCannotBeNull();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void testOnReadWriteToNull() {
+        try {
+            g.tx().onReadWrite(null);
+            fail("An exception should be thrown when onClose behavior is set to null");
+        } catch (Exception ex) {
+            final Exception expectedException = Transaction.Exceptions.onReadWriteBehaviorCannotBeNull();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+    }
+
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldAllowAutoTransactionToWorkWithoutMutationByDefault() {

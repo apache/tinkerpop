@@ -82,6 +82,7 @@ public class ExceptionCoverageTest {
         testClassesThatContainConsistencyChecks.addAll(Arrays.asList(FeatureSupportTest.class.getDeclaredClasses()));
         testClassesThatContainConsistencyChecks.addAll(Arrays.asList(PropertyTest.class.getDeclaredClasses()));
         testClassesThatContainConsistencyChecks.addAll(Arrays.asList(VariablesTest.class.getDeclaredClasses()));
+        testClassesThatContainConsistencyChecks.add(TransactionTest.class);
         testClassesThatContainConsistencyChecks.add(VertexTest.class);
 
         // implemented exceptions are the classes that potentially contains exception consistency checks.
