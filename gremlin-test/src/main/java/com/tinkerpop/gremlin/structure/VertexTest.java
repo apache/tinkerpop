@@ -27,7 +27,7 @@ public class VertexTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS, supported = false)
-    public void testGraphAddEdge() throws Exception {
+    public void shouldHaveExceptionConsistencyWhenIdNotSupportedForAddEdge() throws Exception {
         try {
             final Vertex v = this.g.addVertex();
             v.addEdge("label", v, Element.ID, "");

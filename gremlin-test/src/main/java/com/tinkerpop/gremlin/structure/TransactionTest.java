@@ -31,9 +31,10 @@ import static org.junit.Assert.*;
         "onReadWriteBehaviorCannotBeNull"
 })
 public class TransactionTest extends AbstractGremlinTest {
+
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
-    public void testTransactionAlreadyOpen() {
+    public void shouldHaveExceptionConsistencyWhenTransactionAlreadyOpen() {
         if (!g.tx().isOpen())
             g.tx().open();
 
@@ -49,7 +50,7 @@ public class TransactionTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
-    public void testTransactionOpenOnClose() {
+    public void shouldHaveExceptionConsistencyWhenTransactionOpenOnClose() {
         g.tx().onClose(Transaction.CLOSE_BEHAVIOR.MANUAL);
 
         if (!g.tx().isOpen())
@@ -67,7 +68,7 @@ public class TransactionTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
-    public void testManualTransaction() {
+    public void shouldHaveExceptionConsistencyWhenUsingManualTransaction() {
         g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
 
         try {
@@ -82,7 +83,7 @@ public class TransactionTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
-    public void testOnCloseToNull() {
+    public void shouldHaveExceptionConsistencyWhenOnCloseToNull() {
         try {
             g.tx().onClose(null);
             fail("An exception should be thrown when onClose behavior is set to null");
@@ -95,7 +96,7 @@ public class TransactionTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
-    public void testOnReadWriteToNull() {
+    public void shouldHaveExceptionConsistencyWhenOnReadWriteToNull() {
         try {
             g.tx().onReadWrite(null);
             fail("An exception should be thrown when onClose behavior is set to null");

@@ -64,7 +64,7 @@ public class GraphTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
-    public void testGraphAddVertex() throws Exception {
+    public void shouldHaveExceptionConsistencyWhenIdsNotSupportedForAddVertex() throws Exception {
         try {
             this.g.addVertex(Element.ID, "");
             fail("Call to addVertex should have thrown an exception when ID was specified as it is not supported");

@@ -35,7 +35,7 @@ public class EdgeTest extends AbstractGremlinTest {
     }
 
     @Test
-    public void testNullEdgeLabel() {
+    public void shouldHaveExceptionConsistencyWhenUsingNullEdgeLabel() {
         final Vertex v = g.addVertex();
         try {
             v.addEdge(null, v);

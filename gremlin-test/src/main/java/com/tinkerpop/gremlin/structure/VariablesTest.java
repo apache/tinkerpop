@@ -55,7 +55,7 @@ public class VariablesTest {
             "variableKeyCanNotBeNull",
             "variableKeyCanNotBeEmpty"
     })
-    public static class VariableTest extends AbstractGremlinTest {
+    public static class VariableExceptionConsistencyTest extends AbstractGremlinTest {
         @Parameterized.Parameters(name = "{index}: expect - {2}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{

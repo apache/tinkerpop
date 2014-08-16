@@ -88,7 +88,7 @@ public class PropertyTest {
             "propertyValueCanNotBeNull",
             "propertyKeyCanNotBeEmpty"
     })
-    public static class PropertyValidationOnAddTest extends AbstractGremlinTest {
+    public static class PropertyValidationOnAddExceptionConsistencyTest extends AbstractGremlinTest {
 
         @Parameterized.Parameters(name = "{index}: expect - {1}")
         public static Iterable<Object[]> data() {
@@ -146,7 +146,7 @@ public class PropertyTest {
             "propertyKeyLabelIsReserved",
             "propertyKeyCanNotBeEmpty"
     })
-    public static class PropertyValidationOnSetTest extends AbstractGremlinTest {
+    public static class PropertyValidationOnSetExceptionConsistencyTest extends AbstractGremlinTest {
 
         @Parameterized.Parameters(name = "{index}: expect - {2}")
         public static Iterable<Object[]> data() {
