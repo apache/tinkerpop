@@ -9,7 +9,6 @@ import com.tinkerpop.gremlin.structure.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -25,6 +24,12 @@ import static org.junit.Assert.*;
  */
 @ExceptionCoverage(exceptionClass = GraphComputer.Exceptions.class, methods = {
         "providedKeyIsNotASideEffectKey",
+        "computerHasNoVertexProgramNorMapReducers",
+        "computerHasAlreadyBeenSubmittedAVertexProgram"
+})
+@ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
+        "graphDoesNotSupportProvidedGraphComputer",
+        "onlyOneOrNoGraphComputerClass"
 })
 public class GraphComputerTest extends AbstractGremlinTest {
 
@@ -123,6 +128,33 @@ public class GraphComputerTest extends AbstractGremlinTest {
             final Exception expectedException = SideEffects.Exceptions.sideEffectValueCanNotBeNull();
             assertEquals(expectedException.getClass(), ex.getCause().getClass());
             assertEquals(expectedException.getMessage(), ex.getCause().getMessage());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
+    public void shouldOnlyAllowOneOrNoGraphComputerClass() throws Exception {
+        try {
+            g.compute(BadGraphComputer.class, BadGraphComputer.class).submit().get();
+            fail("Should throw an IllegalArgument when two graph computers are passed in");
+        } catch (Exception ex) {
+            final Exception expectedException = Graph.Exceptions.onlyOneOrNoGraphComputerClass();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
+    public void shouldNotAllowWithNoVertexProgramNorMapReducers() throws Exception {
+        try {
+            g.compute().submit().get();
+            fail("Should throw an IllegalStateException when there is no vertex program nor map reducers");
+        } catch (Exception ex) {
+            final Exception expectedException = GraphComputer.Exceptions.computerHasNoVertexProgramNorMapReducers();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
         }
     }
 

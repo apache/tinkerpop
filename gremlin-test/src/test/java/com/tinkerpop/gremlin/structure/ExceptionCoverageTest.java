@@ -58,6 +58,7 @@ public class ExceptionCoverageTest {
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#constantComputeKeyHasAlreadyBeenSet");
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentVerticesCanNotBeQueried");
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#isolationNotSupported");
+            add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#providedKeyIsNotAComputeKey");
             //add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#computerHasAlreadyBeenSubmittedAVertexProgram");
 
             add("com.tinkerpop.gremlin.structure.Graph$Exceptions#vertexAdditionsNotSupported");
@@ -78,7 +79,6 @@ public class ExceptionCoverageTest {
         testClassesThatContainConsistencyChecks.add(EdgeTest.class);
         testClassesThatContainConsistencyChecks.add(GraphTest.class);
         testClassesThatContainConsistencyChecks.add(GraphComputerTest.class);
-        testClassesThatContainConsistencyChecks.addAll(Arrays.asList(ExceptionConsistencyTest.class.getDeclaredClasses()));
         testClassesThatContainConsistencyChecks.addAll(Arrays.asList(FeatureSupportTest.class.getDeclaredClasses()));
         testClassesThatContainConsistencyChecks.addAll(Arrays.asList(PropertyTest.class.getDeclaredClasses()));
         testClassesThatContainConsistencyChecks.addAll(Arrays.asList(VariablesTest.class.getDeclaredClasses()));
