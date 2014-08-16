@@ -50,7 +50,6 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             CommunityGeneratorTest.class,
             DistributionGeneratorTest.class,
             EdgeTest.class,
-            ExceptionConsistencyTest.class,
             FeatureSupportTest.class,
             GraphTest.class,
             GraphConstructionTest.class,

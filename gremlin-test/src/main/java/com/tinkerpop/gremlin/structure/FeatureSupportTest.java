@@ -60,7 +60,7 @@ public class FeatureSupportTest {
          * if the implementing classes use anonymous inner classes it will
          */
         @Test
-        public void printTheFeatureList() {
+        public void shouldPrintTheFeatureList() {
             System.out.println(String.format("Printing Features of %s for reference: ", g.getClass().getSimpleName()));
             System.out.println(g.getFeatures());
             assertTrue(true);
@@ -72,7 +72,7 @@ public class FeatureSupportTest {
          */
         @Test
         @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_COMPUTER, supported = false)
-        public void ifAGraphCanComputeThenItMustSupportComputer() throws Exception {
+        public void shouldSupportComputerIfAGraphCanCompute() throws Exception {
             try {
                 g.compute();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphFeatures.class.getSimpleName(), FEATURE_COMPUTER));
@@ -87,7 +87,7 @@ public class FeatureSupportTest {
          */
         @Test
         @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_TRANSACTIONS, supported = false)
-        public void ifAGraphConstructsATxThenItMustSupportTransactions() throws Exception {
+        public void shouldSupportTransactionsIfAGraphConstructsATx() throws Exception {
             try {
                 g.tx();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphFeatures.class.getSimpleName(), FEATURE_TRANSACTIONS));
@@ -102,7 +102,7 @@ public class FeatureSupportTest {
          */
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES, supported = false)
-        public void ifAGraphAcceptsMemoryThenItMustSupportMemory() throws Exception {
+        public void shouldSupportMemoryIfAGraphAcceptsMemory() throws Exception {
             try {
                 g.variables();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, Graph.Features.VariableFeatures.class.getSimpleName(), FEATURE_VARIABLES));
@@ -114,7 +114,7 @@ public class FeatureSupportTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
         @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS, supported = false)
-        public void testThreadedTransactionNotSupported() {
+        public void shouldThrowOnThreadedTransactionNotSupported() {
             try {
                 g.tx().create();
                 fail("An exception should be thrown since the threaded transaction feature is not supported");
@@ -134,7 +134,7 @@ public class FeatureSupportTest {
 
         @Test
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
-        public void ifAnIdCanBeAssignedToVertexThenItMustSupportUserSuppliedIds() throws Exception {
+        public void shouldSupportUserSuppliedIdsIfAnIdCanBeAssignedToVertex() throws Exception {
             try {
                 g.addVertex(Element.ID, GraphManager.get().convertId(99999943835l));
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_USER_SUPPLIED_IDS));
@@ -152,7 +152,7 @@ public class FeatureSupportTest {
 
         @Test
         @FeatureRequirement(featureClass = EdgeFeatures.class, feature = EdgeFeatures.FEATURE_USER_SUPPLIED_IDS, supported = false)
-        public void ifAnIdCanBeAssignedToEdgeThenItMustSupportUserSuppliedIds() throws Exception {
+        public void shouldSupportUserSuppliedIdsIfAnIdCanBeAssignedToEdge() throws Exception {
             try {
                 final Vertex v = g.addVertex();
                 v.addEdge("friend", v, Element.ID, GraphManager.get().convertId(99999943835l));
@@ -280,7 +280,7 @@ public class FeatureSupportTest {
         }
 
         @Test
-        public void ifGraphHasMemoryEnabledThenItMustSupportADataType() {
+        public void shouldSupportADataTypeIfGraphHasMemoryEnabled() {
             assertEquals(variableFeatures.supportsVariables(), (variableFeatures.supportsBooleanValues() || variableFeatures.supportsDoubleValues()
                     || variableFeatures.supportsFloatValues() || variableFeatures.supportsIntegerValues()
                     || variableFeatures.supportsLongValues() || variableFeatures.supportsMapValues()
@@ -293,7 +293,7 @@ public class FeatureSupportTest {
         }
 
         @Test
-        public void ifEdgeHasPropertyEnabledThenItMustSupportADataType() {
+        public void shouldSupportADataTypeIfEdgeHasPropertyEnabled() {
             assertEquals(edgePropertyFeatures.supportsProperties(), (edgePropertyFeatures.supportsBooleanValues() || edgePropertyFeatures.supportsDoubleValues()
                     || edgePropertyFeatures.supportsFloatValues() || edgePropertyFeatures.supportsIntegerValues()
                     || edgePropertyFeatures.supportsLongValues() || edgePropertyFeatures.supportsMapValues()
@@ -306,7 +306,7 @@ public class FeatureSupportTest {
         }
 
         @Test
-        public void ifVertexHasPropertyEnabledThenItMustSupportADataType() {
+        public void shouldSupportADataTypeIfVertexHasPropertyEnabled() {
             assertEquals(vertexPropertyFeatures.supportsProperties(), (vertexPropertyFeatures.supportsBooleanValues() || vertexPropertyFeatures.supportsDoubleValues()
                     || vertexPropertyFeatures.supportsFloatValues() || vertexPropertyFeatures.supportsIntegerValues()
                     || vertexPropertyFeatures.supportsLongValues() || vertexPropertyFeatures.supportsMapValues()
@@ -319,7 +319,7 @@ public class FeatureSupportTest {
         }
 
         @Test
-        public void ifThreadedTransactionsAreEnabledThenItMustSupportRegularTransactions() {
+        public void shouldSupportRegularTransactionsIfThreadedTransactionsAreEnabled() {
             if (graphFeatures.supportsThreadedTransactions())
                 assertTrue(graphFeatures.supportsThreadedTransactions());
         }

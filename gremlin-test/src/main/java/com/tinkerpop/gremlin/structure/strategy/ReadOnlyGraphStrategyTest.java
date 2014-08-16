@@ -58,7 +58,7 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     public void shouldNotAllowVertexSetProperty() {
         g.addVertex();
-        assertException(g -> g.V().next().property("test", "test"));
+        assertException(g -> g.V().next().<String>property("test", "test"));
     }
 
     @Test
@@ -74,7 +74,7 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     public void shouldNotAllowEdgeSetProperty() {
         final Vertex v = g.addVertex();
         v.addEdge("friend", v);
-        assertException(g -> g.E().next().property("test", "test"));
+        assertException(g -> g.E().next().<String>property("test", "test"));
     }
 
     @Test
@@ -125,7 +125,7 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    public void testShouldReturnWrappedElementToString() {
+    public void shouldReturnWrappedElementToString() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         Vertex v1 = swg.addVertex(Element.LABEL, "Person", "age", 1);
         Vertex v2 = swg.addVertex(Element.LABEL, "Person", "age", 1);
@@ -141,7 +141,7 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    public void testGraphShouldReturnWrappedToString() {
+    public void shouldReturnWrappedToString() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         assertNotEquals(g.toString(), swg.toString());
     }

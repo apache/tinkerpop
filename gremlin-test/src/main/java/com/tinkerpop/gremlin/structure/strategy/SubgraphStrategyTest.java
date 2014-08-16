@@ -99,7 +99,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    public void testEdgeCriterion() throws Exception {
+    public void shouldFilterEdgeCriterion() throws Exception {
 
         Predicate<Vertex> vertexCriterion = vertex -> true;
         Predicate<Edge> edgeCriterion = edge -> {
@@ -195,7 +195,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    public void testMixedCriteria() throws Exception {
+    public void shouldFilterMixedCriteria() throws Exception {
         Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
         Predicate<Edge> edgeCriterion = edge -> {
             // 9 && 11
@@ -276,7 +276,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
 
     @Test(expected = NoSuchElementException.class)
     @LoadGraphWith(CLASSIC)
-    public void testGetExcludedVertex() throws Exception {
+    public void shouldGetExcludedVertex() throws Exception {
 
         Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
         Predicate<Edge> edgeCriterion = edge -> true;
@@ -290,7 +290,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
 
     @Test(expected = NoSuchElementException.class)
     @LoadGraphWith(CLASSIC)
-    public void testGetExcludedEdge() throws Exception {
+    public void shouldGetExcludedEdge() throws Exception {
 
         Predicate<Vertex> vertexCriterion = vertex -> true;
         Predicate<Edge> edgeCriterion = edge -> {

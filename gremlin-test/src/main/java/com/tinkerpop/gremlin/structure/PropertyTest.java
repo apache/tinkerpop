@@ -109,7 +109,7 @@ public class PropertyTest {
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
-        public void testGraphAddVertex() throws Exception {
+        public void shouldThrowOnGraphAddVertex() throws Exception {
             try {
                 this.g.addVertex(arguments);
                 fail(String.format("Call to addVertex should have thrown an exception with these arguments [%s]", arguments));
@@ -121,7 +121,7 @@ public class PropertyTest {
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_PROPERTIES)
-        public void testGraphAddEdge() throws Exception {
+        public void shouldThrowOnGraphAddEdge() throws Exception {
             try {
                 final Vertex v = this.g.addVertex();
                 v.addEdge("label", v, arguments);
@@ -142,7 +142,7 @@ public class PropertyTest {
     public static class ElementGetValueExceptionConsistencyTest extends AbstractGremlinTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
-        public void testGetValueThatIsNotPresentOnVertex() {
+        public void shouldGetValueThatIsNotPresentOnVertex() {
             final Vertex v = g.addVertex();
             try {
                 v.value("does-not-exist");
@@ -157,7 +157,7 @@ public class PropertyTest {
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
-        public void testGetValueThatIsNotPresentOnEdge() {
+        public void shouldGetValueThatIsNotPresentOnEdge() {
             final Vertex v = g.addVertex();
             final Edge e = v.addEdge("label", v);
             try {
@@ -221,7 +221,7 @@ public class PropertyTest {
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_PROPERTIES)
-        public void testGraphEdgeSetPropertyStandard() throws Exception {
+        public void shouldThrowOnGraphEdgeSetPropertyStandard() throws Exception {
             try {
                 final Vertex v = this.g.addVertex();
                 v.addEdge("label", v).property(key, val);

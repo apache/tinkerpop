@@ -93,7 +93,7 @@ public class VariablesTest {
     public static class MemoryAsMapTest extends AbstractGremlinTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_STRING_VALUES)
-        public void testNone() {
+        public void shouldHoldNone() {
             final Graph.Variables variables = g.variables();
             final Map<String, Object> mapOfAnnotations = variables.asMap();
             assertNotNull(mapOfAnnotations);
@@ -108,7 +108,7 @@ public class VariablesTest {
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_STRING_VALUES)
-        public void testMemoryString() {
+        public void shouldHoldMemoryString() {
             final Graph.Variables variables = g.variables();
             variables.set("test1", "1");
             variables.set("test2", "2");
@@ -124,7 +124,7 @@ public class VariablesTest {
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_INTEGER_VALUES)
-        public void testMemoryInteger() {
+        public void shouldHoldMemoryInteger() {
             final Graph.Variables variables = g.variables();
             variables.set("test1", 1);
             variables.set("test2", 2);
@@ -140,7 +140,7 @@ public class VariablesTest {
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_LONG_VALUES)
-        public void testMemoryLong() {
+        public void shouldHoldMemoryLong() {
             final Graph.Variables variables = g.variables();
             variables.set("test1", 1l);
             variables.set("test2", 2l);
@@ -158,7 +158,7 @@ public class VariablesTest {
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_INTEGER_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_LONG_VALUES)
-        public void testMemoryMixed() {
+        public void shouldHoldMemoryMixed() {
             final Graph.Variables variables = g.variables();
             variables.set("test1", "1");
             variables.set("test2", 2);
@@ -175,7 +175,7 @@ public class VariablesTest {
 
     /**
      * Tests for feature support on {@link com.tinkerpop.gremlin.structure.Graph.Variables}.  The tests validate if
-     * {@link com.tinkerpop.gremlin.structure.Graph.Features.AnnotationFeatures} should be turned on or off and if the
+     * {@link com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures} should be turned on or off and if the
      * enabled features are properly supported by the implementation.  Note that these tests are run in a separate
      * test class as they are "parameterized" tests.
      */

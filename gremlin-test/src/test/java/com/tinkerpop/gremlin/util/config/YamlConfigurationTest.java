@@ -19,7 +19,7 @@ import static org.junit.Assert.assertEquals;
 public class YamlConfigurationTest {
 
     @Test
-    public void testLoadSaveConfiguration() throws Exception {
+    public void shouldLoadSaveConfiguration() throws Exception {
         final YamlConfiguration config = new YamlConfiguration();
         final String testData = this.getTestInputData();
         final StringWriter writer = new StringWriter();
@@ -30,7 +30,7 @@ public class YamlConfigurationTest {
     }
 
     @Test
-    public void testNavigationConfiguration() throws Exception {
+    public void shouldNavigationConfiguration() throws Exception {
         final Map<Object, Object> testData = this.getTestData();
         final YamlConfiguration config = new YamlConfiguration();
         config.load(new StringReader(this.getTestInputData()));
@@ -49,7 +49,7 @@ public class YamlConfigurationTest {
     }
 
     @Test
-    public void testXMLCompatibility() throws Exception {
+    public void shouldSupportXMLCompatibility() throws Exception {
         final YamlConfiguration config = new YamlConfiguration();
         config.setXmlCompatibility(true);
         config.load(new StringReader(this.getTestInputData()));
