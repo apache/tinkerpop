@@ -44,63 +44,6 @@ import static org.junit.Assert.*;
 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 public class ExceptionConsistencyTest {
 
-    /**
-     * Checks that properties added to an {@link com.tinkerpop.gremlin.structure.Element} are validated in a consistent way when they are added at
-     * {@link com.tinkerpop.gremlin.structure.Vertex} or {@link com.tinkerpop.gremlin.structure.Edge} construction by throwing an appropriate exception.
-     */
-    @RunWith(Parameterized.class)
-    @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
-            "providedKeyValuesMustBeAMultipleOfTwo",
-            "providedKeyValuesMustHaveALegalKeyOnEvenIndices"
-    })
-    @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
-            "propertyValueCanNotBeNull",
-            "propertyKeyCanNotBeEmpty"
-    })
-    public static class PropertyValidationOnAddTest extends AbstractGremlinTest {
-
-        @Parameterized.Parameters(name = "{index}: expect - {1}")
-        public static Iterable<Object[]> data() {
-            return Arrays.asList(new Object[][]{
-                    {new Object[]{"odd", "number", "arguments"}, Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
-                    {new Object[]{"odd"}, Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
-                    {new Object[]{"odd", "number", 123, "test"}, Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
-                    {new Object[]{"odd", null}, Property.Exceptions.propertyValueCanNotBeNull()},
-                    {new Object[]{null, "val"}, Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
-                    {new Object[]{"", "val"}, Property.Exceptions.propertyKeyCanNotBeEmpty()}});
-        }
-
-        @Parameterized.Parameter(value = 0)
-        public Object[] arguments;
-
-        @Parameterized.Parameter(value = 1)
-        public Exception expectedException;
-
-        @Test
-        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
-        public void testGraphAddVertex() throws Exception {
-            try {
-                this.g.addVertex(arguments);
-                fail(String.format("Call to addVertex should have thrown an exception with these arguments [%s]", arguments));
-            } catch (Exception ex) {
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
-            }
-        }
-
-        @Test
-        @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_PROPERTIES)
-        public void testGraphAddEdge() throws Exception {
-            try {
-                final Vertex v = this.g.addVertex();
-                v.addEdge("label", v, arguments);
-                fail(String.format("Call to addVertex should have thrown an exception with these arguments [%s]", arguments));
-            } catch (Exception ex) {
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
-            }
-        }
-    }
 
     /**
      * Test for consistent exceptions for graphs not supporting user supplied identifiers.
