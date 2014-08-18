@@ -57,7 +57,12 @@ class Mediator {
 
     def writePluginState() {
         def file = new File(PLUGIN_CONFIG_FILE)
-        if (file.exists()) file.delete()
+
+        // ensure that the directories exist to hold the file.
+        file.mkdirs()
+
+        if (file.exists())
+            file.delete()
 
         new File(PLUGIN_CONFIG_FILE).withWriter { out ->
             availablePlugins.findAll{it.value.activated}.each{ k, v -> out << (k + LINE_SEP)}
