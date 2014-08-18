@@ -553,7 +553,7 @@ image::gephi-graph-submit.png[width=800]
 
 Now that the graph is visualized in Gephi, it is possible to link:https://gephi.github.io/users/tutorial-layouts/[apply a layout algorithm], change the size and/or color of vertices and edges, and display labels/properties of interest.  Further information can be found in Gephi's tutorial on link:https://gephi.github.io/users/tutorial-visualization/[Visualization].  After applying the Fruchterman Reingold layout, increasing the node size, decreasing the edge scale, and displaying the id, name, and weight attributes the graph looks as displayed in the right image above.
 
-NOTE: It's recommended to choose a continuously running layout algorithm like Fruchterman Reingold or Force Atlas, because ever update to color the visited vertices causes their positions to be reset, so these layouts will constantly adjust to account for these changes and make visualization of the traversals.  This also explains why the graph seems to rotate each store step in the screenshots below.
+NOTE: It's recommended to choose a continuously running layout algorithm like Fruchterman Reingold or Force Atlas, because every update to color the visited vertices causes their positions to be reset, so these layouts will constantly adjust to account for these changes and make visualization of the traversals.  This also explains why the graph seems to rotate each store step in the screenshots below.
 
 Consider the following traversal:
 
@@ -574,13 +574,13 @@ gremlin> traversal = g.v(2).store('1').
                            outE('created').has('weight',T.gt,0.5f).inV.store('4')
 ==>[v[5]]
 gremlin> traversal.memory().get('1').get()
-==>[v[2]]
+==>v[2]
 gremlin> traversal.memory().get('2').get()
-==>[v[1]]
+==>v[1]
 gremlin> traversal.memory().get('3').get()
-==>[v[4]]
+==>v[4]
 gremlin> traversal.memory().get('4').get()
-==>[v[5]]
+==>v[5]
 gremlin> 
 gremlin> :> traversal
 Visualizing vertices at step: 1... visited: 1
