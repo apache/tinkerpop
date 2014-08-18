@@ -297,7 +297,7 @@ public interface Graph extends AutoCloseable {
              * <br/>
              * This feature is a bit of a hazy one.  Implementers should evaluate the tests themselves to determine
              * if they can support the feature and if not, they should carefully document for users the capabilities
-             * in this area.
+             * in this area using the {@link com.tinkerpop.gremlin.structure.Graph.OptOut} annotation.
              */
             @FeatureDescriptor(name = FEATURE_FULLY_ISOLATED_TRANSACTIONS)
             public default boolean supportsFullyIsolatedTransactions() {
