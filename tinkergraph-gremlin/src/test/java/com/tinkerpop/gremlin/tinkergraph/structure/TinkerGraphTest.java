@@ -65,6 +65,19 @@ public class TinkerGraphTest implements Serializable {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
+    public void shouldWriteClassicDoubleGraphAsKryoAsKryo() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-double.gio");
+        final TinkerGraph g = TinkerFactory.createClassic();
+        g.E().sideEffect(e -> e.get().<Double>property(
+                "weight", Double.parseDouble(e.get().property("weight").value().toString()))).iterate();
+        KryoWriter.build().create().writeGraph(os, g);
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
     public void shouldWriteClassicGraphAsGraphML() throws IOException {
         try (final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic.xml")) {
             GraphMLWriter.build().create().writeGraph(os, TinkerFactory.createClassic());
