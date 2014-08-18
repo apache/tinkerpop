@@ -17,11 +17,11 @@ import com.tinkerpop.gremlin.structure.Graph;
  */
 public class SideEffectCapComputerStep<S> extends FilterStep<S> implements Reversible, Bulkable, MapReducer, SideEffectCap {
 
-    public final String sideEffectAs;
+    public final String memoryKey;
 
     public SideEffectCapComputerStep(final Traversal traversal, final SideEffectCapStep sideEffectCapStep) {
         super(traversal);
-        this.sideEffectAs = sideEffectCapStep.memoryKey;
+        this.memoryKey = sideEffectCapStep.getMemoryKey();
         this.setPredicate(traverser -> false);
     }
 
@@ -33,10 +33,10 @@ public class SideEffectCapComputerStep<S> extends FilterStep<S> implements Rever
     }
 
     public String toString() {
-        return Graph.Key.isHidden(this.sideEffectAs) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectAs);
+        return Graph.Key.isHidden(this.memoryKey) ? super.toString() : TraversalHelper.makeStepString(this, this.memoryKey);
     }
 
     public String getMemoryKey() {
-        return this.sideEffectAs;
+        return this.memoryKey;
     }
 }

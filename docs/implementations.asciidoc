@@ -427,7 +427,7 @@ gremlin> g.V.groupBy{it.value('name')[1]}{it.value('name')}.next()
 ==>i=[ripple]
 ==>o=[lop, josh]
 
-NOTE: When executing a <<vertexprogram,`VertexProgram`> via `g.compute().program(...).submit()`, it is important that `g` is created with `GiraphGraph.open()`.  
+NOTE: When executing a <<vertexprogram,`VertexProgram`>> via `g.compute().program(...).submit()`, it is important that `g` is created with `GiraphGraph.open()`.  
 
 OLAP Giraph-Gremlin
 ~~~~~~~~~~~~~~~~~~~

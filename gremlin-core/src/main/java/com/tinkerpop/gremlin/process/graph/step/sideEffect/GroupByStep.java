@@ -35,7 +35,7 @@ public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffect
 
     public GroupByStep(final Traversal traversal, final String memoryKey, final SFunction<S, K> keyFunction, final SFunction<S, V> valueFunction, final SFunction<Collection<V>, R> reduceFunction) {
         super(traversal);
-        this.memoryKey = null == memoryKey ? UUID.randomUUID().toString() : memoryKey;
+        this.memoryKey = null == memoryKey ? Graph.Key.hide(UUID.randomUUID().toString()) : memoryKey;
         this.hiddenMemoryKey = Graph.Key.hide(this.memoryKey);
         this.groupByMap = this.traversal.memory().getOrCreate(this.memoryKey, HashMap<K, Collection<V>>::new);
         this.reduceMap = new HashMap<>();

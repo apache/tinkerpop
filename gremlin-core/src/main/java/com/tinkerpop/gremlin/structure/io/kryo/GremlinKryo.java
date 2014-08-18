@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.computer.traversal.TraverserCountTracker;
 import com.tinkerpop.gremlin.process.computer.traversal.TraverserPathTracker;
+import com.tinkerpop.gremlin.process.graph.step.util.Tree;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -176,7 +177,7 @@ public final class GremlinKryo {
 
         /**
          * Note that the following are pre-registered boolean, Boolean, byte, Byte, char, Character, double, Double,
-         * int, Integer, float, Float, long, Long, short, Short, String, void. Current max is DetachedPath=60.
+         * int, Integer, float, Float, long, Long, short, Short, String, void. Current max is Tree=63.
          */
         private final List<Triplet<Class, Serializer, Integer>> serializationList = new ArrayList<Triplet<Class, Serializer, Integer>>() {{
             add(Triplet.<Class, Serializer, Integer>with(byte[].class, null, 25));
@@ -234,6 +235,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(DetachedPath.class, null, 60)); // is this needed?
             add(Triplet.<Class, Serializer, Integer>with(Optional.class, null, 61));
             add(Triplet.<Class, Serializer, Integer>with(AtomicLong.class, null, 62)); // this is all needed for serializing properties in TinkerGraph
+            add(Triplet.<Class, Serializer, Integer>with(Tree.class, null, 63));
         }};
 
         private static final byte major = 1;

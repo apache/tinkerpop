@@ -22,7 +22,7 @@ import java.util.UUID;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TreeStep<S> extends FilterStep<S> implements Reversible, PathConsumer, SideEffectCapable, Bulkable, VertexCentric, MapReducer<Object, Tree, Object, Tree, Tree> {
+public class TreeStep<S> extends FilterStep<S> implements Reversible, PathConsumer, SideEffectCapable, VertexCentric, MapReducer<Object, Tree, Object, Tree, Tree> {
 
     public Tree tree;
     public FunctionRing functionRing;
@@ -31,7 +31,7 @@ public class TreeStep<S> extends FilterStep<S> implements Reversible, PathConsum
 
     public TreeStep(final Traversal traversal, final String memoryKey, final SFunction... branchFunctions) {
         super(traversal);
-        this.memoryKey = null == memoryKey ? UUID.randomUUID().toString() : memoryKey;
+        this.memoryKey = null == memoryKey ? Graph.Key.hide(UUID.randomUUID().toString()) : memoryKey;
         this.hiddenMemoryKey = Graph.Key.hide(this.memoryKey);
         this.functionRing = new FunctionRing(branchFunctions);
         this.tree = traversal.memory().getOrCreate(this.memoryKey, Tree::new);
@@ -52,11 +52,6 @@ public class TreeStep<S> extends FilterStep<S> implements Reversible, PathConsum
 
     public String getMemoryKey() {
         return this.memoryKey;
-    }
-
-    public void setCurrentBulkCount(final long count) {
-        // do nothing as repeated elements is not important for tree, only unique paths.
-        // this is more of an optimization for not running the same path over and over again.
     }
 
     public void setCurrentVertex(final Vertex vertex) {
