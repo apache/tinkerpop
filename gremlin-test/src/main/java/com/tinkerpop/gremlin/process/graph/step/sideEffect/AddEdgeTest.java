@@ -25,6 +25,8 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_aX(final Object v1Id);
 
+    public abstract Traversal<Vertex, Vertex> get_g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(final Object v1Id);
+
     @Test
     @LoadGraphWith(CLASSIC_DOUBLE)
     @FeatureRequirement(featureClass = EdgeFeatures.class, feature = FEATURE_ADD_EDGES)
@@ -64,9 +66,31 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
         while (traversal.hasNext()) {
             final Vertex vertex = traversal.next();
             assertEquals(convertToVertexId("lop"), vertex.id());
+            assertEquals(1, vertex.out("createdBy").count().next().longValue());
+            assertEquals(convertToVertexId("marko"), vertex.out("createdBy").id().next());
+            assertEquals(0, vertex.outE("createdBy").values().next().size());
+            count++;
+
+        }
+        assertEquals(1, count);
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC_DOUBLE)
+    @FeatureRequirement(featureClass = EdgeFeatures.class, feature = FEATURE_ADD_EDGES)
+    public void g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X() {
+        final Traversal<Vertex, Vertex> traversal = get_g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        int count = 0;
+        while (traversal.hasNext()) {
+            final Vertex vertex = traversal.next();
+            assertEquals(convertToVertexId("lop"), vertex.id());
             assertEquals(Long.valueOf(1l), vertex.out("createdBy").count().next());
             assertEquals(convertToVertexId("marko"), vertex.out("createdBy").id().next());
+            assertEquals(2, vertex.outE("createdBy").value("weight").next());
+            assertEquals(1, vertex.outE("createdBy").values().next().size());
             count++;
+
 
         }
         assertEquals(1, count);
@@ -80,6 +104,10 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
 
         public Traversal<Vertex, Vertex> get_g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_aX(final Object v1Id) {
             return g.v(v1Id).as("a").out("created").addOutE("createdBy", "a");
+        }
+
+        public Traversal<Vertex, Vertex> get_g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(final Object v1Id) {
+            return g.v(v1Id).as("a").out("created").addOutE("createdBy", "a", "weight", 2);
         }
     }
 }

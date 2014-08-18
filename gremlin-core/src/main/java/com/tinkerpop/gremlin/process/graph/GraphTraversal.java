@@ -494,20 +494,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.groupCount(null, null);
     }
 
-    public default GraphTraversal<S, Vertex> addInE(final String label, final String as) {
-        return (GraphTraversal) this.addStep(new AddEdgeStep(this, Direction.IN, label, as));
+    public default GraphTraversal<S, Vertex> addE(final Direction direction, final String label, final String as, final Object... propertyKeyValues) {
+        return (GraphTraversal) this.addStep(new AddEdgeStep(this, direction, label, as, propertyKeyValues));
     }
 
-    public default GraphTraversal<S, Vertex> addOutE(final String label, final String as) {
-        return (GraphTraversal) this.addStep(new AddEdgeStep(this, Direction.OUT, label, as));
+    public default GraphTraversal<S, Vertex> addInE(final String label, final String as, final Object... propertyKeyValues) {
+        return this.addE(Direction.IN, label, as, propertyKeyValues);
     }
 
-    public default GraphTraversal<S, Vertex> addBothE(final String label, final String as) {
-        return (GraphTraversal) this.addStep(new AddEdgeStep(this, Direction.BOTH, label, as));
+    public default GraphTraversal<S, Vertex> addOutE(final String label, final String as, final Object... propertyKeyValues) {
+        return this.addE(Direction.OUT, label, as, propertyKeyValues);
     }
 
-    public default GraphTraversal<S, Vertex> addE(final Direction direction, final String label, final String as) {
-        return (GraphTraversal) this.addStep(new AddEdgeStep(this, direction, label, as));
+    public default GraphTraversal<S, Vertex> addBothE(final String label, final String as, final Object... propertyKeyValues) {
+        return this.addE(Direction.BOTH, label, as, propertyKeyValues);
     }
 
     public default GraphTraversal<S, E> timeLimit(final long timeLimit) {
