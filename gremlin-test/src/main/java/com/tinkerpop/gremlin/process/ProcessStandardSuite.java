@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.ExceptTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasNotTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.InjectTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.IntervalTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.RandomTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.RangeTest;
@@ -21,10 +22,10 @@ import com.tinkerpop.gremlin.process.graph.step.map.MatchTest;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
-import com.tinkerpop.gremlin.process.graph.step.map.VertexTest;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.UnionTest;
 import com.tinkerpop.gremlin.process.graph.step.map.ValuesTest;
+import com.tinkerpop.gremlin.process.graph.step.map.VertexTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest;
@@ -53,18 +54,18 @@ import java.util.stream.Stream;
  * To use the ProcessStandardSuite define a class in a test module.  Simple naming would expect the name of the
  * implementation followed by "ProcessStandardSuite".  This class should be annotated as follows (note that the "Suite"
  * implements ProcessStandardSuite.GraphProvider as a convenience only...it could be implemented in a separate class file):
- *
+ * <p>
  * <code>
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  * @RunWith(ProcessStandardSuite.class)
  * @BlueprintsSuite.GraphProviderClass(MsAccessBlueprintsTest.class) public class MsAccessBlueprintsTest implements GraphProvider {
  * }
  * </code>
- *
+ * <p>
  * Implementing {@link com.tinkerpop.gremlin.GraphProvider} provides a way for the ProcessStandardSuite to
  * instantiate Graph instances from the implementation being tested to inject into tests in the suite.  The
  * ProcessStandardSuite will utilized Features defined in the suite to determine which tests will be executed.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ProcessStandardSuite extends AbstractGremlinSuite {
 
@@ -80,6 +81,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             FilterTest.JavaFilterTest.class,
             HasNotTest.JavaHasNotTest.class,
             HasTest.JavaHasTest.class,
+            InjectTest.JavaInjectTest.class,
             IntervalTest.JavaIntervalTest.class,
             RandomTest.JavaRandomTest.class,
             RangeTest.JavaRangeTest.class,
@@ -132,6 +134,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             FilterTest.class,
             HasNotTest.class,
             HasTest.class,
+            InjectTest.class,
             IntervalTest.class,
             RandomTest.class,
             RangeTest.class,
@@ -199,6 +202,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
     public ProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce) throws InitializationError {
         super(klass, builder, testsToExecute, testsToEnforce);
     }
+
     public ProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce, final boolean gremlinFlavorSuite) throws InitializationError {
         super(klass, builder, testsToExecute, testsToEnforce, gremlinFlavorSuite);
     }

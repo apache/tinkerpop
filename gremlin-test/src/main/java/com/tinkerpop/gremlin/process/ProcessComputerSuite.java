@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
+import com.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterTest;
@@ -15,10 +16,10 @@ import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MatchTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
-import com.tinkerpop.gremlin.process.graph.step.map.VertexTest;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.UnionTest;
 import com.tinkerpop.gremlin.process.graph.step.map.ValuesTest;
+import com.tinkerpop.gremlin.process.graph.step.map.VertexTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByTest;
@@ -26,7 +27,6 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeTest;
-import com.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -74,6 +74,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             FilterTest.JavaComputerFilterTest.class,
             HasNotTest.JavaComputerHasNotTest.class,
             HasTest.JavaComputerHasTest.class,
+            // TODO: InjectTest.JavaComputerInjectTest.class,
             IntervalTest.JavaComputerIntervalTest.class,
             RandomTest.JavaComputerRandomTest.class,
             // TODO: REMOVE? RangeTest.JavaComputerRangeTest.class,
@@ -125,6 +126,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             FilterTest.class,
             HasNotTest.class,
             HasTest.class,
+            // InjectTest.class,
             IntervalTest.class,
             RandomTest.class,
             // RangeTest.class,
