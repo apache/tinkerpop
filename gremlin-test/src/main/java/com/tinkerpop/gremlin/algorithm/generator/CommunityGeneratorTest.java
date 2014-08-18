@@ -50,7 +50,7 @@ public class CommunityGeneratorTest {
 
         @Test
         public void shouldGenerateRandomGraph() throws Exception {
-            final Configuration configuration = graphProvider.newGraphConfiguration("g1");
+            final Configuration configuration = graphProvider.newGraphConfiguration("g1", this.getClass(), name.getMethodName());
             final Graph g1 = graphProvider.openTestGraph(configuration);
 
             try {
@@ -76,7 +76,7 @@ public class CommunityGeneratorTest {
 
         @Test
         public void shouldGenerateSameGraph() throws Exception {
-            final Configuration configuration = graphProvider.newGraphConfiguration("g1");
+            final Configuration configuration = graphProvider.newGraphConfiguration("g1", this.getClass(), name.getMethodName());
             final Graph g1 = graphProvider.openTestGraph(configuration);
 
             try {

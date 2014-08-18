@@ -169,7 +169,8 @@ public class IoTest extends AbstractGremlinTest {
         validateXmlAgainstGraphMLXsd(f);
 
         // reusing the same config used for creation of "g".
-        final Configuration configuration = graphProvider.newGraphConfiguration("g2");
+        final Configuration configuration = graphProvider.newGraphConfiguration(
+                "g2", this.getClass(), name.getMethodName());
         graphProvider.clear(configuration);
         final Graph g2 = graphProvider.openTestGraph(configuration);
         final GraphMLReader r = GraphMLReader.build().create();
@@ -213,7 +214,8 @@ public class IoTest extends AbstractGremlinTest {
             assertEquals("AF4B5965-B176-4552-B3C1-FBBE2F52C305".toLowerCase(), idValue.get("elementId").asText());
 
             // reusing the same config used for creation of "g".
-            final Configuration configuration = graphProvider.newGraphConfiguration("g2");
+            final Configuration configuration = graphProvider.newGraphConfiguration(
+                    "g2", this.getClass(), name.getMethodName());
             graphProvider.clear(configuration);
             final Graph g2 = graphProvider.openTestGraph(configuration);
 
@@ -244,7 +246,7 @@ public class IoTest extends AbstractGremlinTest {
         final KryoWriter writer = KryoWriter.build().custom(kryo).create();
         final KryoReader reader = KryoReader.build().custom(kryo).create();
 
-        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
+        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
         graphProvider.clear(configuration);
         final Graph g1 = graphProvider.openTestGraph(configuration);
 
@@ -265,7 +267,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldMigrateGraph() throws Exception {
-        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
+        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
         graphProvider.clear(configuration);
         final Graph g1 = graphProvider.openTestGraph(configuration);
 
@@ -289,7 +291,7 @@ public class IoTest extends AbstractGremlinTest {
             final KryoWriter writer = KryoWriter.build().create();
             writer.writeGraph(os, g);
 
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final KryoReader reader = KryoReader.build()
@@ -315,7 +317,7 @@ public class IoTest extends AbstractGremlinTest {
             final GraphSONWriter writer = GraphSONWriter.build().create();
             writer.writeGraph(os, g);
 
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final GraphSONReader reader = GraphSONReader.build().create();

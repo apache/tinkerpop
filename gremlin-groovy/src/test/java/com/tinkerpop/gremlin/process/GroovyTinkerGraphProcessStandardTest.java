@@ -22,7 +22,7 @@ import java.util.Map;
 public class GroovyTinkerGraphProcessStandardTest extends AbstractGraphProvider {
 
     @Override
-    public Map<String, Object> getBaseConfiguration(final String graphName) {
+    public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName) {
         return new HashMap<String, Object>() {{
             put("gremlin.graph", TinkerGraph.class.getName());
         }};

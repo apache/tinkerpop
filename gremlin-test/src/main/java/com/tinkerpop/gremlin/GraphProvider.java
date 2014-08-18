@@ -18,22 +18,29 @@ import java.util.Map;
 public interface GraphProvider {
 
     /**
-     * Creates a new {@link com.tinkerpop.gremlin.structure.Graph} instance using the default {@link org.apache.commons.configuration.Configuration} from
-     * {@link #standardGraphConfiguration()}.
+     * Creates a new {@link com.tinkerpop.gremlin.structure.Graph} instance using the default
+     * {@link org.apache.commons.configuration.Configuration} from {@link #standardGraphConfiguration(Class, String)}.
+     * The default implementation converts the passes the
      */
-    default public Graph standardTestGraph() {
-        return openTestGraph(standardGraphConfiguration());
+    default public Graph standardTestGraph(final Class<?> test, final String testMethodName) {
+        return GraphFactory.open(standardGraphConfiguration(test, testMethodName));
     }
 
     /**
-     * Creates a new {@link com.tinkerpop.gremlin.structure.Graph} instance from the Configuration object using {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
+     * Creates a new {@link com.tinkerpop.gremlin.structure.Graph} instance from the Configuration object using
+     * {@link com.tinkerpop.gremlin.structure.util.GraphFactory}. The assumption here is that the {@code Configuration}
+     * has been created by one of the {@link #newGraphConfiguration(String, Class, String)} methods and has therefore
+     * already been modified by the implementation as necessary for {@link Graph} creation.
      */
     default public Graph openTestGraph(final Configuration config) {
         return openTestGraph(config, null);
     }
 
     /**
-     * Creates a new {@link com.tinkerpop.gremlin.structure.Graph} instance from the Configuration object using {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
+     * Creates a new {@link com.tinkerpop.gremlin.structure.Graph} instance from the Configuration object using
+     * {@link com.tinkerpop.gremlin.structure.util.GraphFactory}. The assumption here is that the {@code Configuration}
+     * has been created by one of the {@link #newGraphConfiguration(String, Class, String)} methods and has therefore
+     * already been modified by the implementation as necessary for {@link Graph} creation.
      */
     default public Graph openTestGraph(final Configuration config, final GraphStrategy strategy) {
         return GraphFactory.open(config, strategy);
@@ -45,8 +52,8 @@ public interface GraphProvider {
      * should always return a configuration instance that generates the same {@link com.tinkerpop.gremlin.structure.Graph} from the
      * {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
      */
-    default public Configuration standardGraphConfiguration() {
-        return newGraphConfiguration("standard", Collections.<String, Object>emptyMap());
+    default public Configuration standardGraphConfiguration(final Class<?> test, final String testMethodName) {
+        return newGraphConfiguration("standard", test, testMethodName, Collections.<String, Object>emptyMap());
     }
 
     /**
@@ -87,24 +94,33 @@ public interface GraphProvider {
     }
 
     /**
-     * When implementing this method ensure that the StructureStandardSuite can override any settings EXCEPT the
-     * "gremlin.graph" setting which should be defined by the implementer. It should provide a
-     * {@link org.apache.commons.configuration.Configuration} that will generate a graph unique to that {@code graphName}.
-     *
-     * @param graphName              a unique test graph name
-     * @param configurationOverrides Settings to override defaults with.
-     */
-    public Configuration newGraphConfiguration(final String graphName, final Map<String, Object> configurationOverrides);
-
-    /**
-     * When implementing this method ensure that the StructureStandardSuite can override any settings EXCEPT the
+     * When implementing this method ensure that a test suite can override any settings EXCEPT the
      * "gremlin.graph" setting which should be defined by the implementer. It should provide a
      * {@link org.apache.commons.configuration.Configuration} that will generate a graph unique to that {@code graphName}.
      *
      * @param graphName a unique test graph name
+     * @param test the test class
+     * @param testMethodName the name of the test
+     * @param configurationOverrides settings to override defaults with.
      */
-    default public Configuration newGraphConfiguration(final String graphName) {
-        return newGraphConfiguration(graphName, new HashMap<>());
+    public Configuration newGraphConfiguration(final String graphName,
+                                               final Class<?> test,
+                                               final String testMethodName,
+                                               final Map<String, Object> configurationOverrides);
+
+    /**
+     * When implementing this method ensure that a test suite can override any settings EXCEPT the
+     * "gremlin.graph" setting which should be defined by the implementer. It should provide a
+     * {@link org.apache.commons.configuration.Configuration} that will generate a graph unique to that {@code graphName}.
+     *
+     * @param graphName a unique test graph name
+     * @param test the test class
+     * @param testMethodName the name of the test
+     */
+    default public Configuration newGraphConfiguration(final String graphName,
+                                                       final Class<?> test,
+                                                       final String testMethodName) {
+        return newGraphConfiguration(graphName, test, testMethodName, new HashMap<>());
     }
 
     /**

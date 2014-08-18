@@ -30,9 +30,9 @@ public class BaseNeo4jGraphTest {
             final Map<String, Object> neo4jSettings = new HashMap<>();
             neo4jSettings.put("gremlin.neo4j.conf.node_auto_indexing", "true");
             neo4jSettings.put("gremlin.neo4j.conf.relationship_auto_indexing", "true");
-            this.conf = this.graphProvider.newGraphConfiguration("standard", neo4jSettings);
+            this.conf = this.graphProvider.newGraphConfiguration("standard", this.getClass(), name.getMethodName(), neo4jSettings);
         } else
-            this.conf = this.graphProvider.newGraphConfiguration("standard");
+            this.conf = this.graphProvider.newGraphConfiguration("standard", this.getClass(), name.getMethodName());
 
         this.graphProvider.clear(this.conf);
         this.g = Neo4jGraph.open(this.conf);

@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public class Neo4jGraphProvider extends AbstractGraphProvider {
     @Override
-    public Map<String, Object> getBaseConfiguration(final String graphName) {
+    public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName) {
         return new HashMap<String, Object>() {{
             put("gremlin.graph", Neo4jGraph.class.getName());
             put("gremlin.neo4j.directory", getWorkingDirectory() + File.separator + graphName);

@@ -331,7 +331,7 @@ public class TransactionTest extends AbstractGremlinTest {
         // the idea behind this test is to simulate a gremlin-server environment where two graphs of the same type
         // are being mutated by multiple threads. originally replicated a bug that was part of OrientDB.
 
-        final Configuration configuration = graphProvider.newGraphConfiguration("g1");
+        final Configuration configuration = graphProvider.newGraphConfiguration("g1", this.getClass(), name.getMethodName());
         graphProvider.clear(configuration);
         final Graph g1 = graphProvider.openTestGraph(configuration);
 

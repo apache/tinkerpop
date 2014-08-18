@@ -28,7 +28,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
     public void get_g_v1_outE_subgraphXknowsX() throws Exception {
-        final Configuration config = graphProvider.newGraphConfiguration("subgraph");
+        final Configuration config = graphProvider.newGraphConfiguration("subgraph", this.getClass(), name.getMethodName());
         graphProvider.clear(config);
         final Graph subgraph = graphProvider.openTestGraph(config);
         Traversal<Vertex, String> traversal = get_g_v1_outE_subgraphXknowsX_name(convertToVertexId("marko"), subgraph);
@@ -58,7 +58,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
     public void get_g_V_inE_subgraphXcreatedX_name() throws Exception {
-        final Configuration config = graphProvider.newGraphConfiguration("subgraph");
+        final Configuration config = graphProvider.newGraphConfiguration("subgraph", this.getClass(), name.getMethodName());
         graphProvider.clear(config);
         final Graph subgraph = graphProvider.openTestGraph(config);
         Traversal<Vertex, String> traversal = get_g_V_inE_subgraphXcreatedX_name(subgraph);

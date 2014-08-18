@@ -21,7 +21,7 @@ import java.util.Map;
 public class GiraphGraphProvider extends AbstractGraphProvider {
 
     @Override
-    public Map<String, Object> getBaseConfiguration(final String graphName) {
+    public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName) {
         return new HashMap<String, Object>() {{
             put("gremlin.graph", GiraphGraph.class.getName());
             put(GiraphConstants.VERTEX_INPUT_FORMAT_CLASS.getKey(), KryoVertexInputFormat.class.getCanonicalName());

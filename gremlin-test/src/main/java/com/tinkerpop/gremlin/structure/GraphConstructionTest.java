@@ -26,7 +26,7 @@ public class GraphConstructionTest extends AbstractGremlinTest {
     @Test
     public void shouldOpenGraphThroughGraphFactoryViaApacheConfig() throws Exception {
         final Graph expectedGraph = g;
-        final Configuration c = graphProvider.newGraphConfiguration("temp");
+        final Configuration c = graphProvider.newGraphConfiguration("temp", this.getClass(), name.getMethodName());
         final Graph createdGraph = GraphFactory.open(c, null);
 
         assertNotNull(createdGraph);

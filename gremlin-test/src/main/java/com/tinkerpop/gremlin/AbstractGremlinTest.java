@@ -48,7 +48,7 @@ public abstract class AbstractGremlinTest {
     @Before
     public void setup() throws Exception {
         graphProvider = GraphManager.get();
-        config = graphProvider.standardGraphConfiguration();
+        config = graphProvider.standardGraphConfiguration(this.getClass(), name.getMethodName());
 
         // this should clear state from a previously unfinished test. since the graph does not yet exist,
         // persisted graphs will likely just have their directories removed
