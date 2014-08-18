@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.console.plugin
-
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
+import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.structure.Edge
 import com.tinkerpop.gremlin.structure.Graph
 import com.tinkerpop.gremlin.structure.Vertex
@@ -10,9 +10,9 @@ import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
 
 import static groovyx.net.http.ContentType.JSON
-
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Randall Barnhart (randompi@gmail.com)
  */
 class GephiRemoteAcceptor implements RemoteAcceptor {
 
@@ -23,9 +23,21 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     private final Groovysh shell
     private final IO io
 
+    private long vizStepDelay
+    private float[] vizStartRGBColor
+    private char vizColorToFade
+    private float vizColorFadeRate
+    private Map<String, Float> fadingVertexColors;
+
     public GephiRemoteAcceptor(final Groovysh shell, final IO io) {
         this.shell = shell
         this.io = io
+
+        // traversal visualization defaults
+        vizStepDelay = 1000;                 // 1 second pause between viz of steps
+        vizStartRGBColor = [0.0f,1.0f,0.5f]  // light aqua green
+        vizColorToFade = 'g'                 // will fade so blue is strongest
+        vizColorFadeRate = 0.7               // the multiplicative rate to fade visited vertices
     }
 
     @Override
@@ -44,13 +56,25 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
             }
         }
 
-        return "connection to Gephi - http://$host:$port/$workspace"
+        String vizConfig = " with stepDelay:$vizStepDelay, startRGBColor:$vizStartRGBColor, " +
+                "colorToFade:$vizColorToFade, colorFadeRate:$vizColorFadeRate"
+        if (args.size() >= 4)
+            if (args.size() > 7) {
+                vizConfig = configVizOptions(args.subList(3, 6))
+            }
+            else {
+                vizConfig = configVizOptions(args.subList(3, args.size()))
+            }
+
+        return "connection to Gephi - http://$host:$port/$workspace" + vizConfig
     }
 
     @Override
     Object configure(final List<String> args) {
         if (args.size() != 2)
-            return "expects [host <hostname>|port <port number>|workspace <name>]"
+            return "expects [host <hostname>|port <port number>|workspace <name>|" +
+                    "stepDelay <milliseconds>|startRGBColor <RGB array of floats>|" +
+                    "colorToFade: <char r|g|b>]|colorFadeRate: <float>"
 
         if (args[0] == "host")
             host = args[1]
@@ -60,12 +84,82 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
             } catch (Exception ex) {
                 return "port must be an integer value"
             }
-        } else if (args[0] == "workspace")
+        }
+        else if (args[0] == "workspace")
             workspace = args[1]
+        else if (args[0] == "stepDelay")
+            parseVizStepDelay(args[1])
+        else if (args[0] == "startRGBColor")
+            parseVizStartRGBColor(args[1])
+        else if (args[0] == "colorToFade")
+            parseVizColorToFade(args[1])
+        else if (args[0] == "colorFadeRate")
+            parseVizColorFadeRate(args[1])
         else
-            return "expects [host <hostname>|port <port number>|workspace <name>]"
+            return "expects [host <hostname>|port <port number>|workspace <name>|" +
+                    "stepDelay <milliseconds>|startRGBColor <RGB array of floats>|" +
+                    "colorToFade: <char r|g|b>]|colorFadeRate: <float>"
 
-        return "connection to Gephi - http://$host:$port/$workspace"
+        return "connection to Gephi - http://$host:$port/$workspace" +
+                " with stepDelay:$vizStepDelay, startRGBColor:$vizStartRGBColor, " +
+                "colorToFade:$vizColorToFade, colorFadeRate:$vizColorFadeRate"
+    }
+
+
+    private Object configVizOptions(final List<String> vizConfigArgs) {
+        if (vizConfigArgs.size() >= 1)
+            parseVizStepDelay(vizConfigArgs[0])
+
+        if (vizConfigArgs.size() >= 2)
+            parseVizStartRGBColor(vizConfigArgs[1])
+
+        if (vizConfigArgs.size() >= 3)
+            parseVizColorToFade(vizConfigArgs[2])
+
+        if (vizConfigArgs.size() >= 4)
+            parseVizColorFadeRate(vizConfigArgs[3])
+
+
+        return " with stepDelay:$vizStepDelay, startRGBColor:$vizStartRGBColor, " +
+                "colorToFade:$vizColorToFade, colorFadeRate:$vizColorFadeRate"
+    }
+
+    private void parseVizStepDelay(String arg) {
+        try {
+            vizStepDelay = Long.parseLong(arg)
+        } catch (Exception ex) {
+            System.err.println("stepDelay must be a long value")
+            throw new IllegalArgumentException(ex);
+        }
+    }
+
+    private void parseVizStartRGBColor(String arg) {
+        try {
+            vizStartRGBColor = arg[1..-2].tokenize(',')*.toFloat()
+            assert (vizStartRGBColor.length == 3)
+        } catch (Exception ex) {
+            System.err.println("vizStartRGBColor must be an array of 3 float values, e.g. [0.0,1.0,0.5]")
+            throw new IllegalArgumentException(ex)
+        }
+    }
+
+    private void parseVizColorToFade(String arg) {
+        try {
+            vizColorToFade = arg.charAt(0).toLowerCase();
+            assert (vizColorToFade == 'r' || vizColorToFade == 'g' || vizColorToFade == 'b')
+        } catch (Exception ex) {
+            System.err.println("vizColorToFade must be one character value among: r, g, b, R, G, B")
+            throw new IllegalArgumentException(ex)
+        }
+    }
+
+    private void parseVizColorFadeRate(String arg) {
+        try {
+            vizColorFadeRate = Float.parseFloat(arg)
+        } catch (Exception ex) {
+            System.err.println("colorFadeRate must be a float value")
+            throw new IllegalArgumentException(ex);
+        }
     }
 
     @Override
@@ -75,13 +169,70 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         if (o instanceof Graph) {
             clearGraph()
             def g = (Graph) o
-            g.V().sideEffect { addVertexToGephi(it.instance()) }.iterate()
+            g.V().sideEffect { addVertexToGephi(it.get()) }.iterate()
+        }
+        else if (o instanceof Traversal) {
+            fadingVertexColors = [:]
+            def traversal = (Traversal) o
+            def memKeys = traversal.memory().keys()
+            def memSize = memKeys.size()
+            // assumes user called store("1")...store("n") in ascension
+            for (int i = 1; i <= memSize; i++) {
+                def stepKey = Integer.toString(i)
+                if(memKeys.contains(stepKey)) {
+                    print("Visualizing vertices at step: $stepKey... ")
+                    updateVisitedVertices()
+                    int visitedCount = 0
+                    def optionalElements = traversal.memory().get(stepKey)
+                    if (optionalElements.isPresent()) {
+                        optionalElements.get().each { element ->
+                            visitVertexToGephi((Vertex) element)
+                            visitedCount++
+                        }
+                    }
+                    println("visited: $visitedCount")
+                }
+                sleep(vizStepDelay)
+            }
         }
     }
 
     @Override
     void close() throws IOException {
 
+    }
+
+    def updateVisitedVertices() {
+        fadingVertexColors.keySet().each { vertex ->
+            def currentColor = fadingVertexColors.get(vertex)
+            currentColor *= vizColorFadeRate
+            fadingVertexColors.put(vertex, currentColor)
+            def props = [:]
+            props.put(vizColorToFade.toString(), currentColor)
+            updateGephiGraph([cn: [(vertex): props]])
+        }
+    }
+
+    def visitVertexToGephi(def Vertex v) {
+        def props = [:]
+        props.put('r', vizStartRGBColor[0])
+        props.put('g', vizStartRGBColor[1])
+        props.put('b', vizStartRGBColor[2])
+        props.put('x', 1)
+
+        updateGephiGraph([cn: [(v.id().toString()): props]])
+
+        fadingVertexColors.put(v.id().toString(), vizStartRGBColor[fadeColorIndex()])
+    }
+
+    def fadeColorIndex() {
+        if (vizColorToFade == 'r') {
+            return 0
+        } else if (vizColorToFade == 'g') {
+            return 1
+        } else if (vizColorToFade == 'b') {
+            return 2
+        }
     }
 
     def addVertexToGephi(def Vertex v, def boolean ignoreEdges = false) {
@@ -94,7 +245,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
 
         if (!ignoreEdges) {
             v.outE().sideEffect {
-                addEdgeToGephi(it.instance())
+                addEdgeToGephi(it.get())
             }.iterate()
         }
     }
