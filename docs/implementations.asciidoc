@@ -460,7 +460,7 @@ INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
 ==>ripple
 ==>lop
-gremlin> :> g.V.groupBy{it.value('name')[1]}{it.value('name')}.as('a')
+gremlin> :> g.V.groupBy('a'){it.value('name')[1]}{it.value('name')}
 INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, GroupByStep@a]
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0039
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%

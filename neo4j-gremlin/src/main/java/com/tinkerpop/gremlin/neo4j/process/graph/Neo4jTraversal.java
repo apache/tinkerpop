@@ -17,6 +17,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.ExceptStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.IdentityStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.InjectStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.IntervalStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RandomStep;
@@ -329,6 +330,10 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
         final FilterStep<E> filterStep = new FilterStep<>(this);
         filterStep.setPredicate(predicate);
         return (Neo4jTraversal) this.addStep(filterStep);
+    }
+
+    public default Neo4jTraversal<S, E> inject(final E... injections) {
+        return (Neo4jTraversal) this.addStep(new InjectStep(this, injections));
     }
 
     public default Neo4jTraversal<S, E> dedup() {
