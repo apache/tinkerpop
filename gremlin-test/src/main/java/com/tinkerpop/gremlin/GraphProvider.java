@@ -88,7 +88,7 @@ public interface GraphProvider {
 
     /**
      * When implementing this method ensure that the StructureStandardSuite can override any settings EXCEPT the
-     * "blueprints.graph" setting which should be defined by the implementer. It should provide a
+     * "gremlin.graph" setting which should be defined by the implementer. It should provide a
      * {@link org.apache.commons.configuration.Configuration} that will generate a graph unique to that {@code graphName}.
      *
      * @param graphName              a unique test graph name
@@ -98,7 +98,7 @@ public interface GraphProvider {
 
     /**
      * When implementing this method ensure that the StructureStandardSuite can override any settings EXCEPT the
-     * "blueprints.graph" setting which should be defined by the implementer. It should provide a
+     * "gremlin.graph" setting which should be defined by the implementer. It should provide a
      * {@link org.apache.commons.configuration.Configuration} that will generate a graph unique to that {@code graphName}.
      *
      * @param graphName a unique test graph name
