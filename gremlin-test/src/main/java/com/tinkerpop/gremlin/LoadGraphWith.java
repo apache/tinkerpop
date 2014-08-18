@@ -12,6 +12,7 @@ import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_DOUBLE_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_FLOAT_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_INTEGER_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_STRING_VALUES;
@@ -28,13 +29,34 @@ import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FE
 public @interface LoadGraphWith {
 
     public enum GraphData {
+        /**
+         * Loads the "classic" TinkerPop toy graph.
+         */
         CLASSIC,
+
+        /**
+         * Loads the "classic" TinkerPop toy graph with the "weight" value on edges stored as double.  This should
+         * be the most commonly used graph instance for testing as graphs that support string, double and int should
+         * comprise the largest number of implementations.
+         */
+        CLASSIC_DOUBLE,
+
+        /**
+         * Loads the "grateful dead" graph which is a "large" graph which provides for the construction of more
+         * complex traversals.
+         */
         GRATEFUL;
 
         private static final List<FeatureRequirement> featuresRequiredByClassic = new ArrayList<FeatureRequirement>(){{
             add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
             add(FeatureRequirement.Factory.create(FEATURE_INTEGER_VALUES, VertexPropertyFeatures.class));
             add(FeatureRequirement.Factory.create(FEATURE_FLOAT_VALUES, EdgePropertyFeatures.class));
+        }};
+
+        private static final List<FeatureRequirement> featuresRequiredByClassicDouble = new ArrayList<FeatureRequirement>(){{
+            add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
+            add(FeatureRequirement.Factory.create(FEATURE_INTEGER_VALUES, VertexPropertyFeatures.class));
+            add(FeatureRequirement.Factory.create(FEATURE_DOUBLE_VALUES, EdgePropertyFeatures.class));
         }};
 
         private static final List<FeatureRequirement> featuresRequiredByGrateful = new ArrayList<FeatureRequirement>() {{
@@ -46,6 +68,8 @@ public @interface LoadGraphWith {
             switch (this) {
                 case CLASSIC:
                     return RESOURCE_PATH_PREFIX + "tinkerpop-classic.gio";
+                case CLASSIC_DOUBLE:
+                    return RESOURCE_PATH_PREFIX + "tinkerpop-classic-double.gio";
                 case GRATEFUL:
                     return RESOURCE_PATH_PREFIX + "grateful-dead.gio";
             }
@@ -57,6 +81,8 @@ public @interface LoadGraphWith {
             switch (this) {
                 case CLASSIC:
                     return featuresRequiredByClassic;
+                case CLASSIC_DOUBLE:
+                    return featuresRequiredByClassicDouble;
                 case GRATEFUL:
                     return featuresRequiredByGrateful;
             }
