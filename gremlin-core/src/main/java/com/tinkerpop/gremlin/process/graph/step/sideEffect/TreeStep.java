@@ -31,7 +31,7 @@ public class TreeStep<S> extends FilterStep<S> implements Reversible, PathConsum
 
     public TreeStep(final Traversal traversal, final String memoryKey, final SFunction... branchFunctions) {
         super(traversal);
-        this.memoryKey = null == memoryKey ? Graph.Key.hide(UUID.randomUUID().toString()) : memoryKey;
+        this.memoryKey = null == memoryKey ? this.getAs() : memoryKey;
         this.hiddenMemoryKey = Graph.Key.hide(this.memoryKey);
         this.functionRing = new FunctionRing(branchFunctions);
         this.tree = traversal.memory().getOrCreate(this.memoryKey, Tree::new);

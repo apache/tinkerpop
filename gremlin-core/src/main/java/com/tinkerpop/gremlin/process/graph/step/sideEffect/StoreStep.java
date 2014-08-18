@@ -32,7 +32,7 @@ public class StoreStep<S> extends FilterStep<S> implements SideEffectCapable, Re
     public StoreStep(final Traversal traversal, final String memoryKey, final SFunction<S, ?> preStoreFunction) {
         super(traversal);
         this.preStoreFunction = preStoreFunction;
-        this.memoryKey = null == memoryKey ? Graph.Key.hide(UUID.randomUUID().toString()) : memoryKey;
+        this.memoryKey = null == memoryKey ? this.getAs() : memoryKey;
         this.hiddenMemoryKey = Graph.Key.hide(this.memoryKey);
         this.store = this.traversal.memory().getOrCreate(this.memoryKey, ArrayList::new);
         this.setPredicate(traverser -> {

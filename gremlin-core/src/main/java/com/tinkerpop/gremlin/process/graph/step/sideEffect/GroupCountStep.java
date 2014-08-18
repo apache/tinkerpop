@@ -32,7 +32,7 @@ public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapabl
     public GroupCountStep(final Traversal traversal, final String memoryKey, final SFunction<S, ?> preGroupFunction) {
         super(traversal);
         this.preGroupFunction = preGroupFunction;
-        this.memoryKey = null == memoryKey ? Graph.Key.hide(UUID.randomUUID().toString()) : memoryKey;
+        this.memoryKey = null == memoryKey ? this.getAs() : memoryKey;
         this.hiddenMemoryKey = Graph.Key.hide(this.memoryKey);
         this.groupCountMap = this.traversal.memory().getOrCreate(this.memoryKey, HashMap::new);
         this.setPredicate(traverser -> {

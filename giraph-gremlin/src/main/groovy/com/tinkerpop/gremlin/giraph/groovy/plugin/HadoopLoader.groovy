@@ -38,6 +38,10 @@ class HadoopLoader {
             return ((FileSystem) delegate).globStatus(new Path(path + "/*")).collect { it.toString() };
         }
 
+        FileSystem.metaClass.mkdir = { String path ->
+            ((FileSystem) delegate).mkdirs(new Path(path));
+        }
+
         FileSystem.metaClass.cp = { final String from, final String to ->
             return FileUtil.copy(((FileSystem) delegate), new Path(from), ((FileSystem) delegate), new Path(to), false, new Configuration());
         }
