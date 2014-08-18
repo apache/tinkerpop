@@ -8,10 +8,9 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
 import static org.junit.Assert.*;
 
 /**
@@ -31,7 +30,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Path> get_g_V_out_out_pathXname_ageX();
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_valueXnameX_path() {
         final Traversal<Vertex, Path> traversal = get_g_v1_valueXnameX_path(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -44,7 +43,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_out_pathXage_nameX() {
         final Traversal<Vertex, Path> traversal = get_g_v1_out_pathXage_nameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -62,7 +61,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_asXxX_out_loopXx_loops_lt_2X_pathXit__name__langX() {
         final Traversal<Vertex, Path> traversal = get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX();
         printTraversalForm(traversal);
@@ -79,7 +78,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_asXxX_out_loopXx_2X_pathXit_name_langX() {
         final Traversal<Vertex, Path> traversal = get_g_V_asXxX_out_jumpXx_2X_pathXit_name_langX();
         printTraversalForm(traversal);
@@ -96,7 +95,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_out_out_pathXname_ageX() {
         final Traversal<Vertex, Path> traversal = get_g_V_out_out_pathXname_ageX();
         printTraversalForm(traversal);

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
 import static org.junit.Assert.*;
 
 /**
@@ -30,7 +30,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_loops_lt_2X_capXaX();
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_groupByXnameX() {
         final Traversal<Vertex, Map<String, List<Vertex>>> traversal = get_g_V_groupByXnameX();
         printTraversalForm(traversal);
@@ -44,7 +44,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_hasXlangX_groupByXa_lang_nameX_out_capXaX() {
         final Traversal<Vertex, Map<String, List<String>>> traversal = get_g_V_hasXlangX_groupByXa_lang_nameX_out_capXaX();
         printTraversalForm(traversal);
@@ -58,7 +58,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_hasXlangX_groupByXlang_1_sizeX() {
         final Traversal<Vertex, Map<String, Integer>> traversal = get_g_V_hasXlangX_groupByXlang_1_sizeX();
         printTraversalForm(traversal);
@@ -70,7 +70,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_2X_capXaX() {
         List<Traversal<Vertex, Map<String, Integer>>> traversals = new ArrayList<>();
         traversals.add(get_g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_2X_capXaX());

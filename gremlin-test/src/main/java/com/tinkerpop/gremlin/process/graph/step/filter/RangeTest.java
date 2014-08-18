@@ -6,9 +6,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
-import java.util.Iterator;
-
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -31,7 +29,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV(final Object v1Id);
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_out_rangeX0_1X() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_out_rangeX0_1X(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -44,7 +42,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_outX1X_rangeX0_2X() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_outX1X_rangeX0_2X();
         printTraversalForm(traversal);
@@ -57,7 +55,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -71,7 +69,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_outXknowsX_outXcreatedX_rangeX0_0X() {
         final Traversal<Vertex,Vertex> traversal = get_g_v1_outXknowsX_outXcreatedX_rangeX0_0X(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -85,7 +83,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_outXcreatedX_inXcreatedX_rangeX1_2X() {
         final Traversal<Vertex,Vertex> traversal = get_g_v1_outXcreatedX_inXcreatedX_rangeX1_2X(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -99,7 +97,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV() {
         final Traversal<Vertex,Vertex> traversal = get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV(convertToVertexId("marko"));
         printTraversalForm(traversal);

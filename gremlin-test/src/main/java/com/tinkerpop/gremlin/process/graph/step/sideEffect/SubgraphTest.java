@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -25,7 +25,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, String> get_g_V_inE_subgraphXcreatedX_name(final Graph subgraph);
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
     public void get_g_v1_outE_subgraphXknowsX() throws Exception {
         final Configuration config = graphProvider.newGraphConfiguration("subgraph", this.getClass(), name.getMethodName());
@@ -44,9 +44,9 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
 
             final String name = e.inV().<String>value("name").next();
             if (name.equals("vadas"))
-                assertEquals(0.5f, e.value("weight"), 0.0001f);
+                assertEquals(0.5d, e.value("weight"), 0.0001d);
             else if (name.equals("josh"))
-                assertEquals(1.0f, e.value("weight"), 0.0001f);
+                assertEquals(1.0d, e.value("weight"), 0.0001d);
             else
                 fail("There's a vertex present that should not be in the subgraph");
         });
@@ -55,7 +55,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
     public void get_g_V_inE_subgraphXcreatedX_name() throws Exception {
         final Configuration config = graphProvider.newGraphConfiguration("subgraph", this.getClass(), name.getMethodName());

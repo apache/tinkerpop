@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import java.util.Map;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -19,7 +19,7 @@ public abstract class SideEffectCapTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXa_nameX_out_capXaX();
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_hasXageX_groupCountXnameX_asXaX_out_capXaX() {
         final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_hasXageX_groupCountXa_nameX_out_capXaX();
         printTraversalForm(traversal);

@@ -10,7 +10,7 @@ public abstract class UnionTest extends AbstractGremlinTest {
     /*public abstract Traversal<Vertex, String> get_g_V_unionXout_inX_name();
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_unionXout_inX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_unionXout_inX_name();
         System.out.println("Testing: " + traversal);

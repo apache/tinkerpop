@@ -16,7 +16,7 @@ import java.util.HashSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
 import static org.junit.Assert.*;
 
 /**
@@ -54,7 +54,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldHaveImmutableComputeResultSideEffects() throws Exception {
         final ComputerResult results = g.compute().program(LambdaVertexProgram.build().
@@ -98,7 +98,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldNotAllowBadSideEffectKeys() throws Exception {
         try {
@@ -145,7 +145,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldNotAllowWithNoVertexProgramNorMapReducers() throws Exception {
         try {
@@ -159,7 +159,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldNotAllowTheSameComputerToExecutedTwice() throws Exception {
         final GraphComputer computer = g.compute().program(identity());
@@ -187,7 +187,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldRequireRegisteringSideEffectKeys() throws Exception {
         try {
@@ -206,7 +206,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldAllowMapReduceWithNoVertexProgram() throws Exception {
         final ComputerResult results = g.compute().mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()
@@ -219,7 +219,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldHaveConsistentSideEffectsAndExceptions() throws Exception {
         GraphComputer computer = g.compute();
@@ -258,7 +258,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldSupportMultipleMapReduceJobs() throws Exception {
         final ComputerResult results = g.compute().program(LambdaVertexProgram.build()

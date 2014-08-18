@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
 import static org.junit.Assert.*;
 
 /**
@@ -94,7 +94,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     // VERTEX ADJACENCY
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V() {
         final Traversal<Vertex, Vertex> traversal = get_g_V();
         printTraversalForm(traversal);
@@ -109,7 +109,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_out() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_out(convertToVertexId("marko"));
         assert_g_v1_out(traversal);
@@ -132,7 +132,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v2_in() {
         final Traversal<Vertex, Vertex> traversal = get_g_v2_in(convertToVertexId("vadas"));
         assert_g_v2_in(traversal);
@@ -149,7 +149,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v4_both() {
         final Traversal<Vertex, Vertex> traversal = get_g_v4_both(convertToVertexId("josh"));
         printTraversalForm(traversal);
@@ -168,7 +168,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_outX1_knowsX_name() {
         final Traversal<Vertex, String> traversal = get_g_v1_outX1_knowsX_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -178,7 +178,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_bothX1_createdX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_bothX1_createdX_name();
         printTraversalForm(traversal);
@@ -194,7 +194,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     // EDGE ADJACENCY
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_E() {
         final Traversal<Edge, Edge> traversal = get_g_E();
         printTraversalForm(traversal);
@@ -209,7 +209,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_outE() {
         final Traversal<Vertex, Edge> traversal = get_g_v1_outE(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -226,7 +226,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v2_inE() {
         final Traversal<Vertex, Edge> traversal = get_g_v2_inE(convertToVertexId("vadas"));
         printTraversalForm(traversal);
@@ -239,7 +239,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v4_bothEXcreateX() {
         final Traversal<Vertex, Edge> traversal = get_g_v4_bothEXcreatedX(convertToVertexId("josh"));
         printTraversalForm(traversal);
@@ -257,7 +257,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v4_bothE() {
         final Traversal<Vertex, Edge> traversal = get_g_v4_bothE(convertToVertexId("josh"));
         printTraversalForm(traversal);
@@ -274,29 +274,29 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v4_bothEX1_createdX() {
         final Traversal<Vertex, Edge> traversal = get_g_v4_bothEX1_createdX(convertToVertexId("josh"));
         printTraversalForm(traversal);
         final Edge edge = traversal.next();
         assertEquals("created", edge.label());
-        assertTrue(edge.value("weight").equals(1.0f) || edge.value("weight").equals(0.4f));
+        assertTrue(edge.value("weight").equals(1.0d) || edge.value("weight").equals(0.4d));
         assertFalse(traversal.hasNext());
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v4_bothEX1_knows_createdX() {
         final Traversal<Vertex, Edge> traversal = get_g_v4_bothEX1_knows_createdX(convertToVertexId("josh"));
         printTraversalForm(traversal);
         final Edge edge = traversal.next();
         assertTrue(edge.label().equals("created") || edge.label().equals("knows"));
-        assertTrue(edge.value("weight").equals(1.0f) || edge.value("weight").equals(0.4f));
+        assertTrue(edge.value("weight").equals(1.0d) || edge.value("weight").equals(0.4d));
         assertFalse(traversal.hasNext());
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v4_bothX1X_name() {
         final Traversal<Vertex, String> traversal = get_g_v4_bothX1X_name(convertToVertexId("josh"));
         printTraversalForm(traversal);
@@ -312,7 +312,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v4_bothX2X_name() {
         final Traversal<Vertex, String> traversal = get_g_v4_bothX2X_name(convertToVertexId("josh"));
         printTraversalForm(traversal);
@@ -328,7 +328,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_inEX2_knowsX_outV_name() {
         final Traversal<Vertex, String> traversal = get_g_V_inEX2_knowsX_outV_name();
         printTraversalForm(traversal);
@@ -344,21 +344,21 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     // EDGE/VERTEX ADJACENCY
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_outE_inV() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_outE_inV(convertToVertexId("marko"));
         this.assert_g_v1_out(traversal);
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v2_inE_outV() {
         final Traversal<Vertex, Vertex> traversal = get_g_v2_inE_outV(convertToVertexId("vadas"));
         this.assert_g_v2_in(traversal);
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_outE_hasXweight_1X_outV() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_outE_hasXweight_1X_outV();
         printTraversalForm(traversal);
@@ -379,7 +379,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_out_outE_inV_inE_inV_both_name() {
         final Traversal<Vertex, String> traversal = get_g_V_out_outE_inV_inE_inV_both_name();
         printTraversalForm(traversal);
@@ -401,7 +401,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_outEXknowsX_bothV_name() {
         final Traversal<Vertex, String> traversal = get_g_v1_outEXknowsX_bothV_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -421,7 +421,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_outE_otherV() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_outE_otherV(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -440,7 +440,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v4_bothE_outV() {
         final Traversal<Vertex, Vertex> traversal = get_g_v4_bothE_otherV(convertToVertexId("josh"));
         System.out.println("Testing: " + traversal);
@@ -453,7 +453,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v4_bothE_hasXweight_LT_1X_otherV() {
         final Traversal<Vertex, Vertex> traversal = get_g_v4_bothE_hasXweight_lt_1X_otherV(convertToVertexId("josh"));
         System.out.println("Testing: " + traversal);
@@ -466,7 +466,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     // VERTEX EDGE LABEL ADJACENCY
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_outXknowsX() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_outXknowsX(convertToVertexId("marko"));
         assert_g_v1_outXknowsX(traversal);
@@ -488,28 +488,28 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_outXknows_createdX() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_outXknows_createdX(convertToVertexId("marko"));
         this.assert_g_v1_out(traversal);
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_outEXknowsX_inV() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_outEXknowsX_inV(convertToVertexId("marko"));
         this.assert_g_v1_outXknowsX(traversal);
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_outEXknows_createdX_inV() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_outEXknows_createdX_inV(convertToVertexId("marko"));
         this.assert_g_v1_out(traversal);
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_out_out() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_out_out();
         printTraversalForm(traversal);
@@ -527,7 +527,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_out_out_out() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_out_out_out(convertToVertexId("marko"));
         assertFalse(traversal.hasNext());
@@ -536,7 +536,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     // PROPERTY TESTING
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_out_propertyXnameX() {
         final Traversal<Vertex, String> traversal = get_g_v1_out_valueXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -555,7 +555,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_to_XOUT_knowsX() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_to_XOUT_knowsX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -650,7 +650,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         }
 
         public Traversal<Vertex, Vertex> get_g_V_outE_hasXweight_1X_outV() {
-            return g.V().outE().has("weight", 1.0f).outV();
+            return g.V().outE().has("weight", 1.0d).outV();
         }
 
         public Traversal<Vertex, String> get_g_V_out_outE_inV_inE_inV_both_name() {
@@ -686,7 +686,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         }
 
         public Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_lt_1X_otherV(Object v4Id) {
-            return g.v(v4Id).bothE().has("weight", T.lt, 1f).otherV();
+            return g.v(v4Id).bothE().has("weight", T.lt, 1d).otherV();
         }
 
         public Traversal<Vertex, Vertex> get_g_V_out_out() {
@@ -787,7 +787,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         }
 
         public Traversal<Vertex, Vertex> get_g_V_outE_hasXweight_1X_outV() {
-            return g.V().outE().has("weight", 1.0f).outV().submit(g.compute());
+            return g.V().outE().has("weight", 1.0d).outV().submit(g.compute());
         }
 
         public Traversal<Vertex, String> get_g_V_out_outE_inV_inE_inV_both_name() {
@@ -823,7 +823,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         }
 
         public Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_lt_1X_otherV(Object v4Id) {
-            return g.v(v4Id).bothE().has("weight", T.lt, 1f).otherV().submit(g.compute());
+            return g.v(v4Id).bothE().has("weight", T.lt, 1d).otherV().submit(g.compute());
         }
 
         public Traversal<Vertex, Vertex> get_g_V_out_out() {

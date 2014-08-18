@@ -9,7 +9,7 @@ import org.junit.Test;
 import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -19,7 +19,7 @@ import static org.junit.Assert.assertEquals;
 public class SubgraphStrategyTest extends AbstractGremlinTest {
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void testVertexCriterion() throws Exception {
         Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
         Predicate<Edge> edgeCriterion = edge -> true;
@@ -98,19 +98,19 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void shouldFilterEdgeCriterion() throws Exception {
 
         Predicate<Vertex> vertexCriterion = vertex -> true;
         Predicate<Edge> edgeCriterion = edge -> {
             // 8
-            if (edge.<Float>value("weight") == 1.0f && edge.label().equals("knows"))
+            if (edge.<Double>value("weight") == 1.0d && edge.label().equals("knows"))
                 return true;
                 // 9
-            else if (edge.<Float>value("weight") == 0.4f && edge.label().equals("created") && edge.outV().next().value("name").equals("marko"))
+            else if (edge.<Double>value("weight") == 0.4d && edge.label().equals("created") && edge.outV().next().value("name").equals("marko"))
                 return true;
                 // 10
-            else if (edge.<Float>value("weight") == 1.0f && edge.label().equals("created"))
+            else if (edge.<Double>value("weight") == 1.0d && edge.label().equals("created"))
                 return true;
             else return false;
         };
@@ -194,15 +194,15 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void shouldFilterMixedCriteria() throws Exception {
         Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
         Predicate<Edge> edgeCriterion = edge -> {
             // 9 && 11
-            if (edge.<Float>value("weight") == 0.4f && edge.label().equals("created"))
+            if (edge.<Double>value("weight") == 0.4d && edge.label().equals("created"))
                 return true;
                 // 10
-            else if (edge.<Float>value("weight") == 1.0f && edge.label().equals("created"))
+            else if (edge.<Double>value("weight") == 1.0d && edge.label().equals("created"))
                 return true;
             else return false;
         };
@@ -275,7 +275,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test(expected = NoSuchElementException.class)
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void shouldGetExcludedVertex() throws Exception {
 
         Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
@@ -289,19 +289,19 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test(expected = NoSuchElementException.class)
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void shouldGetExcludedEdge() throws Exception {
 
         Predicate<Vertex> vertexCriterion = vertex -> true;
         Predicate<Edge> edgeCriterion = edge -> {
             // 8
-            if (edge.<Float>value("weight") == 1.0f && edge.label().equals("knows"))
+            if (edge.<Double>value("weight") == 1.0d && edge.label().equals("knows"))
                 return true;
                 // 9
-            else if (edge.<Float>value("weight") == 0.4f && edge.label().equals("created") && edge.outV().next().value("name").equals("marko"))
+            else if (edge.<Double>value("weight") == 0.4d && edge.label().equals("created") && edge.outV().next().value("name").equals("marko"))
                 return true;
                 // 10
-            else if (edge.<Float>value("weight") == 1.0f && edge.label().equals("created"))
+            else if (edge.<Double>value("weight") == 1.0d && edge.label().equals("created"))
                 return true;
             else return false;
         };

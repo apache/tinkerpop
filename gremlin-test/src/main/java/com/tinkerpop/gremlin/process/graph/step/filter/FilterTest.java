@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
 import static org.junit.Assert.*;
 
 /**
@@ -37,7 +37,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Edge, Edge> get_g_E_filterXtrueX();
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_filterXfalseX() {
         final Traversal<Vertex,Vertex> traversal = get_g_V_filterXfalseX();
         printTraversalForm(traversal);
@@ -46,7 +46,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_filterXtrueX() {
         final Traversal<Vertex,Vertex> traversal = get_g_V_filterXtrueX();
         printTraversalForm(traversal);
@@ -62,7 +62,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_filterXlang_eq_javaX() {
         final Traversal<Vertex,Vertex> traversal = get_g_V_filterXlang_eq_javaX();
         printTraversalForm(traversal);
@@ -80,7 +80,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_filterXage_gt_30X() {
         Traversal<Vertex,Vertex> traversal = get_g_v1_filterXage_gt_30X(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -92,7 +92,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_out_filterXage_gt_30X() {
         final Traversal<Vertex,Vertex> traversal = get_g_v1_out_filterXage_gt_30X(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -101,7 +101,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
         final Traversal<Vertex,Vertex> traversal = get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX();
         printTraversalForm(traversal);
@@ -119,7 +119,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_E_filterXfalseX() {
         final Traversal<Edge,Edge> traversal = get_g_E_filterXfalseX();
         printTraversalForm(traversal);
@@ -128,7 +128,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_E_filterXtrueX() {
         final Traversal<Edge,Edge> traversal = get_g_E_filterXtrueX();
         printTraversalForm(traversal);

@@ -10,7 +10,7 @@ import org.junit.Test;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -26,7 +26,7 @@ public abstract class OrderTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, String> get_g_V_orderXa_nameXb_nameX_name();
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_name_order() {
         final Traversal<Vertex, String> traversal = get_g_V_name_order();
         printTraversalForm(traversal);
@@ -41,7 +41,7 @@ public abstract class OrderTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_name_orderXabX() {
         final Traversal<Vertex, String> traversal = get_g_V_name_orderXabX();
         printTraversalForm(traversal);
@@ -56,7 +56,7 @@ public abstract class OrderTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_orderXa_nameXb_nameX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_orderXa_nameXb_nameX_name();
         printTraversalForm(traversal);

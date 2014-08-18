@@ -11,11 +11,10 @@ import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
@@ -50,7 +49,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX();
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_hasXkeyX() {
         Traversal<Vertex, Vertex> traversal = get_g_v1_hasXkeyX(convertToVertexId("marko"), "name");
         printTraversalForm(traversal);
@@ -62,7 +61,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_hasXname_markoX() {
         Traversal<Vertex, Vertex> traversal = get_g_v1_hasXname_markoX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -74,7 +73,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_hasXname_markoX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_markoX();
         printTraversalForm(traversal);
@@ -83,7 +82,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_hasXname_blahX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_blahX();
         printTraversalForm(traversal);
@@ -91,7 +90,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_hasXage_gt_30X() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_hasXage_gt_30X();
         printTraversalForm(traversal);
@@ -103,7 +102,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_hasXage_gt_30X() {
         Traversal<Vertex, Vertex> traversal = get_g_v1_hasXage_gt_30X(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -114,7 +113,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_out_hasXid_2X() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_out_hasXid_2X(convertToVertexId("marko"), convertToVertexId("vadas"));
         printTraversalForm(traversal);
@@ -123,7 +122,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_hasXblahX() {
         assumeTrue(graphMeetsTestRequirements());
         final Traversal<Vertex, Vertex> traversal = get_g_V_hasXblahX();
@@ -133,7 +132,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_e7_hasXlabelXknowsX() {
         //System.out.println(convertToEdgeId("marko", "knows", "vadas"));
         Traversal<Edge, Edge> traversal = get_g_e7_hasXlabelXknowsX(convertToEdgeId("marko", "knows", "vadas"));
@@ -147,7 +146,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_E_hasXlabelXknowsX() {
         final Traversal<Edge, Edge> traversal = get_g_E_hasXlabelXknowsX();
         printTraversalForm(traversal);
@@ -160,7 +159,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_E_hasXlabelXknows_createdX() {
         final Traversal<Edge, Edge> traversal = get_g_E_hasXlabelXknows_createdX();
         printTraversalForm(traversal);
@@ -174,7 +173,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_hasXname_equalspredicate_markoX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_equalspredicate_markoX();
         printTraversalForm(traversal);

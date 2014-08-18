@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.junit.Assert.*;
 
@@ -86,7 +86,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     // public abstract Traversal<Vertex, String> get_g_V_out_out_hasXname_rippleX_matchXb_created_a__c_knows_bX_selectXcX_outXknowsX_name();
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_matchXa_out_bX() throws Exception {
         final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_out_bX();
         printTraversalForm(traversal);
@@ -100,7 +100,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_matchXa_out_bX_selectXb_idX() throws Exception {
         final Traversal<Vertex, Object> traversal = get_g_V_matchXa_out_bX_selectXb_idX();
         printTraversalForm(traversal);
@@ -123,7 +123,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_a_outXknowsX_b__b_outXcreatedX_c() throws Exception {
         final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_outXknowsX_b__b_outXcreatedX_cX();
         printTraversalForm(traversal);
@@ -133,7 +133,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_a_outXknowsX_b__a_outXcreatedX_c() throws Exception {
         final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_outXknowsX_b__a_outXcreatedX_cX();
         printTraversalForm(traversal);
@@ -143,7 +143,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_matchXd_inXknowsX_a__d_hasXname_vadasX__a_outXknowsX_b__b_outXcreatedX_cX() throws Exception {
         final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXd_inXknowsX_a__d_hasXname_vadasX__a_outXknowsX_b__b_outXcreatedX_cX();
         printTraversalForm(traversal);
@@ -153,7 +153,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_matchXa_created_b__a_out_jump2_bX_selectXab_nameX() throws Exception {
         final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_created_b__a_out_jump2_bX_selectXab_nameX();
         printTraversalForm(traversal);
@@ -162,7 +162,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_matchXa_created_lop_b__b_0created_29_c__c_out_jump2_cX_selectXnameX() throws Exception {
         final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_created_lop_b__b_0created_29_c__c_out_jump2_cX_selectXnameX();
         printTraversalForm(traversal);
@@ -173,7 +173,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_out_out_matchXa_0created_b__b_0knows_cX_selectXcX_outXcreatedX_name() throws Exception {
         final Traversal<Vertex, String> traversal = get_g_V_out_out_matchXa_0created_b__b_0knows_cX_selectXcX_outXcreatedX_name();
         printTraversalForm(traversal);
@@ -183,19 +183,19 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_matchXa_created_b__b_0created_aX() {
         get_g_V_matchXa_created_b__b_0created_aX();
     }
 
     @Test(expected = IllegalArgumentException.class)
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_matchXa_knows_b__c_knows_bX() {
         get_g_V_matchXa_knows_b__c_knows_bX();
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_matchXa_knows_b__b_created_lop__b_matchXa1_created_b1__b1_0created_c1X_selectXc1X_cX_selectXnameX() throws Exception {
         final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_knows_b__b_created_lop__b_matchXa1_created_b1__b1_0created_c1X_selectXc1X_cX_selectXnameX();
         printTraversalForm(traversal);
@@ -209,7 +209,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     /* TODO: this test requires path reversal
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_matchXa_created_b__c_created_bX_selectXnameX() throws Exception {
         final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_created_b__c_created_bX_selectXnameX();
         printTraversalForm(traversal);
@@ -242,7 +242,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     /* TODO: this test requires path reversal
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_out_out_hasXname_rippleX_matchXb_created_a__c_knows_bX_selectXcX_outXknowsX_name() throws Exception {
         // TODO: Doesn't work, only bindings to 'a' in binding set.
         final Traversal<Vertex, String> traversal = get_g_V_out_out_hasXname_rippleX_matchXb_created_a__c_knows_bX_selectXcX_outXknowsX_name();
@@ -316,7 +316,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     /* TODO: is it necessary to implement each of these traversals three times?
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void testTraversalUpdater() throws Exception {
         assertBranchFactor(
                 2.0,
@@ -341,7 +341,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     */
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void testOptimization() throws Exception {
         MatchStep<Object, Object> query;
         Iterator iter;
@@ -398,7 +398,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     // TODO: uncomment when query cycles are supported
     /*
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void testCyclicPatterns() throws Exception {
         MatchStep<Object, Object> query;
         Iterator iter;

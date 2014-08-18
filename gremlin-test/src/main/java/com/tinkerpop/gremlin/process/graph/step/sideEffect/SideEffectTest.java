@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
 import static org.junit.Assert.*;
 
 
@@ -26,7 +26,7 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, String> get_g_v1_out_sideEffectXX_valueXnameX(final Object v1Id);
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_sideEffectXstore_aX_valueXnameX() {
         final Traversal<Vertex, String> traversal = get_g_v1_sideEffectXstore_aX_valueXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -36,7 +36,7 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_out_sideEffectXincr_cX_valueXnameX() {
         final Traversal<Vertex, String> traversal = get_g_v1_out_sideEffectXincr_cX_valueXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -56,7 +56,7 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_out_sideEffectXX_valueXnameX() {
         final Traversal<Vertex, String> traversal = get_g_v1_out_sideEffectXX_valueXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);

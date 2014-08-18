@@ -10,7 +10,7 @@ import org.junit.Test;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -22,7 +22,7 @@ public abstract class UnfoldTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Edge> get_g_V_mapXoutEX_unfold();
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_mapXoutEX_unfold() {
         final Traversal<Vertex, Edge> traversal = get_g_V_mapXoutEX_unfold();
         printTraversalForm(traversal);

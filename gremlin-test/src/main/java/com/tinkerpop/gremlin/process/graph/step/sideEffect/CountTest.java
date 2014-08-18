@@ -4,10 +4,9 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -25,7 +24,7 @@ public abstract class CountTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Long> get_g_V_filterXfalseX_count();
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_count() {
         final Traversal<Vertex, Long> traversal = get_g_V_count();
         printTraversalForm(traversal);
@@ -34,7 +33,7 @@ public abstract class CountTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_out_count() {
         final Traversal<Vertex, Long> traversal = get_g_V_out_count();
         printTraversalForm(traversal);
@@ -43,7 +42,7 @@ public abstract class CountTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_both_both_count() {
         final Traversal<Vertex, Long> traversal = get_g_V_both_both_count();
         printTraversalForm(traversal);
@@ -52,7 +51,7 @@ public abstract class CountTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_filterXfalseX_count() {
         final Traversal<Vertex, Long> traversal = get_g_V_filterXfalseX_count();
         printTraversalForm(traversal);

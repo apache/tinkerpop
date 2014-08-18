@@ -10,7 +10,7 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -29,7 +29,7 @@ public abstract class ChooseTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_valueXnameX_3L_valuesX();
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_chooseXname_length_5XoutXinX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_chooseXname_length_5XoutXinX_name();
         printTraversalForm(traversal);
@@ -51,7 +51,7 @@ public abstract class ChooseTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_chooseX0XoutX_name() {
         final Traversal<Vertex, String> traversal = get_g_v1_chooseX0XoutX_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -70,7 +70,7 @@ public abstract class ChooseTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_hasXageX_chooseXname_lengthX5_in_4_outX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_hasXageX_chooseXname_lengthX5_in_4_out_3_bothX_name();
         printTraversalForm(traversal);
@@ -89,7 +89,7 @@ public abstract class ChooseTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_chooseXout_count_nextX2L_valueXnameX_3L_valuesX() {
         final Traversal<Vertex, Object> traversal = get_g_V_chooseXout_count_nextX2L_valueXnameX_3L_valuesX();
         printTraversalForm(traversal);

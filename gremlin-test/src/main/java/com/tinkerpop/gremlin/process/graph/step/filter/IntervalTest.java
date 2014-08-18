@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -19,7 +19,7 @@ public abstract class IntervalTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id);
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_outE_intervalXweight_0_06X_inV() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_outE_intervalXweight_0_06X_inV(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -36,7 +36,7 @@ public abstract class IntervalTest extends AbstractGremlinProcessTest {
         }
 
         public Traversal<Vertex, Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id) {
-            return g.v(v1Id).outE().interval("weight", 0.0f, 0.6f).inV();
+            return g.v(v1Id).outE().interval("weight", 0.0d, 0.6d).inV();
         }
     }
 
@@ -46,7 +46,7 @@ public abstract class IntervalTest extends AbstractGremlinProcessTest {
         }
 
         public Traversal<Vertex, Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id) {
-            return g.v(v1Id).outE().interval("weight", 0.0f, 0.6f).inV().submit(g.compute());
+            return g.v(v1Id).outE().interval("weight", 0.0d, 0.6d).inV().submit(g.compute());
         }
     }
 }

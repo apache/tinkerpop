@@ -27,6 +27,6 @@ class GroovyBackTestImpl extends BackTest {
 
     public Traversal<Vertex, Edge> get_g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(
             final Object v1Id) {
-        g.v(v1Id).outE('knows').has('weight', 1.0f).as('here').inV.has('name', 'josh').back('here')
+        g.v(v1Id).outE('knows').has('weight', 1.0d).as('here').inV.has('name', 'josh').back('here')
     }
 }

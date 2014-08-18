@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexPro
 import com.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -17,7 +17,7 @@ import static org.junit.Assert.assertTrue;
 public class PageRankVertexProgramTest extends AbstractGremlinTest {
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void shouldExecutePageRank() throws Exception {
         final ComputerResult result = g.compute().program(PageRankVertexProgram.build().create()).submit().get();
         result.getGraph().V().forEach(v -> {

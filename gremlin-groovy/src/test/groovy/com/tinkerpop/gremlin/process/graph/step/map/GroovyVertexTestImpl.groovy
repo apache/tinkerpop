@@ -84,7 +84,7 @@ class GroovyVertexTestImpl extends VertexTest {
     }
 
     public Traversal<Vertex, Vertex> get_g_V_outE_hasXweight_1X_outV() {
-        g.V.outE.has('weight', 1.0f).outV
+        g.V.outE.has('weight', 1.0d).outV
     }
 
     public Traversal<Vertex, String> get_g_V_out_outE_inV_inE_inV_both_name() {
@@ -132,7 +132,7 @@ class GroovyVertexTestImpl extends VertexTest {
     }
 
     public Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_lt_1X_otherV(final Object v4Id) {
-        g.v(v4Id).bothE.has('weight', T.lt, 1.0f).otherV
+        g.v(v4Id).bothE.has('weight', T.lt, 1.0d).otherV
     }
 
     public Traversal<Vertex, Vertex> get_g_v1_to_XOUT_knowsX(final Object v1Id) {

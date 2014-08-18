@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.IoTest;
@@ -55,7 +56,7 @@ public class TinkerGraphTest implements Serializable {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteClassicGraphAsKryoAsKryo() throws IOException {
+    public void shouldWriteClassicGraphAsKryo() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic.gio");
         KryoWriter.build().create().writeGraph(os, TinkerFactory.createClassic());
         os.close();
@@ -65,12 +66,35 @@ public class TinkerGraphTest implements Serializable {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteClassicDoubleGraphAsKryoAsKryo() throws IOException {
+    public void shouldWriteClassicDoubleGraphAsKryo() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-double.gio");
         final TinkerGraph g = TinkerFactory.createClassic();
         g.E().sideEffect(e -> e.get().<Double>property(
                 "weight", Double.parseDouble(e.get().property("weight").value().toString()))).iterate();
         KryoWriter.build().create().writeGraph(os, g);
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteClassicVerticesAsKryo() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-vertices.gio");
+        KryoWriter.build().create().writeVertices(os, TinkerFactory.createClassic().V(), Direction.BOTH);
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteClassicDoubleVerticesAsKryoAsKryo() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-vertices-double.gio");
+        final TinkerGraph g = TinkerFactory.createClassic();
+        g.E().sideEffect(e -> e.get().<Double>property(
+                "weight", Double.parseDouble(e.get().property("weight").value().toString()))).iterate();
+        KryoWriter.build().create().writeVertices(os, g.V(), Direction.BOTH);
         os.close();
     }
 

@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
 import static org.junit.Assert.*;
 
 /**
@@ -24,7 +24,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_V_asXaX_out_mapXa_nameX();
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_mapXnameX() {
         final Traversal<Vertex, String> traversal = get_g_v1_mapXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -33,7 +33,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_outE_label_mapXlengthX() {
         final Traversal<Vertex, Integer> traversal = get_g_v1_outE_label_mapXlengthX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -45,7 +45,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_out_mapXnameX_mapXlengthX() {
         final Traversal<Vertex, Integer> traversal = get_g_v1_out_mapXnameX_mapXlengthX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -57,7 +57,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC)
+    @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_asXaX_out_mapXa_nameX() {
         int marko = 0;
         int peter = 0;
