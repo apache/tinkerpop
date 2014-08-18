@@ -17,7 +17,7 @@ class GroovyTreeTestImpl extends TreeTest {
         return g.v(v1Id).out().out().tree { it.value("name") };
     }
 
-    public Traversal<Vertex, Tree> get_g_v1_out_out_treeXnameX_asXaX_both_both_capXaX(final Object v1Id) {
-        return g.v(v1Id).out().out().tree { it.value("name") }.as('a').both.both.cap('a');
+    public Traversal<Vertex, Tree> get_g_v1_out_out_treeXa_nameX_both_both_capXaX(final Object v1Id) {
+        return g.v(v1Id).out().out().tree('a') { it.value("name") }.both.both.cap('a');
     }
 }

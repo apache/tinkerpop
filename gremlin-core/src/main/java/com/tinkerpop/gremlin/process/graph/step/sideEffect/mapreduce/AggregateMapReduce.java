@@ -18,26 +18,26 @@ import java.util.List;
  */
 public class AggregateMapReduce implements MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
 
-    public static final String AGGREGATE_STEP_SIDE_EFFECT_KEY = "gremlin.aggregateStep.sideEffectKey";
+    public static final String AGGREGATE_STEP_MEMORY_KEY = "gremlin.aggregateStep.memoryKey";
 
-    private String sideEffectKey;
+    private String memoryKey;
 
     public AggregateMapReduce() {
 
     }
 
     public AggregateMapReduce(final AggregateStep step) {
-        this.sideEffectKey = step.getAs();
+        this.memoryKey = step.getMemoryKey();
     }
 
     @Override
     public void storeState(final Configuration configuration) {
-        configuration.setProperty(AGGREGATE_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
+        configuration.setProperty(AGGREGATE_STEP_MEMORY_KEY, this.memoryKey);
     }
 
     @Override
     public void loadState(final Configuration configuration) {
-        this.sideEffectKey = configuration.getString(AGGREGATE_STEP_SIDE_EFFECT_KEY);
+        this.memoryKey = configuration.getString(AGGREGATE_STEP_MEMORY_KEY);
     }
 
     @Override
@@ -47,7 +47,7 @@ public class AggregateMapReduce implements MapReduce<MapReduce.NullObject, Objec
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<NullObject, Object> emitter) {
-        final Property<Collection> aggregateProperty = vertex.property(Graph.Key.hide(sideEffectKey));
+        final Property<Collection> aggregateProperty = vertex.property(Graph.Key.hide(this.memoryKey));
         if (aggregateProperty.isPresent())
             aggregateProperty.value().forEach(object -> emitter.emit(NullObject.instance(), object));
     }
@@ -61,6 +61,6 @@ public class AggregateMapReduce implements MapReduce<MapReduce.NullObject, Objec
 
     @Override
     public String getSideEffectKey() {
-        return this.sideEffectKey;
+        return this.memoryKey;
     }
 }

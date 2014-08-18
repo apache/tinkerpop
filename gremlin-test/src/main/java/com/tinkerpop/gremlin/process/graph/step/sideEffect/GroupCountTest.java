@@ -25,13 +25,13 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCount();
 
-    public abstract Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCount_asXaX();
+    public abstract Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCountXaX();
 
     public abstract Traversal<Vertex, Map<Object, Long>> get_g_V_filterXfalseX_groupCount();
 
-    public abstract Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXnameX_asXaX_jumpXx_loops_lt_2X_capXaX();
+    public abstract Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_capXaX();
 
-    public abstract Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXnameX_asXaX_jumpXx_2X_capXaX();
+    public abstract Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_2X_capXaX();
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -48,7 +48,7 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_outXcreatedX_name_groupCount() {
-        Arrays.asList(get_g_V_outXcreatedX_name_groupCount(), get_g_V_outXcreatedX_name_groupCount_asXaX()).forEach(traversal -> {
+        Arrays.asList(get_g_V_outXcreatedX_name_groupCount(), get_g_V_outXcreatedX_name_groupCountXaX()).forEach(traversal -> {
             printTraversalForm(traversal);
             final Map<Object, Long> map = traversal.next();
             assertEquals(map.size(), 2);
@@ -72,8 +72,8 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void g_V_asXxX_out_groupCountXnameX_asXaX_jumpXx_2X_capXaX() {
         List<Traversal<Vertex, Map<Object, Long>>> traversals = new ArrayList<>();
-        traversals.add(get_g_V_asXxX_out_groupCountXnameX_asXaX_jumpXx_2X_capXaX());
-        traversals.add(get_g_V_asXxX_out_groupCountXnameX_asXaX_jumpXx_loops_lt_2X_capXaX());
+        traversals.add(get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_2X_capXaX());
+        traversals.add(get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_capXaX());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
             final Map<Object, Long> map = traversal.next();
@@ -96,8 +96,8 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
         }
 
 
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCount_asXaX() {
-            return (Traversal) g.V().out("created").value("name").groupCount().as("a");
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCountXaX() {
+            return (Traversal) g.V().out("created").value("name").groupCount("a");
         }
 
 
@@ -105,15 +105,15 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
             return (Traversal) g.V().filter(t -> false).groupCount();
         }
 
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXnameX_asXaX_jumpXx_loops_lt_2X_capXaX() {
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_capXaX() {
             return g.V().as("x").out()
-                    .groupCount(v -> v.value("name")).as("a")
+                    .groupCount("a", v -> v.value("name"))
                     .jump("x", h -> h.getLoops() < 2).cap("a");
         }
 
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXnameX_asXaX_jumpXx_2X_capXaX() {
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_2X_capXaX() {
             return g.V().as("x").out()
-                    .groupCount(v -> v.value("name")).as("a")
+                    .groupCount("a", v -> v.value("name"))
                     .jump("x", 2).cap("a");
         }
     }
@@ -127,23 +127,23 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
             return (Traversal) g.V().out("created").value("name").groupCount().submit(g.compute());
         }
 
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCount_asXaX() {
-            return (Traversal) g.V().out("created").value("name").groupCount().as("a").submit(g.compute());
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCountXaX() {
+            return (Traversal) g.V().out("created").value("name").groupCount("a").submit(g.compute());
         }
 
         public Traversal<Vertex, Map<Object, Long>> get_g_V_filterXfalseX_groupCount() {
             return (Traversal) g.V().filter(t -> false).groupCount().submit(g.compute());
         }
 
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXnameX_asXaX_jumpXx_loops_lt_2X_capXaX() {
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_capXaX() {
             return g.V().as("x").out()
-                    .groupCount( v -> v.value("name")).as("a")
+                    .groupCount("a", v -> v.value("name"))
                     .jump("x", t -> t.getLoops() < 2).<Map<Object, Long>>cap("a").submit(g.compute());
         }
 
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXnameX_asXaX_jumpXx_2X_capXaX() {
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_2X_capXaX() {
             return g.V().as("x").out()
-                    .groupCount(v -> v.value("name")).as("a")
+                    .groupCount("a", v -> v.value("name"))
                     .jump("x", 2).<Map<Object, Long>>cap("a").submit(g.compute());
         }
     }

@@ -18,26 +18,26 @@ import java.util.List;
  */
 public class StoreMapReduce implements MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
 
-    public static final String STORE_STEP_SIDE_EFFECT_KEY = "gremlin.storeStep.sideEffectKey";
+    public static final String STORE_STEP_MEMORY_KEY = "gremlin.storeStep.memoryKey";
 
-    private String variable;
+    private String memoryKey;
 
     public StoreMapReduce() {
 
     }
 
     public StoreMapReduce(final StoreStep step) {
-        this.variable = step.getAs();
+        this.memoryKey = step.getMemoryKey();
     }
 
     @Override
     public void storeState(final Configuration configuration) {
-        configuration.setProperty(STORE_STEP_SIDE_EFFECT_KEY, this.variable);
+        configuration.setProperty(STORE_STEP_MEMORY_KEY, this.memoryKey);
     }
 
     @Override
     public void loadState(final Configuration configuration) {
-        this.variable = configuration.getString(STORE_STEP_SIDE_EFFECT_KEY);
+        this.memoryKey = configuration.getString(STORE_STEP_MEMORY_KEY);
     }
 
     @Override
@@ -47,7 +47,7 @@ public class StoreMapReduce implements MapReduce<MapReduce.NullObject, Object, M
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<NullObject, Object> emitter) {
-        final Property<Collection> storeProperty = vertex.property(Graph.Key.hide(this.variable));
+        final Property<Collection> storeProperty = vertex.property(Graph.Key.hide(this.memoryKey));
         if (storeProperty.isPresent())
             storeProperty.value().forEach(object -> emitter.emit(NullObject.instance(), object));
     }
@@ -61,6 +61,6 @@ public class StoreMapReduce implements MapReduce<MapReduce.NullObject, Object, M
 
     @Override
     public String getSideEffectKey() {
-        return this.variable;
+        return this.memoryKey;
     }
 }

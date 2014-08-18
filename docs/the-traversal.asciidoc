@@ -32,18 +32,18 @@ The `aggregate()`-step (*sideEffect*) is used to aggregate all the objects at a 
 [source,groovy]
 gremlin> g.v(1).out('created') // what has marko created?
 ==>v[3]
-gremlin> g.v(1).out('created').aggregate.as('x') // aggregate all his creations
+gremlin> g.v(1).out('created').aggregate('x') // aggregate all his creations
 ==>[v[3]]
-gremlin> g.v(1).out('created').aggregate.as('x').in('created') // who are marko's collaborators
+gremlin> g.v(1).out('created').aggregate('x').in('created') // who are marko's collaborators
 ==>v[1]
 ==>v[4]
 ==>v[6]
-gremlin> g.v(1).out('created').aggregate.as('x').in('created').out('created') // what have marko's collaborators created?
+gremlin> g.v(1).out('created').aggregate('x').in('created').out('created') // what have marko's collaborators created?
 ==>v[3]
 ==>v[5]
 ==>v[3]
 ==>v[3]
-gremlin> g.v(1).out('created').aggregate.as('x').in('created').out('created').except('x').name // what have marko's collaborators created that he hasn't created?
+gremlin> g.v(1).out('created').aggregate('x').in('created').out('created').except('x').name // what have marko's collaborators created that he hasn't created?
 ==>ripple
 
 In link:http://en.wikipedia.org/wiki/Recommender_system[recommendation systems], the above pattern is used:
@@ -162,7 +162,7 @@ There is one person that is 32, one person that is 35, one person that is 27, an
 image::groupcount-step.png[width=500]
 
 [source,groovy]
-gremlin> g.V.as('x').both.groupCount{it.value('name')[1]}.as('m').jump('x',10).cap('m')
+gremlin> g.V.as('x').both.groupCount('m'){it.value('name')[1]}.jump('x',10).cap('m')
 ==>[a:19598, e:5740, i:5740, o:27716]
 
 The above is interesting in that it demonstrates the use of referencing the internal `Map<Object,Long>` of `groupCount` with a string variable. Given that `groupCount` is a sideEffect-step, it simply passes the object it received to its output. Internal to `groupCount`, the object's count is incremented. If `groupCount` is the last step in the traversal, the `SideEffectCapStrategy` (see <<traversalstrategy,Traversal Strategy>>) automatically returns the internal map. However, if the `groupCount` is not the last step, then the sideEffect data structure (i.e. the internal map of `groupCount`) can be accessed with `cap`-step by referencing the desired variable.
@@ -399,9 +399,9 @@ StoreStep
 When link:http://en.wikipedia.org/wiki/Lazy_evaluation[lazy] aggregation is needed, `store()`-step (*sideEffect*) should be used over <<aggregate-step,`aggregate()`>>. The two steps differ in that `store()` does not block and only stores objects in its side-effect collection as they pass through.
 
 [source,groovy]
-gremlin> g.V.aggregate.as('x')[0..1].cap('x')
+gremlin> g.V.aggregate('x')[0..1].cap('x')
 ==>[v[1], v[2], v[3], v[4], v[5], v[6]]
-gremlin> g.V.store.as('x')[0..1].cap('x')
+gremlin> g.V.store('x')[0..1].cap('x')
 ==>[v[1], v[2], v[3]]
 
 It is interesting to note that there are three results in the `store()` side-effect even though the interval selection is for 2 objects. Realize that when the third object is on its way to the `range()` filter (i.e. `[0..1]`), it passes through `store()` and thus, stored before filtered.

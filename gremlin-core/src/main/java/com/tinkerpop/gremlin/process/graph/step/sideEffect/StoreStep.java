@@ -16,6 +16,7 @@ import com.tinkerpop.gremlin.util.function.SFunction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -25,11 +26,15 @@ public class StoreStep<S> extends FilterStep<S> implements SideEffectCapable, Re
     public Collection store;
     public long bulkCount = 1l;
     public SFunction<S, ?> preStoreFunction;
+    private final String memoryKey;
+    private final String hiddenMemoryKey;
 
-    public StoreStep(final Traversal traversal, final SFunction<S, ?> preStoreFunction) {
+    public StoreStep(final Traversal traversal, final String memoryKey, final SFunction<S, ?> preStoreFunction) {
         super(traversal);
         this.preStoreFunction = preStoreFunction;
-        this.store = this.traversal.memory().getOrCreate(this.getAs(), ArrayList::new);
+        this.memoryKey = null == memoryKey ? UUID.randomUUID().toString() : memoryKey;
+        this.hiddenMemoryKey = Graph.Key.hide(this.memoryKey);
+        this.store = this.traversal.memory().getOrCreate(this.memoryKey, ArrayList::new);
         this.setPredicate(traverser -> {
             final Object storeObject = null == this.preStoreFunction ? traverser.get() : this.preStoreFunction.apply(traverser.get());
             for (int i = 0; i < this.bulkCount; i++) {
@@ -39,14 +44,8 @@ public class StoreStep<S> extends FilterStep<S> implements SideEffectCapable, Re
         });
     }
 
-    public StoreStep(final Traversal traversal) {
-        this(traversal, null);
-    }
-
-    @Override
-    public void setAs(final String as) {
-        this.traversal.memory().move(this.getAs(), as, ArrayList::new);
-        super.setAs(as);
+    public String getMemoryKey() {
+        return this.memoryKey;
     }
 
     public void setCurrentBulkCount(final long bulkCount) {
@@ -54,10 +53,9 @@ public class StoreStep<S> extends FilterStep<S> implements SideEffectCapable, Re
     }
 
     public void setCurrentVertex(final Vertex vertex) {
-        final String hiddenAs = Graph.Key.hide(this.getAs());
-        this.store = vertex.<Collection>property(hiddenAs).orElse(new ArrayList());
-        if (!vertex.property(hiddenAs).isPresent())
-            vertex.property(hiddenAs, this.store);
+        this.store = vertex.<Collection>property(this.hiddenMemoryKey).orElse(new ArrayList());
+        if (!vertex.property(this.hiddenMemoryKey).isPresent())
+            vertex.property(this.hiddenMemoryKey, this.store);
     }
 
     public MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> getMapReduce() {

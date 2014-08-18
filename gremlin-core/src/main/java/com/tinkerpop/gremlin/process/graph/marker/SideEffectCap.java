@@ -5,5 +5,5 @@ package com.tinkerpop.gremlin.process.graph.marker;
  */
 public interface SideEffectCap {
 
-    public String getSideEffectAs();
+    public String getMemoryKey();
 }

@@ -17,26 +17,26 @@ import java.util.Map;
  */
 public class GroupCountMapReduce implements MapReduce<Object, Long, Object, Long, Map<Object, Long>> {
 
-    public static final String GROUP_COUNT_STEP_SIDE_EFFECT_KEY = "gremlin.groupCountStep.sideEffectKey";
+    public static final String GROUP_COUNT_STEP_MEMORY_KEY = "gremlin.groupCountStep.memoryKey";
 
-    private String sideEffectKey;
+    private String memoryKey;
 
     public GroupCountMapReduce() {
 
     }
 
     public GroupCountMapReduce(final GroupCountStep step) {
-        this.sideEffectKey = step.getAs();
+        this.memoryKey = step.getMemoryKey();
     }
 
     @Override
     public void storeState(final Configuration configuration) {
-        configuration.setProperty(GROUP_COUNT_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
+        configuration.setProperty(GROUP_COUNT_STEP_MEMORY_KEY, this.memoryKey);
     }
 
     @Override
     public void loadState(final Configuration configuration) {
-        this.sideEffectKey = configuration.getString(GROUP_COUNT_STEP_SIDE_EFFECT_KEY);
+        this.memoryKey = configuration.getString(GROUP_COUNT_STEP_MEMORY_KEY);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class GroupCountMapReduce implements MapReduce<Object, Long, Object, Long
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<Object, Long> emitter) {
-        final Property<Map<Object, Number>> groupCountProperty = vertex.property(Graph.Key.hide(this.sideEffectKey));
+        final Property<Map<Object, Number>> groupCountProperty = vertex.property(Graph.Key.hide(this.memoryKey));
         if (groupCountProperty.isPresent())
             groupCountProperty.value().forEach((k, v) -> emitter.emit(k, v.longValue()));
     }
@@ -74,6 +74,6 @@ public class GroupCountMapReduce implements MapReduce<Object, Long, Object, Long
 
     @Override
     public String getSideEffectKey() {
-        return this.sideEffectKey;
+        return this.memoryKey;
     }
 }

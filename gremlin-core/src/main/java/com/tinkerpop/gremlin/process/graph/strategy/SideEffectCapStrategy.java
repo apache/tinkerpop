@@ -20,7 +20,7 @@ public class SideEffectCapStrategy implements TraversalStrategy {
     public void apply(final Traversal traversal) {
         final Step endStep = TraversalHelper.getEnd(traversal);
         if (endStep instanceof SideEffectCapable)
-            traversal.cap(endStep.getAs());
+            traversal.cap();
     }
 
     public int compareTo(final TraversalStrategy traversalStrategy) {

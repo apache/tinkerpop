@@ -16,26 +16,26 @@ import java.util.Iterator;
  */
 public class TreeMapReduce implements MapReduce<Object, Tree, Object, Tree, Tree> {
 
-    public static final String TREE_STEP_SIDE_EFFECT_KEY = "gremlin.treeStep.sideEffectKey";
+    public static final String TREE_STEP_MEMORY_KEY = "gremlin.treeStep.memoryKey";
 
-    private String variable;
+    private String memoryKey;
 
     public TreeMapReduce() {
 
     }
 
     public TreeMapReduce(final TreeStep step) {
-        this.variable = step.getAs();
+        this.memoryKey = step.getMemoryKey();
     }
 
     @Override
     public void storeState(final Configuration configuration) {
-        configuration.setProperty(TREE_STEP_SIDE_EFFECT_KEY, this.variable);
+        configuration.setProperty(TREE_STEP_MEMORY_KEY, this.memoryKey);
     }
 
     @Override
     public void loadState(final Configuration configuration) {
-        this.variable = configuration.getString(TREE_STEP_SIDE_EFFECT_KEY);
+        this.memoryKey = configuration.getString(TREE_STEP_MEMORY_KEY);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class TreeMapReduce implements MapReduce<Object, Tree, Object, Tree, Tree
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<Object, Tree> emitter) {
-        final Property<Tree> treeProperty = vertex.property(Graph.Key.hide(this.variable));
+        final Property<Tree> treeProperty = vertex.property(Graph.Key.hide(this.memoryKey));
         treeProperty.ifPresent(tree -> tree.splitParents().forEach(t -> emitter.emit(((Tree) t).keySet().iterator().next(), (Tree) t)));
     }
 
@@ -58,6 +58,6 @@ public class TreeMapReduce implements MapReduce<Object, Tree, Object, Tree, Tree
 
     @Override
     public String getSideEffectKey() {
-        return this.variable;
+        return this.memoryKey;
     }
 }

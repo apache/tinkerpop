@@ -62,12 +62,28 @@ public interface Edge extends Element {
         return this.toV(Direction.BOTH);
     }
 
+    public default GraphTraversal<Edge, Edge> aggregate(final String memoryKey, final SFunction<Edge, ?> preAggregateFunction) {
+        return this.start().aggregate(memoryKey, preAggregateFunction);
+    }
+
+    public default GraphTraversal<Edge, Edge> aggregate(final String memoryKey) {
+        return this.start().aggregate(memoryKey);
+    }
+
     public default GraphTraversal<Edge, Edge> aggregate(final SFunction<Edge, ?> preAggregateFunction) {
         return this.start().aggregate(preAggregateFunction);
     }
 
     public default GraphTraversal<Edge, Edge> aggregate() {
         return this.start().aggregate();
+    }
+
+    public default GraphTraversal<Edge, Edge> store(final String memoryKey, final SFunction<Edge, ?> preStoreFunction) {
+        return this.start().store(memoryKey, preStoreFunction);
+    }
+
+    public default GraphTraversal<Edge, Edge> store(final String memoryKey) {
+        return this.start().store(memoryKey);
     }
 
     public default GraphTraversal<Edge, Edge> store(final SFunction<Edge, ?> preStoreFunction) {

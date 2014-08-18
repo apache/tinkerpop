@@ -25,7 +25,7 @@ public abstract class AggregateTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, List<String>> get_g_V_aggregateXnameX();
 
-    public abstract Traversal<Vertex, Path> get_g_V_out_aggregate_asXaX_path();
+    public abstract Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path();
 
     //public abstract Traversal<Vertex, Path> get_g_v1_asXxX_bothE_asXeX_valueXweightX_exceptXwX_aggregateXwX_backXeX_otherV_jumpXx_true_trueX_path(final Object v1Id);
 
@@ -61,8 +61,8 @@ public abstract class AggregateTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    public void g_V_out_aggregate_asXaX_path() {
-        final Traversal<Vertex, Path> traversal = get_g_V_out_aggregate_asXaX_path();
+    public void g_V_out_aggregateXaX_path() {
+        final Traversal<Vertex, Path> traversal = get_g_V_out_aggregateXaX_path();
         printTraversalForm(traversal);
         int count = 0;
         final Map<String, Long> firstStepCounts = new HashMap<>();
@@ -111,8 +111,8 @@ public abstract class AggregateTest extends AbstractGremlinTest {
             return (Traversal) g.V().aggregate(v -> v.value("name"));
         }
 
-        public Traversal<Vertex, Path> get_g_V_out_aggregate_asXaX_path() {
-            return g.V().out().aggregate().as("a").path();
+        public Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path() {
+            return g.V().out().aggregate("a").path();
         }
 
         /*public Traversal<Vertex, Path> get_g_v1_asXxX_bothE_asXeX_valueXweightX_exceptXwX_aggregateXwX_backXeX_otherV_jumpXx_true_trueX_path(final Object v1Id) {
@@ -130,8 +130,8 @@ public abstract class AggregateTest extends AbstractGremlinTest {
             return (Traversal) g.V().aggregate(v -> v.value("name")).submit(g.compute());
         }
 
-        public Traversal<Vertex, Path> get_g_V_out_aggregate_asXaX_path() {
-            return g.V().out().aggregate().as("a").path().submit(g.compute());
+        public Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path() {
+            return g.V().out().aggregate("a").path().submit(g.compute());
         }
     }
 }

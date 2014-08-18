@@ -64,6 +64,10 @@ public class SubgraphStep<S> extends FilterStep<S> implements SideEffectCapable,
         super.setAs(as);
     }
 
+    public String getMemoryKey() {
+        return this.getAs();
+    }
+
     private Vertex getOrCreateVertex(final Vertex v) {
         final Vertex found;
         if (idMap.containsKey(v.id()))

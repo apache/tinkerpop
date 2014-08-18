@@ -17,6 +17,8 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SFunction;
 
+import java.util.UUID;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -24,11 +26,15 @@ public class TreeStep<S> extends FilterStep<S> implements Reversible, PathConsum
 
     public Tree tree;
     public FunctionRing functionRing;
+    private final String memoryKey;
+    private final String hiddenMemoryKey;
 
-    public TreeStep(final Traversal traversal, final SFunction... branchFunctions) {
+    public TreeStep(final Traversal traversal, final String memoryKey, final SFunction... branchFunctions) {
         super(traversal);
+        this.memoryKey = null == memoryKey ? UUID.randomUUID().toString() : memoryKey;
+        this.hiddenMemoryKey = Graph.Key.hide(this.memoryKey);
         this.functionRing = new FunctionRing(branchFunctions);
-        this.tree = traversal.memory().getOrCreate(this.getAs(), Tree::new);
+        this.tree = traversal.memory().getOrCreate(this.memoryKey, Tree::new);
 
         this.setPredicate(traverser -> {
             Tree depth = this.tree;
@@ -44,10 +50,8 @@ public class TreeStep<S> extends FilterStep<S> implements Reversible, PathConsum
         });
     }
 
-    @Override
-    public void setAs(final String as) {
-        this.traversal.memory().move(this.getAs(), as, Tree::new);
-        super.setAs(as);
+    public String getMemoryKey() {
+        return this.memoryKey;
     }
 
     public void setCurrentBulkCount(final long count) {
@@ -56,10 +60,9 @@ public class TreeStep<S> extends FilterStep<S> implements Reversible, PathConsum
     }
 
     public void setCurrentVertex(final Vertex vertex) {
-        final String hiddenAs = Graph.Key.hide(this.getAs());
-        this.tree = vertex.<Tree>property(hiddenAs).orElse(new Tree());
-        if (!vertex.property(hiddenAs).isPresent())
-            vertex.property(hiddenAs, this.tree);
+        this.tree = vertex.<Tree>property(this.hiddenMemoryKey).orElse(new Tree());
+        if (!vertex.property(this.hiddenMemoryKey).isPresent())
+            vertex.property(this.hiddenMemoryKey, this.tree);
     }
 
     public MapReduce<Object, Tree, Object, Tree, Tree> getMapReduce() {

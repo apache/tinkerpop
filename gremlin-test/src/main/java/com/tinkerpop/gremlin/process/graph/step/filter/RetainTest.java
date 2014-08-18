@@ -45,7 +45,7 @@ public abstract class RetainTest extends AbstractGremlinTest {
         }
 
         public Traversal<Vertex, Vertex> get_g_v1_out_aggregateXxX_out_retainXxX(final Object v1Id) {
-            return g.v(v1Id).out().aggregate().as("x").out().retain("x");
+            return g.v(v1Id).out().aggregate("x").out().retain("x");
         }
     }
 
@@ -56,7 +56,7 @@ public abstract class RetainTest extends AbstractGremlinTest {
         }
 
         public Traversal<Vertex, Vertex> get_g_v1_out_aggregateXxX_out_retainXxX(final Object v1Id) {
-            return g.v(v1Id).out().aggregate().as("x").out().retain("x").submit(g.compute());
+            return g.v(v1Id).out().aggregate("x").out().retain("x").submit(g.compute());
         }
     }
 }

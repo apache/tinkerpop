@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -28,31 +29,33 @@ public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffect
     public final SFunction<S, K> keyFunction;
     public final SFunction<S, V> valueFunction;
     public final SFunction<Collection<V>, R> reduceFunction;
+    private final String memoryKey;
+    private final String hiddenMemoryKey;
     public boolean vertexCentric = false;
 
-    public GroupByStep(final Traversal traversal, final SFunction<S, K> keyFunction, final SFunction<S, V> valueFunction, final SFunction<Collection<V>, R> reduceFunction) {
+    public GroupByStep(final Traversal traversal, final String memoryKey, final SFunction<S, K> keyFunction, final SFunction<S, V> valueFunction, final SFunction<Collection<V>, R> reduceFunction) {
         super(traversal);
-        this.groupByMap = this.traversal.memory().getOrCreate(this.getAs(), HashMap<K, Collection<V>>::new);
+        this.memoryKey = null == memoryKey ? UUID.randomUUID().toString() : memoryKey;
+        this.hiddenMemoryKey = Graph.Key.hide(this.memoryKey);
+        this.groupByMap = this.traversal.memory().getOrCreate(this.memoryKey, HashMap<K, Collection<V>>::new);
         this.reduceMap = new HashMap<>();
         this.keyFunction = keyFunction;
         this.valueFunction = valueFunction == null ? s -> (V) s : valueFunction;
         this.reduceFunction = reduceFunction;
         this.setPredicate(traverser -> {
             doGroup(traverser.get(), this.groupByMap, this.keyFunction, this.valueFunction);
-            if (!vertexCentric) {
+            if (!this.vertexCentric) {
                 if (null != reduceFunction && !this.starts.hasNext()) {
                     doReduce(this.groupByMap, this.reduceMap, this.reduceFunction);
-                    this.traversal.memory().set(this.getAs(), this.reduceMap);
+                    this.traversal.memory().set(this.memoryKey, this.reduceMap);
                 }
             }
             return true;
         });
     }
 
-    @Override
-    public void setAs(final String as) {
-        this.traversal.memory().move(this.getAs(), as, HashMap::new);
-        super.setAs(as);
+    public String getMemoryKey() {
+        return this.memoryKey;
     }
 
     private static <S, K, V> void doGroup(final S s, final Map<K, Collection<V>> groupMap, final SFunction<S, K> keyFunction, final SFunction<S, V> valueFunction) {
@@ -84,10 +87,9 @@ public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffect
 
     public void setCurrentVertex(final Vertex vertex) {
         this.vertexCentric = true;
-        final String hiddenAs = Graph.Key.hide(this.getAs());
-        this.groupByMap = vertex.<java.util.Map<K, Collection<V>>>property(hiddenAs).orElse(new HashMap<>());
-        if (!vertex.property(hiddenAs).isPresent())
-            vertex.property(hiddenAs, this.groupByMap);
+        this.groupByMap = vertex.<java.util.Map<K, Collection<V>>>property(this.hiddenMemoryKey).orElse(new HashMap<>());
+        if (!vertex.property(this.hiddenMemoryKey).isPresent())
+            vertex.property(this.hiddenMemoryKey, this.groupByMap);
     }
 
     public MapReduce<Object, Collection, Object, Object, Map> getMapReduce() {

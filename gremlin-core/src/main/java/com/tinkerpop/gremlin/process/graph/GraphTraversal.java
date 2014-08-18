@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
+import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.ExceptStep;
@@ -415,12 +416,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new SideEffectStep<>(this, consumer));
     }
 
-    public default <E2> GraphTraversal<S, E2> cap(final String variable) {
-        return (GraphTraversal) this.addStep(new SideEffectCapStep<>(this, variable));
+    public default <E2> GraphTraversal<S, E2> cap(final String memoryKey) {
+        return (GraphTraversal) this.addStep(new SideEffectCapStep<>(this, memoryKey));
     }
 
     public default <E2> GraphTraversal<S, E2> cap() {
-        return this.cap(TraversalHelper.getEnd(this).getAs());
+        return this.cap(((SideEffectCapable) TraversalHelper.getEnd(this)).getMemoryKey());
     }
 
     public default GraphTraversal<S, E> subgraph(final Graph g, final SPredicate<Edge> includeEdge) {
@@ -431,32 +432,61 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new SubgraphStep<>(this, g, edgeIdHolder, vertexMap, includeEdge));
     }
 
+    public default GraphTraversal<S, E> aggregate(final String memoryKey, final SFunction<E, ?> preAggregateFunction) {
+        return (GraphTraversal) this.addStep(new AggregateStep<>(this, memoryKey, preAggregateFunction));
+    }
+
     public default GraphTraversal<S, E> aggregate(final SFunction<E, ?> preAggregateFunction) {
-        return (GraphTraversal) this.addStep(new AggregateStep<>(this, preAggregateFunction));
+        return this.aggregate(null, preAggregateFunction);
     }
 
     public default GraphTraversal<S, E> aggregate() {
-        return (GraphTraversal) this.addStep(new AggregateStep<>(this));
+        return this.aggregate(null, null);
     }
 
-    public default GraphTraversal<S, E> groupBy(final SFunction<E, ?> keyFunction) {
-        return (GraphTraversal) this.groupBy(keyFunction, null, null);
+    public default GraphTraversal<S, E> aggregate(final String memoryKey) {
+        return this.aggregate(memoryKey, null);
+    }
+
+    public default GraphTraversal<S, E> groupBy(final String memoryKey, final SFunction<E, ?> keyFunction, final SFunction<E, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
+        return (GraphTraversal) this.addStep(new GroupByStep(this, memoryKey, keyFunction, (SFunction) valueFunction, (SFunction) reduceFunction));
+    }
+
+
+    public default GraphTraversal<S, E> groupBy(final SFunction<E, ?> keyFunction, final SFunction<E, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
+        return this.groupBy(null, keyFunction, valueFunction, reduceFunction);
     }
 
     public default GraphTraversal<S, E> groupBy(final SFunction<E, ?> keyFunction, final SFunction<E, ?> valueFunction) {
-        return (GraphTraversal) this.groupBy(keyFunction, valueFunction, null);
+        return this.groupBy(null, keyFunction, valueFunction, null);
     }
 
-    public default GraphTraversal<S, E> groupBy(final SFunction<E, ?> keyFunction, final SFunction<E, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
-        return (GraphTraversal) this.addStep(new GroupByStep(this, keyFunction, (SFunction) valueFunction, (SFunction) reduceFunction));
+    public default GraphTraversal<S, E> groupBy(final SFunction<E, ?> keyFunction) {
+        return this.groupBy(null, keyFunction, null, null);
+    }
+
+    public default GraphTraversal<S, E> groupBy(final String memoryKey, final SFunction<E, ?> keyFunction) {
+        return this.groupBy(memoryKey, keyFunction, null, null);
+    }
+
+    public default GraphTraversal<S, E> groupBy(final String memoryKey, final SFunction<E, ?> keyFunction, final SFunction<E, ?> valueFunction) {
+        return this.groupBy(memoryKey, keyFunction, valueFunction, null);
+    }
+
+    public default GraphTraversal<S, E> groupCount(final String memoryKey, final SFunction<E, ?> preGroupFunction) {
+        return (GraphTraversal) this.addStep(new GroupCountStep<>(this, memoryKey, preGroupFunction));
     }
 
     public default GraphTraversal<S, E> groupCount(final SFunction<E, ?> preGroupFunction) {
-        return (GraphTraversal) this.addStep(new GroupCountStep<>(this, preGroupFunction));
+        return this.groupCount(null, preGroupFunction);
+    }
+
+    public default GraphTraversal<S, E> groupCount(final String memoryKey) {
+        return this.groupCount(memoryKey, null);
     }
 
     public default GraphTraversal<S, E> groupCount() {
-        return (GraphTraversal) this.addStep(new GroupCountStep<>(this));
+        return this.groupCount(null, null);
     }
 
     public default GraphTraversal<S, Vertex> addInE(final String label, final String as) {
@@ -479,16 +509,28 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new TimeLimitStep<E>(this, timeLimit));
     }
 
+    public default GraphTraversal<S, E> tree(final String memoryKey, final SFunction... branchFunctions) {
+        return (GraphTraversal) this.addStep(new TreeStep<>(this, memoryKey, branchFunctions));
+    }
+
     public default GraphTraversal<S, E> tree(final SFunction... branchFunctions) {
-        return (GraphTraversal) this.addStep(new TreeStep<>(this, branchFunctions));
+        return this.tree(null, branchFunctions);
+    }
+
+    public default GraphTraversal<S, E> store(final String memoryKey, final SFunction<E, ?> preStoreFunction) {
+        return (GraphTraversal) this.addStep(new StoreStep<>(this, memoryKey, preStoreFunction));
+    }
+
+    public default GraphTraversal<S, E> store(final String memoryKey) {
+        return this.store(memoryKey, null);
     }
 
     public default GraphTraversal<S, E> store(final SFunction<E, ?> preStoreFunction) {
-        return (GraphTraversal) this.addStep(new StoreStep<>(this, preStoreFunction));
+        return this.store(null, preStoreFunction);
     }
 
     public default GraphTraversal<S, E> store() {
-        return (GraphTraversal) this.addStep(new StoreStep<>(this));
+        return this.store(null, null);
     }
 
     ///////////////////// BRANCH STEPS /////////////////////

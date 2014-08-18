@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.UUID;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -30,32 +31,29 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCa
     Collection aggregate;
     final Queue<Traverser<S>> aggregateTraversers = new LinkedList<>();
     private long bulkCount = 1l;
+    private final String memoryKey;
+    private final String hiddenMemoryKey;
 
-    public AggregateStep(final Traversal traversal, final SFunction<S, ?> preAggregateFunction) {
+    public AggregateStep(final Traversal traversal, final String memoryKey, final SFunction<S, ?> preAggregateFunction) {
         super(traversal);
         this.preAggregateFunction = preAggregateFunction;
-        this.aggregate = this.traversal.memory().getOrCreate(this.getAs(), ArrayList::new);
-    }
-
-    public AggregateStep(final Traversal traversal) {
-        this(traversal, null);
+        this.memoryKey = null == memoryKey ? UUID.randomUUID().toString() : memoryKey;
+        this.hiddenMemoryKey = Graph.Key.hide(this.memoryKey);
+        this.aggregate = this.traversal.memory().getOrCreate(this.memoryKey, ArrayList::new);
     }
 
     public void setCurrentBulkCount(final long bulkCount) {
         this.bulkCount = bulkCount;
     }
 
-    @Override
-    public void setAs(final String as) {
-        this.traversal.memory().move(this.getAs(), as, ArrayList::new);
-        super.setAs(as);
+    public void setCurrentVertex(final Vertex vertex) {
+        this.aggregate = vertex.<Collection>property(this.hiddenMemoryKey).orElse(new ArrayList());
+        if (!vertex.property(this.hiddenMemoryKey).isPresent())
+            vertex.property(this.hiddenMemoryKey, this.aggregate);
     }
 
-    public void setCurrentVertex(final Vertex vertex) {
-        final String hiddenAs = Graph.Key.hide(this.getAs());
-        this.aggregate = vertex.<Collection>property(hiddenAs).orElse(new ArrayList());
-        if (!vertex.property(hiddenAs).isPresent())
-            vertex.property(hiddenAs, this.aggregate);
+    public String getMemoryKey() {
+        return this.memoryKey;
     }
 
     public MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> getMapReduce() {

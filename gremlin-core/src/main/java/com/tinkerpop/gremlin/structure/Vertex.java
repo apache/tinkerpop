@@ -139,12 +139,28 @@ public interface Vertex extends Element {
      * The following steps are general to element but repeated here for the sake of ensuring property type casting.
      */
 
+    public default GraphTraversal<Vertex, Vertex> aggregate(final String memoryKey, final SFunction<Vertex, ?> preAggregateFunction) {
+        return this.start().aggregate(memoryKey, preAggregateFunction);
+    }
+
+    public default GraphTraversal<Vertex, Vertex> aggregate(final String memoryKey) {
+        return this.start().aggregate(memoryKey);
+    }
+
     public default GraphTraversal<Vertex, Vertex> aggregate(final SFunction<Vertex, ?> preAggregateFunction) {
         return this.start().aggregate(preAggregateFunction);
     }
 
     public default GraphTraversal<Vertex, Vertex> aggregate() {
         return this.start().aggregate();
+    }
+
+    public default GraphTraversal<Vertex, Vertex> store(final String memoryKey, final SFunction<Vertex, ?> preStoreFunction) {
+        return this.start().store(memoryKey, preStoreFunction);
+    }
+
+    public default GraphTraversal<Vertex, Vertex> store(final String memoryKey) {
+        return this.start().store(memoryKey);
     }
 
     public default GraphTraversal<Vertex, Vertex> store(final SFunction<Vertex, ?> preStoreFunction) {

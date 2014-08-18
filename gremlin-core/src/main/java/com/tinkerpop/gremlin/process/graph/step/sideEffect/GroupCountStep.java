@@ -16,6 +16,7 @@ import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -25,11 +26,15 @@ public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapabl
     public Map<Object, Long> groupCountMap;
     public SFunction<S, ?> preGroupFunction;
     private long bulkCount = 1l;
+    private final String memoryKey;
+    private final String hiddenMemoryKey;
 
-    public GroupCountStep(final Traversal traversal, final SFunction<S, ?> preGroupFunction) {
+    public GroupCountStep(final Traversal traversal, final String memoryKey, final SFunction<S, ?> preGroupFunction) {
         super(traversal);
         this.preGroupFunction = preGroupFunction;
-        this.groupCountMap = this.traversal.memory().getOrCreate(this.getAs(), HashMap::new);
+        this.memoryKey = null == memoryKey ? UUID.randomUUID().toString() : memoryKey;
+        this.hiddenMemoryKey = Graph.Key.hide(this.memoryKey);
+        this.groupCountMap = this.traversal.memory().getOrCreate(this.memoryKey, HashMap::new);
         this.setPredicate(traverser -> {
             MapHelper.incr(this.groupCountMap,
                     null == this.preGroupFunction ? traverser.get() : this.preGroupFunction.apply(traverser.get()),
@@ -38,14 +43,8 @@ public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapabl
         });
     }
 
-    @Override
-    public void setAs(final String as) {
-        this.traversal.memory().move(this.getAs(), as, HashMap::new);
-        super.setAs(as);
-    }
-
-    public GroupCountStep(final Traversal traversal) {
-        this(traversal, null);
+    public String getMemoryKey() {
+        return this.memoryKey;
     }
 
     public void setCurrentBulkCount(final long bulkCount) {
@@ -53,10 +52,9 @@ public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapabl
     }
 
     public void setCurrentVertex(final Vertex vertex) {
-        final String hiddenAs = Graph.Key.hide(this.getAs());
-        this.groupCountMap = vertex.<java.util.Map<Object, Long>>property(hiddenAs).orElse(new HashMap<>());
-        if (!vertex.property(hiddenAs).isPresent())
-            vertex.property(hiddenAs, this.groupCountMap);
+        this.groupCountMap = vertex.<java.util.Map<Object, Long>>property(this.hiddenMemoryKey).orElse(new HashMap<>());
+        if (!vertex.property(this.hiddenMemoryKey).isPresent())
+            vertex.property(this.hiddenMemoryKey, this.groupCountMap);
     }
 
     public MapReduce<Object, Long, Object, Long, Map<Object, Long>> getMapReduce() {

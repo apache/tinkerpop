@@ -21,10 +21,10 @@ import java.util.Map;
  */
 public class GroupByMapReduce implements MapReduce<Object, Collection, Object, Object, Map> {
 
-    public static final String GROUP_BY_STEP_SIDE_EFFECT_KEY = "gremlin.groupByStep.sideEffectKey";
+    public static final String GROUP_BY_STEP_MEMORY_KEY = "gremlin.groupByStep.memoryKey";
     public static final String GROUP_BY_REDUCE_FUNCTION = "gremlin.groupByStep.reduceFunction";
 
-    private String sideEffectKey;
+    private String memoryKey;
     private SFunction reduceFunction;
 
     public GroupByMapReduce() {
@@ -32,14 +32,14 @@ public class GroupByMapReduce implements MapReduce<Object, Collection, Object, O
     }
 
     public GroupByMapReduce(final GroupByStep step) {
-        this.sideEffectKey = step.getAs();
+        this.memoryKey = step.getMemoryKey();
         this.reduceFunction = step.reduceFunction;
     }
 
     @Override
     public void storeState(final Configuration configuration) {
         try {
-            configuration.setProperty(GROUP_BY_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
+            configuration.setProperty(GROUP_BY_STEP_MEMORY_KEY, this.memoryKey);
             VertexProgramHelper.serialize(this.reduceFunction, configuration, GROUP_BY_REDUCE_FUNCTION);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -50,7 +50,7 @@ public class GroupByMapReduce implements MapReduce<Object, Collection, Object, O
     @Override
     public void loadState(final Configuration configuration) {
         try {
-            this.sideEffectKey = configuration.getString(GROUP_BY_STEP_SIDE_EFFECT_KEY);
+            this.memoryKey = configuration.getString(GROUP_BY_STEP_MEMORY_KEY);
             this.reduceFunction = VertexProgramHelper.deserialize(configuration, GROUP_BY_REDUCE_FUNCTION);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -64,7 +64,7 @@ public class GroupByMapReduce implements MapReduce<Object, Collection, Object, O
 
     @Override
     public void map(Vertex vertex, MapEmitter<Object, Collection> emitter) {
-        final HashMap<Object, Collection> groupByProperty = vertex.<HashMap<Object, Collection>>property(Graph.Key.hide(sideEffectKey)).orElse(new HashMap<>());
+        final HashMap<Object, Collection> groupByProperty = vertex.<HashMap<Object, Collection>>property(Graph.Key.hide(memoryKey)).orElse(new HashMap<>());
         groupByProperty.forEach((k, v) -> emitter.emit(k, v));
     }
 
@@ -84,6 +84,6 @@ public class GroupByMapReduce implements MapReduce<Object, Collection, Object, O
 
     @Override
     public String getSideEffectKey() {
-        return this.sideEffectKey;
+        return this.memoryKey;
     }
 }

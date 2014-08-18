@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class CountCapStep<S> extends FilterStep<S> implements SideEffectCapable, Bulkable, VertexCentric, MapReducer<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
 
+    private static final String COUNT_KEY = Graph.Key.hide("count");
     private long bulkCount = 1l;
     private AtomicLong count = new AtomicLong(0l);
     private boolean vertexCentric = false;
@@ -26,7 +27,7 @@ public class CountCapStep<S> extends FilterStep<S> implements SideEffectCapable,
         super(traversal);
         this.setPredicate(traverser -> {
             this.count.set(this.count.get() + this.bulkCount);
-            if (!this.vertexCentric) this.traversal.memory().set(this.getAs(), this.count.get());
+            if (!this.vertexCentric) this.traversal.memory().set(COUNT_KEY, this.count.get());
             return true;
         });
 
@@ -36,12 +37,15 @@ public class CountCapStep<S> extends FilterStep<S> implements SideEffectCapable,
         this.bulkCount = bulkCount;
     }
 
+    public String getMemoryKey() {
+        return COUNT_KEY;
+    }
+
     public void setCurrentVertex(final Vertex vertex) {
         this.vertexCentric = true;
-        final String hiddenAs = Graph.Key.hide(this.getAs());
-        this.count = vertex.<AtomicLong>property(hiddenAs).orElse(new AtomicLong(0));
-        if (!vertex.property(hiddenAs).isPresent())
-            vertex.property(hiddenAs, this.count);
+        this.count = vertex.<AtomicLong>property(COUNT_KEY).orElse(new AtomicLong(0));
+        if (!vertex.property(COUNT_KEY).isPresent())
+            vertex.property(COUNT_KEY, this.count);
     }
 
     public MapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> getMapReduce() {

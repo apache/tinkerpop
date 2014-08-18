@@ -59,6 +59,10 @@ class StepLoader {
             return ((GraphTraversal) delegate).tree(GFunction.make(branchClosures));
         }
 
+        GraphTraversal.metaClass.tree = { final String memoryKey, final Closure... branchClosures ->
+            return ((GraphTraversal) delegate).tree(memoryKey, GFunction.make(branchClosures));
+        }
+
         GraphTraversal.metaClass.pageRank { final Closure closure ->
             final Closure newClosure = closure.dehydrate();
             return ((GraphTraversal) delegate).pageRank(new GSupplier(newClosure));

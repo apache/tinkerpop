@@ -13,6 +13,6 @@ class GroovyRetainTestImpl extends RetainTest {
     }
 
     public Traversal<Vertex, Vertex> get_g_v1_out_aggregateXxX_out_retainXxX(final Object v1Id) {
-        g.v(v1Id).out.aggregate.as('x').out.retain('x')
+        g.v(v1Id).out.aggregate('x').out.retain('x')
     }
 }

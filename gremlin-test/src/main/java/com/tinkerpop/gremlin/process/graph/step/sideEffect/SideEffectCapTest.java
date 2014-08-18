@@ -16,12 +16,12 @@ import static org.junit.Assert.assertFalse;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class SideEffectCapTest extends AbstractGremlinTest {
-    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXnameX_asXaX_out_capXaX();
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXa_nameX_out_capXaX();
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_hasXageX_groupCountXnameX_asXaX_out_capXaX() {
-        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_hasXageX_groupCountXnameX_asXaX_out_capXaX();
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_hasXageX_groupCountXa_nameX_out_capXaX();
         printTraversalForm(traversal);
         Map<String, Long> map = traversal.next();
         assertFalse(traversal.hasNext());
@@ -34,14 +34,14 @@ public abstract class SideEffectCapTest extends AbstractGremlinTest {
 
     public static class JavaSideEffectCapTest extends SideEffectCapTest {
 
-        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXnameX_asXaX_out_capXaX() {
-            return g.V().<Vertex>has("age").groupCount(v -> v.value("name")).as("a").out().cap("a");
+        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXa_nameX_out_capXaX() {
+            return g.V().<Vertex>has("age").groupCount("a",v -> v.value("name")).out().cap("a");
         }
     }
 
     public static class JavaComputerSideEffectCapTest extends SideEffectCapTest {
-        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXnameX_asXaX_out_capXaX() {
-            return g.V().<Vertex>has("age").groupCount(v -> v.value("name")).as("a").out().<Map<String, Long>>cap("a").submit(g.compute());
+        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXa_nameX_out_capXaX() {
+            return g.V().<Vertex>has("age").groupCount("a",v -> v.value("name")).out().<Map<String, Long>>cap("a").submit(g.compute());
         }
     }
 }

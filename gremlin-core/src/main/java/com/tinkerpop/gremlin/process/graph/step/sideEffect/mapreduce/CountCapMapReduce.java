@@ -24,7 +24,7 @@ public class CountCapMapReduce implements MapReduce<MapReduce.NullObject, Long, 
     }
 
     public CountCapMapReduce(final CountCapStep step) {
-        this.sideEffectKey = step.getAs();
+        this.sideEffectKey = step.getMemoryKey();
     }
 
     @Override

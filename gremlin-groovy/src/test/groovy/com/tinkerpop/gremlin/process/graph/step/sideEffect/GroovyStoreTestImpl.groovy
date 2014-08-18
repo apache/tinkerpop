@@ -8,7 +8,11 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 class GroovyStoreTestImpl extends StoreTest {
 
-    public Traversal<Vertex, Collection> get_g_V_storeXnameX_asXaX_out_capXaX() {
-        return g.V.store{ it.value('name') }.as('a').out().cap('a');
+    public Traversal<Vertex, Collection> get_g_V_storeXa_nameX_out_capXaX() {
+       g.V.store('a') { it.value('name') }.out().cap('a');
+    }
+
+    public Traversal<Vertex, Collection> get_g_v1_storeXa_nameX_out_storeXa_nameX_name_capXaX(final Object v1Id) {
+       g.v(v1Id).store('a'){it.get().value('name')}.out().store('a'){it.get().value('name')}.name.cap('a');
     }
 }

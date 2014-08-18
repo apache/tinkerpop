@@ -21,7 +21,7 @@ public class SideEffectCapComputerStep<S> extends FilterStep<S> implements Rever
 
     public SideEffectCapComputerStep(final Traversal traversal, final SideEffectCapStep sideEffectCapStep) {
         super(traversal);
-        this.sideEffectAs = sideEffectCapStep.sideEffectAs;
+        this.sideEffectAs = sideEffectCapStep.memoryKey;
         this.setPredicate(traverser -> false);
     }
 
@@ -36,7 +36,7 @@ public class SideEffectCapComputerStep<S> extends FilterStep<S> implements Rever
         return Graph.Key.isHidden(this.sideEffectAs) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectAs);
     }
 
-    public String getSideEffectAs() {
+    public String getMemoryKey() {
         return this.sideEffectAs;
     }
 }
