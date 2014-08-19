@@ -26,7 +26,12 @@ public @interface FeatureRequirementSet {
         /**
          * Allows for the most basic features of a graph - add edges/vertices withs support for string property values.
          */
-        SIMPLE;
+        SIMPLE,
+
+        /**
+         * Allows for adding of vertices (but not edges) with string property values.
+         */
+        VERTICES_ONLY;
 
         private static final List<FeatureRequirement> featuresRequiredBySimple = new ArrayList<FeatureRequirement>(){{
             add(FeatureRequirement.Factory.create(Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES, Graph.Features.VertexFeatures.class));
@@ -35,10 +40,17 @@ public @interface FeatureRequirementSet {
             add(FeatureRequirement.Factory.create(Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES, Graph.Features.EdgePropertyFeatures.class));
         }};
 
+        private static final List<FeatureRequirement> featuresRequiredByVerticesOnly = new ArrayList<FeatureRequirement>(){{
+            add(FeatureRequirement.Factory.create(Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES, Graph.Features.VertexFeatures.class));
+            add(FeatureRequirement.Factory.create(Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES, Graph.Features.VertexPropertyFeatures.class));
+        }};
+
         public List<FeatureRequirement> featuresRequired() {
             switch (this) {
                 case SIMPLE:
                     return featuresRequiredBySimple;
+                case VERTICES_ONLY:
+                    return featuresRequiredByVerticesOnly;
             }
 
             throw new RuntimeException("No features for this GraphData type");

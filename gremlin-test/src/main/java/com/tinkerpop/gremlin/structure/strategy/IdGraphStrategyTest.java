@@ -32,8 +32,7 @@ public class IdGraphStrategyTest {
         }
 
         @Test
-        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldInjectAnIdAndReturnBySpecifiedIdForVertex() {
             final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
             final Vertex v = g.addVertex(Element.ID, "test", "something", "else");
@@ -71,8 +70,7 @@ public class IdGraphStrategyTest {
         }
 
         @Test
-        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldCreateAnIdAndReturnByCreatedIdForVertex() {
             final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
             final Vertex v = g.addVertex("something", "else");
@@ -115,8 +113,7 @@ public class IdGraphStrategyTest {
         }
 
         @Test
-        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldCreateAnIdAndReturnByCreatedId() {
             final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
             final Vertex v = g.addVertex("something", "else");
@@ -166,8 +163,7 @@ public class IdGraphStrategyTest {
         }
 
         @Test
-        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldInjectAnIdAndReturnBySpecifiedId() {
             final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
