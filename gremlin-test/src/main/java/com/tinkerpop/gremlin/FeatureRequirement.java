@@ -1,4 +1,6 @@
-package com.tinkerpop.gremlin.structure;
+package com.tinkerpop.gremlin;
+
+import com.tinkerpop.gremlin.structure.Graph;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;

@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.algorithm.generator;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.structure.FeatureRequirement;
+import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;

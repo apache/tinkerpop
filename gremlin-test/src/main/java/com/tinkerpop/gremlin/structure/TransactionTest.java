@@ -2,6 +2,8 @@ package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.ExceptionCoverage;
+import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;

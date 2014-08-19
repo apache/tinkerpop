@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.structure;
+package com.tinkerpop.gremlin;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;

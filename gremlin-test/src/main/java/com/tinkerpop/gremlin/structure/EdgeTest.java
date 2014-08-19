@@ -1,6 +1,8 @@
 package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.ExceptionCoverage;
+import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.junit.Test;
 

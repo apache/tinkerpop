@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin;
 
-import com.tinkerpop.gremlin.structure.FeatureRequirement;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
