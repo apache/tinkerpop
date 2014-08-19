@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
+import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.FeatureRequirement;
@@ -13,9 +14,7 @@ import org.junit.runner.RunWith;
 
 import java.util.UUID;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
-import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES;
 import static org.junit.Assert.*;
 
 /**
@@ -167,15 +166,16 @@ public class IdGraphStrategyTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldInjectAnIdAndReturnBySpecifiedId() {
             final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
-            final Vertex v = g.addVertex(Element.ID, "test", "something", "else");
+            final Object o = GraphManager.get().convertId("1");
+            final Vertex v = g.addVertex(Element.ID, o, "something", "else");
             tryCommit(g, c -> {
                 assertNotNull(v);
-                assertEquals("test", v.id());
+                assertEquals(o, v.id());
                 assertFalse(v.property(strategy.getIdKey()).isPresent());
                 assertEquals("else", v.property("something").value());
 
-                final Vertex found = g.v("test");
-                assertEquals("test", found.id());
+                final Vertex found = g.v(o);
+                assertEquals(o, found.id());
                 assertFalse(found.property(strategy.getIdKey()).isPresent());
                 assertEquals("else", found.property("something").value());
             });
@@ -186,28 +186,29 @@ public class IdGraphStrategyTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldAllowDirectSettingOfIdField() {
             final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
-            final Vertex v = g.addVertex(Element.ID, "test", "something", "else", strategy.getIdKey(), "should be ok to set this as supportsEdgeId=true");
+            final Object o = GraphManager.get().convertId("1");
+            final Vertex v = g.addVertex(Element.ID, o, "something", "else", strategy.getIdKey(), "should be ok to set this as supportsEdgeId=true");
             tryCommit(g, c -> {
                 assertNotNull(v);
-                assertEquals("test", v.id());
+                assertEquals(o, v.id());
                 assertEquals("should be ok to set this as supportsEdgeId=true", v.property(strategy.getIdKey()).value());
                 assertEquals("else", v.property("something").value());
 
-                final Vertex found = g.v("test");
-                assertEquals("test", found.id());
+                final Vertex found = g.v(o);
+                assertEquals(o, found.id());
                 assertEquals("should be ok to set this as supportsEdgeId=true", found.property(strategy.getIdKey()).value());
                 assertEquals("else", found.property("something").value());
             });
 
             try {
-                v.addEdge("self", v, Element.ID, "test", "something", "else", strategy.getIdKey(), "this should toss and exception as supportsVertexId=false");
+                v.addEdge("self", v, Element.ID, o, "something", "else", strategy.getIdKey(), "this should toss and exception as supportsVertexId=false");
                 fail("An exception should be tossed here because supportsEdgeId=true");
             } catch (IllegalArgumentException iae) {
                 assertNotNull(iae);
             }
 
             try {
-                final Edge e = v.addEdge("self", v, Element.ID, "test", "something", "else");
+                final Edge e = v.addEdge("self", v, Element.ID, o, "something", "else");
                 e.property(strategy.getIdKey(), "this should toss and exception as supportsVertexId=false");
                 fail("An exception should be tossed here because supportsEdgeId=true");
             } catch (IllegalArgumentException iae) {

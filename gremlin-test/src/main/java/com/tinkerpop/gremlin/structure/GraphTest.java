@@ -125,12 +125,13 @@ public class GraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void shouldHaveExceptionConsistencyWhenAssigningSameIdOnVertex() {
-        g.addVertex(Element.ID, 1000l);
+        final Object o = GraphManager.get().convertId("1");
+        g.addVertex(Element.ID, o);
         try {
-            g.addVertex(Element.ID, 1000l);
+            g.addVertex(Element.ID, o);
             fail("Assigning the same ID to an Element should throw an exception");
         } catch (Exception ex) {
-            final Exception expectedException = Graph.Exceptions.vertexWithIdAlreadyExists(1000l);
+            final Exception expectedException = Graph.Exceptions.vertexWithIdAlreadyExists(o);
             assertEquals(expectedException.getClass(), ex.getClass());
             assertEquals(expectedException.getMessage(), ex.getMessage());
         }

@@ -37,13 +37,14 @@ public class VertexTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_NUMERIC_IDS)
     public void shouldHaveExceptionConsistencyWhenAssigningSameIdOnEdge() {
         final Vertex v = g.addVertex();
-        v.addEdge("label", v, Element.ID, 1000l);
+        final Object o = GraphManager.get().convertId("1");
+        v.addEdge("label", v, Element.ID, o);
 
         try {
-            v.addEdge("label", v, Element.ID, 1000l);
+            v.addEdge("label", v, Element.ID, o);
             fail("Assigning the same ID to an Element should throw an exception");
         } catch (Exception ex) {
-            final Exception expectedException = Graph.Exceptions.edgeWithIdAlreadyExists(1000l);
+            final Exception expectedException = Graph.Exceptions.edgeWithIdAlreadyExists(o);
             assertEquals(expectedException.getClass(), ex.getClass());
             assertEquals(expectedException.getMessage(), ex.getMessage());
         }
