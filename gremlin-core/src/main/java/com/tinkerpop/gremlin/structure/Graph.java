@@ -316,18 +316,8 @@ public interface Graph extends AutoCloseable {
         /**
          * Features that are related to {@link Vertex} operations.
          */
-        public interface VertexFeatures extends FeatureSet {
-            public static final String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
+        public interface VertexFeatures extends ElementFeatures {
             public static final String FEATURE_ADD_VERTICES = "AddVertices";
-
-            /**
-             * Determines if a {@link Vertex} can have a user defined identifier.  Implementation that do not support
-             * this feature will be expected to auto-generate unique identifiers.
-             */
-            @FeatureDescriptor(name = FEATURE_USER_SUPPLIED_IDS)
-            public default boolean supportsUserSuppliedIds() {
-                return true;
-            }
 
             /**
              * Determines if a {@link Vertex} can be added to the {@code Graph}.
@@ -349,18 +339,8 @@ public interface Graph extends AutoCloseable {
         /**
          * Features that are related to {@link Edge} operations.
          */
-        public interface EdgeFeatures extends FeatureSet {
-            public static final String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
+        public interface EdgeFeatures extends ElementFeatures {
             public static final String FEATURE_ADD_EDGES = "AddEdges";
-
-            /**
-             * Determines if an {@link Edge} can have a user defined identifier.  Implementation that do not support
-             * this feature will be expected to auto-generate unique identifiers.
-             */
-            @FeatureDescriptor(name = FEATURE_USER_SUPPLIED_IDS)
-            public default boolean supportsUserSuppliedIds() {
-                return true;
-            }
 
             /**
              * Determines if an {@link Edge} can be added to the {@code Graph}.
@@ -376,6 +356,68 @@ public interface Graph extends AutoCloseable {
             public default EdgePropertyFeatures properties() {
                 return new EdgePropertyFeatures() {
                 };
+            }
+        }
+
+        /**
+         * Features that are related to {@link Element} objects.  This is a base interface.
+         */
+        public interface ElementFeatures extends FeatureSet {
+            public static final String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
+            public static final String FEATURE_NUMERIC_IDS = "NumericIds";
+            public static final String FEATURE_STRING_IDS = "StringIds";
+            public static final String FEATURE_UUID_IDS = "UuidIds";
+            public static final String FEATURE_CUSTOM_IDS = "CustomIds";
+            public static final String FEATURE_ANY_IDS = "AnyIds";
+
+            /**
+             * Determines if an {@link Element} can have a user defined identifier.  Implementation that do not support
+             * this feature will be expected to auto-generate unique identifiers.
+             */
+            @FeatureDescriptor(name = FEATURE_USER_SUPPLIED_IDS)
+            public default boolean supportsUserSuppliedIds() {
+                return true;
+            }
+
+            /**
+             * Determines if an {@link Element} has numeric identifiers.
+             */
+            @FeatureDescriptor(name = FEATURE_NUMERIC_IDS)
+            public default boolean supportsNumericIds() {
+                return true;
+            }
+
+            /**
+             * Determines if an {@link Element} has string identifiers.
+             */
+            @FeatureDescriptor(name = FEATURE_STRING_IDS)
+            public default boolean supportsStringIds() {
+                return true;
+            }
+
+            /**
+             * Determines if an {@link Element} has UUID identifiers.
+             */
+            @FeatureDescriptor(name = FEATURE_UUID_IDS)
+            public default boolean supportsUuidIds() {
+                return true;
+            }
+
+            /**
+             * Determines if an {@link Element} has custom identifiers where "custom" refers to an implementation
+             * defined object.
+             */
+            @FeatureDescriptor(name = FEATURE_CUSTOM_IDS)
+            public default boolean supportsCustomIds() {
+                return true;
+            }
+
+            /**
+             * Determines if an {@link Element} any Java object is a suitable identifier.
+             */
+            @FeatureDescriptor(name = FEATURE_ANY_IDS)
+            public default boolean supportsAnyIds() {
+                return true;
             }
         }
 

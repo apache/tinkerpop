@@ -165,7 +165,12 @@ public class TinkerGraph implements Graph, Serializable {
         throw Exceptions.transactionsNotSupported();
     }
 
-
+    /**
+     * Return TinkerGraph feature set.
+     * <p>
+     * <b>Reference Implementation Help:</b> Implementers only need to implement features for which there are
+     * negative or instance configured features.  By default, all {@link Features} return true.
+     */
     public Features getFeatures() {
         return new TinkerGraphFeatures();
     }
@@ -177,8 +182,32 @@ public class TinkerGraph implements Graph, Serializable {
         }
 
         @Override
+        public EdgeFeatures edge() {
+            return new TinkerGraphEdgeFeatures();
+        }
+
+        @Override
+        public VertexFeatures vertex() {
+            return new TinkerGraphVertexFeatures();
+        }
+
+        @Override
         public String toString() {
             return StringFactory.featureString(this);
+        }
+    }
+
+    public static class TinkerGraphVertexFeatures implements Features.VertexFeatures {
+        @Override
+        public boolean supportsCustomIds() {
+            return false;
+        }
+    }
+
+    public static class TinkerGraphEdgeFeatures implements Features.EdgeFeatures {
+        @Override
+        public boolean supportsCustomIds() {
+            return false;
         }
     }
 

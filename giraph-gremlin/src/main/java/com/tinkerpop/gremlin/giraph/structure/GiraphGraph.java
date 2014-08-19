@@ -163,6 +163,11 @@ public class GiraphGraph implements Graph, Serializable {
                     public boolean supportsAddVertices() {
                         return false;
                     }
+
+                    @Override
+                    public boolean supportsCustomIds() {
+                        return false;
+                    }
                 };
             }
 
@@ -171,6 +176,11 @@ public class GiraphGraph implements Graph, Serializable {
                 return new EdgeFeatures() {
                     @Override
                     public boolean supportsAddEdges() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean supportsCustomIds() {
                         return false;
                     }
                 };

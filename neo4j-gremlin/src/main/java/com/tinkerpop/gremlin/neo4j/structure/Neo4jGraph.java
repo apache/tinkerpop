@@ -396,28 +396,39 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
             return StringFactory.featureString(this);
         }
 
-        public static class Neo4jVertexFeatures implements VertexFeatures {
-
-            @Override
-            public boolean supportsUserSuppliedIds() {
-                return false;
-            }
-
+        public static class Neo4jVertexFeatures extends Neo4jElementFeatures implements VertexFeatures {
             @Override
             public VertexPropertyFeatures properties() {
                 return new Neo4jVertexPropertyFeatures();
             }
         }
 
-        public static class Neo4jEdgeFeatures implements EdgeFeatures {
+        public static class Neo4jEdgeFeatures extends Neo4jElementFeatures implements EdgeFeatures {
+            @Override
+            public EdgePropertyFeatures properties() {
+                return new Neo4jEdgePropertyFeatures();
+            }
+        }
+
+        public static class Neo4jElementFeatures implements ElementFeatures {
             @Override
             public boolean supportsUserSuppliedIds() {
                 return false;
             }
 
             @Override
-            public EdgePropertyFeatures properties() {
-                return new Neo4jEdgePropertyFeatures();
+            public boolean supportsStringIds() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsUuidIds() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsCustomIds() {
+                return false;
             }
         }
 
