@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
+import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.GraphProvider;
 import org.junit.Test;
@@ -120,6 +121,7 @@ public class GraphTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void shouldHaveExceptionConsistencyWhenAssigningSameIdOnVertex() {
         g.addVertex(Element.ID, 1000l);
@@ -135,6 +137,7 @@ public class GraphTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
     public void shouldHaveExceptionConsistencyWhenIdsNotSupportedForAddVertex() throws Exception {
         try {
@@ -162,6 +165,8 @@ public class GraphTest extends AbstractGremlinTest {
      */
     // todo: double check neo4j at 2.2.x to see if this is resolved
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_FULLY_ISOLATED_TRANSACTIONS)
     public void shouldProperlyCountVerticesAndEdgesOnAddRemove() {
         final Vertex v = g.addVertex();
@@ -206,6 +211,8 @@ public class GraphTest extends AbstractGremlinTest {
      * Generate a graph with lots of edges and vertices, then test vertex/edge counts on removal of each edge.
      */
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldRemoveEdges() {
         final int vertexCount = 100;
         final int edgeCount = 200;
@@ -244,6 +251,8 @@ public class GraphTest extends AbstractGremlinTest {
      * Generate a graph with lots of edges and vertices, then test vertex/edge counts on removal of each vertex.
      */
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldRemoveVertices() {
         final int vertexCount = 500;
         final List<Vertex> vertices = new ArrayList<>();
@@ -277,6 +286,8 @@ public class GraphTest extends AbstractGremlinTest {
      * Create a small {@link com.tinkerpop.gremlin.structure.Graph} and ensure that counts of edges per vertex are correct.
      */
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldEvaluateConnectivityPatterns() {
         final GraphProvider graphProvider = GraphManager.get();
         final Graph graph = this.g;
@@ -368,6 +379,8 @@ public class GraphTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldTraverseInOutFromVertexWithSingleEdgeLabelFilter() {
         final GraphProvider graphProvider = GraphManager.get();
         final Graph graph = g;
@@ -417,6 +430,8 @@ public class GraphTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldTraverseInOutFromVertexWithMultipleEdgeLabelFilter() {
         final GraphProvider graphProvider = GraphManager.get();
         final Graph graph = g;
@@ -453,6 +468,8 @@ public class GraphTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldTestTreeConnectivity() {
         final GraphProvider graphProvider = GraphManager.get();
         final Graph graph = g;
@@ -499,6 +516,7 @@ public class GraphTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_PERSISTENCE)
     public void shouldPersistDataOnClose() throws Exception {
         final GraphProvider graphProvider = GraphManager.get();
