@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -19,6 +20,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldAppendPartitionToVertex() {
         final Vertex v = g.addVertex("any", "thing");
 
@@ -28,6 +30,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldAppendPartitionToEdge() {
         final Vertex v1 = g.addVertex("any", "thing");
         final Vertex v2 = g.addVertex("some", "thing");
@@ -48,6 +51,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldWriteVerticesToMultiplePartitions() {
         final Vertex vA = g.addVertex("any", "a");
         final PartitionGraphStrategy strategy = (PartitionGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
@@ -85,6 +89,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldThrowExceptionOnvInDifferentPartition() {
         final Vertex vA = g.addVertex("any", "a");
         assertEquals(vA.id(), g.v(vA.id()).id());
@@ -102,6 +107,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldThrowExceptionOneInDifferentPartition() {
         final Vertex vA = g.addVertex("any", "a");
         final Edge e = vA.addEdge("knows", vA);
@@ -120,6 +126,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldWriteToMultiplePartitions() {
         final Vertex vA = g.addVertex("any", "a");
         final Vertex vAA = g.addVertex("any", "aa");
@@ -135,6 +142,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         final Edge eBtovC = vB.addEdge("b->c", vC);
         final Edge eAtovC = vA.addEdge("a->c", vC);
 
+        // todo: review
         /* not applicable to SubgraphStrategy
         final GraphTraversal t = g.V();
         assertTrue(t.strategies().get().stream().anyMatch(o -> o.getClass().equals(PartitionGraphStrategy.PartitionGraphTraversalStrategy.class)));
@@ -179,6 +187,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         assertEquals(vC.id(), g.e(eAtovC.id()).inV().id().next());
         assertFalse(g.e(eAtovC.id()).outV().hasNext());
 
+        // todo: review
         /* not applicable to SubgraphStrategy
         strategy.addReadPartition("A");
         g.v(vA.id()).out().out().forEach(v -> {
@@ -194,6 +203,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldWrapProperties() {
         final Vertex v = g.addVertex("any", "a");
         final Edge e = v.addEdge("to", v, "all", "a");
