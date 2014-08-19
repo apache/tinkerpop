@@ -13,7 +13,7 @@ Building and Testing
 ~~~~~~~~~~~~~~~~~~~~
 
 * Build Project: `mvn clean install`
-** Specify specific tests in a TinkerPop Suite to run: `mvn test -Dgremlin-tests={test class 1, test class 2...}`
+** Specify specific tests in a TinkerPop Suite to run: `mvn test -Dgremlin.tests={test class 1, test class 2...}`
 * Build AsciiDocs: `mvn process-resources -Dasciidoc`
 * Deploy AsciiDocs: `mvn deploy -Dasciidoc`
 * Deploy JavaDocs: `mvn deploy -Djavadoc`

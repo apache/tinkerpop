@@ -427,6 +427,11 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
             }
 
             @Override
+            public boolean supportsAnyIds() {
+                return false;
+            }
+
+            @Override
             public boolean supportsCustomIds() {
                 return false;
             }

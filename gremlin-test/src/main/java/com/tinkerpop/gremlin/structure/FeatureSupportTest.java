@@ -15,6 +15,11 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.util.UUID;
+
+import static com.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_STRING_IDS;
+import static com.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_NUMERIC_IDS;
+import static com.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_UUID_IDS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_THREADED_TRANSACTIONS;
@@ -144,6 +149,36 @@ public class FeatureSupportTest {
             } catch (Exception ex) {
                 assertEquals(Vertex.Exceptions.userSuppliedIdsNotSupported().getMessage(), ex.getMessage());
             }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
+        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_STRING_IDS, supported = false)
+        public void shouldSupportStringIdsIfStringIdsAreGeneratedFromTheGraph() throws Exception {
+            final Vertex v = g.addVertex();
+            if (v.id() instanceof String)
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_STRING_IDS));
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
+        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_UUID_IDS, supported = false)
+        public void shouldSupportStringIdsIfUuidIdsAreGeneratedFromTheGraph() throws Exception {
+            final Vertex v = g.addVertex();
+            if (v.id() instanceof UUID)
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_UUID_IDS));
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
+        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_NUMERIC_IDS, supported = false)
+        public void shouldSupportStringIdsIfNumericIdsAreGeneratedFromTheGraph() throws Exception {
+            final Vertex v = g.addVertex();
+            if (v.id() instanceof Number)
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
         }
     }
 
