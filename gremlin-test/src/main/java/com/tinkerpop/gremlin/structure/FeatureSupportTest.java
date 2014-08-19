@@ -201,6 +201,42 @@ public class FeatureSupportTest {
                 assertEquals(Edge.Exceptions.userSuppliedIdsNotSupported().getMessage(), ex.getMessage());
             }
         }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = EdgeFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
+        @FeatureRequirement(featureClass = EdgeFeatures.class, feature = FEATURE_STRING_IDS, supported = false)
+        public void shouldSupportStringIdsIfStringIdsAreGeneratedFromTheGraph() throws Exception {
+            final Vertex v = g.addVertex();
+            final Edge e = v.addEdge("knows", v);
+            if (e.id() instanceof String)
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_STRING_IDS));
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = EdgeFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
+        @FeatureRequirement(featureClass = EdgeFeatures.class, feature = FEATURE_UUID_IDS, supported = false)
+        public void shouldSupportStringIdsIfUuidIdsAreGeneratedFromTheGraph() throws Exception {
+            final Vertex v = g.addVertex();
+            final Edge e = v.addEdge("knows", v);
+            if (e.id() instanceof UUID)
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_UUID_IDS));
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = EdgeFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
+        @FeatureRequirement(featureClass = EdgeFeatures.class, feature = FEATURE_NUMERIC_IDS, supported = false)
+        public void shouldSupportStringIdsIfNumericIdsAreGeneratedFromTheGraph() throws Exception {
+            final Vertex v = g.addVertex();
+            final Edge e = v.addEdge("knows", v);
+            if (e.id() instanceof Number)
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
+        }
     }
 
     /**
