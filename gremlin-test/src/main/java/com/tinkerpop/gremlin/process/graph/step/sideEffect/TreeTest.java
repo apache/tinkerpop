@@ -22,6 +22,10 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Tree> get_g_V_out_out_treeXidX();
 
+    public abstract Traversal<Vertex, Tree> get_g_V_out_out_treeXa_idX();
+
+    public abstract Traversal<Vertex, Tree> get_g_V_out_out_treeXaX();
+
     public abstract Traversal<Vertex, Tree> get_g_v1_out_out_treeXnameX(final Object v1Id);
 
     public abstract Traversal<Vertex, Tree> get_g_v1_out_out_treeXa_nameX_both_both_capXaX(final Object v1Id);
@@ -48,16 +52,35 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_out_out_treeXidX() {
-        Traversal<Vertex, Tree> traversal = get_g_V_out_out_treeXidX();
-        printTraversalForm(traversal);
-        final Tree tree = traversal.next();
-        assertFalse(traversal.hasNext());
-        assertEquals(1, tree.size());
-        assertTrue(tree.containsKey(convertToVertexId("marko")));
-        assertEquals(1, ((Map) tree.get(convertToVertexId("marko"))).size());
-        assertTrue(((Map) tree.get(convertToVertexId("marko"))).containsKey(convertToVertexId("josh")));
-        assertTrue(((Map) ((Map) tree.get(convertToVertexId("marko"))).get(convertToVertexId("josh"))).containsKey(convertToVertexId("lop")));
-        assertTrue(((Map) ((Map) tree.get(convertToVertexId("marko"))).get(convertToVertexId("josh"))).containsKey(convertToVertexId("ripple")));
+        List<Traversal<Vertex, Tree>> traversals = Arrays.asList(get_g_V_out_out_treeXidX(), get_g_V_out_out_treeXa_idX());
+        traversals.forEach(traversal -> {
+            printTraversalForm(traversal);
+            final Tree tree = traversal.next();
+            assertFalse(traversal.hasNext());
+            assertEquals(1, tree.size());
+            assertTrue(tree.containsKey(convertToVertexId("marko")));
+            assertEquals(1, ((Map) tree.get(convertToVertexId("marko"))).size());
+            assertTrue(((Map) tree.get(convertToVertexId("marko"))).containsKey(convertToVertexId("josh")));
+            assertTrue(((Map) ((Map) tree.get(convertToVertexId("marko"))).get(convertToVertexId("josh"))).containsKey(convertToVertexId("lop")));
+            assertTrue(((Map) ((Map) tree.get(convertToVertexId("marko"))).get(convertToVertexId("josh"))).containsKey(convertToVertexId("ripple")));
+        });
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC_DOUBLE)
+    public void g_V_out_out_treeXaX() {
+        List<Traversal<Vertex, Tree>> traversals = Arrays.asList(get_g_V_out_out_treeXaX());
+        traversals.forEach(traversal -> {
+            printTraversalForm(traversal);
+            final Tree tree = traversal.next();
+            assertFalse(traversal.hasNext());
+            assertEquals(1, tree.size());
+            assertTrue(tree.containsKey(convertToVertex(g, "marko")));
+            assertEquals(1, ((Map) tree.get(convertToVertex(g, "marko"))).size());
+            assertTrue(((Map) tree.get(convertToVertex(g, "marko"))).containsKey(convertToVertex(g, "josh")));
+            assertTrue(((Map) ((Map) tree.get(convertToVertex(g, "marko"))).get(convertToVertex(g, "josh"))).containsKey(convertToVertex(g, "lop")));
+            assertTrue(((Map) ((Map) tree.get(convertToVertex(g, "marko"))).get(convertToVertex(g, "josh"))).containsKey(convertToVertex(g, "ripple")));
+        });
     }
 
     public static class JavaTreeTest extends TreeTest {
@@ -75,6 +98,14 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex, Tree> get_g_V_out_out_treeXidX() {
             return (Traversal) g.V().out().out().tree(v -> ((Vertex) v).id());
+        }
+
+        public Traversal<Vertex, Tree> get_g_V_out_out_treeXa_idX() {
+            return (Traversal) g.V().out().out().tree("a", v -> ((Vertex) v).id());
+        }
+
+        public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX() {
+            return (Traversal) g.V().out().out().tree("a");
         }
     }
 
@@ -95,6 +126,14 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex, Tree> get_g_V_out_out_treeXidX() {
             return (Traversal) g.V().out().out().tree(v -> ((Vertex) v).id()).submit(g.compute());
+        }
+
+        public Traversal<Vertex, Tree> get_g_V_out_out_treeXa_idX() {
+            return (Traversal) g.V().out().out().tree("a", v -> ((Vertex) v).id()).submit(g.compute());
+        }
+
+        public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX() {
+            return (Traversal) g.V().out().out().tree("a").submit(g.compute());
         }
     }
 }

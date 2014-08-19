@@ -55,9 +55,9 @@ class StepLoader {
             return ((GraphTraversal) delegate).select(GFunction.make(stepClosures));
         }
 
-        //GraphTraversal.metaClass.tree = { final String memoryKey ->
-        //    return ((GraphTraversal) delegate).tree(memoryKey);
-        //}
+        GraphTraversal.metaClass.tree = { final String memoryKey ->
+            return ((GraphTraversal) delegate).tree(memoryKey, new SFunction[0]);
+        }
 
         GraphTraversal.metaClass.tree = { final Closure... branchClosures ->
             return ((GraphTraversal) delegate).tree(GFunction.make(branchClosures));
