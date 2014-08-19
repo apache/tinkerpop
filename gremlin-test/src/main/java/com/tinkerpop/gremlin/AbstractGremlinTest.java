@@ -18,6 +18,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assume.assumeThat;
@@ -66,6 +68,12 @@ public abstract class AbstractGremlinTest {
 
         // if the graph is loading data then it will come with it's own requirements
         if (loadGraphWiths.length > 0) frs.addAll(loadGraphWiths[0].value().featuresRequired());
+
+        // if the graph has a set of feature requirements bundled together then add those
+        final FeatureRequirementSet[] featureRequirementSets = testMethod.getAnnotationsByType(FeatureRequirementSet.class);
+        if (featureRequirementSets.length > 0)
+            frs.addAll(Arrays.stream(featureRequirementSets)
+                             .flatMap(f -> f.value().featuresRequired().stream()).collect(Collectors.toList()));
 
         // process the unique set of feature requirements
         final Set<FeatureRequirement> featureRequirementSet = new HashSet<>(frs);
