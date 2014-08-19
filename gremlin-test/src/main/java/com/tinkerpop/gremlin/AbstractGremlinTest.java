@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assume.assumeThat;
@@ -80,7 +79,7 @@ public abstract class AbstractGremlinTest {
         for (FeatureRequirement fr : featureRequirementSet) {
             try {
                 //System.out.println(String.format("Assume that %s meets Feature Requirement - %s - with %s", fr.featureClass().getSimpleName(), fr.feature(), fr.supported()));
-                assumeThat(g.getFeatures().supports(fr.featureClass(), fr.feature()), is(fr.supported()));
+                assumeThat(g.features().supports(fr.featureClass(), fr.feature()), is(fr.supported()));
             } catch (NoSuchMethodException nsme) {
                 throw new NoSuchMethodException(String.format("[supports%s] is not a valid feature on %s", fr.feature(), fr.featureClass()));
             }
@@ -145,7 +144,7 @@ public abstract class AbstractGremlinTest {
      * Utility method that commits if the graph supports transactions.
      */
     protected void tryCommit(final Graph g) {
-        if (g.getFeatures().graph().supportsTransactions())
+        if (g.features().graph().supportsTransactions())
             g.tx().commit();
     }
 
@@ -155,7 +154,7 @@ public abstract class AbstractGremlinTest {
      */
     protected void tryCommit(final Graph g, final Consumer<Graph> assertFunction) {
         assertFunction.accept(g);
-        if (g.getFeatures().graph().supportsTransactions()) {
+        if (g.features().graph().supportsTransactions()) {
             g.tx().commit();
             assertFunction.accept(g);
         }
@@ -165,7 +164,7 @@ public abstract class AbstractGremlinTest {
      * Utility method that rollsback if the graph supports transactions.
      */
     protected void tryRollback(final Graph g) {
-        if (g.getFeatures().graph().supportsTransactions())
+        if (g.features().graph().supportsTransactions())
             g.tx().rollback();
     }
 

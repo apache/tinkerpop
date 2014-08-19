@@ -212,7 +212,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         return StringFactory.graphString(this, baseGraph.toString());
     }
 
-    public Features getFeatures() {
+    public Features features() {
         return new Neo4jGraphFeatures();
     }
 

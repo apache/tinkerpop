@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirement;
-import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
@@ -1034,7 +1033,7 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais,
                         Direction.BOTH,
                         (vertexId, label, properties) -> {
-                            if (g.getFeatures().vertex().supportsUserSuppliedIds())
+                            if (g.features().vertex().supportsUserSuppliedIds())
                                 assertEquals(v1.id(), vertexId);
 
                             assertEquals(v1.label(), label);
@@ -1109,7 +1108,7 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
                         (vertexId, label, properties) -> {
-                            if (g.getFeatures().vertex().supportsUserSuppliedIds())
+                            if (g.features().vertex().supportsUserSuppliedIds())
                                 assertEquals(v1.id(), vertexId);
 
                             assertEquals(v1.label(), label);
@@ -1828,7 +1827,7 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     private static void assertClassicId(final Graph g, final boolean lossyForId, final Element e, final Object expected) {
-        if (g.getFeatures().edge().supportsUserSuppliedIds()) {
+        if (g.features().edge().supportsUserSuppliedIds()) {
             if (lossyForId)
                 assertEquals(expected.toString(), e.id().toString());
             else

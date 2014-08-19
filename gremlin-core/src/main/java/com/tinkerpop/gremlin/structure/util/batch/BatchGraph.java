@@ -95,16 +95,16 @@ public class BatchGraph<T extends Graph> implements Graph {
                        final BiConsumer<Element, Object[]> existingEdgeStrategy) {
         this.baseGraph = graph;
         this.batchTransaction = new BatchTransaction();
-        this.batchFeatures = new BatchFeatures(graph.getFeatures());
+        this.batchFeatures = new BatchFeatures(graph.features());
         this.bufferSize = bufferSize;
         this.cache = type.getVertexCache();
         this.remainingBufferSize = this.bufferSize;
         this.vertexIdKey = vertexIdKey;
         this.edgeIdKey = edgeIdKey;
         this.incrementalLoading = incrementalLoading;
-        this.baseSupportsSuppliedEdgeId = this.baseGraph.getFeatures().edge().supportsUserSuppliedIds();
-        this.baseSupportsSuppliedVertexId = this.baseGraph.getFeatures().vertex().supportsUserSuppliedIds();
-        this.baseSupportsTransactions = this.baseGraph.getFeatures().graph().supportsTransactions();
+        this.baseSupportsSuppliedEdgeId = this.baseGraph.features().edge().supportsUserSuppliedIds();
+        this.baseSupportsSuppliedVertexId = this.baseGraph.features().vertex().supportsUserSuppliedIds();
+        this.baseSupportsTransactions = this.baseGraph.features().graph().supportsTransactions();
         this.existingEdgeStrategy = existingEdgeStrategy;
         this.existingVertexStrategy = existingVertexStrategy;
     }
@@ -246,7 +246,7 @@ public class BatchGraph<T extends Graph> implements Graph {
     }
 
     @Override
-    public Features getFeatures() {
+    public Features features() {
         return this.batchFeatures;
     }
 
@@ -272,7 +272,7 @@ public class BatchGraph<T extends Graph> implements Graph {
         private final boolean supportsTx;
 
         public BatchTransaction() {
-            supportsTx = baseGraph.getFeatures().graph().supportsTransactions();
+            supportsTx = baseGraph.features().graph().supportsTransactions();
         }
 
         @Override

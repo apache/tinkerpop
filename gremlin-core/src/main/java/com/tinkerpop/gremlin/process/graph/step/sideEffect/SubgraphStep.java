@@ -46,7 +46,7 @@ public class SubgraphStep<S> extends FilterStep<S> implements SideEffectCapable,
         this.edgeIdsAdded = null == edgeIdHolder ? new HashSet<>() : edgeIdHolder;
         this.idVertexMap = null == idVertexMap ? new HashMap<>() : idVertexMap;
         this.subgraph = this.traversal.memory().getOrCreate(this.memoryKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION));
-        this.subgraphSupportsUserIds = this.subgraph.getFeatures().vertex().supportsUserSuppliedIds();
+        this.subgraphSupportsUserIds = this.subgraph.features().vertex().supportsUserSuppliedIds();
 
         this.setPredicate(traverser -> {
             traverser.getPath().stream().map(Pair::getValue1)

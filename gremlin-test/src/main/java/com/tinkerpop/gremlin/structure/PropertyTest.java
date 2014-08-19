@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_STRING_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
@@ -321,7 +320,7 @@ public class PropertyTest {
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldSetValueOnEdge() throws Exception {
-            assumeThat(g.getFeatures().supports(EdgePropertyFeatures.class, featureName), is(true));
+            assumeThat(g.features().supports(EdgePropertyFeatures.class, featureName), is(true));
             final Edge edge = createEdgeForPropertyFeatureTests();
             edge.property("key", value);
             assertPropertyValue(edge);
@@ -330,7 +329,7 @@ public class PropertyTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldSetValueOnVertex() throws Exception {
-            assumeThat(g.getFeatures().supports(VertexPropertyFeatures.class, featureName), is(true));
+            assumeThat(g.features().supports(VertexPropertyFeatures.class, featureName), is(true));
             final Vertex vertex = g.addVertex("key", value);
             assertPropertyValue(vertex);
         }

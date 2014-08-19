@@ -139,7 +139,7 @@ public class GiraphGraph implements Graph, Serializable {
         throw Exceptions.transactionsNotSupported();
     }
 
-    public Features getFeatures() {
+    public Features features() {
         return new Features() {
             @Override
             public GraphFeatures graph() {

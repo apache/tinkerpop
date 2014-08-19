@@ -204,7 +204,7 @@ public interface Graph extends AutoCloseable {
     /**
      * Gets the {@link Features} exposed by the underlying {@code Graph} implementation.
      */
-    public default Features getFeatures() {
+    public default Features features() {
         return new Features() {
         };
     }

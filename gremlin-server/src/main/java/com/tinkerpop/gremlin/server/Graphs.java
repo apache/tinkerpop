@@ -66,7 +66,7 @@ public class Graphs {
     public void rollbackAll() {
         graphs.entrySet().forEach(e -> {
             final Graph g = e.getValue();
-            if (g.getFeatures().graph().supportsTransactions())
+            if (g.features().graph().supportsTransactions())
                 g.tx().rollback();
         });
     }
@@ -77,7 +77,7 @@ public class Graphs {
     public void commitAll() {
         graphs.entrySet().forEach(e -> {
             final Graph g = e.getValue();
-            if (g.getFeatures().graph().supportsTransactions())
+            if (g.features().graph().supportsTransactions())
                 g.tx().commit();
         });
     }

@@ -24,7 +24,7 @@ public class Neo4jGraphProvider extends AbstractGraphProvider {
     @Override
     public void clear(final Graph g, final Configuration configuration) throws Exception {
         if (null != g) {
-            if (g.getFeatures().graph().supportsTransactions())
+            if (g.features().graph().supportsTransactions())
                 g.tx().rollback();
             g.close();
         }

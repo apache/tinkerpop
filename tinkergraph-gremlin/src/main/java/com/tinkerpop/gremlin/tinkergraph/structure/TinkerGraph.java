@@ -171,7 +171,7 @@ public class TinkerGraph implements Graph, Serializable {
      * <b>Reference Implementation Help:</b> Implementers only need to implement features for which there are
      * negative or instance configured features.  By default, all {@link Features} return true.
      */
-    public Features getFeatures() {
+    public Features features() {
         return new TinkerGraphFeatures();
     }
 

@@ -42,7 +42,7 @@ public class GraphTest extends AbstractGremlinTest {
      */
     @Test
     public void shouldImplementAndExposeFeatures() {
-        final Graph.Features features = g.getFeatures();
+        final Graph.Features features = g.features();
         assertNotNull(features);
 
         final AtomicInteger counter = new AtomicInteger(0);
@@ -362,7 +362,7 @@ public class GraphTest extends AbstractGremlinTest {
         final Vertex b;
         final Vertex c;
         final Vertex d;
-        if (graph.getFeatures().vertex().supportsUserSuppliedIds()) {
+        if (graph.features().vertex().supportsUserSuppliedIds()) {
             a = graph.addVertex(Element.ID, graphProvider.convertId("1"));
             b = graph.addVertex(Element.ID, graphProvider.convertId("2"));
             c = graph.addVertex(Element.ID, graphProvider.convertId("3"));
@@ -392,7 +392,7 @@ public class GraphTest extends AbstractGremlinTest {
             assertEquals(graphProvider.convertLabel("knows"), x.label());
         }
 
-        if (graph.getFeatures().vertex().supportsUserSuppliedIds()) {
+        if (graph.features().vertex().supportsUserSuppliedIds()) {
             final Vertex va = graph.v(graphProvider.convertId("1"));
             final Vertex vb = graph.v(graphProvider.convertId("2"));
             final Vertex vc = graph.v(graphProvider.convertId("3"));
@@ -590,13 +590,13 @@ public class GraphTest extends AbstractGremlinTest {
 
         final Vertex v = graph.addVertex();
         final Vertex u = graph.addVertex();
-        if (graph.getFeatures().edge().properties().supportsStringValues()) {
+        if (graph.features().edge().properties().supportsStringValues()) {
             v.property("name", "marko");
             u.property("name", "pavel");
         }
 
         final Edge e = v.addEdge(graphProvider.convertLabel("collaborator"), u);
-        if (graph.getFeatures().edge().properties().supportsStringValues())
+        if (graph.features().edge().properties().supportsStringValues())
             e.property("location", "internet");
 
         tryCommit(graph, AbstractGremlinSuite.assertVertexEdgeCounts(2, 1));
@@ -605,7 +605,7 @@ public class GraphTest extends AbstractGremlinTest {
         final Graph reopenedGraph = graphProvider.standardTestGraph(this.getClass(), name.getMethodName());
         AbstractGremlinSuite.assertVertexEdgeCounts(2, 1).accept(reopenedGraph);
 
-        if (graph.getFeatures().vertex().properties().supportsStringValues()) {
+        if (graph.features().vertex().properties().supportsStringValues()) {
             for (Vertex vertex : reopenedGraph.V().toList()) {
                 assertTrue(vertex.property("name").value().equals("marko") || vertex.property("name").value().equals("pavel"));
             }
@@ -613,7 +613,7 @@ public class GraphTest extends AbstractGremlinTest {
 
         for (Edge edge : reopenedGraph.E().toList()) {
             assertEquals(graphProvider.convertId("collaborator"), edge.label());
-            if (graph.getFeatures().edge().properties().supportsStringValues())
+            if (graph.features().edge().properties().supportsStringValues())
                 assertEquals("internet", edge.property("location").value());
         }
 

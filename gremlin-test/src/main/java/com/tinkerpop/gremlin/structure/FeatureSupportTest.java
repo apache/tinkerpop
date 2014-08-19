@@ -47,7 +47,7 @@ public class FeatureSupportTest {
          */
         @Test
         public void shouldHaveStandardToStringRepresentation() {
-            assertTrue(g.getFeatures().toString().startsWith("FEATURES"));
+            assertTrue(g.features().toString().startsWith("FEATURES"));
         }
     }
 
@@ -69,7 +69,7 @@ public class FeatureSupportTest {
         @Test
         public void shouldPrintTheFeatureList() {
             System.out.println(String.format("Printing Features of %s for reference: ", g.getClass().getSimpleName()));
-            System.out.println(g.getFeatures());
+            System.out.println(g.features());
             assertTrue(true);
         }
 
@@ -265,7 +265,7 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldEnableFeatureOnEdgeIfNotEnabled() throws Exception {
-            assumeThat(g.getFeatures().supports(EdgePropertyFeatures.class, featureName), is(false));
+            assumeThat(g.features().supports(EdgePropertyFeatures.class, featureName), is(false));
             try {
                 final Edge edge = createEdgeForPropertyFeatureTests();
                 edge.property("key", value);
@@ -278,7 +278,7 @@ public class FeatureSupportTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldEnableFeatureOnVertexIfNotEnabled() throws Exception {
-            assumeThat(g.getFeatures().supports(VertexPropertyFeatures.class, featureName), is(false));
+            assumeThat(g.features().supports(VertexPropertyFeatures.class, featureName), is(false));
             try {
                 g.addVertex("key", value);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), featureName));
@@ -323,7 +323,7 @@ public class FeatureSupportTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_VARIABLES)
         public void shouldEnableFeatureOnGraphIfNotEnabled() throws Exception {
-            assumeThat(g.getFeatures().supports(Graph.Features.VariableFeatures.class, featureName), is(false));
+            assumeThat(g.features().supports(Graph.Features.VariableFeatures.class, featureName), is(false));
             try {
                 final Graph.Variables variables = g.variables();
                 variables.set("key", value);
@@ -349,7 +349,7 @@ public class FeatureSupportTest {
 
         @Before
         public void innerSetup() {
-            final Graph.Features f = g.getFeatures();
+            final Graph.Features f = g.features();
             edgeFeatures = f.edge();
             edgePropertyFeatures = edgeFeatures.properties();
             graphFeatures = f.graph();

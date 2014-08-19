@@ -253,7 +253,7 @@ public class VariablesTest {
 
         @Test
         public void shouldSetValueOnGraph() throws Exception {
-            assumeThat(g.getFeatures().supports(Graph.Features.VariableFeatures.class, featureName), is(true));
+            assumeThat(g.features().supports(Graph.Features.VariableFeatures.class, featureName), is(true));
             final Graph.Variables variables = g.variables();
             variables.set("key", value);
 

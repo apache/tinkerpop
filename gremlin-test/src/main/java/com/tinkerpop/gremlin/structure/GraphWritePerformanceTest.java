@@ -103,7 +103,7 @@ public class GraphWritePerformanceTest {
     }
 
     private static void tryBatchCommit(final Graph g, int ix) {
-        if (g.getFeatures().graph().supportsTransactions() && ix % 1000 == 0)
+        if (g.features().graph().supportsTransactions() && ix % 1000 == 0)
             g.tx().commit();
     }
 }

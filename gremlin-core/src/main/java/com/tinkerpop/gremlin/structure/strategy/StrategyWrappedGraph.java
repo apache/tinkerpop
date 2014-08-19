@@ -102,8 +102,8 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
     }
 
     @Override
-    public Features getFeatures() {
-        return this.baseGraph.getFeatures();
+    public Features features() {
+        return this.baseGraph.features();
     }
 
     @Override
