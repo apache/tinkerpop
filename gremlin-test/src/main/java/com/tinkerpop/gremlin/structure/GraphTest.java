@@ -68,6 +68,7 @@ public class GraphTest extends AbstractGremlinTest {
         // ensure that every method exposed was checked
         assertEquals(methods.size(), counter.get());
     }
+
     @Test
     public void shouldHaveExceptionConsistencyWhenFindVertexByIdWithNull() {
         try {
@@ -134,6 +135,71 @@ public class GraphTest extends AbstractGremlinTest {
             assertEquals(expectedException.getMessage(), ex.getMessage());
         }
 
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
+    public void shouldAddVertexWithUserSuppliedNumericId() {
+        g.addVertex(Element.ID, 1000l);
+        tryCommit(g, graph -> {
+            final Vertex v = g.v(1000l);
+            assertEquals(1000l, v.id());
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_STRING_IDS)
+    public void shouldAddVertexWithUserSuppliedStringId() {
+        g.addVertex(Element.ID, "1000");
+        tryCommit(g, graph -> {
+            final Vertex v = g.v("1000");
+            assertEquals("1000", v.id());
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_UUID_IDS)
+    public void shouldAddVertexWithUserSuppliedUuidId() {
+        final UUID uuid = UUID.randomUUID();
+        g.addVertex(Element.ID, uuid);
+        tryCommit(g, graph -> {
+            final Vertex v = g.v(uuid);
+            assertEquals(uuid, v.id());
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ANY_IDS)
+    public void shouldAddVertexWithUserSuppliedAnyId() {
+        final UUID uuid = UUID.randomUUID();
+        g.addVertex(Element.ID, uuid);
+        tryCommit(g, graph -> {
+            final Vertex v = g.v(uuid);
+            assertEquals(uuid, v.id());
+        });
+
+        g.addVertex(Element.ID, uuid.toString());
+        tryCommit(g, graph -> {
+            final Vertex v = g.v(uuid.toString());
+            assertEquals(uuid.toString(), v.id());
+        });
+
+        // this is different from "FEATURE_CUSTOM_IDS" as TinkerGraph does not define a specific id class
+        // (i.e. TinkerId) for the identifier.
+        IoTest.CustomId customId = new IoTest.CustomId("test", uuid);
+        g.addVertex(Element.ID, customId);
+        tryCommit(g, graph -> {
+            final Vertex v = g.v(customId);
+            assertEquals(customId, v.id());
+        });
     }
 
     @Test
