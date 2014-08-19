@@ -46,7 +46,7 @@ public class TraversalHelper {
 
     public static boolean hasAs(final String as, final Traversal<?, ?> traversal) {
         return traversal.getSteps().stream()
-                .filter(p -> as.equals(p.getAs()))
+                .filter(step -> as.equals(step.getAs()))
                 .findFirst().isPresent();
     }
 

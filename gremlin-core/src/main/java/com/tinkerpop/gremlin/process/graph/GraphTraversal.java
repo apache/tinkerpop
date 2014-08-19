@@ -57,6 +57,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.process.util.MemoryHelper;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -429,12 +430,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.cap(((SideEffectCapable) TraversalHelper.getEnd(this)).getMemoryKey());
     }
 
-    public default GraphTraversal<S, E> subgraph(final Graph g, final SPredicate<Edge> includeEdge) {
-        return (GraphTraversal) this.addStep(new SubgraphStep<>(this, g, null, null, includeEdge));
+    public default GraphTraversal<S, E> subgraph(final String memoryKey, final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final SPredicate<Edge> includeEdge) {
+        return (GraphTraversal) this.addStep(new SubgraphStep<>(this, memoryKey, edgeIdHolder, vertexMap, includeEdge));
     }
 
-    public default GraphTraversal<S, E> subgraph(final Graph g, final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final SPredicate<Edge> includeEdge) {
-        return (GraphTraversal) this.addStep(new SubgraphStep<>(this, g, edgeIdHolder, vertexMap, includeEdge));
+    public default GraphTraversal<S, E> subgraph(final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final SPredicate<Edge> includeEdge) {
+        return this.subgraph(null, edgeIdHolder, vertexMap, includeEdge);
+    }
+
+    public default GraphTraversal<S, E> subgraph(final String memoryKey, final SPredicate<Edge> includeEdge) {
+        return this.subgraph(memoryKey, null, null, includeEdge);
+    }
+
+    public default GraphTraversal<S, E> subgraph(final SPredicate<Edge> includeEdge) {
+        return this.subgraph(null, null, null, includeEdge);
     }
 
     public default GraphTraversal<S, E> aggregate(final String memoryKey, final SFunction<E, ?> preAggregateFunction) {
@@ -564,7 +573,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> as(final String as) {
         if (TraversalHelper.hasAs(as, this))
-            throw new IllegalStateException("The named step already exists");
+            throw new IllegalStateException("The named step already exists: " + as);
         final List<Step> steps = this.getSteps();
         steps.get(steps.size() - 1).setAs(as);
         return this;
@@ -579,7 +588,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 else if (object instanceof Property)
                     ((Property) object).remove();
                 else {
-                    // TODO: USE REFLECTION TO FIND REMOVE?
                     throw new IllegalStateException("The following object does not have a remove() method: " + object);
                 }
             }
@@ -588,9 +596,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         }
     }
 
-    public default GraphTraversal<S, E> with(final Object... variableValues) {
-        for (int i = 0; i < variableValues.length; i = i + 2) {
-            this.memory().set((String) variableValues[i], variableValues[i + 1]);
+    public default GraphTraversal<S, E> with(final Object... memoryKeyValues) {
+        MemoryHelper.legalMemoryKeyValueArray(memoryKeyValues);
+        for (int i = 0; i < memoryKeyValues.length; i = i + 2) {
+            this.memory().set((String) memoryKeyValues[i], memoryKeyValues[i + 1]);
         }
         return this;
     }

@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.javatuples.Pair;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -178,7 +179,7 @@ public class ElementHelper {
      * Assign key/value pairs as properties to an {@link com.tinkerpop.gremlin.structure.Element}.  If the value of {@link com.tinkerpop.gremlin.structure.Element#ID} or
      * {@link com.tinkerpop.gremlin.structure.Element#LABEL} is in the set of pairs, then they are ignored.
      *
-     * @param element           the graph element to assign the {@code keyValues}
+     * @param element           the graph element to assign the {@code propertyKeyValues}
      * @param propertyKeyValues the key/value pairs to assign to the {@code element}
      * @throws ClassCastException       if the value of the key is not a {@link String}
      * @throws IllegalArgumentException if the value of {@code element} is null
@@ -191,6 +192,43 @@ public class ElementHelper {
             if (!propertyKeyValues[i].equals(Element.ID) && !propertyKeyValues[i].equals(Element.LABEL))
                 element.property((String) propertyKeyValues[i], propertyKeyValues[i + 1]);
         }
+    }
+
+    /**
+     * Retrieve the properties associated with a particular element.
+     * The result is a Object[] where odd indices are String keys and even indices are the values.
+     *
+     * @param element                the element to retrieve properties from
+     * @param includeId              include Element.ID in the key/value list
+     * @param includeLabel           include Element.LABEL in the key/value list
+     * @param propertiesToCopy       the properties to include with an empty list meaning copy all properties
+     * @param hiddenPropertiesToCopy the hidden properties to include with an empty list meaning copy all properties
+     * @return a key/value array of properties where odd indices are String keys and even indices are the values.
+     */
+    public static Object[] getProperties(final Element element, final boolean includeId, final boolean includeLabel, final Set<String> propertiesToCopy, final Set<String> hiddenPropertiesToCopy) {
+        final List<Object> keyValues = new ArrayList<>();
+        if (includeId) {
+            keyValues.add(Element.ID);
+            keyValues.add(element.id());
+        }
+        if (includeLabel) {
+            keyValues.add(Element.LABEL);
+            keyValues.add(element.label());
+        }
+        element.keys().forEach(key -> {
+            if (propertiesToCopy.isEmpty() || propertiesToCopy.contains(key)) {
+                keyValues.add(key);
+                keyValues.add(element.value(key));
+            }
+        });
+        element.hiddenKeys().forEach(key -> {
+            if (hiddenPropertiesToCopy.isEmpty() || hiddenPropertiesToCopy.contains(key)) {
+                final String hidden = Graph.Key.hide(key);
+                keyValues.add(hidden);
+                keyValues.add(element.value(hidden));
+            }
+        });
+        return keyValues.toArray(new Object[keyValues.size()]);
     }
 
     /**

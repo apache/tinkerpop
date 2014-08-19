@@ -120,6 +120,14 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
         public static class Exceptions {
 
+            public static IllegalArgumentException providedKeyValuesMustBeAMultipleOfTwo() {
+                return new IllegalArgumentException("The provided key/value array must be a multiple of two");
+            }
+
+            public static IllegalArgumentException providedKeyValuesMustHaveALegalKeyOnEvenIndices() {
+                return new IllegalArgumentException("The provided key/value array must have a String key on even array indices");
+            }
+
             public static IllegalArgumentException variableKeyCanNotBeEmpty() {
                 return new IllegalArgumentException("Memory variable key can not be the empty string");
             }

@@ -424,12 +424,12 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
         return this.cap(((SideEffectCapable) TraversalHelper.getEnd(this)).getMemoryKey());
     }
 
-    public default Neo4jTraversal<S, E> subgraph(final Graph g, final SPredicate<Edge> includeEdge) {
-        return (Neo4jTraversal) this.addStep(new SubgraphStep<>(this, g, null, null, includeEdge));
+    public default Neo4jTraversal<S, E> subgraph(final String memoryKey, final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final SPredicate<Edge> includeEdge) {
+        return (Neo4jTraversal) this.addStep(new SubgraphStep<>(this, memoryKey, edgeIdHolder, vertexMap, includeEdge));
     }
 
-    public default Neo4jTraversal<S, E> subgraph(final Graph g, final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final SPredicate<Edge> includeEdge) {
-        return (Neo4jTraversal) this.addStep(new SubgraphStep<>(this, g, edgeIdHolder, vertexMap, includeEdge));
+    public default Neo4jTraversal<S, E> subgraph(final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final SPredicate<Edge> includeEdge) {
+        return this.subgraph(null, edgeIdHolder, vertexMap, includeEdge);
     }
 
     public default Neo4jTraversal<S, E> aggregate(final String memoryKey, final SFunction<E, ?> preAggregateFunction) {
