@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirement;
+import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -18,7 +19,7 @@ import static org.junit.Assert.*;
  */
 public class StrategyWrappedGraphTest extends AbstractGremlinTest {
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotCallBaseFunctionThusNotRemovingTheVertex() throws Exception {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
 

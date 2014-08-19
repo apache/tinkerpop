@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -31,6 +32,7 @@ import static org.junit.Assert.*;
  */
 public class SequenceGraphStrategyTest extends AbstractGremlinTest {
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldAppendPropertyValuesInOrderToVertex() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy().setGraphStrategy(new SequenceGraphStrategy(
@@ -82,6 +84,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test(expected = RuntimeException.class)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldShortCircuitStrategyWithException() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy().setGraphStrategy(new SequenceGraphStrategy(
@@ -119,6 +122,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldShortCircuitStrategyWithNoOp() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy().setGraphStrategy(new SequenceGraphStrategy(
@@ -155,6 +159,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldDoSomethingBeforeAndAfter() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy().setGraphStrategy(new SequenceGraphStrategy(
