@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
+import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
@@ -30,7 +31,10 @@ import static org.junit.Assert.*;
 public class VertexTest extends AbstractGremlinTest {
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_NUMERIC_IDS)
     public void shouldHaveExceptionConsistencyWhenAssigningSameIdOnEdge() {
         final Vertex v = g.addVertex();
         v.addEdge("label", v, Element.ID, 1000l);
@@ -47,6 +51,8 @@ public class VertexTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS, supported = false)
     public void shouldHaveExceptionConsistencyWhenIdNotSupportedForAddEdge() throws Exception {
         try {
@@ -61,19 +67,22 @@ public class VertexTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     public void shouldHaveStandardStringRepresentation() {
         final Vertex v = g.addVertex("name", "marko", "age", 34);
         assertEquals(StringFactory.vertexString(v), v.toString());
     }
 
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldUseDefaultLabelIfNotSpecified() {
         final Vertex v = g.addVertex("name", "marko");
         assertEquals(Vertex.DEFAULT_LABEL, v.label());
     }
 
     @Test
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     public void shouldSupportBasicVertexManipulation() {
         // test property mutation behaviors
@@ -119,6 +128,7 @@ public class VertexTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldEvaluateVerticesEquivalentWithSuppliedIds() {
         final Vertex v = g.addVertex(Element.ID, GraphManager.get().convertId("1"));
@@ -127,6 +137,7 @@ public class VertexTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldEvaluateEquivalentVerticesWithNoSuppliedIds() {
         final Vertex v = g.addVertex();
         assertNotNull(v);
@@ -141,6 +152,7 @@ public class VertexTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldEvaluateEquivalentVertexHashCodeWithSuppliedIds() {
         final Vertex v = g.addVertex(Element.ID, GraphManager.get().convertId("1"));
@@ -160,6 +172,7 @@ public class VertexTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     public void shouldAutotypeStringProperties() {
         final Graph graph = g;
@@ -171,6 +184,7 @@ public class VertexTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     public void shouldAutotypIntegerProperties() {
         final Graph graph = g;
@@ -181,6 +195,7 @@ public class VertexTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_BOOLEAN_VALUES)
     public void shouldAutotypeBooleanProperties() {
         final Graph graph = g;
@@ -191,6 +206,7 @@ public class VertexTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_DOUBLE_VALUES)
     public void shouldAutotypeDoubleProperties() {
         final Graph graph = g;
@@ -201,6 +217,7 @@ public class VertexTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_LONG_VALUES)
     public void shouldAutotypeLongProperties() {
         final Graph graph = g;
@@ -211,6 +228,7 @@ public class VertexTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
     public void shouldAutotypeFloatProperties() {
         final Graph graph = g;
@@ -221,6 +239,7 @@ public class VertexTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     public void shouldGetPropertyKeysOnVertex() {
         final Vertex v = g.addVertex("name", "marko", "location", "desert", "status", "dope");
@@ -254,6 +273,7 @@ public class VertexTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldNotGetConcurrentModificationException() {
         for (int i = 0; i < 25; i++) {
             g.addVertex();
@@ -270,6 +290,7 @@ public class VertexTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldReturnEmptyMapIfNoProperties() {
         final Vertex v = g.addVertex();
         final Map<String, Property> m = v.properties();
@@ -278,8 +299,9 @@ public class VertexTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldSupportIdempotentRemoval() {
-        final Vertex v1 =g.addVertex();
+        final Vertex v1 = g.addVertex();
         tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(1, 0));
 
         v1.remove();
