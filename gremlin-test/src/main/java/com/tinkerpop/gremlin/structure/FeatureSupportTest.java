@@ -135,6 +135,7 @@ public class FeatureSupportTest {
     public static class VertexFunctionalityTest extends AbstractGremlinTest {
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsIfAnIdCanBeAssignedToVertex() throws Exception {
             try {
@@ -153,6 +154,8 @@ public class FeatureSupportTest {
     public static class EdgeFunctionalityTest extends AbstractGremlinTest {
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = EdgeFeatures.class, feature = EdgeFeatures.FEATURE_USER_SUPPLIED_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsIfAnIdCanBeAssignedToEdge() throws Exception {
             try {
@@ -188,6 +191,8 @@ public class FeatureSupportTest {
         public Object value;
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldEnableFeatureOnEdgeIfNotEnabled() throws Exception {
             assumeThat(g.getFeatures().supports(EdgePropertyFeatures.class, featureName), is(false));
             try {
@@ -200,6 +205,7 @@ public class FeatureSupportTest {
         }
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldEnableFeatureOnVertexIfNotEnabled() throws Exception {
             assumeThat(g.getFeatures().supports(VertexPropertyFeatures.class, featureName), is(false));
             try {
