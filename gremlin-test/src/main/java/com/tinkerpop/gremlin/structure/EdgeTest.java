@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
+import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.junit.Test;
 
@@ -28,6 +29,8 @@ import static org.junit.Assert.fail;
 })
 public class EdgeTest extends AbstractGremlinTest {
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldHaveStandardStringRepresentation() {
         final Vertex v1 = g.addVertex();
         final Vertex v2 = g.addVertex();
@@ -37,6 +40,8 @@ public class EdgeTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldHaveExceptionConsistencyWhenUsingNullEdgeLabel() {
         final Vertex v = g.addVertex();
         try {
@@ -50,6 +55,8 @@ public class EdgeTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     public void shouldAutotypeStringProperties() {
         final Graph graph = g;
@@ -61,6 +68,8 @@ public class EdgeTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     public void shouldAutotypIntegerProperties() {
         final Graph graph = g;
@@ -71,6 +80,8 @@ public class EdgeTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_BOOLEAN_VALUES)
     public void shouldAutotypeBooleanProperties() {
         final Graph graph = g;
@@ -81,6 +92,8 @@ public class EdgeTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_DOUBLE_VALUES)
     public void shouldAutotypeDoubleProperties() {
         final Graph graph = g;
@@ -91,6 +104,8 @@ public class EdgeTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_LONG_VALUES)
     public void shouldAutotypeLongProperties() {
         final Graph graph = g;
@@ -101,6 +116,8 @@ public class EdgeTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
     public void shouldAutotypeFloatProperties() {
         final Graph graph = g;
@@ -111,6 +128,8 @@ public class EdgeTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     public void shouldGetPropertyKeysOnEdge() {
         final Vertex v = g.addVertex();
@@ -145,6 +164,8 @@ public class EdgeTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldNotGetConcurrentModificationException() {
         for (int i = 0; i < 25; i++) {
             final Vertex v = g.addVertex();
@@ -162,15 +183,20 @@ public class EdgeTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldReturnEmptyMapIfNoProperties() {
         final Vertex v = g.addVertex();
-        final Map<String, Property> m = v.properties();
+        final Edge e = v.addEdge("knows", v);
+        final Map<String, Property> m = e.properties();
         assertNotNull(m);
         assertEquals(0, m.size());
     }
 
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldSupportIdempotentRemoval() {
         final Vertex v1 =g.addVertex();
         final Vertex v2 =g.addVertex();
