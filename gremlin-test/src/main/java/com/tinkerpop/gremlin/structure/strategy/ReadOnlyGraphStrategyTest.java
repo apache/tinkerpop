@@ -2,12 +2,21 @@ package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirement;
-import com.tinkerpop.gremlin.structure.*;
+import com.tinkerpop.gremlin.FeatureRequirementSet;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_INTEGER_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -19,26 +28,21 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
     public void shouldNotAllowAddVertex() {
         assertException(g -> g.addVertex());
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
     public void shouldNotAllowRemoveVertex() {
         g.addVertex();
         assertException(g -> g.V().next().remove());
     }
 
     @Test
-    public void shouldNotAllowAddEdge() {
-        g.addVertex();
-        assertException(g -> {
-            final Vertex v = g.V().next();
-            v.addEdge("friend", v);
-        });
-    }
-
-    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = FEATURE_ADD_EDGES)
     public void shouldNotAllowRemoveEdge() {
         final Vertex v = g.addVertex();
         v.addEdge("friend", v);
@@ -49,21 +53,32 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = FEATURE_ADD_EDGES)
+    public void shouldNotAllowAddEdge() {
+        g.addVertex();
+        assertException(g -> {
+            final Vertex v = g.V().next();
+            v.addEdge("friend", v);
+        });
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowVertexSetProperties() {
         g.addVertex();
         assertException(g -> g.V().next().properties("test", "test"));
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowVertexSetProperty() {
         g.addVertex();
         assertException(g -> g.V().next().<String>property("test", "test"));
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotAllowEdgeSetProperties() {
         final Vertex v = g.addVertex();
         v.addEdge("friend", v);
@@ -71,7 +86,7 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotAllowEdgeSetProperty() {
         final Vertex v = g.addVertex();
         v.addEdge("friend", v);
@@ -79,7 +94,7 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotAllowVertexPropertyRemoval() {
         final Vertex v = g.addVertex();
         v.property("test", "test");
@@ -93,7 +108,7 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotAllowEdgePropertyRemoval() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("friend", v);
@@ -125,7 +140,8 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     public void shouldReturnWrappedElementToString() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         Vertex v1 = swg.addVertex(Element.LABEL, "Person", "age", 1);
@@ -141,7 +157,6 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     public void shouldReturnWrappedToString() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         assertNotEquals(g.toString(), swg.toString());
