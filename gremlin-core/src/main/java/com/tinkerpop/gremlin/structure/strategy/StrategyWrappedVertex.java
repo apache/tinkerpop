@@ -47,32 +47,7 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> to(final Direction direction, final int branchFactor, final String... labels) {
-        return applyStrategy(this.getBaseVertex().to(direction, branchFactor, labels));
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Edge> toE(final Direction direction, final int branchFactor, final String... labels) {
-        return applyStrategy(this.getBaseVertex().toE(direction, branchFactor, labels));
-    }
-
-    @Override
     public GraphTraversal<Vertex, Vertex> start() {
         return applyStrategy(this.baseVertex.start());
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Vertex> as(final String as) {
-        return applyStrategy(this.baseVertex.as(as));
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Vertex> with(final Object... variableValues) {
-        return applyStrategy(this.baseVertex.with(variableValues));
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Vertex> sideEffect(final SConsumer<Traverser<Vertex>> consumer) {
-        return applyStrategy(this.baseVertex.sideEffect(consumer));
     }
 }

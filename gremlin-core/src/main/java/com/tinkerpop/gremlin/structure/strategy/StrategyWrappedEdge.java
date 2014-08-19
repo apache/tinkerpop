@@ -23,11 +23,13 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
         return this.baseEdge;
     }
 
+    @Override
     public Iterator<Vertex> vertices(final Direction direction) {
         return this.baseEdge.vertices(direction);
     }
 
-    public GraphTraversal<Edge, Vertex> toV(final Direction direction) {
-        return applyStrategy(this.baseEdge.toV(direction));
+    @Override
+    public GraphTraversal<Edge, Edge> start() {
+        return applyStrategy(this.baseEdge.start());
     }
 }

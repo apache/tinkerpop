@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 import static org.junit.Assert.assertTrue;
 
 /**
- * A set of tests that ensure that the {@link ExceptionConsistencyTest} covers all defined TinkerPop exceptions.
+ * A set of tests that ensure that the {@link ExceptionCoverageTest} covers all defined TinkerPop exceptions.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

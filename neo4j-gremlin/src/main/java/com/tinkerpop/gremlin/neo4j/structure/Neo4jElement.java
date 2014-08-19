@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-abstract class Neo4jElement implements Element, WrappedElement<PropertyContainer> {
+public abstract class Neo4jElement implements Element, WrappedElement<PropertyContainer> {
     protected final Neo4jGraph graph;
     protected PropertyContainer baseElement;
 
