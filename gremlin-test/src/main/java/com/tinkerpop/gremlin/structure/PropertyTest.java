@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
+import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures;
@@ -40,7 +41,7 @@ public class PropertyTest {
      */
     public static class BasicPropertyTest extends AbstractGremlinTest {
         @Test
-        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldHaveStandardStringRepresentation() {
             final Vertex v = g.addVertex("name", "marko");
             final Property p = v.property("name");
@@ -48,7 +49,7 @@ public class PropertyTest {
         }
 
         @Test
-        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldReturnEmptyPropertyIfKeyNonExistent() {
             final Vertex v = g.addVertex("name", "marko");
             tryCommit(g, (graph) -> {
@@ -59,7 +60,7 @@ public class PropertyTest {
         }
 
         @Test
-        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldAllowRemovalWhenAlreadyRemoved() {
             final Vertex v = g.addVertex("name", "marko");
             tryCommit(g);
@@ -107,6 +108,7 @@ public class PropertyTest {
         public Exception expectedException;
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
         public void shouldThrowOnGraphAddVertex() throws Exception {
             try {
@@ -119,6 +121,8 @@ public class PropertyTest {
         }
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_PROPERTIES)
         public void shouldThrowOnGraphAddEdge() throws Exception {
             try {
@@ -140,6 +144,7 @@ public class PropertyTest {
     })
     public static class ElementGetValueExceptionConsistencyTest extends AbstractGremlinTest {
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
         public void shouldGetValueThatIsNotPresentOnVertex() {
             final Vertex v = g.addVertex();
@@ -155,6 +160,8 @@ public class PropertyTest {
         }
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
         public void shouldGetValueThatIsNotPresentOnEdge() {
             final Vertex v = g.addVertex();
@@ -206,6 +213,7 @@ public class PropertyTest {
         public Exception expectedException;
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
         public void testGraphVertexSetPropertyStandard() throws Exception {
             try {
@@ -219,6 +227,8 @@ public class PropertyTest {
         }
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_PROPERTIES)
         public void shouldThrowOnGraphEdgeSetPropertyStandard() throws Exception {
             try {
@@ -308,6 +318,8 @@ public class PropertyTest {
         public Object value;
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldSetValueOnEdge() throws Exception {
             assumeThat(g.getFeatures().supports(EdgePropertyFeatures.class, featureName), is(true));
             final Edge edge = createEdgeForPropertyFeatureTests();
@@ -316,6 +328,7 @@ public class PropertyTest {
         }
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldSetValueOnVertex() throws Exception {
             assumeThat(g.getFeatures().supports(VertexPropertyFeatures.class, featureName), is(true));
             final Vertex vertex = g.addVertex("key", value);
