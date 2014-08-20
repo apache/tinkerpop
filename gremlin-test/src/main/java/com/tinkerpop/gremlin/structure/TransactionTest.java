@@ -712,4 +712,69 @@ public class TransactionTest extends AbstractGremlinTest {
         assertEquals(0l, afterCommitInOtherThreadButBeforeRollbackInCurrentThread.get());
         assertEquals(1l, afterCommitInOtherThread.get());
     }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldAllowReferenceOfVertexOutsideOfOrginialTransactionalContextManual() {
+        g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
+        g.tx().open();
+        final Vertex v1 = g.addVertex("name", "stephen");
+        g.tx().commit();
+
+        g.tx().open();
+        assertEquals("stephen", v1.value("name"));
+
+        g.tx().rollback();
+        g.tx().open();
+        assertEquals("stephen", v1.value("name"));
+        g.tx().close();
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldAllowReferenceOfEdgeOutsideOfOrginialTransactionalContextManual() {
+        g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
+        g.tx().open();
+        final Vertex v1 = g.addVertex();
+        final Edge e = v1.addEdge("self", v1, "weight", 0.5d);
+        g.tx().commit();
+
+        g.tx().open();
+        assertEquals(0.5d, e.value("weight"), 0.00001d);
+
+        g.tx().rollback();
+        g.tx().open();
+        assertEquals(0.5d, e.value("weight"), 0.00001d);
+        g.tx().close();
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldAllowReferenceOfVertexOutsideOfOrginialTransactionalContextAuto() {
+        final Vertex v1 = g.addVertex("name", "stephen");
+        g.tx().commit();
+
+        assertEquals("stephen", v1.value("name"));
+
+        g.tx().rollback();
+        assertEquals("stephen", v1.value("name"));
+
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldAllowReferenceOfEdgeOutsideOfOrginialTransactionalContextAuto() {
+        final Vertex v1 = g.addVertex();
+        final Edge e = v1.addEdge("self", v1, "weight", 0.5d);
+        g.tx().commit();
+
+        assertEquals(0.5d, e.value("weight"), 0.00001d);
+
+        g.tx().rollback();
+        assertEquals(0.5d, e.value("weight"), 0.00001d);
+    }
 }
