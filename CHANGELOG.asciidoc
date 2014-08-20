@@ -9,7 +9,16 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Add `@OptIn` and `@OptOut` for implementers to specify on their `Graph` implementations for test compliance information.
+* `TreeStep` now has `TreeMapReduce` for executing on `GraphComputer`.
+* `Neo4jTraversal.cypher()` is fluent throughout.
+* Reverted back to TP2 model of `as()` referring to step names, not variable names of sideEffects.
+* Updated `AddEdge`-step to support property key/value pairs for appending to newly created edges.
+* Renamed `Graph.getFeatures()` to `Graph.features()` to be consistent with other API methods.
+* `Vertex` and `Edge` now implement all `GraphTraversal` methods to ensure consistency throughout stack.
+* `Neo4jTraversal` is auto-generated from `Neo4jTraversalStub` with technique generalizable to other vendors.
+* Added test suite to ensure that all traversals are of the same type: g.V, g.E, g.of(), v.identity(), e.identity(), v-, e-methods.
+* Giraph HDFS helpers now support `hdfs.mkdir(string)` and `local.mkdir(string)`
+* Added `@OptIn` and `@OptOut` for implementers to specify on their `Graph` implementations for test compliance information.
 * `GraphComputer` `SideEffects` now immutable after computation is complete.
 * Dependency grabbing for plugins filter out slf4j logging dependencies so as to avoid multiple bindings with the standard TinkerPop distributions.
 * Fixed Giraph-Gremlin sideEffects to be fully consistent with GraphComputer specification.
