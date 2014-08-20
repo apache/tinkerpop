@@ -28,10 +28,7 @@ public class GiraphGraphStep<E extends Element> extends GraphStep<E> {
     public void generateTraverserIterator(final boolean trackPaths) {
         this.starts.clear();
         try {
-            if (trackPaths)
-                this.starts.add(new TraverserIterator(this, Vertex.class.isAssignableFrom(this.returnClass) ? new GiraphVertexIterator(this.graph) : new GiraphEdgeIterator(this.graph)));
-            else
-                this.starts.add(new TraverserIterator(Vertex.class.isAssignableFrom(this.returnClass) ? new GiraphVertexIterator(this.graph) : new GiraphEdgeIterator(this.graph)));
+            this.starts.add(new TraverserIterator(this, trackPaths, Vertex.class.isAssignableFrom(this.returnClass) ? new GiraphVertexIterator(this.graph) : new GiraphEdgeIterator(this.graph)));
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }

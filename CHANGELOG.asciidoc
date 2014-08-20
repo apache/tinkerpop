@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `StartStep` is a `SideEffect` as it is a process to get data into the stream (like a keyboard) and more efficient as such.
 * Greatly simplified the implementations of `Map`, `FlatMap`, `Filter`, and `SideEffect`.
 * `Path` data structure changed to an ordered list of objects with each associated to a `Set<String>` of as-labels.
 * All sideEffect-based steps no longer extend `FilterStep` with predicate equal true, but a more efficient `SideEffectStep`.

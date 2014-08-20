@@ -39,7 +39,7 @@ public class StartStep<S> extends SideEffectStep<S> implements TraverserSource, 
         if (null != this.start) {
             this.starts.clear();
             if (this.start instanceof Iterator)
-                this.starts.add(trackPaths ? new TraverserIterator(this, (Iterator) this.start) : new TraverserIterator((Iterator) this.start));
+                this.starts.add(new TraverserIterator(this, trackPaths, (Iterator) this.start));
             else
                 this.starts.add(new SingleIterator(trackPaths ? new PathTraverser<>(this.getAs(), this.start) : new SimpleTraverser<>(this.start)));
         }

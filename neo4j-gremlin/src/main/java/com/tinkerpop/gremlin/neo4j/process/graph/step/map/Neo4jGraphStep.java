@@ -22,7 +22,6 @@ import org.neo4j.tooling.GlobalGraphOperations;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -44,10 +43,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
     public void generateTraverserIterator(final boolean trackPaths) {
         this.starts.clear();
-        if (trackPaths)
-            this.starts.add(new TraverserIterator(this, Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
-        else
-            this.starts.add(new TraverserIterator(Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
+        this.starts.add(new TraverserIterator(this, trackPaths, Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
     }
 
     public void clear() {
@@ -84,7 +80,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
                 vertexStream = getVerticesUsingLabel(hasContainer1.value.toString());
 
             this.hasContainers.remove(hasContainer1);
-        } else  {
+        } else {
             final HasContainer hasContainer1 = getVertexIndexKey();
             if (hasContainer1 != null) {
                 vertexStream = getVerticesUsingLegacyIndex(hasContainer1.key, hasContainer1.value);

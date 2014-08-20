@@ -34,11 +34,7 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
 
     public void generateTraverserIterator(final boolean trackPaths) {
         this.starts.clear();
-        if (trackPaths)
-            this.starts.add(new TraverserIterator(this, Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
-        else
-            this.starts.add(new TraverserIterator(Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
-
+        this.starts.add(new TraverserIterator(this, trackPaths, Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
     }
 
     public void clear() {
@@ -52,7 +48,7 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
                 TinkerHelper.queryEdgeIndex(this.graph, indexedContainer.key, indexedContainer.value).stream();
 
         // the copy to a new List is intentional as remove() operations will cause ConcurrentModificationException otherwise
-        return edgeStream.filter(e->HasContainer.testAll(e,hasContainers)).collect(Collectors.<Edge>toList()).iterator();
+        return edgeStream.filter(e -> HasContainer.testAll(e, hasContainers)).collect(Collectors.<Edge>toList()).iterator();
     }
 
     private Iterator<? extends Vertex> vertices() {

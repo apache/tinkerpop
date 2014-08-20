@@ -47,12 +47,13 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
     private int currentIndex;
 
     // initial value allows MatchStep to be used as a stand-alone query engine
-    private Traverser<S> currentStart = new SimpleTraverser<>(null);
+    private Traverser<S> currentStart;
 
     public MatchStep(final Traversal traversal, final String startAs, final Traversal... traversals) {
         super(traversal);
         this.startAs = startAs;
         this.traversalsByStartAs = new HashMap<>();
+        this.currentStart = new SimpleTraverser<>(null);
         for (final Traversal tl : traversals) {
             addTraversal(tl);
         }
@@ -220,8 +221,8 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         if (null == outs) {
             // no out-traversals from here; just enumerate the values bound to localStartAs
             return isAnonymousAs(localStartAs)
-                ? new SimpleEnumerator<>(localStartAs, inputs)
-                : new IteratorEnumerator<>(localStartAs, inputs);
+                    ? new SimpleEnumerator<>(localStartAs, inputs)
+                    : new IteratorEnumerator<>(localStartAs, inputs);
         } else {
             // for each value bound to localStartAs, feed it into all out-traversals in parallel and join the results
             return new SerialEnumerator<>(localStartAs, inputs, o -> {

@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.util.TraverserIterator;
 
 import java.util.Arrays;
@@ -22,10 +21,7 @@ public class InjectStep<S> extends SideEffectStep<S> implements TraverserSource 
     }
 
     public void generateTraverserIterator(final boolean trackPaths) {
-        if (trackPaths)
-            this.addStarts(new TraverserIterator<>(this, this.injections.iterator()));
-        else
-            this.addStarts(new TraverserIterator<>(this.injections.iterator()));
+        this.addStarts(new TraverserIterator<>(this, trackPaths, this.injections.iterator()));
     }
 
     public void clear() {
