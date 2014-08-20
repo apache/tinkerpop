@@ -53,7 +53,7 @@ public class SessionOpProcessor implements OpProcessor {
     @Override
     public ThrowingConsumer<Context> select(final Context ctx) throws OpProcessorException {
         final RequestMessage message = ctx.getRequestMessage();
-        if (logger.isDebugEnabled()) logger.debug("Selecting processor for RequestMessage {}", message);
+        logger.debug("Selecting processor for RequestMessage {}", message);
 
         final ThrowingConsumer<Context> op;
         switch (message.getOp()) {

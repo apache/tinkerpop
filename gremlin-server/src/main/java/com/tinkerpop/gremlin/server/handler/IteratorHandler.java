@@ -51,8 +51,7 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter {
 
                 final EventExecutorGroup executorService = ctx.executor();
                 final Future<?> iteration = executorService.submit((Callable<Void>) () -> {
-                    if (logger.isDebugEnabled())
-                        logger.debug("Preparing to iterate results from - {} - in thread [{}]", requestMessage, Thread.currentThread().getName());
+                    logger.debug("Preparing to iterate results from - {} - in thread [{}]", requestMessage, Thread.currentThread().getName());
 
                     stopWatch.start();
 

@@ -34,8 +34,7 @@ public class Graphs {
             } catch (RuntimeException re) {
                 logger.warn("Graph [{}] configured at [{}] could not be instantiated and will not be available in Gremlin Server.  GraphFactory message: {}",
                         e.getKey(), e.getValue(), re.getMessage());
-                if (logger.isDebugEnabled() && re.getCause() != null)
-                    logger.debug("GraphFactory exception", re.getCause());
+                if (re.getCause() != null) logger.debug("GraphFactory exception", re.getCause());
             }
         });
         graphs = Collections.unmodifiableMap(m);

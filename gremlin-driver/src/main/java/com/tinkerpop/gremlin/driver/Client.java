@@ -64,7 +64,7 @@ public abstract class Client {
         if (initialized)
             return this;
 
-        if (logger.isDebugEnabled()) logger.debug("Initializing client on cluster [{}]", cluster);
+        logger.debug("Initializing client on cluster [{}]", cluster);
 
         cluster.init();
         initializeImplementation();
@@ -149,8 +149,7 @@ public abstract class Client {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         } finally {
-            if (logger.isDebugEnabled()) logger.debug("Submitted {} to - {}", msg,
-                    null == connection ? "connection not initialized" : connection.toString());
+            logger.debug("Submitted {} to - {}", msg, null == connection ? "connection not initialized" : connection.toString());
         }
     }
 

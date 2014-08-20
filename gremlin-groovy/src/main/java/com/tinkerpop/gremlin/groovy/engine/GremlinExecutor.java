@@ -104,15 +104,13 @@ public class GremlinExecutor implements AutoCloseable {
 
         final String lang = language.orElse("gremlin-groovy");
 
-        if (logger.isDebugEnabled())
-            logger.debug("Preparing to evaluate script - {} - in thread [{}]", script, Thread.currentThread().getName());
+        logger.debug("Preparing to evaluate script - {} - in thread [{}]", script, Thread.currentThread().getName());
 
         // select the gremlin threadpool to execute the script evaluation in
         final AtomicBoolean abort = new AtomicBoolean(false);
         final CompletableFuture<Object> future = CompletableFuture.supplyAsync(() -> {
             try {
-                if (logger.isDebugEnabled())
-                    logger.debug("Evaluating script - {} - in thread [{}]", script, Thread.currentThread().getName());
+                logger.debug("Evaluating script - {} - in thread [{}]", script, Thread.currentThread().getName());
 
                 beforeEval.accept(bindings);
                 final Object o = scriptEngines.eval(script, bindings, lang);
@@ -161,8 +159,7 @@ public class GremlinExecutor implements AutoCloseable {
         if (scriptEvaluationTimeout > 0) {
             // Schedule a timeout in the io threadpool for future execution - killing an eval is cheap
             final ScheduledFuture<?> sf = scheduledExecutorService.schedule(() -> {
-                if (logger.isDebugEnabled())
-                    logger.info("Timing out script - {} - in thread [{}]", script, Thread.currentThread().getName());
+                logger.info("Timing out script - {} - in thread [{}]", script, Thread.currentThread().getName());
 
                 if (!evaluationFuture.isDone()) {
                     abort.set(true);
