@@ -243,7 +243,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
         assertTrue(results.getMemory().keys().contains("counter"));
         assertTrue(results.getMemory().keys().contains("and"));
         assertTrue(results.getMemory().keys().contains("or"));
-        assertTrue(results.getMemory().getRuntime() > 0);
+        assertTrue(results.getMemory().getRuntime() >= 0);
 
         assertEquals(Long.valueOf(28), results.getMemory().<Long>get("counter").get());
         assertFalse(results.getMemory().<Boolean>get("and").get());
