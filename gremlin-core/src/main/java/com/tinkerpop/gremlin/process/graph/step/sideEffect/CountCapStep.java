@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
-import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.CountCapMapReduce;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -16,7 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CountCapStep<S> extends FilterStep<S> implements SideEffectCapable, Bulkable, VertexCentric, MapReducer<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
+public class CountCapStep<S> extends SideEffectStep<S> implements SideEffectCapable, Bulkable, VertexCentric, MapReducer<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
 
     private static final String COUNT_KEY = Graph.Key.hide("count");
     private long bulkCount = 1l;
@@ -25,10 +24,9 @@ public class CountCapStep<S> extends FilterStep<S> implements SideEffectCapable,
 
     public CountCapStep(final Traversal traversal) {
         super(traversal);
-        this.setPredicate(traverser -> {
+        this.setConsumer(traverser -> {
             this.count.set(this.count.get() + this.bulkCount);
             if (!this.vertexCentric) this.traversal.memory().set(COUNT_KEY, this.count.get());
-            return true;
         });
 
     }

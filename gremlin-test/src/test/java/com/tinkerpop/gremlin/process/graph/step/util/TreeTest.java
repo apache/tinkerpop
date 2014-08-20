@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.util;
 
+import com.tinkerpop.gremlin.process.graph.util.Tree;
 import org.junit.Test;
 
 import java.util.AbstractMap;

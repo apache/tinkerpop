@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.graph.step.filter;
+package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;

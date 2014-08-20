@@ -21,7 +21,7 @@ import java.util.UUID;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StoreStep<S> extends FilterStep<S> implements SideEffectCapable, Reversible, Bulkable, VertexCentric, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
+public class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable, Reversible, Bulkable, VertexCentric, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
 
     public Collection store;
     public long bulkCount = 1l;
@@ -35,12 +35,11 @@ public class StoreStep<S> extends FilterStep<S> implements SideEffectCapable, Re
         this.memoryKey = null == memoryKey ? this.getAs() : memoryKey;
         this.hiddenMemoryKey = Graph.Key.hide(this.memoryKey);
         this.store = this.traversal.memory().getOrCreate(this.memoryKey, ArrayList::new);
-        this.setPredicate(traverser -> {
+        this.setConsumer(traverser -> {
             final Object storeObject = null == this.preStoreFunction ? traverser.get() : this.preStoreFunction.apply(traverser.get());
             for (int i = 0; i < this.bulkCount; i++) {
                 this.store.add(storeObject);
             }
-            return true;
         });
     }
 

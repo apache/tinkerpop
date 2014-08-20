@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
-import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupByMapReduce;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -17,12 +16,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffectCapable, Reversible, VertexCentric, MapReducer<Object, Collection, Object, Object, Map> {
+public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEffectCapable, Reversible, VertexCentric, MapReducer<Object, Collection, Object, Object, Map> {
 
     public Map<K, Collection<V>> groupByMap;
     public final Map<K, R> reduceMap;
@@ -42,7 +40,7 @@ public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffect
         this.keyFunction = keyFunction;
         this.valueFunction = valueFunction == null ? s -> (V) s : valueFunction;
         this.reduceFunction = reduceFunction;
-        this.setPredicate(traverser -> {
+        this.setConsumer(traverser -> {
             doGroup(traverser.get(), this.groupByMap, this.keyFunction, this.valueFunction);
             if (!this.vertexCentric) {
                 if (null != reduceFunction && !this.starts.hasNext()) {
@@ -50,7 +48,6 @@ public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffect
                     this.traversal.memory().set(this.memoryKey, this.reduceMap);
                 }
             }
-            return true;
         });
     }
 

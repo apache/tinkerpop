@@ -15,10 +15,10 @@ import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.ExceptStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
-import com.tinkerpop.gremlin.process.graph.step.filter.IdentityStep;
-import com.tinkerpop.gremlin.process.graph.step.filter.InjectStep;
+import com.tinkerpop.gremlin.process.graph.step.util.IdentityStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.IntervalStep;
-import com.tinkerpop.gremlin.process.graph.step.filter.PathIdentityStep;
+import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RandomStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RangeStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainStep;
@@ -419,7 +419,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
 
     public default GraphTraversal<S, E> sideEffect(final SConsumer<Traverser<E>> consumer) {
-        return (GraphTraversal) this.addStep(new SideEffectStep<>(this, consumer));
+        final SideEffectStep<E> sideEffectStep = new SideEffectStep<>(this);
+        sideEffectStep.setConsumer(consumer);
+        return (GraphTraversal) this.addStep(sideEffectStep);
     }
 
     public default <E2> GraphTraversal<S, E2> cap(final String memoryKey) {

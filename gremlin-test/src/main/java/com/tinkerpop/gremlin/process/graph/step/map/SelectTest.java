@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.step.util.As;
+import com.tinkerpop.gremlin.process.graph.util.As;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 

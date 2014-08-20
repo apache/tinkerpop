@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.graph.step.util;
+package com.tinkerpop.gremlin.process.graph.util;
 
 import java.util.Arrays;
 import java.util.List;

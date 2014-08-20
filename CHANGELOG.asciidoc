@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* All sideEffect-based steps no longer extend `FilterStep` with predicate equal true, but a more efficient `SideEffectStep`.
 * `TreeStep` now has `TreeMapReduce` for executing on `GraphComputer`.
 * `Neo4jTraversal.cypher()` is fluent throughout.
 * Reverted back to TP2 model of `as()` referring to step names, not variable names of sideEffects.

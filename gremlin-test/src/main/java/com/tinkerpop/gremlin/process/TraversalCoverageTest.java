@@ -65,7 +65,7 @@ public class TraversalCoverageTest extends AbstractGremlinProcessTest {
                 .filter(m -> m.getName().equals(method.getName()))
                 .filter(m -> Arrays.asList(m.getParameterTypes()).toString().equals(Arrays.asList(method.getParameterTypes()).toString()))
                 .findFirst().orElseGet(() -> {
-                    System.out.println("WARNING: [If test passes, ignore] Can not find native implementation of: " + method);
+                    System.out.println("IGNORE IF TEST PASSES: Can not find native implementation of: " + method);
                     return method;
                 });
     }

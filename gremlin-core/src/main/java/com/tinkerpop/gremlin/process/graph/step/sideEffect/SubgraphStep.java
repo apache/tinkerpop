@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
-import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -25,7 +24,7 @@ import java.util.Set;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SubgraphStep<S> extends FilterStep<S> implements SideEffectCapable, PathConsumer, Reversible {
+public class SubgraphStep<S> extends SideEffectStep<S> implements SideEffectCapable, PathConsumer, Reversible {
     private final Graph subgraph;
     private final boolean subgraphSupportsUserIds;
     private final Map<Object, Vertex> idVertexMap;
@@ -48,7 +47,7 @@ public class SubgraphStep<S> extends FilterStep<S> implements SideEffectCapable,
         this.subgraph = this.traversal.memory().getOrCreate(this.memoryKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION));
         this.subgraphSupportsUserIds = this.subgraph.features().vertex().supportsUserSuppliedIds();
 
-        this.setPredicate(traverser -> {
+        this.setConsumer(traverser -> {
             traverser.getPath().stream().map(Pair::getValue1)
                     .filter(i -> i instanceof Edge)
                     .map(e -> (Edge) e)
@@ -61,7 +60,6 @@ public class SubgraphStep<S> extends FilterStep<S> implements SideEffectCapable,
                         // TODO: If userSuppliedIds exist, don't do this to save memory
                         this.edgeIdsAdded.add(e.id());
                     });
-            return true;
         });
     }
 
