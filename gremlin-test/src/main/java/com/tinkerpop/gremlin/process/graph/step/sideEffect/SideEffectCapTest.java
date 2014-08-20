@@ -34,12 +34,15 @@ public abstract class SideEffectCapTest extends AbstractGremlinTest {
 
     public static class JavaSideEffectCapTest extends SideEffectCapTest {
 
+        @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXa_nameX_out_capXaX() {
             return g.V().<Vertex>has("age").groupCount("a",v -> v.value("name")).out().cap("a");
         }
     }
 
     public static class JavaComputerSideEffectCapTest extends SideEffectCapTest {
+
+        @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXa_nameX_out_capXaX() {
             return g.V().<Vertex>has("age").groupCount("a",v -> v.value("name")).out().<Map<String, Long>>cap("a").submit(g.compute());
         }

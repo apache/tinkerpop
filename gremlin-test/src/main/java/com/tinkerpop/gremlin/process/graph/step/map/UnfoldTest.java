@@ -39,6 +39,7 @@ public abstract class UnfoldTest extends AbstractGremlinTest {
 
     public static class JavaUnfoldTest extends UnfoldTest {
 
+        @Override
         public Traversal<Vertex, Edge> get_g_V_mapXoutEX_unfold() {
             return g.V().map(t -> t.get().outE()).unfold();
         }
@@ -46,6 +47,7 @@ public abstract class UnfoldTest extends AbstractGremlinTest {
 
     public static class JavaComputerUnfoldTest extends UnfoldTest {
 
+        @Override
         public Traversal<Vertex, Edge> get_g_V_mapXoutEX_unfold() {
             return (Traversal) g.V().map(t -> t.get().outE()).unfold().submit(g.compute());
         }

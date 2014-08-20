@@ -233,6 +233,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
             return g.E().filter(v -> true).submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
             return g.V().filter(v -> {
                 final String name = v.get().value("name");

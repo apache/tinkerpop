@@ -51,21 +51,25 @@ public abstract class CyclicPathTest extends AbstractGremlinTest {
     }
 
     public static class JavaCyclicPathTest extends CyclicPathTest {
-
+        @Override
         public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(final Object v1Id) {
             return g.v(v1Id).out("created").in("created").cyclicPath();
         }
 
+        @Override
         public Traversal<Vertex, Path> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath_path(final Object v1Id) {
             return g.v(v1Id).out("created").in("created").cyclicPath().path();
         }
     }
 
     public static class JavaComputerCyclicPathTest extends CyclicPathTest {
+
+        @Override
         public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(final Object v1Id) {
             return g.v(v1Id).out("created").in("created").cyclicPath().submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, Path> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath_path(final Object v1Id) {
             return g.v(v1Id).out("created").in("created").cyclicPath().path().submit(g.compute());
         }

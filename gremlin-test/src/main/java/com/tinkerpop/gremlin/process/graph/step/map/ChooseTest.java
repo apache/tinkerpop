@@ -108,18 +108,21 @@ public abstract class ChooseTest extends AbstractGremlinTest {
 
     public static class JavaChooseTest extends ChooseTest {
 
+        @Override
         public Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name() {
             return g.V().choose(t -> t.get().<String>value("name").length() == 5,
                     g.of().out(),
                     g.of().in()).value("name");
         }
 
+        @Override
         public Traversal<Vertex, String> get_g_v1_chooseX0XoutX_name(Object v1Id) {
             return g.v(v1Id).choose(t -> 0, new HashMap() {{
                 put(0, g.of().out().value("name"));
             }});
         }
 
+        @Override
         public Traversal<Vertex, String> get_g_V_hasXageX_chooseXname_lengthX5_in_4_out_3_bothX_name() {
             return g.V().has("age").choose(t -> t.get().<String>value("name").length(), new HashMap() {{
                 put(5, g.of().in());
@@ -128,6 +131,7 @@ public abstract class ChooseTest extends AbstractGremlinTest {
             }}).value("name");
         }
 
+        @Override
         public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_valueXnameX_3L_valuesX() {
             return g.V().choose(t -> t.get().out().count().next(), new HashMap() {{
                 put(2L, g.of().value("name"));

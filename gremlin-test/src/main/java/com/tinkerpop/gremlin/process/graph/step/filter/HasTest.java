@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.filter;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
-import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;

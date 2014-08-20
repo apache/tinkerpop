@@ -35,6 +35,7 @@ public abstract class IntervalTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = false;
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id) {
             return g.v(v1Id).outE().interval("weight", 0.0d, 0.6d).inV();
         }
@@ -45,6 +46,7 @@ public abstract class IntervalTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = true;
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id) {
             return g.v(v1Id).outE().interval("weight", 0.0d, 0.6d).inV().submit(g.compute());
         }

@@ -60,36 +60,46 @@ public abstract class CountTest extends AbstractGremlinTest {
     }
 
     public static class JavaCountTest extends CountTest {
+
+        @Override
         public Traversal<Vertex, Long> get_g_V_count() {
             return g.V().count();
         }
 
+        @Override
         public Traversal<Vertex, Long> get_g_V_out_count() {
             return g.V().out().count();
         }
 
+        @Override
         public Traversal<Vertex, Long> get_g_V_both_both_count() {
             return g.V().both().both().count();
         }
 
+        @Override
         public Traversal<Vertex, Long> get_g_V_filterXfalseX_count() {
             return g.V().filter(v -> false).count();
         }
     }
 
     public static class JavaComputerCountTest extends CountTest {
+
+        @Override
         public Traversal<Vertex, Long> get_g_V_count() {
             return g.V().count().submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, Long> get_g_V_out_count() {
             return g.V().out().count().submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, Long> get_g_V_both_both_count() {
             return g.V().both().both().count().submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, Long> get_g_V_filterXfalseX_count() {
             return g.V().filter(v -> false).count().submit(g.compute());
         }

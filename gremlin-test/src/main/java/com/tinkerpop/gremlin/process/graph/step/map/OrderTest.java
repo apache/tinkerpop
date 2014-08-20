@@ -72,14 +72,17 @@ public abstract class OrderTest extends AbstractGremlinTest {
 
     public static class JavaOrderTest extends OrderTest {
 
+        @Override
         public Traversal<Vertex, String> get_g_V_name_order() {
             return g.V().<String>value("name").order();
         }
 
+        @Override
         public Traversal<Vertex, String> get_g_V_name_orderXabX() {
             return g.V().<String>value("name").order((a, b) -> b.get().compareTo(a.get()));
         }
 
+        @Override
         public Traversal<Vertex, String> get_g_V_orderXa_nameXb_nameX_name() {
             return g.V().order((a, b) -> a.get().<String>value("name").compareTo(b.get().<String>value("name"))).value("name");
         }

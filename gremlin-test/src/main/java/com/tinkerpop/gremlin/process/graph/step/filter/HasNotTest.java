@@ -50,10 +50,12 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = false;
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String prop) {
             return g.v(v1Id).hasNot(prop);
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String prop) {
             return g.V().hasNot(prop);
         }
@@ -64,10 +66,12 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = true;
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String prop) {
             return g.v(v1Id).<Vertex>hasNot(prop).submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String prop) {
             return g.V().<Vertex>hasNot(prop).submit(g.compute());
         }

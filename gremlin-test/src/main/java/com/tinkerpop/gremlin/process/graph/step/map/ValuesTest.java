@@ -137,18 +137,22 @@ public abstract class ValuesTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = false;
         }
 
+        @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_values() {
             return g.V().values();
         }
 
+        @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_valuesXname_ageX() {
             return g.V().values("name", "age");
         }
 
+        @Override
         public Traversal<Edge, Map<String, Object>> get_g_E_valuesXid_label_weightX() {
             return g.E().values("id", "label", "weight");
         }
 
+        @Override
         public Traversal<Vertex, Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id) {
             return g.v(v1Id).out("created").values();
         }
@@ -160,18 +164,22 @@ public abstract class ValuesTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = true;
         }
 
+        @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_values() {
             return g.V().values().submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_valuesXname_ageX() {
             return g.V().values("name", "age").submit(g.compute());
         }
 
+        @Override
         public Traversal<Edge, Map<String, Object>> get_g_E_valuesXid_label_weightX() {
             return g.E().values("id", "label", "weight").submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id) {
             return g.v(v1Id).out("created").values().submit(g.compute());
         }

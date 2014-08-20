@@ -49,10 +49,12 @@ public abstract class RandomTest extends AbstractGremlinTest {
 
     public static class JavaRandomTest extends RandomTest {
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_randomX1X() {
             return g.V().random(1.0d);
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_randomX0X() {
             return g.V().random(0.0d);
         }
@@ -60,10 +62,12 @@ public abstract class RandomTest extends AbstractGremlinTest {
 
     public static class JavaComputerRandomTest extends RandomTest {
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_randomX1X() {
             return g.V().random(1.0d).submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_randomX0X() {
             return g.V().random(0.0d).submit(g.compute());
         }

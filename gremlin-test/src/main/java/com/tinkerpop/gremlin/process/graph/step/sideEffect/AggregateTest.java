@@ -103,14 +103,17 @@ public abstract class AggregateTest extends AbstractGremlinTest {
 
     public static class JavaAggregateTest extends AggregateTest {
 
+        @Override
         public Traversal<Vertex, List<String>> get_g_V_valueXnameX_aggregate() {
             return (Traversal) g.V().value("name").aggregate();
         }
 
+        @Override
         public Traversal<Vertex, List<String>> get_g_V_aggregateXnameX() {
             return (Traversal) g.V().aggregate(v -> v.value("name"));
         }
 
+        @Override
         public Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path() {
             return g.V().out().aggregate("a").path();
         }
@@ -122,14 +125,17 @@ public abstract class AggregateTest extends AbstractGremlinTest {
 
     public static class JavaComputerAggregateTest extends AggregateTest {
 
+        @Override
         public Traversal<Vertex, List<String>> get_g_V_valueXnameX_aggregate() {
             return (Traversal) g.V().value("name").aggregate().submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, List<String>> get_g_V_aggregateXnameX() {
             return (Traversal) g.V().aggregate(v -> v.value("name")).submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path() {
             return g.V().out().aggregate("a").path().submit(g.compute());
         }
