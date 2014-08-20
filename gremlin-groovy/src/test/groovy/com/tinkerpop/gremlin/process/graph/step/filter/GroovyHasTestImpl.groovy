@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.filter
 import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.structure.Edge
+import com.tinkerpop.gremlin.structure.Element
 import com.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -52,22 +53,22 @@ class GroovyHasTestImpl extends HasTest {
 
     @Override
     public Traversal<Edge, Edge> get_g_e7_hasXlabelXknowsX(final Object e7Id) {
-        g.e(e7Id).has('label', 'knows')
+        g.e(e7Id).has(Element.LABEL, 'knows')
     }
 
     @Override
     public Traversal<Edge, Edge> get_g_E_hasXlabelXknowsX() {
-        g.E.has('label', 'knows')
+        g.E.has(Element.LABEL, 'knows')
     }
 
     @Override
     public Traversal<Edge, Edge> get_g_E_hasXlabelXknows_createdX() {
-        g.E.has('label', T.in, ['knows', 'created'])
+        g.E.has(Element.LABEL, T.in, ['knows', 'created'])
     }
 
     @Override
     Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_animalX() {
-        return null
+        return g.V.has(Element.LABEL, T.in, ["person", "animal"]);
     }
 
     @Override
