@@ -9,16 +9,19 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 class GroovyChooseTestImpl extends ChooseTest {
 
+    @Override
     public Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name() {
         return g.V().choose({ it.get().value('name').length() == 5 },
                 g.of().out(),
                 g.of().in()).name;
     }
 
+    @Override
     public Traversal<Vertex, String> get_g_v1_chooseX0XoutX_name(Object v1Id) {
         return g.v(v1Id).choose({ 0 }, [0: g.of().out().value("name")]);
     }
 
+    @Override
     public Traversal<Vertex, String> get_g_V_hasXageX_chooseXname_lengthX5_in_4_out_3_bothX_name() {
         return g.V().has('age').choose({ it.get().value('name').length() },
                 [5: g.of().in(),
@@ -26,6 +29,7 @@ class GroovyChooseTestImpl extends ChooseTest {
                  3: g.of().both()]).name;
     }
 
+    @Override
     public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_valueXnameX_3L_valuesX() {
         return g.V.choose({it.get().out().count().next();},[
             2L:g.of().value("name"),

@@ -9,21 +9,23 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 class GroovyValuesTestImpl extends ValuesTest {
 
+    @Override
     public Traversal<Vertex, Map<String, Object>> get_g_V_values() {
         g.V.values
     }
 
+    @Override
     public Traversal<Vertex, Map<String, Object>> get_g_V_valuesXname_ageX() {
         g.V.values('name', 'age')
     }
 
+    @Override
     public Traversal<Edge, Map<String, Object>> get_g_E_valuesXid_label_weightX() {
         g.E.values('id', 'label', 'weight')
     }
 
-
+    @Override
     public Traversal<Vertex, Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id) {
         g.v(v1Id).out('created').values
-
     }
 }

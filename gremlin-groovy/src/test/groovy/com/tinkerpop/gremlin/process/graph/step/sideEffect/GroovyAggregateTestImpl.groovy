@@ -9,14 +9,17 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 class GroovyAggregateTestImpl extends AggregateTest {
 
+    @Override
     public Traversal<Vertex, List<String>> get_g_V_valueXnameX_aggregate() {
         g.V().value('name').aggregate()
     }
 
+    @Override
     public Traversal<Vertex, List<String>> get_g_V_aggregateXnameX() {
         g.V.aggregate() { it.value('name') }
     }
 
+    @Override
     public Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path() {
         return g.V().out().aggregate('a').path();
     }

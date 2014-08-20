@@ -43,11 +43,23 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 	//// METHODS INHERITED FROM com.tinkerpop.gremlin.process.graph.GraphTraversal ////
 	///////////////////////////////////////////////////////////////////////////////////
 
-	public default <E2> Neo4jTraversal<S, E2> has(java.lang.String arg0, com.tinkerpop.gremlin.util.function.SBiPredicate arg1, java.lang.Object arg2) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.has(arg0, arg1, arg2);
+	public default <E2> Neo4jTraversal<S, E2> flatMap(com.tinkerpop.gremlin.util.function.SFunction<com.tinkerpop.gremlin.process.Traverser<E>, java.util.Iterator<E2>> arg0) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.flatMap(arg0);
+	}
+
+	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Vertex> to(com.tinkerpop.gremlin.structure.Direction arg0, int arg1, java.lang.String... arg2) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.to(arg0, arg1, arg2);
+	}
+
+	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Vertex> to(com.tinkerpop.gremlin.structure.Direction arg0, java.lang.String... arg1) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.to(arg0, arg1);
 	}
 
 	public default <E2> Neo4jTraversal<S, E2> has(java.lang.String arg0, com.tinkerpop.gremlin.process.T arg1, java.lang.Object arg2) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.has(arg0, arg1, arg2);
+	}
+
+	public default <E2> Neo4jTraversal<S, E2> has(java.lang.String arg0, com.tinkerpop.gremlin.util.function.SBiPredicate arg1, java.lang.Object arg2) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.has(arg0, arg1, arg2);
 	}
 
@@ -59,14 +71,6 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.has(arg0, arg1);
 	}
 
-	public default Neo4jTraversal<S, E> groupCount(com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg0) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.groupCount(arg0);
-	}
-
-	public default Neo4jTraversal<S, E> groupCount(java.lang.String arg0, com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg1) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.groupCount(arg0, arg1);
-	}
-
 	public default Neo4jTraversal<S, E> groupCount() {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.groupCount();
 	}
@@ -75,16 +79,20 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.groupCount(arg0);
 	}
 
-	public default <E2> Neo4jTraversal<S, E2> flatMap(com.tinkerpop.gremlin.util.function.SFunction<com.tinkerpop.gremlin.process.Traverser<E>, java.util.Iterator<E2>> arg0) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.flatMap(arg0);
+	public default Neo4jTraversal<S, E> groupCount(com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg0) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.groupCount(arg0);
 	}
 
-	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Vertex> to(com.tinkerpop.gremlin.structure.Direction arg0, int arg1, java.lang.String... arg2) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.to(arg0, arg1, arg2);
+	public default Neo4jTraversal<S, E> groupCount(java.lang.String arg0, com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg1) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.groupCount(arg0, arg1);
 	}
 
-	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Vertex> to(com.tinkerpop.gremlin.structure.Direction arg0, java.lang.String... arg1) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.to(arg0, arg1);
+	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Vertex> both(java.lang.String... arg0) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.both(arg0);
+	}
+
+	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Vertex> both(int arg0, java.lang.String... arg1) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.both(arg0, arg1);
 	}
 
 	public default <E2> Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Property<E2>> property(java.lang.String arg0) {
@@ -111,16 +119,12 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.interval(arg0, arg1, arg2);
 	}
 
-	public default <E2> Neo4jTraversal<S, E2> cap(java.lang.String arg0) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.cap(arg0);
-	}
-
 	public default <E2> Neo4jTraversal<S, E2> cap() {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.cap();
 	}
 
-	public default <E2> Neo4jTraversal<S, E2> select(java.lang.String arg0, com.tinkerpop.gremlin.util.function.SFunction arg1) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.select(arg0, arg1);
+	public default <E2> Neo4jTraversal<S, E2> cap(java.lang.String arg0) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.cap(arg0);
 	}
 
 	public default <E2> Neo4jTraversal<S, java.util.Map<java.lang.String, E2>> select(java.util.List<java.lang.String> arg0, com.tinkerpop.gremlin.util.function.SFunction... arg1) {
@@ -135,7 +139,11 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.select(arg0);
 	}
 
-	public default Neo4jTraversal<S, E> aggregate(com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg0) {
+	public default <E2> Neo4jTraversal<S, E2> select(java.lang.String arg0, com.tinkerpop.gremlin.util.function.SFunction arg1) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.select(arg0, arg1);
+	}
+
+	public default Neo4jTraversal<S, E> aggregate(java.lang.String arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.aggregate(arg0);
 	}
 
@@ -143,12 +151,12 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.aggregate();
 	}
 
-	public default Neo4jTraversal<S, E> aggregate(java.lang.String arg0, com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg1) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.aggregate(arg0, arg1);
+	public default Neo4jTraversal<S, E> aggregate(com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg0) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.aggregate(arg0);
 	}
 
-	public default Neo4jTraversal<S, E> aggregate(java.lang.String arg0) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.aggregate(arg0);
+	public default Neo4jTraversal<S, E> aggregate(java.lang.String arg0, com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg1) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.aggregate(arg0, arg1);
 	}
 
 	public default <E2> Neo4jTraversal<S, E2> choose(com.tinkerpop.gremlin.util.function.SPredicate<com.tinkerpop.gremlin.process.Traverser<S>> arg0, com.tinkerpop.gremlin.process.Traversal arg1, com.tinkerpop.gremlin.process.Traversal arg2) {
@@ -159,20 +167,12 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.choose(arg0, arg1);
 	}
 
-	public default Neo4jTraversal<S, java.util.List<E>> fold() {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.fold();
-	}
-
 	public default <E2> Neo4jTraversal<S, E2> fold(E2 arg0, com.tinkerpop.gremlin.util.function.SBiFunction<E2, E, E2> arg1) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.fold(arg0, arg1);
 	}
 
-	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Vertex> both(int arg0, java.lang.String... arg1) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.both(arg0, arg1);
-	}
-
-	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Vertex> both(java.lang.String... arg0) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.both(arg0);
+	public default Neo4jTraversal<S, java.util.List<E>> fold() {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.fold();
 	}
 
 	public default Neo4jTraversal<S, E> as(java.lang.String arg0) {
@@ -183,12 +183,8 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.back(arg0);
 	}
 
-	public default Neo4jTraversal<S, E> groupBy(java.lang.String arg0, com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg1) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.groupBy(arg0, arg1);
-	}
-
-	public default Neo4jTraversal<S, E> groupBy(com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg0, com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg1, com.tinkerpop.gremlin.util.function.SFunction<java.util.Collection, ?> arg2) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.groupBy(arg0, arg1, arg2);
+	public default Neo4jTraversal<S, E> groupBy(com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg0) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.groupBy(arg0);
 	}
 
 	public default Neo4jTraversal<S, E> groupBy(java.lang.String arg0, com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg1, com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg2, com.tinkerpop.gremlin.util.function.SFunction<java.util.Collection, ?> arg3) {
@@ -199,8 +195,12 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.groupBy(arg0, arg1, arg2);
 	}
 
-	public default Neo4jTraversal<S, E> groupBy(com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg0) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.groupBy(arg0);
+	public default Neo4jTraversal<S, E> groupBy(java.lang.String arg0, com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg1) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.groupBy(arg0, arg1);
+	}
+
+	public default Neo4jTraversal<S, E> groupBy(com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg0, com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg1, com.tinkerpop.gremlin.util.function.SFunction<java.util.Collection, ?> arg2) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.groupBy(arg0, arg1, arg2);
 	}
 
 	public default Neo4jTraversal<S, E> groupBy(com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg0, com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg1) {
@@ -211,28 +211,28 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.trackPaths();
 	}
 
-	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Edge> toE(com.tinkerpop.gremlin.structure.Direction arg0, java.lang.String... arg1) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.toE(arg0, arg1);
-	}
-
 	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Edge> toE(com.tinkerpop.gremlin.structure.Direction arg0, int arg1, java.lang.String... arg2) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.toE(arg0, arg1, arg2);
 	}
 
-	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Edge> outE(java.lang.String... arg0) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.outE(arg0);
+	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Edge> toE(com.tinkerpop.gremlin.structure.Direction arg0, java.lang.String... arg1) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.toE(arg0, arg1);
 	}
 
 	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Edge> outE(int arg0, java.lang.String... arg1) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.outE(arg0, arg1);
 	}
 
-	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Edge> inE(int arg0, java.lang.String... arg1) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.inE(arg0, arg1);
+	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Edge> outE(java.lang.String... arg0) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.outE(arg0);
 	}
 
 	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Edge> inE(java.lang.String... arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.inE(arg0);
+	}
+
+	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Edge> inE(int arg0, java.lang.String... arg1) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.inE(arg0, arg1);
 	}
 
 	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Edge> bothE(int arg0, java.lang.String... arg1) {
@@ -275,11 +275,11 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.except(arg0);
 	}
 
-	public default Neo4jTraversal<S, E> except(java.util.Collection<E> arg0) {
+	public default Neo4jTraversal<S, E> except(E arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.except(arg0);
 	}
 
-	public default Neo4jTraversal<S, E> except(E arg0) {
+	public default Neo4jTraversal<S, E> except(java.util.Collection<E> arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.except(arg0);
 	}
 
@@ -287,15 +287,15 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.hasNot(arg0);
 	}
 
-	public default Neo4jTraversal<S, E> retain(java.util.Collection<E> arg0) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.retain(arg0);
-	}
-
 	public default Neo4jTraversal<S, E> retain(E arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.retain(arg0);
 	}
 
 	public default Neo4jTraversal<S, E> retain(java.lang.String arg0) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.retain(arg0);
+	}
+
+	public default Neo4jTraversal<S, E> retain(java.util.Collection<E> arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.retain(arg0);
 	}
 
@@ -311,6 +311,10 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.sideEffect(arg0);
 	}
 
+	public default Neo4jTraversal<S, E> subgraph(java.lang.String arg0, java.util.Set<java.lang.Object> arg1, java.util.Map<java.lang.Object, com.tinkerpop.gremlin.structure.Vertex> arg2, com.tinkerpop.gremlin.util.function.SPredicate<com.tinkerpop.gremlin.structure.Edge> arg3) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.subgraph(arg0, arg1, arg2, arg3);
+	}
+
 	public default Neo4jTraversal<S, E> subgraph(java.util.Set<java.lang.Object> arg0, java.util.Map<java.lang.Object, com.tinkerpop.gremlin.structure.Vertex> arg1, com.tinkerpop.gremlin.util.function.SPredicate<com.tinkerpop.gremlin.structure.Edge> arg2) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.subgraph(arg0, arg1, arg2);
 	}
@@ -321,10 +325,6 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 
 	public default Neo4jTraversal<S, E> subgraph(com.tinkerpop.gremlin.util.function.SPredicate<com.tinkerpop.gremlin.structure.Edge> arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.subgraph(arg0);
-	}
-
-	public default Neo4jTraversal<S, E> subgraph(java.lang.String arg0, java.util.Set<java.lang.Object> arg1, java.util.Map<java.lang.Object, com.tinkerpop.gremlin.structure.Vertex> arg2, com.tinkerpop.gremlin.util.function.SPredicate<com.tinkerpop.gremlin.structure.Edge> arg3) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.subgraph(arg0, arg1, arg2, arg3);
 	}
 
 	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Vertex> addE(com.tinkerpop.gremlin.structure.Direction arg0, java.lang.String arg1, java.lang.String arg2, java.lang.Object... arg3) {
@@ -347,12 +347,12 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.timeLimit(arg0);
 	}
 
-	public default Neo4jTraversal<S, E> jump(java.lang.String arg0, com.tinkerpop.gremlin.util.function.SPredicate<com.tinkerpop.gremlin.process.Traverser<E>> arg1, com.tinkerpop.gremlin.util.function.SPredicate<com.tinkerpop.gremlin.process.Traverser<E>> arg2) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.jump(arg0, arg1, arg2);
-	}
-
 	public default Neo4jTraversal<S, E> jump(java.lang.String arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.jump(arg0);
+	}
+
+	public default Neo4jTraversal<S, E> jump(java.lang.String arg0, com.tinkerpop.gremlin.util.function.SPredicate<com.tinkerpop.gremlin.process.Traverser<E>> arg1, com.tinkerpop.gremlin.util.function.SPredicate<com.tinkerpop.gremlin.process.Traverser<E>> arg2) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.jump(arg0, arg1, arg2);
 	}
 
 	public default Neo4jTraversal<S, E> jump(java.lang.String arg0, int arg1) {
@@ -367,20 +367,20 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.jump(arg0, arg1);
 	}
 
-	public default <E2> Neo4jTraversal<S, E2> value() {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.value();
+	public default <E2> Neo4jTraversal<S, E2> value(java.lang.String arg0, java.util.function.Supplier<E2> arg1) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.value(arg0, arg1);
 	}
 
 	public default <E2> Neo4jTraversal<S, E2> value(java.lang.String arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.value(arg0);
 	}
 
-	public default <E2> Neo4jTraversal<S, E2> value(java.lang.String arg0, java.util.function.Supplier<E2> arg1) {
+	public default <E2> Neo4jTraversal<S, E2> value(java.lang.String arg0, E2 arg1) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.value(arg0, arg1);
 	}
 
-	public default <E2> Neo4jTraversal<S, E2> value(java.lang.String arg0, E2 arg1) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.value(arg0, arg1);
+	public default <E2> Neo4jTraversal<S, E2> value() {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.value();
 	}
 
 	public default Neo4jTraversal<S, java.lang.Long> count() {
@@ -395,12 +395,12 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.identity();
 	}
 
-	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Vertex> in(java.lang.String... arg0) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.in(arg0);
-	}
-
 	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Vertex> in(int arg0, java.lang.String... arg1) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.in(arg0, arg1);
+	}
+
+	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Vertex> in(java.lang.String... arg0) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.in(arg0);
 	}
 
 	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Vertex> out(int arg0, java.lang.String... arg1) {
@@ -411,19 +411,19 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.out(arg0);
 	}
 
-	public default Neo4jTraversal<S, E> store(java.lang.String arg0, com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg1) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.store(arg0, arg1);
-	}
-
 	public default Neo4jTraversal<S, E> store() {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.store();
 	}
 
-	public default Neo4jTraversal<S, E> store(java.lang.String arg0) {
+	public default Neo4jTraversal<S, E> store(com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.store(arg0);
 	}
 
-	public default Neo4jTraversal<S, E> store(com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg0) {
+	public default Neo4jTraversal<S, E> store(java.lang.String arg0, com.tinkerpop.gremlin.util.function.SFunction<E, ?> arg1) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.store(arg0, arg1);
+	}
+
+	public default Neo4jTraversal<S, E> store(java.lang.String arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.store(arg0);
 	}
 
@@ -463,12 +463,12 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.range(arg0, arg1);
 	}
 
-	public default Neo4jTraversal<S, E> order(java.util.Comparator<com.tinkerpop.gremlin.process.Traverser<E>> arg0) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.order(arg0);
-	}
-
 	public default Neo4jTraversal<S, E> order() {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.order();
+	}
+
+	public default Neo4jTraversal<S, E> order(java.util.Comparator<com.tinkerpop.gremlin.process.Traverser<E>> arg0) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.order(arg0);
 	}
 
 	public default <E2> Neo4jTraversal<S, E2> map(com.tinkerpop.gremlin.util.function.SFunction<com.tinkerpop.gremlin.process.Traverser<E>, E2> arg0) {

@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 class GroovyIntervalTestImpl extends IntervalTest {
 
+    @Override
     public Traversal<Vertex, Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id) {
         g.v(v1Id).outE.interval('weight', 0.0d, 0.6d).inV
     }
