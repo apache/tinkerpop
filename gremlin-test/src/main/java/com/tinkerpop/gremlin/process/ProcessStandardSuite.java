@@ -119,6 +119,9 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             // util
             MemoryTest.JavaMemoryTest.class,
 
+            // compliance
+            TraversalCoverageTest.class,
+
             // algorithms
             // PageRankVertexProgramTest.class
     };
@@ -173,7 +176,10 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             // PageRankVertexProgramTest.class,
 
             // util
-            MemoryTest.class
+            MemoryTest.class,
+
+            // compliance
+            TraversalCoverageTest.class
     };
 
     /**

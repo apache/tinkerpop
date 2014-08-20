@@ -26,11 +26,11 @@ public class ElementTraversalMethodsTest {
         final List<Method> vertexMethods = new ArrayList<>(Arrays.asList(Vertex.class.getMethods()));
 
         final List<Method> nonExistent = graphTraversalMethods.stream()
-                .filter(m -> !exists(m, vertexMethods))
+                .filter(m -> !existsInList(m, vertexMethods))
                 .collect(Collectors.toList());
         if (nonExistent.size() > 0) {
             for (Method method : nonExistent) {
-                System.out.println(method);
+                System.out.println("Requirement implementation: " + method);
             }
             fail("The following methods are not implemented by Vertex: " + nonExistent);
         }
@@ -45,18 +45,18 @@ public class ElementTraversalMethodsTest {
         final List<Method> vertexMethods = new ArrayList<>(Arrays.asList(Edge.class.getMethods()));
 
         final List<Method> nonExistent = graphTraversalMethods.stream()
-                .filter(m -> !exists(m, vertexMethods))
+                .filter(m -> !existsInList(m, vertexMethods))
                 .collect(Collectors.toList());
         if (nonExistent.size() > 0) {
             for (Method method : nonExistent) {
-                System.out.println(method);
+                System.out.println("Requirement implementation: " + method);
             }
             fail("The following methods are not implemented by Edge: " + nonExistent);
         }
 
     }
 
-    private static boolean exists(final Method method, final List<Method> methods) {
+    private static boolean existsInList(final Method method, final List<Method> methods) {
         final List<Method> nonMatches = methods.stream()
                 .filter(m -> m.getName().equals(method.getName()))
                 .filter(m -> m.getParameterCount() == method.getParameterCount())

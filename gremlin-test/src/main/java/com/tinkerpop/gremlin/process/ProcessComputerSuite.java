@@ -109,7 +109,10 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             TreeTest.JavaComputerTreeTest.class,
 
             // algorithms
-            PageRankVertexProgramTest.class
+            PageRankVertexProgramTest.class,
+
+            // compliance
+            TraversalCoverageTest.class
     };
 
     /**
@@ -163,7 +166,10 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
 
 
             // algorithms
-            PageRankVertexProgramTest.class
+            PageRankVertexProgramTest.class,
+
+            // compliance
+            TraversalCoverageTest.class
     };
 
     /**
