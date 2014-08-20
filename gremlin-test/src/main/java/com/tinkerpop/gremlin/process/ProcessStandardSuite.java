@@ -154,7 +154,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             SelectTest.class,
             VertexTest.class,
             UnfoldTest.class,
-            UnionTest.class,
+            //UnionTest.class,
             ValuesTest.class,
 
             // sideEffect

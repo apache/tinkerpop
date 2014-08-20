@@ -27,7 +27,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC_DOUBLE)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
-    public void get_g_v1_outE_subgraphXknowsX() throws Exception {
+    public void g_v1_outE_subgraphXknowsX() throws Exception {
         final Configuration config = graphProvider.newGraphConfiguration("subgraph", this.getClass(), name.getMethodName());
         graphProvider.clear(config);
         Graph subgraph = graphProvider.openTestGraph(config);
@@ -56,7 +56,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC_DOUBLE)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
-    public void get_g_V_inE_subgraphXcreatedX_name() throws Exception {
+    public void g_V_inE_subgraphXcreatedX_name() throws Exception {
         final Configuration config = graphProvider.newGraphConfiguration("subgraph", this.getClass(), name.getMethodName());
         graphProvider.clear(config);
         final Graph subgraph = graphProvider.openTestGraph(config);
