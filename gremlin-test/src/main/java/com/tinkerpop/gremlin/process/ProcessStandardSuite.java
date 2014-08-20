@@ -126,7 +126,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
     /**
      * Tests that will be enforced by the suite where instances of them should be in the list of testsToExecute.
      */
-    protected static final Class<?>[] testsToEnforce = new Class<?>[]{
+    protected static Class<?>[] testsToEnforce = new Class<?>[]{
             // filter
             CyclicPathTest.class,
             DedupTest.class,
@@ -192,6 +192,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
                     .filter(c -> filters.contains(c.getName()))
                     .collect(Collectors.toList());
             testsToExecute = allowed.toArray(new Class<?>[allowed.size()]);
+            testsToEnforce = testsToExecute;
         }
     }
 
