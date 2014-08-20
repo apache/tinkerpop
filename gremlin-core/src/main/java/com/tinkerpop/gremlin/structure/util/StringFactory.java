@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.structure.util;
 
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.SideEffects;
+import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
@@ -75,8 +75,8 @@ public class StringFactory {
         return "variables" + L_BRACKET + "size:" + variables.keys().size() + R_BRACKET;
     }
 
-    public static String computerSideEffectsString(final SideEffects sideEffects) {
-        return "sideEffects" + L_BRACKET + "size:" + sideEffects.keys().size() + R_BRACKET;
+    public static String computeMemoryString(final Memory memory) {
+        return "memory" + L_BRACKET + "size:" + memory.keys().size() + R_BRACKET;
     }
 
     public static String computerString(final GraphComputer graphComputer) {

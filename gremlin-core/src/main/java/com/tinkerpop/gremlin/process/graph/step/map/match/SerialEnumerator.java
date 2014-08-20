@@ -43,8 +43,8 @@ public class SerialEnumerator<T> implements Enumerator<T> {
         // traversal iterators such as DefaultTraversal may return hasNext=true after first returning hasNext=false
         /*
         int size = completedEnumsSize;
-        if (!memory.isEmpty()) {
-            size += memory.get(memory.size() - 1).size();
+        if (!sideEffects.isEmpty()) {
+            size += sideEffects.get(sideEffects.size() - 1).size();
         }
         return size;
         */

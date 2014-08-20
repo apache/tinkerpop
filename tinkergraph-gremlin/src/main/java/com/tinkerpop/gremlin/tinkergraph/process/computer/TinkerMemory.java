@@ -2,9 +2,9 @@ package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.computer.SideEffects;
+import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.process.computer.util.SideEffectsHelper;
+import com.tinkerpop.gremlin.process.computer.util.MemoryHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.HashSet;
@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerSideEffects implements SideEffects.Administrative {
+public class TinkerMemory implements Memory.Administrative {
 
     public final Set<String> sideEffectKeys = new HashSet<>();
     public final Map<String, Object> sideEffectsMap;
@@ -27,16 +27,16 @@ public class TinkerSideEffects implements SideEffects.Administrative {
     private final AtomicLong runtime = new AtomicLong(0l);
     private boolean complete = false;
 
-    public TinkerSideEffects(final VertexProgram vertexProgram, final List<MapReduce> mapReducers) {
+    public TinkerMemory(final VertexProgram vertexProgram, final List<MapReduce> mapReducers) {
         this.sideEffectsMap = new ConcurrentHashMap<>();
         if (null != vertexProgram) {
-            for (final String key : (Set<String>) vertexProgram.getSideEffectComputeKeys()) {
-                SideEffectsHelper.validateKey(key);
+            for (final String key : (Set<String>) vertexProgram.getMemoryComputeKeys()) {
+                MemoryHelper.validateKey(key);
                 this.sideEffectKeys.add(key);
             }
         }
         for (final MapReduce mapReduce : mapReducers) {
-            this.sideEffectKeys.add(mapReduce.getSideEffectKey());
+            this.sideEffectKeys.add(mapReduce.getMemoryKey());
         }
     }
 
@@ -53,7 +53,7 @@ public class TinkerSideEffects implements SideEffects.Administrative {
     }
 
     public void setRuntime(final long runTime) {
-        if (this.complete) throw SideEffects.Exceptions.sideEffectsCompleteAndImmutable();
+        if (this.complete) throw Memory.Exceptions.memoryCompleteAndImmutable();
         this.runtime.set(runTime);
     }
 
@@ -104,13 +104,13 @@ public class TinkerSideEffects implements SideEffects.Administrative {
     }
 
     public String toString() {
-        return StringFactory.computerSideEffectsString(this);
+        return StringFactory.computeMemoryString(this);
     }
 
     private void checkKeyValue(final String key, final Object value) {
-        if (this.complete) throw SideEffects.Exceptions.sideEffectsCompleteAndImmutable();
+        if (this.complete) throw Memory.Exceptions.memoryCompleteAndImmutable();
         if (!this.sideEffectKeys.contains(key))
-            throw GraphComputer.Exceptions.providedKeyIsNotASideEffectKey(key);
-        SideEffectsHelper.validateValue(value);
+            throw GraphComputer.Exceptions.providedKeyIsNotAMemoryKey(key);
+        MemoryHelper.validateValue(value);
     }
 }

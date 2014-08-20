@@ -19,13 +19,13 @@ image:bsp-diagram.png[width=400,float=right] GraphComputer takes a `VertexProgra
 
 image::graphcomputer.png[width=500]
 
-The example below demonstrates how to submit a VertexProgram to a graph's GraphComputer. The result is of `submit()` is a `Future<Pair<Graph,SideEffect>>`. The `Pair<Graph,SideEffect>` result has the resultant computed graph which can be a full copy of the orginal graph (see <<giraph-gremlin,Giraph-Gremlin>>) or a view over the original graph (see <<tinkergraph,TinkerGraph>>). The pair result also provides access to computational side-effects (e.g. runtime, number of iterations, results of MapReduce jobs, and VertexProgram-specific side-effects).
+The example below demonstrates how to submit a VertexProgram to a graph's GraphComputer. The result is of `submit()` is a `Future<ComputerResult>`. The `ComputerResult` has the resultant computed graph which can be a full copy of the original graph (see <<giraph-gremlin,Giraph-Gremlin>>) or a view over the original graph (see <<tinkergraph,TinkerGraph>>). The pair result also provides access to computational side-effects (e.g. runtime, number of iterations, results of MapReduce jobs, and VertexProgram-specific memory manipulations).
 
 [source,groovy]
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> result = g.compute().program(PageRankVertexProgram.build().create()).submit().get()
-==>result[tinkergraph[vertices:6 edges:6],sideEffects[size:0]]
+==>result[tinkergraph[vertices:6 edges:6],memory[size:0]]
 gremlin> result.graph.V.map{[it.get().value('name'), it.get().value(PageRankVertexProgram.PAGE_RANK)]}
 ==>[marko, 0.15000000000000002]
 ==>[vadas, 0.19250000000000003]
@@ -33,7 +33,7 @@ gremlin> result.graph.V.map{[it.get().value('name'), it.get().value(PageRankVert
 ==>[josh, 0.19250000000000003]
 ==>[ripple, 0.23181250000000003]
 ==>[peter, 0.15000000000000002]
-gremlin> result.sideEffects.runtime
+gremlin> result.memory.runtime
 ==>35
 
 NOTE: This model of "vertex-centric graph computing" was made popular by Google's link:http://googleresearch.blogspot.com/2009/06/large-scale-graph-computing-at-google.html[Pregel] graph engine. In the open source world, this model is found in OLAP graph computing systems such as link:https://giraph.apache.org/[Giraph], link:https://hama.apache.org/[Hama], and link:http://faunus.thinkaurelius.com[Faunus]. TinkerPop3 extends the popularized model with integrated post-processing <<mapreduce,MapReduce>> jobs over the vertex set.
@@ -60,14 +60,14 @@ public interface MapReduce<MK, MV, RK, RV, R> {
 
 image::mapreduce.png[width=650]
 
-The `MapReduce` extension to GraphComputer is made explicit when examining the <<peerpressurevertexprogram,`PeerPressureVertexProgram`>> and corresponding `ClusterPopulationMapReduce`. In the code below, the GraphComputer result returns the computed on `Graph` as well as the `SideEffects` of the computation (`Pair<Graph,SideEffects>`). The sideEffects maintain the results of any MapReduce jobs. The cluster population MapReduce result states that there are 5 vertices in cluster 1 and 1 vertex in cluster 6. This can be verified (in a serial manner) by looking at the hidden `PeerPressureVertexProgram.CLUSTER` property of the resultant graph. In essence, the serial process of the final Gremlin traversal is done in a parallel MapReduce fashion using `ClusterPopulationMapReduce`.
+The `MapReduce` extension to GraphComputer is made explicit when examining the <<peerpressurevertexprogram,`PeerPressureVertexProgram`>> and corresponding `ClusterPopulationMapReduce`. In the code below, the GraphComputer result returns the computed on `Graph` as well as the `Memory` of the computation (`ComputerResult`). The memory maintain the results of any MapReduce jobs. The cluster population MapReduce result states that there are 5 vertices in cluster 1 and 1 vertex in cluster 6. This can be verified (in a serial manner) by looking at the hidden `PeerPressureVertexProgram.CLUSTER` property of the resultant graph. In essence, the serial process of the final Gremlin traversal is done in a parallel MapReduce fashion using `ClusterPopulationMapReduce`.
 
 [source,groovy]
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> result = g.compute().program(PeerPressureVertexProgram.build().create()).mapReduce(new ClusterPopulationMapReduce()).submit().get()
-==>result[tinkergraph[vertices:6 edges:6],sideEffects[size:2]]
-gremlin> result.sideEffects.get('clusterPopulation').get()
+==>result[tinkergraph[vertices:6 edges:6],memory[size:2]]
+gremlin> result.memory.get('clusterPopulation').get()
 ==>1=5
 ==>6=1
 gremlin> result.graph.V().value(PeerPressureVertexProgram.CLUSTER).groupCount.next()
@@ -82,11 +82,11 @@ gremlin> g = TinkerFactory.createClassic()
 gremlin> result = g.compute().program(PeerPressureVertexProgram.build().create()).
  mapReduce(new ClusterPopulationMapReduce()).
  mapReduce(new ClusterCountMapReduce()).submit().get()
-==>result[tinkergraph[vertices:6 edges:6],sideEffects[size:3]]
-gremlin> result.sideEffects.get('clusterPopulation').get()
+==>result[tinkergraph[vertices:6 edges:6],memory[size:3]]
+gremlin> result.memory.get('clusterPopulation').get()
 ==>1=5
 ==>6=1
-gremlin> result.sideEffects.get('clusterCount').get()
+gremlin> result.memory.get('clusterCount').get()
 ==>2
 
 IMPORTANT: The MapReduce model of TinkerPop3 does not support MapReduce chaining. Thus, the order in which the MapReduce jobs are executed is irrelevant. This is made apparent when realizing that the `map()`-stage takes a `Vertex` as its input and the `reduce()`-stage yields key/value pairs.
@@ -113,7 +113,7 @@ gremlin> result = g.compute().program(LambdaVertexProgram.build().
                       execute(new GSTriConsumer("a.property('counter', c.isInitialIteration() ? 1 : ++a.value('counter'))")).
                       terminate(new GSPredicate('a.iteration > 9')).
                       elementComputeKeys('counter',VARIABLE).create()).submit().get()
-==>result[tinkergraph[vertices:6 edges:6],sideEffects[size:0]]
+==>result[tinkergraph[vertices:6 edges:6],memory[size:0]]
 gremlin> result.graph.V.counter
 ==>10
 ==>10
@@ -137,7 +137,7 @@ results.getGraph().V().value("counter").forEach(System.out::println);
 // 10
 // 10
 
-Finally, there also exists `LambdaMapReduce` to compliment `LambdaVertexProgram`. In essence, the `map`, `combine`, `reduce`, etc. methods of <<mapreduce,MapReduce>> can be described by lambdas. An example is provided below in Gremlin-Groovy that expands on the example previous that simply sums up all the counters on the vertices and stores them into a graph computer sideEffect called `counter`.
+Finally, there also exists `LambdaMapReduce` to compliment `LambdaVertexProgram`. In essence, the `map`, `combine`, `reduce`, etc. methods of <<mapreduce,MapReduce>> can be described by lambdas. An example is provided below in Gremlin-Groovy that expands on the example previous that simply sums up all the counters on the vertices and stores them into a graph computer memory called `counter`.
 
 [source,groovy]
 gremlin> result = g.compute().
@@ -148,10 +148,10 @@ gremlin> result = g.compute().
                       mapReduce(LambdaMapReduce.build().
                         map(new GSBiConsumer("b.emit(MapReduce.NullObject.instance(), a.value('counter'))")).
                         reduce(new GSTriConsumer("c.emit(a,b.sum())")).
-                        sideEffect(new GSFunction('a.next().value1')).
-                        sideEffectKey('sum').create()).submit().get()
-==>result[tinkergraph[vertices:6 edges:6],sideEffects[size:1]]
-gremlin> result.sideEffects.sum.get()
+                        memory(new GSFunction('a.next().value1')).
+                        memoryKey('sum').create()).submit().get()
+==>result[tinkergraph[vertices:6 edges:6],memory[size:1]]
+gremlin> result.memory.sum.get()
 ==>60
 
 NOTE: The examples presented are simple. For more complex examples within Gremlin Console, it may be important to either develop a `VertexProgram` class or make use of Groovy link:http://groovy.codehaus.org/Strings+and+GString[multi-line strings].
@@ -220,13 +220,13 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
 
 
     @Override
-    public void setup(final SideEffects sideEffects) {
+    public void setup(final Memory memory) {
 
     }
 
     @Override
-    public void execute(final Vertex vertex, Messenger<Double> messenger, final SideEffects sideEffects) { <6>
-        if (sideEffects.isInitialIteration()) { <7>
+    public void execute(final Vertex vertex, Messenger<Double> messenger, final Memory memory) { <6>
+        if (memory.isInitialIteration()) { <7>
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
             double edgeCount = Double.valueOf((Long) this.messageType.edges(vertex).count().next());
             vertex.property(PAGE_RANK, initialPageRank);
@@ -241,8 +241,8 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
     }
 
     @Override
-    public boolean terminate(final SideEffects sideEffects) { <9>
-        return sideEffects.getIteration() >= this.totalIterations;
+    public boolean terminate(final Memory memory) { <9>
+        return memory.getIteration() >= this.totalIterations;
     }
 }
 ----
@@ -304,15 +304,15 @@ The counters that are propagated around the graph are stored in a hidden propert
 
 [source,groovy]
 gremlin> result = g.compute().program(TraversalVertexProgram.build().traversal(new GSSupplier("TinkerGraph.open().V.both.has('age').age.groupCount.as('a')")).create()).submit().get()
-==>result[tinkergraph[vertices:6 edges:6],sideEffects[size:3]]
-gremlin> result.sideEffects.get('a').get()
+==>result[tinkergraph[vertices:6 edges:6],memory[size:3]]
+gremlin> result.memory.get('a').get()
 ==>32=3
 ==>35=1
 ==>27=1
 ==>29=3
-gremlin> result.sideEffects.iteration
+gremlin> result.memory.iteration
 ==>6
-gremlin> result.sideEffects.runtime
+gremlin> result.memory.runtime
 ==>19
 
 CAUTION: When evaluating traversals that rely on path information (i.e. the history of the traversal), practical computational limits can be easily reached due the link:http://en.wikipedia.org/wiki/Combinatorial_explosion[combinatoric explosion] of data. With path computing enabled, every traverser is unique and thus, must be enumerated as opposed to counted. The difference being a collection of paths vs. a single 64-bit long at a single vertex. For more information on this concept, please see link:http://thinkaurelius.com/2012/11/11/faunus-provides-big-graph-data-analytics/[Faunus Provides Big Graph Data].

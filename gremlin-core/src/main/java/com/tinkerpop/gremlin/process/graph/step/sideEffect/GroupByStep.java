@@ -35,7 +35,7 @@ public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEf
         super(traversal);
         this.memoryKey = null == memoryKey ? this.getAs() : memoryKey;
         this.hiddenMemoryKey = Graph.Key.hide(this.memoryKey);
-        this.groupByMap = this.traversal.memory().getOrCreate(this.memoryKey, HashMap<K, Collection<V>>::new);
+        this.groupByMap = this.traversal.sideEffects().getOrCreate(this.memoryKey, HashMap<K, Collection<V>>::new);
         this.reduceMap = new HashMap<>();
         this.keyFunction = keyFunction;
         this.valueFunction = valueFunction == null ? s -> (V) s : valueFunction;
@@ -45,7 +45,7 @@ public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEf
             if (!this.vertexCentric) {
                 if (null != reduceFunction && !this.starts.hasNext()) {
                     doReduce(this.groupByMap, this.reduceMap, this.reduceFunction);
-                    this.traversal.memory().set(this.memoryKey, this.reduceMap);
+                    this.traversal.sideEffects().set(this.memoryKey, this.reduceMap);
                 }
             }
         });

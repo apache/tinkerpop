@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
-import com.tinkerpop.gremlin.process.computer.SideEffects;
+import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
@@ -77,13 +77,13 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     }
 
     @Override
-    public void setup(final SideEffects sideEffects) {
+    public void setup(final Memory memory) {
 
     }
 
     @Override
-    public void execute(final Vertex vertex, Messenger<Double> messenger, final SideEffects sideEffects) {
-        if (sideEffects.isInitialIteration()) {
+    public void execute(final Vertex vertex, Messenger<Double> messenger, final Memory memory) {
+        if (memory.isInitialIteration()) {
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
             double edgeCount = Double.valueOf((Long) this.messageType.edges(vertex).count().next());
             vertex.property(PAGE_RANK, initialPageRank);
@@ -98,8 +98,8 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     }
 
     @Override
-    public boolean terminate(final SideEffects sideEffects) {
-        return sideEffects.getIteration() >= this.totalIterations;
+    public boolean terminate(final Memory memory) {
+        return memory.getIteration() >= this.totalIterations;
     }
 
     //////////////////////////////

@@ -31,7 +31,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public static final String OF = "of";
 
-    public Memory memory();
+    public SideEffects sideEffects();
 
     public Strategies strategies();
 
@@ -45,7 +45,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
         try {
             final ComputerResult result = computer.program(TraversalVertexProgram.build().traversal(() -> this).create()).submit().get();
             final Traversal traversal = new DefaultTraversal<>();
-            traversal.addStarts(new SingleIterator(result.getSideEffects()));
+            traversal.addStarts(new SingleIterator(result.getMemory()));
             return traversal;
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -65,7 +65,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
         public boolean complete();
     }
 
-    public interface Memory extends Serializable {
+    public interface SideEffects extends Serializable {
 
         public <V> void set(final String key, final V value);
 
@@ -99,32 +99,32 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
         public static class Exceptions {
 
-            public static IllegalArgumentException providedKeyValuesMustBeAMultipleOfTwo() {
-                return new IllegalArgumentException("The provided key/value array must be a multiple of two");
+            public static IllegalArgumentException sideEffectKeyValuesMustBeAMultipleOfTwo() {
+                return new IllegalArgumentException("The provided side effect key/value array must be a multiple of two");
             }
 
-            public static IllegalArgumentException providedKeyValuesMustHaveALegalKeyOnEvenIndices() {
-                return new IllegalArgumentException("The provided key/value array must have a String key on even array indices");
+            public static IllegalArgumentException sideEffectKeyValuesMustHaveALegalKeyOnEvenIndices() {
+                return new IllegalArgumentException("The provided side effect key/value array must have a String key on even array indices");
             }
 
-            public static IllegalArgumentException variableKeyCanNotBeEmpty() {
-                return new IllegalArgumentException("Memory variable key can not be the empty string");
+            public static IllegalArgumentException sideEffectKeyCanNotBeEmpty() {
+                return new IllegalArgumentException("Side effect key can not be the empty string");
             }
 
-            public static IllegalArgumentException variableKeyCanNotBeNull() {
-                return new IllegalArgumentException("Memory variable key can not be null");
+            public static IllegalArgumentException sideEffectKeyCanNotBeNull() {
+                return new IllegalArgumentException("Side effect key can not be null");
             }
 
-            public static IllegalArgumentException variableValueCanNotBeNull() {
-                return new IllegalArgumentException("Memory variable value can not be null");
+            public static IllegalArgumentException sideEffectValueCanNotBeNull() {
+                return new IllegalArgumentException("Side effect value can not be null");
             }
 
-            public static IllegalArgumentException variableValueDoesNotExist(final String variable) {
-                return new IllegalArgumentException("The memory does not have a value for provided variable: " + variable);
+            public static IllegalArgumentException sideEffectValueDoesNotExist(final String variable) {
+                return new IllegalArgumentException("The sideEffects do not have a value for provided variable: " + variable);
             }
 
-            public static UnsupportedOperationException dataTypeOfVariableValueNotSupported(final Object val) {
-                return new UnsupportedOperationException(String.format("Memory variable value [%s] is of type %s is not supported", val, val.getClass()));
+            public static UnsupportedOperationException dataTypeOfSideEffectValueNotSupported(final Object val) {
+                return new UnsupportedOperationException(String.format("Side effect value [%s] is of type %s is not supported", val, val.getClass()));
             }
         }
     }

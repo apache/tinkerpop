@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 public interface Graph extends AutoCloseable {
 
     /**
-     * Key is a helper class for manipulating keys wherever they may be (e.g. properties, memory, sideEffects, etc.)
+     * Key is a helper class for manipulating keys wherever they may be (e.g. properties, sideEffects, sideEffects, etc.)
      */
     public class Key {
 
@@ -265,7 +265,7 @@ public interface Graph extends AutoCloseable {
              * Determines if the {@code Graph} implementation supports persisting it's contents natively to disk.
              * This feature does not refer to every graph's ability to write to disk via the Gremlin IO packages
              * (.e.g. GraphML), unless the graph natively persists to disk via those options somehow.  For example,
-             * TinkerGraph does not support this feature as it is a pure in-memory graph.
+             * TinkerGraph does not support this feature as it is a pure in-sideEffects graph.
              */
             @FeatureDescriptor(name = FEATURE_PERSISTENCE)
             public default boolean supportsPersistence() {
@@ -305,7 +305,7 @@ public interface Graph extends AutoCloseable {
             }
 
             /**
-             * Gets the features related to "graph memory" operation.
+             * Gets the features related to "graph sideEffects" operation.
              */
             public default VariableFeatures variables() {
                 return new VariableFeatures() {

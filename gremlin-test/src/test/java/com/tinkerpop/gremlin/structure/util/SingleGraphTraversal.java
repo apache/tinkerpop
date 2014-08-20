@@ -23,7 +23,7 @@ public class SingleGraphTraversal<S> implements GraphTraversal<S, S> {
     }
 
     @Override
-    public Memory memory() {
+    public SideEffects sideEffects() {
         return null;
     }
 

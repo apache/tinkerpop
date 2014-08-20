@@ -23,6 +23,6 @@ public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implemen
 
     public DefaultGraphTraversal(final Graph graph) {
         this();
-        this.memory().setGraph(graph);
+        this.sideEffects().setGraph(graph);
     }
 }

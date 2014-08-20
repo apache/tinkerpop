@@ -67,14 +67,14 @@ public class ClusterPopulationMapReduce implements MapReduce<Serializable, Long,
     }
 
     @Override
-    public Map<Serializable, Long> generateSideEffect(final Iterator<Pair<Serializable, Long>> keyValues) {
+    public Map<Serializable, Long> generateMemoryValue(final Iterator<Pair<Serializable, Long>> keyValues) {
         final Map<Serializable, Long> clusterPopulation = new HashMap<>();
         keyValues.forEachRemaining(pair -> clusterPopulation.put(pair.getValue0(), pair.getValue1()));
         return clusterPopulation;
     }
 
     @Override
-    public String getSideEffectKey() {
+    public String getMemoryKey() {
         return this.sideEffectKey;
     }
 }

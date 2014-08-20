@@ -18,7 +18,7 @@ public class RetainStep<S> extends FilterStep<S> implements Reversible {
         super(traversal);
         this.collectionAs = collectionAs;
         this.setPredicate(traverser -> {
-            final Optional optional = this.traversal.memory().get(this.collectionAs);
+            final Optional optional = this.traversal.sideEffects().get(this.collectionAs);
             if (!optional.isPresent()) return false;
             else {
                 final Object except = optional.get();

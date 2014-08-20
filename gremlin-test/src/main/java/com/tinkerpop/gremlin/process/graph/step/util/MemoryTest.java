@@ -14,25 +14,25 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class MemoryTest extends AbstractGremlinProcessTest {
-    public abstract Traversal.Memory get_g_V_memory();
+    public abstract Traversal.SideEffects get_g_V_memory();
 
     @Test
     @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_memory() {
-        final Traversal.Memory memory = get_g_V_memory();
-        assertFalse(memory.get("a").isPresent());
-        assertTrue(memory.get(Graph.Key.hide("g")).isPresent());
-        assertFalse(memory.get("g").isPresent());
-        assertTrue(Graph.class.isAssignableFrom(memory.get(Graph.Key.hide("g")).get().getClass()));
+        final Traversal.SideEffects sideEffects = get_g_V_memory();
+        assertFalse(sideEffects.get("a").isPresent());
+        assertTrue(sideEffects.get(Graph.Key.hide("g")).isPresent());
+        assertFalse(sideEffects.get("g").isPresent());
+        assertTrue(Graph.class.isAssignableFrom(sideEffects.get(Graph.Key.hide("g")).get().getClass()));
     }
 
-    public static class JavaMemoryTest extends MemoryTest {
-        public JavaMemoryTest() {
+    public static class JavaSideEffectsTest extends MemoryTest {
+        public JavaSideEffectsTest() {
             requiresGraphComputer = false;
         }
 
-        public Traversal.Memory get_g_V_memory() {
-            return g.V().memory();
+        public Traversal.SideEffects get_g_V_memory() {
+            return g.V().sideEffects();
         }
     }
 }

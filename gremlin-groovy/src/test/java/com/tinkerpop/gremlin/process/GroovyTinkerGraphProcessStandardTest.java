@@ -33,7 +33,7 @@ public class GroovyTinkerGraphProcessStandardTest extends AbstractGraphProvider 
         if (g != null) g.close();
 
         if (configuration.containsKey("gremlin.tg.directory")) {
-            // this is a non-in-memory configuration so blow away the directory
+            // this is a non-in-sideEffects configuration so blow away the directory
             final File graphDirectory = new File(configuration.getString("gremlin.tg.directory"));
             graphDirectory.delete();
         }

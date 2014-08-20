@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-import java.util.UUID;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -39,7 +38,7 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCa
         this.preAggregateFunction = preAggregateFunction;
         this.memoryKey = null == memoryKey ? this.getAs() : memoryKey;
         this.hiddenMemoryKey = Graph.Key.hide(this.memoryKey);
-        this.aggregate = this.traversal.memory().getOrCreate(this.memoryKey, ArrayList::new);
+        this.aggregate = this.traversal.sideEffects().getOrCreate(this.memoryKey, ArrayList::new);
     }
 
     public void setCurrentBulkCount(final long bulkCount) {

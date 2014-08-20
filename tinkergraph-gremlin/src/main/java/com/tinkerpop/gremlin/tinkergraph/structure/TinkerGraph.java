@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * An in-memory, reference implementation of the property graph interfaces provided by Gremlin3.
+ * An in-sideEffects, reference implementation of the property graph interfaces provided by Gremlin3.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)

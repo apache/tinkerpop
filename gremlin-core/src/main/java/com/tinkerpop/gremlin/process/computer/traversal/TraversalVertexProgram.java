@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
-import com.tinkerpop.gremlin.process.computer.SideEffects;
+import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.SideEffectCapComputerStep;
 import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraversalResultMapReduce;
@@ -75,7 +75,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
             traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
                 final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
                 this.mapReducers.add(mapReduce);
-                this.computeKeys.put(Graph.Key.hide(mapReduce.getSideEffectKey()), KeyType.CONSTANT);
+                this.computeKeys.put(Graph.Key.hide(mapReduce.getMemoryKey()), KeyType.CONSTANT);
             });
 
             if (!(TraversalHelper.getEnd(traversal) instanceof SideEffectCapComputerStep))
@@ -101,20 +101,20 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     @Override
-    public void setup(final SideEffects sideEffects) {
-        sideEffects.set(VOTE_TO_HALT, true);
+    public void setup(final Memory memory) {
+        memory.set(VOTE_TO_HALT, true);
     }
 
     @Override
-    public void execute(final Vertex vertex, final Messenger<M> messenger, SideEffects sideEffects) {
-        if (sideEffects.isInitialIteration()) {
-            executeFirstIteration(vertex, messenger, sideEffects);
+    public void execute(final Vertex vertex, final Messenger<M> messenger, Memory memory) {
+        if (memory.isInitialIteration()) {
+            executeFirstIteration(vertex, messenger, memory);
         } else {
-            executeOtherIterations(vertex, messenger, sideEffects);
+            executeOtherIterations(vertex, messenger, memory);
         }
     }
 
-    private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final SideEffects sideEffects) {
+    private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final Memory memory) {
         final Traversal traversal = this.traversalSupplier.get();
         traversal.strategies().apply();
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
@@ -142,27 +142,27 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         else
             vertex.property(TRAVERSER_TRACKER, new TraverserCountTracker());
 
-        sideEffects.and(VOTE_TO_HALT, voteToHalt.get());
+        memory.and(VOTE_TO_HALT, voteToHalt.get());
     }
 
-    private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, final SideEffects sideEffects) {
+    private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, final Memory memory) {
         if (this.trackPaths) {
-            sideEffects.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, messenger, this.traversalSupplier));
+            memory.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, messenger, this.traversalSupplier));
             vertex.<TraverserPathTracker>value(TRAVERSER_TRACKER).completeIteration();
         } else {
-            sideEffects.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, messenger, this.traversalSupplier));
+            memory.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, messenger, this.traversalSupplier));
             vertex.<TraverserCountTracker>value(TRAVERSER_TRACKER).completeIteration();
         }
 
     }
 
     @Override
-    public boolean terminate(final SideEffects sideEffects) {
-        final boolean voteToHalt = sideEffects.<Boolean>get(VOTE_TO_HALT).get();
+    public boolean terminate(final Memory memory) {
+        final boolean voteToHalt = memory.<Boolean>get(VOTE_TO_HALT).get();
         if (voteToHalt) {
             return true;
         } else {
-            sideEffects.set(VOTE_TO_HALT, true);
+            memory.set(VOTE_TO_HALT, true);
             return false;
         }
     }
@@ -178,7 +178,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     @Override
-    public Set<String> getSideEffectComputeKeys() {
+    public Set<String> getMemoryComputeKeys() {
         final Set<String> keys = new HashSet<>();
         keys.add(VOTE_TO_HALT);
         return keys;

@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
-import com.tinkerpop.gremlin.process.computer.SideEffects;
+import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
@@ -80,42 +80,42 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
     }
 
     @Override
-    public Set<String> getSideEffectComputeKeys() {
+    public Set<String> getMemoryComputeKeys() {
         return new HashSet<>(Arrays.asList(VOTE_TO_HALT));
     }
 
     @Override
-    public void setup(final SideEffects sideEffects) {
-        sideEffects.set(VOTE_TO_HALT, false);
+    public void setup(final Memory memory) {
+        memory.set(VOTE_TO_HALT, false);
     }
 
     @Override
-    public void execute(final Vertex vertex, Messenger<Pair<Serializable, Double>> messenger, final SideEffects sideEffects) {
-        if (sideEffects.isInitialIteration()) {
+    public void execute(final Vertex vertex, Messenger<Pair<Serializable, Double>> messenger, final Memory memory) {
+        if (memory.isInitialIteration()) {
             double voteStrength = this.distributeVote ? (1.0d / Double.valueOf((Long) this.messageType.edges(vertex).count().next())) : 1.0d;
             vertex.property(CLUSTER, vertex.id());
             vertex.property(VOTE_STRENGTH, voteStrength);
             messenger.sendMessage(this.messageType, new Pair<>((Serializable) vertex.id(), voteStrength));
-            sideEffects.and(VOTE_TO_HALT, false);
+            memory.and(VOTE_TO_HALT, false);
         } else {
             final Map<Serializable, Double> votes = new HashMap<>();
             votes.put(vertex.value(CLUSTER), vertex.<Double>value(VOTE_STRENGTH));
             messenger.receiveMessages(this.messageType).forEach(message -> MapHelper.incr(votes, message.getValue0(), message.getValue1()));
             Serializable cluster = PeerPressureVertexProgram.largestCount(votes);
             if (null == cluster) cluster = (Serializable) vertex.id();
-            sideEffects.and(VOTE_TO_HALT, vertex.value(CLUSTER).equals(cluster));
+            memory.and(VOTE_TO_HALT, vertex.value(CLUSTER).equals(cluster));
             vertex.property(CLUSTER, cluster);
             messenger.sendMessage(this.messageType, new Pair<>(cluster, vertex.<Double>value(VOTE_STRENGTH)));
         }
     }
 
     @Override
-    public boolean terminate(final SideEffects sideEffects) {
-        final boolean voteToHalt = sideEffects.<Boolean>get(VOTE_TO_HALT).get() || sideEffects.getIteration() >= this.maxIterations;
+    public boolean terminate(final Memory memory) {
+        final boolean voteToHalt = memory.<Boolean>get(VOTE_TO_HALT).get() || memory.getIteration() >= this.maxIterations;
         if (voteToHalt) {
             return true;
         } else {
-            sideEffects.or(VOTE_TO_HALT, true);
+            memory.or(VOTE_TO_HALT, true);
             return false;
         }
     }

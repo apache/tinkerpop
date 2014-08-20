@@ -112,8 +112,8 @@ public interface GraphComputer {
             return new IllegalArgumentException("The provided key is not a compute key: " + key);
         }
 
-        public static IllegalArgumentException providedKeyIsNotASideEffectKey(final String key) {
-            return new IllegalArgumentException("The provided key is not a sideEffect key: " + key);
+        public static IllegalArgumentException providedKeyIsNotAMemoryKey(final String key) {
+            return new IllegalArgumentException("The provided key is not a memory key: " + key);
         }
 
         public static IllegalStateException constantComputeKeyHasAlreadyBeenSet(final String key, final Object id) {

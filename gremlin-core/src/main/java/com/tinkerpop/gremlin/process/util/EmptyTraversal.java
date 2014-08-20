@@ -15,7 +15,7 @@ import java.util.List;
 public class EmptyTraversal<S, E> implements Traversal<S, E> {
 
     private static final EmptyTraversal INSTANCE = new EmptyTraversal();
-    private static final Memory MEMORY = new DefaultMemory();         // TODO: make "empty memory?"
+    private static final SideEffects SIDE_EFFECTS = new DefaultSideEffects();         // TODO: make "empty sideEffects?"
     private static final Strategies TRAVERSAL_STRATEGIES = new DefaultStrategies(new EmptyTraversal<>());
 
     public static EmptyTraversal instance() {
@@ -30,8 +30,8 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
         throw FastNoSuchElementException.instance();
     }
 
-    public Memory memory() {
-        return MEMORY;
+    public SideEffects sideEffects() {
+        return SIDE_EFFECTS;
     }
 
     public Strategies strategies() {

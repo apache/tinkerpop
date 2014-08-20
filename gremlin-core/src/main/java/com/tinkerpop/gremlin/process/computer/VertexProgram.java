@@ -40,31 +40,31 @@ public interface VertexProgram<M extends Serializable> {
      * The method is called at the beginning of the computation. The method is global to the {@link GraphComputer}
      * and as such, is not called for each vertex.
      *
-     * @param sideEffects The global sideEffects of the GraphComputer
+     * @param memory The global memory of the GraphComputer
      */
-    public void setup(final SideEffects sideEffects);
+    public void setup(final Memory memory);
 
     /**
      * This method denotes the main body of computation that is executed on each vertex in the graph.
      *
-     * @param vertex      the {@link com.tinkerpop.gremlin.structure.Vertex} to execute the {@link VertexProgram} on
-     * @param messenger   the messenger that moves data between vertices
-     * @param sideEffects the shared state between all vertices in the computation
+     * @param vertex    the {@link com.tinkerpop.gremlin.structure.Vertex} to execute the {@link VertexProgram} on
+     * @param messenger the messenger that moves data between vertices
+     * @param memory    the shared state between all vertices in the computation
      */
-    public void execute(final Vertex vertex, final Messenger<M> messenger, final SideEffects sideEffects);
+    public void execute(final Vertex vertex, final Messenger<M> messenger, final Memory memory);
 
     /**
      * The method is called at the end of a round to determine if the computation is complete. The method is global
      * to the {@link GraphComputer} and as such, is not called for each {@link com.tinkerpop.gremlin.structure.Vertex}.
      *
-     * @param sideEffects The global sideEffects of the {@link GraphComputer}
+     * @param memory The global memory of the {@link GraphComputer}
      * @return whether or not to halt the computation
      */
-    public boolean terminate(final SideEffects sideEffects);
+    public boolean terminate(final Memory memory);
 
     public Map<String, KeyType> getElementComputeKeys();
 
-    public default Set<String> getSideEffectComputeKeys() {
+    public default Set<String> getMemoryComputeKeys() {
         return Collections.emptySet();
     }
 

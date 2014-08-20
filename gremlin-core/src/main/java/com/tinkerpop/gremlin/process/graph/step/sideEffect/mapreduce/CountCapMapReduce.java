@@ -64,12 +64,12 @@ public class CountCapMapReduce implements MapReduce<MapReduce.NullObject, Long, 
     }
 
     @Override
-    public Long generateSideEffect(Iterator<Pair<NullObject, Long>> keyValues) {
+    public Long generateMemoryValue(Iterator<Pair<NullObject, Long>> keyValues) {
         return keyValues.next().getValue1();
     }
 
     @Override
-    public String getSideEffectKey() {
+    public String getMemoryKey() {
         return this.sideEffectKey;
     }
 }

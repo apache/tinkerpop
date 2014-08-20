@@ -39,11 +39,11 @@ import java.util.Optional;
         reason = "Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
         test = "com.tinkerpop.gremlin.process.computer.GraphComputerTest",
-        method = "shouldNotAllowBadSideEffectKeys",
+        method = "shouldNotAllowBadMemoryKeys",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
         test = "com.tinkerpop.gremlin.process.computer.GraphComputerTest",
-        method = "shouldRequireRegisteringSideEffectKeys",
+        method = "shouldRequireRegisteringMemoryKeys",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
         test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphTest$JavaSubgraphTest",
@@ -100,7 +100,7 @@ public class GiraphGraph implements Graph, Serializable {
             }
         };
         traversal.addStep(new GiraphGraphStep(traversal, Vertex.class, this));
-        traversal.memory().setGraph(this);
+        traversal.sideEffects().setGraph(this);
         return traversal;
     }
 
@@ -112,14 +112,14 @@ public class GiraphGraph implements Graph, Serializable {
             }
         };
         traversal.addStep(new GiraphGraphStep(traversal, Edge.class, this));
-        traversal.memory().setGraph(this);
+        traversal.sideEffects().setGraph(this);
         return traversal;
     }
 
     @Override
     public <S> GraphTraversal<S, S> of() {
         final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>();
-        traversal.memory().setGraph(this);
+        traversal.sideEffects().setGraph(this);
         traversal.addStep(new StartStep<>(traversal));
         return traversal;
     }

@@ -76,14 +76,14 @@ public class GroupByMapReduce implements MapReduce<Object, Collection, Object, O
     }
 
     @Override
-    public Map generateSideEffect(Iterator<Pair<Object, Object>> keyValues) {
+    public Map generateMemoryValue(Iterator<Pair<Object, Object>> keyValues) {
         final Map map = new HashMap();
         keyValues.forEachRemaining(pair -> map.put(pair.getValue0(), pair.getValue1()));
         return map;
     }
 
     @Override
-    public String getSideEffectKey() {
+    public String getMemoryKey() {
         return this.memoryKey;
     }
 }

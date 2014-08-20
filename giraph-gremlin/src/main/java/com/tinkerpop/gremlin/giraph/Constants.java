@@ -27,12 +27,12 @@ public class Constants {
     public static final String GIRAPH_GREMLIN_JOB_PREFIX = "GiraphGremlin: ";
     public static final String GIRAPH_GREMLIN_LIBS = "GIRAPH_GREMLIN_LIBS";
     public static final String DOT_JAR = ".jar";
-    public static final String GREMLIN_DERIVE_COMPUTER_SIDE_EFFECTS = "gremlin.deriveComputerSideEffects";
-    public static final String GREMLIN_SIDE_EFFECT_OUTPUT_FORMAT_CLASS = "gremlin.sideEffectOutputFormatClass";
-    public static final String TILDA_SIDE_EFFECTS = "~sideEffects";
+    public static final String GREMLIN_DERIVE_COMPUTER_MEMORY = "gremlin.deriveComputerMemory";
+    public static final String GREMLIN_MEMORY_OUTPUT_FORMAT_CLASS = "gremlin.memoryOutputFormatClass";
+    public static final String TILDA_MEMORY = "~memory";
     public static final String RUNTIME = "runtime";
     public static final String ITERATION = "iteration";
-    public static final String GREMLIN_SIDE_EFFECT_KEYS = "gremlin.sideEffectKeys";
+    public static final String GREMLIN_MEMORY_KEYS = "gremlin.memoryKeys";
     public static final String MAP_REDUCE_CLASS = "gremlin.mapReduceClass";
 
 }

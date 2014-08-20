@@ -6,9 +6,9 @@ import com.tinkerpop.gremlin.giraph.process.computer.util.MemoryAggregator;
 import com.tinkerpop.gremlin.giraph.process.computer.util.RuleWritable;
 import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.SideEffects;
+import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.process.computer.util.SideEffectsHelper;
+import com.tinkerpop.gremlin.process.computer.util.MemoryHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.giraph.master.MasterCompute;
 
@@ -21,20 +21,20 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphSideEffects extends MasterCompute implements SideEffects {
+public class GiraphMemory extends MasterCompute implements Memory {
 
     private VertexProgram vertexProgram;
     private GiraphInternalVertex giraphInternalVertex;
-    private Set<String> sideEffectKeys;
+    private Set<String> memoryKeys;
     private boolean isMasterCompute = true;
 
-    public GiraphSideEffects() {
+    public GiraphMemory() {
     }
 
-    public GiraphSideEffects(final GiraphInternalVertex giraphInternalVertex, final VertexProgram vertexProgram) {
+    public GiraphMemory(final GiraphInternalVertex giraphInternalVertex, final VertexProgram vertexProgram) {
         this.giraphInternalVertex = giraphInternalVertex;
         this.vertexProgram = vertexProgram;
-        this.sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectComputeKeys());
+        this.memoryKeys = new HashSet<String>(this.vertexProgram.getMemoryComputeKeys());
         this.isMasterCompute = false;
     }
 
@@ -52,12 +52,12 @@ public class GiraphSideEffects extends MasterCompute implements SideEffects {
             }
         } else {
             this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getConf()));
-            this.sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectComputeKeys());
+            this.memoryKeys = new HashSet<String>(this.vertexProgram.getMemoryComputeKeys());
             try {
-                for (final String key : this.sideEffectKeys) {
-                    SideEffectsHelper.validateKey(key);
+                for (final String key : this.memoryKeys) {
+                    MemoryHelper.validateKey(key);
                     this.registerPersistentAggregator(key, MemoryAggregator.class);
-                    this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.NO_OP, null)); // for those sideEffects not defined during setup(), necessary to provide a default value
+                    this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.NO_OP, null)); // for those memory not defined during setup(), necessary to provide a default value
                 }
                 this.registerPersistentAggregator(Constants.RUNTIME, MemoryAggregator.class);
                 this.set(Constants.RUNTIME, System.currentTimeMillis());
@@ -77,7 +77,7 @@ public class GiraphSideEffects extends MasterCompute implements SideEffects {
     }
 
     public Set<String> keys() {
-        return this.sideEffectKeys;
+        return this.memoryKeys;
     }
 
     public <R> Optional<R> get(final String key) {
@@ -147,12 +147,12 @@ public class GiraphSideEffects extends MasterCompute implements SideEffects {
     }
 
     public String toString() {
-        return StringFactory.computerSideEffectsString(this);
+        return StringFactory.computeMemoryString(this);
     }
 
     private void checkKeyValue(final String key, final Object value) {
-        if (!key.equals(Constants.RUNTIME) && !this.sideEffectKeys.contains(key))
-            throw GraphComputer.Exceptions.providedKeyIsNotASideEffectKey(key);
-        SideEffectsHelper.validateValue(value);
+        if (!key.equals(Constants.RUNTIME) && !this.memoryKeys.contains(key))
+            throw GraphComputer.Exceptions.providedKeyIsNotAMemoryKey(key);
+        MemoryHelper.validateValue(value);
     }
 }

@@ -10,22 +10,22 @@ import java.io.Serializable;
 public class ComputerResult implements Serializable {
 
     private final Graph graph;
-    private final SideEffects sideEffects;
+    private final Memory memory;
 
-    public ComputerResult(final Graph graph, final SideEffects sideEffects) {
+    public ComputerResult(final Graph graph, final Memory memory) {
         this.graph = graph;
-        this.sideEffects = sideEffects;
+        this.memory = memory;
     }
 
     public Graph getGraph() {
         return this.graph;
     }
 
-    public SideEffects getSideEffects() {
-        return this.sideEffects;
+    public Memory getMemory() {
+        return this.memory;
     }
 
     public String toString() {
-        return "result[" + this.graph + "," + this.sideEffects + "]";
+        return "result[" + this.graph + "," + this.memory + "]";
     }
 }

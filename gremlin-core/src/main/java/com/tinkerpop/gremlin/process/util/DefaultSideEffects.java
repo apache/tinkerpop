@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DefaultMemory implements Traversal.Memory {
+public class DefaultSideEffects implements Traversal.SideEffects {
 
     private Map<String, Object> memory;
 

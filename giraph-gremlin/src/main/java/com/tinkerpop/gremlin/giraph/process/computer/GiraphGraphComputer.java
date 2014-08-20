@@ -57,13 +57,13 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
 
     private final List<MapReduce> mapReduces = new ArrayList<>();
     private VertexProgram vertexProgram;
-    final GiraphImmutableSideEffects sideEffects = new GiraphImmutableSideEffects();
+    final GiraphImmutableMemory memory = new GiraphImmutableMemory();
 
     public GiraphGraphComputer(final GiraphGraph giraphGraph) {
         this.giraphGraph = giraphGraph;
         final Configuration configuration = giraphGraph.variables().getConfiguration();
         configuration.getKeys().forEachRemaining(key -> this.giraphConfiguration.set(key, configuration.getProperty(key).toString()));
-        this.giraphConfiguration.setMasterComputeClass(GiraphSideEffects.class);
+        this.giraphConfiguration.setMasterComputeClass(GiraphMemory.class);
         this.giraphConfiguration.setVertexClass(GiraphInternalVertex.class);
         this.giraphConfiguration.setOutEdgesClass(EmptyOutEdges.class);
         this.giraphConfiguration.setClass("giraph.vertexIdClass", LongWritable.class, LongWritable.class);
@@ -117,13 +117,13 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
                 this.loadJars(fs);
                 fs.delete(new Path(this.giraphConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION)), true);
                 ToolRunner.run(this, new String[]{});
-                // sideEffects.keys().forEach(k -> LOGGER.error(k + "---" + sideEffects.get(k)));
+                // memory.keys().forEach(k -> LOGGER.error(k + "---" + memory.get(k)));
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            this.sideEffects.complete(System.currentTimeMillis() - startTime);
-            return new ComputerResult(GiraphHelper.getOutputGraph(this.giraphGraph), this.sideEffects);
+            this.memory.complete(System.currentTimeMillis() - startTime);
+            return new ComputerResult(GiraphHelper.getOutputGraph(this.giraphGraph), this.memory);
         });
     }
 
@@ -138,17 +138,17 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
                 LOGGER.info(Constants.GIRAPH_GREMLIN_JOB_PREFIX + this.vertexProgram);
                 job.run(true);
                 this.mapReduces.addAll(this.vertexProgram.getMapReducers());
-                // calculate main vertex program sideEffects if desired (costs one mapreduce job)
-                if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_DERIVE_COMPUTER_SIDE_EFFECTS, false)) {
-                    final Set<String> sideEffectKeys = new HashSet<String>(this.vertexProgram.getSideEffectComputeKeys());
-                    sideEffectKeys.add(Constants.ITERATION);
-                    this.giraphConfiguration.setStrings(Constants.GREMLIN_SIDE_EFFECT_KEYS, (String[]) sideEffectKeys.toArray(new String[sideEffectKeys.size()]));
-                    this.mapReduces.add(new SideEffectsMapReduce(sideEffectKeys));
+                // calculate main vertex program memory if desired (costs one mapreduce job)
+                if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_DERIVE_COMPUTER_MEMORY, false)) {
+                    final Set<String> memoryKeys = new HashSet<String>(this.vertexProgram.getMemoryComputeKeys());
+                    memoryKeys.add(Constants.ITERATION);
+                    this.giraphConfiguration.setStrings(Constants.GREMLIN_MEMORY_KEYS, (String[]) memoryKeys.toArray(new String[memoryKeys.size()]));
+                    this.mapReduces.add(new SideEffectsMapReduce(memoryKeys));
                 }
             }
             // do map reduce jobs
             for (final MapReduce mapReduce : this.mapReduces) {
-                MapReduceHelper.executeMapReduceJob(mapReduce, this.sideEffects, this.giraphConfiguration);
+                MapReduceHelper.executeMapReduceJob(mapReduce, this.memory, this.giraphConfiguration);
             }
         } catch (Exception e) {
             e.printStackTrace();

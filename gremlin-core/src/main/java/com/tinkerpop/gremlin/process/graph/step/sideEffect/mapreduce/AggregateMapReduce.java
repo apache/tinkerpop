@@ -53,14 +53,14 @@ public class AggregateMapReduce implements MapReduce<MapReduce.NullObject, Objec
     }
 
     @Override
-    public List<Object> generateSideEffect(final Iterator<Pair<NullObject, Object>> keyValues) {
+    public List<Object> generateMemoryValue(final Iterator<Pair<NullObject, Object>> keyValues) {
         final List<Object> result = new ArrayList<>();
         keyValues.forEachRemaining(pair -> result.add(pair.getValue1()));
         return result;
     }
 
     @Override
-    public String getSideEffectKey() {
+    public String getMemoryKey() {
         return this.memoryKey;
     }
 }

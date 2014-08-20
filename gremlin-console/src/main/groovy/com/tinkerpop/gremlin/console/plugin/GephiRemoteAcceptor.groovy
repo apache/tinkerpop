@@ -174,7 +174,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         else if (o instanceof Traversal) {
             fadingVertexColors = [:]
             def traversal = (Traversal) o
-            def memKeys = traversal.memory().keys()
+            def memKeys = traversal.sideEffects().keys()
             def memSize = memKeys.size()
             // assumes user called store("1")...store("n") in ascension
             for (int i = 1; i <= memSize; i++) {
@@ -183,7 +183,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
                     print("Visualizing vertices at step: $stepKey... ")
                     updateVisitedVertices()
                     int visitedCount = 0
-                    def optionalElements = traversal.memory().get(stepKey)
+                    def optionalElements = traversal.sideEffects().get(stepKey)
                     if (optionalElements.isPresent()) {
                         optionalElements.get().each { element ->
                             visitVertexToGephi((Vertex) element)

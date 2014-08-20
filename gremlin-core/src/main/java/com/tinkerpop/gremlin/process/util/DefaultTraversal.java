@@ -18,7 +18,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     protected final List<Step> steps = new ArrayList<>();
     protected final Strategies strategies = new DefaultStrategies(this);
-    protected final Memory memory = new DefaultMemory();
+    protected final SideEffects sideEffects = new DefaultSideEffects();
 
     public DefaultTraversal() {
         this.strategies.register(TraverserSourceStrategy.instance());
@@ -27,15 +27,15 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     public DefaultTraversal(final Graph graph) {
         this();
-        this.memory().setGraph(graph);
+        this.sideEffects().setGraph(graph);
     }
 
     public List<Step> getSteps() {
         return this.steps;
     }
 
-    public Memory memory() {
-        return this.memory;
+    public SideEffects sideEffects() {
+        return this.sideEffects;
     }
 
     public Strategies strategies() {

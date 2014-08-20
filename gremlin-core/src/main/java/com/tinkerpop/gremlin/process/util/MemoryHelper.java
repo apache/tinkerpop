@@ -9,19 +9,19 @@ public class MemoryHelper {
 
     public static void validateMemory(final String key, final Object value) throws IllegalArgumentException {
         if (null == value)
-            throw Traversal.Memory.Exceptions.variableValueCanNotBeNull();
+            throw Traversal.SideEffects.Exceptions.sideEffectValueCanNotBeNull();
         if (null == key)
-            throw Traversal.Memory.Exceptions.variableKeyCanNotBeNull();
+            throw Traversal.SideEffects.Exceptions.sideEffectKeyCanNotBeNull();
         if (key.isEmpty())
-            throw Traversal.Memory.Exceptions.variableKeyCanNotBeEmpty();
+            throw Traversal.SideEffects.Exceptions.sideEffectKeyCanNotBeEmpty();
     }
 
     public static void legalMemoryKeyValueArray(final Object[] memoryKeyValues) {
         if (memoryKeyValues.length % 2 != 0)
-            throw Traversal.Memory.Exceptions.providedKeyValuesMustBeAMultipleOfTwo();
+            throw Traversal.SideEffects.Exceptions.sideEffectKeyValuesMustBeAMultipleOfTwo();
         for (int i = 0; i < memoryKeyValues.length; i = i + 2) {
             if (!(memoryKeyValues[i] instanceof String))
-                throw Traversal.Memory.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices();
+                throw Traversal.SideEffects.Exceptions.sideEffectKeyValuesMustHaveALegalKeyOnEvenIndices();
         }
     }
 

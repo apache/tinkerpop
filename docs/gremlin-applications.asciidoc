@@ -573,13 +573,13 @@ gremlin> traversal = g.v(2).store('1').
                            out('knows').has('age',T.gt,30).store('3').
                            outE('created').has('weight',T.gt,0.5f).inV.store('4')
 ==>[v[5]]
-gremlin> traversal.memory().get('1').get()
+gremlin> traversal.sideEffects().get('1').get()
 ==>v[2]
-gremlin> traversal.memory().get('2').get()
+gremlin> traversal.sideEffects().get('2').get()
 ==>v[1]
-gremlin> traversal.memory().get('3').get()
+gremlin> traversal.sideEffects().get('3').get()
 ==>v[4]
-gremlin> traversal.memory().get('4').get()
+gremlin> traversal.sideEffects().get('4').get()
 ==>v[5]
 gremlin> 
 gremlin> :> traversal
@@ -589,7 +589,7 @@ Visualizing vertices at step: 3... visited: 1
 Visualizing vertices at step: 4... visited: 1
 gremlin>
 
-When `:> traversal` is called, it iterates through the memory of the traversal accessing the vertices stored at each corresponding step. It then updates the vertices' color with `startRGBColor`, which in this case is a lime-green blue: [0.0,1.0,0.5]. After the first step visualization, it sleeps for the configured `stepDelay` in milliseconds. On the second step, it decays the configured `colorToFade` of all the previously visited vertices in prior steps, by multiplying the current `colorToFade` value for each vertex with the `colorFadeRate`.  To avoid color decay on prior steps, then provide a `colorFadeRate` value of `1.0`.  The screenshots below show how the visualization evolves over the 4 steps:
+When `:> traversal` is called, it iterates through the sideEffects of the traversal accessing the vertices stored at each corresponding step. It then updates the vertices' color with `startRGBColor`, which in this case is a lime-green blue: [0.0,1.0,0.5]. After the first step visualization, it sleeps for the configured `stepDelay` in milliseconds. On the second step, it decays the configured `colorToFade` of all the previously visited vertices in prior steps, by multiplying the current `colorToFade` value for each vertex with the `colorFadeRate`.  To avoid color decay on prior steps, then provide a `colorFadeRate` value of `1.0`.  The screenshots below show how the visualization evolves over the 4 steps:
 
 image::gephi-traversal.png[width=1200]
 

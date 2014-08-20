@@ -8,7 +8,7 @@ At the most general level there is `Traversal<S,E>` which implements `Iterator<E
   
  . `Step<S,E>`: a individual function applied to `S` to yield `E`.
  . `TraversalStrategy`: interceptor methods to alter the execution of the traversal.
- . `Traversal.Memory`: key/value pairs that can be used to store global information about the traversal.
+ . `Traversal.SideEffects`: key/value pairs that can be used to store global information about the traversal.
  . `Traverser<T>`: the object propagating through the `Traversal` currently representing an object of type `T`. 
 
 The classic notion of a graph traversal is provided by `GraphTraversal<S,E>` which extends `Traversal<S,E>`.
@@ -701,11 +701,11 @@ image:gremlin-quill.png[width=200,float=right] The super interface of GraphTrave
 public interface SocialTraversal<S, E> extends Traversal<S, E> {
 
         public default SocialTraversal<S, Vertex> people() {
-            return (SocialTraversal) this.addStep(new StartStep<>(this, this.memory().getGraph().V().has("age")));
+            return (SocialTraversal) this.addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has("age")));
         }
 
         public default SocialTraversal<S, Vertex> people(String name) {
-            return (SocialTraversal) this.addStep(new StartStep<>(this, this.memory().getGraph().V().has("name", name)));
+            return (SocialTraversal) this.addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has("name", name)));
         }
 
         public default SocialTraversal<S, Vertex> knows() {
@@ -728,7 +728,7 @@ public interface SocialTraversal<S, E> extends Traversal<S, E> {
 
         public static <S> SocialTraversal<S, S> of(final Graph graph) {
             final SocialTraversal traversal = new DefaultSocialTraversal();
-            traversal.memory().setGraph(graph);
+            traversal.sideEffects().setGraph(graph);
             return traversal;
         }
 

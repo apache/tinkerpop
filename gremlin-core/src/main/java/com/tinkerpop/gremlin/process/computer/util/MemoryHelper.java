@@ -1,21 +1,21 @@
 package com.tinkerpop.gremlin.process.computer.util;
 
-import com.tinkerpop.gremlin.process.computer.SideEffects;
+import com.tinkerpop.gremlin.process.computer.Memory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SideEffectsHelper {
+public class MemoryHelper {
 
     public static void validateValue(final Object value) throws IllegalArgumentException {
         if (null == value)
-            throw SideEffects.Exceptions.sideEffectValueCanNotBeNull();
+            throw Memory.Exceptions.memoryValueCanNotBeNull();
     }
 
     public static void validateKey(final String key) throws IllegalArgumentException {
         if (null == key)
-            throw SideEffects.Exceptions.sideEffectKeyCanNotBeNull();
+            throw Memory.Exceptions.memoryKeyCanNotBeNull();
         if (key.isEmpty())
-            throw SideEffects.Exceptions.sideEffectKeyCanNotBeEmpty();
+            throw Memory.Exceptions.memoryKeyCanNotBeEmpty();
     }
 }

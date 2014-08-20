@@ -361,7 +361,7 @@ public class GraphMLWriter implements GraphWriter {
         /**
          * Normalized output is deterministic with respect to the order of elements and properties in the resulting
          * XML document, and is compatible with line diff-based tools such as Git. Note: normalized output is
-         * memory-intensive and is not appropriate for very large graphs.
+         * sideEffects-intensive and is not appropriate for very large graphs.
          *
          * @param normalize whether to normalize the output.
          */

@@ -23,7 +23,7 @@ import static org.junit.Assert.*;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @ExceptionCoverage(exceptionClass = GraphComputer.Exceptions.class, methods = {
-        "providedKeyIsNotASideEffectKey",
+        "providedKeyIsNotAMemoryKey",
         "computerHasNoVertexProgramNorMapReducers",
         "computerHasAlreadyBeenSubmittedAVertexProgram"
 })
@@ -56,42 +56,42 @@ public class GraphComputerTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC_DOUBLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
-    public void shouldHaveImmutableComputeResultSideEffects() throws Exception {
+    public void shouldHaveImmutableComputeResultMemory() throws Exception {
         final ComputerResult results = g.compute().program(LambdaVertexProgram.build().
                 setup(s -> {
                 }).
                 execute((v, m, s) -> {
                 }).
-                terminate(s -> true).sideEffectKeys(new HashSet<>(Arrays.asList("set", "incr", "and", "or"))).create()).submit().get();
+                terminate(s -> true).memoryComputeKeys(new HashSet<>(Arrays.asList("set", "incr", "and", "or"))).create()).submit().get();
 
         try {
-            results.getSideEffects().set("set", "test");
+            results.getMemory().set("set", "test");
         } catch (Exception ex) {
-            final Exception expectedException = SideEffects.Exceptions.sideEffectsCompleteAndImmutable();
+            final Exception expectedException = Memory.Exceptions.memoryCompleteAndImmutable();
             assertEquals(expectedException.getClass(), ex.getClass());
             assertEquals(expectedException.getMessage(), ex.getMessage());
         }
 
         try {
-            results.getSideEffects().incr("incr", 1);
+            results.getMemory().incr("incr", 1);
         } catch (Exception ex) {
-            final Exception expectedException = SideEffects.Exceptions.sideEffectsCompleteAndImmutable();
+            final Exception expectedException = Memory.Exceptions.memoryCompleteAndImmutable();
             assertEquals(expectedException.getClass(), ex.getClass());
             assertEquals(expectedException.getMessage(), ex.getMessage());
         }
 
         try {
-            results.getSideEffects().and("and", true);
+            results.getMemory().and("and", true);
         } catch (Exception ex) {
-            final Exception expectedException = SideEffects.Exceptions.sideEffectsCompleteAndImmutable();
+            final Exception expectedException = Memory.Exceptions.memoryCompleteAndImmutable();
             assertEquals(expectedException.getClass(), ex.getClass());
             assertEquals(expectedException.getMessage(), ex.getMessage());
         }
 
         try {
-            results.getSideEffects().or("or", false);
+            results.getMemory().or("or", false);
         } catch (Exception ex) {
-            final Exception expectedException = SideEffects.Exceptions.sideEffectsCompleteAndImmutable();
+            final Exception expectedException = Memory.Exceptions.memoryCompleteAndImmutable();
             assertEquals(expectedException.getClass(), ex.getClass());
             assertEquals(expectedException.getMessage(), ex.getMessage());
         }
@@ -100,17 +100,17 @@ public class GraphComputerTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC_DOUBLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
-    public void shouldNotAllowBadSideEffectKeys() throws Exception {
+    public void shouldNotAllowBadMemoryKeys() throws Exception {
         try {
             g.compute().program(LambdaVertexProgram.build().
                     setup(s -> s.set("", true)).
                     execute((v, m, s) -> {
                     }).
-                    terminate(s -> true).sideEffectKeys(new HashSet<>(Arrays.asList("")))
+                    terminate(s -> true).memoryComputeKeys(new HashSet<>(Arrays.asList("")))
                     .create()).submit().get();
-            fail("Providing empty sideEffect key should fail");
+            fail("Providing empty memory key should fail");
         } catch (Exception ex) {
-            final Exception expectedException = SideEffects.Exceptions.sideEffectKeyCanNotBeEmpty();
+            final Exception expectedException = Memory.Exceptions.memoryKeyCanNotBeEmpty();
             assertEquals(expectedException.getClass(), ex.getClass());
             assertEquals(expectedException.getMessage(), ex.getMessage());
         }
@@ -120,12 +120,12 @@ public class GraphComputerTest extends AbstractGremlinTest {
                     setup(s -> s.set("blah", null)).
                     execute((v, m, s) -> {
                     }).
-                    terminate(s -> true).sideEffectKeys(new HashSet<>(Arrays.asList(""))).
-                    sideEffectKeys(new HashSet<>(Arrays.asList("blah")))
+                    terminate(s -> true).memoryComputeKeys(new HashSet<>(Arrays.asList(""))).
+                    memoryComputeKeys(new HashSet<>(Arrays.asList("blah")))
                     .create()).submit().get();
-            fail("Providing null sideEffect key should fail");
+            fail("Providing null memory key should fail");
         } catch (Exception ex) {
-            final Exception expectedException = SideEffects.Exceptions.sideEffectValueCanNotBeNull();
+            final Exception expectedException = Memory.Exceptions.memoryValueCanNotBeNull();
             assertEquals(expectedException.getClass(), ex.getCause().getClass());
             assertEquals(expectedException.getMessage(), ex.getCause().getMessage());
         }
@@ -189,7 +189,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC_DOUBLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
-    public void shouldRequireRegisteringSideEffectKeys() throws Exception {
+    public void shouldRequireRegisteringMemoryKeys() throws Exception {
         try {
             g.compute().program(LambdaVertexProgram.build().
                     setup(s -> s.set("or", true)).
@@ -212,16 +212,16 @@ public class GraphComputerTest extends AbstractGremlinTest {
         final ComputerResult results = g.compute().mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()
                 .map((v, e) -> v.<Integer>property("age").ifPresent(age -> e.emit(MapReduce.NullObject.instance(), age)))
                 .reduce((k, vv, e) -> e.emit(MapReduce.NullObject.instance(), StreamFactory.stream(vv).mapToInt(i -> i).sum()))
-                .sideEffect(i -> i.next().getValue1())
-                .sideEffectKey("ageSum").create())
+                .memory(i -> i.next().getValue1())
+                .memoryKey("ageSum").create())
                 .submit().get();
-        assertEquals(123, results.getSideEffects().get("ageSum").get());
+        assertEquals(123, results.getMemory().get("ageSum").get());
     }
 
     @Test
     @LoadGraphWith(CLASSIC_DOUBLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
-    public void shouldHaveConsistentSideEffectsAndExceptions() throws Exception {
+    public void shouldHaveConsistentMemoryAndExceptions() throws Exception {
         GraphComputer computer = g.compute();
         ComputerResult results = computer.program(LambdaVertexProgram.build().
                 setup(s -> s.set("or", true)).
@@ -236,19 +236,19 @@ public class GraphComputerTest extends AbstractGremlinTest {
                 }).
                 terminate(s -> s.getIteration() >= 2).
                 elementComputeKeys("nameLengthCounter", VertexProgram.KeyType.VARIABLE).
-                sideEffectKeys(new HashSet<>(Arrays.asList("counter", "and", "or"))).create()).submit().get();
-        assertEquals(1, results.getSideEffects().getIteration());
-        assertEquals(3, results.getSideEffects().asMap().size());
-        assertEquals(3, results.getSideEffects().keys().size());
-        assertTrue(results.getSideEffects().keys().contains("counter"));
-        assertTrue(results.getSideEffects().keys().contains("and"));
-        assertTrue(results.getSideEffects().keys().contains("or"));
-        assertTrue(results.getSideEffects().getRuntime() > 0);
+                memoryComputeKeys(new HashSet<>(Arrays.asList("counter", "and", "or"))).create()).submit().get();
+        assertEquals(1, results.getMemory().getIteration());
+        assertEquals(3, results.getMemory().asMap().size());
+        assertEquals(3, results.getMemory().keys().size());
+        assertTrue(results.getMemory().keys().contains("counter"));
+        assertTrue(results.getMemory().keys().contains("and"));
+        assertTrue(results.getMemory().keys().contains("or"));
+        assertTrue(results.getMemory().getRuntime() > 0);
 
-        assertEquals(Long.valueOf(28), results.getSideEffects().<Long>get("counter").get());
-        assertFalse(results.getSideEffects().<Boolean>get("and").get());
-        assertFalse(results.getSideEffects().<Boolean>get("or").get());
-        assertFalse(results.getSideEffects().get("BAD").isPresent());
+        assertEquals(Long.valueOf(28), results.getMemory().<Long>get("counter").get());
+        assertFalse(results.getMemory().<Boolean>get("and").get());
+        assertFalse(results.getMemory().<Boolean>get("or").get());
+        assertFalse(results.getMemory().get("BAD").isPresent());
         assertEquals(Long.valueOf(6), results.getGraph().V().count().next());
 
         results.getGraph().V().forEach(v -> {
@@ -275,19 +275,19 @@ public class GraphComputerTest extends AbstractGremlinTest {
                             e.emit(MapReduce.NullObject.instance(), counter);
 
                         })
-                        .sideEffect(i -> i.next().getValue1())
-                        .sideEffectKey("a").create())
+                        .memory(i -> i.next().getValue1())
+                        .memoryKey("a").create())
                 .mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()
                         .map((v, e) -> e.emit(MapReduce.NullObject.instance(), v.value("counter")))
                         .combine((k, vv, e) -> e.emit(MapReduce.NullObject.instance(), 1))
                         .reduce((k, vv, e) -> e.emit(MapReduce.NullObject.instance(), 1))
-                        .sideEffect(i -> i.next().getValue1())
-                        .sideEffectKey("b").create())
+                        .memory(i -> i.next().getValue1())
+                        .memoryKey("b").create())
                 .submit().get();
 
 
-        assertEquals(60, results.getSideEffects().get("a").get());
-        assertEquals(1, results.getSideEffects().get("b").get());
+        assertEquals(60, results.getMemory().get("a").get());
+        assertEquals(1, results.getMemory().get("b").get());
     }
 
     private static LambdaVertexProgram identity() {

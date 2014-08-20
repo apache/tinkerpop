@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.giraph.structure.util;
 
 import com.tinkerpop.gremlin.giraph.Constants;
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphMemory;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphMessenger;
-import com.tinkerpop.gremlin.giraph.process.computer.GiraphSideEffects;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.computer.util.KryoWritable;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
@@ -36,7 +36,7 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
     private TinkerGraph tinkerGraph;
     private TinkerVertex tinkerVertex;
 
-    private GiraphSideEffects sideEffects;
+    private GiraphMemory memory;
 
     public GiraphInternalVertex() {
     }
@@ -71,15 +71,15 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
             inflateTinkerVertex();
         if (null == this.vertexProgram)
             this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getConf()));
-        if (null == this.sideEffects)
-            this.sideEffects = new GiraphSideEffects(this, this.vertexProgram);
+        if (null == this.memory)
+            this.memory = new GiraphMemory(this, this.vertexProgram);
 
-        this.vertexProgram.execute(this.tinkerVertex, new GiraphMessenger(this, messages), this.sideEffects);
-        if (this.getConf().getBoolean(Constants.GREMLIN_DERIVE_COMPUTER_SIDE_EFFECTS, false)) {
-            this.sideEffects.keys().forEach(key ->
-                    this.sideEffects.get(key).ifPresent(v ->
+        this.vertexProgram.execute(this.tinkerVertex, new GiraphMessenger(this, messages), this.memory);
+        if (this.getConf().getBoolean(Constants.GREMLIN_DERIVE_COMPUTER_MEMORY, false)) {
+            this.memory.keys().forEach(key ->
+                    this.memory.get(key).ifPresent(v ->
                             this.tinkerVertex.<Object>property(Graph.Key.hide(key), v)));
-            this.tinkerVertex.property(Graph.Key.hide(Constants.ITERATION), this.sideEffects.getIteration());
+            this.tinkerVertex.property(Graph.Key.hide(Constants.ITERATION), this.memory.getIteration());
         }
     }
 

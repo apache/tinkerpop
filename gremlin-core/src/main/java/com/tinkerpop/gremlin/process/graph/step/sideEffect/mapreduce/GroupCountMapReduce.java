@@ -66,14 +66,14 @@ public class GroupCountMapReduce implements MapReduce<Object, Long, Object, Long
     }
 
     @Override
-    public Map<Object, Long> generateSideEffect(final Iterator<Pair<Object, Long>> keyValues) {
+    public Map<Object, Long> generateMemoryValue(final Iterator<Pair<Object, Long>> keyValues) {
         final Map<Object, Long> result = new HashMap<>();
         keyValues.forEachRemaining(pair -> result.put(pair.getValue0(), pair.getValue1()));
         return result;
     }
 
     @Override
-    public String getSideEffectKey() {
+    public String getMemoryKey() {
         return this.memoryKey;
     }
 }

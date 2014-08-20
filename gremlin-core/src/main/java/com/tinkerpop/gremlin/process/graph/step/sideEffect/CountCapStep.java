@@ -26,7 +26,7 @@ public class CountCapStep<S> extends SideEffectStep<S> implements SideEffectCapa
         super(traversal);
         this.setConsumer(traverser -> {
             this.count.set(this.count.get() + this.bulkCount);
-            if (!this.vertexCentric) this.traversal.memory().set(COUNT_KEY, this.count.get());
+            if (!this.vertexCentric) this.traversal.sideEffects().set(COUNT_KEY, this.count.get());
         });
 
     }

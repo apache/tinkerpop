@@ -302,12 +302,12 @@ public class FeatureSupportTest {
     @ExceptionCoverage(exceptionClass = Graph.Variables.Exceptions.class, methods = {
             "dataTypeOfVariableValueNotSupported"
     })
-    public static class MemoryFunctionalityTest extends AbstractGremlinTest {
+    public static class SideEffectsFunctionalityTest extends AbstractGremlinTest {
         private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
 
         @Parameterized.Parameters(name = "{index}: supports{0}({1})")
         public static Iterable<Object[]> data() {
-            return VariablesTest.MemoryFeatureSupportTest.data();
+            return VariablesTest.SideEffectsFeatureSupportTest.data();
         }
 
         @Parameterized.Parameter(value = 0)
@@ -317,8 +317,8 @@ public class FeatureSupportTest {
         public Object value;
 
         /**
-         * In this case, the feature requirement for memory is checked, because it means that at least one aspect of
-         * memory is supported so we need to test other features to make sure they work properly.
+         * In this case, the feature requirement for sideEffects is checked, because it means that at least one aspect of
+         * sideEffects is supported so we need to test other features to make sure they work properly.
          */
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_VARIABLES)

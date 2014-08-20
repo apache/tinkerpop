@@ -32,7 +32,7 @@ public class GroupCountStep<S> extends SideEffectStep<S> implements SideEffectCa
         this.preGroupFunction = preGroupFunction;
         this.memoryKey = null == memoryKey ? this.getAs() : memoryKey;
         this.hiddenMemoryKey = Graph.Key.hide(this.memoryKey);
-        this.groupCountMap = this.traversal.memory().getOrCreate(this.memoryKey, HashMap::new);
+        this.groupCountMap = this.traversal.sideEffects().getOrCreate(this.memoryKey, HashMap::new);
         this.setConsumer(traverser -> {
             MapHelper.incr(this.groupCountMap,
                     null == this.preGroupFunction ? traverser.get() : this.preGroupFunction.apply(traverser.get()),

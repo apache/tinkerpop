@@ -20,7 +20,7 @@ The classes that a vendor should focus on implemented are itemized below. Please
  .. Process API: a single `Step` that states how to yield vertices or edges from a `Graph` (i.e. `Graph.V()` and `Graph.E()`).
 . Online Analytics Processing Graph Systems (*OLAP*)
  .. Everything required of OTLP is required of OLAP (but not vice versa).
- .. GraphComputer API: `GraphComputer`, `Messenger`, `SideEffects`.
+ .. GraphComputer API: `GraphComputer`, `Messenger`, `Memory`.
 
 A collection of implementation notes:
 
@@ -121,11 +121,11 @@ There are times when there may be a specific test in the suite that the implemen
         reason = "Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
         test = "com.tinkerpop.gremlin.process.computer.GraphComputerTest",
-        method = "shouldNotAllowBadSideEffectKeys",
+        method = "shouldNotAllowBadMemoryKeys",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
         test = "com.tinkerpop.gremlin.process.computer.GraphComputerTest",
-        method = "shouldRequireRegisteringSideEffectKeys",
+        method = "shouldRequireRegisteringMemoryKeys",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 public class GiraphGraph implements Graph, Serializable {
 ----
@@ -367,11 +367,11 @@ gremlin.inputLocation=tinkerpop-classic-vertices.gio
 giraph.vertexInputFormatClass=com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexInputFormat
 gremlin.outputLocation=output
 giraph.vertexOutputFormatClass=com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexOutputFormat
-gremlin.sideEffectOutputFormatClass=org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat
+gremlin.memoryOutputFormatClass=org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat
 gremlin.vertexProgram=com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
 gremlin.traversalVertexProgram.traversalSupplierClass=com.tinkerpop.gremlin.giraph.process.graph.example.TraversalSupplier1
 gremlin.jarsInDistributedCache=true
-gremlin.deriveComputerSideEffects=false
+gremlin.deriveComputerMemory=false
 giraph.minWorkers=2
 giraph.maxWorkers=2
 
@@ -385,11 +385,11 @@ A review of the properties above are presented in the table below.
 |giraph.vertexInputFormatClass |The format that the graph input file(s) are represented in.
 |gremlin.outputLocation |The location to write the computed Giraph graph to.
 |giraph.vertexOutputFormatClass |The format that the output file(s) should be represented in.
-|gremlin.sideEffectOutputFormatClass |The format of any resultant GraphComputer SideEffects.
+|gremlin.memoryOutputFormatClass |The format of any resultant GraphComputer Memory.
 |gremlin.vertexProgram |The `VertexProgram` to distribute to all vertices in the `GiraphGraph`
 |gremlin.traversalVertexProgram.traversalSupplierClass |For `TraversalVertexProgram`, the location of the Gremlin traversal to use (if not using Gremlin Console).
 |gremlin.jarsInDistributedCache |Whether to upload the Giraph-Gremlin jars to Hadoop's distributed cache (necessary if jars are not on machines' classpaths).
-|gremlin.deriveComputerSideEffects |Whether or not `SideEffects` are yielded (requires an extra MapReduce job if true).
+|gremlin.deriveComputerMemory |Whether or not `Memory` is yielded (requires an extra MapReduce job if true).
 |giraph.minWorkers |The minimum number of parallel workers to execute the vertices of the graph.
 |giraph.maxWorkers |The maximum number of parallel workers to execute the vertices of the graph.
 |=========================================================
@@ -471,14 +471,14 @@ INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
 ==>[a:[marko, vadas], e:[peter], i:[ripple], o:[lop, josh]]
 gremlin> result
-==>result[giraphgraph[kryovertexinputformat->kryovertexoutputformat],sideEffects[size:1]]
-gremlin> result.sideEffects.runtime
+==>result[giraphgraph[kryovertexinputformat->kryovertexoutputformat],memory[size:1]]
+gremlin> result.memory.runtime
 ==>20356
-gremlin> result.sideEffects.keys()
+gremlin> result.memory.keys()
 ==>a
-gremlin> result.sideEffects.a
+gremlin> result.memory.a
 ==>Optional[{a=[marko, vadas], e=[peter], i=[ripple], o=[lop, josh]}]
-gremlin> result.sideEffects.a.get()
+gremlin> result.memory.a.get()
 ==>a=[marko, vadas]
 ==>e=[peter]
 ==>i=[ripple]

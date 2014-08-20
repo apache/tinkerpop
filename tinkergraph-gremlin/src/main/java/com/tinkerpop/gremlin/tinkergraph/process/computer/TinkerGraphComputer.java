@@ -26,7 +26,7 @@ public class TinkerGraphComputer implements GraphComputer {
     private Isolation isolation = Isolation.BSP;
     private VertexProgram vertexProgram;
     private final TinkerGraph graph;
-    private TinkerSideEffects sideEffects;
+    private TinkerMemory sideEffects;
     private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
     private final List<MapReduce> mapReduces = new ArrayList<>();
@@ -65,7 +65,7 @@ public class TinkerGraphComputer implements GraphComputer {
             this.mapReduces.addAll(this.vertexProgram.getMapReducers());
         }
 
-        this.sideEffects = new TinkerSideEffects(this.vertexProgram, this.mapReduces);
+        this.sideEffects = new TinkerMemory(this.vertexProgram, this.mapReduces);
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
             if (null != this.vertexProgram) {
@@ -94,9 +94,9 @@ public class TinkerGraphComputer implements GraphComputer {
                     if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
                         final TinkerReduceEmitter reduceEmitter = new TinkerReduceEmitter();
                         mapEmitter.reduceMap.forEach((k, v) -> mapReduce.reduce(k, ((List) v).iterator(), reduceEmitter));
-                        mapReduce.addToSideEffects(this.sideEffects, reduceEmitter.resultList.iterator());
+                        mapReduce.addToMemory(this.sideEffects, reduceEmitter.resultList.iterator());
                     } else {
-                        mapReduce.addToSideEffects(this.sideEffects, mapEmitter.mapList.iterator());
+                        mapReduce.addToMemory(this.sideEffects, mapEmitter.mapList.iterator());
                     }
                 }
             }

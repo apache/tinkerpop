@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
-import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.StoreMapReduce;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -16,7 +15,6 @@ import com.tinkerpop.gremlin.util.function.SFunction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -34,7 +32,7 @@ public class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable
         this.preStoreFunction = preStoreFunction;
         this.memoryKey = null == memoryKey ? this.getAs() : memoryKey;
         this.hiddenMemoryKey = Graph.Key.hide(this.memoryKey);
-        this.store = this.traversal.memory().getOrCreate(this.memoryKey, ArrayList::new);
+        this.store = this.traversal.sideEffects().getOrCreate(this.memoryKey, ArrayList::new);
         this.setConsumer(traverser -> {
             final Object storeObject = null == this.preStoreFunction ? traverser.get() : this.preStoreFunction.apply(traverser.get());
             for (int i = 0; i < this.bulkCount; i++) {

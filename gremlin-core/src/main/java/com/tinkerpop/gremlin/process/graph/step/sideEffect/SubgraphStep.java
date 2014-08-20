@@ -44,7 +44,7 @@ public class SubgraphStep<S> extends SideEffectStep<S> implements SideEffectCapa
         this.memoryKey = null == memoryKey ? this.getAs() : memoryKey;
         this.edgeIdsAdded = null == edgeIdHolder ? new HashSet<>() : edgeIdHolder;
         this.idVertexMap = null == idVertexMap ? new HashMap<>() : idVertexMap;
-        this.subgraph = this.traversal.memory().getOrCreate(this.memoryKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION));
+        this.subgraph = this.traversal.sideEffects().getOrCreate(this.memoryKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION));
         this.subgraphSupportsUserIds = this.subgraph.features().vertex().supportsUserSuppliedIds();
 
         this.setConsumer(traverser -> {
@@ -57,7 +57,7 @@ public class SubgraphStep<S> extends SideEffectStep<S> implements SideEffectCapa
                         final Vertex newVOut = getOrCreateVertex(e.outV().next());
                         final Vertex newVIn = getOrCreateVertex(e.inV().next());
                         newVOut.addEdge(e.label(), newVIn, ElementHelper.getProperties(e, this.subgraphSupportsUserIds, false, Collections.emptySet(), Collections.emptySet()));
-                        // TODO: If userSuppliedIds exist, don't do this to save memory
+                        // TODO: If userSuppliedIds exist, don't do this to save sideEffects
                         this.edgeIdsAdded.add(e.id());
                     });
         });

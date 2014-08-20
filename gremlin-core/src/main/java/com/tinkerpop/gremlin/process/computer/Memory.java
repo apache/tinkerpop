@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface SideEffects {
+public interface Memory {
 
     public Set<String> keys();
 
@@ -40,7 +40,7 @@ public interface SideEffects {
         return this.getIteration() == 0;
     }
 
-    public interface Administrative extends SideEffects {
+    public interface Administrative extends Memory {
 
         public void incrIteration();
 
@@ -50,24 +50,24 @@ public interface SideEffects {
 
     public static class Exceptions {
 
-        public static IllegalArgumentException sideEffectKeyCanNotBeEmpty() {
-            return new IllegalArgumentException("Graph computer sideEffects key can not be the empty string");
+        public static IllegalArgumentException memoryKeyCanNotBeEmpty() {
+            return new IllegalArgumentException("Graph computer memory key can not be the empty string");
         }
 
-        public static IllegalArgumentException sideEffectKeyCanNotBeNull() {
-            return new IllegalArgumentException("Graph computer sideEffects key can not be null");
+        public static IllegalArgumentException memoryKeyCanNotBeNull() {
+            return new IllegalArgumentException("Graph computer memory key can not be null");
         }
 
-        public static IllegalArgumentException sideEffectValueCanNotBeNull() {
-            return new IllegalArgumentException("Graph computer sideEffects value can not be null");
+        public static IllegalArgumentException memoryValueCanNotBeNull() {
+            return new IllegalArgumentException("Graph computer memory value can not be null");
         }
 
-        public static IllegalStateException sideEffectsCompleteAndImmutable() {
-            return new IllegalStateException("Graph computer sideEffects are complete and immutable");
+        public static IllegalStateException memoryCompleteAndImmutable() {
+            return new IllegalStateException("Graph computer memory is complete and immutable");
         }
 
-        public static UnsupportedOperationException dataTypeOfSideEffectValueNotSupported(final Object val) {
-            return new UnsupportedOperationException(String.format("Graph computer sideEffect value [%s] is of type %s is not supported", val, val.getClass()));
+        public static UnsupportedOperationException dataTypeOfMemoryValueNotSupported(final Object val) {
+            return new UnsupportedOperationException(String.format("Graph computer memory value [%s] is of type %s is not supported", val, val.getClass()));
         }
     }
 

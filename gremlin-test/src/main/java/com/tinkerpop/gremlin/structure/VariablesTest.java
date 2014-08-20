@@ -92,7 +92,7 @@ public class VariablesTest {
      * Ensure that the {@link com.tinkerpop.gremlin.structure.Graph.Variables#asMap()} method returns some basics.
      * Other tests will enforce that all types are properly covered in {@link com.tinkerpop.gremlin.structure.Graph.Variables}.
      */
-    public static class MemoryAsMapTest extends AbstractGremlinTest {
+    public static class SideEffectsAsMapTest extends AbstractGremlinTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_STRING_VALUES)
         public void shouldHoldNone() {
@@ -182,7 +182,7 @@ public class VariablesTest {
      * test class as they are "parameterized" tests.
      */
     @RunWith(Parameterized.class)
-    public static class MemoryFeatureSupportTest extends AbstractGremlinTest {
+    public static class SideEffectsFeatureSupportTest extends AbstractGremlinTest {
         private static final Map<String,Object> testMap = new HashMap<String,Object>() {{
             put("testString", "try");
             put("testInteger", 123);

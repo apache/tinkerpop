@@ -116,7 +116,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             TreeTest.JavaTreeTest.class,
 
             // util
-            MemoryTest.JavaMemoryTest.class,
+            MemoryTest.JavaSideEffectsTest.class,
 
             // compliance
             TraversalCoverageTest.class,

@@ -34,7 +34,7 @@ public class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements SideE
             } catch (final NoSuchElementException ignored) {
             }
             this.done = true;
-            return traverser.makeChild(this.getAs(), this.traversal.memory().<E>get(this.memoryKey).get());
+            return traverser.makeChild(this.getAs(), this.traversal.sideEffects().<E>get(this.memoryKey).get());
         } else {
             throw FastNoSuchElementException.instance();
         }

@@ -136,9 +136,9 @@ public class KryoReader implements GraphReader {
         try (final Output output = new Output(new FileOutputStream(tempFile))) {
             final boolean supportedMemory = input.readBoolean();
             if (supportedMemory) {
-                // if the graph that serialized the data supported memory then the memory needs to be read
-                // to advance the reader forward.  if the graph being read into doesn't support the memory
-                // then we just setting the data to memory.
+                // if the graph that serialized the data supported sideEffects then the sideEffects needs to be read
+                // to advance the reader forward.  if the graph being read into doesn't support the sideEffects
+                // then we just setting the data to sideEffects.
                 final Map<String, Object> memMap = (Map<String, Object>) kryo.readObject(input, HashMap.class);
                 if (graphToWriteTo.features().graph().variables().supportsVariables()) {
                     final Graph.Variables variables = graphToWriteTo.variables();

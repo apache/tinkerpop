@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapredu
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.computer.SideEffects;
+import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.SideEffectCapComputerStep;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
@@ -56,7 +56,7 @@ public class SideEffectCapMapReduce implements MapReduce {
     }
 
     @Override
-    public Object generateSideEffect(final Iterator keyValues) {
+    public Object generateMemoryValue(final Iterator keyValues) {
         return ((MapReducer) ((Stream<Step>) this.traversal.getSteps().stream())
                 .filter(step -> step instanceof MapReducer)
                 .filter(step -> !(step instanceof SideEffectCapComputerStep))
@@ -64,16 +64,16 @@ public class SideEffectCapMapReduce implements MapReduce {
                 .filter(step -> ((SideEffectCapable) step).getMemoryKey().equals(this.memoryKey))
                 .findFirst().get())
                 .getMapReduce()
-                .generateSideEffect(keyValues);
+                .generateMemoryValue(keyValues);
     }
 
     @Override
-    public void addToSideEffects(final SideEffects sideEffects, final Iterator keyValues) {
+    public void addToMemory(final Memory memory, final Iterator keyValues) {
 
     }
 
     @Override
-    public String getSideEffectKey() {
+    public String getMemoryKey() {
         return this.memoryKey;
     }
 }

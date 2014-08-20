@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.giraph.process.computer.util;
 
 import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.computer.SideEffects;
+import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -24,8 +24,8 @@ public class SideEffectsMapReduce implements MapReduce<String, Object, String, O
 
     public Set<String> sideEffectKeys = new HashSet<>();
 
-    public String getSideEffectKey() {
-        return Constants.TILDA_SIDE_EFFECTS;
+    public String getMemoryKey() {
+        return Constants.TILDA_MEMORY;
     }
 
     public SideEffectsMapReduce() {
@@ -38,12 +38,12 @@ public class SideEffectsMapReduce implements MapReduce<String, Object, String, O
 
     @Override
     public void storeState(final Configuration configuration) {
-        configuration.setProperty(Constants.GREMLIN_SIDE_EFFECT_KEYS, new ArrayList<>(this.sideEffectKeys.size()));
+        configuration.setProperty(Constants.GREMLIN_MEMORY_KEYS, new ArrayList<>(this.sideEffectKeys.size()));
     }
 
     @Override
     public void loadState(final Configuration configuration) {
-        this.sideEffectKeys = new HashSet((List) configuration.getList(Constants.GREMLIN_SIDE_EFFECT_KEYS));
+        this.sideEffectKeys = new HashSet((List) configuration.getList(Constants.GREMLIN_MEMORY_KEYS));
     }
 
     @Override
@@ -72,7 +72,7 @@ public class SideEffectsMapReduce implements MapReduce<String, Object, String, O
     }
 
     @Override
-    public Map<String, Object> generateSideEffect(final Iterator<Pair<String, Object>> keyValues) {
+    public Map<String, Object> generateMemoryValue(final Iterator<Pair<String, Object>> keyValues) {
         final Map<String, Object> map = new HashMap<>();
         while (keyValues.hasNext()) {
             final Pair<String, Object> pair = keyValues.next();
@@ -82,10 +82,10 @@ public class SideEffectsMapReduce implements MapReduce<String, Object, String, O
     }
 
     @Override
-    public void addToSideEffects(final SideEffects sideEffects, final Iterator<Pair<String, Object>> keyValues) {
+    public void addToMemory(final Memory memory, final Iterator<Pair<String, Object>> keyValues) {
         while (keyValues.hasNext()) {
             final Pair<String, Object> keyValue = keyValues.next();
-            sideEffects.set(keyValue.getValue0(), keyValue.getValue1());
+            memory.set(keyValue.getValue0(), keyValue.getValue1());
         }
     }
 

@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
 import com.tinkerpop.gremlin.giraph.Constants;
-import com.tinkerpop.gremlin.process.computer.SideEffects;
+import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.HashMap;
@@ -12,24 +12,24 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphImmutableSideEffects implements SideEffects {
+public class GiraphImmutableMemory implements Memory {
 
     private long runtime = 0l;
     private int iteration = -1;
-    private final Map<String, Object> sideEffectsMap = new HashMap<>();
+    private final Map<String, Object> memoryMap = new HashMap<>();
     private boolean complete = false;
 
     public Set<String> keys() {
-        return this.sideEffectsMap.keySet();
+        return this.memoryMap.keySet();
     }
 
     public <R> Optional<R> get(final String key) {
-        return Optional.ofNullable((R) this.sideEffectsMap.get(key));
+        return Optional.ofNullable((R) this.memoryMap.get(key));
     }
 
     public void set(final String key, Object value) {
-        if (this.complete) throw SideEffects.Exceptions.sideEffectsCompleteAndImmutable();
-        this.sideEffectsMap.put(key, value);
+        if (this.complete) throw Memory.Exceptions.memoryCompleteAndImmutable();
+        this.memoryMap.put(key, value);
     }
 
     public int getIteration() {
@@ -43,23 +43,23 @@ public class GiraphImmutableSideEffects implements SideEffects {
     protected void complete(final long runtime) {
         this.complete = true;
         this.runtime = runtime;
-        if (this.sideEffectsMap.containsKey(Constants.ITERATION))
-            this.iteration = (int) this.sideEffectsMap.remove(Constants.ITERATION);
+        if (this.memoryMap.containsKey(Constants.ITERATION))
+            this.iteration = (int) this.memoryMap.remove(Constants.ITERATION);
     }
 
     public long incr(final String key, final long delta) {
-        throw SideEffects.Exceptions.sideEffectsCompleteAndImmutable();
+        throw Memory.Exceptions.memoryCompleteAndImmutable();
     }
 
     public boolean and(final String key, final boolean bool) {
-        throw SideEffects.Exceptions.sideEffectsCompleteAndImmutable();
+        throw Memory.Exceptions.memoryCompleteAndImmutable();
     }
 
     public boolean or(final String key, final boolean bool) {
-        throw SideEffects.Exceptions.sideEffectsCompleteAndImmutable();
+        throw Memory.Exceptions.memoryCompleteAndImmutable();
     }
 
     public String toString() {
-        return StringFactory.computerSideEffectsString(this);
+        return StringFactory.computeMemoryString(this);
     }
 }

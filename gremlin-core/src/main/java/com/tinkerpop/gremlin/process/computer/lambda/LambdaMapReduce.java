@@ -17,17 +17,17 @@ import java.util.Iterator;
  */
 public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK, RV, R> {
 
-    public static final String LAMBDA_MAP_REDUCE_SIDE_EFFECT_KEY = "gremlin.lambdaMapReduce.sideEffectKey";
+    public static final String LAMBDA_MAP_REDUCE_MEMORY_KEY = "gremlin.lambdaMapReduce.memoryKey";
     public static final String LAMBDA_MAP_REDUCE_MAP_LAMBDA = "gremlin.lambdaMapReduce.mapLambda";
     public static final String LAMBDA_MAP_REDUCE_COMBINE_LAMBDA = "gremlin.lambdaMapReduce.combineLambda";
     public static final String LAMBDA_MAP_REDUCE_REDUCE_LAMBDA = "gremlin.lambdaMapReduce.reduceLambda";
-    public static final String LAMBDA_MAP_REDUCE_SIDE_EFFECT_LAMBDA = "gremlin.lambdaMapReduce.sideEffectLambda";
+    public static final String LAMBDA_MAP_REDUCE_MEMORY_LAMBDA = "gremlin.lambdaMapReduce.memoryLambda";
 
 
     private SBiConsumer<Vertex, MapEmitter<MK, MV>> mapLambda;
     private STriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>> combineLambda;
     private STriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>> reduceLambda;
-    private SFunction<Iterator<Pair<RK, RV>>, R> sideEffectLambda;
+    private SFunction<Iterator<Pair<RK, RV>>, R> memoryLambda;
     private String sideEffectKey;
 
     private LambdaMapReduce() {
@@ -39,8 +39,8 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
             VertexProgramHelper.serialize(this.mapLambda, configuration, LAMBDA_MAP_REDUCE_MAP_LAMBDA);
             VertexProgramHelper.serialize(this.combineLambda, configuration, LAMBDA_MAP_REDUCE_COMBINE_LAMBDA);
             VertexProgramHelper.serialize(this.reduceLambda, configuration, LAMBDA_MAP_REDUCE_REDUCE_LAMBDA);
-            VertexProgramHelper.serialize(this.sideEffectKey, configuration, LAMBDA_MAP_REDUCE_SIDE_EFFECT_KEY);
-            VertexProgramHelper.serialize(this.sideEffectLambda, configuration, LAMBDA_MAP_REDUCE_SIDE_EFFECT_LAMBDA);
+            VertexProgramHelper.serialize(this.sideEffectKey, configuration, LAMBDA_MAP_REDUCE_MEMORY_KEY);
+            VertexProgramHelper.serialize(this.memoryLambda, configuration, LAMBDA_MAP_REDUCE_MEMORY_LAMBDA);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -54,9 +54,9 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
                     VertexProgramHelper.deserialize(configuration, LAMBDA_MAP_REDUCE_COMBINE_LAMBDA) : null;
             this.reduceLambda = configuration.containsKey(LAMBDA_MAP_REDUCE_REDUCE_LAMBDA) ?
                     VertexProgramHelper.deserialize(configuration, LAMBDA_MAP_REDUCE_REDUCE_LAMBDA) : null;
-            this.sideEffectLambda = configuration.containsKey(LAMBDA_MAP_REDUCE_SIDE_EFFECT_LAMBDA) ?
-                    VertexProgramHelper.deserialize(configuration, LAMBDA_MAP_REDUCE_SIDE_EFFECT_LAMBDA) : s -> (R) s;
-            this.sideEffectKey = configuration.getString(LAMBDA_MAP_REDUCE_SIDE_EFFECT_KEY, null);
+            this.memoryLambda = configuration.containsKey(LAMBDA_MAP_REDUCE_MEMORY_LAMBDA) ?
+                    VertexProgramHelper.deserialize(configuration, LAMBDA_MAP_REDUCE_MEMORY_LAMBDA) : s -> (R) s;
+            this.sideEffectKey = configuration.getString(LAMBDA_MAP_REDUCE_MEMORY_KEY, null);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -83,11 +83,11 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
         this.reduceLambda.accept(key, values, emitter);
     }
 
-    public R generateSideEffect(final Iterator<Pair<RK, RV>> keyValues) {
-        return this.sideEffectLambda.apply(keyValues);
+    public R generateMemoryValue(final Iterator<Pair<RK, RV>> keyValues) {
+        return this.memoryLambda.apply(keyValues);
     }
 
-    public String getSideEffectKey() {
+    public String getMemoryKey() {
         return this.sideEffectKey;
     }
 
@@ -128,17 +128,17 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
             return this;
         }
 
-        public Builder<MK, MV, RK, RV, R> sideEffect(SFunction<Iterator<Pair<RK, RV>>, R> sideEffectLambda) {
+        public Builder<MK, MV, RK, RV, R> memory(SFunction<Iterator<Pair<RK, RV>>, R> memoryLambda) {
             try {
-                VertexProgramHelper.serialize(sideEffectLambda, configuration, LambdaMapReduce.LAMBDA_MAP_REDUCE_SIDE_EFFECT_LAMBDA);
+                VertexProgramHelper.serialize(memoryLambda, configuration, LambdaMapReduce.LAMBDA_MAP_REDUCE_MEMORY_LAMBDA);
             } catch (Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
             return this;
         }
 
-        public Builder<MK, MV, RK, RV, R> sideEffectKey(final String sideEffectKey) {
-            this.configuration.setProperty(LambdaMapReduce.LAMBDA_MAP_REDUCE_SIDE_EFFECT_KEY, sideEffectKey);
+        public Builder<MK, MV, RK, RV, R> memoryKey(final String memoryKey) {
+            this.configuration.setProperty(LambdaMapReduce.LAMBDA_MAP_REDUCE_MEMORY_KEY, memoryKey);
             return this;
         }
 

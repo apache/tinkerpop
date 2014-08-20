@@ -30,7 +30,7 @@ public class Neo4jGraphProvider extends AbstractGraphProvider {
         }
 
         if (configuration.containsKey("gremlin.neo4j.directory")) {
-            // this is a non-in-memory configuration so blow away the directory
+            // this is a non-in-sideEffects configuration so blow away the directory
             final File graphDirectory = new File(configuration.getString("gremlin.neo4j.directory"));
             deleteDirectory(graphDirectory);
         }

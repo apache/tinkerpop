@@ -103,7 +103,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public static <S> GraphTraversal<S, S> of(final Graph graph) {
         final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>();
-        traversal.memory().setGraph(graph);
+        traversal.sideEffects().setGraph(graph);
         return traversal;
     }
 
@@ -601,7 +601,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, E> with(final Object... memoryKeyValues) {
         MemoryHelper.legalMemoryKeyValueArray(memoryKeyValues);
         for (int i = 0; i < memoryKeyValues.length; i = i + 2) {
-            this.memory().set((String) memoryKeyValues[i], memoryKeyValues[i + 1]);
+            this.sideEffects().set((String) memoryKeyValues[i], memoryKeyValues[i + 1]);
         }
         return this;
     }

@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.structure.util.batch.cache.VertexCache;
 
 /**
  * Type of vertex ids expected by BatchGraph. The default is IdType.OBJECT.
- * Use the IdType that best matches the used vertex id types in order to save memory.
+ * Use the IdType that best matches the used vertex id types in order to save sideEffects.
  *
  * @author Matthias Broecheler (http://www.matthiasb.com)
  */

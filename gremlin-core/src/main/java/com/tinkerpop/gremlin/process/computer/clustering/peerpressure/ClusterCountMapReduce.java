@@ -68,12 +68,12 @@ public class ClusterCountMapReduce implements MapReduce<MapReduce.NullObject, Se
     }
 
     @Override
-    public Integer generateSideEffect(final Iterator<Pair<NullObject, Integer>> keyValues) {
+    public Integer generateMemoryValue(final Iterator<Pair<NullObject, Integer>> keyValues) {
         return keyValues.next().getValue1();
     }
 
     @Override
-    public String getSideEffectKey() {
+    public String getMemoryKey() {
         return this.sideEffectKey;
     }
 }

@@ -37,11 +37,11 @@ public class TinkerFactory {
     public interface SocialTraversal<S, E> extends Traversal<S, E> {
 
         public default SocialTraversal<S, Vertex> people() {
-            return (SocialTraversal) this.addStep(new StartStep<>(this, this.memory().getGraph().V().has("age")));
+            return (SocialTraversal) this.addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has("age")));
         }
 
         public default SocialTraversal<S, Vertex> people(String name) {
-            return (SocialTraversal) this.addStep(new StartStep<>(this, this.memory().getGraph().V().has("name", name)));
+            return (SocialTraversal) this.addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has("name", name)));
         }
 
         public default SocialTraversal<S, Vertex> knows() {
@@ -64,7 +64,7 @@ public class TinkerFactory {
 
         public static <S> SocialTraversal<S, S> of(final Graph graph) {
             final SocialTraversal traversal = new DefaultSocialTraversal();
-            traversal.memory().setGraph(graph);
+            traversal.sideEffects().setGraph(graph);
             return traversal;
         }
 

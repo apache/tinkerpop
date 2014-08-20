@@ -30,7 +30,7 @@ public class TreeStep<S> extends SideEffectStep<S> implements Reversible, PathCo
         this.memoryKey = null == memoryKey ? this.getAs() : memoryKey;
         this.hiddenMemoryKey = Graph.Key.hide(this.memoryKey);
         this.functionRing = new FunctionRing(branchFunctions);
-        this.tree = traversal.memory().getOrCreate(this.memoryKey, Tree::new);
+        this.tree = traversal.sideEffects().getOrCreate(this.memoryKey, Tree::new);
 
         this.setConsumer(traverser -> {
             Tree depth = this.tree;
