@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.filter;
 
+import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.T;
@@ -45,6 +46,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Edge, Edge> get_g_E_hasXlabelXknowsX();
 
     public abstract Traversal<Edge, Edge> get_g_E_hasXlabelXknows_createdX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_animalX();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX();
 
@@ -173,6 +176,26 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void g_V_hasXlabelXperson_animalX() {
+        Vertex a = this.g.addVertex(Element.LABEL, "person", "name", "a");
+        Vertex b = this.g.addVertex(Element.LABEL, "animal", "name", "b");
+        Vertex c = this.g.addVertex(Element.LABEL, "alien", "name", "c");
+        Vertex d = this.g.addVertex(Element.LABEL, "spirit", "name", "d");
+        tryCommit(g);
+
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXlabelXperson_animalX();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            final String label = traversal.next().label();
+            assertTrue(label.equals("animal") || label.equals("person"));
+        }
+        assertEquals(2, counter);
+    }
+
+    @Test
     @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_hasXname_equalspredicate_markoX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_equalspredicate_markoX();
@@ -186,50 +209,67 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = false;
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_v1_hasXkeyX(final Object v1Id, final String key) {
             return g.v(v1Id).has(key);
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_v1_hasXname_markoX(final Object v1Id) {
             return g.v(v1Id).has("name", "marko");
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXname_markoX() {
             return g.V().has("name", "marko");
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXname_blahX() {
             return g.V().has("name", "blah");
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXblahX() {
             return g.V().has("blah");
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_v1_hasXage_gt_30X(final Object v1Id) {
             return g.v(v1Id).has("age", T.gt, 30);
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(final Object v1Id, final Object v2Id) {
             return g.v(v1Id).out().has(Element.ID, v2Id);
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXage_gt_30X() {
             return g.V().has("age", T.gt, 30);
         }
 
+        @Override
         public Traversal<Edge, Edge> get_g_e7_hasXlabelXknowsX(final Object e7Id) {
-            return g.e(e7Id).has("label", "knows");
+            return g.e(e7Id).has(Element.LABEL, "knows");
         }
 
+        @Override
         public Traversal<Edge, Edge> get_g_E_hasXlabelXknowsX() {
-            return g.E().has("label", "knows");
+            return g.E().has(Element.LABEL, "knows");
         }
 
+        @Override
         public Traversal<Edge, Edge> get_g_E_hasXlabelXknows_createdX() {
-            return g.E().has("label", T.in, Arrays.asList("knows", "created"));
+            return g.E().has(Element.LABEL, T.in, Arrays.asList("knows", "created"));
         }
 
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_animalX() {
+            return g.V().has(Element.LABEL, T.in, Arrays.asList("person", "animal"));
+        }
+
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX() {
             return g.V().has("name", (v1, v2) -> v1.equals(v2), "marko");
         }
@@ -240,50 +280,67 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = true;
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_v1_hasXkeyX(final Object v1Id, final String key) {
             return g.v(v1Id).<Vertex>has(key).submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_v1_hasXname_markoX(final Object v1Id) {
             return g.v(v1Id).<Vertex>has("name", "marko").submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXname_markoX() {
             return g.V().<Vertex>has("name", "marko").submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXname_blahX() {
             return g.V().<Vertex>has("name", "blah").submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXblahX() {
             return g.V().<Vertex>has("blah").submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_v1_hasXage_gt_30X(final Object v1Id) {
             return g.v(v1Id).<Vertex>has("age", T.gt, 30).submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(final Object v1Id, final Object v2Id) {
             return g.v(v1Id).out().<Vertex>has(Element.ID, v2Id).submit(g.compute());
         }
 
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXage_gt_30X() {
             return g.V().<Vertex>has("age", T.gt, 30).submit(g.compute());
         }
 
+        @Override
         public Traversal<Edge, Edge> get_g_e7_hasXlabelXknowsX(final Object e7Id) {
-            return g.e(e7Id).<Edge>has("label", "knows").submit(g.compute());
+            return g.e(e7Id).<Edge>has(Element.LABEL, "knows").submit(g.compute());
         }
 
+        @Override
         public Traversal<Edge, Edge> get_g_E_hasXlabelXknowsX() {
-            return g.E().<Edge>has("label", "knows").submit(g.compute());
+            return g.E().<Edge>has(Element.LABEL, "knows").submit(g.compute());
         }
 
+        @Override
         public Traversal<Edge, Edge> get_g_E_hasXlabelXknows_createdX() {
-            return g.E().<Edge>has("label", T.in, Arrays.asList("knows", "created")).submit(g.compute());
+            return g.E().<Edge>has(Element.LABEL, T.in, Arrays.asList("knows", "created")).submit(g.compute());
         }
 
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_animalX() {
+            return g.V().has(Element.LABEL, T.in, Arrays.asList("person", "animal"));
+        }
+
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX() {
             return g.V().<Vertex>has("name", (v1, v2) -> v1.equals(v2), "marko").submit(g.compute());
         }

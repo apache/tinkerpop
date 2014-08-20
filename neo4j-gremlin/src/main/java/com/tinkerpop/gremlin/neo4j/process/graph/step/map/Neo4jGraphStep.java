@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.step.map.GraphStep;
 import com.tinkerpop.gremlin.process.util.TraverserIterator;
 import com.tinkerpop.gremlin.structure.Compare;
+import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -20,6 +21,8 @@ import org.neo4j.graphdb.index.RelationshipAutoIndexer;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -74,7 +77,12 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         } else if (this.hasContainers.size() > 0 && this.hasContainers.get(0).key.equals(Element.LABEL)) {
             //Scenario 2, using label only for search
             final HasContainer hasContainer1 = this.hasContainers.get(0);
-            vertexStream = getVerticesUsingLabel((String) hasContainer1.value);
+            if (hasContainer1.predicate == Contains.IN || hasContainer1.predicate == Contains.NOT_IN) {
+                final List<String> labels = (List<String>) hasContainer1.value;
+                vertexStream = getVerticesUsingLabel(labels.toArray(new String[labels.size()]));
+            } else
+                vertexStream = getVerticesUsingLabel(hasContainer1.value.toString());
+
             this.hasContainers.remove(hasContainer1);
         } else  {
             final HasContainer hasContainer1 = getVertexIndexKey();
@@ -103,9 +111,10 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         return StreamFactory.stream(iterator).map(n -> new Neo4jVertex(n, this.graph));
     }
 
-    private Stream<Vertex> getVerticesUsingLabel(final String label) {
-        final ResourceIterator<Node> iterator = GlobalGraphOperations.at(graph.getBaseGraph()).getAllNodesWithLabel(DynamicLabel.label(label)).iterator();
-        return StreamFactory.stream(iterator).map(n -> new Neo4jVertex(n, this.graph));
+    private Stream<Vertex> getVerticesUsingLabel(final String... labels) {
+        return Arrays.stream(labels)
+                .flatMap(label -> StreamFactory.stream(GlobalGraphOperations.at(graph.getBaseGraph()).getAllNodesWithLabel(DynamicLabel.label(label)).iterator()))
+                .map(n -> new Neo4jVertex(n, this.graph));
     }
 
     private Stream<Vertex> getVerticesUsingLegacyIndex(final String key, final Object value) {
