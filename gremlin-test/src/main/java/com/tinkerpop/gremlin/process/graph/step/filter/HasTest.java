@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.filter;
 
+import com.tinkerpop.gremlin.AbstractGremlinSuite;
+import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
@@ -164,6 +166,12 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_E_hasXlabelXknows_createdX() {
+        final Vertex marko = (Vertex) g.V().has("name", "marko").next();
+        marko.addEdge("self", marko);
+        tryCommit(g);
+
+        AbstractGremlinSuite.assertVertexEdgeCounts(6, 7);
+
         final Traversal<Edge, Edge> traversal = get_g_E_hasXlabelXknows_createdX();
         printTraversalForm(traversal);
         int counter = 0;
@@ -178,10 +186,10 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void g_V_hasXlabelXperson_animalX() {
-        Vertex a = this.g.addVertex(Element.LABEL, "person", "name", "a");
-        Vertex b = this.g.addVertex(Element.LABEL, "animal", "name", "b");
-        Vertex c = this.g.addVertex(Element.LABEL, "alien", "name", "c");
-        Vertex d = this.g.addVertex(Element.LABEL, "spirit", "name", "d");
+        this.g.addVertex(Element.LABEL, "person", "name", "a");
+        this.g.addVertex(Element.LABEL, "animal", "name", "b");
+        this.g.addVertex(Element.LABEL, "alien", "name", "c");
+        this.g.addVertex(Element.LABEL, "spirit", "name", "d");
         tryCommit(g);
 
         final Traversal<Vertex, Vertex> traversal = get_g_V_hasXlabelXperson_animalX();
