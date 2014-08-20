@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.util;
 
+import com.tinkerpop.gremlin.process.PathTraverser;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
@@ -59,10 +60,11 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     public Traverser<E> next() {
         if (this.available) {
             this.available = false;
+            prepareTraversalForNextStep(this.nextEnd);
             return this.nextEnd;
         } else {
             final Traverser<E> traverser = this.processNextStart();
-            traverser.setFuture(this.nextStep.getAs());
+            prepareTraversalForNextStep(traverser);
             return traverser;
         }
     }
@@ -73,7 +75,6 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         else {
             try {
                 this.nextEnd = this.processNextStart();
-                this.nextEnd.setFuture(this.nextStep.getAs());
                 this.available = true;
                 return true;
             } catch (final NoSuchElementException e) {
@@ -101,5 +102,10 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         step.available = false;
         step.nextEnd = null;
         return step;
+    }
+
+    private void prepareTraversalForNextStep(final Traverser<E> traverser) {
+        traverser.setFuture(this.nextStep.getAs());
+        if (traverser instanceof PathTraverser) traverser.getPath().addAs(this.getAs());
     }
 }

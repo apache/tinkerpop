@@ -7,7 +7,9 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
@@ -28,6 +30,10 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Edge> get_g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX(final Object v1Id);
 
     public abstract Traversal<Vertex, Edge> get_g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(final Object v1Id);
+
+    public abstract Traversal<Vertex, Edge> get_g_v1_outEXknowsX_asXhereX_hasXweight_1X_inV_hasXname_joshX_backXhereX(final Object v1Id);
+
+    public abstract Traversal<Vertex, Edge> get_g_v1_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_backXhereX(final Object v1Id);
 
     @Test
     @LoadGraphWith(CLASSIC_DOUBLE)
@@ -91,15 +97,20 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX() {
-        final Traversal<Vertex, Edge> traversal = get_g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(convertToVertexId("marko"));
-        printTraversalForm(traversal);
-        assertTrue(traversal.hasNext());
-        assertTrue(traversal.hasNext());
-        final Edge edge = traversal.next();
-        assertEquals("knows", edge.label());
-        assertEquals(1.0d, edge.<Double>value("weight"), 0.00001d);
-        assertFalse(traversal.hasNext());
-        assertFalse(traversal.hasNext());
+        final List<Traversal<Vertex, Edge>> traversals = Arrays.asList(
+                get_g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(convertToVertexId("marko")),
+                get_g_v1_outEXknowsX_asXhereX_hasXweight_1X_inV_hasXname_joshX_backXhereX(convertToVertexId("marko")),
+                get_g_v1_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_backXhereX(convertToVertexId("marko")));
+        traversals.forEach(traversal -> {
+            printTraversalForm(traversal);
+            assertTrue(traversal.hasNext());
+            assertTrue(traversal.hasNext());
+            final Edge edge = traversal.next();
+            assertEquals("knows", edge.label());
+            assertEquals(1.0d, edge.<Double>value("weight"), 0.00001d);
+            assertFalse(traversal.hasNext());
+            assertFalse(traversal.hasNext());
+        });
     }
 
     public static class JavaBackTest extends BackTest {
@@ -131,6 +142,16 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Edge> get_g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(final Object v1Id) {
             return g.v(v1Id).outE("knows").has("weight", 1.0d).as("here").inV().has("name", "josh").back("here");
         }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_v1_outEXknowsX_asXhereX_hasXweight_1X_inV_hasXname_joshX_backXhereX(final Object v1Id) {
+            return g.v(v1Id).outE("knows").as("here").has("weight", 1.0d).inV().has("name", "josh").<Edge>back("here");
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_v1_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_backXhereX(final Object v1Id) {
+            return g.v(v1Id).outE("knows").as("here").has("weight", 1.0d).as("fake").inV().has("name", "josh").<Edge>back("here");
+        }
     }
 
     public static class JavaComputerBackTest extends BackTest {
@@ -161,6 +182,16 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Edge> get_g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(final Object v1Id) {
             return g.v(v1Id).outE("knows").has("weight", 1.0d).as("here").inV().has("name", "josh").<Edge>back("here").submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_v1_outEXknowsX_asXhereX_hasXweight_1X_inV_hasXname_joshX_backXhereX(final Object v1Id) {
+            return g.v(v1Id).outE("knows").as("here").has("weight", 1.0d).inV().has("name", "josh").<Edge>back("here").submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_v1_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_backXhereX(final Object v1Id) {
+            return g.v(v1Id).outE("knows").as("here").has("weight", 1.0d).as("fake").inV().has("name", "josh").<Edge>back("here").submit(g.compute());
         }
     }
 }

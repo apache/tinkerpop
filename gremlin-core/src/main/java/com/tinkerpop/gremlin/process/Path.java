@@ -1,13 +1,16 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import org.javatuples.Pair;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -21,20 +24,11 @@ import java.util.stream.Stream;
  */
 public class Path implements Serializable {
 
-    protected List<String> asLabels = new ArrayList<>();
+    protected List<Set<String>> asLabels = new ArrayList<>();
     protected List<Object> objects = new ArrayList<>();
 
-    protected Path() {
+    public Path() {
 
-    }
-
-    public Path(final Object... asObjects) {
-        if (asObjects.length % 2 != 0)
-            throw new IllegalArgumentException("The provided array must be a multiple of two");
-        for (int i = 0; i < asObjects.length; i = i + 2) {
-            this.asLabels.add((String) asObjects[i]);
-            this.objects.add(asObjects[i + 1]);
-        }
     }
 
     public int size() {
@@ -42,7 +36,15 @@ public class Path implements Serializable {
     }
 
     public void add(final String as, final Object object) {
-        this.asLabels.add(as);
+        final Set<String> labels = new HashSet<>();
+        if (TraversalHelper.isLabeled(as))
+            labels.add(as);
+        this.asLabels.add(labels);
+        this.objects.add(object);
+    }
+
+    public void add(final Set<String> asLabels, final Object object) {
+        this.asLabels.add(asLabels.stream().filter(TraversalHelper::isLabeled).collect(Collectors.toSet()));
         this.objects.add(object);
     }
 
@@ -51,25 +53,41 @@ public class Path implements Serializable {
         this.objects.addAll(path.objects);
     }
 
-    public <T> T get(final String as) {
+    public <A> A get(final String as) {
         for (int i = 0; i < this.asLabels.size(); i++) {
-            if (this.asLabels.get(i).equals(as))
-                return (T) this.objects.get(i);
+            if (this.asLabels.get(i).contains(as))
+                return (A) this.objects.get(i);
         }
         throw new IllegalArgumentException("The as-step does not exist: " + as);
     }
 
-    public <T> T get(final int index) {
-        return (T) this.objects.get(index);
+    public <A> A get(final int index) {
+        return (A) this.objects.get(index);
     }
 
     public boolean hasAs(final String as) {
-        return this.asLabels.contains(as);
+        for (final Set<String> labels : this.asLabels) {
+            if (labels.contains(as))
+                return true;
+        }
+        return false;
     }
 
-    // TODO: why does this have to exist. I hate this.
-    public void renameLastStep(final String as) {
-        this.asLabels.set(this.asLabels.size() - 1, as);
+    public void addAs(final String as) {
+        if (TraversalHelper.isLabeled(as))
+            this.asLabels.get(this.asLabels.size() - 1).add(as);
+    }
+
+    public List<Object> getObjects() {
+        return new ArrayList<>(this.objects);
+    }
+
+    public List<Set<String>> getAsLabels() {
+        final List<Set<String>> labels = new ArrayList<>();
+        for (final Set<String> set : this.asLabels) {
+            labels.add(new HashSet<>(set));
+        }
+        return labels;
     }
 
     /**
@@ -86,17 +104,18 @@ public class Path implements Serializable {
         this.objects.forEach(consumer);
     }
 
-    public void forEach(final BiConsumer<String, Object> consumer) {
+    public void forEach(final BiConsumer<Set<String>, Object> consumer) {
         for (int i = 0; i < this.size(); i++) {
             consumer.accept(this.asLabels.get(i), this.objects.get(i));
         }
     }
 
-    public Stream<Pair<String, Object>> stream() {
+    public Stream<Pair<Set<String>, Object>> stream() {
         return IntStream.range(0, this.size()).mapToObj(i -> Pair.with(this.asLabels.get(i), this.objects.get(i)));
     }
 
     public String toString() {
         return this.objects.toString();
     }
+
 }

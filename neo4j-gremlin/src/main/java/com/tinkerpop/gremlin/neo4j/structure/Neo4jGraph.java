@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.neo4j.process.graph.step.map.Neo4jCypherStartStep;
 import com.tinkerpop.gremlin.neo4j.process.graph.step.map.Neo4jGraphStep;
 import com.tinkerpop.gremlin.neo4j.process.graph.util.DefaultNeo4jTraversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;

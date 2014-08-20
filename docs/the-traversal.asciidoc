@@ -409,6 +409,38 @@ gremlin> g.V.out.out.path{
 
 WARNING: Generating path information is expensive as the history of the traverser is stored into a Java list. With numerous traversers, there are numerous lists. Moreover, in an OLAP <<graphcomputer,`GraphComputer`>> environment this becomes exceedingly prohibitive as there are traversers emanating from all vertices in the graph in parallel. In OLAP there are optimizations provided for traverser populations, but when paths are calculated (and each traverser is unique due to its history), then these optimizations are no longer possible.
 
+[[path-data-structure]]
+Path Data Structure
+^^^^^^^^^^^^^^^^^^^
+
+The `Path` data structure is an ordered list of objects, where each object is associated to a `Set<String>` of labels. An example is presented below to demonstrate both the `Path` API as well as how a traversal yields labeled paths.
+
+image::path-data-structure.png[width=350]
+
+[source,groovy]
+gremlin> path = g.v(1).as('a').has('name').as('b').out('knows').out('created').as('c').has('name','ripple').name.as('d').identity.as('e').path.next()
+==>[v[1], v[4], v[5], ripple]
+gremlin> path.size()
+==>4
+gremlin> path.objects
+==>v[1]
+==>v[4]
+==>v[5]
+==>ripple
+gremlin> path.asLabels
+==>[a, b]
+==>[]
+==>[c]
+==>[d, e]
+gremlin> path.a
+==>v[1]
+gremlin> path.b
+==>v[1]
+gremlin> path.c
+==>v[5]
+gremlin> path.d == path.e
+==>true
+
 [[select-step]]
 Select Step
 ~~~~~~~~~~~
@@ -484,7 +516,7 @@ gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> sg = TinkerGraph.open() <1>
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> g.E.subgraph(sg, {it.label == 'knows'}) <2>
+gremlin> g.E.with('sg',sg).subgraph('sg', {it.label == 'knows'}) <2>
 ==>tinkergraph[vertices:3 edges:2]
 gremlin> sg.E <3>
 ==>e[7][1-knows->2]
@@ -501,9 +533,7 @@ A more common subgraphing use case is to get all of the graph structure surround
 ----
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> sg = TinkerGraph.open()
-==>tinkergraph[vertices:0 edges:0]
-gremlin> g.v(3).as('a').inE.outV.jump('a'){it.loops<3}{true}.subgraph(sg, {true})   <1>
+gremlin> sg = g.v(3).as('a').inE.outV.jump('a'){it.loops<3}{true}.subgraph({true}).next()   <1>
 ==>tinkergraph[vertices:4 edges:4]
 gremlin> sg.E
 ==>e[8][1-knows->4]
@@ -512,7 +542,7 @@ gremlin> sg.E
 ==>e[12][6-created->3]
 ----
 
-<1> Starting at vertex `3`, traverse 3 steps away on in-edges, outputting all of that into the subgraph.
+<1> Starting at vertex `3`, traverse 3 steps away on in-edges, outputting all of that into the subgraph. Note that if now graph is provided, a `TinkerGraph` is assumed.
 
 [[timelimit-step]]
 TimeLimit Step

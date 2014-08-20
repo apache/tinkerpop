@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.neo4j.process.graph.step.map;
 
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import org.neo4j.graphdb.ResourceIterator;
 
 import java.util.Map;
