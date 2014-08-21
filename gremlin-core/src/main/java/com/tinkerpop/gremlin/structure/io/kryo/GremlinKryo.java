@@ -36,6 +36,7 @@ import java.util.Currency;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -177,7 +178,7 @@ public final class GremlinKryo {
 
         /**
          * Note that the following are pre-registered boolean, Boolean, byte, Byte, char, Character, double, Double,
-         * int, Integer, float, Float, long, Long, short, Short, String, void. Current max is Tree=63.
+         * int, Integer, float, Float, long, Long, short, Short, String, void. Current max is HashSet=64.
          */
         private final List<Triplet<Class, Serializer, Integer>> serializationList = new ArrayList<Triplet<Class, Serializer, Integer>>() {{
             add(Triplet.<Class, Serializer, Integer>with(byte[].class, null, 25));
@@ -236,6 +237,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(Optional.class, null, 61));
             add(Triplet.<Class, Serializer, Integer>with(AtomicLong.class, null, 62)); // this is all needed for serializing properties in TinkerGraph
             add(Triplet.<Class, Serializer, Integer>with(Tree.class, null, 63));
+            add(Triplet.with(HashSet.class, null, 64));
         }};
 
         private static final byte major = 1;
