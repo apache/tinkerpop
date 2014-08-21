@@ -33,6 +33,7 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
     /**
      * Gets the underlying base {@link Graph} that is being hosted within this wrapper.
      */
+    @Override
     public Graph getBaseGraph() {
         return this.baseGraph;
     }

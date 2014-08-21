@@ -83,7 +83,7 @@ public class SubgraphStrategy implements GraphStrategy {
     private boolean testEdge(final Edge edge) {
         // the edge must pass the edge predicate, and both of its incident vertices must also pass the vertex predicate
         // inV() and/or outV() will be empty if they do not
-        return edgePredicate.test(edge) && edge.inV().hasNext() && edge.outV().hasNext(); // && vertexPredicate.test(edge.inV().next()) && vertexPredicate.test(edge.outV().next());
+        return edgePredicate.test(edge) && edge.inV().hasNext() && edge.outV().hasNext();
     }
 
     private boolean testElement(final Element element) {

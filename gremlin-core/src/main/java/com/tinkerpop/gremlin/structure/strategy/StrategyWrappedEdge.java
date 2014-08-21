@@ -19,6 +19,7 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
         this.baseEdge = baseEdge;
     }
 
+    @Override
     public Edge getBaseEdge() {
         return this.baseEdge;
     }

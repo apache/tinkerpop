@@ -1,12 +1,10 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
-import com.tinkerpop.gremlin.util.function.SConsumer;
 
 import java.util.Iterator;
 
@@ -23,6 +21,7 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
         this.baseVertex = baseVertex;
     }
 
+    @Override
     public Vertex getBaseVertex() {
         return this.baseVertex;
     }
