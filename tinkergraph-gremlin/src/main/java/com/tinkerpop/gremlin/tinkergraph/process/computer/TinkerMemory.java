@@ -10,7 +10,6 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -70,8 +69,12 @@ public class TinkerMemory implements Memory.Administrative {
         return this.getIteration() == 0;
     }
 
-    public <R> Optional<R> get(final String key) {
-        return Optional.ofNullable((R) this.sideEffectsMap.get(key));
+    public <R> R get(final String key) throws IllegalArgumentException {
+        final R r = (R) this.sideEffectsMap.get(key);
+        if (null == r)
+            throw Memory.Exceptions.memoryDoesNotExist(key);
+        else
+            return r;
     }
 
     public long incr(final String key, final long delta) {

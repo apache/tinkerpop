@@ -15,7 +15,6 @@ import org.apache.giraph.master.MasterCompute;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -73,17 +72,20 @@ public class GiraphMemory extends MasterCompute implements Memory {
     }
 
     public long getRuntime() {
-        return System.currentTimeMillis() - this.<Long>get(Constants.RUNTIME).get();
+        return System.currentTimeMillis() - this.<Long>get(Constants.RUNTIME);
     }
 
     public Set<String> keys() {
         return this.memoryKeys;
     }
 
-    public <R> Optional<R> get(final String key) {
+    public <R> R get(final String key) throws IllegalArgumentException {
         //this.checkKey(key);
         final RuleWritable rule = this.isMasterCompute ? this.getAggregatedValue(key) : this.giraphInternalVertex.getAggregatedValue(key);
-        return null == rule ? Optional.empty() : Optional.ofNullable(rule.getObject());
+        if (null == rule)
+            throw Memory.Exceptions.memoryDoesNotExist(key);
+        else
+            return rule.getObject();
     }
 
     public void set(final String key, Object value) {

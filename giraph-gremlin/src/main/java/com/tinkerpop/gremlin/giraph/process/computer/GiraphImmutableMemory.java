@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -23,8 +22,12 @@ public class GiraphImmutableMemory implements Memory {
         return this.memoryMap.keySet();
     }
 
-    public <R> Optional<R> get(final String key) {
-        return Optional.ofNullable((R) this.memoryMap.get(key));
+    public <R> R get(final String key) throws IllegalArgumentException {
+        final R r = (R) this.memoryMap.get(key);
+        if (null == r)
+            throw Memory.Exceptions.memoryDoesNotExist(key);
+        else
+            return r;
     }
 
     public void set(final String key, Object value) {

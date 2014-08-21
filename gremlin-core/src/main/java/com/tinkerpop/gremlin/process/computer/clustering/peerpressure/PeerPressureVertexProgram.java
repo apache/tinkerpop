@@ -111,7 +111,7 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
 
     @Override
     public boolean terminate(final Memory memory) {
-        final boolean voteToHalt = memory.<Boolean>get(VOTE_TO_HALT).get() || memory.getIteration() >= this.maxIterations;
+        final boolean voteToHalt = memory.<Boolean>get(VOTE_TO_HALT) || memory.getIteration() >= this.maxIterations;
         if (voteToHalt) {
             return true;
         } else {

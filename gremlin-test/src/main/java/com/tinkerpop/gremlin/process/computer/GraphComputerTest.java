@@ -1,11 +1,11 @@
 package com.tinkerpop.gremlin.process.computer;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.ExceptionCoverage;
+import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaMapReduce;
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
-import com.tinkerpop.gremlin.ExceptionCoverage;
-import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -215,7 +215,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
                 .memory(i -> i.next().getValue1())
                 .memoryKey("ageSum").create())
                 .submit().get();
-        assertEquals(123, results.getMemory().get("ageSum").get());
+        assertEquals(123, results.getMemory().<Integer>get("ageSum").intValue());
     }
 
     @Test
@@ -245,10 +245,15 @@ public class GraphComputerTest extends AbstractGremlinTest {
         assertTrue(results.getMemory().keys().contains("or"));
         assertTrue(results.getMemory().getRuntime() >= 0);
 
-        assertEquals(Long.valueOf(28), results.getMemory().<Long>get("counter").get());
-        assertFalse(results.getMemory().<Boolean>get("and").get());
-        assertFalse(results.getMemory().<Boolean>get("or").get());
-        assertFalse(results.getMemory().get("BAD").isPresent());
+        assertEquals(Long.valueOf(28), results.getMemory().<Long>get("counter"));
+        assertFalse(results.getMemory().<Boolean>get("and"));
+        assertFalse(results.getMemory().<Boolean>get("or"));
+        try {
+            results.getMemory().get("BAD");
+            fail("Should throw an IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            assertEquals(Memory.Exceptions.memoryDoesNotExist("BAD").getMessage(), e.getMessage());
+        }
         assertEquals(Long.valueOf(6), results.getGraph().V().count().next());
 
         results.getGraph().V().forEach(v -> {
@@ -286,8 +291,8 @@ public class GraphComputerTest extends AbstractGremlinTest {
                 .submit().get();
 
 
-        assertEquals(60, results.getMemory().get("a").get());
-        assertEquals(1, results.getMemory().get("b").get());
+        assertEquals(60, results.getMemory().<Integer>get("a").intValue());
+        assertEquals(1, results.getMemory().<Integer>get("b").intValue());
     }
 
     private static LambdaVertexProgram identity() {

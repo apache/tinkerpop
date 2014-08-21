@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -15,14 +14,26 @@ public class DefaultSideEffects implements Traversal.SideEffects {
 
     private Map<String, Object> memory;
 
+    public boolean exists(final String key) {
+        return (null != this.memory && this.memory.containsKey(key));
+    }
+
     public <T> void set(final String key, final T value) {
         MemoryHelper.validateMemory(key, value);
         if (null == this.memory) this.memory = new HashMap<>();
         this.memory.put(key, value);
     }
 
-    public <T> Optional<T> get(final String key) {
-        return null == this.memory ? Optional.empty() : Optional.ofNullable((T) this.memory.get(key));
+    public <T> T get(final String key) throws IllegalArgumentException {
+        if (null == this.memory)
+            throw Traversal.SideEffects.Exceptions.sideEffectDoesNotExist(key);
+        else {
+            final T t = (T) this.memory.get(key);
+            if (null == t)
+                throw Traversal.SideEffects.Exceptions.sideEffectDoesNotExist(key);
+            else
+                return t;
+        }
     }
 
     public void remove(final String key) {

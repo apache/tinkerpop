@@ -19,7 +19,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -67,9 +66,13 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public interface SideEffects extends Serializable {
 
+        public default boolean exists(final String key) {
+            return this.keys().contains(key);
+        }
+
         public <V> void set(final String key, final V value);
 
-        public <V> Optional<V> get(final String key);
+        public <V> V get(final String key) throws IllegalArgumentException;
 
         public void remove(final String key);
 
@@ -80,7 +83,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
         }
 
         public default Graph getGraph() {
-            return this.<Graph>get(Graph.Key.hide("g")).get();
+            return this.<Graph>get(Graph.Key.hide("g"));
         }
 
         public default void removeGraph() {
@@ -89,7 +92,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
         public default <V> V getOrCreate(final String key, final Supplier<V> orCreate) {
             if (this.keys().contains(key))
-                return this.<V>get(key).get();
+                return this.<V>get(key);
             else {
                 V t = orCreate.get();
                 this.set(key, t);
@@ -119,8 +122,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
                 return new IllegalArgumentException("Side effect value can not be null");
             }
 
-            public static IllegalArgumentException sideEffectValueDoesNotExist(final String variable) {
-                return new IllegalArgumentException("The sideEffects do not have a value for provided variable: " + variable);
+            public static IllegalArgumentException sideEffectDoesNotExist(final String key) {
+                return new IllegalArgumentException("The sideEffects do not have a value for provided key: " + key);
             }
 
             public static UnsupportedOperationException dataTypeOfSideEffectValueNotSupported(final Object val) {
