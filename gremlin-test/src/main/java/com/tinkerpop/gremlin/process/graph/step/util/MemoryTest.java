@@ -7,8 +7,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -20,10 +19,13 @@ public abstract class MemoryTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_V_memory() {
         final Traversal.SideEffects sideEffects = get_g_V_memory();
-        assertFalse(sideEffects.get("a").isPresent());
-        assertTrue(sideEffects.get(Graph.Key.hide("g")).isPresent());
-        assertFalse(sideEffects.get("g").isPresent());
-        assertTrue(Graph.class.isAssignableFrom(sideEffects.get(Graph.Key.hide("g")).get().getClass()));
+        try {
+            assertFalse(sideEffects.get("a"));
+        } catch (IllegalArgumentException e) {
+            assertEquals(Traversal.SideEffects.Exceptions.sideEffectDoesNotExist("a").getMessage(), e.getMessage());
+        }
+        assertEquals(sideEffects.get(Graph.Key.hide("g")), sideEffects.getGraph());
+        assertTrue(Graph.class.isAssignableFrom(sideEffects.getGraph().getClass()));
     }
 
     public static class JavaSideEffectsTest extends MemoryTest {

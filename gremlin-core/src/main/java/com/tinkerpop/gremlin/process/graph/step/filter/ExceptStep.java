@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Collection;
-import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -18,10 +17,9 @@ public class ExceptStep<S> extends FilterStep<S> implements Reversible {
         super(traversal);
         this.collectionAs = collectionAs;
         this.setPredicate(traverser -> {
-            final Optional optional = this.traversal.sideEffects().get(this.collectionAs);
-            if (!optional.isPresent()) return true;
+            if (!this.traversal.sideEffects().exists(this.collectionAs)) return true;
             else {
-                final Object except = optional.get();
+                final Object except = this.traversal.sideEffects().get(this.collectionAs);
                 return except instanceof Collection ?
                         !((Collection) except).contains(traverser.get()) :
                         !except.equals(traverser.get());

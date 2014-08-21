@@ -158,7 +158,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     @Override
     public boolean terminate(final Memory memory) {
-        final boolean voteToHalt = memory.<Boolean>get(VOTE_TO_HALT).get();
+        final boolean voteToHalt = memory.<Boolean>get(VOTE_TO_HALT);
         if (voteToHalt) {
             return true;
         } else {

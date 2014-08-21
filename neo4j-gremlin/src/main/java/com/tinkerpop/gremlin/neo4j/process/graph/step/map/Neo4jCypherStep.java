@@ -23,7 +23,7 @@ public class Neo4jCypherStep<S, E> extends FlatMapStep<S, Map<String, E>> {
 
     public Neo4jCypherStep(final String query, final Map<String, Object> params, final Traversal traversal) {
         super(traversal);
-        final Neo4jGraph graph = (Neo4jGraph) traversal.sideEffects().get(Graph.Key.hide("g")).get();
+        final Neo4jGraph graph = (Neo4jGraph) traversal.sideEffects().getGraph();
         final ExecutionEngine cypher = graph.getCypher();
         this.setFunction(traverser -> {
             final S s = traverser.get();

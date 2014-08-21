@@ -4,7 +4,6 @@ import org.javatuples.Pair;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -13,15 +12,19 @@ import java.util.stream.Collectors;
  */
 public interface Memory {
 
+    public default boolean exists(final String key) {
+        return this.keys().contains(key);
+    }
+
     public Set<String> keys();
 
-    public <R> Optional<R> get(final String key);
+    public <R> R get(final String key) throws IllegalArgumentException;
 
     public void set(final String key, Object value);
 
     public default Map<String, Object> asMap() {
         final Map<String, Object> map = keys().stream()
-                .map(key -> Pair.with(key, get(key).get()))
+                .map(key -> Pair.with(key, get(key)))
                 .collect(Collectors.toMap(kv -> kv.getValue0(), Pair::getValue1));
         return Collections.unmodifiableMap(map);
     }
@@ -64,6 +67,10 @@ public interface Memory {
 
         public static IllegalStateException memoryCompleteAndImmutable() {
             return new IllegalStateException("Graph computer memory is complete and immutable");
+        }
+
+        public static IllegalArgumentException memoryDoesNotExist(final String key) {
+            return new IllegalArgumentException("The memory does not have a value for provided key: " + key);
         }
 
         public static UnsupportedOperationException dataTypeOfMemoryValueNotSupported(final Object val) {

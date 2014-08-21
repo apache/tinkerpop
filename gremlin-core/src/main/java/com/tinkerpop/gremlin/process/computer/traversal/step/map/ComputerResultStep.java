@@ -39,8 +39,8 @@ public class ComputerResultStep<S> extends AbstractStep<S, S> {
         this.computerTraversal.strategies().apply();
         final Step endStep = TraversalHelper.getEnd(this.computerTraversal);
         this.traversers = endStep instanceof SideEffectCap ?
-                new SingleIterator<>(new SimpleTraverser<>((S) this.memory.get(((SideEffectCap) endStep).getMemoryKey()).get())) :
-                (Iterator<Traverser<S>>) this.memory.get(TraversalResultMapReduce.TRAVERSERS).get();
+                new SingleIterator<>(new SimpleTraverser<>((S) this.memory.get(((SideEffectCap) endStep).getMemoryKey()))) :
+                (Iterator<Traverser<S>>) this.memory.get(TraversalResultMapReduce.TRAVERSERS);
     }
 
     public Traverser<S> processNextStart() {
