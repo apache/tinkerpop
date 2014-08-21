@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * Defines the list of standard exceptions covered by a test set.  Used in conjunction with the exception compliance
- * unit tests to ensure full coverage of defined exceptions in Blueprints.  The list of exceptions is defined with by
+ * unit tests to ensure full coverage of defined exceptions in Gremlin Structure.  The list of exceptions is defined with by
  * the exception class and the list of methods that generate the exceptions that are covered by the test.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
 @Repeatable(ExceptionCoverageSet.class)
 public @interface ExceptionCoverage {
     /**
-     * The exception class from Blueprints that contains the exceptions that are covered by the block of tests.
+     * The exception class from Gremlin Structure that contains the exceptions that are covered by the block of tests.
      */
     public Class exceptionClass();
 

@@ -31,8 +31,8 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(Enclosed.class)
 public class GraphReadPerformanceTest {
     @AxisRange(min = 0, max = 1)
-    @BenchmarkMethodChart(filePrefix = "blueprints-read")
-    @BenchmarkHistoryChart(labelWith = LabelType.CUSTOM_KEY, maxRuns = 20, filePrefix = "hx-blueprints-read")
+    @BenchmarkMethodChart(filePrefix = "gremlin-read")
+    @BenchmarkHistoryChart(labelWith = LabelType.CUSTOM_KEY, maxRuns = 20, filePrefix = "hx-gremlin-read")
     public static class ReadFromGraph extends AbstractGremlinTest {
 
         @Rule

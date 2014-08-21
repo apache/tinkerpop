@@ -183,7 +183,7 @@ public class GraphMLWriter implements GraphWriter {
                 for (String key : keys) {
                     writer.writeStartElement(GraphMLTokens.DATA);
                     writer.writeAttribute(GraphMLTokens.KEY, key);
-                    // technically there can't be a null here as Blueprints forbids that occurrence even if Graph
+                    // technically there can't be a null here as gremlin structure forbids that occurrence even if Graph
                     // implementations support it, but out to empty string just in case.
                     writer.writeCharacters(edge.property(key).orElse("").toString());
                     writer.writeEndElement();
@@ -205,7 +205,7 @@ public class GraphMLWriter implements GraphWriter {
                 for (String key : edge.keys()) {
                     writer.writeStartElement(GraphMLTokens.DATA);
                     writer.writeAttribute(GraphMLTokens.KEY, key);
-                    // technically there can't be a null here as Blueprints forbids that occurrence even if Graph
+                    // technically there can't be a null here as gremlin structure forbids that occurrence even if Graph
                     // implementations support it, but out to empty string just in case.
                     writer.writeCharacters(edge.property(key).orElse("").toString());
                     writer.writeEndElement();
@@ -230,7 +230,7 @@ public class GraphMLWriter implements GraphWriter {
             for (String key : keys) {
                 writer.writeStartElement(GraphMLTokens.DATA);
                 writer.writeAttribute(GraphMLTokens.KEY, key);
-                // technically there can't be a null here as Blueprints forbids that occurrence even if Graph
+                // technically there can't be a null here as gremlin structure forbids that occurrence even if Graph
                 // implementations support it, but out to empty string just in case.
                 writer.writeCharacters(vertex.property(key).orElse("").toString());
                 writer.writeEndElement();

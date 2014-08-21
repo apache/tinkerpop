@@ -20,7 +20,7 @@ public @interface FeatureDescriptor {
     String name();
 
     /**
-     * A description of the feature that will be useful to implementers if a Blueprints test fails around
+     * A description of the feature that will be useful to implementers if a Gremlin test fails around
      * proper feature support.
      */
     String description() default "";

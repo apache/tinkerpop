@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 /**
  * The StructureStandardSuite is a custom JUnit test runner that executes the Gremlin Test Suite over a Graph
- * implementation.  This specialized test suite and runner is for use by Blueprints implementers to test their
+ * implementation.  This specialized test suite and runner is for use by Gremlin implementers to test their
  * Graph implementations.  The ProcessStandardSuite ensures consistency and validity of the implementations that they
  * test.
  * <p>
@@ -30,8 +30,8 @@ import java.util.stream.Stream;
  * file):
  * <code>
  * @RunWith(StructureStandardSuite.class)
- * @BlueprintsSuite.GraphProviderClass(MsAccessBlueprintsTest.class)
- * public class MsAccessBlueprintsTest implements GraphProvider {
+ * @StructureStandardSuite.GraphProviderClass(TinkerGraphStructureStandardTest.class)
+ * public class TinkerGraphStructureStandardTest implements GraphProvider {
  * }
  * </code>
  * Implementing {@link com.tinkerpop.gremlin.GraphProvider} provides a way for the StructureStandardSuite to

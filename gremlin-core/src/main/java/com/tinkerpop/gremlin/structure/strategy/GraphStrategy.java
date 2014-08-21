@@ -17,9 +17,9 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 /**
- * Defines a collection of functions that plug-in to Blueprints API methods to enhance or alter the functionality of
+ * Defines a collection of functions that plug-in to Gremlin Structure API methods to enhance or alter the functionality of
  * the implementation. The methods defined in {@link GraphStrategy} follow a common pattern where each method
- * represents some injection point for new logic in the Blueprints API.  A method always accepts a
+ * represents some injection point for new logic in the Gremlin Structure API.  A method always accepts a
  * {@link Strategy.Context} which contains the context of the call being made and will have
  * a different {@link Strategy.Context#getCurrent()} object depending on that context (e.g the
  * {@link com.tinkerpop.gremlin.structure.Vertex#addEdge(String, com.tinkerpop.gremlin.structure.Vertex, Object...)} method will send the instance of
@@ -28,7 +28,7 @@ import java.util.function.UnaryOperator;
  * A method will always return a {@link java.util.function.UnaryOperator} where the argument and return value to it is a function with
  * the same signature as the calling method where the strategy logic is being injected.  The argument passed in to
  * this function will be a reference to the original calling function (from an implementation perspective, it might
- * be best to think of this "calling function" as the original Blueprints API method that performs the ultimate
+ * be best to think of this "calling function" as the original Gremlin Structure API method that performs the ultimate
  * operation against the graph).  In constructing the outgoing function to the {@link java.util.function.UnaryOperator}, it should
  * of course match the signature of the original calling function and depending on the functionality,
  * call the original function to trigger a call to the underlying implementation.

@@ -24,7 +24,7 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
 /**
- * Blueprints Test Suite for {@link com.tinkerpop.gremlin.structure.Graph.Variables} operations.
+ * Gremlin Test Suite for {@link com.tinkerpop.gremlin.structure.Graph.Variables} operations.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

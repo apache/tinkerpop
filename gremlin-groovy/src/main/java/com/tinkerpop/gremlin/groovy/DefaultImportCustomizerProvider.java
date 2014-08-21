@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Grabs the standard Gremlin/Blueprints classes and allows additional imports to be added.
+ * Grabs the standard Gremlin core classes and allows additional imports to be added.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

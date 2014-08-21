@@ -17,8 +17,8 @@ import org.junit.runners.model.RunnerBuilder;
  * <code>
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @RunWith(BlueprintsPerformanceSuite.class)
- * @StructurePerformanceSuite.GraphProviderClass(MsAccessBlueprintsPerformanceTest.class) public class MsAccessStructurePerformanceTest implements GraphProvider {
+ * @RunWith(StructurePerformanceSuite.class)
+ * @StructurePerformanceSuite.GraphProviderClass(TinkerGraphStructurePerformanceTest.class) public class TinkerGraphStructurePerformanceTest implements GraphProvider {
  * }
  * </code>
  * Implementing {@link com.tinkerpop.gremlin.GraphProvider} provides a way for the StructurePerformanceSuite to

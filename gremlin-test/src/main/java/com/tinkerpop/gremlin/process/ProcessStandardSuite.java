@@ -46,7 +46,7 @@ import java.util.stream.Stream;
 
 /**
  * The ProcessStandardSuite is a custom JUnit test runner that executes the Gremlin Test Suite over a Graph
- * implementation.  This specialized test suite and runner is for use by Blueprints implementers to test their
+ * implementation.  This specialized test suite and runner is for use by Gremlin implementers to test their
  * Graph implementations.  The StructureStandardSuite ensures consistency and validity of the implementations that they
  * test.
  * <p>
@@ -55,16 +55,16 @@ import java.util.stream.Stream;
  * implements ProcessStandardSuite.GraphProvider as a convenience only...it could be implemented in a separate class file):
  * <p>
  * <code>
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  * @RunWith(ProcessStandardSuite.class)
- * @BlueprintsSuite.GraphProviderClass(MsAccessBlueprintsTest.class) public class MsAccessBlueprintsTest implements GraphProvider {
+ * @ProcessStandardSuite.GraphProviderClass(TinkerGraphProcessStandardTest.class) public class TinkerGraphProcessStandardTest implements GraphProvider {
  * }
  * </code>
  * <p>
  * Implementing {@link com.tinkerpop.gremlin.GraphProvider} provides a way for the ProcessStandardSuite to
  * instantiate Graph instances from the implementation being tested to inject into tests in the suite.  The
  * ProcessStandardSuite will utilized Features defined in the suite to determine which tests will be executed.
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ProcessStandardSuite extends AbstractGremlinSuite {
 

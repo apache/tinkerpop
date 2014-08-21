@@ -17,7 +17,7 @@ import java.util.function.UnaryOperator;
 public interface Strategy {
 
     /**
-     * Set the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} to utilized in the various Blueprints methods that it supports.
+     * Set the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} to utilized in the various Gremlin Structure methods that it supports.
      */
     public void setGraphStrategy(final GraphStrategy strategy);
 
@@ -32,8 +32,8 @@ public interface Strategy {
      * no {@link Strategy} is present then it simply returns the {@code impl} as the default.
      *
      * @param f    a function to execute if a {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} is present.
-     * @param impl the base implementation of an operation that does something in a Blueprints implementation.
-     * @return a function that will be applied in the Blueprints implementation
+     * @param impl the base implementation of an operation that does something in a Gremlin Structure implementation.
+     * @return a function that will be applied in the Gremlin Structure implementation
      */
     public default <T> T compose(final Function<GraphStrategy, UnaryOperator<T>> f, final T impl) {
         return getGraphStrategy().isPresent() ? f.apply(getGraphStrategy().get()).apply(impl) : impl;
