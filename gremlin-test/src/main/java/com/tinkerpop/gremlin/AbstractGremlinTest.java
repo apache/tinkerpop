@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -75,18 +74,12 @@ public abstract class AbstractGremlinTest {
             frs.addAll(Arrays.stream(featureRequirementSets)
                              .flatMap(f -> f.value().featuresRequired().stream()).collect(Collectors.toList()));
 
-        final List<Graph.FeatureOverride> featureOverrides = Arrays.asList(g.getClass().getAnnotationsByType(Graph.FeatureOverride.class));
-
         // process the unique set of feature requirements
         final Set<FeatureRequirement> featureRequirementSet = new HashSet<>(frs);
         for (FeatureRequirement fr : featureRequirementSet) {
             try {
                 //System.out.println(String.format("Assume that %s meets Feature Requirement - %s - with %s", fr.featureClass().getSimpleName(), fr.feature(), fr.supported()));
-                final Optional<Graph.FeatureOverride> override = hasOverridenFeature(featureOverrides, fr);
-                if (override.isPresent())
-                    assumeThat(override.get().supported(), is(fr.supported()));
-                else
-                    assumeThat(g.features().supports(fr.featureClass(), fr.feature()), is(fr.supported()));
+                assumeThat(g.features().supports(fr.featureClass(), fr.feature()), is(fr.supported()));
             } catch (NoSuchMethodException nsme) {
                 throw new NoSuchMethodException(String.format("[supports%s] is not a valid feature on %s", fr.feature(), fr.featureClass()));
             }
@@ -96,10 +89,6 @@ public abstract class AbstractGremlinTest {
         if (loadGraphWiths.length > 0) graphProvider.loadGraphData(g, loadGraphWiths[0]);
 
         prepareGraph(g);
-    }
-
-    private static Optional<Graph.FeatureOverride> hasOverridenFeature(final List<Graph.FeatureOverride> featureOverrides, final FeatureRequirement fr) {
-        return featureOverrides.stream().filter(fo -> fo.featureClass().equals(fr.featureClass()) && fo.feature().equals(fr.feature())).findFirst();
     }
 
     protected void prepareGraph(final Graph g) throws Exception {

@@ -747,47 +747,6 @@ public interface Graph extends AutoCloseable {
     }
 
     /**
-     * Provides an override to {@link com.tinkerpop.gremlin.structure.Graph.Features} which can allow a test to be
-     * executed if the implementation has a way to cope with the test.  This annotation is most useful for
-     * implementations like Giraph which don't support the
-     * {@link com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures#supportsAddVertices()} and
-     * {@link com.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures#supportsAddEdges()} features, but has
-     * an alternative method within the {@code GraphProvider} for getting that data into the graph for the test case.
-     */
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.TYPE)
-    @Repeatable(FeatureOverrides.class)
-    @Inherited
-    public @interface FeatureOverride {
-        /**
-         * The name of the feature as defined by the <code>public static final</code> member variable on each FeatureSet
-         * implementation.
-         */
-        String feature();
-
-        /**
-         * The FeatureSet extension interface that owns the feature to be tested.
-         */
-        Class<? extends Graph.Features.FeatureSet> featureClass();
-
-        /**
-         * Denotes if the feature is supported or unsupported.  By default this value is set to true.
-         */
-        boolean supported() default true;
-    }
-
-    /**
-     * Holds a collection of {@link FeatureOverride} enabling multiple {@link FeatureOverride} to be applied to a
-     * single suite.
-     */
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.TYPE)
-    @Inherited
-    public @interface FeatureOverrides {
-        FeatureOverride[] value();
-    }
-
-    /**
      * Defines the test suite that the implementer has decided to support and represents publicly as "passing".
      * Marking the {@link Graph} instance with this class allows that particular test suite to run.
      */
