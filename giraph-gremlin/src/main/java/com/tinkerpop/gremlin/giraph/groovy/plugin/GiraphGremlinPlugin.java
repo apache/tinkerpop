@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.giraph.hdfs.HDFSTools;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphMessenger;
 import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
-import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
+import com.tinkerpop.gremlin.giraph.structure.GiraphConfiguration;
 import com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONVertexInputFormat;
 import com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexInputFormat;
 import com.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
@@ -39,7 +39,7 @@ public class GiraphGremlinPlugin extends AbstractGremlinPlugin {
         add("import org.apache.hadoop.mapreduce.lib.input.*");
         add("import org.apache.hadoop.mapreduce.lib.output.*");
         add("import org.apache.log4j.*");
-        add(IMPORT_SPACE + GiraphGraph.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + GiraphConfiguration.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + GiraphMessenger.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + KryoVertexInputFormat.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + GraphSONVertexInputFormat.class.getPackage().getName() + DOT_STAR);

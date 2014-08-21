@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.giraph.groovy.plugin;
 import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.groovy.engine.function.GSSupplier;
+import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
@@ -24,19 +25,10 @@ import java.util.List;
  */
 public class GiraphRemoteAcceptor implements RemoteAcceptor {
 
-    private static final String PREFIX_SCRIPT =
-            "import " + GiraphGraph.class.getPackage().getName() + ".*\n" +
-                    "import " + GiraphComputerHelper.class.getPackage().getName() + ".*\n" +
-                    "g = GiraphGraph.open()\n" +
-                    "traversal = ";
-
-    private static final String POSTFIX_SCRIPT = "\nGiraphComputerHelper.prepareTraversalForComputer(traversal)\n" +
-            "traversal\n";
-
-    //TODO: might not always be 'g' cause of the variable bindings
-
     private GiraphGraph giraphGraph;
     private Groovysh shell;
+    private boolean useSugarPlugin = false;
+    private String graphVariable = "g";
 
     public GiraphRemoteAcceptor(final Groovysh shell) {
         this.shell = shell;
@@ -62,6 +54,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
                 final FileConfiguration configuration = new PropertiesConfiguration();
                 configuration.load(new File(args.get(0)));
                 this.giraphGraph = GiraphGraph.open(configuration);
+                this.graphVariable = args.get(1);
                 this.shell.getInterp().getContext().setProperty(args.get(1), this.giraphGraph);
             } catch (final Exception e) {
                 throw new RuntimeException(e.getMessage(), e);
@@ -74,7 +67,11 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object configure(final List<String> args) {
         for (int i = 0; i < args.size(); i = i + 2) {
-            this.giraphGraph.variables().getConfiguration().setProperty(args.get(i), args.get(i + 1));
+            if (args.get(i).equals("useSugar"))
+                this.useSugarPlugin = Boolean.valueOf(args.get(i + 1));
+            else {
+                this.giraphGraph.variables().getConfiguration().setProperty(args.get(i), args.get(i + 1));
+            }
         }
         return this.giraphGraph;
     }
@@ -82,7 +79,15 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object submit(final List<String> args) {
         try {
-            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(new GSSupplier<>(PREFIX_SCRIPT + args.get(0) + POSTFIX_SCRIPT)).create();
+            final StringBuilder builder = new StringBuilder();
+            if (this.useSugarPlugin)
+                builder.append(SugarLoader.class.getCanonicalName() + ".load()\n");
+            builder.append(this.graphVariable + " = " + GiraphGraph.class.getCanonicalName() + ".open()\n");
+            builder.append("traversal = " + args.get(0) + "\n");
+            builder.append(GiraphComputerHelper.class.getCanonicalName() + ".prepareTraversalForComputer(traversal)\n");
+            builder.append("traversal\n");
+
+            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(new GSSupplier<>(builder.toString(), false)).create();
             final ComputerResult result = this.giraphGraph.compute().program(vertexProgram).submit().get();
 
             this.shell.getInterp().getContext().setProperty("result", result);

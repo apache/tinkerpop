@@ -161,20 +161,20 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
     }
 
     private void loadJars(final FileSystem fs) {
-        final String giraphGremlinLibDirectory = "giraph-gremlin-lib";
+        final String giraphGremlinLibsRemote = "giraph-gremlin-libs";
         if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_JARS_IN_DISTRIBUTED_CACHE, true)) {
-            final String giraphGremlinHome = System.getenv(Constants.GIRAPH_GREMLIN_LIBS);
-            if (null == giraphGremlinHome)
+            final String giraphGremlinLibsLocal = System.getenv(Constants.GIRAPH_GREMLIN_LIBS);
+            if (null == giraphGremlinLibsLocal)
                 LOGGER.warn(Constants.GIRAPH_GREMLIN_LIBS + " is not set -- proceeding regardless.");
             else {
-                final File file = new File(giraphGremlinHome);
+                final File file = new File(giraphGremlinLibsLocal);
                 if (file.exists()) {
                     Arrays.asList(file.listFiles()).stream().filter(f -> f.getName().endsWith(Constants.DOT_JAR)).forEach(f -> {
                         try {
-                            // if (!fs.exists(new Path(fs.getHomeDirectory() + "/" + giraphGremlinLibDirectory + "/" + f.getName())))
-                            fs.copyFromLocalFile(new Path(f.getPath()), new Path(fs.getHomeDirectory() + "/" + giraphGremlinLibDirectory + "/" + f.getName()));
+                            final Path jarFile = new Path(fs.getHomeDirectory() + "/" + giraphGremlinLibsRemote + "/" + f.getName());
+                            fs.copyFromLocalFile(new Path(f.getPath()), jarFile);
                             try {
-                                DistributedCache.addArchiveToClassPath(new Path(fs.getHomeDirectory() + "/" + giraphGremlinLibDirectory + "/" + f.getName()), this.giraphConfiguration, fs);
+                                DistributedCache.addArchiveToClassPath(jarFile, this.giraphConfiguration, fs);
                             } catch (final Exception e) {
                                 throw new RuntimeException(e.getMessage(), e);
                             }

@@ -13,9 +13,13 @@ public class GSConsumer<A> extends GLambda implements SConsumer<A> {
         super(gremlinGroovyScript);
     }
 
+    public GSConsumer(final String gremlinGroovyScript, final boolean useStaticScriptEngine) {
+        super(gremlinGroovyScript, useStaticScriptEngine);
+    }
+
     public void accept(final A a) {
         try {
-            engine.eval(this.gremlinGroovyScript, makeBindings(a));
+            this.getEngine().eval(this.gremlinGroovyScript, makeBindings(a));
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

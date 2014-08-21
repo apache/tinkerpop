@@ -484,6 +484,8 @@ gremlin> result.memory.a
 
 NOTE: Distributed graph computations on cluster-sized graphs can yield an enormous number of results. To be safe, Giraph-Gremlin only returns up to 20 results to the console (with, of course, all the results being available in HDFS). If more results are desired, simply leverage `_l`.
 
+TIP: image:gremlin-sugar.png[width=50,float=left] For those wanting to use the <<sugar-plugin,SugarPlugin>> with their submitted traversal, simply `:remote config useSugar true`
+
 The results of the graph traversal are stored in HDFS accessible via `hdfs`.
 
 [source,text]

@@ -14,11 +14,18 @@ import java.util.List;
 public abstract class GLambda implements Serializable {
 
     protected final String gremlinGroovyScript;
-    protected final static GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+    private final static GremlinGroovyScriptEngine STATIC_ENGINE = new GremlinGroovyScriptEngine();
     private static final List<String> VARIABLE_NAME_ARRAY = Arrays.asList("a", "b", "c", "d", "e", "f", "g");
+    private final boolean useStaticScriptEngine;
 
     public GLambda(final String gremlinGroovyScript) {
         this.gremlinGroovyScript = gremlinGroovyScript;
+        this.useStaticScriptEngine = true;
+    }
+
+    public GLambda(final String gremlinGroovyScript, final boolean useStaticScriptEngine) {
+        this.gremlinGroovyScript = gremlinGroovyScript;
+        this.useStaticScriptEngine = useStaticScriptEngine;
     }
 
     public static Bindings makeBindings(final Object... objects) {
@@ -29,4 +36,7 @@ public abstract class GLambda implements Serializable {
         return bindings;
     }
 
+    public GremlinGroovyScriptEngine getEngine() {
+        return this.useStaticScriptEngine ? STATIC_ENGINE : new GremlinGroovyScriptEngine();
+    }
 }

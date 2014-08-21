@@ -10,28 +10,27 @@ import com.tinkerpop.gremlin.structure.Graph
  */
 class SugarLoader {
 
+    private static final String V = "V";
+    private static final String E = "E";
+
     public static void load() {
 
-        GraphTraversal.metaClass.propertyMissing = { final String name ->
-            if (GremlinLoader.isStep(name)) {
-                return delegate."$name"();
-            } else {
-                return ((GraphTraversal) delegate).value(name);
-            }
-        }
-
+        // g.V, g.E
         Graph.metaClass.propertyMissing = { final String name ->
-            if (GremlinLoader.isStep(name)) {
-                return delegate."$name"();
-            } else {
+            if (name.equals(V))
+                return ((Graph) delegate).V();
+            else if (name.equals(E))
+                return ((Graph) delegate).E();
+            else
                 throw new MissingPropertyException(name, delegate.getClass());
-            }
         }
 
+        // v.name = marko
         Element.metaClass.propertyMissing = { final String name, final def value ->
             ((Element) delegate).property(name, value)
         }
 
+        // v.name
         Element.metaClass.propertyMissing = { final String name ->
             if (GremlinLoader.isStep(name)) {
                 return delegate."$name"();
@@ -40,10 +39,21 @@ class SugarLoader {
             }
         }
 
+        // g.V.out.name
+        GraphTraversal.metaClass.propertyMissing = { final String name ->
+            if (GremlinLoader.isStep(name)) {
+                return delegate."$name"();
+            } else {
+                return ((GraphTraversal) delegate).value(name);
+            }
+        }
+
+        // g.V.map{it.name}
         Traverser.metaClass.propertyMissing = { final String name ->
             return ((Traverser) delegate).get()."$name";
         }
 
+        // g.V.map{it.label()}
         Traverser.metaClass.methodMissing = { final String name, final def args ->
             return ((Traverser) delegate).get()."$name"(*args);
         }

@@ -13,9 +13,13 @@ public class GSSupplier<A> extends GLambda implements SSupplier<A> {
         super(gremlinGroovyScript);
     }
 
+    public GSSupplier(final String gremlinGroovyScript, final boolean useStaticScriptEngine) {
+        super(gremlinGroovyScript, useStaticScriptEngine);
+    }
+
     public A get() {
         try {
-            return (A) this.engine.eval(this.gremlinGroovyScript);
+            return (A) this.getEngine().eval(this.gremlinGroovyScript);
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
