@@ -84,7 +84,7 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
     public void shouldWrapv() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-        assertTrue(swg.v(graphProvider.convertId(1)) instanceof StrategyWrappedVertex);
+        assertTrue(swg.v(convertToVertexId("marko")) instanceof StrategyWrappedVertex);
     }
 
     @Test
@@ -92,7 +92,7 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
     public void shouldWrape() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-        assertTrue(swg.e(graphProvider.convertId(11)) instanceof StrategyWrappedEdge);
+        assertTrue(swg.e(convertToEdgeId("josh", "created", "lop")) instanceof StrategyWrappedEdge);
     }
 
     @Test
@@ -100,8 +100,8 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
     public void shouldWrapvTraversalVertices() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-        assertEquals(3l, swg.v(graphProvider.convertId(1)).out().count().next().longValue());
-        swg.v(graphProvider.convertId(1)).out().sideEffect(e -> assertTrue(e.get() instanceof StrategyWrappedVertex)).iterate();
+        assertEquals(3l, swg.v(convertToVertexId("marko")).out().count().next().longValue());
+        swg.v(convertToVertexId("marko")).out().sideEffect(e -> assertTrue(e.get() instanceof StrategyWrappedVertex)).iterate();
     }
 
     @Test
@@ -109,8 +109,8 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
     public void shouldWrapvTraversalEdges() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-        assertEquals(3l, swg.v(graphProvider.convertId(1)).outE().count().next().longValue());
-        swg.v(graphProvider.convertId(1)).outE().sideEffect(e -> assertTrue(e.get() instanceof StrategyWrappedEdge)).iterate();
+        assertEquals(3l, swg.v(convertToVertexId("marko")).outE().count().next().longValue());
+        swg.v(convertToVertexId("marko")).outE().sideEffect(e -> assertTrue(e.get() instanceof StrategyWrappedEdge)).iterate();
     }
 
     @Test
@@ -118,8 +118,8 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
     public void shouldWrapvEdges() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-        assertTrue(swg.v(graphProvider.convertId(1)).edges(Direction.BOTH, 1).hasNext());
-        assertTrue(swg.v(graphProvider.convertId(1)).edges(Direction.BOTH, 1).next() instanceof StrategyWrappedEdge);
+        assertTrue(swg.v(convertToVertexId("marko")).edges(Direction.BOTH, 1).hasNext());
+        assertTrue(swg.v(convertToVertexId("marko")).edges(Direction.BOTH, 1).next() instanceof StrategyWrappedEdge);
     }
 
     @Test
@@ -127,8 +127,8 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
     public void shouldWrapvAdjacentVertices() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-        assertTrue(swg.v(graphProvider.convertId(1)).vertices(Direction.BOTH, 1).hasNext());
-        assertTrue(swg.v(graphProvider.convertId(1)).vertices(Direction.BOTH, 1).next() instanceof StrategyWrappedVertex);
+        assertTrue(swg.v(convertToVertexId("marko")).vertices(Direction.BOTH, 1).hasNext());
+        assertTrue(swg.v(convertToVertexId("marko")).vertices(Direction.BOTH, 1).next() instanceof StrategyWrappedVertex);
     }
 
     @Test
@@ -136,9 +136,10 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
     public void shouldWrapeDirectionVertices() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-        assertTrue(swg.e(graphProvider.convertId(11)).vertices(Direction.IN).hasNext());
-        assertTrue(swg.e(graphProvider.convertId(11)).vertices(Direction.IN).next() instanceof StrategyWrappedVertex);
-        assertTrue(swg.e(graphProvider.convertId(11)).vertices(Direction.OUT).hasNext());
-        assertTrue(swg.e(graphProvider.convertId(11)).vertices(Direction.OUT).next() instanceof StrategyWrappedVertex);
+        final Object id = convertToEdgeId("josh", "created", "lop");
+        assertTrue(swg.e(id).vertices(Direction.IN).hasNext());
+        assertTrue(swg.e(id).vertices(Direction.IN).next() instanceof StrategyWrappedVertex);
+        assertTrue(swg.e(id).vertices(Direction.OUT).hasNext());
+        assertTrue(swg.e(id).vertices(Direction.OUT).next() instanceof StrategyWrappedVertex);
     }
 }
