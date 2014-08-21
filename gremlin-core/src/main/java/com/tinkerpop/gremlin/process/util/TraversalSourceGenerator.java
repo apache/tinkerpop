@@ -10,6 +10,8 @@ import java.lang.reflect.TypeVariable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -38,7 +40,9 @@ public class TraversalSourceGenerator {
         builder.append("\t//// METHODS INHERITED FROM " + traversalToCloneClassName + " ////\n");
         builder.append("\t///////////////////////////////////////////////////////////////////////////////////\n\n");
 
-        for (final Method method : traversalToCloneClass.getMethods()) {
+        final List<Method> methods = Arrays.asList(traversalToCloneClass.getMethods());
+        Collections.sort(methods, (a, b) -> (a.getName() + a.getParameterCount()).compareTo((b.getName() + b.getParameterCount())));
+        for (final Method method : methods) {
             if (method.getReturnType().equals(traversalToCloneClass) && !Modifier.isStatic(method.getModifiers())) {
                 String methodName = sharedToGenericString(method);
                 methodName = methodName.replace(traversalToCloneClass.getCanonicalName(), resultTraversalClassName);
