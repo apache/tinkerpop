@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.neo4j.process.graph.step.map;
+package com.tinkerpop.gremlin.neo4j.process.graph.step.util;
 
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;

@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
-import com.tinkerpop.gremlin.giraph.process.graph.step.map.GiraphGraphStep;
+import com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect.GiraphGraphStep;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;

@@ -1,11 +1,10 @@
-package com.tinkerpop.gremlin.giraph.process.graph.step.map;
+package com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.giraph.hdfs.GiraphEdgeIterator;
 import com.tinkerpop.gremlin.giraph.hdfs.GiraphVertexIterator;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.step.map.GraphStep;
-import com.tinkerpop.gremlin.process.util.TraverserIterator;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 
@@ -21,16 +20,12 @@ public class GiraphGraphStep<E extends Element> extends GraphStep<E> {
         this.graph = graph;
     }
 
-    public void clear() {
-        this.starts.clear();
-    }
-
     public void generateTraverserIterator(final boolean trackPaths) {
-        this.starts.clear();
         try {
-            this.starts.add(new TraverserIterator(this, trackPaths, Vertex.class.isAssignableFrom(this.returnClass) ? new GiraphVertexIterator(this.graph) : new GiraphEdgeIterator(this.graph)));
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+            this.start = Vertex.class.isAssignableFrom(this.returnClass) ? new GiraphVertexIterator(this.graph) : new GiraphEdgeIterator(this.graph);
+            super.generateTraverserIterator(trackPaths);
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 }

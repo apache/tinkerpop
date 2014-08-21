@@ -47,7 +47,6 @@ public class KryoWritable<T> implements WritableComparable<KryoWritable> {
         } catch (final ClassNotFoundException e) {
             throw new IOException(e.getMessage(), e);
         }
-
         // TODO: Get Kryo to work
         //final Input in = new Input(new ByteArrayInputStream(objectBytes));
         //this.t = (T) Constants.KRYO.readClassAndObject(in);

@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.groovy.engine.function;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.step.map.ValueStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect.TinkerGraphStep;
 import com.tinkerpop.gremlin.util.Serializer;
 import com.tinkerpop.gremlin.util.function.SSupplier;
 import org.junit.Test;

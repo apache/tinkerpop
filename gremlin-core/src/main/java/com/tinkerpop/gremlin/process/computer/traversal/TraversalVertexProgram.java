@@ -2,21 +2,21 @@ package com.tinkerpop.gremlin.process.computer.traversal;
 
 import com.tinkerpop.gremlin.process.PathTraverser;
 import com.tinkerpop.gremlin.process.SimpleTraverser;
-import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
-import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.SideEffectCapComputerStep;
 import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraversalResultMapReduce;
 import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
-import com.tinkerpop.gremlin.process.graph.step.map.GraphStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
+import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -118,7 +118,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         final Traversal traversal = this.traversalSupplier.get();
         traversal.strategies().apply();
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
-        final String future = (traversal.getSteps().size() == 1) ? Traverser.NO_FUTURE : ((Step) traversal.getSteps().get(1)).getAs();
+        final String future = startStep.getNextStep().equals(EmptyStep.instance()) ? Traverser.NO_FUTURE : startStep.getNextStep().getAs();
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         if (Vertex.class.isAssignableFrom(startStep.returnClass)) {
             final Traverser<Vertex> traverser = this.trackPaths ?

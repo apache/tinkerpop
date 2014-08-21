@@ -1,11 +1,10 @@
-package com.tinkerpop.gremlin.neo4j.process.graph.step.map;
+package com.tinkerpop.gremlin.neo4j.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.step.map.GraphStep;
-import com.tinkerpop.gremlin.process.util.TraverserIterator;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -42,12 +41,8 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     }
 
     public void generateTraverserIterator(final boolean trackPaths) {
-        this.starts.clear();
-        this.starts.add(new TraverserIterator(this, trackPaths, Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
-    }
-
-    public void clear() {
-        this.starts.clear();
+        this.start = Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges();
+        super.generateTraverserIterator(trackPaths);
     }
 
     private Iterator<? extends Edge> edges() {

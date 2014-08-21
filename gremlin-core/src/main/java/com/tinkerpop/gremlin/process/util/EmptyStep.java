@@ -63,4 +63,8 @@ public class EmptyStep<S, E> implements Step<S, E> {
     public static <S, E> Step<S, E> instance() {
         return INSTANCE;
     }
+
+    public boolean equals(final Object object) {
+        return object instanceof EmptyStep;
+    }
 }

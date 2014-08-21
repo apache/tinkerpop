@@ -1,5 +1,6 @@
-package com.tinkerpop.gremlin.neo4j.process.graph.step.map;
+package com.tinkerpop.gremlin.neo4j.process.graph.step.sideEffect;
 
+import com.tinkerpop.gremlin.neo4j.process.graph.step.util.Neo4jCypherIterator;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;

@@ -30,11 +30,11 @@ public class GiraphMessenger implements Messenger<Serializable> {
         if (messageType instanceof MessageType.Local) {
             final MessageType.Local<Object, Double> localMessageType = (MessageType.Local) messageType;
             localMessageType.vertices(this.giraphInternalVertex.getTinkerVertex()).forEach(v ->
-                    this.giraphInternalVertex.sendMessage(new LongWritable(Long.valueOf(v.id().toString())), new KryoWritable(message)));
+                    this.giraphInternalVertex.sendMessage(new LongWritable(Long.valueOf(v.id().toString())), new KryoWritable<>(message)));
         } else {
             final MessageType.Global globalMessageType = (MessageType.Global) messageType;
             globalMessageType.vertices().forEach(v ->
-                    this.giraphInternalVertex.sendMessage(new LongWritable(Long.valueOf(v.id().toString())), new KryoWritable(message)));
+                    this.giraphInternalVertex.sendMessage(new LongWritable(Long.valueOf(v.id().toString())), new KryoWritable<>(message)));
         }
     }
 }

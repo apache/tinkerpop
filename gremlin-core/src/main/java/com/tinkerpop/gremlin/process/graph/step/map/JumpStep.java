@@ -28,6 +28,7 @@ public class JumpStep<S> extends AbstractStep<S, S> {
         this.emitPredicate = emitPredicate;
         this.jumpToStep = TraversalHelper.hasAs(this.jumpAs, this.traversal) ? TraversalHelper.getAs(this.jumpAs, this.traversal).getNextStep() : null;
         this.jumpBack = null != this.jumpToStep;
+        this.futureSetByChild = true;
     }
 
     public JumpStep(final Traversal traversal, final String jumpAs, final SPredicate<Traverser<S>> ifPredicate) {
@@ -42,6 +43,7 @@ public class JumpStep<S> extends AbstractStep<S, S> {
         this.emitPredicate = emitPredicate;
         this.jumpToStep = TraversalHelper.hasAs(this.jumpAs, this.traversal) ? TraversalHelper.getAs(this.jumpAs, this.traversal).getNextStep() : null;
         this.jumpBack = null != this.jumpToStep;
+        this.futureSetByChild = true;
     }
 
     public JumpStep(final Traversal traversal, final String jumpAs, final int loops) {
@@ -64,10 +66,12 @@ public class JumpStep<S> extends AbstractStep<S, S> {
                 if (this.emitPredicate != null && this.emitPredicate.test(traverser)) {
                     final Traverser<S> emitTraverser = traverser.makeSibling();
                     if (this.jumpBack) emitTraverser.resetLoops();
+                    emitTraverser.setFuture(this.getNextStep().getAs());
                     return emitTraverser;
                 }
             } else {
                 if (this.jumpBack) traverser.resetLoops();
+                traverser.setFuture(this.getNextStep().getAs());
                 return traverser;
             }
         }

@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.process.graph.step.util.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.IntervalStep;
 import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect.TinkerGraphStep;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

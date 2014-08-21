@@ -11,7 +11,7 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect.TinkerGraphStep;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 

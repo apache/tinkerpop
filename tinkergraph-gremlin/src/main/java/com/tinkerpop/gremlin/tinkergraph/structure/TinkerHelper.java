@@ -16,7 +16,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect.TinkerGraphStep;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerGraphStepStrategy;
 
 import java.util.ArrayList;

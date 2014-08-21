@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.neo4j.process.graph.strategy;
 
-import com.tinkerpop.gremlin.neo4j.process.graph.step.map.Neo4jGraphStep;
+import com.tinkerpop.gremlin.neo4j.process.graph.step.sideEffect.Neo4jGraphStep;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
