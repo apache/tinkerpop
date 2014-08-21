@@ -132,7 +132,10 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
             // it is possible to run graph computer without a vertex program (and thus, only map reduce jobs if they exist)
             if (null != this.vertexProgram) {
                 final GiraphJob job = new GiraphJob(this.giraphConfiguration, Constants.GIRAPH_GREMLIN_JOB_PREFIX + this.vertexProgram);
-                FileInputFormat.setInputPaths(job.getInternalJob(), new Path(this.giraphConfiguration.get(Constants.GREMLIN_INPUT_LOCATION)));
+                final Path inputPath = new Path(this.giraphConfiguration.get(Constants.GREMLIN_INPUT_LOCATION));
+                if (!FileSystem.get(this.giraphConfiguration).exists(inputPath))
+                    throw new IllegalArgumentException("The provided input path does not exist: " + inputPath);
+                FileInputFormat.setInputPaths(job.getInternalJob(), inputPath);
                 FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + Constants.TILDA_G));
                 // job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
                 LOGGER.info(Constants.GIRAPH_GREMLIN_JOB_PREFIX + this.vertexProgram);

@@ -103,6 +103,7 @@
                             <attach>false</attach>
                             <descriptors>
                                 <descriptor>src/assembly/standalone.xml</descriptor>
+                                <descriptor>src/assembly/hadoop-job.xml</descriptor>
                             </descriptors>
                             <finalName>${project.artifactId}-${project.version}</finalName>
                         </configuration>
