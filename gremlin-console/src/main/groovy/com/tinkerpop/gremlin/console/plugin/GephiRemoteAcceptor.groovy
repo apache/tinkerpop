@@ -183,9 +183,9 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
                     print("Visualizing vertices at step: $stepKey... ")
                     updateVisitedVertices()
                     int visitedCount = 0
-                    def optionalElements = traversal.sideEffects().get(stepKey)
-                    if (optionalElements.isPresent()) {
-                        optionalElements.get().each { element ->
+
+                    if (traversal.sideEffects().exists(stepKey)) {
+                        traversal.sideEffects().get(stepKey).each { element ->
                             visitVertexToGephi((Vertex) element)
                             visitedCount++
                         }
