@@ -18,26 +18,26 @@ import java.util.List;
  */
 public class StoreMapReduce implements MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
 
-    public static final String STORE_STEP_MEMORY_KEY = "gremlin.storeStep.memoryKey";
+    public static final String STORE_STEP_SIDE_EFFECT_KEY = "gremlin.storeStep.sideEffectKey";
 
-    private String memoryKey;
+    private String sideEffectKey;
 
     public StoreMapReduce() {
 
     }
 
     public StoreMapReduce(final StoreStep step) {
-        this.memoryKey = step.getMemoryKey();
+        this.sideEffectKey = step.getSideEffectKey();
     }
 
     @Override
     public void storeState(final Configuration configuration) {
-        configuration.setProperty(STORE_STEP_MEMORY_KEY, this.memoryKey);
+        configuration.setProperty(STORE_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
     }
 
     @Override
     public void loadState(final Configuration configuration) {
-        this.memoryKey = configuration.getString(STORE_STEP_MEMORY_KEY);
+        this.sideEffectKey = configuration.getString(STORE_STEP_SIDE_EFFECT_KEY);
     }
 
     @Override
@@ -47,20 +47,20 @@ public class StoreMapReduce implements MapReduce<MapReduce.NullObject, Object, M
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<NullObject, Object> emitter) {
-        final Property<Collection> storeProperty = vertex.property(Graph.Key.hide(this.memoryKey));
+        final Property<Collection> storeProperty = vertex.property(Graph.Key.hide(this.sideEffectKey));
         if (storeProperty.isPresent())
             storeProperty.value().forEach(object -> emitter.emit(NullObject.instance(), object));
     }
 
     @Override
-    public List<Object> generateMemoryValue(final Iterator<Pair<NullObject, Object>> keyValues) {
+    public List<Object> generateSideEffect(final Iterator<Pair<NullObject, Object>> keyValues) {
         final List<Object> result = new ArrayList<>();
         keyValues.forEachRemaining(pair -> result.add(pair.getValue1()));
         return result;
     }
 
     @Override
-    public String getMemoryKey() {
-        return this.memoryKey;
+    public String getSideEffectKey() {
+        return this.sideEffectKey;
     }
 }

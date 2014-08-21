@@ -69,7 +69,9 @@ Mutating the Graph
 
 Below is a sequence of basic graph mutation operations represented in Java8. One of the major differences between TinkerPop2 and TinkerPop3 is that in TinkerPop3, the Java convention of using setters and getters has been abandoned in favor of a syntax that is more aligned with the syntax of Gremlin-Groovy in TinkerPop2. Given that Gremlin-Java8 and Gremlin-Groovy are nearly identical due to the inclusion of Java8 lambdas, a big efforts was made to ensure that both languages are as similar as possible. 
 
-TIP: image:groovy-logo.png[width=175,float=left] Gremlin-Groovy leverages the link:http://groovy.codehaus.org/[Groovy 2.x language] to express Gremlin traversals. One of the major benefits of Groovy is the inclusion of a runtime console that makes it easy for developers to practice with the Gremlin language and for production users to connect to their graph and execute traversals in an interactive manner. Moreover, Gremlin-Groovy provides various syntax simplifications.
+IMPORTANT: image:groovy-logo.png[width=175,float=left] Gremlin-Groovy leverages the link:http://groovy.codehaus.org/[Groovy 2.x language] to express Gremlin traversals. One of the major benefits of Groovy is the inclusion of a runtime console that makes it easy for developers to practice with the Gremlin language and for production users to connect to their graph and execute traversals in an interactive manner. Moreover, Gremlin-Groovy provides various syntax simplifications.
+
+TIP: image:gremlin-sugar.png[width=100,float=left] For those wishing to use the Gremlin2 syntax, please see <<sugar-plugin,SugarPlugin>>. This plugin provides syntactic sugar at, typically, a runtime cost. It can be loaded programmaticaly via `SugarLoader.load()`. Once loaded, it is possible to do `g.V.out.name` instead of `g.V().out().value('name')` as well as a host of other niceities.
 
 CAUTION: In the code examples presented throughout this documentation, either Gremlin-Java8 or Gremlin-Groovy is used. Usually which derivative of Gremlin is being used is made explicit in the text, however, if not, a simple mouse over on the code block will state the language as either "JAVA" or "GROOVY."
 
@@ -206,20 +208,20 @@ Again, all steps extend either map, flatMap, or filter. Thus, the traversal abov
 IMPORTANT: The steps map, flatMap, and filter take a link:http://en.wikipedia.org/wiki/Anonymous_function[lambda function] (i.e. an anonymous function or closure). For map, the function must return an object. For flatMap, the function must return an iterator of objects. For filter, the function is a predicate that returns either true or false. The lambdas introduced by Java8 are supported in TinkerPop3.
 
 [source,groovy]
-marko
-  .filter{it.get().value('name') == 'marko'}
-  .flatMap{it.get().out('knows')}
-  .map{it.get().value('name')}
+marko.
+  filter{it.get().value('name') == 'marko'}.
+  flatMap{it.get().out('knows')}.
+  map{it.get().value('name')}
 ==>vadas
 ==>josh
 
 Finally, as a strictly academic exercise, the traversal can be written completely using flatMap.
 
 [source,groovy]
-marko
-  .flatMap{it.get().value('name') == 'marko' ? [it.get()].iterator() : [].iterator()}
-  .flatMap{it.get().out('knows')}
-  .flatMap{[it.get().value('name')].iterator()}
+marko.
+  flatMap{it.get().value('name') == 'marko' ? [it.get()].iterator() : [].iterator()}.
+  flatMap{it.get().out('knows')}.
+  flatMap{[it.get().value('name')].iterator()}
 ==>vadas
 ==>josh
 

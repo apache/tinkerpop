@@ -30,7 +30,7 @@ public class SideEffectCapMapReduce implements MapReduce {
     }
 
     public SideEffectCapMapReduce(final SideEffectCapComputerStep step) {
-        this.memoryKey = step.getMemoryKey();
+        this.memoryKey = step.getSideEffectKey();
         this.traversal = step.getTraversal();
     }
 
@@ -56,24 +56,24 @@ public class SideEffectCapMapReduce implements MapReduce {
     }
 
     @Override
-    public Object generateMemoryValue(final Iterator keyValues) {
+    public Object generateSideEffect(final Iterator keyValues) {
         return ((MapReducer) ((Stream<Step>) this.traversal.getSteps().stream())
                 .filter(step -> step instanceof MapReducer)
                 .filter(step -> !(step instanceof SideEffectCapComputerStep))
                 .filter(step -> step instanceof SideEffectCapable)
-                .filter(step -> ((SideEffectCapable) step).getMemoryKey().equals(this.memoryKey))
+                .filter(step -> ((SideEffectCapable) step).getSideEffectKey().equals(this.memoryKey))
                 .findFirst().get())
                 .getMapReduce()
-                .generateMemoryValue(keyValues);
+                .generateSideEffect(keyValues);
     }
 
     @Override
-    public void addToMemory(final Memory memory, final Iterator keyValues) {
+    public void addSideEffectToMemory(final Memory memory, final Iterator keyValues) {
 
     }
 
     @Override
-    public String getMemoryKey() {
+    public String getSideEffectKey() {
         return this.memoryKey;
     }
 }

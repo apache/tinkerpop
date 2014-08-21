@@ -22,15 +22,15 @@ public class TreeStep<S> extends SideEffectStep<S> implements Reversible, PathCo
 
     public Tree tree;
     public FunctionRing functionRing;
-    private final String memoryKey;
-    private final String hiddenMemoryKey;
+    private final String sideEffectKey;
+    private final String hiddenSideEffectKey;
 
-    public TreeStep(final Traversal traversal, final String memoryKey, final SFunction... branchFunctions) {
+    public TreeStep(final Traversal traversal, final String sideEffectKey, final SFunction... branchFunctions) {
         super(traversal);
-        this.memoryKey = null == memoryKey ? this.getAs() : memoryKey;
-        this.hiddenMemoryKey = Graph.Key.hide(this.memoryKey);
+        this.sideEffectKey = null == sideEffectKey ? this.getAs() : sideEffectKey;
+        this.hiddenSideEffectKey = Graph.Key.hide(this.sideEffectKey);
         this.functionRing = new FunctionRing(branchFunctions);
-        this.tree = traversal.sideEffects().getOrCreate(this.memoryKey, Tree::new);
+        this.tree = traversal.sideEffects().getOrCreate(this.sideEffectKey, Tree::new);
 
         this.setConsumer(traverser -> {
             Tree depth = this.tree;
@@ -45,14 +45,14 @@ public class TreeStep<S> extends SideEffectStep<S> implements Reversible, PathCo
         });
     }
 
-    public String getMemoryKey() {
-        return this.memoryKey;
+    public String getSideEffectKey() {
+        return this.sideEffectKey;
     }
 
     public void setCurrentVertex(final Vertex vertex) {
-        this.tree = vertex.<Tree>property(this.hiddenMemoryKey).orElse(new Tree());
-        if (!vertex.property(this.hiddenMemoryKey).isPresent())
-            vertex.property(this.hiddenMemoryKey, this.tree);
+        this.tree = vertex.<Tree>property(this.hiddenSideEffectKey).orElse(new Tree());
+        if (!vertex.property(this.hiddenSideEffectKey).isPresent())
+            vertex.property(this.hiddenSideEffectKey, this.tree);
     }
 
     public MapReduce<Object, Tree, Object, Tree, Tree> getMapReduce() {

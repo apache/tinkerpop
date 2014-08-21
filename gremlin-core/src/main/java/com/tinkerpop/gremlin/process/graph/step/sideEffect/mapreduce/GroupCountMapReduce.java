@@ -17,26 +17,26 @@ import java.util.Map;
  */
 public class GroupCountMapReduce implements MapReduce<Object, Long, Object, Long, Map<Object, Long>> {
 
-    public static final String GROUP_COUNT_STEP_MEMORY_KEY = "gremlin.groupCountStep.memoryKey";
+    public static final String GROUP_COUNT_STEP_SIDE_EFFECT_KEY = "gremlin.groupCountStep.sideEffectKey";
 
-    private String memoryKey;
+    private String sideEffectKey;
 
     public GroupCountMapReduce() {
 
     }
 
     public GroupCountMapReduce(final GroupCountStep step) {
-        this.memoryKey = step.getMemoryKey();
+        this.sideEffectKey = step.getSideEffectKey();
     }
 
     @Override
     public void storeState(final Configuration configuration) {
-        configuration.setProperty(GROUP_COUNT_STEP_MEMORY_KEY, this.memoryKey);
+        configuration.setProperty(GROUP_COUNT_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
     }
 
     @Override
     public void loadState(final Configuration configuration) {
-        this.memoryKey = configuration.getString(GROUP_COUNT_STEP_MEMORY_KEY);
+        this.sideEffectKey = configuration.getString(GROUP_COUNT_STEP_SIDE_EFFECT_KEY);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class GroupCountMapReduce implements MapReduce<Object, Long, Object, Long
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<Object, Long> emitter) {
-        final Property<Map<Object, Number>> groupCountProperty = vertex.property(Graph.Key.hide(this.memoryKey));
+        final Property<Map<Object, Number>> groupCountProperty = vertex.property(Graph.Key.hide(this.sideEffectKey));
         if (groupCountProperty.isPresent())
             groupCountProperty.value().forEach((k, v) -> emitter.emit(k, v.longValue()));
     }
@@ -66,14 +66,14 @@ public class GroupCountMapReduce implements MapReduce<Object, Long, Object, Long
     }
 
     @Override
-    public Map<Object, Long> generateMemoryValue(final Iterator<Pair<Object, Long>> keyValues) {
+    public Map<Object, Long> generateSideEffect(final Iterator<Pair<Object, Long>> keyValues) {
         final Map<Object, Long> result = new HashMap<>();
         keyValues.forEachRemaining(pair -> result.put(pair.getValue0(), pair.getValue1()));
         return result;
     }
 
     @Override
-    public String getMemoryKey() {
-        return this.memoryKey;
+    public String getSideEffectKey() {
+        return this.sideEffectKey;
     }
 }

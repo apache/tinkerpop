@@ -32,9 +32,9 @@ TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 * Added test suite to ensure that all traversals are of the same type: g.V, g.E, g.of(), v.identity(), e.identity(), v-, e-methods.
 * Giraph HDFS helpers now support `hdfs.mkdir(string)` and `local.mkdir(string)`
 * Added `@OptIn` and `@OptOut` for implementers to specify on their `Graph` implementations for test compliance information.
-* `GraphComputer` `SideEffects` now immutable after computation is complete.
+* `GraphComputer` `Memory` now immutable after computation is complete.
 * Dependency grabbing for plugins filter out slf4j logging dependencies so as to avoid multiple bindings with the standard TinkerPop distributions.
-* Fixed Giraph-Gremlin sideEffects to be fully consistent with GraphComputer specification.
+* Fixed `GiraphMemory` to be fully consistent with GraphComputer specification.
 * Removed fatJar assembly from Giraph-Graph as it is no longed needed with distributed cache model.
 * Reworked `GiraphRemoteAcceptor` to provide a `result` variable back to the console with `ComputerResult`.
 * `VertexProgram` is not longer `Serializable` (use `loadState` and `storeState` for wire-propagation).

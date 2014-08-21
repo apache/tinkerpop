@@ -17,11 +17,11 @@ import java.util.NoSuchElementException;
 public class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements SideEffectCap {
 
     private boolean done = false;
-    public String memoryKey;
+    public String sideEffectKey;
 
-    public SideEffectCapStep(final Traversal traversal, final String memoryKey) {
+    public SideEffectCapStep(final Traversal traversal, final String sideEffectKey) {
         super(traversal);
-        this.memoryKey = memoryKey;
+        this.sideEffectKey = sideEffectKey;
     }
 
     public Traverser<E> processNextStart() {
@@ -34,17 +34,17 @@ public class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements SideE
             } catch (final NoSuchElementException ignored) {
             }
             this.done = true;
-            return traverser.makeChild(this.getAs(), this.traversal.sideEffects().<E>get(this.memoryKey));
+            return traverser.makeChild(this.getAs(), this.traversal.sideEffects().<E>get(this.sideEffectKey));
         } else {
             throw FastNoSuchElementException.instance();
         }
     }
 
     public String toString() {
-        return Graph.Key.isHidden(this.memoryKey) ? super.toString() : TraversalHelper.makeStepString(this, this.memoryKey);
+        return Graph.Key.isHidden(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
     }
 
-    public String getMemoryKey() {
-        return this.memoryKey;
+    public String getSideEffectKey() {
+        return this.sideEffectKey;
     }
 }

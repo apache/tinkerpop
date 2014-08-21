@@ -30,15 +30,15 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCa
     Collection aggregate;
     final Queue<Traverser<S>> aggregateTraversers = new LinkedList<>();
     private long bulkCount = 1l;
-    private final String memoryKey;
-    private final String hiddenMemoryKey;
+    private final String sideEffectKey;
+    private final String hiddenSideEffectKey;
 
-    public AggregateStep(final Traversal traversal, final String memoryKey, final SFunction<S, ?> preAggregateFunction) {
+    public AggregateStep(final Traversal traversal, final String sideEffectKey, final SFunction<S, ?> preAggregateFunction) {
         super(traversal);
         this.preAggregateFunction = preAggregateFunction;
-        this.memoryKey = null == memoryKey ? this.getAs() : memoryKey;
-        this.hiddenMemoryKey = Graph.Key.hide(this.memoryKey);
-        this.aggregate = this.traversal.sideEffects().getOrCreate(this.memoryKey, ArrayList::new);
+        this.sideEffectKey = null == sideEffectKey ? this.getAs() : sideEffectKey;
+        this.hiddenSideEffectKey = Graph.Key.hide(this.sideEffectKey);
+        this.aggregate = this.traversal.sideEffects().getOrCreate(this.sideEffectKey, ArrayList::new);
     }
 
     public void setCurrentBulkCount(final long bulkCount) {
@@ -46,13 +46,13 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCa
     }
 
     public void setCurrentVertex(final Vertex vertex) {
-        this.aggregate = vertex.<Collection>property(this.hiddenMemoryKey).orElse(new ArrayList());
-        if (!vertex.property(this.hiddenMemoryKey).isPresent())
-            vertex.property(this.hiddenMemoryKey, this.aggregate);
+        this.aggregate = vertex.<Collection>property(this.hiddenSideEffectKey).orElse(new ArrayList());
+        if (!vertex.property(this.hiddenSideEffectKey).isPresent())
+            vertex.property(this.hiddenSideEffectKey, this.aggregate);
     }
 
-    public String getMemoryKey() {
-        return this.memoryKey;
+    public String getSideEffectKey() {
+        return this.sideEffectKey;
     }
 
     public MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> getMapReduce() {

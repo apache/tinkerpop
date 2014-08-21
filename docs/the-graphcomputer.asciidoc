@@ -303,7 +303,7 @@ In the OLAP traversal above, the traversal is put into a newly constructed `Trav
 The counters that are propagated around the graph are stored in a hidden property called `gremlin.traversalTracker`. When the computation is complete a MapReduce job executes which aggregates all the `groupCount` hidden `Map` properties on each vertex and generates a local copy of the Map (thus, turning the distributed Map representation into a local Map representation). The same OLAP traversal can be executed using the standard `g.compute()` model, though at the expense of verbosity.
 
 [source,groovy]
-gremlin> result = g.compute().program(TraversalVertexProgram.build().traversal(new GSSupplier("TinkerGraph.open().V.both.has('age').value('age').groupCount().as('a')")).create()).submit().get()
+gremlin> result = g.compute().program(TraversalVertexProgram.build().traversal(new GSSupplier("TinkerGraph.open().V().both().has('age').value('age').groupCount('a')")).create()).submit().get()
 ==>result[tinkergraph[vertices:6 edges:6],memory[size:3]]
 gremlin> result.memory.a
 ==>32=3
@@ -313,6 +313,6 @@ gremlin> result.memory.a
 gremlin> result.memory.iteration
 ==>6
 gremlin> result.memory.runtime
-==>19
+==>11
 
 CAUTION: When evaluating traversals that rely on path information (i.e. the history of the traversal), practical computational limits can be easily reached due the link:http://en.wikipedia.org/wiki/Combinatorial_explosion[combinatoric explosion] of data. With path computing enabled, every traverser is unique and thus, must be enumerated as opposed to counted. The difference being a collection of paths vs. a single 64-bit long at a single vertex. For more information on this concept, please see link:http://thinkaurelius.com/2012/11/11/faunus-provides-big-graph-data-analytics/[Faunus Provides Big Graph Data].

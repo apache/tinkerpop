@@ -75,7 +75,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
             traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
                 final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
                 this.mapReducers.add(mapReduce);
-                this.computeKeys.put(Graph.Key.hide(mapReduce.getMemoryKey()), KeyType.CONSTANT);
+                this.computeKeys.put(Graph.Key.hide(mapReduce.getSideEffectKey()), KeyType.CONSTANT);
             });
 
             if (!(TraversalHelper.getEnd(traversal) instanceof SideEffectCapComputerStep))

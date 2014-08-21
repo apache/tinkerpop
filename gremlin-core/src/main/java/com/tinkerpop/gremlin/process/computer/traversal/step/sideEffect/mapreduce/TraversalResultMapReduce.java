@@ -57,7 +57,7 @@ public class TraversalResultMapReduce implements MapReduce<MapReduce.NullObject,
     }
 
     @Override
-    public Iterator<Object> generateMemoryValue(final Iterator<Pair<MapReduce.NullObject, Object>> keyValues) {
+    public Iterator<Object> generateSideEffect(final Iterator<Pair<MapReduce.NullObject, Object>> keyValues) {
         return new Iterator<Object>() {
             public boolean hasNext() {
                 return keyValues.hasNext();
@@ -70,7 +70,7 @@ public class TraversalResultMapReduce implements MapReduce<MapReduce.NullObject,
     }
 
     @Override
-    public String getMemoryKey() {
+    public String getSideEffectKey() {
         return TRAVERSERS;
     }
 }
