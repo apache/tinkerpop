@@ -37,16 +37,37 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
 
     @Override
     public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
-        return this.baseVertex.vertices(direction, branchFactor, labels);
+        return new StrategyWrappedVertexIterator(this.baseVertex.vertices(direction, branchFactor, labels), this.strategyWrappedGraph);
     }
 
     @Override
     public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
-        return this.baseVertex.edges(direction, branchFactor, labels);
+        return new StrategyWrappedEdge.StrategyWrappedEdgeIterator(this.baseVertex.edges(direction, branchFactor, labels), this.strategyWrappedGraph);
     }
 
     @Override
     public GraphTraversal<Vertex, Vertex> start() {
         return applyStrategy(this.baseVertex.start());
+    }
+
+    public static class StrategyWrappedVertexIterator implements Iterator<Vertex> {
+        private final Iterator<Vertex> vertices;
+        private final StrategyWrappedGraph strategyWrappedGraph;
+
+        public StrategyWrappedVertexIterator(final Iterator<Vertex> itty,
+                                             final StrategyWrappedGraph strategyWrappedGraph) {
+            this.vertices = itty;
+            this.strategyWrappedGraph = strategyWrappedGraph;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return this.vertices.hasNext();
+        }
+
+        @Override
+        public Vertex next() {
+            return new StrategyWrappedVertex(this.vertices.next(), this.strategyWrappedGraph);
+        }
     }
 }
