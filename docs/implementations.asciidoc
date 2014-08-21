@@ -371,7 +371,7 @@ gremlin.memoryOutputFormatClass=org.apache.hadoop.mapreduce.lib.output.SequenceF
 gremlin.vertexProgram=com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
 gremlin.traversalVertexProgram.traversalSupplierClass=com.tinkerpop.gremlin.giraph.process.graph.example.TraversalSupplier1
 gremlin.jarsInDistributedCache=true
-gremlin.deriveComputerMemory=false
+gremlin.deriveMemory=false
 giraph.minWorkers=2
 giraph.maxWorkers=2
 
@@ -389,7 +389,7 @@ A review of the properties above are presented in the table below.
 |gremlin.vertexProgram |The `VertexProgram` to distribute to all vertices in the `GiraphGraph`
 |gremlin.traversalVertexProgram.traversalSupplierClass |For `TraversalVertexProgram`, the location of the Gremlin traversal to use (if not using Gremlin Console).
 |gremlin.jarsInDistributedCache |Whether to upload the Giraph-Gremlin jars to Hadoop's distributed cache (necessary if jars are not on machines' classpaths).
-|gremlin.deriveComputerMemory |Whether or not `Memory` is yielded (requires an extra MapReduce job if true).
+|gremlin.deriveMemory |Whether or not `Memory` is yielded (requires an extra MapReduce job if true).
 |giraph.minWorkers |The minimum number of parallel workers to execute the vertices of the graph.
 |giraph.maxWorkers |The maximum number of parallel workers to execute the vertices of the graph.
 |=========================================================

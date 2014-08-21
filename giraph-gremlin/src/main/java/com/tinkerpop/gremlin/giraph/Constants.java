@@ -15,7 +15,6 @@ public class Constants {
         KRYO.register(RuleWritable.Rule.class, 1000000);
         KRYO.register(MapReduce.NullObject.class, 1000001);
     }
-    // Do we need a static with class loading here?
 
     public static final String CONFIGURATION = "configuration";
     public static final String GREMLIN_INPUT_LOCATION = "gremlin.inputLocation";
@@ -27,7 +26,7 @@ public class Constants {
     public static final String GIRAPH_GREMLIN_JOB_PREFIX = "GiraphGremlin: ";
     public static final String GIRAPH_GREMLIN_LIBS = "GIRAPH_GREMLIN_LIBS";
     public static final String DOT_JAR = ".jar";
-    public static final String GREMLIN_DERIVE_COMPUTER_MEMORY = "gremlin.deriveComputerMemory";
+    public static final String GREMLIN_DERIVE_MEMORY = "gremlin.deriveMemory";
     public static final String GREMLIN_MEMORY_OUTPUT_FORMAT_CLASS = "gremlin.memoryOutputFormatClass";
     public static final String TILDA_MEMORY = "~memory";
     public static final String RUNTIME = "runtime";

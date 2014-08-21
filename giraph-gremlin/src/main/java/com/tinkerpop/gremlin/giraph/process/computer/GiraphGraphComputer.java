@@ -142,7 +142,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
                 job.run(true);
                 this.mapReduces.addAll(this.vertexProgram.getMapReducers());
                 // calculate main vertex program memory if desired (costs one mapreduce job)
-                if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_DERIVE_COMPUTER_MEMORY, false)) {
+                if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_DERIVE_MEMORY, false)) {
                     final Set<String> memoryKeys = new HashSet<String>(this.vertexProgram.getMemoryComputeKeys());
                     memoryKeys.add(Constants.ITERATION);
                     this.giraphConfiguration.setStrings(Constants.GREMLIN_MEMORY_KEYS, (String[]) memoryKeys.toArray(new String[memoryKeys.size()]));

@@ -118,7 +118,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         final Traversal traversal = this.traversalSupplier.get();
         traversal.strategies().apply();
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
-        final String future = startStep.getNextStep().equals(EmptyStep.instance()) ? Traverser.NO_FUTURE : startStep.getNextStep().getAs();
+        final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.NO_FUTURE : startStep.getNextStep().getAs();
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         if (Vertex.class.isAssignableFrom(startStep.returnClass)) {
             final Traverser<Vertex> traverser = this.trackPaths ?
@@ -186,7 +186,9 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + this.traversalSupplier.get().toString();
+        final Traversal traversal = this.traversalSupplier.get();
+        traversal.strategies().apply();
+        return this.getClass().getSimpleName() + traversal.toString();
     }
 
     public SSupplier<Traversal> getTraversalSupplier() {
@@ -229,7 +231,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         }
 
         public Builder traversal(final Class<SSupplier<Traversal>> traversalSupplierClass) {
-            this.configuration.setProperty(TRAVERSAL_SUPPLIER_CLASS, traversalSupplierClass);
+            this.configuration.setProperty(TRAVERSAL_SUPPLIER_CLASS, traversalSupplierClass.getCanonicalName());
             return this;
         }
 
