@@ -45,36 +45,6 @@ import java.util.Optional;
         test = "com.tinkerpop.gremlin.process.computer.GraphComputerTest",
         method = "shouldRequireRegisteringMemoryKeys",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
-@Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphTest$JavaSubgraphTest",
-        method = "g_v1_outE_subgraphXknowsX",
-        reason = "This test directly adds vertices/edges. Giraph does not support those methods of directly adding graph elements.")
-@Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphTest$JavaSubgraphTest",
-        method = "g_V_inE_subgraphXcreatedX_name",
-        reason = "This test directly adds vertices/edges. Giraph does not support those methods of directly adding graph elements.")
-@Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeTest$JavaAddEdgeTest",
-        method = "g_v1_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX",
-        reason = "This test directly adds vertices/edges. Giraph does not support those methods of directly adding graph elements.")
-@Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeTest$JavaAddEdgeTest",
-        method = "g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_aX",
-        reason = "This test directly adds vertices/edges. Giraph does not support those methods of directly adding graph elements.")
-@Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeTest$JavaAddEdgeTest",
-        method = "g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X",
-        reason = "This test directly adds vertices/edges. Giraph does not support those methods of directly adding graph elements.")
-@Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.filter.HasTest$JavaHasTest",
-        method = "g_V_hasXlabelXperson_animalX",
-        reason = "This test directly adds vertices/edges. Giraph does not support those methods of directly adding graph elements.")
-@Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.filter.HasTest$JavaHasTest",
-        method = "g_E_hasXlabelXknows_createdX",
-        reason = "This test directly adds vertices/edges. Giraph does not support those methods of directly adding graph elements.")
-@Graph.FeatureOverride(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-@Graph.FeatureOverride(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
 public class GiraphGraph implements Graph, Serializable {
 
     protected final GiraphGraphVariables variables;

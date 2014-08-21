@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.filter;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
+import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
@@ -8,6 +9,7 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
@@ -164,6 +166,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(CLASSIC_DOUBLE)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void g_E_hasXlabelXknows_createdX() {
         final Vertex marko = (Vertex) g.V().has("name", "marko").next();
         marko.addEdge("self", marko);
