@@ -3,6 +3,9 @@ package com.tinkerpop.gremlin.structure.strategy;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
+import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -58,5 +61,84 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
         assertTrue(toRemove.property("deleted").isPresent());
     }
 
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    public void shouldWrapETraversalEdges() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
+        assertEquals(6l, swg.E().count().next().longValue());
+        swg.E().sideEffect(e -> assertTrue(e.get() instanceof StrategyWrappedEdge)).iterate();
+    }
 
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    public void shouldWrapVTraversalVertices() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
+        assertEquals(6l, swg.V().count().next().longValue());
+        swg.V().sideEffect(e -> assertTrue(e.get() instanceof StrategyWrappedVertex)).iterate();
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    public void shouldWrapv() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
+        assertTrue(swg.v(graphProvider.convertId(1)) instanceof StrategyWrappedVertex);
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    public void shouldWrape() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
+        assertTrue(swg.e(graphProvider.convertId(11)) instanceof StrategyWrappedEdge);
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    public void shouldWrapvTraversalVertices() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
+        assertEquals(3l, swg.v(graphProvider.convertId(1)).out().count().next().longValue());
+        swg.v(graphProvider.convertId(1)).out().sideEffect(e -> assertTrue(e.get() instanceof StrategyWrappedVertex)).iterate();
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    public void shouldWrapvTraversalEdges() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
+        assertEquals(3l, swg.v(graphProvider.convertId(1)).outE().count().next().longValue());
+        swg.v(graphProvider.convertId(1)).outE().sideEffect(e -> assertTrue(e.get() instanceof StrategyWrappedEdge)).iterate();
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    public void shouldWrapvEdges() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
+        assertTrue(swg.v(graphProvider.convertId(1)).edges(Direction.BOTH, 1).hasNext());
+        assertTrue(swg.v(graphProvider.convertId(1)).edges(Direction.BOTH, 1).next() instanceof StrategyWrappedEdge);
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    public void shouldWrapvAdjacentVertices() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
+        assertTrue(swg.v(graphProvider.convertId(1)).vertices(Direction.BOTH, 1).hasNext());
+        assertTrue(swg.v(graphProvider.convertId(1)).vertices(Direction.BOTH, 1).next() instanceof StrategyWrappedVertex);
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    public void shouldWrapeDirectionVertices() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
+        assertTrue(swg.e(graphProvider.convertId(11)).vertices(Direction.IN).hasNext());
+        assertTrue(swg.e(graphProvider.convertId(11)).vertices(Direction.IN).next() instanceof StrategyWrappedVertex);
+        assertTrue(swg.e(graphProvider.convertId(11)).vertices(Direction.OUT).hasNext());
+        assertTrue(swg.e(graphProvider.convertId(11)).vertices(Direction.OUT).next() instanceof StrategyWrappedVertex);
+    }
 }
