@@ -9,6 +9,11 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* The Gephi Plugin now visualizes traversals and has numerous configuration options.
+* Add more specific features around the types of "identifiers" a graph can support.
+* Add a new test graph called `CLASSIC_DOUBLE` that is copy of the `CLASSIC` graph, but represents floats as doubles.  This graph will be the default graph for testing going forward.
+* Fix bug in `Neo4jGraph` that was not processing multiple vertex labels properly when doing a `has()` step with `IN`.
+* Changed semantics of `@LoadGraphWith` in gremlin-test to only refer to the ability of a test implementation to process the data types of the test graph (not to actually load it).
 * `StartStep` is a `SideEffect` as it is a process to get data into the stream (like a keyboard) and more efficient as such.
 * Greatly simplified the implementations of `Map`, `FlatMap`, `Filter`, and `SideEffect`.
 * `Path` data structure changed to an ordered list of objects with each associated to a `Set<String>` of as-labels.
