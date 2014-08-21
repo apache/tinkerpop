@@ -435,7 +435,7 @@ gremlin> r = LegacyGraphSONReader.build().create()
 ==>com.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader@64337702
 gremlin> r.readGraph(new FileInputStream('/tmp/tp2.json'),g)
 ==>null
-gremlin> g.E
+gremlin> g.E()
 ==>e[11][4-created->3]
 ==>e[12][6-created->3]
 ==>e[7][1-knows->2]

@@ -10,7 +10,7 @@ class GroovySelectTestImpl extends SelectTest {
 
     @Override
     public Traversal<Vertex, Map<String, Vertex>> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
-        g.v(v1Id).as('a').out('knows').as('b').select
+        g.v(v1Id).as('a').out('knows').as('b').select()
     }
 
     @Override

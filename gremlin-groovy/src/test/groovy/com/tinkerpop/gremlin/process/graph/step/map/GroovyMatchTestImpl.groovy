@@ -11,12 +11,12 @@ class GroovyMatchTestImpl extends MatchTest {
 
     @Override
     public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_out_bX() {
-        g.V.match('a', g.of().as('a').out.as('b'));
+        g.V().match('a', g.of().as('a').out().as('b'));
     }
 
     @Override
     public Traversal<Vertex, Object> get_g_V_matchXa_out_bX_selectXb_idX() {
-        g.V.match('a', g.of().as('a').out.as('b')).select('b') { it.id };
+        g.V().match('a', g.of().as('a').out().as('b')).select('b') { it.id() };
     }
 
     @Override
@@ -41,17 +41,17 @@ class GroovyMatchTestImpl extends MatchTest {
                 g.of().as('a').out('knows').as('b'),
                 g.of().as('b').out('created').as('c'));
     }
-    
+
     @Override
     public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_out_jump2_bX_selectXab_nameX() {
-        g.V.match('a',
+        g.V().match('a',
                 g.of().as('a').out('created').as('b'),
                 g.of().as('a').out().jump('a', 2).as('b')).select(['a', 'b']) { it.value('name') }
     }
 
     @Override
     public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_lop_b__b_0created_29_c__c_out_jump2_cX_selectXnameX() {
-        g.V.match('a',
+        g.V().match('a',
                 g.of().as('a').out('created').has('name', 'lop').as('b'),
                 g.of().as('b').in('created').has('age', 29).as('c'),
                 g.of().as('c').out().jump('c') { it.loops < 2 }).select { it.value('name') }
@@ -59,14 +59,14 @@ class GroovyMatchTestImpl extends MatchTest {
 
     @Override
     public Traversal<Vertex, String> get_g_V_out_out_matchXa_0created_b__b_0knows_cX_selectXcX_outXcreatedX_name() {
-        g.V.out.out.match('a',
+        g.V().out().out().match('a',
                 g.of().as('a').in('created').as('b'),
-                g.of().as('b').in('knows').as('c')).select('c').out('created').name
+                g.of().as('b').in('knows').as('c')).select('c').out('created').value('name')
     }
 
     @Override
     public Traversal<Vertex, Map<String, Object>> get_g_V_matchXa_created_b__b_0created_aX() {
-        g.V.match('a',
+        g.V().match('a',
                 g.of().as('a').out('created').as('b'),
                 g.of().as('b').in('created').as('a'))
     }
@@ -76,10 +76,10 @@ class GroovyMatchTestImpl extends MatchTest {
         return g.V().match('a', g.of().as('a').out('knows').as('b'),
                 g.of().as('c').out('knows').as('b'));
     }
-    
+
     @Override
     public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_knows_b__b_created_lop__b_matchXa1_created_b1__b1_0created_c1X_selectXc1X_cX_selectXnameX() {
-        g.V.match('a',
+        g.V().match('a',
                 g.of().as('a').out('knows').as('b'),
                 g.of().as('b').out('created').has('name', 'lop'),
                 g.of().as('b').match('a1',
@@ -115,7 +115,7 @@ class GroovyMatchTestImpl extends MatchTest {
                 g.of().as('c').out('sungBy').as('d'),
                 g.of().as('d').has('name', 'Garcia'));
     }
-    
+
     /*@Override
     public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__c_created_bX_selectXnameX() {
         g.V.match('a',

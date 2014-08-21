@@ -13,7 +13,7 @@ class GroovyChooseTestImpl extends ChooseTest {
     public Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name() {
         return g.V().choose({ it.get().value('name').length() == 5 },
                 g.of().out(),
-                g.of().in()).name;
+                g.of().in()).value('name');
     }
 
     @Override
@@ -26,12 +26,12 @@ class GroovyChooseTestImpl extends ChooseTest {
         return g.V().has('age').choose({ it.get().value('name').length() },
                 [5: g.of().in(),
                  4: g.of().out(),
-                 3: g.of().both()]).name;
+                 3: g.of().both()]).value('name');
     }
 
     @Override
     public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_valueXnameX_3L_valuesX() {
-        return g.V.choose({it.get().out().count().next();},[
+        return g.V().choose({it.get().out().count().next();},[
             2L:g.of().value("name"),
             3L:g.of().values()])
     }

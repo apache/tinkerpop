@@ -181,7 +181,7 @@ $ bin/gremlin.sh
 -----oOOo-(3)-oOOo-----
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> g.V().has('name','marko').out('knows').name
+gremlin> g.V().has('name','marko').out('knows').value('name')
 ==>vadas
 ==>josh
 ----
@@ -194,7 +194,7 @@ gremlin> marko = g.v(1)
 gremlin> marko.out('knows') <1>
 ==>v[2]
 ==>v[4]
-gremlin> marko.out('knows').name <2>
+gremlin> marko.out('knows').value('name') <2>
 ==>vadas
 ==>josh
 
@@ -235,7 +235,7 @@ image::traversal-mechanics.png[width=500]
 In TinkerPop3, the objects propagating through the traversal are wrapped in a `Traverser<T>`. The traverser concept is new to TinkerPop3 and provides the means by which steps remain stateless. A traverser maintains all the metadata about the traversal -- e.g., how many times the traverser has gone through a loop, the path history of the traverser, the current object being traversed, etc. Traverser metadata may be accessed by a step. A classic example is the `path()`-step.
 
 [source,groovy]
-marko.out('knows').name.path
+marko.out('knows').value('name').path()
 ==>[v[1], v[2], vadas]
 ==>[v[1], v[4], josh]
 
@@ -244,7 +244,7 @@ CAUTION: Path calculation is costly in terms of space as an array of previously 
 Another example is the `jump()`-step which takes into account the number of times the traverser has gone through a particular section of the traversal expression.
 
 [source,groovy]
-marko.as('a').out.jump('a',2).name
+marko.as('a').out().jump('a',2).value('name')
 ==>ripple
 ==>lop
 

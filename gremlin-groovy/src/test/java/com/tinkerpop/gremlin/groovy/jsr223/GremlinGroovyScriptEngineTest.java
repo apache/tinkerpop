@@ -48,7 +48,7 @@ public class GremlinGroovyScriptEngineTest {
         engine.put("g", TinkerFactory.createClassic());
         engine.put("list", list);
         assertEquals(list.size(), 0);
-        engine.eval("g.v(1).out.fill(list)");
+        engine.eval("g.v(1).out().fill(list)");
         assertEquals(list.size(), 3);
     }
 
@@ -64,7 +64,7 @@ public class GremlinGroovyScriptEngineTest {
 
         final ScriptEngine engineWithImports = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider());
         assertEquals(Vertex.class.getName(), engineWithImports.eval("Vertex.class.getName()"));
-        assertEquals(2l, engineWithImports.eval("TinkerFactory.createClassic().V.has('age',T.gt,30).count().next()"));
+        assertEquals(2l, engineWithImports.eval("TinkerFactory.createClassic().V().has('age',T.gt,30).count().next()"));
         assertEquals(Direction.IN, engineWithImports.eval("Direction.IN"));
         assertEquals(Direction.OUT, engineWithImports.eval("Direction.OUT"));
         assertEquals(Direction.BOTH, engineWithImports.eval("Direction.BOTH"));
@@ -87,12 +87,12 @@ public class GremlinGroovyScriptEngineTest {
         bindings.put("l", 100l);
         bindings.put("d", 1.55555d);
 
-        assertEquals(engine.eval("g.E.has('weight',f).next()", bindings), g.e(7));
-        assertEquals(engine.eval("g.V.has('name',s).next()", bindings), g.v(1));
-        assertEquals(engine.eval("g.V.sideEffect{it.get().property('bbb',it.get().value('name')=='marko')}.iterate();g.V.has('bbb',b).next()", bindings), g.v(1));
-        assertEquals(engine.eval("g.V.sideEffect{it.get().property('iii',it.get().value('name')=='marko'?1:0)}.iterate();g.V.has('iii',i).next()", bindings), g.v(1));
-        assertEquals(engine.eval("g.V.sideEffect{it.get().property('lll',it.get().value('name')=='marko'?100l:0l)}.iterate();g.V.has('lll',l).next()", bindings), g.v(1));
-        assertEquals(engine.eval("g.V.sideEffect{it.get().property('ddd',it.get().value('name')=='marko'?1.55555d:0)}.iterate();g.V.has('ddd',d).next()", bindings), g.v(1));
+        assertEquals(engine.eval("g.E().has('weight',f).next()", bindings), g.e(7));
+        assertEquals(engine.eval("g.V().has('name',s).next()", bindings), g.v(1));
+        assertEquals(engine.eval("g.V().sideEffect{it.get().property('bbb',it.get().value('name')=='marko')}.iterate();g.V().has('bbb',b).next()", bindings), g.v(1));
+        assertEquals(engine.eval("g.V().sideEffect{it.get().property('iii',it.get().value('name')=='marko'?1:0)}.iterate();g.V().has('iii',i).next()", bindings), g.v(1));
+        assertEquals(engine.eval("g.V().sideEffect{it.get().property('lll',it.get().value('name')=='marko'?100l:0l)}.iterate();g.V().has('lll',l).next()", bindings), g.v(1));
+        assertEquals(engine.eval("g.V().sideEffect{it.get().property('ddd',it.get().value('name')=='marko'?1.55555d:0)}.iterate();g.V().has('ddd',d).next()", bindings), g.v(1));
     }
 
     @Test
@@ -112,7 +112,7 @@ public class GremlinGroovyScriptEngineTest {
                         final Bindings bindings = engine.createBindings();
                         bindings.put("g", TinkerFactory.createClassic());
                         bindings.put("name", name);
-                        final Object result = engine.eval("t = g.V.has('name',name); if(t.hasNext()) { t.out.count() } else { null }", bindings);
+                        final Object result = engine.eval("t = g.V().has('name',name); if(t.hasNext()) { t.out().count() } else { null }", bindings);
                         if (name.equals("stephen") || name.equals("pavel") || name.equals("matthias"))
                             assertNull(result);
                         else
@@ -130,7 +130,7 @@ public class GremlinGroovyScriptEngineTest {
     @Test
     public void shouldBeThreadSafeOnCompiledScript() throws Exception {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
-        final CompiledScript script = engine.compile("t = g.V.has('name',name); if(t.hasNext()) { t.out.count() } else { null }");
+        final CompiledScript script = engine.compile("t = g.V().has('name',name); if(t.hasNext()) { t.out().count() } else { null }");
 
         int runs = 500;
         final CountDownLatch latch = new CountDownLatch(runs);
@@ -168,10 +168,10 @@ public class GremlinGroovyScriptEngineTest {
         final Graph g = TinkerFactory.createClassic();
 
         final String[] gremlins = new String[]{
-                "g.v(xxx).out.toList()",
-                "g.v(xxx).in.toList()",
-                "g.v(xxx).out.out.out.toList()",
-                "g.v(xxx).out.groupCount()"
+                "g.v(xxx).out().toList()",
+                "g.v(xxx).in().toList()",
+                "g.v(xxx).out().out().out().toList()",
+                "g.v(xxx).out().groupCount()"
         };
 
         long parameterizedStartTime = System.currentTimeMillis();
@@ -260,7 +260,7 @@ public class GremlinGroovyScriptEngineTest {
 
         // this works on its own when the function and the line that uses it is in one "script".  this is the
         // current workaround
-        assertEquals(g.v(2), engine.eval("def isVadas(v){v.value('name')=='vadas'};g.V.filter{isVadas(it.get())}.next()", bindings));
+        assertEquals(g.v(2), engine.eval("def isVadas(v){v.value('name')=='vadas'};g.V().filter{isVadas(it.get())}.next()", bindings));
 
         // let's reset this piece and make sure isVadas is not hanging around.
         engine.reset();
@@ -283,7 +283,7 @@ public class GremlinGroovyScriptEngineTest {
         assertEquals(true, engine.eval("isVadas(g.v(2))", bindings));
 
         // make sure the function works in a closure...this generates a StackOverflowError
-        assertEquals(g.v(2), engine.eval("g.V.filter{isVadas(it.get())}.next()", bindings));
+        assertEquals(g.v(2), engine.eval("g.V().filter{isVadas(it.get())}.next()", bindings));
     }
 
     @Test

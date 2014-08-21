@@ -12,14 +12,6 @@ class StepLoader {
 
     public static void load() {
 
-        GraphTraversal.metaClass.propertyMissing = { final String name ->
-            if (GremlinLoader.isStep(name)) {
-                return delegate."$name"();
-            } else {
-                return ((GraphTraversal) delegate).value(name);
-            }
-        }
-
         [Iterable, Iterator].each {
             it.metaClass.mean = {
                 double counter = 0;

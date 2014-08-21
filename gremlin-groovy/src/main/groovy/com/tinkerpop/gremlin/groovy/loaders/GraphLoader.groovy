@@ -16,22 +16,6 @@ class GraphLoader {
 
     public static void load() {
 
-        Graph.metaClass.propertyMissing = { final String name ->
-            if (GremlinLoader.isStep(name)) {
-                return delegate."$name"();
-            } else {
-                throw new MissingPropertyException(name, delegate.getClass());
-            }
-        }
-
-        Element.metaClass.propertyMissing = { final String name ->
-            if (GremlinLoader.isStep(name)) {
-                return delegate."$name"();
-            } else {
-                throw new MissingPropertyException(name, delegate.getClass());
-            }
-        }
-
         // GraphML loading and saving
         Graph.metaClass.loadGraphML = { final def fileObject ->
             final GraphMLReader reader = GraphMLReader.build().create();

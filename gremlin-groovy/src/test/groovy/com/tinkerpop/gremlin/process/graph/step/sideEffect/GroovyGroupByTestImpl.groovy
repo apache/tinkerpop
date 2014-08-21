@@ -10,17 +10,17 @@ class GroovyGroupByTestImpl extends GroupByTest {
 
     @Override
     public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_groupByXnameX() {
-        g.V.groupBy { it.value('name') }
+        g.V().groupBy { it.value('name') }
     }
 
     @Override
     public Traversal<Vertex, Map<String, List<String>>> get_g_V_hasXlangX_groupByXa_lang_nameX_out_capXaX() {
-        g.V.has('lang').groupBy('a') { it.value('lang') } { it.value('name') }.out.cap('a')
+        g.V().has('lang').groupBy('a') { it.value('lang') } { it.value('name') }.out().cap('a')
     }
 
     @Override
     public Traversal<Vertex, Map<String, Integer>> get_g_V_hasXlangX_groupByXlang_1_sizeX() {
-        g.V.has('lang').groupBy { it.value('lang') } { 1 } { it.size() }
+        g.V().has('lang').groupBy { it.value('lang') } { 1 } { it.size() }
     }
 
     @Override

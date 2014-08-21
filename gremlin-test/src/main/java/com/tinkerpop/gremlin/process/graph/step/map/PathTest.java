@@ -36,7 +36,6 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         printTraversalForm(traversal);
         final Path path = traversal.next();
         assertFalse(traversal.hasNext());
-        System.out.println("!!!!!!!!" + path);
         assertEquals(2, path.size());
         assertEquals(convertToVertexId("marko"), ((Vertex) path.get(0)).<String>id());
         assertEquals("marko", path.<String>get(1));

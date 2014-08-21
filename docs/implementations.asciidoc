@@ -226,7 +226,7 @@ gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
 gremlin> g.loadGraphML('data/grateful-dead.xml')
 ==>null
-gremlin> clock(1000){g.V.has('name','Garcia').next()}
+gremlin> clock(1000){g.V().has('name','Garcia').next()}
 ==>0.11787599999999974  <1>
 gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
@@ -234,7 +234,7 @@ gremlin> g.createIndex('name',Vertex.class)
 ==>null
 gremlin> g.loadGraphML('data/grateful-dead.xml')
 ==>null
-gremlin> clock(1000){g.V.has('name','Garcia').next()}
+gremlin> clock(1000){g.V().has('name','Garcia').next()}
 ==>0.03508100000000018 <2>
 
 <1> Average runtime of 1000 vertex lookups when no `name`-index is defined.
@@ -289,11 +289,11 @@ gremlin> g.loadKryo('data/tinkerpop-classic.gio')
 ==>null
 gremlin> g.cypher('MATCH (a {name:"marko"}) RETURN a')
 ==>[a:v[0]]
-gremlin> g.cypher('MATCH (a {name:"marko"}) RETURN a').select('a').out('knows').name
+gremlin> g.cypher('MATCH (a {name:"marko"}) RETURN a').select('a').out('knows').value('name')
 ==>vadas
 ==>josh
-gremlin> g.cypher("MATCH (n{name:'marko'})-[:knows]->(m) RETURN m").select('m').id.fold.
-             cypher("MATCH (m)-[:created]->(n) WHERE id(m) in {start} RETURN n").select("n").name
+gremlin> g.cypher("MATCH (n{name:'marko'})-[:knows]->(m) RETURN m").select('m').id().fold().
+             cypher("MATCH (m)-[:created]->(n) WHERE id(m) in {start} RETURN n").select('n').value('name')
 ==>lop
 ==>ripple
 
@@ -416,12 +416,12 @@ gremlin> hdfs.ls()
 ==>rw-r--r-- marko supergroup 891 tinkerpop-classic-vertices.gio
 gremlin> g = GraphFactory.open('../../../giraph-gremlin/conf/giraph-kryo.properties')  // be conscious of where giraph-kryo.properties is
 ==>giraphgraph[kryovertexinputformat->kryovertexoutputformat]
-gremlin> g.V.count()
+gremlin> g.V().count()
 ==>6
-gremlin> g.V.out.out.name
+gremlin> g.V().out().out().value('name')
 ==>ripple
 ==>lop
-gremlin> g.V.groupBy{it.value('name')[1]}{it.value('name')}.next()
+gremlin> g.V().groupBy{it.value('name')[1]}{it.value('name')}.next()
 ==>a=[marko, vadas]
 ==>e=[peter]
 ==>i=[ripple]
@@ -439,7 +439,7 @@ IMPORTANT: When using Giraph-Gremlin OLAP from the Gremlin Console, the only Gre
 [source,text]
 gremlin> :remote connect giraph ../../../giraph-gremlin/conf/giraph-kryo.properties
 ==>giraphgraph[kryovertexinputformat->kryovertexoutputformat]
-gremlin> :> g.V.count()
+gremlin> :> g.V().count()
 INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, CountStep]
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0037
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
@@ -449,7 +449,7 @@ INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0038
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
 ==>6
-gremlin> :> g.V.out.out.name
+gremlin> :> g.V().out().out().value('name')
 INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, VertexStep(OUT), VertexStep(OUT), ElementValueStep(name)]
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0031
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
@@ -460,7 +460,7 @@ INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
 ==>ripple
 ==>lop
-gremlin> :> g.V.groupBy('a'){it.value('name')[1]}{it.value('name')}
+gremlin> :> g.V().groupBy('a'){it.value('name')[1]}{it.value('name')}
 INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, GroupByStep@a]
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0039
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
@@ -477,8 +477,6 @@ gremlin> result.memory.runtime
 gremlin> result.memory.keys()
 ==>a
 gremlin> result.memory.a
-==>Optional[{a=[marko, vadas], e=[peter], i=[ripple], o=[lop, josh]}]
-gremlin> result.memory.a.get()
 ==>a=[marko, vadas]
 ==>e=[peter]
 ==>i=[ripple]

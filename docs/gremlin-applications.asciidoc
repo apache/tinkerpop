@@ -42,21 +42,21 @@ The "toy" graph provides a way to get started with Gremlin quickly.
 ----
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> g.V
+gremlin> g.V()
 ==>v[1]
 ==>v[2]
 ==>v[3]
 ==>v[4]
 ==>v[5]
 ==>v[6]
-gremlin> g.V.name
+gremlin> g.V().value('name')
 ==>marko
 ==>vadas
 ==>lop
 ==>josh
 ==>ripple
 ==>peter
-gremlin> g.V.has('name','marko').out('knows').name
+gremlin> g.V().has('name','marko').out('knows').value('name')
 ==>vadas
 ==>josh
 ----
@@ -211,16 +211,16 @@ The `:remote` command shown above displays the current status of the remote conn
 
 [source,groovy]
 ----
-gremlin> :> g.V.name
+gremlin> :> g.V().value('name')
 ==>Item{resultItem=marko class=java.lang.String}
 ==>Item{resultItem=vadas class=java.lang.String}
 ==>Item{resultItem=lop class=java.lang.String}
 ==>Item{resultItem=josh class=java.lang.String}
 ==>Item{resultItem=ripple class=java.lang.String}
 ==>Item{resultItem=peter class=java.lang.String}
-gremlin> :> g.V.has('name','marko').out('created').name
+gremlin> :> g.V().has('name','marko').out('created').value('name')
 ==>Item{resultItem=lop class=java.lang.String}
-gremlin> :> g.E.label.groupCount()
+gremlin> :> g.E().label().groupCount()
 ==>Item{resultItem={created=4, knows=2} class=java.lang.String}
 ----
 
@@ -233,7 +233,7 @@ gremlin> :remote connect server config/remote-objects.yaml <1>
 gremlin> :remote list <2>
 ==>0 - gremlin server - [localhost/127.0.0.1:8182]
 ==>*1 - gremlin server - [localhost/127.0.0.1:8182]
-gremlin> :> g.E.label.groupCount() <3>
+gremlin> :> g.E().label().groupCount() <3>
 ==>Item{resultItem={created=4, knows=2} class=java.util.HashMap}
 gremlin> m = _l[0].get(Map.class) <4>
 ==>created=4
@@ -558,28 +558,28 @@ NOTE: It's recommended to choose a continuously running layout algorithm like Fr
 Consider the following traversal:
 
 [source,groovy]
-g.v(2).in.out('knows').
+g.v(2).in().out('knows').
       has('age',T.gt,30).outE('created').
-      has('weight',T.gt,0.5f).inV
+      has('weight',T.gt,0.5f).inV()
 
-To visualize it insert the appropriately named `store.as("n")` steps where n is an integer, and the vertices will be highlighted in ascending store step order. 
+To visualize it insert the appropriately named `store('n')` steps where `n` is an integer, and the vertices will be highlighted in ascending store step order.
 
 [source,groovy]
 gremlin> g.v(2).in('knows').out('knows').has('age',T.gt,30).
-               outE('created').has('weight',T.gt,0.5f).inV.name
+               outE('created').has('weight',T.gt,0.5f).inV().value('name')
 ==>ripple
 gremlin> traversal = g.v(2).store('1').
                            in('knows').store('2').
                            out('knows').has('age',T.gt,30).store('3').
-                           outE('created').has('weight',T.gt,0.5f).inV.store('4')
+                           outE('created').has('weight',T.gt,0.5f).inV().store('4')
 ==>[v[5]]
-gremlin> traversal.sideEffects().get('1').get()
+gremlin> traversal.sideEffects().get('1')
 ==>v[2]
-gremlin> traversal.sideEffects().get('2').get()
+gremlin> traversal.sideEffects().get('2')
 ==>v[1]
-gremlin> traversal.sideEffects().get('3').get()
+gremlin> traversal.sideEffects().get('3')
 ==>v[4]
-gremlin> traversal.sideEffects().get('4').get()
+gremlin> traversal.sideEffects().get('4')
 ==>v[5]
 gremlin> 
 gremlin> :> traversal
@@ -646,7 +646,7 @@ gremlin> g.v(1).value('name')  // conventional
 ==>marko
 gremlin> g.v(1).name  // sugar
 ==>marko
-gremlin> g.V.map{it.get().value('name')}  // conventional
+gremlin> g.V().map{it.get().value('name')}  // conventional
 ==>marko
 ==>vadas
 ==>lop
@@ -666,6 +666,7 @@ The examples above are generalized below:
 . Missing element fields: if a vertex or edge's instance field is selected and that field does not exist, then it is assumed the user means `value('fieldName')`.
 . Missing traverser method: if a traverser method is called and that method doesn't exist, then it is assumed that the method is on the wrapped object of the traverser.
 . Missing traverser field: if a traverser field is called and that field doesn't exist, then it is assumed that the field is on the wrapped object of the traverser.
+. Missing traversal field: if a traversal field is called and that field doesn't exist, then it is assumed either a step() or defaults to `value('step')`.
 
 [[utilities-plugin]]
 Utilities Plugin
@@ -687,9 +688,9 @@ gremlin> :plugin use utilities
 ==>sugar activated
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> clock{g.V.both.both.both.iterate()}
+gremlin> clock{g.V().both().both().both().iterate()}
 ==>0.6182899999999999
-gremlin> clock(1000){g.V.both.both.both.iterate()}
+gremlin> clock(1000){g.V().both().both().both().iterate()}
 ==>0.23745999999999978
 ----
 
@@ -707,7 +708,7 @@ gremlin> :plugin use sugar // activate sugar plugin for use in benchmark
 ==>sugar activated
 gremlin> benchmark{ 
 gremlin>   'sugar' {g.v(1).name.next()}
-gremlin>   'nosugar' {g.v(1).value("name").next()}}.prettyPrint()
+gremlin>   'nosugar' {g.v(1).value('name').next()}}.prettyPrint()
 Environment
 ===========
 * Groovy: 2.3.6
@@ -727,7 +728,7 @@ Options
 sugar    4135       0  4135  4143
 nosugar  1223       0  1223  1226
 ==>null
-gremlin> profile { g.V.iterate() }.prettyPrint()
+gremlin> profile { g.V().iterate() }.prettyPrint()
 Flat:
 
  %    cumulative   self            self     total    self    total   self    total                                                                              

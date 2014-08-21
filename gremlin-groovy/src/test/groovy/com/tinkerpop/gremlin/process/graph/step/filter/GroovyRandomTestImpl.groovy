@@ -10,11 +10,11 @@ class GroovyRandomTestImpl extends RandomTest {
 
     @Override
     public Traversal<Vertex, Vertex> get_g_V_randomX1X() {
-        g.V.random(1.0f)
+        g.V().random(1.0f)
     }
 
     @Override
     public Traversal<Vertex, Vertex> get_g_V_randomX0X() {
-        g.V.random(0.0f)
+        g.V().random(0.0f)
     }
 }

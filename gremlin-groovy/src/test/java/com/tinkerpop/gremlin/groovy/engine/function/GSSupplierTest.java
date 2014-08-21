@@ -17,7 +17,7 @@ public class GSSupplierTest {
 
     @Test
     public void shouldSerialize() throws Exception {
-        SSupplier<Traversal> traversalSSupplier = new GSSupplier<>("TinkerFactory.createClassic().V.out.name");
+        SSupplier<Traversal> traversalSSupplier = new GSSupplier<>("TinkerFactory.createClassic().V().out().value('name')");
         byte[] bytes = Serializer.serializeObject(traversalSSupplier);
         traversalSSupplier = (SSupplier<Traversal>) Serializer.deserializeObject(bytes);
         Traversal traversal = traversalSSupplier.get();
