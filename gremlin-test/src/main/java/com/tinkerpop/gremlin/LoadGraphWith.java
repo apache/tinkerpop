@@ -1,8 +1,6 @@
 package com.tinkerpop.gremlin;
 
-import com.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
-import com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 
 import java.lang.annotation.ElementType;
@@ -21,6 +19,16 @@ import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FE
 /**
  * Annotations to define a graph example to load from test resources prior to test execution.  This annotation is
  * for use only with test that extend from {@link AbstractGremlinTest}.
+ * <br/>
+ * Note that the annotation assumes that the @{link GraphData} referenced by the annotation can be made available
+ * to the graph in the test.  In other words, even a graph that has "read-only" features, should have some method of
+ * getting the data available to it.  That said, graphs must minimally support the data types that the sample
+ * data contains for the test to be executed.
+ * <br/>
+ * If a graph implementation is "read-only", it can override the
+ * {@link GraphProvider#loadGraphData(com.tinkerpop.gremlin.structure.Graph, LoadGraphWith)} method to provide some
+ * other mechanism for making that data available to the graph in time for the test.  See the Giraph implementation
+ * for more details.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -49,24 +57,18 @@ public @interface LoadGraphWith {
         GRATEFUL;
 
         private static final List<FeatureRequirement> featuresRequiredByClassic = new ArrayList<FeatureRequirement>(){{
-            add(FeatureRequirement.Factory.create(VertexFeatures.FEATURE_ADD_VERTICES, VertexFeatures.class));
-            add(FeatureRequirement.Factory.create(EdgeFeatures.FEATURE_ADD_EDGES, EdgeFeatures.class));
             add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
             add(FeatureRequirement.Factory.create(FEATURE_INTEGER_VALUES, VertexPropertyFeatures.class));
             add(FeatureRequirement.Factory.create(FEATURE_FLOAT_VALUES, EdgePropertyFeatures.class));
         }};
 
         private static final List<FeatureRequirement> featuresRequiredByClassicDouble = new ArrayList<FeatureRequirement>(){{
-            add(FeatureRequirement.Factory.create(VertexFeatures.FEATURE_ADD_VERTICES, VertexFeatures.class));
-            add(FeatureRequirement.Factory.create(EdgeFeatures.FEATURE_ADD_EDGES, EdgeFeatures.class));
             add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
             add(FeatureRequirement.Factory.create(FEATURE_INTEGER_VALUES, VertexPropertyFeatures.class));
             add(FeatureRequirement.Factory.create(FEATURE_DOUBLE_VALUES, EdgePropertyFeatures.class));
         }};
 
         private static final List<FeatureRequirement> featuresRequiredByGrateful = new ArrayList<FeatureRequirement>() {{
-            add(FeatureRequirement.Factory.create(VertexFeatures.FEATURE_ADD_VERTICES, VertexFeatures.class));
-            add(FeatureRequirement.Factory.create(EdgeFeatures.FEATURE_ADD_EDGES, EdgeFeatures.class));
             add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
             add(FeatureRequirement.Factory.create(FEATURE_INTEGER_VALUES, VertexPropertyFeatures.class));
         }};
