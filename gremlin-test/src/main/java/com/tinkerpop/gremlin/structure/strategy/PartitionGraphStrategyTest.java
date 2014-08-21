@@ -7,6 +7,8 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
+import java.util.NoSuchElementException;
+
 import static org.junit.Assert.*;
 
 /**
@@ -142,12 +144,6 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         final Edge eBtovC = vB.addEdge("b->c", vC);
         final Edge eAtovC = vA.addEdge("a->c", vC);
 
-        // todo: review
-        /* not applicable to SubgraphStrategy
-        final GraphTraversal t = g.V();
-        assertTrue(t.strategies().get().stream().anyMatch(o -> o.getClass().equals(PartitionGraphStrategy.PartitionGraphTraversalStrategy.class)));
-        */
-
         strategy.clearReadPartitions();
         assertEquals(new Long(0), g.V().count().next());
         assertEquals(new Long(0), g.E().count().next());
@@ -184,22 +180,13 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         assertEquals(new Long(1), g.v(vC.id()).in().count().next());
         assertEquals(vC.id(), g.e(eBtovC.id()).inV().id().next());
         assertEquals(vB.id(), g.e(eBtovC.id()).outV().id().next());
-        assertEquals(vC.id(), g.e(eAtovC.id()).inV().id().next());
-        assertFalse(g.e(eAtovC.id()).outV().hasNext());
 
-        // todo: review
-        /* not applicable to SubgraphStrategy
-        strategy.addReadPartition("A");
-        g.v(vA.id()).out().out().forEach(v -> {
-            assertTrue(v instanceof StrategyWrapped);
-            assertFalse(((StrategyWrappedElement) v).getBaseElement() instanceof StrategyWrapped);
-        });
-
-        g.v(vA.id()).outE().inV().outE().forEach(e -> {
-            assertTrue(e instanceof StrategyWrapped);
-            assertFalse(((StrategyWrappedElement) e).getBaseElement() instanceof StrategyWrapped);
-        });
-        */
+        try {
+            g.e(eAtovC.id());
+            fail("Edge should not be in the graph because vA is not in partitions {B,C}");
+        } catch (Exception ex) {
+            assertTrue(ex instanceof NoSuchElementException);
+        }
     }
 
     @Test

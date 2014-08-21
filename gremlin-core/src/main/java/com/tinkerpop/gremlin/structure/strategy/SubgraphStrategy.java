@@ -82,8 +82,11 @@ public class SubgraphStrategy implements GraphStrategy {
 
     private boolean testEdge(final Edge edge) {
         // the edge must pass the edge predicate, and both of its incident vertices must also pass the vertex predicate
-        // inV() and/or outV() will be empty if they do not
-        return edgePredicate.test(edge) && edge.inV().hasNext() && edge.outV().hasNext();
+        // inV() and/or outV() will be empty if they do not.  it is sometimes the case that an edge is unwrapped
+        // in which case it may not be filtered.  in such cases, the vertices on such edges should be tested.
+        return edgePredicate.test(edge)
+                && (edge instanceof StrategyWrapped ? edge.inV().hasNext() && edge.outV().hasNext()
+                    : testVertex(edge.inV().next()) && testVertex(edge.outV().next()));
     }
 
     private boolean testElement(final Element element) {
@@ -100,7 +103,9 @@ public class SubgraphStrategy implements GraphStrategy {
     private class SubgraphTraversalStrategy implements TraversalStrategy.NoDependencies {
 
         public void apply(final Traversal traversal) {
-            // modify the traversal by appending filters after some steps, replacing others
+            // modify the traversal by appending filters after some steps, replacing others.  the idea is to
+            // find VertexStep instances that return a Vertex and replace those with SubgraphVertexStep.
+            // after each GraphStep, EdgeVertexStep and Vertex step insert a SubgraphFilterStep.
             final List<Class> insertAfterSteps = Arrays.<Class>asList(GraphStep.class, EdgeVertexStep.class);
             final List<Integer> insertAfterPositions = new ArrayList<>();
             final List<Integer> replacePositions = new ArrayList<>();
@@ -110,18 +115,14 @@ public class SubgraphStrategy implements GraphStrategy {
                 if (insertAfterSteps.stream().anyMatch(c -> c.isAssignableFrom(traversalSteps.get(pos).getClass()))) {
                     insertAfterPositions.add(i);
                 }
+
                 if (VertexStep.class.isAssignableFrom(traversalSteps.get(pos).getClass())) {
-                    VertexStep vs = (VertexStep) traversalSteps.get(pos);
-                    if (Vertex.class.isAssignableFrom(vs.returnClass)) {
-                        replacePositions.add(i);
-                    } else {
-                        insertAfterPositions.add(i);
-                    }
+                    replacePositions.add(i);
                 }
             }
 
             for (int pos : replacePositions) {
-                VertexStep other = (VertexStep) traversalSteps.get(pos);
+                final VertexStep other = (VertexStep) traversalSteps.get(pos);
                 TraversalHelper.replaceStep(traversalSteps.get(pos), new SubgraphVertexStep(other), traversal);
             }
 
@@ -132,6 +133,9 @@ public class SubgraphStrategy implements GraphStrategy {
         }
     }
 
+    /**
+     * A step that checks the subgraph filters to ensure that a {@link Element} should pass through.
+     */
     private class SubgraphFilterStep extends FilterStep<Element> implements Reversible {
 
         public SubgraphFilterStep(final Traversal traversal) {
@@ -144,6 +148,10 @@ public class SubgraphStrategy implements GraphStrategy {
         }
     }
 
+    /**
+     * A step that wraps up the traversal allowing the results to be iterated within the context of the following
+     * {@link com.tinkerpop.gremlin.structure.strategy.SubgraphStrategy.SubgraphFilterStep}.
+     */
     private class SubgraphVertexStep<E extends Element> extends FlatMapStep<Vertex, E> { // TODO: implement Reversible
 
         private final Direction direction;

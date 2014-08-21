@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -11,6 +12,9 @@ import java.util.function.Predicate;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
@@ -43,12 +47,10 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         assertEquals(2, sg.v(convertToVertexId("josh")).outE().count().next().longValue());
         assertEquals(2, g.v(convertToVertexId("josh")).out().count().next().longValue());
         assertEquals(2, sg.v(convertToVertexId("josh")).out().count().next().longValue());
-
         assertEquals(1, g.v(convertToVertexId("josh")).inE().count().next().longValue());
         assertEquals(0, sg.v(convertToVertexId("josh")).inE().count().next().longValue());
         assertEquals(1, g.v(convertToVertexId("josh")).in().count().next().longValue());
         assertEquals(0, sg.v(convertToVertexId("josh")).in().count().next().longValue());
-
         assertEquals(3, g.v(convertToVertexId("josh")).bothE().count().next().longValue());
         assertEquals(2, sg.v(convertToVertexId("josh")).bothE().count().next().longValue());
         assertEquals(3, g.v(convertToVertexId("josh")).both().count().next().longValue());
@@ -91,10 +93,20 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         assertEquals(2, sg.e(convertToEdgeId("josh", "created", "lop")).bothV().count().next().longValue());
 
         assertEquals(2, g.e(convertToEdgeId("peter", "created", "lop")).bothV().count().next().longValue());
-        assertEquals(1, sg.e(convertToEdgeId("peter", "created", "lop")).bothV().count().next().longValue());
+        try {
+            sg.e(convertToEdgeId("peter", "created", "lop"));
+            fail("Edge 12 should not be in the graph because peter is not a vertex");
+        } catch (Exception ex) {
+            assertTrue(ex instanceof NoSuchElementException);
+        }
 
         assertEquals(2, g.e(convertToEdgeId("marko", "knows", "vadas")).bothV().count().next().longValue());
-        assertEquals(0, sg.e(convertToEdgeId("marko", "knows", "vadas")).bothV().count().next().longValue());
+        try {
+            sg.e(convertToEdgeId("marko", "knows", "vadas"));
+            fail("Edge 7 should not be in the graph because marko is not a vertex");
+        } catch (Exception ex) {
+            assertTrue(ex instanceof NoSuchElementException);
+        }
     }
 
     @Test
@@ -198,7 +210,8 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
     public void shouldFilterMixedCriteria() throws Exception {
         Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
         Predicate<Edge> edgeCriterion = edge -> {
-            // 9 && 11
+            // 9 isn't present because marko is not in the vertex list
+            // 11
             if (edge.<Double>value("weight") == 0.4d && edge.label().equals("created"))
                 return true;
                 // 10
@@ -263,15 +276,19 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
         assertEquals(1, g.v(convertToVertexId("josh")).both(1).count().next().longValue());
         assertEquals(1, sg.v(convertToVertexId("josh")).both(1).count().next().longValue());
         assertEquals(1, g.v(convertToVertexId("josh")).bothE(1, "knows", "created").count().next().longValue());
-// TODO: Why Neo4j not happy?
-//        assertEquals(1, sg.v(convertToVertexId("josh")).bothE(1, "knows", "created").count().next().longValue());
+        assertEquals(1, sg.v(convertToVertexId("josh")).bothE(1, "knows", "created").count().next().longValue());
         assertEquals(1, g.v(convertToVertexId("josh")).both(1, "knows", "created").count().next().longValue());
         assertEquals(1, sg.v(convertToVertexId("josh")).both(1, "knows", "created").count().next().longValue());
 
         // from edge
 
         assertEquals(2, g.e(convertToEdgeId("marko", "created", "lop")).bothV().count().next().longValue());
-        assertEquals(1, sg.e(convertToEdgeId("marko", "created", "lop")).bothV().count().next().longValue());
+        try {
+            sg.e(convertToEdgeId("marko", "created", "lop"));
+            fail("Edge 9 should not be in the graph because marko is not a vertex");
+        } catch (Exception ex) {
+            assertTrue(ex instanceof NoSuchElementException);
+        }
     }
 
     @Test(expected = NoSuchElementException.class)
