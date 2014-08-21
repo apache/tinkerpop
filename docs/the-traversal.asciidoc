@@ -19,7 +19,7 @@ Graph Traversal Steps
 
 image::step-types.png[width=650]
 
-A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, or an Edge. A graph traversal is composed of a ordered list of steps. Each step is of particular general form as diagrammed above. A list of all the steps (and their descriptions) are provided in the TinkerPop3 link:http://www.tinkerpop.com/javadocs/current/com/tinkerpop/gremlin/process/graph/GraphTraversal.html[GraphTraversal JavaDoc]. A few of the more interesting/complex steps are presented in the following subsections.
+A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, or an Edge. A graph traversal is composed of an ordered list of steps. Each step is of particular general form as diagrammed above. A list of all the steps (and their descriptions) are provided in the TinkerPop3 link:http://www.tinkerpop.com/javadocs/current/com/tinkerpop/gremlin/process/graph/GraphTraversal.html[GraphTraversal JavaDoc]. A few of the more interesting/complex steps are presented in the following subsections.
 
 [[addedge-step]]
 AddEdge Step
@@ -129,14 +129,14 @@ image::choose-step.png[width=700]
 
 [source,groovy]
 gremlin> g.V().has('age').choose({it.get().value('name').length() == 5},
-  g.of().in,
-  g.of().out).value('name') <1>
+  g.of().in(),
+  g.of().out()).value('name') <1>
 ==>marko
 ==>ripple
 ==>lop
 gremlin> g.V().has('age').choose({it.get().value('name').length()},
-  [5:g.of().in,
-   4:g.of().out]).value('name') <2>
+  [5:g.of().in(),
+   4:g.of().out()]).value('name') <2>
 ==>marko
 ==>ripple
 ==>lop
@@ -148,8 +148,8 @@ In Java8, there is no elegant syntax to create a `Map`. Thus, the last traversal
 
 [source,java]
 g.V().has("age").choose(v -> v.get().value("name").length(), new HashMap() {{
-  put(5,g.of().in); 
-  put(4,g.of().out); 
+  put(5,g.of().in());
+  put(4,g.of().out());
 }}).value("name")
 
 [[groupby-step]]
@@ -243,7 +243,7 @@ TinkerPop3 introduces the `jump()`-step (*branch*). This step allows the propaga
 gremlin> g.v(1).as('a').out().jump('a'){it.loops<2}.value('name') <1>
 ==>ripple
 ==>lop
-gremlin> g.v(1).as('a').jump('b'){it.loops>1}.out.jump('a').as('b').value('name') <2>
+gremlin> g.v(1).as('a').jump('b'){it.loops>1}.out().jump('a').as('b').value('name') <2>
 ==>ripple
 ==>lop
 gremlin> g.v(1).jump('a').out().out().out().as('a').value('name') <3>
@@ -535,7 +535,7 @@ gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> sg = g.v(3).as('a').inE().outV().jump('a'){it.loops<3}{true}.subgraph({true}).next()   <1>
 ==>tinkergraph[vertices:4 edges:4]
-gremlin> sg.E
+gremlin> sg.E()
 ==>e[8][1-knows->4]
 ==>e[9][1-created->3]
 ==>e[11][4-created->3]
@@ -557,23 +557,23 @@ image::timelimit-step.png[width=500]
 [source,groovy]
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> g.V().as('x').both().groupCount().as('m').jump('x',16).cap('m').next().sort{-it.value}
+gremlin> g.V().as('x').both().groupCount('m').jump('x',16).cap('m').next().sort{-it.value}
 ==>v[1]=2744208
 ==>v[3]=2744208
 ==>v[4]=2744208
 ==>v[2]=1136688
 ==>v[5]=1136688
 ==>v[6]=1136688
-gremlin> clock(1){g.V().as('x').both().groupCount().as('m').jump('x',16).cap('m').next().sort{-it.value}}
+gremlin> clock(1){g.V().as('x').both().groupCount('m').jump('x',16).cap('m').next().sort{-it.value}}
 ==>2735.111
-gremlin> g.V().as('x').timeLimit(750).both().groupCount().as('m').jump('x',16).cap('m').next().sort{-it.value}
+gremlin> g.V().as('x').timeLimit(750).both().groupCount('m').jump('x',16).cap('m').next().sort{-it.value}
 ==>v[1]=648473
 ==>v[3]=647510
 ==>v[4]=647499
 ==>v[5]=268540
 ==>v[6]=268533
 ==>v[2]=267941
-gremlin> clock(1){g.V().as('x').timeLimit(750).both().groupCount().as('m').jump('x',16).cap('m').next().sort{-it.value}}
+gremlin> clock(1){g.V().as('x').timeLimit(750).both().groupCount('m').jump('x',16).cap('m').next().sort{-it.value}}
 ==>750.03
 
 In essence, the relative order is respected, even through the number traversers at each vertex is not. The primary benefit being that the calculation is guaranteed to complete at the specified time limit (in milliseconds). Finally, note that the internal clock of `timeLimit()`-step starts when the first traverser enters it. When the time limit is reached, any `next()` evaluation of the step will yield a `NoSuchElementException` and any `hasNext()` evaluation will yield `false`.

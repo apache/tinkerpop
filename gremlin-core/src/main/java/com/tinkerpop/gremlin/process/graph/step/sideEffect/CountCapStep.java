@@ -35,7 +35,7 @@ public class CountCapStep<S> extends SideEffectStep<S> implements SideEffectCapa
         this.bulkCount = bulkCount;
     }
 
-    public String getMemoryKey() {
+    public String getSideEffectKey() {
         return COUNT_KEY;
     }
 

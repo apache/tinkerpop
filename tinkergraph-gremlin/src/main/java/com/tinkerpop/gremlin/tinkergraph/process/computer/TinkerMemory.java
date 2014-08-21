@@ -35,7 +35,7 @@ public class TinkerMemory implements Memory.Administrative {
             }
         }
         for (final MapReduce mapReduce : mapReducers) {
-            this.sideEffectKeys.add(mapReduce.getMemoryKey());
+            this.sideEffectKeys.add(mapReduce.getSideEffectKey());
         }
     }
 

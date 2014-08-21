@@ -27,15 +27,15 @@ public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEf
     public final SFunction<S, K> keyFunction;
     public final SFunction<S, V> valueFunction;
     public final SFunction<Collection<V>, R> reduceFunction;
-    private final String memoryKey;
-    private final String hiddenMemoryKey;
+    private final String sideEffectKey;
+    private final String hiddenSideEffectKey;
     public boolean vertexCentric = false;
 
-    public GroupByStep(final Traversal traversal, final String memoryKey, final SFunction<S, K> keyFunction, final SFunction<S, V> valueFunction, final SFunction<Collection<V>, R> reduceFunction) {
+    public GroupByStep(final Traversal traversal, final String sideEffectKey, final SFunction<S, K> keyFunction, final SFunction<S, V> valueFunction, final SFunction<Collection<V>, R> reduceFunction) {
         super(traversal);
-        this.memoryKey = null == memoryKey ? this.getAs() : memoryKey;
-        this.hiddenMemoryKey = Graph.Key.hide(this.memoryKey);
-        this.groupByMap = this.traversal.sideEffects().getOrCreate(this.memoryKey, HashMap<K, Collection<V>>::new);
+        this.sideEffectKey = null == sideEffectKey ? this.getAs() : sideEffectKey;
+        this.hiddenSideEffectKey = Graph.Key.hide(this.sideEffectKey);
+        this.groupByMap = this.traversal.sideEffects().getOrCreate(this.sideEffectKey, HashMap<K, Collection<V>>::new);
         this.reduceMap = new HashMap<>();
         this.keyFunction = keyFunction;
         this.valueFunction = valueFunction == null ? s -> (V) s : valueFunction;
@@ -45,14 +45,14 @@ public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEf
             if (!this.vertexCentric) {
                 if (null != reduceFunction && !this.starts.hasNext()) {
                     doReduce(this.groupByMap, this.reduceMap, this.reduceFunction);
-                    this.traversal.sideEffects().set(this.memoryKey, this.reduceMap);
+                    this.traversal.sideEffects().set(this.sideEffectKey, this.reduceMap);
                 }
             }
         });
     }
 
-    public String getMemoryKey() {
-        return this.memoryKey;
+    public String getSideEffectKey() {
+        return this.sideEffectKey;
     }
 
     private static <S, K, V> void doGroup(final S s, final Map<K, Collection<V>> groupMap, final SFunction<S, K> keyFunction, final SFunction<S, V> valueFunction) {
@@ -84,9 +84,9 @@ public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEf
 
     public void setCurrentVertex(final Vertex vertex) {
         this.vertexCentric = true;
-        this.groupByMap = vertex.<java.util.Map<K, Collection<V>>>property(this.hiddenMemoryKey).orElse(new HashMap<>());
-        if (!vertex.property(this.hiddenMemoryKey).isPresent())
-            vertex.property(this.hiddenMemoryKey, this.groupByMap);
+        this.groupByMap = vertex.<java.util.Map<K, Collection<V>>>property(this.hiddenSideEffectKey).orElse(new HashMap<>());
+        if (!vertex.property(this.hiddenSideEffectKey).isPresent())
+            vertex.property(this.hiddenSideEffectKey, this.groupByMap);
     }
 
     public MapReduce<Object, Collection, Object, Object, Map> getMapReduce() {

@@ -83,11 +83,11 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
         this.reduceLambda.accept(key, values, emitter);
     }
 
-    public R generateMemoryValue(final Iterator<Pair<RK, RV>> keyValues) {
+    public R generateSideEffect(final Iterator<Pair<RK, RV>> keyValues) {
         return this.memoryLambda.apply(keyValues);
     }
 
-    public String getMemoryKey() {
+    public String getSideEffectKey() {
         return this.sideEffectKey;
     }
 

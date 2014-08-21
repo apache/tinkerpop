@@ -24,15 +24,15 @@ public class GroupCountStep<S> extends SideEffectStep<S> implements SideEffectCa
     public Map<Object, Long> groupCountMap;
     public SFunction<S, ?> preGroupFunction;
     private long bulkCount = 1l;
-    private final String memoryKey;
-    private final String hiddenMemoryKey;
+    private final String sideEffectKey;
+    private final String hiddenSideEffectKey;
 
-    public GroupCountStep(final Traversal traversal, final String memoryKey, final SFunction<S, ?> preGroupFunction) {
+    public GroupCountStep(final Traversal traversal, final String sideEffectKey, final SFunction<S, ?> preGroupFunction) {
         super(traversal);
         this.preGroupFunction = preGroupFunction;
-        this.memoryKey = null == memoryKey ? this.getAs() : memoryKey;
-        this.hiddenMemoryKey = Graph.Key.hide(this.memoryKey);
-        this.groupCountMap = this.traversal.sideEffects().getOrCreate(this.memoryKey, HashMap::new);
+        this.sideEffectKey = null == sideEffectKey ? this.getAs() : sideEffectKey;
+        this.hiddenSideEffectKey = Graph.Key.hide(this.sideEffectKey);
+        this.groupCountMap = this.traversal.sideEffects().getOrCreate(this.sideEffectKey, HashMap::new);
         this.setConsumer(traverser -> {
             MapHelper.incr(this.groupCountMap,
                     null == this.preGroupFunction ? traverser.get() : this.preGroupFunction.apply(traverser.get()),
@@ -40,8 +40,8 @@ public class GroupCountStep<S> extends SideEffectStep<S> implements SideEffectCa
         });
     }
 
-    public String getMemoryKey() {
-        return this.memoryKey;
+    public String getSideEffectKey() {
+        return this.sideEffectKey;
     }
 
     public void setCurrentBulkCount(final long bulkCount) {
@@ -49,9 +49,9 @@ public class GroupCountStep<S> extends SideEffectStep<S> implements SideEffectCa
     }
 
     public void setCurrentVertex(final Vertex vertex) {
-        this.groupCountMap = vertex.<java.util.Map<Object, Long>>property(this.hiddenMemoryKey).orElse(new HashMap<>());
-        if (!vertex.property(this.hiddenMemoryKey).isPresent())
-            vertex.property(this.hiddenMemoryKey, this.groupCountMap);
+        this.groupCountMap = vertex.<java.util.Map<Object, Long>>property(this.hiddenSideEffectKey).orElse(new HashMap<>());
+        if (!vertex.property(this.hiddenSideEffectKey).isPresent())
+            vertex.property(this.hiddenSideEffectKey, this.groupCountMap);
     }
 
     public MapReduce<Object, Long, Object, Long, Map<Object, Long>> getMapReduce() {

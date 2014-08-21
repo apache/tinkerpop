@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.giraph.process.computer;
 import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.computer.util.MapReduceHelper;
-import com.tinkerpop.gremlin.giraph.process.computer.util.SideEffectsMapReduce;
+import com.tinkerpop.gremlin.giraph.process.computer.util.MemoryMapReduce;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.GiraphHelper;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
@@ -143,7 +143,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
                     final Set<String> memoryKeys = new HashSet<String>(this.vertexProgram.getMemoryComputeKeys());
                     memoryKeys.add(Constants.ITERATION);
                     this.giraphConfiguration.setStrings(Constants.GREMLIN_MEMORY_KEYS, (String[]) memoryKeys.toArray(new String[memoryKeys.size()]));
-                    this.mapReduces.add(new SideEffectsMapReduce(memoryKeys));
+                    this.mapReduces.add(new MemoryMapReduce(memoryKeys));
                 }
             }
             // do map reduce jobs

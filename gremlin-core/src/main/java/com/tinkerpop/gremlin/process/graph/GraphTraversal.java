@@ -429,7 +429,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, E2> cap() {
-        return this.cap(((SideEffectCapable) TraversalHelper.getEnd(this)).getMemoryKey());
+        return this.cap(((SideEffectCapable) TraversalHelper.getEnd(this)).getSideEffectKey());
     }
 
     public default GraphTraversal<S, E> subgraph(final String memoryKey, final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final SPredicate<Edge> includeEdge) {

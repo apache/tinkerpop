@@ -79,10 +79,15 @@ public class GiraphMemory extends MasterCompute implements Memory {
         return this.memoryKeys;
     }
 
+    public boolean exists(final String key) {
+        final RuleWritable rule = this.isMasterCompute ? this.getAggregatedValue(key) : this.giraphInternalVertex.getAggregatedValue(key);
+        return null != rule.getObject();
+    }
+
     public <R> R get(final String key) throws IllegalArgumentException {
         //this.checkKey(key);
         final RuleWritable rule = this.isMasterCompute ? this.getAggregatedValue(key) : this.giraphInternalVertex.getAggregatedValue(key);
-        if (null == rule)
+        if (null == rule.getObject())
             throw Memory.Exceptions.memoryDoesNotExist(key);
         else
             return rule.getObject();

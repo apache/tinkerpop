@@ -29,22 +29,22 @@ public class SubgraphStep<S> extends SideEffectStep<S> implements SideEffectCapa
     private final boolean subgraphSupportsUserIds;
     private final Map<Object, Vertex> idVertexMap;
     private final Set<Object> edgeIdsAdded;
-    private final String memoryKey;
+    private final String sideEffectKey;
     private static final Map<String, Object> DEFAULT_CONFIGURATION = new HashMap<String, Object>() {{
         put("gremlin.graph", "com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph");
     }};
 
     // TODO: add support for side-effecting out an edge list.
 
-    public SubgraphStep(final Traversal traversal, final String memoryKey,
+    public SubgraphStep(final Traversal traversal, final String sideEffectKey,
                         final Set<Object> edgeIdHolder,
                         final Map<Object, Vertex> idVertexMap,
                         final SPredicate<Edge> includeEdge) {
         super(traversal);
-        this.memoryKey = null == memoryKey ? this.getAs() : memoryKey;
+        this.sideEffectKey = null == sideEffectKey ? this.getAs() : sideEffectKey;
         this.edgeIdsAdded = null == edgeIdHolder ? new HashSet<>() : edgeIdHolder;
         this.idVertexMap = null == idVertexMap ? new HashMap<>() : idVertexMap;
-        this.subgraph = this.traversal.sideEffects().getOrCreate(this.memoryKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION));
+        this.subgraph = this.traversal.sideEffects().getOrCreate(this.sideEffectKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION));
         this.subgraphSupportsUserIds = this.subgraph.features().vertex().supportsUserSuppliedIds();
 
         this.setConsumer(traverser -> {
@@ -63,8 +63,8 @@ public class SubgraphStep<S> extends SideEffectStep<S> implements SideEffectCapa
         });
     }
 
-    public String getMemoryKey() {
-        return this.memoryKey;
+    public String getSideEffectKey() {
+        return this.sideEffectKey;
     }
 
     private Vertex getOrCreateVertex(final Vertex vertex) {

@@ -34,12 +34,12 @@ public interface MapReduce<MK, MV, RK, RV, R> {
     public default void reduce(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter) {
     }
 
-    public R generateMemoryValue(final Iterator<Pair<RK, RV>> keyValues);
+    public R generateSideEffect(final Iterator<Pair<RK, RV>> keyValues);
 
-    public String getMemoryKey();
+    public String getSideEffectKey();
 
-    public default void addToMemory(final Memory memory, final Iterator<Pair<RK, RV>> keyValues) {
-        memory.set(this.getMemoryKey(), this.generateMemoryValue(keyValues));
+    public default void addSideEffectToMemory(final Memory memory, final Iterator<Pair<RK, RV>> keyValues) {
+        memory.set(this.getSideEffectKey(), this.generateSideEffect(keyValues));
     }
 
     //////////////////

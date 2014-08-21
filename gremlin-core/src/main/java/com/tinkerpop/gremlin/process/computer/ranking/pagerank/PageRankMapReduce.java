@@ -51,12 +51,12 @@ public class PageRankMapReduce implements MapReduce<Object, Double, Object, Doub
     }
 
     @Override
-    public Iterator<Pair<Object, Double>> generateMemoryValue(final Iterator<Pair<Object, Double>> keyValues) {
+    public Iterator<Pair<Object, Double>> generateSideEffect(final Iterator<Pair<Object, Double>> keyValues) {
         return keyValues;
     }
 
     @Override
-    public String getMemoryKey() {
+    public String getSideEffectKey() {
         return this.sideEffectKey;
     }
 }
