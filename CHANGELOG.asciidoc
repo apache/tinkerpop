@@ -14,6 +14,8 @@ TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 * `Traversal.SideEffects` has `getGraph()`, `setGraph()`, and `removeGraph()` default helpers.
 * `Traversal.Memory` -> `Traversal.SideEffects` and `GraphComputer.SideEffects` -> `GraphComputer.Memory`.
 * `StrategyWrappedVertex` and `StrategyWrappedEdge` properly wrap `Element` objects returned from non-traversal based methods.
+* Gremlin-Server now sends a single write with status 200 for Object and empty response messages.
+* `GremlinGroovyScriptEngine` allows imports to re-import dependencies added via "use".
 * Changed order in which the `GremlinExecutor` is initialized such that dependency loading via "use" are handled first which fixes problems with starting Gremlin Server with `gremlin-server-neo4j.yaml`.
 * Corrected issues with the "branch factor" related traversals under `SubgraphStrategy`.  This change also altered the semantics of the `SubgraphStrategy` a bit as it became more restrictive around `Edge` inclusion (requires both vertices to be in the subgraph).
 * The Gephi Plugin now visualizes traversals and has numerous configuration options.
@@ -44,7 +46,6 @@ TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 * Moved `GiraphGraph.getOutputGraph()` to `GiraphHelper`.
 * Changed `GIRAPH_GREMLIN_HOME` to `GIRAPH_GREMLIN_LIB` to reference directory where jars are to be loaded.
 * Updated README with release instructions.
-* Gremlin-Server now sends a single write with status 200 for Object and empty response messages.
 
 TinkerPop 3.0.0.M1 (Release Date: August 12, 2014)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
