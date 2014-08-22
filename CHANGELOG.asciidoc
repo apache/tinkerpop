@@ -11,6 +11,7 @@ TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 
 * If the input path of a `GiraphGraphComputer` does not exist, failure happens prior to job submission.
 * `SugarPlugin` now has all inefficient methods and Gremlin-Groovy proper is only efficient Groovy techniques.
+* Calls to `use` on the `DependencyManager` now return the list of `GremlinPlugin` instances to initialize instead of just initializing them automatically because it causes problems with `ScriptEngine` setup if a plugin requires a script to be evaluated and a required dependency is not yet loaded.
 * `Traversal.SideEffects` has `getGraph()`, `setGraph()`, and `removeGraph()` default helpers.
 * `Traversal.Memory` -> `Traversal.SideEffects` and `GraphComputer.SideEffects` -> `GraphComputer.Memory`.
 * `StrategyWrappedVertex` and `StrategyWrappedEdge` properly wrap `Element` objects returned from non-traversal based methods.
