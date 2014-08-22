@@ -14,6 +14,7 @@ TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 * `Traversal.SideEffects` has `getGraph()`, `setGraph()`, and `removeGraph()` default helpers.
 * `Traversal.Memory` -> `Traversal.SideEffects` and `GraphComputer.SideEffects` -> `GraphComputer.Memory`.
 * `StrategyWrappedVertex` and `StrategyWrappedEdge` properly wrap `Element` objects returned from non-traversal based methods.
+* Changed order in which the `GremlinExecutor` is initialized such that dependency loading via "use" are handled first which fixes problems with starting Gremlin Server with `gremlin-server-neo4j.yaml`.
 * Corrected issues with the "branch factor" related traversals under `SubgraphStrategy`.  This change also altered the semantics of the `SubgraphStrategy` a bit as it became more restrictive around `Edge` inclusion (requires both vertices to be in the subgraph).
 * The Gephi Plugin now visualizes traversals and has numerous configuration options.
 * Add more specific features around the types of "identifiers" a graph can support.

@@ -175,14 +175,7 @@ public class GremlinExecutor implements AutoCloseable {
 
     private ScriptEngines createScriptEngines() {
         final ScriptEngines scriptEngines = new ScriptEngines(se -> {
-            for (Map.Entry<String, EngineSettings> config : settings.entrySet()) {
-                final String language = config.getKey();
-                se.reload(language,
-                        new HashSet<>(config.getValue().getImports()),
-                        new HashSet<>(config.getValue().getStaticImports()),
-                        config.getValue().getConfig());
-            }
-
+            // load dependencies first
             use.forEach(u -> {
                 if (u.size() != 3)
                     logger.warn("Could not resolve dependencies for [{}].  Each entry for the 'use' configuration must include [groupId, artifactId, version]", u);
@@ -192,7 +185,16 @@ public class GremlinExecutor implements AutoCloseable {
                 }
             });
 
-            // initialization script eval must occur after dependencies are set with "use"
+            // imports must occur after dependencies are set with "use"
+            for (Map.Entry<String, EngineSettings> config : settings.entrySet()) {
+                final String language = config.getKey();
+                se.reload(language,
+                        new HashSet<>(config.getValue().getImports()),
+                        new HashSet<>(config.getValue().getStaticImports()),
+                        config.getValue().getConfig());
+            }
+
+            // initialization script eval can now be performed now that dependencies are present with "use"
             for (Map.Entry<String, EngineSettings> config : settings.entrySet()) {
                 final String language = config.getKey();
 
