@@ -45,7 +45,7 @@ public class GiraphHelper {
             //}
         });
         if (giraphGraph.variables().getConfiguration().containsKey(Constants.GREMLIN_OUTPUT_LOCATION)) {
-            conf.setProperty(Constants.GREMLIN_INPUT_LOCATION, giraphGraph.variables().getConfiguration().getOutputLocation() + "/" + Constants.TILDA_G);
+            conf.setProperty(Constants.GREMLIN_INPUT_LOCATION, giraphGraph.variables().getConfiguration().getOutputLocation() + "/" + Constants.HIDDEN_G);
             conf.setProperty(Constants.GREMLIN_OUTPUT_LOCATION, giraphGraph.variables().getConfiguration().getOutputLocation() + "_");
         }
         if (giraphGraph.variables().getConfiguration().containsKey(Constants.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS)) {

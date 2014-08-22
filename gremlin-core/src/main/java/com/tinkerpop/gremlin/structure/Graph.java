@@ -35,9 +35,9 @@ public interface Graph extends AutoCloseable {
     public class Key {
 
         /**
-         * A low probability prefix to denote that a key is hidden.
+         * The prefix to denote that a key is hidden.
          */
-        private static final String HIDDEN_PREFIX = "%&%";
+        private static final String HIDDEN_PREFIX = "~";
 
         /**
          * Turn the provided key into a hidden key. If the key is already hidden, return key.
