@@ -100,10 +100,6 @@ public class GremlinExecutor implements AutoCloseable {
     }
 
     public CompletableFuture<Object> eval(final String script, final Optional<String> language, final Bindings boundVars) {
-        final Bindings bindings = new SimpleBindings();
-        bindings.putAll(this.globalBindings);
-        bindings.putAll(boundVars);
-
         final String lang = language.orElse("gremlin-groovy");
 
         logger.debug("Preparing to evaluate script - {} - in thread [{}]", script, Thread.currentThread().getName());
@@ -111,6 +107,11 @@ public class GremlinExecutor implements AutoCloseable {
         // select the gremlin threadpool to execute the script evaluation in
         final AtomicBoolean abort = new AtomicBoolean(false);
         final CompletableFuture<Object> future = CompletableFuture.supplyAsync(() -> {
+
+            final Bindings bindings = new SimpleBindings();
+            bindings.putAll(this.globalBindings);
+            bindings.putAll(boundVars);
+
             try {
                 logger.debug("Evaluating script - {} - in thread [{}]", script, Thread.currentThread().getName());
 
