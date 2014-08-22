@@ -139,7 +139,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         return allImports;
     }
 
-    private static void processStaticImports(final ImportCustomizer ic, final Set<String> staticImports) {
+    protected static void processStaticImports(final ImportCustomizer ic, final Set<String> staticImports) {
         for (final String staticImport : staticImports) {
             if (staticImport.endsWith(DOT_STAR)) {
                 ic.addStaticStars(staticImport.replace(DOT_STAR, EMPTY_STRING));
@@ -150,7 +150,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         }
     }
 
-    private static void processImports(final ImportCustomizer ic, final Set<String> imports) {
+    protected static void processImports(final ImportCustomizer ic, final Set<String> imports) {
         for (final String imp : imports) {
             if (imp.endsWith(DOT_STAR)) {
                 ic.addStarImports(imp.replace(DOT_STAR, EMPTY_STRING));

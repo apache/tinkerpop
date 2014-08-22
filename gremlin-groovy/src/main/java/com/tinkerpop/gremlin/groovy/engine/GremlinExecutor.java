@@ -29,6 +29,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Execute Gremlin scripts against a {@code ScriptEngine} instance.  It is designed to host any JSR-223 enabled
@@ -175,7 +176,14 @@ public class GremlinExecutor implements AutoCloseable {
 
     private ScriptEngines createScriptEngines() {
         final ScriptEngines scriptEngines = new ScriptEngines(se -> {
-            // load dependencies first
+            // this first part initializes the scriptengines - it does so without imports as the "use" operation
+            // needs to pull in dependencies first
+            for (Map.Entry<String, EngineSettings> config : settings.entrySet()) {
+                final String language = config.getKey();
+                se.reload(language, Collections.emptySet(), Collections.emptySet(), config.getValue().getConfig());
+            }
+
+            // use grabs dependencies
             use.forEach(u -> {
                 if (u.size() != 3)
                     logger.warn("Could not resolve dependencies for [{}].  Each entry for the 'use' configuration must include [groupId, artifactId, version]", u);
@@ -187,11 +195,8 @@ public class GremlinExecutor implements AutoCloseable {
 
             // imports must occur after dependencies are set with "use"
             for (Map.Entry<String, EngineSettings> config : settings.entrySet()) {
-                final String language = config.getKey();
-                se.reload(language,
-                        new HashSet<>(config.getValue().getImports()),
-                        new HashSet<>(config.getValue().getStaticImports()),
-                        config.getValue().getConfig());
+                se.addImports(config.getValue().getImports().stream().map(i -> "import " + i).collect(Collectors.toSet()));
+                se.addImports(config.getValue().getStaticImports().stream().map(i -> "import static " + i).collect(Collectors.toSet()));
             }
 
             // initialization script eval can now be performed now that dependencies are present with "use"

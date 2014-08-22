@@ -4,10 +4,14 @@ import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
 import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import com.tinkerpop.gremlin.util.Gremlin;
+import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.config.YamlConfiguration;
 import groovy.lang.Closure;
 import groovy.lang.Script;
 import org.junit.Ignore;
@@ -24,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -68,6 +73,108 @@ public class GremlinGroovyScriptEngineTest {
         assertEquals(Direction.IN, engineWithImports.eval("Direction.IN"));
         assertEquals(Direction.OUT, engineWithImports.eval("Direction.OUT"));
         assertEquals(Direction.BOTH, engineWithImports.eval("Direction.BOTH"));
+    }
+
+
+    @Test
+    public void shouldLoadStandardImportsAndThenAddToThem() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider());
+        assertEquals(Vertex.class.getName(), engine.eval("Vertex.class.getName()"));
+        assertEquals(2l, engine.eval("TinkerFactory.createClassic().V().has('age',T.gt,30).count().next()"));
+        assertEquals(Direction.IN, engine.eval("Direction.IN"));
+        assertEquals(Direction.OUT, engine.eval("Direction.OUT"));
+        assertEquals(Direction.BOTH, engine.eval("Direction.BOTH"));
+
+        try {
+            engine.eval("YamlConfiguration.class.getName()");
+            fail("Should have thrown an exception because no imports were supplied");
+        } catch (Exception se) {
+            assertTrue(se instanceof ScriptException);
+        }
+
+        engine.addImports(new HashSet<>(Arrays.asList("import " + YamlConfiguration.class.getCanonicalName())));
+        assertEquals(YamlConfiguration.class.getName(), engine.eval("YamlConfiguration.class.getName()"));
+        assertEquals(Vertex.class.getName(), engine.eval("Vertex.class.getName()"));
+        assertEquals(2l, engine.eval("TinkerFactory.createClassic().V().has('age',T.gt,30).count().next()"));
+        assertEquals(Direction.IN, engine.eval("Direction.IN"));
+        assertEquals(Direction.OUT, engine.eval("Direction.OUT"));
+        assertEquals(Direction.BOTH, engine.eval("Direction.BOTH"));
+    }
+
+    @Test
+    public void shouldLoadImportsViaDependencyManagerInterface() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new NoImportCustomizerProvider());
+        try {
+            engine.eval("Vertex.class.getName()");
+            fail("Should have thrown an exception because no imports were supplied");
+        } catch (Exception se) {
+            assertTrue(se instanceof ScriptException);
+        }
+
+        engine.addImports(new HashSet<>(Arrays.asList("import com.tinkerpop.gremlin.structure.Vertex")));
+        assertEquals(Vertex.class.getName(), engine.eval("Vertex.class.getName()"));
+    }
+
+    @Test
+    public void shouldLoadImportsViaDependencyManagerInterfaceAdditively() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new NoImportCustomizerProvider());
+        try {
+            engine.eval("Vertex.class.getName()");
+            fail("Should have thrown an exception because no imports were supplied");
+        } catch (Exception se) {
+            assertTrue(se instanceof ScriptException);
+        }
+
+        try {
+            engine.eval("StreamFactory.class.getName()");
+            fail("Should have thrown an exception because no imports were supplied");
+        } catch (Exception se) {
+            assertTrue(se instanceof ScriptException);
+        }
+
+        engine.addImports(new HashSet<>(Arrays.asList("import " + Vertex.class.getCanonicalName())));
+        assertEquals(Vertex.class.getName(), engine.eval("Vertex.class.getName()"));
+
+        try {
+            engine.eval("StreamFactory.class.getName()");
+            fail("Should have thrown an exception because no imports were supplied");
+        } catch (Exception se) {
+            assertTrue(se instanceof ScriptException);
+        }
+
+        engine.addImports(new HashSet<>(Arrays.asList("import " + StreamFactory.class.getCanonicalName())));
+        assertEquals(Vertex.class.getName(), engine.eval("Vertex.class.getName()"));
+        assertEquals(StreamFactory.class.getName(), engine.eval("StreamFactory.class.getName()"));
+    }
+
+    @Test
+    public void shouldLoadImportsViaDependencyManagerFromDependencyGatheredByUse() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new NoImportCustomizerProvider());
+        try {
+            engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)");
+            fail("Should have thrown an exception because no imports were supplied");
+        } catch (Exception se) {
+            assertTrue(se instanceof ScriptException);
+        }
+
+        engine.addImports(new HashSet<>(Arrays.asList("import org.apache.commons.math3.util.FastMath")));
+        engine.use("org.apache.commons", "commons-math3", "3.2");
+        assertEquals(1235, engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)"));
+    }
+
+    @Test
+    public void shouldAllowsUseToBeExecutedAfterImport() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new NoImportCustomizerProvider());
+        try {
+            engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)");
+            fail("Should have thrown an exception because no imports were supplied");
+        } catch (Exception se) {
+            assertTrue(se instanceof ScriptException);
+        }
+
+        engine.use("org.apache.commons", "commons-math3", "3.2");
+        engine.addImports(new HashSet<>(Arrays.asList("import org.apache.commons.math3.util.FastMath")));
+        assertEquals(1235, engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)"));
     }
 
     @Test

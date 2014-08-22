@@ -30,8 +30,10 @@ public class DefaultImportCustomizerProvider extends AbstractImportCustomizerPro
     }
 
     /**
-     * Utilizes imports defined by the supplied arguments with the .  Those imports defined statically through
+     * Utilizes imports defined by the supplied arguments.  Those imports defined statically through
      * initializeStatically() are ignored.
+     *
+     * @param baseCustomizer Imports from this customizer get added to the new one
      */
     public DefaultImportCustomizerProvider(final ImportCustomizerProvider baseCustomizer,
                                            final Set<String> extraImports, final Set<String> extraStaticImports) {

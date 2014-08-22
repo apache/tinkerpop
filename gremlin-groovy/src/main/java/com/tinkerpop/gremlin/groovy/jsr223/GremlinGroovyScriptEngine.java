@@ -1,9 +1,11 @@
 package com.tinkerpop.gremlin.groovy.jsr223;
 
 import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
+import com.tinkerpop.gremlin.groovy.EmptyImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import com.tinkerpop.gremlin.groovy.ImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
+import com.tinkerpop.gremlin.groovy.plugin.Artifact;
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import groovy.grape.Grape;
 import groovy.lang.Binding;
@@ -98,6 +100,8 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     private ImportCustomizerProvider importCustomizerProvider;
     private Optional<SecurityCustomizerProvider> securityProvider;
 
+    private final Set<Artifact> artifactsToUse = new HashSet<>();
+
     public GremlinGroovyScriptEngine() {
         this(new DefaultImportCustomizerProvider());
     }
@@ -113,6 +117,13 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         createClassLoader();
     }
 
+    /**
+     * {@inheritDoc}
+     * <br/>
+     * This method should be called after "expected" imports have been added to the {@code DependencyManager}
+     * because adding imports with {@link #addImports(java.util.Set)} will reset the classloader and flush away
+     * dependencies.
+     */
     @Override
     public synchronized void use(final String group, final String artifact, final String version) {
         final Map<String, Object> dependency = new HashMap<String, Object>() {{
@@ -135,6 +146,8 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
                 loadedPlugins.add(it.getName());
             }
         });
+
+        artifactsToUse.add(new Artifact(group, artifact, version));
     }
 
     @Override
@@ -165,7 +178,9 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
                 imports.add(s.substring(6).trim());
         });
 
-        this.importCustomizerProvider = new DefaultImportCustomizerProvider(
+        // use the EmptyImportCustomizer because it doesn't come with static initializers containing
+        // existing imports.
+        this.importCustomizerProvider = new EmptyImportCustomizerProvider(
                 this.importCustomizerProvider, imports, staticImports);
         reset();
     }
@@ -189,7 +204,14 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         this.classMap.clear();
         this.globalClosures.clear();
 
+        this.loadedPlugins.clear();
+        artifactsToUse.forEach(this::use);
+
         this.getContext().getBindings(ScriptContext.ENGINE_SCOPE).clear();
+    }
+
+    private void use(final Artifact artifact) {
+        use(artifact.getGroup(), artifact.getArtifact(), artifact.getVersion());
     }
 
     public Object eval(final Reader reader, final ScriptContext context) throws ScriptException {

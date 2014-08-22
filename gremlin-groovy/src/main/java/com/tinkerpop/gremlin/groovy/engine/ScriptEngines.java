@@ -128,7 +128,13 @@ public class ScriptEngines implements AutoCloseable {
         signalControlOp();
 
         try {
-            getDependencyManagers().forEach(dm -> dm.use(group, artifact, version));
+            getDependencyManagers().forEach(dm -> {
+                try {
+                    dm.use(group, artifact, version);
+                } catch (Exception ex) {
+                    logger.warn("Could not get dependency for [{}, {}, {}]", group, artifact, version);
+                }
+            });
         } finally {
             controlOperationExecuting = false;
         }
