@@ -26,7 +26,6 @@ class ControlOps {
     public static void versionOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
         context.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(msg).code(ResultCode.SUCCESS).contents(ResultType.OBJECT).result(Gremlin.version()));
-        context.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(msg).code(ResultCode.SUCCESS_TERMINATOR).create());
     }
 
     /**
@@ -60,7 +59,6 @@ class ControlOps {
 
         try {
             context.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(msg).code(ResultCode.SUCCESS).contents(ResultType.OBJECT).result(infoToShow).create());
-            context.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(msg).code(ResultCode.SUCCESS_TERMINATOR).create());
         } catch (Exception ex) {
             logger.warn("The result [{}] in the request {} could not be serialized and returned.",
                     infoToShow, context.getRequestMessage(), ex);
@@ -74,7 +72,6 @@ class ControlOps {
         final RequestMessage msg = context.getRequestMessage();
         context.getGremlinExecutor().getScriptEngines().reset();
         context.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(msg).code(ResultCode.SUCCESS).contents(ResultType.EMPTY).create());
-        context.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(msg).code(ResultCode.SUCCESS_TERMINATOR).create());
     }
 
     /**
@@ -97,7 +94,6 @@ class ControlOps {
             }};
 
             context.getChannelHandlerContext().write(ResponseMessage.build(msg).code(ResultCode.SUCCESS).contents(ResultType.OBJECT).result(coords).create());
-            context.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(msg).code(ResultCode.SUCCESS_TERMINATOR).create());
         });
     }
 }

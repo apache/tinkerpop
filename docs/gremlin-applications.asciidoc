@@ -449,7 +449,7 @@ When Gremlin Server receives that request, it will decode it given the "mime typ
 |result |The return value as classified by the `resultType`.
 |========================================================= 
 
-Assuming that Gremlin Server is configured to return one result at a time, the first `ResponseMessage` returned to the client would look something like this:
+Gremlin Server will send a single response when the `resultType` is of type object (`resultType=0`) or empty (`resultType=2`). In this case the `ResponseMessage` returned to the client would look something like this:
 
 [source,js]
 ----
@@ -459,7 +459,7 @@ Assuming that Gremlin Server is configured to return one result at a time, the f
  "type":0}
 ----
 
-As Gremlin Server is streaming results, additional responses will arrive over the WebSocket until the iteration of the result on the server is complete.  The response stream is always marked as "complete" by a terminating message.  The "terminator" will look like this:
+Gremlin Server is capable of streaming results when the `resultType` is of type collection (`resultType=1`). When Gremlin Server is streaming results, additional responses will arrive over the WebSocket until the iteration of the result on the server is complete.  Each successful incremental message will have a `ResultCode` of 200. The response stream is always marked as "complete" by a terminating message.  The "terminator" will look like this:
 
 [source,js]
 {"result":null,"code":299,"requestId":"1d6d02bd-8e56-421d-9438-3bd6d0079ff1","type":0}
