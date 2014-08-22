@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.groovy.engine;
 
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
@@ -176,28 +177,27 @@ public class GremlinExecutor implements AutoCloseable {
 
     private ScriptEngines createScriptEngines() {
         final ScriptEngines scriptEngines = new ScriptEngines(se -> {
-            // this first part initializes the scriptengines - it does so without imports as the "use" operation
-            // needs to pull in dependencies first
+            // this first part initializes the scriptengines Map
             for (Map.Entry<String, EngineSettings> config : settings.entrySet()) {
                 final String language = config.getKey();
-                se.reload(language, Collections.emptySet(), Collections.emptySet(), config.getValue().getConfig());
+                se.reload(language, new HashSet<>(config.getValue().getImports()),
+                        new HashSet<>(config.getValue().getStaticImports()), config.getValue().getConfig());
             }
 
-            // use grabs dependencies
+            // use grabs dependencies and returns plugins to load
+            final List<GremlinPlugin> pluginsToLoad = new ArrayList<>();
             use.forEach(u -> {
                 if (u.size() != 3)
                     logger.warn("Could not resolve dependencies for [{}].  Each entry for the 'use' configuration must include [groupId, artifactId, version]", u);
                 else {
                     logger.info("Getting dependencies for [{}]", u);
-                    se.use(u.get(0), u.get(1), u.get(2));
+                    pluginsToLoad.addAll(se.use(u.get(0), u.get(1), u.get(2)));
                 }
             });
 
-            // imports must occur after dependencies are set with "use"
-            for (Map.Entry<String, EngineSettings> config : settings.entrySet()) {
-                se.addImports(config.getValue().getImports().stream().map(i -> "import " + i).collect(Collectors.toSet()));
-                se.addImports(config.getValue().getStaticImports().stream().map(i -> "import static " + i).collect(Collectors.toSet()));
-            }
+            // now that all dependencies are in place, the imports can't get messed up if a plugin tries to execute
+            // a script (as the script engine appends the import list to the top of all scripts passed to the engine)
+            se.loadPlugins(pluginsToLoad);
 
             // initialization script eval can now be performed now that dependencies are present with "use"
             for (Map.Entry<String, EngineSettings> config : settings.entrySet()) {

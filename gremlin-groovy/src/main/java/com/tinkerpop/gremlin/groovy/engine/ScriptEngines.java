@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.jsr223.DependencyManager;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineFactory;
+import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,7 @@ import javax.script.ScriptException;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -124,20 +126,35 @@ public class ScriptEngines implements AutoCloseable {
      * implements {@link DependencyManager}.  For those that do call the @{link DependencyManager#use} method to fire
      * it up.  Waits for any existing script evaluations to complete but then blocks other operations until complete.
      */
-    public void use(final String group, final String artifact, final String version) {
+    public List<GremlinPlugin> use(final String group, final String artifact, final String version) {
         signalControlOp();
 
+        final List<GremlinPlugin> pluginsToLoad = new ArrayList<>();
         try {
             getDependencyManagers().forEach(dm -> {
                 try {
-                    dm.use(group, artifact, version);
+                    pluginsToLoad.addAll(dm.use(group, artifact, version));
                 } catch (Exception ex) {
-                    logger.warn("Could not get dependency for [{}, {}, {}]", group, artifact, version);
+                    logger.warn("Could not get dependency for [{}, {}, {}] - {}", group, artifact, version, ex.getMessage());
                 }
             });
         } finally {
             controlOperationExecuting = false;
         }
+
+        return pluginsToLoad;
+    }
+
+    public void loadPlugins(final List<GremlinPlugin> plugins) {
+        signalControlOp();
+
+        getDependencyManagers().forEach(dm -> {
+            try {
+                dm.loadPlugins(plugins);
+            } finally {
+                controlOperationExecuting = false;
+            }
+        });
     }
 
     @Override

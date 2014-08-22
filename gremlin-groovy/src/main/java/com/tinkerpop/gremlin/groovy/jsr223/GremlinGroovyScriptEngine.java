@@ -37,8 +37,10 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
@@ -125,7 +127,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
      * dependencies.
      */
     @Override
-    public synchronized void use(final String group, final String artifact, final String version) {
+    public synchronized List<GremlinPlugin> use(final String group, final String artifact, final String version) {
         final Map<String, Object> dependency = new HashMap<String, Object>() {{
             put("group", group);
             put("module", artifact);
@@ -140,14 +142,22 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
         // note that the service loader utilized the classloader from the groovy shell as shell class are available
         // from within there given loading through Grape.
-        ServiceLoader.load(GremlinPlugin.class, loader).forEach(it -> {
+        final List<GremlinPlugin> pluginsFound = new ArrayList<>();
+        ServiceLoader.load(GremlinPlugin.class, loader).forEach(pluginsFound::add);
+
+        artifactsToUse.add(new Artifact(group, artifact, version));
+
+        return pluginsFound;
+    }
+
+    @Override
+    public void loadPlugins(final List<GremlinPlugin> plugins) {
+        plugins.forEach(it -> {
             if (!loadedPlugins.contains(it.getName())) {
                 it.pluginTo(new ScriptEnginePluginAcceptor(this));
                 loadedPlugins.add(it.getName());
             }
         });
-
-        artifactsToUse.add(new Artifact(group, artifact, version));
     }
 
     @Override

@@ -1,5 +1,8 @@
 package com.tinkerpop.gremlin.groovy.jsr223;
 
+import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
+
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,11 +16,25 @@ import java.util.Set;
 public interface DependencyManager {
     /**
      * Take maven coordinates and load the classes into the classloader used by the ScriptEngine.  Those ScriptEngines
-     * that can should support script engine plugins by checking if there are any new GremlinPlugin
-     * implementations in the classloader.  The GremlinGroovyScriptEngine implementation uses ServiceLoader to figure
-     * out if there are such classes and then calls the plugInTo() method on that GremlinPlugin interface.
+     * that can support script engine plugins should check if there are any new {@link GremlinPlugin}
+     * implementations in the classloader.  The {@link com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine}
+     * implementation uses ServiceLoader to figure out if there are such classes to return.
+     * <br/>
+     * It is up to the caller to execute the
+     * {@link GremlinPlugin#pluginTo(com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor)} method.  The reason for
+     * this has to do with conflicts that can occur with custom imports that are added via the
+     * {@link com.tinkerpop.gremlin.groovy.ImportCustomizerProvider} and scripts executed through the
+     * {@link com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor}. Generally speaking, all calls to this "use" method
+     * should be complete prior to calling
+     * {@link GremlinPlugin#pluginTo(com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor)}.
      */
-    void use(final String group, final String artifact, final String version);
+    List<GremlinPlugin> use(final String group, final String artifact, final String version);
+
+    /**
+     * Load a list of {@link GremlinPlugin} instances.  These plugins are typically returned from calls to
+     * {@link #use(String, String, String)}.
+     */
+    void loadPlugins(final List<GremlinPlugin> plugins);
 
     /**
      * Perform class imports for the ScriptEngine.
