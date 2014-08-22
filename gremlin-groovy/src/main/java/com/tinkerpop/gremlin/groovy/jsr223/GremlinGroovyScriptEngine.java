@@ -205,7 +205,9 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         this.globalClosures.clear();
 
         this.loadedPlugins.clear();
-        artifactsToUse.forEach(this::use);
+
+        final Set<Artifact> toReuse = new HashSet<>(artifactsToUse);
+        toReuse.forEach(this::use);
 
         this.getContext().getBindings(ScriptContext.ENGINE_SCOPE).clear();
     }
