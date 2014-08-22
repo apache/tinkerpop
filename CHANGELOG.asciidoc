@@ -39,6 +39,7 @@ TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 * Moved `GiraphGraph.getOutputGraph()` to `GiraphHelper`.
 * Changed `GIRAPH_GREMLIN_HOME` to `GIRAPH_GREMLIN_LIB` to reference directory where jars are to be loaded.
 * Updated README with release instructions.
+* Gremlin-Server now sends a single write with status 200 for Object and empty response messages.
 
 TinkerPop 3.0.0.M1 (Release Date: August 12, 2014)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
