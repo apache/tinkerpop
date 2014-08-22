@@ -5,9 +5,9 @@ import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.ExceptTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.GivenTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasNotTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.IntervalTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.RandomTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.RangeTest;
@@ -30,6 +30,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreTest;
@@ -55,6 +56,8 @@ import java.util.stream.Stream;
  * implements ProcessStandardSuite.GraphProvider as a convenience only...it could be implemented in a separate class file):
  * <p>
  * <code>
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  * @RunWith(ProcessStandardSuite.class)
  * @ProcessStandardSuite.GraphProviderClass(TinkerGraphProcessStandardTest.class) public class TinkerGraphProcessStandardTest implements GraphProvider {
  * }
@@ -63,8 +66,6 @@ import java.util.stream.Stream;
  * Implementing {@link com.tinkerpop.gremlin.GraphProvider} provides a way for the ProcessStandardSuite to
  * instantiate Graph instances from the implementation being tested to inject into tests in the suite.  The
  * ProcessStandardSuite will utilized Features defined in the suite to determine which tests will be executed.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ProcessStandardSuite extends AbstractGremlinSuite {
 
@@ -78,6 +79,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             DedupTest.JavaDedupTest.class,
             ExceptTest.JavaExceptTest.class,
             FilterTest.JavaFilterTest.class,
+            GivenTest.JavaGivenTest.class,
             HasNotTest.JavaHasNotTest.class,
             HasTest.JavaHasTest.class,
             InjectTest.JavaInjectTest.class,
@@ -134,6 +136,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             DedupTest.class,
             ExceptTest.class,
             FilterTest.class,
+            GivenTest.class,
             HasNotTest.class,
             HasTest.class,
             InjectTest.class,

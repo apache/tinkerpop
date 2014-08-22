@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -340,6 +341,18 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
 
     public <E2> Neo4jTraversal<Vertex, E2> hasNot(final String key) {
         return this.start().hasNot(key);
+    }
+
+    public Neo4jTraversal<Vertex, Map<String, Object>> given(final String firstKey, final String secondKey, final SBiPredicate predicate) {
+        return this.start().given(firstKey, secondKey, predicate);
+    }
+
+    public Neo4jTraversal<Vertex, Map<String, Object>> given(final String firstKey, final SBiPredicate predicate, final String secondKey) {
+        return this.start().given(firstKey, predicate, secondKey);
+    }
+
+    public Neo4jTraversal<Vertex, Map<String, Object>> given(final String firstKey, final T t, final String secondKey) {
+        return this.start().given(firstKey, t, secondKey);
     }
 
     public <E2> Neo4jTraversal<Vertex, E2> interval(final String key, final Comparable startValue, final Comparable endValue) {

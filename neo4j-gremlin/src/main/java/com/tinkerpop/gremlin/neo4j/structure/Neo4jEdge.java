@@ -312,6 +312,18 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
         return this.start().hasNot(key);
     }
 
+    public Neo4jTraversal<Edge, Map<String, Object>> given(final String firstKey, final String secondKey, final SBiPredicate predicate) {
+        return this.start().given(firstKey, secondKey, predicate);
+    }
+
+    public Neo4jTraversal<Edge, Map<String, Object>> given(final String firstKey, final SBiPredicate predicate, final String secondKey) {
+        return this.start().given(firstKey, predicate, secondKey);
+    }
+
+    public Neo4jTraversal<Edge, Map<String, Object>> given(final String firstKey, final T t, final String secondKey) {
+        return this.start().given(firstKey, t, secondKey);
+    }
+
     public <E2> Neo4jTraversal<Edge, E2> interval(final String key, final Comparable startValue, final Comparable endValue) {
         return this.start().interval(key, startValue, endValue);
     }

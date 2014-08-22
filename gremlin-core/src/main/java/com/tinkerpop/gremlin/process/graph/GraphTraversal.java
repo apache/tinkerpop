@@ -14,11 +14,9 @@ import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.ExceptStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.GivenStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
-import com.tinkerpop.gremlin.process.graph.step.util.IdentityStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.IntervalStep;
-import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RandomStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RangeStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainStep;
@@ -50,12 +48,15 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
+import com.tinkerpop.gremlin.process.graph.step.util.IdentityStep;
+import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.MemoryHelper;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -360,6 +361,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> except(final Collection<E> exceptionCollection) {
         return (GraphTraversal) this.addStep(new ExceptStep<>(this, exceptionCollection));
+    }
+
+    public default GraphTraversal<S, Map<String, Object>> given(final String firstKey, final String secondKey, final SBiPredicate predicate) {
+        return (GraphTraversal) this.addStep(new GivenStep(this, firstKey, secondKey, predicate));
+    }
+
+    public default GraphTraversal<S, Map<String, Object>> given(final String firstKey, final SBiPredicate predicate, final String secondKey) {
+        return this.given(firstKey, secondKey, predicate);
+    }
+
+    public default GraphTraversal<S, Map<String, Object>> given(final String firstKey, final T t, final String secondKey) {
+        return this.given(firstKey, secondKey, T.convert(t));
     }
 
     public default <E2> GraphTraversal<S, E2> has(final String key) {

@@ -13,7 +13,6 @@ import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.BackTest;
 import com.tinkerpop.gremlin.process.graph.step.map.JumpTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
-import com.tinkerpop.gremlin.process.graph.step.map.MatchTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldTest;
@@ -45,6 +44,8 @@ import java.util.stream.Stream;
  * implementation followed by "ProcessComputerStandardSuite".  This class should be annotated as follows (note that the "Suite"
  * implements ProcessComputerStandardSuite.GraphProvider as a convenience only...it could be implemented in a separate class file):
  * <code>
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  * @RunWith(ProcessComputerSuite.class)
  * @ProcessComputerSuite.GraphProviderClass(TinkerGraphProcessComputerTest.class) public class TinkerGraphProcessComputerTest implements GraphProvider {
  * }
@@ -52,8 +53,6 @@ import java.util.stream.Stream;
  * Implementing {@link com.tinkerpop.gremlin.GraphProvider} provides a way for the ProcessComputerStandardSuite to
  * instantiate Graph instances from the implementation being tested to inject into tests in the suite.  The
  * ProcessStandardSuite will utilized Features defined in the suite to determine which tests will be executed.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ProcessComputerSuite extends AbstractGremlinSuite {
 
@@ -86,7 +85,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // TODO: REMOVE? FoldTest.JavaComputerFoldTest.class,
             JumpTest.JavaComputerJumpTest.class,
             MapTest.JavaComputerMapTest.class,
-            MatchTest.JavaComputerMatchTest.class,
+            // TODO: MatchTest.JavaComputerMatchTest.class,
             // TODO: REMOVE? OrderTest.JavaOrderTest.class
             PathTest.JavaComputerPathTest.class,
             SelectTest.JavaComputerSelectTest.class,
@@ -142,7 +141,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // FoldTest.class,
             JumpTest.class,
             MapTest.class,
-            MatchTest.class,
+            // MatchTest.class,
             // OrderTest.class,
             PathTest.class,
             SelectTest.class,
