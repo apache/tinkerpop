@@ -30,7 +30,10 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 /**
- * A GraphStrategy which creates a logical subgraph to selectively include vertices and edges of a Graph according to provided criteria
+ * A GraphStrategy which creates a logical subgraph to selectively include vertices and edges of a Graph according to
+ * provided criteria.  A vertex is in the subgraph if it meets the specified {@link #vertexPredicate}.  An edge
+ * is in the subgraph if it meets the specified {@link #edgePredicate} and its associated vertices meet the
+ * specified {@link #vertexPredicate}.
  *
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -104,8 +107,8 @@ public class SubgraphStrategy implements GraphStrategy {
 
         public void apply(final Traversal traversal) {
             // modify the traversal by appending filters after some steps, replacing others.  the idea is to
-            // find VertexStep instances that return a Vertex and replace those with SubgraphVertexStep.
-            // after each GraphStep, EdgeVertexStep and Vertex step insert a SubgraphFilterStep.
+            // find VertexStep instances and replace them with SubgraphVertexStep. after each GraphStep,
+            // EdgeVertexStep insert a SubgraphFilterStep.
             final List<Class> insertAfterSteps = Arrays.<Class>asList(GraphStep.class, EdgeVertexStep.class);
             final List<Integer> insertAfterPositions = new ArrayList<>();
             final List<Integer> replacePositions = new ArrayList<>();
@@ -149,8 +152,8 @@ public class SubgraphStrategy implements GraphStrategy {
     }
 
     /**
-     * A step that wraps up the traversal allowing the results to be iterated within the context of the following
-     * {@link com.tinkerpop.gremlin.structure.strategy.SubgraphStrategy.SubgraphFilterStep}.
+     * A step that wraps up the adjacent traversal from the vertex allowing the results to be iterated within the
+     * context of the subgraph filters.
      */
     private class SubgraphVertexStep<E extends Element> extends FlatMapStep<Vertex, E> { // TODO: implement Reversible
 
@@ -168,7 +171,7 @@ public class SubgraphStrategy implements GraphStrategy {
             super(traversal);
             this.direction = direction;
             this.setFunction(traverser -> {
-                Vertex nextVertex = traverser.get();
+                final Vertex nextVertex = traverser.get();
                 if (testVertex(nextVertex)) {
 
                     Iterator<E> iter = null;
@@ -192,7 +195,6 @@ public class SubgraphStrategy implements GraphStrategy {
                         iter = (Iterator<E>) vertexIter;
                     } else {
                         Iterator<Edge> edgeIter = null;
-
                         switch (direction) {
                             case OUT:
                                 edgeIter = nextVertex.outE(labels);
@@ -206,13 +208,11 @@ public class SubgraphStrategy implements GraphStrategy {
                         }
 
                         edgeIter = new EdgeIterator(edgeIter);
-
                         iter = (Iterator<E>) edgeIter;
                     }
 
-                    if (branchFactor > 0) {
+                    if (branchFactor > 0)
                         iter = new BranchFactorIterator<>(branchFactor, iter);
-                    }
 
                     return iter;
                 } else {
@@ -248,18 +248,15 @@ public class SubgraphStrategy implements GraphStrategy {
         }
 
         public Edge next() {
-            if (null == nextElement) {
-                throw new NoSuchElementException();
-            }
-
-            Edge tmp = nextElement;
+            if (null == nextElement) throw new NoSuchElementException();
+            final Edge tmp = nextElement;
             advanceToNext();
             return tmp;
         }
 
         private void advanceToNext() {
             while (baseIterator.hasNext()) {
-                Edge nextBaseElement = baseIterator.next();
+                final Edge nextBaseElement = baseIterator.next();
                 if (testEdge(nextBaseElement)) {
                     nextElement = nextBaseElement;
                     return;
@@ -281,13 +278,9 @@ public class SubgraphStrategy implements GraphStrategy {
 
         private EdgeVertexIterator(final Direction direction,
                                    final Iterator<Edge> baseIterator) {
-            if (direction == Direction.BOTH) {
-                throw new IllegalArgumentException();
-            }
-
+            if (direction == Direction.BOTH) throw new IllegalArgumentException();
             this.direction = direction;
             this.edgeIterator = baseIterator;
-
             advanceToNext();
         }
 
@@ -296,11 +289,8 @@ public class SubgraphStrategy implements GraphStrategy {
         }
 
         public Vertex next() {
-            if (null == nextVertex) {
-                throw new NoSuchElementException();
-            }
-
-            Vertex tmp = nextVertex;
+            if (null == nextVertex) throw new NoSuchElementException();
+            final Vertex tmp = nextVertex;
             advanceToNext();
             return tmp;
         }
@@ -308,7 +298,7 @@ public class SubgraphStrategy implements GraphStrategy {
         private void advanceToNext() {
             do {
                 while (null != vertexIterator && vertexIterator.hasNext()) {
-                    Vertex nextBaseVertex = vertexIterator.next();
+                    final Vertex nextBaseVertex = vertexIterator.next();
                     if (testVertex(nextBaseVertex)) {
                         nextVertex = nextBaseVertex;
                         return;
@@ -320,10 +310,9 @@ public class SubgraphStrategy implements GraphStrategy {
                     return;
                 }
 
-                Edge nextBaseEdge = edgeIterator.next();
+                final Edge nextBaseEdge = edgeIterator.next();
                 if (testEdge(nextBaseEdge)) {
                     nextEdge = nextBaseEdge;
-
                     switch (direction) {
                         case OUT:
                             vertexIterator = nextEdge.inV();
@@ -353,10 +342,7 @@ public class SubgraphStrategy implements GraphStrategy {
         }
 
         public V next() {
-            if (count >= branchFactor) {
-                throw new NoSuchElementException();
-            }
-
+            if (count >= branchFactor) throw new NoSuchElementException();
             count++;
             return baseIterator.next();
         }
@@ -367,11 +353,9 @@ public class SubgraphStrategy implements GraphStrategy {
         private int iteratorIndex;
         private V nextItem;
 
-        private MultiIterator(Iterator<V>... baseIterators) {
+        private MultiIterator(final Iterator<V>... baseIterators) {
             this.baseIterators = baseIterators;
-            if (0 == baseIterators.length) {
-                throw new IllegalArgumentException("must supply at least one base iterator");
-            }
+            if (0 == baseIterators.length) throw new IllegalArgumentException("must supply at least one base iterator");
             iteratorIndex = 0;
             advanceToNext();
         }
@@ -381,10 +365,7 @@ public class SubgraphStrategy implements GraphStrategy {
         }
 
         public V next() {
-            if (null == nextItem) {
-                throw new NoSuchElementException();
-            }
-
+            if (null == nextItem) throw new NoSuchElementException();
             V tmp = nextItem;
             advanceToNext();
             return tmp;
@@ -394,9 +375,8 @@ public class SubgraphStrategy implements GraphStrategy {
             nextItem = null;
 
             do {
-                if (iteratorIndex >= baseIterators.length) {
+                if (iteratorIndex >= baseIterators.length)
                     return;
-                }
 
                 if (baseIterators[iteratorIndex].hasNext()) {
                     nextItem = baseIterators[iteratorIndex].next();
