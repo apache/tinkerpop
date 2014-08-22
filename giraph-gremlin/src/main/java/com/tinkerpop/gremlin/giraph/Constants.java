@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.giraph;
 import com.esotericsoftware.kryo.Kryo;
 import com.tinkerpop.gremlin.giraph.process.computer.util.RuleWritable;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.structure.Graph;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -22,13 +23,13 @@ public class Constants {
     public static final String GIRAPH_VERTEX_INPUT_FORMAT_CLASS = "giraph.vertexInputFormatClass";
     public static final String GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS = "giraph.vertexOutputFormatClass";
     public static final String GREMLIN_JARS_IN_DISTRIBUTED_CACHE = "gremlin.jarsInDistributedCache";
-    public static final String TILDA_G = "~g";
+    public static final String HIDDEN_G = Graph.Key.hide("g");
     public static final String GIRAPH_GREMLIN_JOB_PREFIX = "GiraphGremlin: ";
     public static final String GIRAPH_GREMLIN_LIBS = "GIRAPH_GREMLIN_LIBS";
     public static final String DOT_JAR = ".jar";
     public static final String GREMLIN_DERIVE_MEMORY = "gremlin.deriveMemory";
     public static final String GREMLIN_MEMORY_OUTPUT_FORMAT_CLASS = "gremlin.memoryOutputFormatClass";
-    public static final String TILDA_MEMORY = "~memory";
+    public static final String HIDDEN_MEMORY = Graph.Key.hide("memory");
     public static final String RUNTIME = "runtime";
     public static final String ITERATION = "iteration";
     public static final String GREMLIN_MEMORY_KEYS = "gremlin.memoryKeys";

@@ -136,7 +136,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
                 if (!FileSystem.get(this.giraphConfiguration).exists(inputPath))
                     throw new IllegalArgumentException("The provided input path does not exist: " + inputPath);
                 FileInputFormat.setInputPaths(job.getInternalJob(), inputPath);
-                FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + Constants.TILDA_G));
+                FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + Constants.HIDDEN_G));
                 // job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
                 LOGGER.info(Constants.GIRAPH_GREMLIN_JOB_PREFIX + this.vertexProgram);
                 job.run(true);

@@ -25,7 +25,7 @@ public class MemoryMapReduce implements MapReduce<String, Object, String, Object
     public Set<String> memoryKeys = new HashSet<>();
 
     public String getSideEffectKey() {
-        return Constants.TILDA_MEMORY;
+        return Constants.HIDDEN_MEMORY;
     }
 
     public MemoryMapReduce() {
