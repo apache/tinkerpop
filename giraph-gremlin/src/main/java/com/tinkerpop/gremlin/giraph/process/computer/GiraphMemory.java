@@ -55,8 +55,8 @@ public class GiraphMemory extends MasterCompute implements Memory {
             try {
                 for (final String key : this.memoryKeys) {
                     MemoryHelper.validateKey(key);
-                    this.registerPersistentAggregator(key, MemoryAggregator.class);
-                    this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.NO_OP, null)); // for those memory not defined during setup(), necessary to provide a default value
+                    this.registerAggregator(key, MemoryAggregator.class);  // TODO: NO LONGER PERSISTENT (NEED MORE THOUGHTS)
+                    // this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.SET, null)); // for those memory not defined during setup(), necessary to provide a default value
                 }
                 this.registerPersistentAggregator(Constants.RUNTIME, MemoryAggregator.class);
                 this.set(Constants.RUNTIME, System.currentTimeMillis());
@@ -109,9 +109,9 @@ public class GiraphMemory extends MasterCompute implements Memory {
             this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.AND, value));
             return value;
         } else {
-            this.giraphInternalVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.AND, bool));
             final Boolean result = ((RuleWritable) this.giraphInternalVertex.getAggregatedValue(key)).getObject();
-            return null == result ? bool : result;
+            this.giraphInternalVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.AND, bool));
+            return null == result ? bool : result && bool;
         }
     }
 
@@ -123,9 +123,9 @@ public class GiraphMemory extends MasterCompute implements Memory {
             this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.OR, value));
             return value;
         } else {
-            this.giraphInternalVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.OR, bool));
             final Boolean result = ((RuleWritable) this.giraphInternalVertex.getAggregatedValue(key)).getObject();
-            return null == result ? bool : result;
+            this.giraphInternalVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.OR, bool));
+            return null == result ? bool : result || bool;
         }
     }
 
@@ -137,9 +137,9 @@ public class GiraphMemory extends MasterCompute implements Memory {
             this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.INCR, value));
             return value.longValue();
         } else {
-            this.giraphInternalVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.INCR, delta));
             final Long result = ((RuleWritable) this.giraphInternalVertex.getAggregatedValue(key)).getObject();
-            return null == result ? delta : result;
+            this.giraphInternalVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.INCR, delta));
+            return null == result ? delta : result + delta;
         }
     }
 

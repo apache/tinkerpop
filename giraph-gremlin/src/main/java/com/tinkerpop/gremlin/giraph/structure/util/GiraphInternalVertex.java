@@ -77,8 +77,10 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
         this.vertexProgram.execute(this.tinkerVertex, new GiraphMessenger(this, messages), this.memory);
         if (this.getConf().getBoolean(Constants.GREMLIN_DERIVE_MEMORY, false)) {
             this.memory.keys().forEach(key -> {
-                if (this.memory.exists(key))
+                if (this.memory.exists(key)) {
+                    // TODO: make this a HashMap
                     this.tinkerVertex.<Object>property(Graph.Key.hide(key), this.memory.get(key));
+                }
             });
             this.tinkerVertex.property(Graph.Key.hide(Constants.ITERATION), this.memory.getIteration());
         }
