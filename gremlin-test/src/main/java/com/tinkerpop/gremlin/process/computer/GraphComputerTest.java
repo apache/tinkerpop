@@ -224,30 +224,40 @@ public class GraphComputerTest extends AbstractGremlinTest {
     public void shouldHaveConsistentMemoryAndExceptions() throws Exception {
         GraphComputer computer = g.compute();
         ComputerResult results = computer.program(LambdaVertexProgram.build().
-                setup(s -> s.set("or", true)).
+                setup(s -> {
+                    s.and("or", true);
+                    s.and("otherOr", false);
+                }).
                 execute((v, m, s) -> {
+                    s.incr("incrCounter", 1);
                     if (s.isInitialIteration()) {
                         v.property("nameLengthCounter", v.<String>value("name").length());
                         s.incr("counter", v.<String>value("name").length());
                         s.and("and", v.<String>value("name").length() == 5);
                         s.and("or", false);
+                        s.and("otherOr", false);
                     } else
                         v.property("nameLengthCounter", v.<String>value("name").length() + v.<Integer>value("nameLengthCounter"));
                 }).
                 terminate(s -> s.getIteration() >= 2).
                 elementComputeKeys("nameLengthCounter", VertexProgram.KeyType.VARIABLE).
-                memoryComputeKeys(new HashSet<>(Arrays.asList("counter", "and", "or"))).create()).submit().get();
+                memoryComputeKeys(new HashSet<>(Arrays.asList("counter", "incrCounter", "and", "or", "otherOr"))).create()).submit().get();
+        // System.out.println("!!!!!!!!" + results.getMemory().asMap());
         assertEquals(1, results.getMemory().getIteration());
-        assertEquals(3, results.getMemory().asMap().size());
-        assertEquals(3, results.getMemory().keys().size());
+        assertEquals(5, results.getMemory().asMap().size());
+        assertEquals(5, results.getMemory().keys().size());
         assertTrue(results.getMemory().keys().contains("counter"));
+        assertTrue(results.getMemory().keys().contains("incrCounter"));
         assertTrue(results.getMemory().keys().contains("and"));
         assertTrue(results.getMemory().keys().contains("or"));
+        assertTrue(results.getMemory().keys().contains("otherOr"));
         assertTrue(results.getMemory().getRuntime() >= 0);
 
+        assertEquals(Long.valueOf(12), results.getMemory().<Long>get("incrCounter"));
         assertEquals(Long.valueOf(28), results.getMemory().<Long>get("counter"));
         assertFalse(results.getMemory().<Boolean>get("and"));
         assertFalse(results.getMemory().<Boolean>get("or"));
+        assertFalse(results.getMemory().<Boolean>get("otherOr"));
         try {
             results.getMemory().get("BAD");
             fail("Should throw an IllegalArgumentException");

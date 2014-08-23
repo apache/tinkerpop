@@ -1,13 +1,9 @@
 package com.tinkerpop.gremlin.giraph.process.computer.util;
 
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-import com.tinkerpop.gremlin.giraph.Constants;
+import com.tinkerpop.gremlin.util.Serializer;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -18,7 +14,7 @@ import java.io.IOException;
 public class RuleWritable implements Writable {
 
     public enum Rule {
-        OR, AND, INCR, SET, NO_OP
+        OR, AND, INCR, SET;
     }
 
     private Rule rule;
@@ -45,6 +41,18 @@ public class RuleWritable implements Writable {
 
     public void readFields(final DataInput input) throws IOException {
         this.rule = Rule.values()[WritableUtils.readVInt(input)];
+        final int objectLength = WritableUtils.readVInt(input);
+        final byte[] objectBytes = new byte[objectLength];
+        for (int i = 0; i < objectLength; i++) {
+            objectBytes[i] = input.readByte();
+        }
+        try {
+            this.object = Serializer.deserializeObject(objectBytes);
+        } catch (final ClassNotFoundException e) {
+            throw new IOException(e.getMessage(), e);
+        }
+
+        /*this.rule = Rule.values()[WritableUtils.readVInt(input)];
         int objectLength = WritableUtils.readVInt(input);
         byte[] bytes = new byte[objectLength];
         for (int i = 0; i < objectLength; i++) {
@@ -52,10 +60,16 @@ public class RuleWritable implements Writable {
         }
         final Input in = new Input(new ByteArrayInputStream(bytes));
         this.object = Constants.KRYO.readClassAndObject(in);
-        in.close();
+        in.close();*/
     }
 
     public void write(final DataOutput output) throws IOException {
+        WritableUtils.writeVInt(output, this.rule.ordinal());
+        final byte[] objectBytes = Serializer.serializeObject(this.object);
+        WritableUtils.writeVInt(output, objectBytes.length);
+        output.write(objectBytes);
+
+        /*
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final Output out = new Output(outputStream);
         Constants.KRYO.writeClassAndObject(out, this.object);
@@ -63,7 +77,11 @@ public class RuleWritable implements Writable {
         WritableUtils.writeVInt(output, this.rule.ordinal());
         WritableUtils.writeVInt(output, outputStream.toByteArray().length);
         output.write(outputStream.toByteArray());
-        out.close();
+        out.close(); */
+    }
+
+    public String toString() {
+        return this.rule + ":" + this.object;
     }
 
 }
