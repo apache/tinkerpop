@@ -41,7 +41,7 @@ public class PageRankVertexProgramTest extends AbstractGremlinTest {
             else
                 throw new IllegalStateException("The following vertex should not exist in the graph: " + name);
         });
-        assertEquals(result.getMemory().getIteration(), 29);
+        assertEquals(result.getMemory().getIteration(), 30);
         assertEquals(result.getMemory().asMap().size(), 0);
     }
 

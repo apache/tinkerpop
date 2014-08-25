@@ -26,7 +26,7 @@ public class TinkerGraphComputer implements GraphComputer {
     private Isolation isolation = Isolation.BSP;
     private VertexProgram vertexProgram;
     private final TinkerGraph graph;
-    private TinkerMemory sideEffects;
+    private TinkerMemory memory;
     private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
     private final List<MapReduce> mapReduces = new ArrayList<>();
@@ -65,22 +65,30 @@ public class TinkerGraphComputer implements GraphComputer {
             this.mapReduces.addAll(this.vertexProgram.getMapReducers());
         }
 
-        this.sideEffects = new TinkerMemory(this.vertexProgram, this.mapReduces);
+        this.memory = new TinkerMemory(this.vertexProgram, this.mapReduces);
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
             if (null != this.vertexProgram) {
                 TinkerGraphView graphView = TinkerHelper.createGraphView(this.graph, this.isolation, this.vertexProgram.getElementComputeKeys());
                 // execute the vertex program
-                this.vertexProgram.setup(this.sideEffects);
+                this.vertexProgram.setup(this.memory);
+                this.memory.completeSubRound();
                 while (true) {
                     StreamFactory.parallelStream(this.graph.V()).forEach(vertex ->
                             this.vertexProgram.execute(vertex,
                                     new TinkerMessenger(vertex, this.messageBoard, this.vertexProgram.getMessageCombiner()),
-                                    this.sideEffects));
-                    this.sideEffects.incrIteration();
+                                    this.memory));
                     graphView.completeIteration();
                     this.messageBoard.completeIteration();
-                    if (this.vertexProgram.terminate(this.sideEffects)) break;
+                    this.memory.completeSubRound();
+                    if (this.vertexProgram.terminate(this.memory)) {
+                        this.memory.incrIteration();
+                        this.memory.completeSubRound();
+                        break;
+                    } else {
+                        this.memory.incrIteration();
+                        this.memory.completeSubRound();
+                    }
                 }
             }
 
@@ -94,16 +102,16 @@ public class TinkerGraphComputer implements GraphComputer {
                     if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
                         final TinkerReduceEmitter reduceEmitter = new TinkerReduceEmitter();
                         mapEmitter.reduceMap.forEach((k, v) -> mapReduce.reduce(k, ((List) v).iterator(), reduceEmitter));
-                        mapReduce.addSideEffectToMemory(this.sideEffects, reduceEmitter.resultList.iterator());
+                        mapReduce.addSideEffectToMemory(this.memory, reduceEmitter.resultList.iterator());
                     } else {
-                        mapReduce.addSideEffectToMemory(this.sideEffects, mapEmitter.mapList.iterator());
+                        mapReduce.addSideEffectToMemory(this.memory, mapEmitter.mapList.iterator());
                     }
                 }
             }
             // update runtime and return the newly computed graph
-            this.sideEffects.setRuntime(System.currentTimeMillis() - time);
-            this.sideEffects.complete();
-            return new ComputerResult(this.graph, this.sideEffects);
+            this.memory.setRuntime(System.currentTimeMillis() - time);
+            this.memory.complete();
+            return new ComputerResult(this.graph, this.memory);
         });
     }
 

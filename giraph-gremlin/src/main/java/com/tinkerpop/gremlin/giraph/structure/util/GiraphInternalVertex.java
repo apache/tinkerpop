@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.giraph.process.computer.GiraphMemory;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphMessenger;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.computer.util.KryoWritable;
+import com.tinkerpop.gremlin.giraph.process.computer.util.RuleWritable;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Element;
@@ -74,15 +75,16 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
         if (null == this.memory)
             this.memory = new GiraphMemory(this, this.vertexProgram);
 
-        this.vertexProgram.execute(this.tinkerVertex, new GiraphMessenger(this, messages), this.memory);
-        if (this.getConf().getBoolean(Constants.GREMLIN_DERIVE_MEMORY, false)) {
+        if (!(Boolean) ((RuleWritable) this.getAggregatedValue(Constants.GREMLIN_HALT)).getObject()) {
+            this.vertexProgram.execute(this.tinkerVertex, new GiraphMessenger(this, messages), this.memory);
+        } else if (this.getConf().getBoolean(Constants.GREMLIN_DERIVE_MEMORY, false)) {
             this.memory.keys().forEach(key -> {
                 if (this.memory.exists(key)) {
                     // TODO: make this a HashMap
                     this.tinkerVertex.<Object>property(Graph.Key.hide(key), this.memory.get(key));
                 }
             });
-            this.tinkerVertex.property(Graph.Key.hide(Constants.ITERATION), this.memory.getIteration());
+            this.tinkerVertex.property(Graph.Key.hide(Constants.ITERATION), this.memory.getIteration() - 1);
         }
     }
 

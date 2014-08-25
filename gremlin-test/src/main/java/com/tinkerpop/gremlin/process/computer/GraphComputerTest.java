@@ -58,11 +58,11 @@ public class GraphComputerTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldHaveImmutableComputeResultMemory() throws Exception {
         final ComputerResult results = g.compute().program(LambdaVertexProgram.build().
-                setup(s -> {
+                setup(memory -> {
                 }).
-                execute((v, m, s) -> {
+                execute((vertex, messenger, memory) -> {
                 }).
-                terminate(s -> true).memoryComputeKeys(new HashSet<>(Arrays.asList("set", "incr", "and", "or"))).create()).submit().get();
+                terminate(memory -> true).memoryComputeKeys(new HashSet<>(Arrays.asList("set", "incr", "and", "or"))).create()).submit().get();
 
         try {
             results.getMemory().set("set", "test");
@@ -103,10 +103,10 @@ public class GraphComputerTest extends AbstractGremlinTest {
     public void shouldNotAllowBadMemoryKeys() throws Exception {
         try {
             g.compute().program(LambdaVertexProgram.build().
-                    setup(s -> s.set("", true)).
-                    execute((v, m, s) -> {
+                    setup(memory -> memory.set("", true)).
+                    execute((vertex, messenger, memory) -> {
                     }).
-                    terminate(s -> true).memoryComputeKeys(new HashSet<>(Arrays.asList("")))
+                    terminate(memory -> true).memoryComputeKeys(new HashSet<>(Arrays.asList("")))
                     .create()).submit().get();
             fail("Providing empty memory key should fail");
         } catch (Exception ex) {
@@ -117,10 +117,10 @@ public class GraphComputerTest extends AbstractGremlinTest {
 
         try {
             g.compute().program(LambdaVertexProgram.build().
-                    setup(s -> s.set("blah", null)).
-                    execute((v, m, s) -> {
+                    setup(memory -> memory.set("blah", null)).
+                    execute((vertex, messenger, memory) -> {
                     }).
-                    terminate(s -> true).memoryComputeKeys(new HashSet<>(Arrays.asList(""))).
+                    terminate(memory -> true).memoryComputeKeys(new HashSet<>(Arrays.asList(""))).
                     memoryComputeKeys(new HashSet<>(Arrays.asList("blah")))
                     .create()).submit().get();
             fail("Providing null memory key should fail");
@@ -192,10 +192,10 @@ public class GraphComputerTest extends AbstractGremlinTest {
     public void shouldRequireRegisteringMemoryKeys() throws Exception {
         try {
             g.compute().program(LambdaVertexProgram.build().
-                    setup(s -> s.set("or", true)).
-                    execute((v, m, s) -> {
+                    setup(memory -> memory.set("or", true)).
+                    execute((vertex, messenger, memory) -> {
                     }).
-                    terminate(s -> s.getIteration() >= 2).create()).submit().get();
+                    terminate(memory -> memory.getIteration() >= 2).create()).submit().get();
             // TODO: Giraph fails HARD and kills the process (thus, test doesn't proceed past this point)
             fail("Should fail with an ExecutionException[IllegalArgumentException]");
         } catch (ExecutionException e) {
@@ -207,6 +207,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC_DOUBLE)
+
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldAllowMapReduceWithNoVertexProgram() throws Exception {
         final ComputerResult results = g.compute().mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()
@@ -221,43 +222,31 @@ public class GraphComputerTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC_DOUBLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
-    public void shouldHaveConsistentMemoryAndExceptions() throws Exception {
+    public void shouldHaveConsistentMemoryVertexPropertiesAndExceptions() throws Exception {
         GraphComputer computer = g.compute();
         ComputerResult results = computer.program(LambdaVertexProgram.build().
-                setup(s -> {
-                    s.and("or", true);
-                    s.and("otherOr", false);
+                setup(memory -> {
                 }).
-                execute((v, m, s) -> {
-                    s.incr("incrCounter", 1);
-                    if (s.isInitialIteration()) {
-                        v.property("nameLengthCounter", v.<String>value("name").length());
-                        s.incr("counter", v.<String>value("name").length());
-                        s.and("and", v.<String>value("name").length() == 5);
-                        s.and("or", false);
-                        s.and("otherOr", false);
+                execute((vertex, messenger, memory) -> {
+                    memory.incr("a", 1);
+                    if (memory.isInitialIteration()) {
+                        vertex.property("nameLengthCounter", vertex.<String>value("name").length());
+                        memory.incr("b", vertex.<String>value("name").length());
                     } else
-                        v.property("nameLengthCounter", v.<String>value("name").length() + v.<Integer>value("nameLengthCounter"));
+                        vertex.property("nameLengthCounter", vertex.<String>value("name").length() + vertex.<Integer>value("nameLengthCounter"));
                 }).
-                terminate(s -> s.getIteration() >= 2).
+                terminate(memory -> memory.getIteration() == 1).
                 elementComputeKeys("nameLengthCounter", VertexProgram.KeyType.VARIABLE).
-                memoryComputeKeys(new HashSet<>(Arrays.asList("counter", "incrCounter", "and", "or", "otherOr"))).create()).submit().get();
-        // System.out.println("!!!!!!!!" + results.getMemory().asMap());
+                memoryComputeKeys(new HashSet<>(Arrays.asList("a", "b"))).create()).submit().get();
         assertEquals(1, results.getMemory().getIteration());
-        assertEquals(5, results.getMemory().asMap().size());
-        assertEquals(5, results.getMemory().keys().size());
-        assertTrue(results.getMemory().keys().contains("counter"));
-        assertTrue(results.getMemory().keys().contains("incrCounter"));
-        assertTrue(results.getMemory().keys().contains("and"));
-        assertTrue(results.getMemory().keys().contains("or"));
-        assertTrue(results.getMemory().keys().contains("otherOr"));
+        assertEquals(2, results.getMemory().asMap().size());
+        assertEquals(2, results.getMemory().keys().size());
+        assertTrue(results.getMemory().keys().contains("a"));
+        assertTrue(results.getMemory().keys().contains("b"));
         assertTrue(results.getMemory().getRuntime() >= 0);
 
-        assertEquals(Long.valueOf(12), results.getMemory().<Long>get("incrCounter"));
-        assertEquals(Long.valueOf(28), results.getMemory().<Long>get("counter"));
-        assertFalse(results.getMemory().<Boolean>get("and"));
-        assertFalse(results.getMemory().<Boolean>get("or"));
-        assertFalse(results.getMemory().<Boolean>get("otherOr"));
+        assertEquals(Long.valueOf(12), results.getMemory().<Long>get("a"));   // 2 iterations
+        assertEquals(Long.valueOf(28), results.getMemory().<Long>get("b"));
         try {
             results.getMemory().get("BAD");
             fail("Should throw an IllegalArgumentException");
@@ -277,8 +266,8 @@ public class GraphComputerTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldSupportMultipleMapReduceJobs() throws Exception {
         final ComputerResult results = g.compute().program(LambdaVertexProgram.build()
-                .execute((v, m, s) -> v.<Integer>property("counter", s.isInitialIteration() ? 1 : v.<Integer>value("counter") + 1))
-                .terminate(s -> s.getIteration() > 9)
+                .execute((vertex, messenger, memory) -> vertex.<Integer>property("counter", memory.isInitialIteration() ? 1 : vertex.<Integer>value("counter") + 1))
+                .terminate(memory -> memory.getIteration() > 8)
                 .elementComputeKeys("counter", VertexProgram.KeyType.VARIABLE).create())
                 .mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()
                         .map((v, e) -> e.emit(MapReduce.NullObject.instance(), v.value("counter")))
@@ -303,6 +292,65 @@ public class GraphComputerTest extends AbstractGremlinTest {
 
         assertEquals(60, results.getMemory().<Integer>get("a").intValue());
         assertEquals(1, results.getMemory().<Integer>get("b").intValue());
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC_DOUBLE)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
+    public void shouldAndOrIncrCorrectlyThroughSubStages() throws Exception {
+        GraphComputer computer = g.compute();
+        ComputerResult results = computer.program(LambdaVertexProgram.build().
+                setup(memory -> {
+                    memory.set("a", 0l);
+                    memory.set("b", 0l);
+                    memory.set("c", true);
+                    memory.set("d", false);
+                    memory.set("e", true);
+                }).
+                execute((vertex, messenger, memory) -> {
+                    assertEquals(Long.valueOf(6 * memory.getIteration()), memory.get("a"));
+                    assertEquals(Long.valueOf(0), memory.get("b"));
+                    if (memory.isInitialIteration()) {
+                        assertTrue(memory.get("c"));
+                        assertFalse(memory.get("d"));
+                    } else {
+                        assertFalse(memory.get("c"));
+                        assertTrue(memory.get("d"));
+                    }
+                    assertTrue(memory.get("e"));
+
+                    memory.incr("a", 1l);
+                    memory.incr("b", 1l);
+                    memory.and("c", false);
+                    memory.or("d", true);
+                    memory.and("e", false);
+                }).
+                terminate(memory -> {
+                    assertEquals(Long.valueOf(6 * (memory.getIteration() + 1)), memory.get("a"));
+                    assertEquals(Long.valueOf(6), memory.get("b"));
+                    assertFalse(memory.get("c"));
+                    assertTrue(memory.get("d"));
+                    assertFalse(memory.get("e"));
+                    memory.set("b", 0l);
+                    memory.set("e", true);
+                    return memory.getIteration() > 1;
+                }).
+                memoryComputeKeys(new HashSet<>(Arrays.asList("a", "b", "c", "d", "e"))).create()).submit().get();
+        assertEquals(2, results.getMemory().getIteration());
+        assertEquals(5, results.getMemory().asMap().size());
+        assertEquals(5, results.getMemory().keys().size());
+        assertTrue(results.getMemory().keys().contains("a"));
+        assertTrue(results.getMemory().keys().contains("b"));
+        assertTrue(results.getMemory().keys().contains("c"));
+        assertTrue(results.getMemory().keys().contains("d"));
+        assertTrue(results.getMemory().keys().contains("e"));
+
+        assertEquals(Long.valueOf(18), results.getMemory().get("a"));
+        assertEquals(Long.valueOf(0), results.getMemory().get("b"));
+        assertFalse(results.getMemory().get("c"));
+        assertTrue(results.getMemory().get("d"));
+        assertTrue(results.getMemory().get("e"));
+
     }
 
     private static LambdaVertexProgram identity() {

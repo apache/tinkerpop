@@ -34,5 +34,6 @@ public class Constants {
     public static final String ITERATION = "iteration";
     public static final String GREMLIN_MEMORY_KEYS = "gremlin.memoryKeys";
     public static final String MAP_REDUCE_CLASS = "gremlin.mapReduceClass";
+    public static final String GREMLIN_HALT = "gremlinHalt";
 
 }

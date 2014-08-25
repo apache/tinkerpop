@@ -45,30 +45,41 @@ public class GiraphMemory extends MasterCompute implements Memory {
 
     public void compute() {
         this.isMasterCompute = true;
-        if (!this.isInitialIteration()) { // the master compute is the first evaluation, thus, don't check for termination at start
-            if (this.vertexProgram.terminate(this)) {
-                this.haltComputation();
-            }
-        } else {
+        if (0 == this.getSuperstep()) { // setup
             this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getConf()));
             this.memoryKeys = new HashSet<String>(this.vertexProgram.getMemoryComputeKeys());
             try {
                 for (final String key : this.memoryKeys) {
                     MemoryHelper.validateKey(key);
-                    this.registerAggregator(key, MemoryAggregator.class);  // TODO: NO LONGER PERSISTENT (NEED MORE THOUGHTS)
-                    // this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.SET, null)); // for those memory not defined during setup(), necessary to provide a default value
+                    this.registerPersistentAggregator(key, MemoryAggregator.class);
                 }
+                this.registerPersistentAggregator(Constants.GREMLIN_HALT, MemoryAggregator.class);
                 this.registerPersistentAggregator(Constants.RUNTIME, MemoryAggregator.class);
+                this.setAggregatedValue(Constants.GREMLIN_HALT, new RuleWritable(RuleWritable.Rule.SET, false));
                 this.set(Constants.RUNTIME, System.currentTimeMillis());
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
             this.vertexProgram.setup(this);
+        } else {
+            if (this.get(Constants.GREMLIN_HALT)) {
+                this.haltComputation();
+            } else if (this.vertexProgram.terminate(this)) { // terminate
+                //if (this.getConf().getBoolean(Constants.GREMLIN_DERIVE_MEMORY, false))
+                //   this.haltComputation();
+                // else
+                this.setAggregatedValue(Constants.GREMLIN_HALT, new RuleWritable(RuleWritable.Rule.SET, true));
+            }
         }
     }
 
     public int getIteration() {
-        return this.isMasterCompute ? (int) this.getSuperstep() : (int) this.giraphInternalVertex.getSuperstep();
+        if (this.isMasterCompute) {
+            final int temp = (int) this.getSuperstep();
+            return temp == 0 ? temp : temp - 1;
+        } else {
+            return (int) this.giraphInternalVertex.getSuperstep();
+        }
     }
 
     public long getRuntime() {
