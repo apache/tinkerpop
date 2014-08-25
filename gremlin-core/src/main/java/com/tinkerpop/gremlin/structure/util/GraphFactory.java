@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure.util;
 
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import com.tinkerpop.gremlin.structure.strategy.SequenceGraphStrategy;
 import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph;
 import com.tinkerpop.gremlin.util.config.YamlConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -14,7 +15,8 @@ import java.io.File;
 import java.util.Map;
 
 /**
- * Factory to construct new {@link com.tinkerpop.gremlin.structure.Graph} instances from a {@link org.apache.commons.configuration.Configuration} object or properties file.
+ * Factory to construct new {@link com.tinkerpop.gremlin.structure.Graph} instances from a
+ * {@link org.apache.commons.configuration.Configuration} object or properties file.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -23,13 +25,17 @@ public class GraphFactory {
     /**
      * Open a graph.  See each {@link com.tinkerpop.gremlin.structure.Graph} instance for its configuration options.
      *
-     * @param configuration A configuration object that specifies the minimally required properties for a {@link com.tinkerpop.gremlin.structure.Graph}
-     *                      instance. This minimum is determined by the {@link com.tinkerpop.gremlin.structure.Graph} instance itself.
-     * @param strategy      A {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} to plug into the underlying {@link com.tinkerpop.gremlin.structure.Graph} being constructed.
+     * @param configuration A configuration object that specifies the minimally required properties for a                        I
+     *                      {@link com.tinkerpop.gremlin.structure.Graph} instance. This minimum is determined by the
+     *                      {@link com.tinkerpop.gremlin.structure.Graph} instance itself.
+     * @param strategies    One or more {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} implementations
+     *                      to plug into the underlying {@link com.tinkerpop.gremlin.structure.Graph} being constructed.
+     *                      If multiple strategies are supplied then they are given in order to a
+     *                      {@link com.tinkerpop.gremlin.structure.strategy.SequenceGraphStrategy} for execution.
      * @return A {@link com.tinkerpop.gremlin.structure.Graph} instance.
-     * @throws IllegalArgumentException if {@code configuration} or {@code strategy} are null
+     * @throws IllegalArgumentException if {@code configuration}
      */
-    public static Graph open(final Configuration configuration, final GraphStrategy strategy) {
+    public static Graph open(final Configuration configuration, final GraphStrategy... strategies) {
         if (null == configuration)
             throw Graph.Exceptions.argumentCanNotBeNull("configuration");
 
@@ -56,9 +62,13 @@ public class GraphFactory {
         }
 
         final Graph returnedGraph;
-        if (strategy != null) {
+        if (strategies != null && strategies.length == 1) {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.strategy().setGraphStrategy(strategy);
+            swg.strategy().setGraphStrategy(strategies[0]);
+            returnedGraph = swg;
+        } else if (strategies != null && strategies.length > 1) {
+            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+            swg.strategy().setGraphStrategy(new SequenceGraphStrategy(strategies));
             returnedGraph = swg;
         } else
             returnedGraph = g;
