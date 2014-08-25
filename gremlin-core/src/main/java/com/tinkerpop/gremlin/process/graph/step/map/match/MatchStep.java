@@ -55,9 +55,22 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         this.traversalsByStartAs = new HashMap<>();
         this.currentStart = new SimpleTraverser<>(null);
         for (final Traversal tl : traversals) {
-            addTraversal(tl);
+            addTraversalPrivate(tl);
         }
-        // given all the wrapped traversals, determine bad patterns in the set and throw exceptions if not solvable
+        checkSolvability();
+    }
+
+    /**
+     * Adds an individual traversal to an already-constructed MatchStep.
+     * The query must be solvable after addition (i.e. should not require the addition of
+     * further traversals in order to be solvable)
+     * This method should be called before the query is first executed.
+     *
+     * @param traversal the traversal to add
+     */
+    public void addTraversal(final Traversal<S, S> traversal) {
+        addTraversalPrivate(traversal);
+
         checkSolvability();
     }
 
@@ -131,7 +144,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         }
     }
 
-    private void addTraversal(final Traversal<S, S> traversal) {
+    private void addTraversalPrivate(final Traversal<S, S> traversal) {
         String startAs = TraversalHelper.getStart(traversal).getAs();
         String endAs = TraversalHelper.getEnd(traversal).getAs();
         if (!TraversalHelper.isLabeled(startAs)) {
@@ -155,6 +168,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         l2.add(wrapper);
     }
 
+    // given all the wrapped traversals, determine bad patterns in the set and throw exceptions if not solvable
     private void checkSolvability() {
         final Set<String> pathSet = new HashSet<>();
         final Stack<String> stack = new Stack<>();
