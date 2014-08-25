@@ -13,13 +13,9 @@ public class GSPredicate<A> extends GLambda implements SPredicate<A> {
         super(gremlinGroovyScript);
     }
 
-    public GSPredicate(final String gremlinGroovyScript, final boolean useStaticScriptEngine) {
-        super(gremlinGroovyScript, useStaticScriptEngine);
-    }
-
     public boolean test(final A a) {
         try {
-            return (boolean) this.getEngine().eval(this.gremlinGroovyScript, makeBindings(a));
+            return (boolean) STATIC_ENGINE.eval(this.gremlinGroovyScript, makeBindings(a));
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

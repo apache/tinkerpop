@@ -87,7 +87,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
             builder.append(GiraphComputerHelper.class.getCanonicalName() + ".prepareTraversalForComputer(traversal)\n");
             builder.append("traversal\n");
 
-            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(new GSSupplier<>(builder.toString(), false)).create();
+            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(new GSSupplier<>(builder.toString())).create();
             final ComputerResult result = this.giraphGraph.compute().program(vertexProgram).submit().get();
 
             this.shell.getInterp().getContext().setProperty("result", result);

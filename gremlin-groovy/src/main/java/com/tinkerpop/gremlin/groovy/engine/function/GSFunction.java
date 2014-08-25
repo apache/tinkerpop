@@ -13,13 +13,9 @@ public class GSFunction<A, B> extends GLambda implements SFunction<A, B> {
         super(gremlinGroovyScript);
     }
 
-    public GSFunction(final String gremlinGroovyScript, final boolean useStaticScriptEngine) {
-        super(gremlinGroovyScript, useStaticScriptEngine);
-    }
-
     public B apply(final A a) {
         try {
-            return (B) this.getEngine().eval(this.gremlinGroovyScript, makeBindings(a));
+            return (B) STATIC_ENGINE.eval(this.gremlinGroovyScript, makeBindings(a));
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

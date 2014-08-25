@@ -13,13 +13,9 @@ public class GSTriConsumer<A, B, C> extends GLambda implements STriConsumer<A, B
         super(gremlinGroovyScript);
     }
 
-    public GSTriConsumer(final String gremlinGroovyScript, final boolean useStaticScriptEngine) {
-        super(gremlinGroovyScript, useStaticScriptEngine);
-    }
-
     public void accept(final A a, B b, C c) {
         try {
-            this.getEngine().eval(this.gremlinGroovyScript, makeBindings(a, b, c));
+            STATIC_ENGINE.eval(this.gremlinGroovyScript, makeBindings(a, b, c));
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
