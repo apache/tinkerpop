@@ -65,10 +65,10 @@ public class GiraphMemory extends MasterCompute implements Memory {
             if (this.get(Constants.GREMLIN_HALT)) {
                 this.haltComputation();
             } else if (this.vertexProgram.terminate(this)) { // terminate
-                //if (this.getConf().getBoolean(Constants.GREMLIN_DERIVE_MEMORY, false))
-                //   this.haltComputation();
-                // else
-                this.setAggregatedValue(Constants.GREMLIN_HALT, new RuleWritable(RuleWritable.Rule.SET, true));
+                if (!this.getConf().getBoolean(Constants.GREMLIN_DERIVE_MEMORY, false)) // no need for the extra BSP round if memory is not required
+                    this.haltComputation();
+                else
+                    this.setAggregatedValue(Constants.GREMLIN_HALT, new RuleWritable(RuleWritable.Rule.SET, true));
             }
         }
     }
