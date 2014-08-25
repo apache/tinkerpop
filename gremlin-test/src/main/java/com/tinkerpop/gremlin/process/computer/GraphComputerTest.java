@@ -308,6 +308,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
                     memory.set("e", true);
                 }).
                 execute((vertex, messenger, memory) -> {
+                    // test current step values
                     assertEquals(Long.valueOf(6 * memory.getIteration()), memory.get("a"));
                     assertEquals(Long.valueOf(0), memory.get("b"));
                     if (memory.isInitialIteration()) {
@@ -319,11 +320,24 @@ public class GraphComputerTest extends AbstractGremlinTest {
                     }
                     assertTrue(memory.get("e"));
 
-                    memory.incr("a", 1l);
-                    memory.incr("b", 1l);
-                    memory.and("c", false);
-                    memory.or("d", true);
-                    memory.and("e", false);
+                    // update current step values and make sure returns are correct
+                    assertEquals(Long.valueOf(6 * memory.getIteration()) + 1l, memory.incr("a", 1l));
+                    assertEquals(Long.valueOf(0) + 1l, memory.incr("b", 1l));
+                    assertFalse(memory.and("c", false));
+                    assertTrue(memory.or("d", true));
+                    assertFalse(memory.and("e", false));
+
+                    // test current step values, should be the same as previous prior to update
+                    assertEquals(Long.valueOf(6 * memory.getIteration()), memory.get("a"));
+                    assertEquals(Long.valueOf(0), memory.get("b"));
+                    if (memory.isInitialIteration()) {
+                        assertTrue(memory.get("c"));
+                        assertFalse(memory.get("d"));
+                    } else {
+                        assertFalse(memory.get("c"));
+                        assertTrue(memory.get("d"));
+                    }
+                    assertTrue(memory.get("e"));
                 }).
                 terminate(memory -> {
                     assertEquals(Long.valueOf(6 * (memory.getIteration() + 1)), memory.get("a"));
