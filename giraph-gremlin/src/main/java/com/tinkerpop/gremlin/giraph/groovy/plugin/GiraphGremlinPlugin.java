@@ -66,7 +66,10 @@ public class GiraphGremlinPlugin extends AbstractGremlinPlugin {
 
             pluginAcceptor.addBinding("hdfs", FileSystem.get(new Configuration()));
             pluginAcceptor.addBinding("local", FileSystem.getLocal(new Configuration()));
-            GiraphGraphComputer.LOGGER.info("Be sure to set the environmental variable " + Constants.GIRAPH_GREMLIN_LIBS + " to the location of the Giraph-Gremlin jars");
+            if (null == System.getenv(Constants.GIRAPH_GREMLIN_LIBS))
+                GiraphGraphComputer.LOGGER.warn("Be sure to set the environmental variable: " + Constants.GIRAPH_GREMLIN_LIBS);
+            else
+                GiraphGraphComputer.LOGGER.info(Constants.GIRAPH_GREMLIN_LIBS + " is set to: " + System.getenv(Constants.GIRAPH_GREMLIN_LIBS));
         } catch (final Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
