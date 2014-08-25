@@ -640,9 +640,9 @@ public class TransactionTest extends AbstractGremlinTest {
     }
 
     @Test
+    @org.junit.Ignore("Ignoring this test for now.  Perhaps it will have relelvance later. see - https://github.com/tinkerpop/tinkerpop3/issues/31")
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_FULLY_ISOLATED_TRANSACTIONS)
     public void shouldSupportTransactionIsolationWithSeparateThreads() throws Exception {
         // one thread modifies the graph and a separate thread reads before the transaction is committed.
         // the expectation is that the changes in the transaction are isolated to the thread that made the change

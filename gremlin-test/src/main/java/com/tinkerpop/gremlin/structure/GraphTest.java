@@ -228,53 +228,6 @@ public class GraphTest extends AbstractGremlinTest {
     }
 
     /**
-     * Test graph counts with addition and removal of vertices.
-     */
-    // todo: double check neo4j at 2.2.x to see if this is resolved
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_FULLY_ISOLATED_TRANSACTIONS)
-    public void shouldProperlyCountVerticesAndEdgesOnAddRemove() {
-        final Vertex v = g.addVertex();
-        StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
-        assertEquals(v, g.V().next());
-        assertEquals(v.id(), g.V().next().id());
-        assertEquals(v.label(), g.V().next().label());
-        v.remove();
-        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(0, 0));
-        g.addVertex();
-        g.addVertex();
-        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(2, 0));
-        g.V().forEach(Vertex::remove);
-        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(0, 0));
-
-        final String edgeLabel = GraphManager.get().convertLabel("test");
-        Vertex v1 = g.addVertex();
-        Vertex v2 = g.addVertex();
-        Edge e = v1.addEdge(edgeLabel, v2);
-        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(2, 1));
-
-        // test removal of the edge itself
-        e.remove();
-        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(2, 0));
-
-        v1.addEdge(edgeLabel, v2);
-        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(2, 1));
-
-        // test removal of the out vertex to remove the edge
-        v1.remove();
-        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(1, 0));
-
-        // test removal of the in vertex to remove the edge
-        v1 = g.addVertex();
-        v1.addEdge(edgeLabel, v2);
-        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(2, 1));
-        v2.remove();
-        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(1, 0));
-    }
-
-    /**
      * Generate a graph with lots of edges and vertices, then test vertex/edge counts on removal of each edge.
      */
     @Test
