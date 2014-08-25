@@ -467,7 +467,7 @@ gremlin> conf = new BaseConfiguration()
 ==>org.apache.commons.configuration.BaseConfiguration@5b40ceb
 gremlin> conf.setProperty("gremlin.graph","com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph")
 ==>null
-gremlin> g = GraphFactory.open(conf, Optional.of(new ReadOnlyGraphStrategy()))
+gremlin> g = GraphFactory.open(conf, new ReadOnlyGraphStrategy())
 ==>[readonlygraphstrategy[tinkergraph[vertices:0 edges:0]]]
 ----
 
