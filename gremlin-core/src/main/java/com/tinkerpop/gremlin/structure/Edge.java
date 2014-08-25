@@ -316,16 +316,20 @@ public interface Edge extends Element {
         return this.start().hasNot(key);
     }
 
-    public default GraphTraversal<Edge, Map<String, Object>> given(final String firstKey, final String secondKey, final SBiPredicate predicate) {
-        return this.start().given(firstKey, secondKey, predicate);
+    public default GraphTraversal<Edge, Map<String, Object>> where(final String firstKey, final String secondKey, final SBiPredicate predicate) {
+        return this.start().where(firstKey, secondKey, predicate);
     }
 
-    public default GraphTraversal<Edge, Map<String, Object>> given(final String firstKey, final SBiPredicate predicate, final String secondKey) {
-        return this.start().given(firstKey, predicate, secondKey);
+    public default GraphTraversal<Edge, Map<String, Object>> where(final String firstKey, final SBiPredicate predicate, final String secondKey) {
+        return this.start().where(firstKey, predicate, secondKey);
     }
 
-    public default GraphTraversal<Edge, Map<String, Object>> given(final String firstKey, final T t, final String secondKey) {
-        return this.start().given(firstKey, t, secondKey);
+    public default GraphTraversal<Edge, Map<String, Object>> where(final String firstKey, final T t, final String secondKey) {
+        return this.start().where(firstKey, t, secondKey);
+    }
+
+    public default GraphTraversal<Edge, Map<String, Object>> where(final Traversal constraint) {
+        return this.start().where(constraint);
     }
 
     public default <E2> GraphTraversal<Edge, E2> interval(final String key, final Comparable startValue, final Comparable endValue) {

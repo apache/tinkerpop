@@ -14,13 +14,13 @@ import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.ExceptStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
-import com.tinkerpop.gremlin.process.graph.step.filter.GivenStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.IntervalStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RandomStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RangeStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.WhereStep;
 import com.tinkerpop.gremlin.process.graph.step.map.BackStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeOtherVertexStep;
@@ -363,16 +363,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new ExceptStep<>(this, exceptionCollection));
     }
 
-    public default GraphTraversal<S, Map<String, Object>> given(final String firstKey, final String secondKey, final SBiPredicate predicate) {
-        return (GraphTraversal) this.addStep(new GivenStep(this, firstKey, secondKey, predicate));
+    public default GraphTraversal<S, Map<String, Object>> where(final String firstKey, final String secondKey, final SBiPredicate predicate) {
+        return (GraphTraversal) this.addStep(new WhereStep(this, firstKey, secondKey, predicate));
     }
 
-    public default GraphTraversal<S, Map<String, Object>> given(final String firstKey, final SBiPredicate predicate, final String secondKey) {
-        return this.given(firstKey, secondKey, predicate);
+    public default GraphTraversal<S, Map<String, Object>> where(final String firstKey, final SBiPredicate predicate, final String secondKey) {
+        return this.where(firstKey, secondKey, predicate);
     }
 
-    public default GraphTraversal<S, Map<String, Object>> given(final String firstKey, final T t, final String secondKey) {
-        return this.given(firstKey, secondKey, T.convert(t));
+    public default GraphTraversal<S, Map<String, Object>> where(final String firstKey, final T t, final String secondKey) {
+        return this.where(firstKey, secondKey, T.convert(t));
+    }
+
+    public default GraphTraversal<S, Map<String, Object>> where(final Traversal constraint) {
+        return (GraphTraversal) this.addStep(new WhereStep(this, constraint));
     }
 
     public default <E2> GraphTraversal<S, E2> has(final String key) {

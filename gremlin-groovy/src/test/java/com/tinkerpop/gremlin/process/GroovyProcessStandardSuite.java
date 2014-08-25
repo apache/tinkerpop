@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRandomTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRangeTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRetainTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovySimplePathTestImpl;
+import com.tinkerpop.gremlin.process.graph.step.filter.GroovyWhereTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyBackTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyChooseTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyJumpTestImpl;
@@ -25,6 +26,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.GroovyValuesTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyAggregateTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupByTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupCountTestImpl;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyStoreTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyTreeTestImpl;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
@@ -57,6 +59,7 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyRangeTestImpl.class,
             GroovyRetainTestImpl.class,
             GroovySimplePathTestImpl.class,
+            GroovyWhereTestImpl.class,
             // map
             GroovyBackTestImpl.class,
             GroovyChooseTestImpl.class,
@@ -66,12 +69,13 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyOrderTestImpl.class,
             GroovyPathTestImpl.class,
             GroovySelectTestImpl.class,
-            GroovyVertexTestImpl.class,
             GroovyValuesTestImpl.class,
+            GroovyVertexTestImpl.class,
             // sideEffect
             GroovyAggregateTestImpl.class,
             GroovyGroupByTestImpl.class,
             GroovyGroupCountTestImpl.class,
+            GroovyStoreTestImpl.class,
             GroovyTreeTestImpl.class
     };
 
