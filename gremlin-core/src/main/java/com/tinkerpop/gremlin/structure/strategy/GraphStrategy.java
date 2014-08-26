@@ -341,6 +341,18 @@ public interface GraphStrategy {
         return UnaryOperator.identity();
     }
 
+    /**
+     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph#close()}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Supplier} that accepts a {@link java.util.function.Supplier} with
+     * {@link com.tinkerpop.gremlin.structure.Graph#close()} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     */
+    public default UnaryOperator<Supplier<Void>> getGraphClose(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return UnaryOperator.identity();
+    }
+
     public static class DoNothingGraphStrategy implements GraphStrategy {
         public static final DoNothingGraphStrategy INSTANCE = new DoNothingGraphStrategy();
 

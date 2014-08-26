@@ -8,8 +8,11 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
+import com.tinkerpop.gremlin.util.function.FunctionUtils;
 
 import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * A wrapper class for {@link Graph} instances that host and apply a {@link GraphStrategy}.  The wrapper implements
@@ -109,7 +112,15 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
 
     @Override
     public void close() throws Exception {
-        this.baseGraph.close();
+        // compose function doesn't seem to want to work here even though it works with other Supplier<Void>
+        // strategy functions. maybe the "throws Exception" is hosing it up.......
+        if (strategy.getGraphStrategy().isPresent()) {
+            strategy.getGraphStrategy().get().getGraphClose(this.graphContext).apply(FunctionUtils.wrapSupplier(() -> {
+                baseGraph.close();
+                return null;
+            })).get();
+        } else
+            baseGraph.close();
     }
 
     @Override

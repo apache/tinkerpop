@@ -157,6 +157,11 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
+    public UnaryOperator<Supplier<Void>> getGraphClose(Strategy.Context<StrategyWrappedGraph> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getGraphClose(ctx));
+    }
+
+    @Override
     public String toString() {
         return String.join("->", graphStrategySequence.stream().map(Object::toString)
                 .map(String::toLowerCase).collect(Collectors.<String>toList()));

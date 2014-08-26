@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -141,5 +142,28 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
         assertTrue(swg.e(id).vertices(Direction.IN).next() instanceof StrategyWrappedVertex);
         assertTrue(swg.e(id).vertices(Direction.OUT).hasNext());
         assertTrue(swg.e(id).vertices(Direction.OUT).next() instanceof StrategyWrappedVertex);
+    }
+
+    @Test
+    public void shouldAdHocTheCloseStrategy() throws Exception {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+
+        final AtomicInteger counter = new AtomicInteger(0);
+        swg.strategy().setGraphStrategy(new GraphStrategy() {
+            @Override
+            public UnaryOperator<Supplier<Void>> getGraphClose(final Strategy.Context<StrategyWrappedGraph> ctx) {
+                return (t) -> () -> {
+                    counter.incrementAndGet();
+                    return null;
+                };
+            }
+        });
+
+        // allows multiple calls to close() - the test will clean up with a call to the base graph.close()
+        swg.close();
+        swg.close();
+        swg.close();
+
+        assertEquals(3, counter.get());
     }
 }
