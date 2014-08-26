@@ -88,7 +88,7 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter {
                         ctx.writeAndFlush(ResponseMessage.build(requestMessage).code(ResultCode.SERVER_ERROR_TIMEOUT).result(errorMessage).create());
                     }
 
-                    ctx.writeAndFlush(ResponseMessage.build(requestMessage).code(ResultCode.SUCCESS_TERMINATOR).create());
+                    ctx.writeAndFlush(ResponseMessage.build(requestMessage).contents(ResultType.EMPTY).code(ResultCode.SUCCESS_TERMINATOR).create());
                 });
             } finally {
                 ReferenceCountUtil.release(msg);
