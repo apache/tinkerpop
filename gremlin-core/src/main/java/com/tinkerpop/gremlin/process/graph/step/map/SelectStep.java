@@ -16,22 +16,22 @@ import java.util.Map;
 public class SelectStep<E> extends MapStep<Object, Map<String, E>> {
 
     public final FunctionRing functionRing;
-    public final List<String> asLabels;
+    public final List<String> selectLabels;
     private final boolean wasEmpty;
 
-    public SelectStep(final Traversal traversal, final List<String> asLabels, SFunction... stepFunctions) {
+    public SelectStep(final Traversal traversal, final List<String> selectLabels, SFunction... stepFunctions) {
         super(traversal);
         this.functionRing = new FunctionRing(stepFunctions);
-        this.wasEmpty = asLabels.size() == 0;
-        this.asLabels = this.wasEmpty ? TraversalHelper.getAsLabels(this.traversal) : asLabels;
+        this.wasEmpty = selectLabels.size() == 0;
+        this.selectLabels = this.wasEmpty ? TraversalHelper.getLabels(this.traversal) : selectLabels;
         this.setFunction(traverser -> {
             final Path path = traverser.hasPath() ? traverser.getPath() : null;
             final Object start = traverser.get();
             final Map<String, E> temp = new LinkedHashMap<>();
             if (this.functionRing.hasFunctions()) {   ////////// FUNCTION RING
                 if (null != path)
-                    this.asLabels.forEach(as -> {   ////// PROCESS PATHS
-                        if (path.hasAs(as))
+                    this.selectLabels.forEach(as -> {   ////// PROCESS PATHS
+                        if (path.hasLabel(as))
                             temp.put(as, (E) this.functionRing.next().apply(path.get(as)));
                     });
 
@@ -39,22 +39,22 @@ public class SelectStep<E> extends MapStep<Object, Map<String, E>> {
                     if (this.wasEmpty)
                         ((Map) start).forEach((k, v) -> temp.put((String) k, (E) this.functionRing.next().apply(v)));
                     else
-                        this.asLabels.forEach(as -> {
+                        this.selectLabels.forEach(as -> {
                             if (((Map) start).containsKey(as))
                                 temp.put(as, (E) this.functionRing.next().apply(((Map) start).get(as)));
                         });
                 }
             } else {    ////////// IF NO FUNCTION RING
                 if (path != null)
-                    this.asLabels.forEach(as -> {  ////// PROCESS PATHS
-                        if (path.hasAs(as))
+                    this.selectLabels.forEach(as -> {  ////// PROCESS PATHS
+                        if (path.hasLabel(as))
                             temp.put(as, path.get(as));
                     });
                 if (start instanceof Map) {  ////// PROCESS MAPS
                     if (this.wasEmpty)
                         ((Map) start).forEach((k, v) -> temp.put((String) k, (E) v));
                     else
-                        this.asLabels.forEach(as -> {
+                        this.selectLabels.forEach(as -> {
                             if (((Map) start).containsKey(as))
                                 temp.put(as, (E) ((Map) start).get(as));
                         });
@@ -67,5 +67,9 @@ public class SelectStep<E> extends MapStep<Object, Map<String, E>> {
 
     public boolean hasStepFunctions() {
         return this.functionRing.hasFunctions();
+    }
+
+    public String toString() {
+        return TraversalHelper.makeStepString(this, this.selectLabels);
     }
 }

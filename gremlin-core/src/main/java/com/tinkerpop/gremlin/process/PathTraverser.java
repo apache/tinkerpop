@@ -40,11 +40,11 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
         this.path = path;
     }
 
-    public <R> PathTraverser<R> makeChild(final String as, final R r) {
+    public <R> PathTraverser<R> makeChild(final String label, final R r) {
         final PathTraverser<R> traverser = new PathTraverser<>(r);
         traverser.loops = this.loops;
         traverser.path.add(this.path);
-        traverser.path.add(as, r);
+        traverser.path.add(label, r);
         traverser.future = this.future;
         return traverser;
     }

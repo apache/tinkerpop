@@ -84,7 +84,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
     @Override
     protected Traverser<Map<String, E>> processNextStart() throws NoSuchElementException {
         final Map<String, E> map = new HashMap<>();
-        final Traverser<Map<String, E>> result = this.currentStart.makeChild(this.getAs(), map);
+        final Traverser<Map<String, E>> result = this.currentStart.makeChild(this.getLabel(), map);
         final BiConsumer<String, S> resultSetter = (name, value) -> map.put(name, (E) value);
 
         while (true) { // break out when the current solution is exhausted and there are no more starts
@@ -144,8 +144,8 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
     }
 
     private void addTraversalPrivate(final Traversal<S, S> traversal) {
-        String startAs = TraversalHelper.getStart(traversal).getAs();
-        String endAs = TraversalHelper.getEnd(traversal).getAs();
+        String startAs = TraversalHelper.getStart(traversal).getLabel();
+        String endAs = TraversalHelper.getEnd(traversal).getLabel();
         if (!TraversalHelper.isLabeled(startAs)) {
             throw new IllegalArgumentException("All match traversals must have their start step labeled with as()");
         }
@@ -244,7 +244,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
 
                 for (TraversalWrapper<S, S> w : outs) {
                     TraversalUpdater<S, S> updater
-                            = new TraversalUpdater<>(w, new SingleIterator<>(o), currentStart, this.getAs());
+                            = new TraversalUpdater<>(w, new SingleIterator<>(o), currentStart, this.getLabel());
 
                     Set<String> rightLabels = new HashSet<>();
                     addVariables(w.endAs, rightLabels);

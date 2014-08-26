@@ -20,7 +20,7 @@ public class MapStep<S, E> extends AbstractStep<S, E> {
         while (true) {
             final Traverser<S> traverser = this.starts.next();
             final E end = this.function.apply(traverser);
-            if (NO_OBJECT != end) return traverser.makeChild(this.getAs(), end);
+            if (NO_OBJECT != end) return traverser.makeChild(this.getLabel(), end);
         }
     }
 

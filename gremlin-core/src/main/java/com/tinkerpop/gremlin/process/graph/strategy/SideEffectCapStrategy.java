@@ -24,7 +24,7 @@ public class SideEffectCapStrategy implements TraversalStrategy {
     }
 
     public int compareTo(final TraversalStrategy traversalStrategy) {
-        return traversalStrategy instanceof TraverserSourceStrategy || traversalStrategy instanceof AsStrategy ? -1 : 1;
+        return traversalStrategy instanceof TraverserSourceStrategy || traversalStrategy instanceof LabeledStepStrategy ? -1 : 1;
     }
 
     public static SideEffectCapStrategy instance() {

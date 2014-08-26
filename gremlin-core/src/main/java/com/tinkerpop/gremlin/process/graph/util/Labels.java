@@ -6,9 +6,9 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class As {
+public class Labels {
 
-    public static List<String> of(final String... asLabels) {
-        return Arrays.asList(asLabels);
+    public static List<String> of(final String... labels) {
+        return Arrays.asList(labels);
     }
 }

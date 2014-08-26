@@ -12,7 +12,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.match.Enumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.InnerJoinEnumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.IteratorEnumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStep;
-import com.tinkerpop.gremlin.process.graph.util.As;
+import com.tinkerpop.gremlin.process.graph.util.Labels;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -646,7 +646,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_out_jump2_bX_selectXab_nameX() {
             return g.V().match("a",
                     g.of().as("a").out("created").as("b"),
-                    g.of().as("a").out().jump("a", 2).as("b")).select(As.of("a", "b"), v -> ((Vertex) v).value("name"));
+                    g.of().as("a").out().jump("a", 2).as("b")).select(Labels.of("a", "b"), v -> ((Vertex) v).value("name"));
         }
 
         @Override
@@ -742,7 +742,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                     g.of().as("a").out("created").as("b"),
                     g.of().as("b").in("created").as("c"))
                     .where("a", T.neq, "c")
-                    .select(As.of("a", "c"), v -> ((Vertex) v).value("name"));
+                    .select(Labels.of("a", "c"), v -> ((Vertex) v).value("name"));
         }
 
         /*@Override
@@ -803,7 +803,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_out_jump2_bX_selectXab_nameX() {
             return (Traversal) g.V().match("a",
                     g.of().as("a").out("created").as("b"),
-                    g.of().as("a").out().jump("a", 2).as("b")).select(As.of("a", "b"), v -> ((Vertex) v).value("name")).submit(g.compute());
+                    g.of().as("a").out().jump("a", 2).as("b")).select(Labels.of("a", "b"), v -> ((Vertex) v).value("name")).submit(g.compute());
         }
 
         @Override
@@ -901,7 +901,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                     g.of().as("a").out("created").as("b"),
                     g.of().as("b").in("created").as("c"))
                     .where("a", T.neq, "c")
-                    .select(As.of("a", "c"), v -> ((Vertex) v).value("name")).submit(g.compute());
+                    .select(Labels.of("a", "c"), v -> ((Vertex) v).value("name")).submit(g.compute());
         }
 
         /*@Override

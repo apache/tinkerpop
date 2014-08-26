@@ -23,7 +23,7 @@ public class UnrollJumpStrategy implements TraversalStrategy {
         TraversalHelper.getStepsOfClass(JumpStep.class, traversal).stream()
                 .filter(JumpStep::unRollable)
                 .forEach(toStep -> {
-                    final Step fromStep = TraversalHelper.getAs(toStep.jumpAs, traversal);
+                    final Step fromStep = TraversalHelper.getStep(toStep.jumpLabel, traversal);
                     final List<Step> stepsToClone = TraversalHelper.isolateSteps(fromStep, toStep);
                     stepsToClone.forEach(stepToClone -> TraversalHelper.removeStep(stepToClone, traversal));
                     for (int i = 0; i < toStep.loops; i++) {
@@ -37,7 +37,7 @@ public class UnrollJumpStrategy implements TraversalStrategy {
                         }
                     }
                     if (TraversalHelper.isLabeled(toStep))
-                        toStep.getPreviousStep().setAs(toStep.getAs());
+                        toStep.getPreviousStep().setLabel(toStep.getLabel());
                     TraversalHelper.removeStep(toStep, traversal);
                 });
     }

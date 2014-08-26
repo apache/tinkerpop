@@ -11,12 +11,19 @@ import com.tinkerpop.gremlin.structure.Property;
  */
 public class PropertyStep<E> extends MapStep<Element, Property<E>> implements Reversible {
 
-    public PropertyStep(final Traversal traversal, final String key) {
+    public String propertyKey;
+
+    public PropertyStep(final Traversal traversal, final String propertyKey) {
         super(traversal);
-        this.setFunction(traverser -> traverser.get().property(key));
+        this.propertyKey = propertyKey;
+        this.setFunction(traverser -> traverser.get().property(this.propertyKey));
     }
 
     public void reverse() {
         TraversalHelper.replaceStep(this, new PropertyElementStep(this.traversal), this.traversal);
+    }
+
+    public String toString() {
+        return TraversalHelper.makeStepString(this, this.propertyKey);
     }
 }

@@ -24,7 +24,7 @@ import java.util.stream.Stream;
  */
 public class Path implements Serializable {
 
-    protected List<Set<String>> asLabels = new ArrayList<>();
+    protected List<Set<String>> labels = new ArrayList<>();
     protected List<Object> objects = new ArrayList<>();
 
     public Path() {
@@ -35,59 +35,59 @@ public class Path implements Serializable {
         return this.objects.size();
     }
 
-    public void add(final String as, final Object object) {
+    public void add(final String label, final Object object) {
         final Set<String> labels = new HashSet<>();
-        if (TraversalHelper.isLabeled(as))
-            labels.add(as);
-        this.asLabels.add(labels);
+        if (TraversalHelper.isLabeled(label))
+            labels.add(label);
+        this.labels.add(labels);
         this.objects.add(object);
     }
 
-    public void add(final Set<String> asLabels, final Object object) {
-        this.asLabels.add(asLabels.stream().filter(TraversalHelper::isLabeled).collect(Collectors.toSet()));
+    public void add(final Set<String> labels, final Object object) {
+        this.labels.add(labels.stream().filter(TraversalHelper::isLabeled).collect(Collectors.toSet()));
         this.objects.add(object);
     }
 
     public void add(final Path path) {
-        this.asLabels.addAll(path.asLabels);
+        this.labels.addAll(path.labels);
         this.objects.addAll(path.objects);
     }
 
-    public <A> A get(final String as) {
-        for (int i = 0; i < this.asLabels.size(); i++) {
-            if (this.asLabels.get(i).contains(as))
+    public <A> A get(final String label) {
+        for (int i = 0; i < this.labels.size(); i++) {
+            if (this.labels.get(i).contains(label))
                 return (A) this.objects.get(i);
         }
-        throw new IllegalArgumentException("The as-step does not exist: " + as);
+        throw new IllegalArgumentException("The as-step does not exist: " + label);
     }
 
     public <A> A get(final int index) {
         return (A) this.objects.get(index);
     }
 
-    public boolean hasAs(final String as) {
-        for (final Set<String> labels : this.asLabels) {
-            if (labels.contains(as))
+    public boolean hasLabel(final String label) {
+        for (final Set<String> labels : this.labels) {
+            if (labels.contains(label))
                 return true;
         }
         return false;
     }
 
-    public void addAs(final String as) {
-        if (TraversalHelper.isLabeled(as))
-            this.asLabels.get(this.asLabels.size() - 1).add(as);
+    public void addLabel(final String label) {
+        if (TraversalHelper.isLabeled(label))
+            this.labels.get(this.labels.size() - 1).add(label);
     }
 
     public List<Object> getObjects() {
         return new ArrayList<>(this.objects);
     }
 
-    public List<Set<String>> getAsLabels() {
-        final List<Set<String>> labels = new ArrayList<>();
-        for (final Set<String> set : this.asLabels) {
-            labels.add(new HashSet<>(set));
+    public List<Set<String>> getLabels() {
+        final List<Set<String>> labelSets = new ArrayList<>();
+        for (final Set<String> set : this.labels) {
+            labelSets.add(new HashSet<>(set));
         }
-        return labels;
+        return labelSets;
     }
 
     /**
@@ -106,12 +106,12 @@ public class Path implements Serializable {
 
     public void forEach(final BiConsumer<Set<String>, Object> consumer) {
         for (int i = 0; i < this.size(); i++) {
-            consumer.accept(this.asLabels.get(i), this.objects.get(i));
+            consumer.accept(this.labels.get(i), this.objects.get(i));
         }
     }
 
     public Stream<Pair<Set<String>, Object>> stream() {
-        return IntStream.range(0, this.size()).mapToObj(i -> Pair.with(this.asLabels.get(i), this.objects.get(i)));
+        return IntStream.range(0, this.size()).mapToObj(i -> Pair.with(this.labels.get(i), this.objects.get(i)));
     }
 
     public String toString() {

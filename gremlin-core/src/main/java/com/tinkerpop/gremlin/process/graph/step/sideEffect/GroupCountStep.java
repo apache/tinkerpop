@@ -30,7 +30,7 @@ public class GroupCountStep<S> extends SideEffectStep<S> implements SideEffectCa
     public GroupCountStep(final Traversal traversal, final String sideEffectKey, final SFunction<S, ?> preGroupFunction) {
         super(traversal);
         this.preGroupFunction = preGroupFunction;
-        this.sideEffectKey = null == sideEffectKey ? this.getAs() : sideEffectKey;
+        this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         this.hiddenSideEffectKey = Graph.Key.hide(this.sideEffectKey);
         this.groupCountMap = this.traversal.sideEffects().getOrCreate(this.sideEffectKey, HashMap::new);
         this.setConsumer(traverser -> {

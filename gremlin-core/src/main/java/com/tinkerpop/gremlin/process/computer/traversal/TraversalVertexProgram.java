@@ -118,11 +118,11 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         final Traversal traversal = this.traversalSupplier.get();
         traversal.strategies().apply();
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
-        final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.NO_FUTURE : startStep.getNextStep().getAs();
+        final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.NO_FUTURE : startStep.getNextStep().getLabel();
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         if (Vertex.class.isAssignableFrom(startStep.returnClass)) {
             final Traverser<Vertex> traverser = this.trackPaths ?
-                    new PathTraverser<>(startStep.getAs(), vertex) :
+                    new PathTraverser<>(startStep.getLabel(), vertex) :
                     new SimpleTraverser<>(vertex);
             traverser.setFuture(future);
             messenger.sendMessage(MessageType.Global.of(vertex), TraversalMessage.of(traverser));
@@ -130,7 +130,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         } else if (Edge.class.isAssignableFrom(startStep.returnClass)) {
             vertex.outE().forEach(e -> {
                 final Traverser<Edge> traverser = this.trackPaths ?
-                        new PathTraverser<>(startStep.getAs(), e) :
+                        new PathTraverser<>(startStep.getLabel(), e) :
                         new SimpleTraverser<>(e);
                 traverser.setFuture(future);
                 messenger.sendMessage(MessageType.Global.of(vertex), TraversalMessage.of(traverser));

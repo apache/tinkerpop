@@ -7,9 +7,9 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AsIdentityStep<S> extends SideEffectStep<S> {
+public class LabelIdentityStep<S> extends SideEffectStep<S> {
 
-    public AsIdentityStep(final Traversal traversal) {
+    public LabelIdentityStep(final Traversal traversal) {
         super(traversal);
     }
 }

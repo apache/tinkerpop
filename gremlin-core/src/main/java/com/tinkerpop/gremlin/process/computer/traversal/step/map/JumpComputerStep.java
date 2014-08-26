@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class JumpComputerStep<S> extends AbstractStep<S, S> {
 
-    public String jumpAs;
+    public String jumpLabel;
     public Queue<Traverser<S>> queue = new LinkedList<>();
     public SPredicate<Traverser<S>> ifPredicate;
     public int loops = -1;
@@ -26,19 +26,19 @@ public class JumpComputerStep<S> extends AbstractStep<S, S> {
 
     public JumpComputerStep(final Traversal traversal, final JumpStep jumpStep) {
         super(traversal);
-        this.jumpAs = jumpStep.jumpAs;
+        this.jumpLabel = jumpStep.jumpLabel;
         this.ifPredicate = jumpStep.ifPredicate;
         this.loops = jumpStep.loops;
         this.emitPredicate = jumpStep.emitPredicate;
         if (TraversalHelper.isLabeled(jumpStep))
-            this.setAs(jumpStep.getAs());
+            this.setLabel(jumpStep.getLabel());
         this.futureSetByChild = true;
     }
 
     protected Traverser<S> processNextStart() {
-        final String loopFuture = TraversalHelper.getAs(this.jumpAs, this.traversal).getNextStep().getAs();
+        final String loopFuture = TraversalHelper.getStep(this.jumpLabel, this.traversal).getNextStep().getLabel();
         if (null == this.jumpBack)
-            this.jumpBack = new AtomicBoolean(this.traversal.getSteps().indexOf(this) > this.traversal.getSteps().indexOf(TraversalHelper.getAs(this.jumpAs, this.traversal).getNextStep()));
+            this.jumpBack = new AtomicBoolean(this.traversal.getSteps().indexOf(this) > this.traversal.getSteps().indexOf(TraversalHelper.getStep(this.jumpLabel, this.traversal).getNextStep()));
         while (true) {
             if (!this.queue.isEmpty()) {
                 return this.queue.remove();
@@ -51,11 +51,11 @@ public class JumpComputerStep<S> extends AbstractStep<S, S> {
                     if (null != this.emitPredicate && this.emitPredicate.test(traverser)) {
                         final Traverser<S> emitTraverser = traverser.makeSibling();
                         if (this.jumpBack.get()) emitTraverser.resetLoops();
-                        emitTraverser.setFuture(this.nextStep.getAs());
+                        emitTraverser.setFuture(this.nextStep.getLabel());
                         this.queue.add(emitTraverser);
                     }
                 } else {
-                    traverser.setFuture(this.nextStep.getAs());
+                    traverser.setFuture(this.nextStep.getLabel());
                     if (this.jumpBack.get()) traverser.resetLoops();
                     this.queue.add(traverser);
                 }

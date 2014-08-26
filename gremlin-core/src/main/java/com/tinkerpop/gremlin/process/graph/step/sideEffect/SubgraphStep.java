@@ -41,7 +41,7 @@ public class SubgraphStep<S> extends SideEffectStep<S> implements SideEffectCapa
                         final Map<Object, Vertex> idVertexMap,
                         final SPredicate<Edge> includeEdge) {
         super(traversal);
-        this.sideEffectKey = null == sideEffectKey ? this.getAs() : sideEffectKey;
+        this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         this.edgeIdsAdded = null == edgeIdHolder ? new HashSet<>() : edgeIdHolder;
         this.idVertexMap = null == idVertexMap ? new HashMap<>() : idVertexMap;
         this.subgraph = this.traversal.sideEffects().getOrCreate(this.sideEffectKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION));

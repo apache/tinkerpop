@@ -79,18 +79,18 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable, Clonea
     public Object clone() throws CloneNotSupportedException;
 
     /**
-     * Get the as-label of this step.
+     * Get the label of this step.
      *
-     * @return the as-label of the step
+     * @return the label of the step
      */
-    public String getAs();
+    public String getLabel();
 
     /**
-     * Set the as-label of this step.
+     * Set the label of this step.
      *
-     * @param as the as-label for this step
+     * @param label the label for this step
      */
-    public void setAs(final String as);
+    public void setLabel(final String label);
 
     static final class NoObject {
 

@@ -11,15 +11,15 @@ import java.util.Collection;
  */
 public class ExceptStep<S> extends FilterStep<S> implements Reversible {
 
-    public final String collectionAs;
+    public final String collectionSideEffectKey;
 
-    public ExceptStep(final Traversal traversal, final String collectionAs) {
+    public ExceptStep(final Traversal traversal, final String collectionSideEffectKey) {
         super(traversal);
-        this.collectionAs = collectionAs;
+        this.collectionSideEffectKey = collectionSideEffectKey;
         this.setPredicate(traverser -> {
-            if (!this.traversal.sideEffects().exists(this.collectionAs)) return true;
+            if (!this.traversal.sideEffects().exists(this.collectionSideEffectKey)) return true;
             else {
-                final Object except = this.traversal.sideEffects().get(this.collectionAs);
+                final Object except = this.traversal.sideEffects().get(this.collectionSideEffectKey);
                 return except instanceof Collection ?
                         !((Collection) except).contains(traverser.get()) :
                         !except.equals(traverser.get());
@@ -29,19 +29,19 @@ public class ExceptStep<S> extends FilterStep<S> implements Reversible {
 
     public ExceptStep(final Traversal traversal, final Collection<S> exceptionCollection) {
         super(traversal);
-        this.collectionAs = null;
+        this.collectionSideEffectKey = null;
         this.setPredicate(traverser -> !exceptionCollection.contains(traverser.get()));
     }
 
     public ExceptStep(final Traversal traversal, final S exceptionObject) {
         super(traversal);
-        this.collectionAs = null;
+        this.collectionSideEffectKey = null;
         this.setPredicate(traverser -> !exceptionObject.equals(traverser.get()));
     }
 
     public String toString() {
-        return null == this.collectionAs ?
+        return null == this.collectionSideEffectKey ?
                 super.toString() :
-                TraversalHelper.makeStepString(this, this.collectionAs);
+                TraversalHelper.makeStepString(this, this.collectionSideEffectKey);
     }
 }

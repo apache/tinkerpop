@@ -30,7 +30,7 @@ public class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable
     public StoreStep(final Traversal traversal, final String sideEffectKey, final SFunction<S, ?> preStoreFunction) {
         super(traversal);
         this.preStoreFunction = preStoreFunction;
-        this.sideEffectKey = null == sideEffectKey ? this.getAs() : sideEffectKey;
+        this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         this.hiddenSideEffectKey = Graph.Key.hide(this.sideEffectKey);
         this.store = this.traversal.sideEffects().getOrCreate(this.sideEffectKey, ArrayList::new);
         this.setConsumer(traverser -> {

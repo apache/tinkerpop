@@ -65,7 +65,7 @@ public class TraversalCounterMessage extends TraversalMessage {
             if (traverser.isDone()) {
                 MapHelper.incr(tracker.getDoneObjectTracks(), traverser, counts);
             } else {
-                final Step step = TraversalHelper.getAs(traverser.getFuture(), traversal);
+                final Step step = TraversalHelper.getStep(traverser.getFuture(), traversal);
                 if (step instanceof VertexCentric) ((VertexCentric) step).setCurrentVertex(vertex);
                 if (step instanceof Bulkable) ((Bulkable) step).setCurrentBulkCount(counts);
                 step.addStarts(new SingleIterator(traverser));
@@ -99,7 +99,7 @@ public class TraversalCounterMessage extends TraversalMessage {
             return false;
         }
 
-        final Step step = TraversalHelper.getAs(this.traverser.getFuture(), traversal);
+        final Step step = TraversalHelper.getStep(this.traverser.getFuture(), traversal);
         MapHelper.incr(tracker.getGraphTracks(), this.traverser, this.counter);
 
         if (step instanceof VertexCentric) ((VertexCentric) step).setCurrentVertex(vertex);

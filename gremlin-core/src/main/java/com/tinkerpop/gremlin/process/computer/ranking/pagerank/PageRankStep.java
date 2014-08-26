@@ -47,6 +47,6 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
         }
         final Traverser<Vertex> traverser = this.starts.next();
         final Vertex vertex = traverser.get();
-        return traverser.makeChild(this.getAs(), new Pair<>(vertex, (Double) this.resultantGraph.v(vertex.id()).value(PageRankVertexProgram.PAGE_RANK)));
+        return traverser.makeChild(this.getLabel(), new Pair<>(vertex, (Double) this.resultantGraph.v(vertex.id()).value(PageRankVertexProgram.PAGE_RANK)));
     }
 }

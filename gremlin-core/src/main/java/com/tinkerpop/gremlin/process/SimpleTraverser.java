@@ -39,8 +39,8 @@ public class SimpleTraverser<T> implements Traverser<T> {
         return this.future;
     }
 
-    public void setFuture(final String as) {
-        this.future = as;
+    public void setFuture(final String label) {
+        this.future = label;
     }
 
     public boolean hasPath() {
@@ -67,7 +67,7 @@ public class SimpleTraverser<T> implements Traverser<T> {
         this.loops = 0;
     }
 
-    public <R> SimpleTraverser<R> makeChild(final String as, final R r) {
+    public <R> SimpleTraverser<R> makeChild(final String label, final R r) {
         final SimpleTraverser<R> traverser = new SimpleTraverser<>(r);
         traverser.future = this.future;
         traverser.loops = this.loops;

@@ -125,68 +125,68 @@ public interface Vertex extends Element {
         return this.start().identity();
     }
 
-    public default GraphTraversal<Vertex, Vertex> to(final Direction direction, final int branchFactor, final String... labels) {
-        return this.start().to(direction, branchFactor, labels);
+    public default GraphTraversal<Vertex, Vertex> to(final Direction direction, final int branchFactor, final String... edgeLabels) {
+        return this.start().to(direction, branchFactor, edgeLabels);
     }
 
-    public default GraphTraversal<Vertex, Vertex> to(final Direction direction, final String... labels) {
-        return this.start().to(direction, labels);
+    public default GraphTraversal<Vertex, Vertex> to(final Direction direction, final String... edgeLabels) {
+        return this.start().to(direction, edgeLabels);
     }
 
-    public default GraphTraversal<Vertex, Vertex> out(final int branchFactor, final String... labels) {
-        return this.start().out(branchFactor, labels);
+    public default GraphTraversal<Vertex, Vertex> out(final int branchFactor, final String... edgeLabels) {
+        return this.start().out(branchFactor, edgeLabels);
     }
 
-    public default GraphTraversal<Vertex, Vertex> out(final String... labels) {
-        return this.start().out(labels);
+    public default GraphTraversal<Vertex, Vertex> out(final String... edgeLabels) {
+        return this.start().out(edgeLabels);
     }
 
-    public default GraphTraversal<Vertex, Vertex> in(final int branchFactor, final String... labels) {
-        return this.start().in(branchFactor, labels);
+    public default GraphTraversal<Vertex, Vertex> in(final int branchFactor, final String... edgeLabels) {
+        return this.start().in(branchFactor, edgeLabels);
     }
 
-    public default GraphTraversal<Vertex, Vertex> in(final String... labels) {
-        return this.start().in(labels);
+    public default GraphTraversal<Vertex, Vertex> in(final String... edgeLabels) {
+        return this.start().in(edgeLabels);
     }
 
-    public default GraphTraversal<Vertex, Vertex> both(final int branchFactor, final String... labels) {
-        return this.start().both(branchFactor, labels);
+    public default GraphTraversal<Vertex, Vertex> both(final int branchFactor, final String... edgeLabels) {
+        return this.start().both(branchFactor, edgeLabels);
     }
 
-    public default GraphTraversal<Vertex, Vertex> both(final String... labels) {
-        return this.start().both(labels);
+    public default GraphTraversal<Vertex, Vertex> both(final String... edgeLabels) {
+        return this.start().both(edgeLabels);
     }
 
-    public default GraphTraversal<Vertex, Edge> toE(final Direction direction, final int branchFactor, final String... labels) {
-        return this.start().toE(direction, branchFactor, labels);
+    public default GraphTraversal<Vertex, Edge> toE(final Direction direction, final int branchFactor, final String... edgeLabels) {
+        return this.start().toE(direction, branchFactor, edgeLabels);
     }
 
-    public default GraphTraversal<Vertex, Edge> toE(final Direction direction, final String... labels) {
-        return this.start().toE(direction, labels);
+    public default GraphTraversal<Vertex, Edge> toE(final Direction direction, final String... edgeLabels) {
+        return this.start().toE(direction, edgeLabels);
     }
 
-    public default GraphTraversal<Vertex, Edge> outE(final int branchFactor, final String... labels) {
-        return this.start().outE(branchFactor, labels);
+    public default GraphTraversal<Vertex, Edge> outE(final int branchFactor, final String... edgeLabels) {
+        return this.start().outE(branchFactor, edgeLabels);
     }
 
-    public default GraphTraversal<Vertex, Edge> outE(final String... labels) {
-        return this.start().outE(labels);
+    public default GraphTraversal<Vertex, Edge> outE(final String... edgeLabels) {
+        return this.start().outE(edgeLabels);
     }
 
-    public default GraphTraversal<Vertex, Edge> inE(final int branchFactor, final String... labels) {
-        return this.start().inE(branchFactor, labels);
+    public default GraphTraversal<Vertex, Edge> inE(final int branchFactor, final String... edgeLabels) {
+        return this.start().inE(branchFactor, edgeLabels);
     }
 
-    public default GraphTraversal<Vertex, Edge> inE(final String... labels) {
-        return this.start().inE(labels);
+    public default GraphTraversal<Vertex, Edge> inE(final String... edgeLabels) {
+        return this.start().inE(edgeLabels);
     }
 
-    public default GraphTraversal<Vertex, Edge> bothE(final int branchFactor, final String... labels) {
-        return this.start().bothE(branchFactor, labels);
+    public default GraphTraversal<Vertex, Edge> bothE(final int branchFactor, final String... edgeLabels) {
+        return this.start().bothE(branchFactor, edgeLabels);
     }
 
-    public default GraphTraversal<Vertex, Edge> bothE(final String... labels) {
-        return this.start().bothE(labels);
+    public default GraphTraversal<Vertex, Edge> bothE(final String... edgeLabels) {
+        return this.start().bothE(edgeLabels);
     }
 
     public default GraphTraversal<Vertex, Vertex> toV(final Direction direction) {
@@ -237,28 +237,28 @@ public interface Vertex extends Element {
         return this.start().path(pathFunctions);
     }
 
-    public default <E2> GraphTraversal<Vertex, E2> back(final String as) {
-        return this.start().back(as);
+    public default <E2> GraphTraversal<Vertex, E2> back(final String stepLabel) {
+        return this.start().back(stepLabel);
     }
 
-    public default <E2> GraphTraversal<Vertex, Map<String, E2>> match(final String inAs, final Traversal... traversals) {
-        return this.start().match(inAs, traversals);
+    public default <E2> GraphTraversal<Vertex, Map<String, E2>> match(final String startLabel, final Traversal... traversals) {
+        return this.start().match(startLabel, traversals);
     }
 
-    public default <E2> GraphTraversal<Vertex, Map<String, E2>> select(final List<String> asLabels, SFunction... stepFunctions) {
-        return this.start().select(asLabels, stepFunctions);
+    public default <E2> GraphTraversal<Vertex, Map<String, E2>> select(final List<String> labels, SFunction... stepFunctions) {
+        return this.start().select(labels, stepFunctions);
     }
 
     public default <E2> GraphTraversal<Vertex, Map<String, E2>> select(final SFunction... stepFunctions) {
         return this.start().select(stepFunctions);
     }
 
-    public default <E2> GraphTraversal<Vertex, E2> select(final String as, SFunction stepFunction) {
-        return this.start().select(as, stepFunction);
+    public default <E2> GraphTraversal<Vertex, E2> select(final String label, SFunction stepFunction) {
+        return this.start().select(label, stepFunction);
     }
 
-    public default <E2> GraphTraversal<Vertex, E2> select(final String as) {
-        return this.start().select(as, null);
+    public default <E2> GraphTraversal<Vertex, E2> select(final String label) {
+        return this.start().select(label, null);
     }
 
     /*public default <E2> GraphTraversal<S, E2> union(final Traversal... traversals) {
@@ -307,8 +307,8 @@ public interface Vertex extends Element {
         return this.start().dedup(uniqueFunction);
     }
 
-    public default GraphTraversal<Vertex, Vertex> except(final String memoryKey) {
-        return this.start().except(memoryKey);
+    public default GraphTraversal<Vertex, Vertex> except(final String sideEffectKey) {
+        return this.start().except(sideEffectKey);
     }
 
     public default GraphTraversal<Vertex, Vertex> except(final Object exceptionObject) {
@@ -367,8 +367,8 @@ public interface Vertex extends Element {
         return this.start().range(low, high);
     }
 
-    public default GraphTraversal<Vertex, Vertex> retain(final String memoryKey) {
-        return this.start().retain(memoryKey);
+    public default GraphTraversal<Vertex, Vertex> retain(final String sideEffectKey) {
+        return this.start().retain(sideEffectKey);
     }
 
     public default GraphTraversal<Vertex, Vertex> retain(final Object retainObject) {
@@ -393,32 +393,32 @@ public interface Vertex extends Element {
         return this.start().sideEffect(consumer);
     }
 
-    public default <E2> GraphTraversal<Vertex, E2> cap(final String memoryKey) {
-        return this.start().cap(memoryKey);
+    public default <E2> GraphTraversal<Vertex, E2> cap(final String sideEffectKey) {
+        return this.start().cap(sideEffectKey);
     }
 
     public default <E2> GraphTraversal<Vertex, E2> cap() {
         return this.start().cap();
     }
 
-    public default GraphTraversal<Vertex, Vertex> subgraph(final String memoryKey, final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final SPredicate<Edge> includeEdge) {
-        return this.start().subgraph(memoryKey, edgeIdHolder, vertexMap, includeEdge);
+    public default GraphTraversal<Vertex, Vertex> subgraph(final String sideEffectKey, final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final SPredicate<Edge> includeEdge) {
+        return this.start().subgraph(sideEffectKey, edgeIdHolder, vertexMap, includeEdge);
     }
 
     public default GraphTraversal<Vertex, Vertex> subgraph(final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final SPredicate<Edge> includeEdge) {
         return this.start().subgraph(null, edgeIdHolder, vertexMap, includeEdge);
     }
 
-    public default GraphTraversal<Vertex, Vertex> subgraph(final String memoryKey, final SPredicate<Edge> includeEdge) {
-        return this.start().subgraph(memoryKey, null, null, includeEdge);
+    public default GraphTraversal<Vertex, Vertex> subgraph(final String sideEffectKey, final SPredicate<Edge> includeEdge) {
+        return this.start().subgraph(sideEffectKey, null, null, includeEdge);
     }
 
     public default GraphTraversal<Vertex, Vertex> subgraph(final SPredicate<Edge> includeEdge) {
         return this.start().subgraph(null, null, null, includeEdge);
     }
 
-    public default GraphTraversal<Vertex, Vertex> aggregate(final String memoryKey, final SFunction<Vertex, ?> preAggregateFunction) {
-        return this.start().aggregate(memoryKey, preAggregateFunction);
+    public default GraphTraversal<Vertex, Vertex> aggregate(final String sideEffectKey, final SFunction<Vertex, ?> preAggregateFunction) {
+        return this.start().aggregate(sideEffectKey, preAggregateFunction);
     }
 
     public default GraphTraversal<Vertex, Vertex> aggregate(final SFunction<Vertex, ?> preAggregateFunction) {
@@ -429,12 +429,12 @@ public interface Vertex extends Element {
         return this.start().aggregate(null, null);
     }
 
-    public default GraphTraversal<Vertex, Vertex> aggregate(final String memoryKey) {
-        return this.start().aggregate(memoryKey, null);
+    public default GraphTraversal<Vertex, Vertex> aggregate(final String sideEffectKey) {
+        return this.start().aggregate(sideEffectKey, null);
     }
 
-    public default GraphTraversal<Vertex, Vertex> groupBy(final String memoryKey, final SFunction<Vertex, ?> keyFunction, final SFunction<Vertex, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
-        return this.start().groupBy(memoryKey, keyFunction, valueFunction, reduceFunction);
+    public default GraphTraversal<Vertex, Vertex> groupBy(final String sideEffectKey, final SFunction<Vertex, ?> keyFunction, final SFunction<Vertex, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
+        return this.start().groupBy(sideEffectKey, keyFunction, valueFunction, reduceFunction);
     }
 
 
@@ -450,64 +450,64 @@ public interface Vertex extends Element {
         return this.start().groupBy(null, keyFunction, null, null);
     }
 
-    public default GraphTraversal<Vertex, Vertex> groupBy(final String memoryKey, final SFunction<Vertex, ?> keyFunction) {
-        return this.start().groupBy(memoryKey, keyFunction, null, null);
+    public default GraphTraversal<Vertex, Vertex> groupBy(final String sideEffectKey, final SFunction<Vertex, ?> keyFunction) {
+        return this.start().groupBy(sideEffectKey, keyFunction, null, null);
     }
 
-    public default GraphTraversal<Vertex, Vertex> groupBy(final String memoryKey, final SFunction<Vertex, ?> keyFunction, final SFunction<Vertex, ?> valueFunction) {
-        return this.start().groupBy(memoryKey, keyFunction, valueFunction, null);
+    public default GraphTraversal<Vertex, Vertex> groupBy(final String sideEffectKey, final SFunction<Vertex, ?> keyFunction, final SFunction<Vertex, ?> valueFunction) {
+        return this.start().groupBy(sideEffectKey, keyFunction, valueFunction, null);
     }
 
-    public default GraphTraversal<Vertex, Vertex> groupCount(final String memoryKey, final SFunction<Vertex, ?> preGroupFunction) {
-        return this.start().groupCount(memoryKey, preGroupFunction);
+    public default GraphTraversal<Vertex, Vertex> groupCount(final String sideEffectKey, final SFunction<Vertex, ?> preGroupFunction) {
+        return this.start().groupCount(sideEffectKey, preGroupFunction);
     }
 
     public default GraphTraversal<Vertex, Vertex> groupCount(final SFunction<Vertex, ?> preGroupFunction) {
         return this.start().groupCount(null, preGroupFunction);
     }
 
-    public default GraphTraversal<Vertex, Vertex> groupCount(final String memoryKey) {
-        return this.start().groupCount(memoryKey, null);
+    public default GraphTraversal<Vertex, Vertex> groupCount(final String sideEffectKey) {
+        return this.start().groupCount(sideEffectKey, null);
     }
 
     public default GraphTraversal<Vertex, Vertex> groupCount() {
         return this.start().groupCount(null, null);
     }
 
-    public default GraphTraversal<Vertex, Vertex> addE(final Direction direction, final String label, final String as, final Object... propertyKeyValues) {
-        return this.start().addE(direction, label, as, propertyKeyValues);
+    public default GraphTraversal<Vertex, Vertex> addE(final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
+        return this.start().addE(direction, edgeLabel, stepLabel, propertyKeyValues);
     }
 
-    public default GraphTraversal<Vertex, Vertex> addInE(final String label, final String as, final Object... propertyKeyValues) {
-        return this.start().addInE(label, as, propertyKeyValues);
+    public default GraphTraversal<Vertex, Vertex> addInE(final String edgeLabel, final String setLabel, final Object... propertyKeyValues) {
+        return this.start().addInE(edgeLabel, setLabel, propertyKeyValues);
     }
 
-    public default GraphTraversal<Vertex, Vertex> addOutE(final String label, final String as, final Object... propertyKeyValues) {
-        return this.start().addOutE(label, as, propertyKeyValues);
+    public default GraphTraversal<Vertex, Vertex> addOutE(final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
+        return this.start().addOutE(edgeLabel, stepLabel, propertyKeyValues);
     }
 
-    public default GraphTraversal<Vertex, Vertex> addBothE(final String label, final String as, final Object... propertyKeyValues) {
-        return this.start().addBothE(label, as, propertyKeyValues);
+    public default GraphTraversal<Vertex, Vertex> addBothE(final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
+        return this.start().addBothE(edgeLabel, stepLabel, propertyKeyValues);
     }
 
     public default GraphTraversal<Vertex, Vertex> timeLimit(final long timeLimit) {
         return this.start().timeLimit(timeLimit);
     }
 
-    public default GraphTraversal<Vertex, Vertex> tree(final String memoryKey, final SFunction... branchFunctions) {
-        return this.start().tree(memoryKey, branchFunctions);
+    public default GraphTraversal<Vertex, Vertex> tree(final String sideEffectKey, final SFunction... branchFunctions) {
+        return this.start().tree(sideEffectKey, branchFunctions);
     }
 
     public default GraphTraversal<Vertex, Vertex> tree(final SFunction... branchFunctions) {
         return this.start().tree(null, branchFunctions);
     }
 
-    public default GraphTraversal<Vertex, Vertex> store(final String memoryKey, final SFunction<Vertex, ?> preStoreFunction) {
-        return this.start().store(memoryKey, preStoreFunction);
+    public default GraphTraversal<Vertex, Vertex> store(final String sideEffectKey, final SFunction<Vertex, ?> preStoreFunction) {
+        return this.start().store(sideEffectKey, preStoreFunction);
     }
 
-    public default GraphTraversal<Vertex, Vertex> store(final String memoryKey) {
-        return this.start().store(memoryKey, null);
+    public default GraphTraversal<Vertex, Vertex> store(final String sideEffectKey) {
+        return this.start().store(sideEffectKey, null);
     }
 
     public default GraphTraversal<Vertex, Vertex> store(final SFunction<Vertex, ?> preStoreFunction) {
@@ -520,34 +520,34 @@ public interface Vertex extends Element {
 
     ///////////////////// BRANCH STEPS /////////////////////
 
-    public default GraphTraversal<Vertex, Vertex> jump(final String as, final SPredicate<Traverser<Vertex>> ifPredicate, final SPredicate<Traverser<Vertex>> emitPredicate) {
-        return this.start().jump(as, ifPredicate, emitPredicate);
+    public default GraphTraversal<Vertex, Vertex> jump(final String jumpLabel, final SPredicate<Traverser<Vertex>> ifPredicate, final SPredicate<Traverser<Vertex>> emitPredicate) {
+        return this.start().jump(jumpLabel, ifPredicate, emitPredicate);
     }
 
-    public default GraphTraversal<Vertex, Vertex> jump(final String as, final SPredicate<Traverser<Vertex>> ifPredicate) {
-        return this.start().jump(as, ifPredicate);
+    public default GraphTraversal<Vertex, Vertex> jump(final String jumpLabel, final SPredicate<Traverser<Vertex>> ifPredicate) {
+        return this.start().jump(jumpLabel, ifPredicate);
     }
 
-    public default GraphTraversal<Vertex, Vertex> jump(final String as, final int loops, final SPredicate<Traverser<Vertex>> emitPredicate) {
-        return this.start().jump(as, loops, emitPredicate);
+    public default GraphTraversal<Vertex, Vertex> jump(final String jumpLabel, final int loops, final SPredicate<Traverser<Vertex>> emitPredicate) {
+        return this.start().jump(jumpLabel, loops, emitPredicate);
     }
 
-    public default GraphTraversal<Vertex, Vertex> jump(final String as, final int loops) {
-        return this.start().jump(as, loops);
+    public default GraphTraversal<Vertex, Vertex> jump(final String jumpLabel, final int loops) {
+        return this.start().jump(jumpLabel, loops);
     }
 
-    public default GraphTraversal<Vertex, Vertex> jump(final String as) {
-        return this.start().jump(as);
+    public default GraphTraversal<Vertex, Vertex> jump(final String jumpLabel) {
+        return this.start().jump(jumpLabel);
     }
 
     ///////////////////// UTILITY STEPS /////////////////////
 
-    public default GraphTraversal<Vertex, Vertex> as(final String as) {
-        return this.start().as(as);
+    public default GraphTraversal<Vertex, Vertex> as(final String label) {
+        return this.start().as(label);
     }
 
-    public default GraphTraversal<Vertex, Vertex> with(final Object... memoryKeyValues) {
-        return this.start().with(memoryKeyValues);
+    public default GraphTraversal<Vertex, Vertex> with(final Object... sideEffectKeyValues) {
+        return this.start().with(sideEffectKeyValues);
     }
 
 }

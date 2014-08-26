@@ -28,7 +28,7 @@ public class TraverserIterator<T> implements Iterator<Traverser<T>> {
 
     public Traverser<T> next() {
         return this.trackPaths ?
-                new PathTraverser<>(this.step.getAs(), this.iterator.next()) :
+                new PathTraverser<>(this.step.getLabel(), this.iterator.next()) :
                 new SimpleTraverser<>(this.iterator.next());
     }
 }

@@ -48,11 +48,11 @@ public class EmptyStep<S, E> implements Step<S, E> {
         return instance();
     }
 
-    public String getAs() {
+    public String getLabel() {
         return Traverser.NO_FUTURE;
     }
 
-    public void setAs(String as) {
+    public void setLabel(String label) {
 
     }
 

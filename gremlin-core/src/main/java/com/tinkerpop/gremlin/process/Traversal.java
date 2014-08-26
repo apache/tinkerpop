@@ -144,12 +144,12 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
         return (Traversal) this.addStep(new PathIdentityStep<>(this));
     }
 
-    public default <E2> Traversal<S, E2> cap(final String variable) {
-        return (Traversal) this.addStep(new SideEffectCapStep<>(this, variable));
+    public default <E2> Traversal<S, E2> cap(final String sideEffecyKey) {
+        return (Traversal) this.addStep(new SideEffectCapStep<>(this, sideEffecyKey));
     }
 
     public default <E2> Traversal<S, E2> cap() {
-        return this.cap(TraversalHelper.getEnd(this).getAs());
+        return this.cap(TraversalHelper.getEnd(this).getLabel());
     }
 
     public default Traversal<S, Long> count() {

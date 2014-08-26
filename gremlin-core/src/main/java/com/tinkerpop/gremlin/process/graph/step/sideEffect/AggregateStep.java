@@ -36,7 +36,7 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCa
     public AggregateStep(final Traversal traversal, final String sideEffectKey, final SFunction<S, ?> preAggregateFunction) {
         super(traversal);
         this.preAggregateFunction = preAggregateFunction;
-        this.sideEffectKey = null == sideEffectKey ? this.getAs() : sideEffectKey;
+        this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         this.hiddenSideEffectKey = Graph.Key.hide(this.sideEffectKey);
         this.aggregate = this.traversal.sideEffects().getOrCreate(this.sideEffectKey, ArrayList::new);
     }

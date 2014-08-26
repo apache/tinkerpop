@@ -19,7 +19,7 @@ public class DefaultSideEffects implements Traversal.SideEffects {
     }
 
     public <T> void set(final String key, final T value) {
-        MemoryHelper.validateMemory(key, value);
+        SideEffectHelper.validateSideEffect(key, value);
         if (null == this.memory) this.memory = new HashMap<>();
         this.memory.put(key, value);
     }

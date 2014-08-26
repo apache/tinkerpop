@@ -14,7 +14,7 @@ import java.util.NoSuchElementException;
  */
 public abstract class AbstractStep<S, E> implements Step<S, E> {
 
-    protected String as;
+    protected String label;
     protected Traversal traversal;
     public ExpandableStepIterator<S> starts;
     protected Traverser<E> nextEnd;
@@ -27,7 +27,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     public AbstractStep(final Traversal traversal) {
         this.traversal = traversal;
         this.starts = new ExpandableStepIterator<S>((Step) this);
-        this.as = Graph.Key.hide(Integer.toString(this.traversal.getSteps().size()));
+        this.label = Graph.Key.hide(Integer.toString(this.traversal.getSteps().size()));
     }
 
     public void reset() {
@@ -56,12 +56,12 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         return this.nextStep;
     }
 
-    public void setAs(final String as) {
-        this.as = as;
+    public void setLabel(final String label) {
+        this.label = label;
     }
 
-    public String getAs() {
-        return this.as;
+    public String getLabel() {
+        return this.label;
     }
 
     public Traverser<E> next() {
@@ -113,7 +113,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     private void prepareTraversalForNextStep(final Traverser<E> traverser) {
         if (!this.futureSetByChild)
-            traverser.setFuture(this.nextStep.getAs());
-        if (traverser instanceof PathTraverser) traverser.getPath().addAs(this.getAs());
+            traverser.setFuture(this.nextStep.getLabel());
+        if (traverser instanceof PathTraverser) traverser.getPath().addLabel(this.getLabel());
     }
 }

@@ -15,11 +15,11 @@ import java.util.Iterator;
  */
 public class TinkerVertexStep<E extends Element> extends VertexStep<E> {
 
-    public TinkerVertexStep(final Traversal traversal, final Class<E> returnClass, final Direction direction, final int branchFactor, final String... labels) {
-        super(traversal, returnClass, direction, branchFactor, labels);
+    public TinkerVertexStep(final Traversal traversal, final Class<E> returnClass, final Direction direction, final int branchFactor, final String... edgeLabels) {
+        super(traversal, returnClass, direction, branchFactor, edgeLabels);
         if (Vertex.class.isAssignableFrom(returnClass))
-            this.setFunction(traverser -> (Iterator) TinkerHelper.getVertices((TinkerVertex) traverser.get(), this.direction, this.branchFactor, this.labels));
+            this.setFunction(traverser -> (Iterator) TinkerHelper.getVertices((TinkerVertex) traverser.get(), this.direction, this.branchFactor, this.edgeLabels));
         else
-            this.setFunction(traverser -> (Iterator) TinkerHelper.getEdges((TinkerVertex) traverser.get(), this.direction, this.branchFactor, this.labels));
+            this.setFunction(traverser -> (Iterator) TinkerHelper.getEdges((TinkerVertex) traverser.get(), this.direction, this.branchFactor, this.edgeLabels));
     }
 }

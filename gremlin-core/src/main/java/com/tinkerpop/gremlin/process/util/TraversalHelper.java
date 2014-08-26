@@ -19,11 +19,11 @@ import java.util.stream.Collectors;
 public class TraversalHelper {
 
     public static boolean isLabeled(final Step step) {
-        return !Graph.Key.isHidden(step.getAs());
+        return !Graph.Key.isHidden(step.getLabel());
     }
 
-    public static boolean isLabeled(final String as) {
-        return !Graph.Key.isHidden(as);
+    public static boolean isLabeled(final String label) {
+        return !Graph.Key.isHidden(label);
     }
 
     public static boolean isReversible(final Traversal traversal) {
@@ -35,28 +35,28 @@ public class TraversalHelper {
         return steps.size() == 0 ? Optional.empty() : Optional.of(steps.get(steps.size() - 1));
     }
 
-    public static <S, E> Step<S, E> getAs(final String as, final Traversal<?, ?> traversal) {
+    public static <S, E> Step<S, E> getStep(final String label, final Traversal<?, ?> traversal) {
         return (Step) traversal.getSteps().stream()
-                .filter(step -> as.equals(step.getAs()))
+                .filter(step -> label.equals(step.getLabel()))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("The provided name does not exist: " + as));
+                .orElseThrow(() -> new IllegalArgumentException("The provided name does not exist: " + label));
     }
 
-    public static boolean hasAs(final String as, final Traversal<?, ?> traversal) {
+    public static boolean hasLabel(final String label, final Traversal<?, ?> traversal) {
         return traversal.getSteps().stream()
-                .filter(step -> as.equals(step.getAs()))
+                .filter(step -> label.equals(step.getLabel()))
                 .findFirst().isPresent();
     }
 
-    public static List<String> getAsLabels(final Traversal traversal) {
-        final List<String> asLabels = new ArrayList<>();
+    public static List<String> getLabels(final Traversal traversal) {
+        final List<String> labels = new ArrayList<>();
         for (final Step step : (List<Step>) traversal.getSteps()) {
-            final String as = step.getAs();
+            final String as = step.getLabel();
             if (isLabeled(as)) {
-                asLabels.add(as);
+                labels.add(as);
             }
         }
-        return asLabels;
+        return labels;
     }
 
     public static <S, E> Step<S, ?> getStart(final Traversal<S, E> traversal) {
@@ -114,7 +114,7 @@ public class TraversalHelper {
         final List<Step> steps = traversal.getSteps();
         for (int i = 0; i < steps.size(); i++) {
             if (!TraversalHelper.isLabeled(steps.get(i)))
-                steps.get(i).setAs(Graph.Key.hide(Integer.toString(i)));
+                steps.get(i).setLabel(Graph.Key.hide(Integer.toString(i)));
         }
     }
 
@@ -140,7 +140,7 @@ public class TraversalHelper {
             builder.append(")");
         }
         if (TraversalHelper.isLabeled(step))
-            builder.append("@").append(step.getAs());
+            builder.append("@").append(step.getLabel());
         return builder.toString();
     }
 

@@ -9,15 +9,15 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
  */
 public class BackStep<S, E> extends MapStep<S, E> implements PathConsumer {
 
-    public String as;
+    public String stepLabel;
 
-    public BackStep(final Traversal traversal, final String as) {
+    public BackStep(final Traversal traversal, final String stepLabel) {
         super(traversal);
-        this.as = as;
-        this.setFunction(traverser -> traverser.getPath().get(this.as));
+        this.stepLabel = stepLabel;
+        this.setFunction(traverser -> traverser.getPath().get(this.stepLabel));
     }
 
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.as);
+        return TraversalHelper.makeStepString(this, this.stepLabel);
     }
 }

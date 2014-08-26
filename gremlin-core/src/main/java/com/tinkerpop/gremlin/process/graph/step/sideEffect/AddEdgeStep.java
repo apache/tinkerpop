@@ -13,27 +13,27 @@ import com.tinkerpop.gremlin.structure.Vertex;
 public class AddEdgeStep extends SideEffectStep<Vertex> implements PathConsumer, Reversible {
 
     public Direction direction;
-    public String label;
-    public String as;
+    public String edgeLabel;
+    public String stepLabel;
 
-    public AddEdgeStep(final Traversal traversal, final Direction direction, final String label, final String as, final Object... propertyKeyValues) {
+    public AddEdgeStep(final Traversal traversal, final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
         super(traversal);
         this.direction = direction;
-        this.label = label;
-        this.as = as;
+        this.edgeLabel = edgeLabel;
+        this.stepLabel = stepLabel;
         super.setConsumer(traverser -> {
             final Vertex currentVertex = traverser.get();
-            final Vertex otherVertex = traverser.getPath().get(as);
+            final Vertex otherVertex = traverser.getPath().get(stepLabel);
             if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH)) {
-                otherVertex.addEdge(label, currentVertex, propertyKeyValues);
+                otherVertex.addEdge(edgeLabel, currentVertex, propertyKeyValues);
             }
             if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH)) {
-                currentVertex.addEdge(label, otherVertex, propertyKeyValues);
+                currentVertex.addEdge(edgeLabel, otherVertex, propertyKeyValues);
             }
         });
     }
 
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.direction.name(), this.label, this.as);
+        return TraversalHelper.makeStepString(this, this.direction.name(), this.edgeLabel, this.stepLabel);
     }
 }

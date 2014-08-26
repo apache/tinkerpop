@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Arrays;
 import java.util.Iterator;
 
 /**
@@ -14,21 +15,21 @@ import java.util.Iterator;
  */
 public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implements Reversible {
 
-    public String[] labels;
+    public String[] edgeLabels;
     public Direction direction;
     public int branchFactor;
     public Class<E> returnClass;
 
-    public VertexStep(final Traversal traversal, final Class<E> returnClass, final Direction direction, final int branchFactor, final String... labels) {
+    public VertexStep(final Traversal traversal, final Class<E> returnClass, final Direction direction, final int branchFactor, final String... edgeLabels) {
         super(traversal);
         this.direction = direction;
-        this.labels = labels;
+        this.edgeLabels = edgeLabels;
         this.branchFactor = branchFactor;
         this.returnClass = returnClass;
         if (Vertex.class.isAssignableFrom(this.returnClass))
-            this.setFunction(traverser -> (Iterator<E>) traverser.get().vertices(this.direction, this.branchFactor, this.labels));
+            this.setFunction(traverser -> (Iterator<E>) traverser.get().vertices(this.direction, this.branchFactor, this.edgeLabels));
         else
-            this.setFunction(traverser -> (Iterator<E>) traverser.get().edges(this.direction, this.branchFactor, this.labels));
+            this.setFunction(traverser -> (Iterator<E>) traverser.get().edges(this.direction, this.branchFactor, this.edgeLabels));
     }
 
     public void reverse() {
@@ -36,7 +37,7 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
     }
 
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.direction, this.returnClass.getSimpleName().toLowerCase());
+        return TraversalHelper.makeStepString(this, this.direction, Arrays.asList(this.edgeLabels), this.returnClass.getSimpleName().toLowerCase());
     }
 
 }

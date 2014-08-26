@@ -439,7 +439,7 @@ public class BatchGraph<T extends Graph> implements Graph {
         }
 
         @Override
-        public GraphTraversal<Vertex, Vertex> with(final Object... variableValues) {
+        public GraphTraversal<Vertex, Vertex> with(final Object... sideEffectKeyValues) {
             throw retrievalNotSupported();
         }
 
@@ -464,7 +464,7 @@ public class BatchGraph<T extends Graph> implements Graph {
         }
 
         @Override
-        public GraphTraversal<Vertex, Vertex> as(final String as) {
+        public GraphTraversal<Vertex, Vertex> as(final String label) {
             throw retrievalNotSupported();
         }
 

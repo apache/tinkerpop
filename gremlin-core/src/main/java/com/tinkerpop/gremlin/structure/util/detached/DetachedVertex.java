@@ -39,7 +39,7 @@ public class DetachedVertex extends DetachedElement implements Vertex {
         return StringFactory.vertexString(this);
     }
 
-    public GraphTraversal<Vertex, Vertex> as(final String as) {
+    public GraphTraversal<Vertex, Vertex> as(final String label) {
         throw new IllegalStateException();
     }
 

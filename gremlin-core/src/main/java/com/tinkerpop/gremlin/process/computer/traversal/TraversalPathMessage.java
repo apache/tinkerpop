@@ -56,7 +56,7 @@ public class TraversalPathMessage extends TraversalMessage {
                         MapHelper.incr(tracker.getDoneObjectTracks(), object, traverser);
                     }
                 } else {
-                    final Step step = TraversalHelper.getAs(traverser.getFuture(), traversal);
+                    final Step step = TraversalHelper.getStep(traverser.getFuture(), traversal);
                     if (step instanceof VertexCentric) ((VertexCentric) step).setCurrentVertex(vertex);
                     step.addStarts(new SingleIterator(traverser));
                     if (processStep(step, messenger, tracker))
@@ -77,7 +77,7 @@ public class TraversalPathMessage extends TraversalMessage {
             return false;
         }
 
-        final Step step = TraversalHelper.getAs(this.traverser.getFuture(), traversal);
+        final Step step = TraversalHelper.getStep(this.traverser.getFuture(), traversal);
         if (step instanceof VertexCentric) ((VertexCentric) step).setCurrentVertex(vertex);
         MapHelper.incr(tracker.getGraphTracks(), this.traverser.get(), this.traverser);
         step.addStarts(new SingleIterator(this.traverser));

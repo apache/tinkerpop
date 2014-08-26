@@ -160,7 +160,7 @@ public class SubgraphStrategy implements GraphStrategy {
         private final Direction direction;
 
         public SubgraphVertexStep(final VertexStep<E> other) {
-            this(other.getTraversal(), other.returnClass, other.direction, other.branchFactor, other.labels);
+            this(other.getTraversal(), other.returnClass, other.direction, other.branchFactor, other.edgeLabels);
         }
 
         public SubgraphVertexStep(final Traversal traversal,

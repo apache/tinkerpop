@@ -45,8 +45,8 @@ public class WhereStep<E> extends FilterStep<Map<String, E>> {
 
         this.setPredicate(traverser -> {
             final Map<String, E> map = traverser.get();
-            final Object startObject = map.get(startStep.getAs());
-            final Object endObject = TraversalHelper.isLabeled(endStep) ? map.get(endStep.getAs()) : null;
+            final Object startObject = map.get(startStep.getLabel());
+            final Object endObject = TraversalHelper.isLabeled(endStep) ? map.get(endStep.getLabel()) : null;
             startStep.addStarts(new TraverserIterator<>(startStep, TraversalHelper.trackPaths(constraint), Arrays.asList(startObject).iterator()));
             if (null == endObject) {
                 if (constraint.hasNext()) {

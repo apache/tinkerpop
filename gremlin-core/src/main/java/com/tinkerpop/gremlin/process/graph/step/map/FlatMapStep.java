@@ -63,7 +63,7 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
         }
 
         public Traverser<B> next() {
-            return this.head.makeChild(this.step.getAs(), this.iterator.next());
+            return this.head.makeChild(this.step.getLabel(), this.iterator.next());
         }
     }
 

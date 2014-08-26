@@ -260,7 +260,7 @@ gremlin> g.v(1).as('a').out().jump('a',2).value('name')
 ==>ripple
 ==>lop
 
-The jump()-step also supports an "emit predicate." Whereby the traverser is split in two -- the traverser exists the code block as well as continues back within the code block.
+The `jump()`-step also supports an "emit predicate." Whereby the traverser is split in two -- the traverser exists the code block as well as continues back within the code block.
 
 [source,groovy]
 gremlin> g.v(1).as('a').out().jump('a'){it.loops<2}{true}.value('name')
@@ -274,7 +274,7 @@ image::jump-step.png[width=500]
 
 The first time through the jump-sequence, the vertices lop, vadas, and josh are seen. Given that the loops==0, then traverser jumps back to step `a`. However, because the emit-predicate is declared true, those vertices are emitted from jump-sequence. At step 2 (loops==1), the vertices touched are ripple and lop (Josh's created projects). Thus, they are emitted. Therefore, the solution the traversal is all vertices touched: lop, vadas, josh, ripple, and lop.
 
-The jump()-step highlights one of the major benefits of `Traverser<T>` in TinkerPop3: the ability to take a traverser and place it anywhere in the Traversal step-sequence. Because a traverser maintains all the metadata associated with its particular walk, and no step maintains state information about a traverser, traversers can be arbitrarily relocated without ill-effects.
+The `jump()`-step highlights one of the major benefits of `Traverser<T>` in TinkerPop3: the ability to take a traverser and place it anywhere in the Traversal step-sequence. Because a traverser maintains all the metadata associated with its particular walk, and no step maintains state information about a traverser, traversers can be arbitrarily relocated without ill-effects.
 
 [[match-step]]
 Match Step
@@ -471,7 +471,7 @@ gremlin> path.objects
 ==>v[4]
 ==>v[5]
 ==>ripple
-gremlin> path.asLabels
+gremlin> path.labels
 ==>[a, b]
 ==>[]
 ==>[c]
@@ -491,7 +491,7 @@ Select Step
 
 There are two use cases for `select()`-step (*map*).
 
-. Select named steps within a path (as defined by `as()` in a traversal).
+. Select labeled steps within a path (as defined by `as()` in a traversal).
 . Select objects out of a `Map<String,Object>` flow (i.e. a sub-map).
 
 The first use case is demonstrated via example below.
@@ -530,7 +530,7 @@ gremlin> g.V()[0..1].as('a').map{[b:1,c:2]}.select('c') <4>
 ==>2
 
 <1> A contrived example to create a `Map<String,Object>` flow as a foundation for the examples to follow.
-<2> Select will grab both as-named steps and `Map<String,Object>` entries.
+<2> Select will grab both labeled steps and `Map<String,Object>` entries.
 <3> The same `List<String>` selectivity can be used as demonstrated in the previous example.
 <4> If a single selection is used, then the object is emitted not wrapped in a map. Useful for continuing the traversal process without having to do a map projection.
 

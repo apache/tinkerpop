@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.util.As;
+import com.tinkerpop.gremlin.process.graph.util.Labels;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -106,12 +106,12 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
-            return g.v(v1Id).as("a").out("knows").as("b").select(As.of("a"));
+            return g.v(v1Id).as("a").out("knows").as("b").select(Labels.of("a"));
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id) {
-            return g.v(v1Id).as("a").out("knows").as("b").select(As.of("a"), v -> ((Vertex) v).value("name"));
+            return g.v(v1Id).as("a").out("knows").as("b").select(Labels.of("a"), v -> ((Vertex) v).value("name"));
         }
     }
 
@@ -133,13 +133,13 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
-            return g.v(v1Id).as("a").out("knows").as("b").<Vertex>select(As.of("a")).submit(g.compute());
+            return g.v(v1Id).as("a").out("knows").as("b").<Vertex>select(Labels.of("a")).submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id) {
             // TODO: Micro elements do not store properties
-            return g.v(v1Id).as("a").out("knows").as("b").select(As.of("a"), v -> ((Vertex) v).value("name"));  // .submit(g.compute());
+            return g.v(v1Id).as("a").out("knows").as("b").select(Labels.of("a"), v -> ((Vertex) v).value("name"));  // .submit(g.compute());
         }
     }
 }

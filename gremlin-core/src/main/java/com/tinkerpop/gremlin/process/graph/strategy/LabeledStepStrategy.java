@@ -3,26 +3,26 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.graph.step.util.AsIdentityStep;
+import com.tinkerpop.gremlin.process.graph.step.util.LabelIdentityStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AsStrategy implements TraversalStrategy {
+public class LabeledStepStrategy implements TraversalStrategy {
 
-    private static final AsStrategy INSTANCE = new AsStrategy();
+    private static final LabeledStepStrategy INSTANCE = new LabeledStepStrategy();
 
-    private AsStrategy() {
+    private LabeledStepStrategy() {
     }
 
     public void apply(final Traversal traversal) {
         final Step step = TraversalHelper.getEnd(traversal);
         if (TraversalHelper.isLabeled(step))
-            TraversalHelper.insertStep(new AsIdentityStep<>(traversal), traversal.getSteps().size(), traversal);
+            TraversalHelper.insertStep(new LabelIdentityStep<>(traversal), traversal.getSteps().size(), traversal);
     }
 
-    public static AsStrategy instance() {
+    public static LabeledStepStrategy instance() {
         return INSTANCE;
     }
 

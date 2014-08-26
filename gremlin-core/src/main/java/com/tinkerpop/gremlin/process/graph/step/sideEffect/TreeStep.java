@@ -27,7 +27,7 @@ public class TreeStep<S> extends SideEffectStep<S> implements Reversible, PathCo
 
     public TreeStep(final Traversal traversal, final String sideEffectKey, final SFunction... branchFunctions) {
         super(traversal);
-        this.sideEffectKey = null == sideEffectKey ? this.getAs() : sideEffectKey;
+        this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         this.hiddenSideEffectKey = Graph.Key.hide(this.sideEffectKey);
         this.functionRing = new FunctionRing(branchFunctions);
         this.tree = traversal.sideEffects().getOrCreate(this.sideEffectKey, Tree::new);

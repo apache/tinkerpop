@@ -128,68 +128,68 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         return this.start().identity();
     }
 
-    public Neo4jTraversal<Vertex, Vertex> to(final Direction direction, final int branchFactor, final String... labels) {
-        return this.start().to(direction, branchFactor, labels);
+    public Neo4jTraversal<Vertex, Vertex> to(final Direction direction, final int branchFactor, final String... edgeLabels) {
+        return this.start().to(direction, branchFactor, edgeLabels);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> to(final Direction direction, final String... labels) {
-        return this.start().to(direction, labels);
+    public Neo4jTraversal<Vertex, Vertex> to(final Direction direction, final String... edgeLabels) {
+        return this.start().to(direction, edgeLabels);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> out(final int branchFactor, final String... labels) {
-        return this.start().out(branchFactor, labels);
+    public Neo4jTraversal<Vertex, Vertex> out(final int branchFactor, final String... edgeLabels) {
+        return this.start().out(branchFactor, edgeLabels);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> out(final String... labels) {
-        return this.start().out(labels);
+    public Neo4jTraversal<Vertex, Vertex> out(final String... edgeLabels) {
+        return this.start().out(edgeLabels);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> in(final int branchFactor, final String... labels) {
-        return this.start().in(branchFactor, labels);
+    public Neo4jTraversal<Vertex, Vertex> in(final int branchFactor, final String... edgeLabels) {
+        return this.start().in(branchFactor, edgeLabels);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> in(final String... labels) {
-        return this.start().in(labels);
+    public Neo4jTraversal<Vertex, Vertex> in(final String... edgeLabels) {
+        return this.start().in(edgeLabels);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> both(final int branchFactor, final String... labels) {
-        return this.start().both(branchFactor, labels);
+    public Neo4jTraversal<Vertex, Vertex> both(final int branchFactor, final String... edgeLabels) {
+        return this.start().both(branchFactor, edgeLabels);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> both(final String... labels) {
-        return this.start().both(labels);
+    public Neo4jTraversal<Vertex, Vertex> both(final String... edgeLabels) {
+        return this.start().both(edgeLabels);
     }
 
-    public Neo4jTraversal<Vertex, Edge> toE(final Direction direction, final int branchFactor, final String... labels) {
-        return this.start().toE(direction, branchFactor, labels);
+    public Neo4jTraversal<Vertex, Edge> toE(final Direction direction, final int branchFactor, final String... edgeLabels) {
+        return this.start().toE(direction, branchFactor, edgeLabels);
     }
 
-    public Neo4jTraversal<Vertex, Edge> toE(final Direction direction, final String... labels) {
-        return this.start().toE(direction, labels);
+    public Neo4jTraversal<Vertex, Edge> toE(final Direction direction, final String... edgeLabels) {
+        return this.start().toE(direction, edgeLabels);
     }
 
-    public Neo4jTraversal<Vertex, Edge> outE(final int branchFactor, final String... labels) {
-        return this.start().outE(branchFactor, labels);
+    public Neo4jTraversal<Vertex, Edge> outE(final int branchFactor, final String... edgeLabels) {
+        return this.start().outE(branchFactor, edgeLabels);
     }
 
-    public Neo4jTraversal<Vertex, Edge> outE(final String... labels) {
-        return this.start().outE(labels);
+    public Neo4jTraversal<Vertex, Edge> outE(final String... edgeLabels) {
+        return this.start().outE(edgeLabels);
     }
 
-    public Neo4jTraversal<Vertex, Edge> inE(final int branchFactor, final String... labels) {
-        return this.start().inE(branchFactor, labels);
+    public Neo4jTraversal<Vertex, Edge> inE(final int branchFactor, final String... edgeLabels) {
+        return this.start().inE(branchFactor, edgeLabels);
     }
 
-    public Neo4jTraversal<Vertex, Edge> inE(final String... labels) {
-        return this.start().inE(labels);
+    public Neo4jTraversal<Vertex, Edge> inE(final String... edgeLabels) {
+        return this.start().inE(edgeLabels);
     }
 
-    public Neo4jTraversal<Vertex, Edge> bothE(final int branchFactor, final String... labels) {
-        return this.start().bothE(branchFactor, labels);
+    public Neo4jTraversal<Vertex, Edge> bothE(final int branchFactor, final String... edgeLabels) {
+        return this.start().bothE(branchFactor, edgeLabels);
     }
 
-    public Neo4jTraversal<Vertex, Edge> bothE(final String... labels) {
-        return this.start().bothE(labels);
+    public Neo4jTraversal<Vertex, Edge> bothE(final String... edgeLabels) {
+        return this.start().bothE(edgeLabels);
     }
 
     public Neo4jTraversal<Vertex, Vertex> toV(final Direction direction) {
@@ -240,28 +240,28 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         return this.start().path(pathFunctions);
     }
 
-    public <E2> Neo4jTraversal<Vertex, E2> back(final String as) {
-        return this.start().back(as);
+    public <E2> Neo4jTraversal<Vertex, E2> back(final String stepLabel) {
+        return this.start().back(stepLabel);
     }
 
-    public <E2> Neo4jTraversal<Vertex, Map<String, E2>> match(final String inAs, final Traversal... traversals) {
-        return this.start().match(inAs, traversals);
+    public <E2> Neo4jTraversal<Vertex, Map<String, E2>> match(final String startLabel, final Traversal... traversals) {
+        return this.start().match(startLabel, traversals);
     }
 
-    public <E2> Neo4jTraversal<Vertex, Map<String, E2>> select(final List<String> asLabels, SFunction... stepFunctions) {
-        return this.start().select(asLabels, stepFunctions);
+    public <E2> Neo4jTraversal<Vertex, Map<String, E2>> select(final List<String> labels, SFunction... stepFunctions) {
+        return this.start().select(labels, stepFunctions);
     }
 
     public <E2> Neo4jTraversal<Vertex, Map<String, E2>> select(final SFunction... stepFunctions) {
         return this.start().select(stepFunctions);
     }
 
-    public <E2> Neo4jTraversal<Vertex, E2> select(final String as, SFunction stepFunction) {
-        return this.start().select(as, stepFunction);
+    public <E2> Neo4jTraversal<Vertex, E2> select(final String label, SFunction stepFunction) {
+        return this.start().select(label, stepFunction);
     }
 
-    public <E2> Neo4jTraversal<Vertex, E2> select(final String as) {
-        return this.start().select(as, null);
+    public <E2> Neo4jTraversal<Vertex, E2> select(final String label) {
+        return this.start().select(label, null);
     }
 
     /*public <E2> Neo4jTraversal<S, E2> union(final Traversal... traversals) {
@@ -310,8 +310,8 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         return this.start().dedup(uniqueFunction);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> except(final String memoryKey) {
-        return this.start().except(memoryKey);
+    public Neo4jTraversal<Vertex, Vertex> except(final String sideEffectKey) {
+        return this.start().except(sideEffectKey);
     }
 
     public Neo4jTraversal<Vertex, Vertex> except(final Object exceptionObject) {
@@ -370,8 +370,8 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         return this.start().range(low, high);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> retain(final String memoryKey) {
-        return this.start().retain(memoryKey);
+    public Neo4jTraversal<Vertex, Vertex> retain(final String sideEffectKey) {
+        return this.start().retain(sideEffectKey);
     }
 
     public Neo4jTraversal<Vertex, Vertex> retain(final Object retainObject) {
@@ -396,32 +396,32 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         return this.start().sideEffect(consumer);
     }
 
-    public <E2> Neo4jTraversal<Vertex, E2> cap(final String memoryKey) {
-        return this.start().cap(memoryKey);
+    public <E2> Neo4jTraversal<Vertex, E2> cap(final String sideEffectKey) {
+        return this.start().cap(sideEffectKey);
     }
 
     public <E2> Neo4jTraversal<Vertex, E2> cap() {
         return this.start().cap();
     }
 
-    public Neo4jTraversal<Vertex, Vertex> subgraph(final String memoryKey, final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final SPredicate<Edge> includeEdge) {
-        return this.start().subgraph(memoryKey, edgeIdHolder, vertexMap, includeEdge);
+    public Neo4jTraversal<Vertex, Vertex> subgraph(final String sideEffectKey, final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final SPredicate<Edge> includeEdge) {
+        return this.start().subgraph(sideEffectKey, edgeIdHolder, vertexMap, includeEdge);
     }
 
     public Neo4jTraversal<Vertex, Vertex> subgraph(final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final SPredicate<Edge> includeEdge) {
         return this.start().subgraph(null, edgeIdHolder, vertexMap, includeEdge);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> subgraph(final String memoryKey, final SPredicate<Edge> includeEdge) {
-        return this.start().subgraph(memoryKey, null, null, includeEdge);
+    public Neo4jTraversal<Vertex, Vertex> subgraph(final String sideEffectKey, final SPredicate<Edge> includeEdge) {
+        return this.start().subgraph(sideEffectKey, null, null, includeEdge);
     }
 
     public Neo4jTraversal<Vertex, Vertex> subgraph(final SPredicate<Edge> includeEdge) {
         return this.start().subgraph(null, null, null, includeEdge);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> aggregate(final String memoryKey, final SFunction<Vertex, ?> preAggregateFunction) {
-        return this.start().aggregate(memoryKey, preAggregateFunction);
+    public Neo4jTraversal<Vertex, Vertex> aggregate(final String sideEffectKey, final SFunction<Vertex, ?> preAggregateFunction) {
+        return this.start().aggregate(sideEffectKey, preAggregateFunction);
     }
 
     public Neo4jTraversal<Vertex, Vertex> aggregate(final SFunction<Vertex, ?> preAggregateFunction) {
@@ -432,12 +432,12 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         return this.start().aggregate(null, null);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> aggregate(final String memoryKey) {
-        return this.start().aggregate(memoryKey, null);
+    public Neo4jTraversal<Vertex, Vertex> aggregate(final String sideEffectKey) {
+        return this.start().aggregate(sideEffectKey, null);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> groupBy(final String memoryKey, final SFunction<Vertex, ?> keyFunction, final SFunction<Vertex, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
-        return this.start().groupBy(memoryKey, keyFunction, valueFunction, reduceFunction);
+    public Neo4jTraversal<Vertex, Vertex> groupBy(final String sideEffectKey, final SFunction<Vertex, ?> keyFunction, final SFunction<Vertex, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
+        return this.start().groupBy(sideEffectKey, keyFunction, valueFunction, reduceFunction);
     }
 
 
@@ -453,64 +453,64 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         return this.start().groupBy(null, keyFunction, null, null);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> groupBy(final String memoryKey, final SFunction<Vertex, ?> keyFunction) {
-        return this.start().groupBy(memoryKey, keyFunction, null, null);
+    public Neo4jTraversal<Vertex, Vertex> groupBy(final String sideEffectKey, final SFunction<Vertex, ?> keyFunction) {
+        return this.start().groupBy(sideEffectKey, keyFunction, null, null);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> groupBy(final String memoryKey, final SFunction<Vertex, ?> keyFunction, final SFunction<Vertex, ?> valueFunction) {
-        return this.start().groupBy(memoryKey, keyFunction, valueFunction, null);
+    public Neo4jTraversal<Vertex, Vertex> groupBy(final String sideEffectKey, final SFunction<Vertex, ?> keyFunction, final SFunction<Vertex, ?> valueFunction) {
+        return this.start().groupBy(sideEffectKey, keyFunction, valueFunction, null);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> groupCount(final String memoryKey, final SFunction<Vertex, ?> preGroupFunction) {
-        return this.start().groupCount(memoryKey, preGroupFunction);
+    public Neo4jTraversal<Vertex, Vertex> groupCount(final String sideEffectKey, final SFunction<Vertex, ?> preGroupFunction) {
+        return this.start().groupCount(sideEffectKey, preGroupFunction);
     }
 
     public Neo4jTraversal<Vertex, Vertex> groupCount(final SFunction<Vertex, ?> preGroupFunction) {
         return this.start().groupCount(null, preGroupFunction);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> groupCount(final String memoryKey) {
-        return this.start().groupCount(memoryKey, null);
+    public Neo4jTraversal<Vertex, Vertex> groupCount(final String sideEffectKey) {
+        return this.start().groupCount(sideEffectKey, null);
     }
 
     public Neo4jTraversal<Vertex, Vertex> groupCount() {
         return this.start().groupCount(null, null);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> addE(final Direction direction, final String label, final String as, final Object... propertyKeyValues) {
-        return this.start().addE(direction, label, as, propertyKeyValues);
+    public Neo4jTraversal<Vertex, Vertex> addE(final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
+        return this.start().addE(direction, edgeLabel, stepLabel, propertyKeyValues);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> addInE(final String label, final String as, final Object... propertyKeyValues) {
-        return this.start().addInE(label, as, propertyKeyValues);
+    public Neo4jTraversal<Vertex, Vertex> addInE(final String edgeLabel, final String setLabel, final Object... propertyKeyValues) {
+        return this.start().addInE(edgeLabel, setLabel, propertyKeyValues);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> addOutE(final String label, final String as, final Object... propertyKeyValues) {
-        return this.start().addOutE(label, as, propertyKeyValues);
+    public Neo4jTraversal<Vertex, Vertex> addOutE(final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
+        return this.start().addOutE(edgeLabel, stepLabel, propertyKeyValues);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> addBothE(final String label, final String as, final Object... propertyKeyValues) {
-        return this.start().addBothE(label, as, propertyKeyValues);
+    public Neo4jTraversal<Vertex, Vertex> addBothE(final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
+        return this.start().addBothE(edgeLabel, stepLabel, propertyKeyValues);
     }
 
     public Neo4jTraversal<Vertex, Vertex> timeLimit(final long timeLimit) {
         return this.start().timeLimit(timeLimit);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> tree(final String memoryKey, final SFunction... branchFunctions) {
-        return this.start().tree(memoryKey, branchFunctions);
+    public Neo4jTraversal<Vertex, Vertex> tree(final String sideEffectKey, final SFunction... branchFunctions) {
+        return this.start().tree(sideEffectKey, branchFunctions);
     }
 
     public Neo4jTraversal<Vertex, Vertex> tree(final SFunction... branchFunctions) {
         return this.start().tree(null, branchFunctions);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> store(final String memoryKey, final SFunction<Vertex, ?> preStoreFunction) {
-        return this.start().store(memoryKey, preStoreFunction);
+    public Neo4jTraversal<Vertex, Vertex> store(final String sideEffectKey, final SFunction<Vertex, ?> preStoreFunction) {
+        return this.start().store(sideEffectKey, preStoreFunction);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> store(final String memoryKey) {
-        return this.start().store(memoryKey, null);
+    public Neo4jTraversal<Vertex, Vertex> store(final String sideEffectKey) {
+        return this.start().store(sideEffectKey, null);
     }
 
     public Neo4jTraversal<Vertex, Vertex> store(final SFunction<Vertex, ?> preStoreFunction) {
@@ -523,34 +523,34 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
 
     ///////////////////// BRANCH STEPS /////////////////////
 
-    public Neo4jTraversal<Vertex, Vertex> jump(final String as, final SPredicate<Traverser<Vertex>> ifPredicate, final SPredicate<Traverser<Vertex>> emitPredicate) {
-        return this.start().jump(as, ifPredicate, emitPredicate);
+    public Neo4jTraversal<Vertex, Vertex> jump(final String jumpLabel, final SPredicate<Traverser<Vertex>> ifPredicate, final SPredicate<Traverser<Vertex>> emitPredicate) {
+        return this.start().jump(jumpLabel, ifPredicate, emitPredicate);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> jump(final String as, final SPredicate<Traverser<Vertex>> ifPredicate) {
-        return this.start().jump(as, ifPredicate);
+    public Neo4jTraversal<Vertex, Vertex> jump(final String jumpLabel, final SPredicate<Traverser<Vertex>> ifPredicate) {
+        return this.start().jump(jumpLabel, ifPredicate);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> jump(final String as, final int loops, final SPredicate<Traverser<Vertex>> emitPredicate) {
-        return this.start().jump(as, loops, emitPredicate);
+    public Neo4jTraversal<Vertex, Vertex> jump(final String jumpLabel, final int loops, final SPredicate<Traverser<Vertex>> emitPredicate) {
+        return this.start().jump(jumpLabel, loops, emitPredicate);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> jump(final String as, final int loops) {
-        return this.start().jump(as, loops);
+    public Neo4jTraversal<Vertex, Vertex> jump(final String jumpLabel, final int loops) {
+        return this.start().jump(jumpLabel, loops);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> jump(final String as) {
-        return this.start().jump(as);
+    public Neo4jTraversal<Vertex, Vertex> jump(final String jumpLabel) {
+        return this.start().jump(jumpLabel);
     }
 
     ///////////////////// UTILITY STEPS /////////////////////
 
-    public Neo4jTraversal<Vertex, Vertex> as(final String as) {
-        return this.start().as(as);
+    public Neo4jTraversal<Vertex, Vertex> as(final String label) {
+        return this.start().as(label);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> with(final Object... memoryKeyValues) {
-        return this.start().with(memoryKeyValues);
+    public Neo4jTraversal<Vertex, Vertex> with(final Object... sideEffectKeyValues) {
+        return this.start().with(sideEffectKeyValues);
     }
 
 }

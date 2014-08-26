@@ -5,9 +5,9 @@ import com.tinkerpop.gremlin.process.Traversal;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MemoryHelper {
+public class SideEffectHelper {
 
-    public static void validateMemory(final String key, final Object value) throws IllegalArgumentException {
+    public static void validateSideEffect(final String key, final Object value) throws IllegalArgumentException {
         if (null == value)
             throw Traversal.SideEffects.Exceptions.sideEffectValueCanNotBeNull();
         if (null == key)
@@ -16,7 +16,7 @@ public class MemoryHelper {
             throw Traversal.SideEffects.Exceptions.sideEffectKeyCanNotBeEmpty();
     }
 
-    public static void legalMemoryKeyValueArray(final Object[] memoryKeyValues) {
+    public static void legalSideEffectKeyValues(final Object[] memoryKeyValues) {
         if (memoryKeyValues.length % 2 != 0)
             throw Traversal.SideEffects.Exceptions.sideEffectKeyValuesMustBeAMultipleOfTwo();
         for (int i = 0; i < memoryKeyValues.length; i = i + 2) {

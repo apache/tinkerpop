@@ -88,23 +88,23 @@ public interface Traverser<T> extends Serializable {
     public String getFuture();
 
     /**
-     * Set the future of the traverser as signified by the steps as-label.
+     * Set the future of the traverser as signified by the step's label.
      *
-     * @param as The future as-labeled step of the traverser
+     * @param label The future labeled step of the traverser
      */
-    public void setFuture(final String as);
+    public void setFuture(final String label);
 
     /**
      * Generate a child traverser of the current traverser for current as step and new object location.
      * The child has the path history, future, and loop information of the parent.
      * The child extends that path history with the current as and provided R-object.
      *
-     * @param as  The current as-label of the child
+     * @param label  The current label of the child
      * @param r   The current object of the child
      * @param <R> The current object type of the child
      * @return The newly created traverser
      */
-    public <R> Traverser<R> makeChild(final String as, final R r);
+    public <R> Traverser<R> makeChild(final String label, final R r);
 
     /**
      * Generate a sibling traverser of the current traverser with a full copy of all state within the sibling.

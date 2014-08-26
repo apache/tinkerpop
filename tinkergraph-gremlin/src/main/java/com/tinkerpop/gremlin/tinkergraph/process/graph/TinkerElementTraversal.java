@@ -32,11 +32,11 @@ public class TinkerElementTraversal<S, E> extends DefaultGraphTraversal<S, E> {
 
     public GraphTraversal<S, E> submit(final GraphComputer computer) {
         TinkerHelper.prepareTraversalForComputer(this);
-        final String label = this.getSteps().get(0).getAs();
+        final String label = this.getSteps().get(0).getLabel();
         TraversalHelper.removeStep(0, this);
         final Step identityStep = new IdentityStep(this);
         if (TraversalHelper.isLabeled(label))
-            identityStep.setAs(label);
+            identityStep.setLabel(label);
 
         TraversalHelper.insertStep(identityStep, 0, this);
         TraversalHelper.insertStep(new HasStep(this, new HasContainer(Element.ID, Compare.EQUAL, this.id)), 0, this);

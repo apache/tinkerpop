@@ -1,9 +1,11 @@
 package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -11,8 +13,15 @@ import java.util.Map;
  */
 public class ValuesStep extends MapStep<Element, Map<String, Object>> {
 
-    public ValuesStep(final Traversal traversal, final String... keys) {
+    public String[] propertyKeys;
+
+    public ValuesStep(final Traversal traversal, final String... propertyKeys) {
         super(traversal);
-        this.setFunction(traverser -> ElementHelper.propertyMap(traverser.get(), keys));
+        this.propertyKeys = propertyKeys;
+        this.setFunction(traverser -> ElementHelper.propertyMap(traverser.get(), propertyKeys));
+    }
+
+    public String toString() {
+        return TraversalHelper.makeStepString(this, Arrays.asList(this.propertyKeys));
     }
 }

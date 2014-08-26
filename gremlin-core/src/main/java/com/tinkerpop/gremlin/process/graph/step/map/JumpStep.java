@@ -13,65 +13,65 @@ import com.tinkerpop.gremlin.util.function.SPredicate;
  */
 public class JumpStep<S> extends AbstractStep<S, S> {
 
-    public final String jumpAs;
+    public final String jumpLabel;
     public Step jumpToStep;
     public final SPredicate<Traverser<S>> ifPredicate;
     public final SPredicate<Traverser<S>> emitPredicate;
     public final int loops;
     private final boolean jumpBack;
 
-    public JumpStep(final Traversal traversal, final String jumpAs, final SPredicate<Traverser<S>> ifPredicate, final SPredicate<Traverser<S>> emitPredicate) {
+    public JumpStep(final Traversal traversal, final String jumpLabel, final SPredicate<Traverser<S>> ifPredicate, final SPredicate<Traverser<S>> emitPredicate) {
         super(traversal);
         this.loops = -1;
-        this.jumpAs = jumpAs;
+        this.jumpLabel = jumpLabel;
         this.ifPredicate = ifPredicate;
         this.emitPredicate = emitPredicate;
-        this.jumpToStep = TraversalHelper.hasAs(this.jumpAs, this.traversal) ? TraversalHelper.getAs(this.jumpAs, this.traversal).getNextStep() : null;
+        this.jumpToStep = TraversalHelper.hasLabel(this.jumpLabel, this.traversal) ? TraversalHelper.getStep(this.jumpLabel, this.traversal).getNextStep() : null;
         this.jumpBack = null != this.jumpToStep;
         this.futureSetByChild = true;
     }
 
-    public JumpStep(final Traversal traversal, final String jumpAs, final SPredicate<Traverser<S>> ifPredicate) {
-        this(traversal, jumpAs, ifPredicate, null);
+    public JumpStep(final Traversal traversal, final String jumpLabel, final SPredicate<Traverser<S>> ifPredicate) {
+        this(traversal, jumpLabel, ifPredicate, null);
     }
 
-    public JumpStep(final Traversal traversal, final String jumpAs, final int loops, final SPredicate<Traverser<S>> emitPredicate) {
+    public JumpStep(final Traversal traversal, final String jumpLabel, final int loops, final SPredicate<Traverser<S>> emitPredicate) {
         super(traversal);
-        this.jumpAs = jumpAs;
+        this.jumpLabel = jumpLabel;
         this.loops = loops;
         this.ifPredicate = null;
         this.emitPredicate = emitPredicate;
-        this.jumpToStep = TraversalHelper.hasAs(this.jumpAs, this.traversal) ? TraversalHelper.getAs(this.jumpAs, this.traversal).getNextStep() : null;
+        this.jumpToStep = TraversalHelper.hasLabel(this.jumpLabel, this.traversal) ? TraversalHelper.getStep(this.jumpLabel, this.traversal).getNextStep() : null;
         this.jumpBack = null != this.jumpToStep;
         this.futureSetByChild = true;
     }
 
-    public JumpStep(final Traversal traversal, final String jumpAs, final int loops) {
-        this(traversal, jumpAs, loops, null);
+    public JumpStep(final Traversal traversal, final String jumpLabel, final int loops) {
+        this(traversal, jumpLabel, loops, null);
     }
 
-    public JumpStep(final Traversal traversal, final String jumpAs) {
-        this(traversal, jumpAs, t -> true);
+    public JumpStep(final Traversal traversal, final String jumpLabel) {
+        this(traversal, jumpLabel, t -> true);
     }
 
     protected Traverser<S> processNextStart() {
         if (null == this.jumpToStep)
-            this.jumpToStep = TraversalHelper.getAs(this.jumpAs, this.traversal).getNextStep();
+            this.jumpToStep = TraversalHelper.getStep(this.jumpLabel, this.traversal).getNextStep();
         while (true) {
             final Traverser<S> traverser = this.starts.next();
             if (this.jumpBack) traverser.incrLoops();
             if (doJump(traverser)) {
-                traverser.setFuture(this.jumpAs);
+                traverser.setFuture(this.jumpLabel);
                 this.jumpToStep.addStarts(new SingleIterator(traverser));
                 if (this.emitPredicate != null && this.emitPredicate.test(traverser)) {
                     final Traverser<S> emitTraverser = traverser.makeSibling();
                     if (this.jumpBack) emitTraverser.resetLoops();
-                    emitTraverser.setFuture(this.getNextStep().getAs());
+                    emitTraverser.setFuture(this.getNextStep().getLabel());
                     return emitTraverser;
                 }
             } else {
                 if (this.jumpBack) traverser.resetLoops();
-                traverser.setFuture(this.getNextStep().getAs());
+                traverser.setFuture(this.getNextStep().getLabel());
                 return traverser;
             }
         }
@@ -86,6 +86,6 @@ public class JumpStep<S> extends AbstractStep<S, S> {
     }
 
     public String toString() {
-        return this.loops != -1 ? TraversalHelper.makeStepString(this, this.jumpAs, this.loops) : TraversalHelper.makeStepString(this, this.jumpAs);
+        return this.loops != -1 ? TraversalHelper.makeStepString(this, this.jumpLabel, this.loops) : TraversalHelper.makeStepString(this, this.jumpLabel);
     }
 }
