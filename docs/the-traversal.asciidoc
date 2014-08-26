@@ -365,11 +365,11 @@ gremlin> g.V().match('a',
             select(['a','c']){it.value('name')}
 ==>[a:marko, c:ripple]
 
-WARNING: Currently `match()` can not operate within a multi-JVM <<graphcomputer,GraphComputer>> OLAP environment. Future work includes a linearization <<traversalstrategy,TraversalStrategy>> for `match()`.
+WARNING: Currently, `match()` does not operate within a multi-JVM <<graphcomputer,GraphComputer>> OLAP environment. Future work includes a linearization <<traversalstrategy,TraversalStrategy>> for `match()`.
 
-[[using-where]]
-Using Where
-^^^^^^^^^^^
+[[using-where-with-match]]
+Using Where with Match
+^^^^^^^^^^^^^^^^^^^^^^
 
 Match is typically used in conjunction with both `select()` (demonstrated previously) and `where()` (presented here). A `where()` allows the user to further constrain the result set provided by `match()`.
 
@@ -489,7 +489,7 @@ gremlin> path.d == path.e
 Select Step
 ~~~~~~~~~~~
 
-There are two use cases for `select`-step (*map*).
+There are two use cases for `select()`-step (*map*).
 
 . Select named steps within a path (as defined by `as()` in a traversal).
 . Select objects out of a `Map<String,Object>` flow (i.e. a sub-map).
@@ -513,7 +513,7 @@ gremlin> g.V().as('a').out().as('b').out().as('c').select('a') // if the selecti
 ==>v[1]
 ==>v[1]
 
-The second use case is best understood in terms of <<match-step,`match`-step>> where the result of `match()` is a `Map<String,Object>` of variable bindings. However, any step that emits a `Map<String,Object>` can be selected. A contrived example is presented below.
+The second use case is best understood in terms of <<match-step,`match()`-step>> where the result of `match()` is a `Map<String,Object>` of variable bindings. However, any step that emits a `Map<String,Object>` can be selected. A contrived example is presented below.
 
 [source,groovy]
 gremlin> g.V()[0..1].as('a').map{[b:1,c:2]} <1>
@@ -533,6 +533,43 @@ gremlin> g.V()[0..1].as('a').map{[b:1,c:2]}.select('c') <4>
 <2> Select will grab both as-named steps and `Map<String,Object>` entries.
 <3> The same `List<String>` selectivity can be used as demonstrated in the previous example.
 <4> If a single selection is used, then the object is emitted not wrapped in a map. Useful for continuing the traversal process without having to do a map projection.
+
+[[using-where-with-select]]
+Using Where with Select
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Finally, like <<match-step,`match()`-step>>, it is possible to use `where()`, as where is a filter that processes `Map<String,Object>` streams.
+
+[source,groovy]
+gremlin> g.V().as('a').out('created').in('created').as('b').select{it.value('name')} <1>
+==>[a:marko, b:marko]
+==>[a:marko, b:josh]
+==>[a:marko, b:peter]
+==>[a:josh, b:josh]
+==>[a:josh, b:marko]
+==>[a:josh, b:josh]
+==>[a:josh, b:peter]
+==>[a:peter, b:marko]
+==>[a:peter, b:josh]
+==>[a:peter, b:peter]
+gremlin> g.V().as('a').out('created').in('created').as('b').
+           select{it.value('name')}.
+             where('a',T.neq,'b') <2>
+==>[a:marko, b:josh]
+==>[a:marko, b:peter]
+==>[a:josh, b:marko]
+==>[a:josh, b:peter]
+==>[a:peter, b:marko]
+==>[a:peter, b:josh]
+gremlin> g.V().as('a').out('created').in('created').as('b').select(). <3>
+              where('a',T.neq,'b').
+              where(g.of().as('a').out('knows').as('b')).
+                select{it.value('name')}
+==>[a:marko, b:josh]
+
+<1> A standard `select()` that generates a `Map<String,Object>` of variables bindings in the path (i.e. `a` and `b`)
+<2> The `select{it.value('name')}` projects each binding vertex to their name property and `where()` operates to ensure `a` and `b` strings are not the same.
+<3> The first `select()` projects a vertex binding set. A binding is filtered if 'a' vertex equals 'b' vertex. A binding is filtered if 'a' doesn't know 'b'. The final `select()` projects to the name of the vertices.
 
 [[store-step]]
 Store Step
