@@ -44,4 +44,11 @@ public class CountStep<S> extends MapStep<S, Long> implements Bulkable {
     public void setCurrentBulkCount(final long bulkCount) {
         this.bulkCount = bulkCount;
     }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.done.set(false);
+        this.counter.set(0l);
+    }
 }

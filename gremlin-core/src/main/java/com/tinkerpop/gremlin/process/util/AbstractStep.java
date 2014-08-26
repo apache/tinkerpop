@@ -17,8 +17,8 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     protected String label;
     protected Traversal traversal;
     public ExpandableStepIterator<S> starts;
-    protected Traverser<E> nextEnd;
-    protected boolean available;
+    protected Traverser<E> nextEnd = null;
+    protected boolean available = false;
     protected boolean futureSetByChild = false;
 
     protected Step<?, S> previousStep = EmptyStep.instance();

@@ -36,7 +36,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public void addStarts(final Iterator<Traverser<S>> starts);
 
-    public default <E2> Traversal<S,E2> addStep(final Step<?, E2> step) {
+    public default <E2> Traversal<S, E2> addStep(final Step<?, E2> step) {
         TraversalHelper.insertStep(step, this.getSteps().size(), this);
         return (Traversal) this;
     }
@@ -55,9 +55,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
     }
 
     public default void reset() {
-        for (final Step step : this.getSteps()) {
-            step.reset();
-        }
+        this.getSteps().forEach(Step::reset);
     }
 
     public interface Strategies extends Serializable {
