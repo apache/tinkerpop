@@ -25,18 +25,21 @@ public class MatchWhereStrategy implements TraversalStrategy {
     public void apply(final Traversal traversal) {
         final List<MatchStep> matchSteps = TraversalHelper.getStepsOfClass(MatchStep.class, traversal);
         for (final MatchStep matchStep : matchSteps) {
+            boolean foundWhereWithNoTraversal = false;
             Step currentStep = matchStep.getNextStep();
-            while (currentStep instanceof WhereStep || currentStep instanceof IdentityStep || currentStep instanceof SelectStep || currentStep instanceof SelectOneStep) {
+            while (currentStep instanceof WhereStep || currentStep instanceof SelectStep || currentStep instanceof SelectOneStep || currentStep instanceof IdentityStep) {
                 if (currentStep instanceof WhereStep) {
                     if (!((WhereStep) currentStep).hasBiPredicate()) {
                         matchStep.addTraversal(((WhereStep) currentStep).constraint);
                         TraversalHelper.removeStep(currentStep, traversal);
+                    } else {
+                        foundWhereWithNoTraversal = true;
                     }
                 } else if (currentStep instanceof SelectStep) {
-                    if (((SelectStep) currentStep).hasStepFunctions())
+                    if (((SelectStep) currentStep).hasStepFunctions() || foundWhereWithNoTraversal)
                         break;
                 } else if (currentStep instanceof SelectOneStep) {
-                    if (((SelectOneStep) currentStep).hasStepFunction())
+                    if (((SelectOneStep) currentStep).hasStepFunction() || foundWhereWithNoTraversal)
                         break;
                 } // else is the identity step
 
