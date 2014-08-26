@@ -567,9 +567,9 @@ gremlin> g.V().as('a').out('created').in('created').as('b').select(). <3>
                 select{it.value('name')}
 ==>[a:marko, b:josh]
 
-<1> A standard `select()` that generates a `Map<String,Object>` of variables bindings in the path (i.e. `a` and `b`)
-<2> The `select{it.value('name')}` projects each binding vertex to their name property and `where()` operates to ensure `a` and `b` strings are not the same.
-<3> The first `select()` projects a vertex binding set. A binding is filtered if 'a' vertex equals 'b' vertex. A binding is filtered if 'a' doesn't know 'b'. The final `select()` projects to the name of the vertices.
+<1> A standard `select()` that generates a `Map<String,Object>` of variables bindings in the path (i.e. `a` and `b`) for the sake of a running example.
+<2> The `select{it.value('name')}` projects each binding vertex to their name property value and `where()` operates to ensure respective `a` and `b` strings are not the same.
+<3> The first `select()` projects a vertex binding set. A binding is filtered if `a` vertex equals `b` vertex. A binding is filtered if `a` doesn't know `b`. The second and final `select()` projects the name of the vertices.
 
 [[store-step]]
 Store Step
