@@ -50,6 +50,6 @@ public class MatchWhereStrategy implements TraversalStrategy {
     }
 
     public int compareTo(final TraversalStrategy traversalStrategy) {
-        return traversalStrategy instanceof IdentityStep ? 1 : -1;
+        return traversalStrategy instanceof IdentityReductionStrategy ? 1 : -1;
     }
 }
