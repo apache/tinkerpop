@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.neo4j.process.graph.util.DefaultNeo4jTraversal;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Element;
 
 import java.util.Map;
 
@@ -24,7 +25,7 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
     public static <S> Neo4jTraversal<S, S> of(final Graph graph) {
         if (!(graph instanceof Neo4jGraph))
             throw new IllegalArgumentException(String.format("graph must be of type %s", Neo4jGraph.class));
-        return new DefaultNeo4jTraversal<S, S>((Neo4jGraph) graph);
+        return new DefaultNeo4jTraversal<>((Neo4jGraph) graph);
     }
 
     public static <S> Neo4jTraversal<S, S> of() {
@@ -203,23 +204,35 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.groupCount(arg0, arg1);
 	}
 
-	public default <E2> Neo4jTraversal<S, E2> has(java.lang.String arg0) {
+	public default <E2 extends Element> Neo4jTraversal<S, E2> has(java.lang.String arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.has(arg0);
 	}
 
-	public default <E2> Neo4jTraversal<S, E2> has(java.lang.String arg0, java.lang.Object arg1) {
+	public default <E2 extends Element> Neo4jTraversal<S, E2> has(java.lang.String arg0, java.lang.Object arg1) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.has(arg0, arg1);
 	}
 
-	public default <E2> Neo4jTraversal<S, E2> has(java.lang.String arg0, com.tinkerpop.gremlin.process.T arg1, java.lang.Object arg2) {
+	public default <E2 extends Element> Neo4jTraversal<S, E2> has(java.lang.String arg0, com.tinkerpop.gremlin.process.T arg1, java.lang.Object arg2) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.has(arg0, arg1, arg2);
 	}
 
-	public default <E2> Neo4jTraversal<S, E2> has(java.lang.String arg0, com.tinkerpop.gremlin.util.function.SBiPredicate arg1, java.lang.Object arg2) {
+	public default <E2 extends Element> Neo4jTraversal<S, E2> has(java.lang.String arg0, com.tinkerpop.gremlin.util.function.SBiPredicate arg1, java.lang.Object arg2) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.has(arg0, arg1, arg2);
 	}
 
-	public default <E2> Neo4jTraversal<S, E2> hasNot(java.lang.String arg0) {
+	public default <E2 extends Element> Neo4jTraversal<S, E2> has(java.lang.String arg0, java.lang.String arg1, java.lang.Object arg2) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.has(arg0, arg1, arg2);
+	}
+
+	public default <E2 extends Element> Neo4jTraversal<S, E2> has(java.lang.String arg0, java.lang.String arg1, com.tinkerpop.gremlin.process.T arg2, java.lang.Object arg3) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.has(arg0, arg1, arg2, arg3);
+	}
+
+	public default <E2 extends Element> Neo4jTraversal<S, E2> has(java.lang.String arg0, java.lang.String arg1, com.tinkerpop.gremlin.util.function.SBiPredicate arg2, java.lang.Object arg3) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.has(arg0, arg1, arg2, arg3);
+	}
+
+	public default <E2 extends Element> Neo4jTraversal<S, E2> hasNot(java.lang.String arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.hasNot(arg0);
 	}
 
@@ -255,7 +268,7 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.inject(arg0);
 	}
 
-	public default <E2> Neo4jTraversal<S, E2> interval(java.lang.String arg0, java.lang.Comparable arg1, java.lang.Comparable arg2) {
+	public default <E2 extends Element> Neo4jTraversal<S, E2> interval(java.lang.String arg0, java.lang.Comparable arg1, java.lang.Comparable arg2) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.interval(arg0, arg1, arg2);
 	}
 

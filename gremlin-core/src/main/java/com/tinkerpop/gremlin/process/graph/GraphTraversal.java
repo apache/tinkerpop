@@ -376,30 +376,42 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> where(final Traversal constraint) {
-        return (GraphTraversal)this.addStep(new WhereStep<>(this, constraint));
+        return (GraphTraversal) this.addStep(new WhereStep<>(this, constraint));
     }
 
-    public default <E2> GraphTraversal<S, E2> has(final String key) {
+    public default <E2 extends Element> GraphTraversal<S, E2> has(final String key) {
         return (GraphTraversal) this.addStep(new HasStep(this, new HasContainer(key, Contains.IN)));
     }
 
-    public default <E2> GraphTraversal<S, E2> has(final String key, final Object value) {
+    public default <E2 extends Element> GraphTraversal<S, E2> has(final String key, final Object value) {
         return this.has(key, Compare.EQUAL, value);
     }
 
-    public default <E2> GraphTraversal<S, E2> has(final String key, final T t, final Object value) {
+    public default <E2 extends Element> GraphTraversal<S, E2> has(final String key, final T t, final Object value) {
         return this.has(key, T.convert(t), value);
     }
 
-    public default <E2> GraphTraversal<S, E2> has(final String key, final SBiPredicate predicate, final Object value) {
+    public default <E2 extends Element> GraphTraversal<S, E2> has(final String key, final SBiPredicate predicate, final Object value) {
         return (GraphTraversal) this.addStep(new HasStep(this, new HasContainer(key, predicate, value)));
     }
 
-    public default <E2> GraphTraversal<S, E2> hasNot(final String key) {
+    public default <E2 extends Element> GraphTraversal<S, E2> has(final String label, final String key, final Object value) {
+        return this.has(label, key, Compare.EQUAL, value);
+    }
+
+    public default <E2 extends Element> GraphTraversal<S, E2> has(final String label, final String key, final T t, final Object value) {
+        return this.has(label, key, T.convert(t), value);
+    }
+
+    public default <E2 extends Element> GraphTraversal<S, E2> has(final String label, final String key, final SBiPredicate predicate, final Object value) {
+        return (GraphTraversal) this.addStep(new HasStep(this, new HasContainer(label, key, predicate, value)));
+    }
+
+    public default <E2 extends Element> GraphTraversal<S, E2> hasNot(final String key) {
         return (GraphTraversal) this.addStep(new HasStep(this, new HasContainer(key, Contains.NOT_IN)));
     }
 
-    public default <E2> GraphTraversal<S, E2> interval(final String key, final Comparable startValue, final Comparable endValue) {
+    public default <E2 extends Element> GraphTraversal<S, E2> interval(final String key, final Comparable startValue, final Comparable endValue) {
         return (GraphTraversal) this.addStep(new IntervalStep(this,
                 new HasContainer(key, Compare.GREATER_THAN_EQUAL, startValue),
                 new HasContainer(key, Compare.LESS_THAN, endValue)));

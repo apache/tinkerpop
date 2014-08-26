@@ -75,4 +75,9 @@ class GroovyHasTestImpl extends HasTest {
     public Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX() {
         g.V().has("name", { v1, v2 -> v1.equals(v2) }, "marko");
     }
+
+    @Override
+    public Traversal<Vertex, Integer> get_g_V_hasXperson_name_markoX_age() {
+        g.V().has('person', 'name', 'marko').value('age');
+    }
 }

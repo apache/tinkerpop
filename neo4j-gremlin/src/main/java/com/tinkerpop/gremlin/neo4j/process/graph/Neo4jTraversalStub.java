@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.neo4j.process.graph.util.DefaultNeo4jTraversal;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Element;
 
 import java.util.Map;
 
@@ -21,7 +22,7 @@ public interface Neo4jTraversalStub<S, E> extends GraphTraversal<S, E> {
     public static <S> Neo4jTraversal<S, S> of(final Graph graph) {
         if (!(graph instanceof Neo4jGraph))
             throw new IllegalArgumentException(String.format("graph must be of type %s", Neo4jGraph.class));
-        return new DefaultNeo4jTraversal<S, S>((Neo4jGraph) graph);
+        return new DefaultNeo4jTraversal<>((Neo4jGraph) graph);
     }
 
     public static <S> Neo4jTraversal<S, S> of() {

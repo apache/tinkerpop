@@ -54,6 +54,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX();
 
+    public abstract Traversal<Vertex, Integer> get_g_V_hasXperson_name_markoX_age();
+
     @Test
     @LoadGraphWith(CLASSIC_DOUBLE)
     public void g_v1_hasXkeyX() {
@@ -214,6 +216,19 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void g_V_hasXperson_name_markoX_age() {
+        this.g.addVertex(Element.LABEL, "person", "name", "marko", "age", 34);
+        this.g.addVertex(Element.LABEL, "animal", "name", "marko", "age", 1);
+        this.g.addVertex(Element.LABEL, "alien", "name", "c");
+        this.g.addVertex(Element.LABEL, "spirit", "name", "d");
+        final Traversal<Vertex, Integer> traversal = get_g_V_hasXperson_name_markoX_age();
+        printTraversalForm(traversal);
+        assertEquals(34, traversal.next().intValue());
+        assertFalse(traversal.hasNext());
+    }
+
     public static class JavaHasTest extends HasTest {
         public JavaHasTest() {
             requiresGraphComputer = false;
@@ -282,6 +297,11 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX() {
             return g.V().has("name", (v1, v2) -> v1.equals(v2), "marko");
+        }
+
+        @Override
+        public Traversal<Vertex, Integer> get_g_V_hasXperson_name_markoX_age() {
+            return g.V().has("person", "name", "marko").value("age");
         }
     }
 
@@ -353,6 +373,11 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX() {
             return g.V().<Vertex>has("name", (v1, v2) -> v1.equals(v2), "marko").submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Integer> get_g_V_hasXperson_name_markoX_age() {
+            return g.V().has("person","name", "marko").<Integer>value("age").submit(g.compute());
         }
     }
 }

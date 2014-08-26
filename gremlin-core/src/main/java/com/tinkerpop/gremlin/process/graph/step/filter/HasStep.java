@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.util.HasContainer;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HasStep extends FilterStep<Element> implements Reversible {
+public class HasStep<S extends Element> extends FilterStep<S> implements Reversible {
 
     public HasContainer hasContainer;
 

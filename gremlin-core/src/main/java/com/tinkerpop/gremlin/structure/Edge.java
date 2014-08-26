@@ -312,6 +312,18 @@ public interface Edge extends Element {
         return this.start().has(key, predicate, value);
     }
 
+    public default GraphTraversal<Edge, Edge> has(final String label, final String key, final Object value) {
+        return this.start().has(label, key, value);
+    }
+
+    public default GraphTraversal<Edge, Edge> has(final String label, final String key, final T t, final Object value) {
+        return this.start().has(label, key, t, value);
+    }
+
+    public default GraphTraversal<Edge, Edge> has(final String label, final String key, final SBiPredicate predicate, final Object value) {
+        return this.start().has(label, key, predicate, value);
+    }
+
     public default GraphTraversal<Edge, Edge> hasNot(final String key) {
         return this.start().hasNot(key);
     }

@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -306,6 +307,18 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
 
     public Neo4jTraversal<Edge, Edge> has(final String key, final SBiPredicate predicate, final Object value) {
         return this.start().has(key, predicate, value);
+    }
+
+    public Neo4jTraversal<Edge, Edge> has(final String label, final String key, final Object value) {
+        return this.start().has(label, key, value);
+    }
+
+    public Neo4jTraversal<Edge, Edge> has(final String label, final String key, final T t, final Object value) {
+        return this.start().has(label, key, t, value);
+    }
+
+    public Neo4jTraversal<Edge, Edge> has(final String label, final String key, final SBiPredicate predicate, final Object value) {
+        return this.start().has(label, key, predicate, value);
     }
 
     public Neo4jTraversal<Edge, Edge> hasNot(final String key) {

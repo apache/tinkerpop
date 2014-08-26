@@ -338,6 +338,18 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         return this.start().has(key, predicate, value);
     }
 
+    public Neo4jTraversal<Vertex, Vertex> has(final String label, final String key, final Object value) {
+        return this.start().has(label, key, value);
+    }
+
+    public Neo4jTraversal<Vertex, Vertex> has(final String label, final String key, final T t, final Object value) {
+        return this.start().has(label, key, t, value);
+    }
+
+    public Neo4jTraversal<Vertex, Vertex> has(final String label, final String key, final SBiPredicate predicate, final Object value) {
+        return this.start().has(label, key, predicate, value);
+    }
+
     public Neo4jTraversal<Vertex, Vertex> hasNot(final String key) {
         return this.start().hasNot(key);
     }

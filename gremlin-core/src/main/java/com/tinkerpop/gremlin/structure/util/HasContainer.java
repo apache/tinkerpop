@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure.util;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.util.function.SBiPredicate;
 
 import java.io.Serializable;
 import java.util.List;
@@ -13,11 +14,13 @@ import java.util.function.BiPredicate;
  */
 public class HasContainer implements Serializable {
 
+    public String label;
     public String key;
-    public BiPredicate predicate;
+    public SBiPredicate predicate;
     public Object value;
 
-    public HasContainer(final String key, final BiPredicate predicate, final Object value) {
+    public HasContainer(final String label, final String key, final SBiPredicate predicate, final Object value) {
+        this.label = label;
         this.key = key;
         this.predicate = predicate;
         this.value = value;
@@ -26,12 +29,20 @@ public class HasContainer implements Serializable {
         }
     }
 
+    public HasContainer(final String key, final SBiPredicate predicate, final Object value) {
+        this(null, key, predicate, value);
+    }
+
     public HasContainer(final String key, final Contains contains) {
-        this(key, contains, null);
+        this(null, key, contains, null);
     }
 
     public boolean test(final Element element) {
         if (null != this.value) {
+
+            if (null != this.label && !element.label().equals(this.label))
+                return false;
+
             if (this.key.equals(Element.ID))
                 return this.predicate.test(element.id(), this.value);
             else if (this.key.equals(Element.LABEL))
@@ -59,12 +70,18 @@ public class HasContainer implements Serializable {
         }
     }
 
+    public boolean hasLabel() {
+        return this.label != null;
+    }
+
     public String toString() {
         return this.value == null ?
                 (this.predicate == Contains.IN ?
                         "[" + this.key + "]" :
                         "[!" + this.key + "]") :
-                "[" + this.key + "," + this.predicate + "," + this.value + "]";
+                (this.label == null) ?
+                        "[" + this.key + "," + this.predicate + "," + this.value + "]" :
+                        "[" + this.label + ":" + this.key + "," + this.predicate + "," + this.value + "]";
     }
 
 }
