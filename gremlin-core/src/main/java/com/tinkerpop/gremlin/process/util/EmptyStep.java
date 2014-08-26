@@ -24,6 +24,10 @@ public class EmptyStep<S, E> implements Step<S, E> {
 
     }
 
+    public void reset() {
+
+    }
+
     public Step<?, S> getPreviousStep() {
         return instance();
     }

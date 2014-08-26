@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class WhereStep extends FilterStep<Map<String, Object>> {
+public class WhereStep<E> extends FilterStep<Map<String, E>> {
 
     public final String firstKey;
     public final String secondKey;
@@ -28,7 +28,7 @@ public class WhereStep extends FilterStep<Map<String, Object>> {
         this.constraint = null;
 
         this.setPredicate(traverser -> {
-            final Map<String, Object> map = traverser.get();
+            final Map<String, E> map = traverser.get();
             return biPredicate.test(map.get(firstKey), map.get(secondKey));
         });
     }
@@ -44,13 +44,13 @@ public class WhereStep extends FilterStep<Map<String, Object>> {
         final Step endStep = TraversalHelper.getEnd(constraint);
 
         this.setPredicate(traverser -> {
-            final Map<String, Object> map = traverser.get();
+            final Map<String, E> map = traverser.get();
             final Object startObject = map.get(startStep.getAs());
             final Object endObject = TraversalHelper.isLabeled(endStep) ? map.get(endStep.getAs()) : null;
             startStep.addStarts(new TraverserIterator<>(startStep, TraversalHelper.trackPaths(constraint), Arrays.asList(startObject).iterator()));
             if (null == endObject) {
                 if (constraint.hasNext()) {
-                    constraint.iterate(); // TODO: Need to have reset() capabilities in Step/Traversal
+                    constraint.reset();
                     return true;
                 } else {
                     return false;
@@ -59,7 +59,7 @@ public class WhereStep extends FilterStep<Map<String, Object>> {
             } else {
                 while (constraint.hasNext()) {
                     if (constraint.next().equals(endObject)) {
-                        constraint.iterate();   // TODO: Need to have reset() capabilities in Step/Traversal
+                        constraint.reset();
                         return true;
                     }
                 }

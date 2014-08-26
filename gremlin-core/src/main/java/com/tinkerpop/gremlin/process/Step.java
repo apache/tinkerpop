@@ -64,6 +64,12 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable, Clonea
      */
     public <A, B> Traversal<A, B> getTraversal();
 
+
+    /**
+     * Reset the state of the step such that it has no incoming starts.
+     */
+    public void reset();
+
     /**
      * Cloning is used to duplicate steps for the purpose of traversal optimization.
      *

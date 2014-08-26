@@ -242,7 +242,7 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
         return (Neo4jTraversal) this.addStep(new IntersectStep(this, traversals));
     }*/
 
-    public <E2> Neo4jTraversal<Edge, E2> unfold() {
+    public Neo4jTraversal<Edge, Edge> unfold() {
         return this.start().unfold();
     }
 
@@ -292,43 +292,43 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
         return this.start().except(exceptionCollection);
     }
 
-    public <E2> Neo4jTraversal<Edge, E2> has(final String key) {
+    public Neo4jTraversal<Edge, Edge> has(final String key) {
         return this.start().has(key);
     }
 
-    public <E2> Neo4jTraversal<Edge, E2> has(final String key, final Object value) {
+    public Neo4jTraversal<Edge, Edge> has(final String key, final Object value) {
         return this.start().has(key, value);
     }
 
-    public <E2> Neo4jTraversal<Edge, E2> has(final String key, final T t, final Object value) {
+    public Neo4jTraversal<Edge, Edge> has(final String key, final T t, final Object value) {
         return this.start().has(key, t, value);
     }
 
-    public <E2> Neo4jTraversal<Edge, E2> has(final String key, final SBiPredicate predicate, final Object value) {
+    public Neo4jTraversal<Edge, Edge> has(final String key, final SBiPredicate predicate, final Object value) {
         return this.start().has(key, predicate, value);
     }
 
-    public <E2> Neo4jTraversal<Edge, E2> hasNot(final String key) {
+    public Neo4jTraversal<Edge, Edge> hasNot(final String key) {
         return this.start().hasNot(key);
     }
 
-    public Neo4jTraversal<Edge, Map<String, Object>> where(final String firstKey, final String secondKey, final SBiPredicate predicate) {
+    public <E2> Neo4jTraversal<Edge, Map<String, E2>> where(final String firstKey, final String secondKey, final SBiPredicate predicate) {
         return this.start().where(firstKey, secondKey, predicate);
     }
 
-    public Neo4jTraversal<Edge, Map<String, Object>> where(final String firstKey, final SBiPredicate predicate, final String secondKey) {
+    public <E2> Neo4jTraversal<Edge, Map<String, E2>> where(final String firstKey, final SBiPredicate predicate, final String secondKey) {
         return this.start().where(firstKey, predicate, secondKey);
     }
 
-    public Neo4jTraversal<Edge, Map<String, Object>> where(final String firstKey, final T t, final String secondKey) {
+    public <E2> Neo4jTraversal<Edge, Map<String, E2>> where(final String firstKey, final T t, final String secondKey) {
         return this.start().where(firstKey, t, secondKey);
     }
 
-    public Neo4jTraversal<Edge, Map<String, Object>> where(final Traversal constraint) {
+    public <E2> Neo4jTraversal<Edge, Map<String, E2>> where(final Traversal constraint) {
         return this.start().where(constraint);
     }
 
-    public <E2> Neo4jTraversal<Edge, E2> interval(final String key, final Comparable startValue, final Comparable endValue) {
+    public Neo4jTraversal<Edge, Edge> interval(final String key, final Comparable startValue, final Comparable endValue) {
         return this.start().interval(key, startValue, endValue);
     }
 

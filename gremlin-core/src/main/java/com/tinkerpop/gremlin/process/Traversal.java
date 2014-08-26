@@ -51,6 +51,12 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
         }
     }
 
+    public default void reset() {
+        for (final Step step : this.getSteps()) {
+            step.reset();
+        }
+    }
+
     public interface Strategies extends Serializable {
 
         public void register(final TraversalStrategy traversalStrategy);

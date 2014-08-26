@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.step.filter.WhereStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.util.function.SBiFunction;
 import com.tinkerpop.gremlin.util.function.SBiPredicate;
@@ -270,7 +269,7 @@ public interface Vertex extends Element {
         return (GraphTraversal) this.addStep(new IntersectStep(this, traversals));
     }*/
 
-    public default <E2> GraphTraversal<Vertex, E2> unfold() {
+    public default GraphTraversal<Vertex, Vertex> unfold() {
         return this.start().unfold();
     }
 
@@ -320,43 +319,43 @@ public interface Vertex extends Element {
         return this.start().except(exceptionCollection);
     }
 
-    public default <E2> GraphTraversal<Vertex, E2> has(final String key) {
+    public default GraphTraversal<Vertex, Vertex> has(final String key) {
         return this.start().has(key);
     }
 
-    public default <E2> GraphTraversal<Vertex, E2> has(final String key, final Object value) {
+    public default GraphTraversal<Vertex, Vertex> has(final String key, final Object value) {
         return this.start().has(key, value);
     }
 
-    public default <E2> GraphTraversal<Vertex, E2> has(final String key, final T t, final Object value) {
+    public default GraphTraversal<Vertex, Vertex> has(final String key, final T t, final Object value) {
         return this.start().has(key, t, value);
     }
 
-    public default <E2> GraphTraversal<Vertex, E2> has(final String key, final SBiPredicate predicate, final Object value) {
+    public default GraphTraversal<Vertex, Vertex> has(final String key, final SBiPredicate predicate, final Object value) {
         return this.start().has(key, predicate, value);
     }
 
-    public default <E2> GraphTraversal<Vertex, E2> hasNot(final String key) {
+    public default GraphTraversal<Vertex, Vertex> hasNot(final String key) {
         return this.start().hasNot(key);
     }
 
-    public default GraphTraversal<Vertex, Map<String, Object>> where(final String firstKey, final String secondKey, final SBiPredicate predicate) {
+    public default <E2> GraphTraversal<Vertex, Map<String, E2>> where(final String firstKey, final String secondKey, final SBiPredicate predicate) {
         return this.start().where(firstKey, secondKey, predicate);
     }
 
-    public default GraphTraversal<Vertex, Map<String, Object>> where(final String firstKey, final SBiPredicate predicate, final String secondKey) {
+    public default <E2> GraphTraversal<Vertex, Map<String, E2>> where(final String firstKey, final SBiPredicate predicate, final String secondKey) {
         return this.start().where(firstKey, predicate, secondKey);
     }
 
-    public default GraphTraversal<Vertex, Map<String, Object>> where(final String firstKey, final T t, final String secondKey) {
+    public default <E2> GraphTraversal<Vertex, Map<String, E2>> where(final String firstKey, final T t, final String secondKey) {
         return this.start().where(firstKey, t, secondKey);
     }
 
-    public default GraphTraversal<Vertex, Map<String, Object>> where(final Traversal constraint) {
+    public default <E2> GraphTraversal<Vertex, Map<String, E2>> where(final Traversal constraint) {
         return this.start().where(constraint);
     }
 
-    public default <E2> GraphTraversal<Vertex, E2> interval(final String key, final Comparable startValue, final Comparable endValue) {
+    public default GraphTraversal<Vertex, Vertex> interval(final String key, final Comparable startValue, final Comparable endValue) {
         return this.start().interval(key, startValue, endValue);
     }
 

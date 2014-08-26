@@ -30,6 +30,12 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         this.as = Graph.Key.hide(Integer.toString(this.traversal.getSteps().size()));
     }
 
+    public void reset() {
+        this.starts.clear();
+        this.available = false;
+        this.nextEnd = null;
+    }
+
     public void addStarts(final Iterator<Traverser<S>> starts) {
         this.starts.add((Iterator) starts);
     }

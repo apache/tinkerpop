@@ -35,4 +35,8 @@ public class SelectOneStep<E> extends MapStep<Object, E> {
             return (E) NO_OBJECT;
         });
     }
+
+    public boolean hasStepFunction() {
+        return null != this.stepFunction;
+    }
 }

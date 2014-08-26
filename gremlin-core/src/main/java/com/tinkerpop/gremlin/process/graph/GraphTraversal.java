@@ -363,20 +363,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new ExceptStep<>(this, exceptionCollection));
     }
 
-    public default GraphTraversal<S, Map<String, Object>> where(final String firstKey, final String secondKey, final SBiPredicate predicate) {
-        return (GraphTraversal) this.addStep(new WhereStep(this, firstKey, secondKey, predicate));
+    public default <E2> GraphTraversal<S, Map<String, E2>> where(final String firstKey, final String secondKey, final SBiPredicate predicate) {
+        return (GraphTraversal) this.addStep(new WhereStep<>(this, firstKey, secondKey, predicate));
     }
 
-    public default GraphTraversal<S, Map<String, Object>> where(final String firstKey, final SBiPredicate predicate, final String secondKey) {
+    public default <E2> GraphTraversal<S, Map<String, E2>> where(final String firstKey, final SBiPredicate predicate, final String secondKey) {
         return this.where(firstKey, secondKey, predicate);
     }
 
-    public default GraphTraversal<S, Map<String, Object>> where(final String firstKey, final T t, final String secondKey) {
+    public default <E2> GraphTraversal<S, Map<String, E2>> where(final String firstKey, final T t, final String secondKey) {
         return this.where(firstKey, secondKey, T.convert(t));
     }
 
-    public default GraphTraversal<S, Map<String, Object>> where(final Traversal constraint) {
-        return (GraphTraversal) this.addStep(new WhereStep(this, constraint));
+    public default <E2> GraphTraversal<S, Map<String, E2>> where(final Traversal constraint) {
+        return (GraphTraversal)this.addStep(new WhereStep<>(this, constraint));
     }
 
     public default <E2> GraphTraversal<S, E2> has(final String key) {

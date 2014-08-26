@@ -475,19 +475,19 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.values(arg0);
 	}
 
-	public default Neo4jTraversal<S, java.util.Map<java.lang.String, java.lang.Object>> where(com.tinkerpop.gremlin.process.Traversal arg0) {
+	public default <E2> Neo4jTraversal<S, java.util.Map<java.lang.String, E2>> where(com.tinkerpop.gremlin.process.Traversal arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.where(arg0);
 	}
 
-	public default Neo4jTraversal<S, java.util.Map<java.lang.String, java.lang.Object>> where(java.lang.String arg0, com.tinkerpop.gremlin.process.T arg1, java.lang.String arg2) {
+	public default <E2> Neo4jTraversal<S, java.util.Map<java.lang.String, E2>> where(java.lang.String arg0, com.tinkerpop.gremlin.process.T arg1, java.lang.String arg2) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.where(arg0, arg1, arg2);
 	}
 
-	public default Neo4jTraversal<S, java.util.Map<java.lang.String, java.lang.Object>> where(java.lang.String arg0, com.tinkerpop.gremlin.util.function.SBiPredicate arg1, java.lang.String arg2) {
+	public default <E2> Neo4jTraversal<S, java.util.Map<java.lang.String, E2>> where(java.lang.String arg0, com.tinkerpop.gremlin.util.function.SBiPredicate arg1, java.lang.String arg2) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.where(arg0, arg1, arg2);
 	}
 
-	public default Neo4jTraversal<S, java.util.Map<java.lang.String, java.lang.Object>> where(java.lang.String arg0, java.lang.String arg1, com.tinkerpop.gremlin.util.function.SBiPredicate arg2) {
+	public default <E2> Neo4jTraversal<S, java.util.Map<java.lang.String, E2>> where(java.lang.String arg0, java.lang.String arg1, com.tinkerpop.gremlin.util.function.SBiPredicate arg2) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.where(arg0, arg1, arg2);
 	}
 

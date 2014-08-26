@@ -18,8 +18,6 @@ import java.util.stream.Collectors;
  */
 public class TraversalHelper {
 
-    private static final String UNDERSCORE = "_";
-
     public static boolean isLabeled(final Step step) {
         return !Graph.Key.isHidden(step.getAs());
     }

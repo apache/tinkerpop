@@ -70,7 +70,6 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
      */
     public void addTraversal(final Traversal<S, S> traversal) {
         addTraversalPrivate(traversal);
-
         checkSolvability();
     }
 
