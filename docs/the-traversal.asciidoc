@@ -353,7 +353,7 @@ gremlin> g.V().match('a',
 ==>vadas
 ==>josh
 
-Finally, like all other steps in Gremlin, `match()` is a function and thus, `match()` within `match()` is a natural consequence of Gremlin's functional foundation (i.e. recursive matching).
+Like all other steps in Gremlin, `match()` is a function and thus, `match()` within `match()` is a natural consequence of Gremlin's functional foundation (i.e. recursive matching).
 
 [source,groovy]
 gremlin> g.V().match('a',
@@ -366,6 +366,50 @@ gremlin> g.V().match('a',
 ==>[a:marko, c:ripple]
 
 WARNING: Currently `match()` can not operate within a multi-JVM <<graphcomputer,GraphComputer>> OLAP environment. Future work includes a linearization <<traversalstrategy,TraversalStrategy>> for `match()`.
+
+[[using-where]]
+Using Where
+^^^^^^^^^^^
+
+Match is typically used in conjunction with both `select()` (demonstrated previously) and `where()` (presented here). A `where()` allows the user to further constrain the result set provided by `match()`.
+
+[source,groovy]
+gremlin> g.V().match('a',
+            g.of().as('a').out('created').as('b'),
+            g.of().as('b').in('created').as('c')).
+              where('a', T.neq, 'c').
+               select(['a','c']){it.value('name')}
+==>[a:marko, c:josh]
+==>[a:marko, c:peter]
+==>[a:josh, c:marko]
+==>[a:josh, c:peter]
+==>[a:peter, c:marko]
+==>[a:peter, c:josh]
+
+The `where()`-step can take either a `BiPredicate` (first example below) or a `Traversal` (second example below). Using `MatchWhereStrategy`, `where()`-clauses can be automatically folded into `match()` and thus, subject to `match()`-steps budget-match algorithm.
+
+[source,groovy]
+gremlin> traversal = g.V().match('a',
+            g.of().as('a').out('created').as('b'),
+            g.of().as('b').in('created').as('c')).
+              where(g.of().as('a').out('knows').as('c')). <1>
+               select(['a','c']){it.value('name')}; null <2>
+==>null
+gremlin> traversal.toString()
+==>[TinkerGraphStep(vertex), MatchStep, WhereStep, SelectStep] <3>
+gremlin> traversal.strategies().apply()
+==>null
+gremlin> traversal.toString()
+==>[TinkerGraphStep(vertex), MatchStep, SelectStep] <4>
+gremlin> traversal <5>
+==>[a:marko, c:josh] <6>
+
+<1> A `where()`-step with a traversal containing variable bindings declared in `match()`.
+<2> A useful trick to ensure that that the traversal is not iterated by Gremlin Console.
+<3> The string representation of the traversal prior to its strategies being applied.
+<4> The string representation of the traversal after the strategies have been applied (and thus, `where()` is folded into `match()`)
+<5> The Gremlin Console will automatically iterate anything that is an iterator or is iterable.
+<6> Both marko and josh are co-developers and marko knows josh.
 
 [[path-step]]
 Path Step

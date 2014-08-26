@@ -8,18 +8,18 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 class TinkerIndex<T extends Element> implements Serializable {
 
-    protected Map<String, Map<Object, Set<T>>> index = new HashMap<>();
+    protected Map<String, Map<Object, Set<T>>> index = new ConcurrentHashMap<>();
     protected final Class<T> indexClass;
     private final Set<String> indexedKeys = new HashSet<>();
     private final TinkerGraph graph;
@@ -32,7 +32,7 @@ class TinkerIndex<T extends Element> implements Serializable {
     protected void put(final String key, final Object value, final T element) {
         Map<Object, Set<T>> keyMap = this.index.get(key);
         if (keyMap == null) {
-            keyMap = new HashMap<>();
+            keyMap = new ConcurrentHashMap<>();
             this.index.put(key, keyMap);
         }
         Set<T> objects = keyMap.get(value);

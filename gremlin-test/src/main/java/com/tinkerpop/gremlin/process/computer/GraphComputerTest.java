@@ -369,11 +369,11 @@ public class GraphComputerTest extends AbstractGremlinTest {
 
     private static LambdaVertexProgram identity() {
         return LambdaVertexProgram.build().
-                setup(s -> {
+                setup(memory -> {
                 }).
-                execute((v, m, s) -> {
+                execute((vertex, messenger, memory) -> {
                 }).
-                terminate(s -> true).create();
+                terminate(memory -> true).create();
     }
 
     class BadGraphComputer implements GraphComputer {

@@ -30,10 +30,11 @@ public class Constants {
     public static final String GREMLIN_DERIVE_MEMORY = "gremlin.deriveMemory";
     public static final String GREMLIN_MEMORY_OUTPUT_FORMAT_CLASS = "gremlin.memoryOutputFormatClass";
     public static final String HIDDEN_MEMORY = Graph.Key.hide("memory");
-    public static final String RUNTIME = "runtime";
-    public static final String ITERATION = "iteration";
+    public static final String RUNTIME = Graph.Key.hide("giraphGremlin.runtime");
+    public static final String ITERATION = Graph.Key.hide("giraphGremlin.iteration");
     public static final String GREMLIN_MEMORY_KEYS = "gremlin.memoryKeys";
     public static final String MAP_REDUCE_CLASS = "gremlin.mapReduceClass";
-    public static final String GREMLIN_HALT = "gremlinHalt";
+    public static final String GREMLIN_HALT = "giraphGremlin.Halt";
+    public static final String MEMORY_MAP = Graph.Key.hide("giraphGremlim.memoryMap");
 
 }

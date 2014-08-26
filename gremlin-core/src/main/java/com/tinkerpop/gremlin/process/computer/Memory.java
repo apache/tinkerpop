@@ -24,6 +24,7 @@ public interface Memory {
 
     public default Map<String, Object> asMap() {
         final Map<String, Object> map = keys().stream()
+                .filter(this::exists)
                 .map(key -> Pair.with(key, get(key)))
                 .collect(Collectors.toMap(kv -> kv.getValue0(), Pair::getValue1));
         return Collections.unmodifiableMap(map);

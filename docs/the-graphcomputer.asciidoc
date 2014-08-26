@@ -126,8 +126,8 @@ The same example is presented below in Java8 using native lambda syntax.
 
 [source,java]
 ComputerResult results = g.compute().program(LambdaVertexProgram.build().
-                        execute((v, m, s) -> v.<Integer>property("counter", s.isInitialIteration() ? 1 : v.<Integer>value("counter") + 1)).
-                        terminate(s -> s.getIteration() > 9).
+                        execute((vertex, messenger, memory) -> vertex.<Integer>property("counter", memory.isInitialIteration() ? 1 : vertex.<Integer>value("counter") + 1)).
+                        terminate(memory -> memory.getIteration() > 9).
                         elementComputeKeys("counter", VertexProgram.KeyType.VARIABLE).create()).submit().get();
 results.getGraph().V().value("counter").forEach(System.out::println);
 // 10

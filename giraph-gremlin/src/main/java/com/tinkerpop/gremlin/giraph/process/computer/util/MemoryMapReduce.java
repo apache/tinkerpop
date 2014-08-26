@@ -3,13 +3,12 @@ package com.tinkerpop.gremlin.giraph.process.computer.util;
 import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.Memory;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -53,10 +52,10 @@ public class MemoryMapReduce implements MapReduce<String, Object, String, Object
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<String, Object> emitter) {
-        for (final String sideEffectKey : this.memoryKeys) {
-            final Property property = vertex.property(Graph.Key.hide(sideEffectKey));
-            if (property.isPresent()) {
-                emitter.emit(sideEffectKey, property.value());
+        final Map<String, Object> memoryMap = vertex.<Map<String, Object>>property(Constants.MEMORY_MAP).orElse(Collections.emptyMap());
+        for (final String memoryKey : this.memoryKeys) {
+            if (memoryMap.containsKey(memoryKey)) {
+                emitter.emit(memoryKey, memoryMap.get(memoryKey));
             }
         }
     }

@@ -24,6 +24,8 @@ import org.apache.hadoop.io.Text;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -74,17 +76,15 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
             this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getConf()));
         if (null == this.memory)
             this.memory = new GiraphMemory(this, this.vertexProgram);
+        final boolean deriveMemory = this.getConf().getBoolean(Constants.GREMLIN_DERIVE_MEMORY, false);
 
-        if (!(Boolean) ((RuleWritable) this.getAggregatedValue(Constants.GREMLIN_HALT)).getObject()) {
+
+        if (!deriveMemory || !(Boolean) ((RuleWritable) this.getAggregatedValue(Constants.GREMLIN_HALT)).getObject())
             this.vertexProgram.execute(this.tinkerVertex, new GiraphMessenger(this, messages), this.memory);
-        } else if (this.getConf().getBoolean(Constants.GREMLIN_DERIVE_MEMORY, false)) {
-            this.memory.keys().forEach(key -> {
-                if (this.memory.exists(key)) {
-                    // TODO: make this a HashMap
-                    this.tinkerVertex.<Object>property(Graph.Key.hide(key), this.memory.get(key));
-                }
-            });
-            this.tinkerVertex.property(Graph.Key.hide(Constants.ITERATION), this.memory.getIteration() - 1);
+        else if (deriveMemory) {
+            final Map<String, Object> memoryMap = new HashMap<>(this.memory.asMap());
+            memoryMap.put(Constants.ITERATION, this.memory.getIteration() - 1);
+            this.tinkerVertex.property(Constants.MEMORY_MAP, memoryMap);
         }
     }
 

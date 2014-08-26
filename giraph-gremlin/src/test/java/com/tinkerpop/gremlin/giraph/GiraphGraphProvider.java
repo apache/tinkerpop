@@ -48,14 +48,18 @@ public class GiraphGraphProvider extends AbstractGraphProvider {
 
     @Override
     public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith) {
-        if (loadGraphWith.value().equals(LoadGraphWith.GraphData.GRATEFUL)) {
+        this.loadGraphData(g, loadGraphWith.value());
+    }
+
+    public void loadGraphData(final Graph g, final LoadGraphWith.GraphData graphData) {
+        if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL)) {
             ((GiraphGraph) g).variables().getConfiguration().setInputLocation(KryoInputFormat.class.getResource("grateful-dead-vertices.gio").getPath());
-        } else if (loadGraphWith.value().equals(LoadGraphWith.GraphData.CLASSIC_DOUBLE)) {
+        } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC_DOUBLE)) {
             ((GiraphGraph) g).variables().getConfiguration().setInputLocation(KryoInputFormat.class.getResource("tinkerpop-classic-vertices-double.gio").getPath());
-        } else if (loadGraphWith.value().equals(LoadGraphWith.GraphData.CLASSIC)) {
+        } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC)) {
             ((GiraphGraph) g).variables().getConfiguration().setInputLocation(KryoInputFormat.class.getResource("tinkerpop-classic-vertices.gio").getPath());
         } else {
-            throw new RuntimeException("Could not load graph with " + loadGraphWith);
+            throw new RuntimeException("Could not load graph with " + graphData);
         }
     }
 }
