@@ -13,15 +13,6 @@ import static org.junit.Assert.assertTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphsTest {
-    @Test(expected = UnsupportedOperationException.class)
-    public void shouldReturnImmutableMapOfGraphs() {
-        final Settings settings = Settings.read(GraphsTest.class.getResourceAsStream("gremlin-server-integration.yaml"));
-        final Graphs graphs = new Graphs(settings);
-        final Map<String, Graph> m = graphs.getGraphs();
-
-        m.put("h", TinkerGraph.open());
-    }
-
     @Test
     public void shouldReturnGraphs() {
         final Settings settings = Settings.read(GraphsTest.class.getResourceAsStream("gremlin-server-integration.yaml"));

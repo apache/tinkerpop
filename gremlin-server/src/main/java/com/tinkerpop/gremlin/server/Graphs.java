@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +18,7 @@ import java.util.Map;
 public class Graphs {
     private static final Logger logger = LoggerFactory.getLogger(GremlinServer.class);
 
-    private final Map<String, Graph> graphs;
+    private final Map<String, Graph> graphs = new HashMap<>();
 
     /**
      * Create a new instance using the {@link Settings} from Gremlin Server.
@@ -29,7 +28,7 @@ public class Graphs {
         settings.graphs.entrySet().forEach(e -> {
             try {
                 final Graph newGraph = GraphFactory.open(e.getValue());
-                m.put(e.getKey(), newGraph);
+                graphs.put(e.getKey(), newGraph);
                 logger.info("Graph [{}] was successfully configured via [{}].", e.getKey(), e.getValue());
             } catch (RuntimeException re) {
                 logger.warn("Graph [{}] configured at [{}] could not be instantiated and will not be available in Gremlin Server.  GraphFactory message: {}",
@@ -37,7 +36,6 @@ public class Graphs {
                 if (re.getCause() != null) logger.debug("GraphFactory exception", re.getCause());
             }
         });
-        graphs = Collections.unmodifiableMap(m);
     }
 
     /**

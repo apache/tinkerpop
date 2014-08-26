@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import com.tinkerpop.gremlin.server.util.MetricManager;
+import com.tinkerpop.gremlin.structure.Graph;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -125,6 +126,12 @@ public class GremlinServer {
         final GremlinExecutor gremlinExecutor = gremlinExecutorBuilder.create();
 
         logger.info("Initialized GremlinExecutor and configured ScriptEngines.");
+
+        // script engine init may have altered the graph bindings or maybe even created new ones - need to
+        // re-apply those references back
+        gremlinExecutor.getGlobalBindings().entrySet().stream()
+                .filter(kv -> kv.getValue() instanceof Graph)
+                .forEach(kv -> graphs.get().getGraphs().put(kv.getKey(), (Graph) kv.getValue()));
 
         return gremlinExecutor;
     }

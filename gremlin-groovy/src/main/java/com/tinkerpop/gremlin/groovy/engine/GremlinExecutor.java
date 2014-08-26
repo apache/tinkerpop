@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.groovy.engine;
 
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
+import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
@@ -147,6 +148,10 @@ public class GremlinExecutor implements AutoCloseable {
         return scheduledExecutorService;
     }
 
+    public Bindings getGlobalBindings() {
+        return globalBindings;
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -230,6 +235,13 @@ public class GremlinExecutor implements AutoCloseable {
                         bindings.put(GremlinGroovyScriptEngine.KEY_REFERENCE_TYPE, GremlinGroovyScriptEngine.REFERENCE_TYPE_HARD);
 
                         se.eval(p.getValue1(), bindings, language);
+
+                        // re-assign graph bindings back to global bindings.  prevent assignment of non-graph
+                        // implementations just in case someone tries to overwrite them in the init
+                        bindings.entrySet().stream()
+                                .filter(kv -> kv.getValue() instanceof Graph)
+                                .forEach(kv -> this.globalBindings.put(kv.getKey(), kv.getValue()));
+
                         logger.info("Initialized {} ScriptEngine with {}", language, p.getValue0());
                     } catch (ScriptException sx) {
                         hasErrors.set(true);
