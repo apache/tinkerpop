@@ -6,25 +6,24 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Neo4jCypherStartTest extends BaseNeo4jGraphTest  {
+public class Neo4jCypherStartTest extends BaseNeo4jGraphTest {
     @Test
     public void shouldExecuteCypher() throws Exception {
         this.g.addVertex("name", "marko");
         this.g.tx().commit();
-        final Iterator<Map<String, Object>> result = g.cypher("MATCH (a {name:\"marko\"}) RETURN a", null);
+        final Iterator<Map<String, Object>> result = g.cypher("MATCH (a {name:\"marko\"}) RETURN a", Collections.emptyMap());
         assertNotNull(result);
         assertTrue(result.hasNext());
     }

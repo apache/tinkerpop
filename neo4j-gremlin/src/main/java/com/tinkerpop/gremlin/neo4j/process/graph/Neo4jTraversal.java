@@ -31,12 +31,12 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
         return new DefaultNeo4jTraversal<>();
     }
 
-    public default Neo4jTraversal<S, E> cypher(final String query) {
-        return (Neo4jTraversal) this.addStep(new Neo4jCypherStep<>(query, this));
+    public default <E2> Neo4jTraversal<S, Map<String,E2>> cypher(final String query) {
+        return (Neo4jTraversal) this.addStep(new Neo4jCypherStep<>(this, query));
     }
 
-    public default Neo4jTraversal<S, E> cypher(final String query, final Map<String, Object> params) {
-        return (Neo4jTraversal) this.addStep(new Neo4jCypherStep<>(query, params, this));
+    public default <E2> Neo4jTraversal<S, Map<String,E2>> cypher(final String query, final Map<String, Object> parameters) {
+        return (Neo4jTraversal) this.addStep(new Neo4jCypherStep<>(this, query, parameters));
     }
 
 	///////////////////////////////////////////////////////////////////////////////////

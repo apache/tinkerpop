@@ -8,31 +8,32 @@ import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.ResourceIterator;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class Neo4jCypherStep<S, E> extends FlatMapStep<S, Map<String, E>> {
 
     private static final String START = "start";
 
-    public Neo4jCypherStep(final String query, final Traversal traversal) {
-        this(query, new HashMap<>(), traversal);
+    public Neo4jCypherStep(final Traversal traversal, final String query) {
+        this(traversal, query, new HashMap<>());
     }
 
-    public Neo4jCypherStep(final String query, final Map<String, Object> params, final Traversal traversal) {
+    public Neo4jCypherStep(final Traversal traversal, final String query, final Map<String, Object> parameters) {
         super(traversal);
         final Neo4jGraph graph = (Neo4jGraph) traversal.sideEffects().getGraph();
         final ExecutionEngine cypher = graph.getCypher();
         this.setFunction(traverser -> {
             final S s = traverser.get();
-            params.put(START, s);
-            final ExecutionResult result = cypher.execute(query, params);
+            parameters.put(START, s);
+            final ExecutionResult result = cypher.execute(query, parameters);
             final ResourceIterator<Map<String, Object>> itty = result.iterator();
-            return itty.hasNext() ? new Neo4jCypherIterator(itty, graph) : new ArrayList().iterator();
+            return itty.hasNext() ? new Neo4jCypherIterator(itty, graph) : Collections.emptyIterator();
         });
     }
 }

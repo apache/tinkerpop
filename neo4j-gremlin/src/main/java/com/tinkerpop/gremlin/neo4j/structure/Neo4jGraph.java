@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jTraversal;
-import com.tinkerpop.gremlin.neo4j.process.graph.step.sideEffect.Neo4jCypherStartStep;
 import com.tinkerpop.gremlin.neo4j.process.graph.step.sideEffect.Neo4jGraphStep;
+import com.tinkerpop.gremlin.neo4j.process.graph.step.util.Neo4jCypherIterator;
 import com.tinkerpop.gremlin.neo4j.process.graph.util.DefaultNeo4jTraversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
@@ -233,13 +233,13 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     }
 
     public Neo4jTraversal cypher(final String query) {
-        return cypher(query, null);
+        return cypher(query, Collections.emptyMap());
     }
 
-    public Neo4jTraversal cypher(final String query, final Map<String, Object> params) {
+    public Neo4jTraversal cypher(final String query, final Map<String, Object> parameters) {
         this.tx().readWrite();
         final Neo4jTraversal traversal = Neo4jTraversal.of(this);
-        traversal.addStep(new Neo4jCypherStartStep<>(this.cypher.execute(query, null == params ? Collections.<String, Object>emptyMap() : params).iterator(), traversal, this));
+        traversal.addStep(new StartStep(traversal, new Neo4jCypherIterator(this.cypher.execute(query, parameters).iterator(), this)));
         return traversal;
     }
 
