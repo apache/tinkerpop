@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.map
 
+import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.structure.Vertex
 
@@ -89,7 +90,7 @@ class GroovyMatchTestImpl extends MatchTest {
 
     @Override
     public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX() {
-        return g.V().match('a',
+        g.V().match('a',
                 g.of().as('a').has('name', 'Garcia'),
                 g.of().as('a').in('writtenBy').as('b'),
                 g.of().as('a').in('sungBy').as('b'));
@@ -97,7 +98,7 @@ class GroovyMatchTestImpl extends MatchTest {
 
     @Override
     public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_0sungBy_b__a_0sungBy_c__b_writtenBy_d__c_writtenBy_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX() {
-        return g.V().match('a',
+        g.V().match('a',
                 g.of().as('a').in('sungBy').as('b'),
                 g.of().as('a').in('sungBy').as('c'),
                 g.of().as('b').out('writtenBy').as('d'),
@@ -107,8 +108,8 @@ class GroovyMatchTestImpl extends MatchTest {
     }
 
     @Override
-    public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_inXsungByX_b__a_0writtenBy_c__b_writtenBy_d__c_sungBy_d__d_hasXname_GarciaXX() {
-        return g.V().match('a',
+    public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_d__c_sungBy_d__d_hasXname_GarciaXX() {
+        g.V().match('a',
                 g.of().as('a').in('sungBy').as('b'),
                 g.of().as('a').in('writtenBy').as('c'),
                 g.of().as('b').out('writtenBy').as('d'),
@@ -117,12 +118,31 @@ class GroovyMatchTestImpl extends MatchTest {
     }
 
     @Override
+    public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_dX_whereXc_sungBy_dX_whereXd_hasXname_GarciaXX() {
+        return g.V().match('a',
+                g.of().as('a').in('sungBy').as('b'),
+                g.of().as('a').in('writtenBy').as('c'),
+                g.of().as('b').out('writtenBy').as('d'))
+                .where(g.of().as('c').out('sungBy').as('d'))
+                .where(g.of().as('d').has('name', 'Garcia'));
+    }
+
+    @Override
     public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_lop_b__b_0created_29_cX_whereXc_out_jump2_cX_selectXnameX() {
-        return g.V().match("a",
+        g.V().match("a",
                 g.of().as("a").out("created").has("name", "lop").as("b"),
                 g.of().as("b").in("created").has("age", 29).as("c"))
                 .where(g.of().as("c").out().jump("c") { it.loops < 2 })
                 .select { it.value("name") };
+    }
+
+    @Override
+    public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__b_0created_cX_whereXa_neq_cX_selectXa_c_nameX() {
+        g.V().match('a',
+                g.of().as('a').out('created').as('b'),
+                g.of().as('b').in('created').as('c'))
+                .where('a', T.neq, 'c')
+                .select(['a', 'c']) { it.value('name') }
     }
 
     /*@Override

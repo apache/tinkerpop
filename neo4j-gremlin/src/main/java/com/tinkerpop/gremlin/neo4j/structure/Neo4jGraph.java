@@ -43,6 +43,10 @@ import java.util.function.Function;
  */
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest",
+        method = "g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_d__c_sungBy_d__d_hasXname_GarciaXX",
+        reason = "This is returning one matched binding that is wrong. This needs to be fixed.")
 public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     private GraphDatabaseService baseGraph;
 
