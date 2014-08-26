@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `Traversal.addStep()` is now hard typed so type casting isn't required and traversal APIs look clean.
 * Changed the hidden key prefix from `%$%` to `~` in `Graph.Key.hide()`.
 * Added `has(label,key,predicate,value)` to allow for `has('person','name','marko')`. Various overloaded methods provided.
 * Update to traversal API where if a `SFunction<S,?>` was required, but can process a `Traverser<S>`, then the function is `SFunction<Traverser<S>,?>`.

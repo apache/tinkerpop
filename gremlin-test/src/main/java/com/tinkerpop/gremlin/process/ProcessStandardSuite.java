@@ -122,6 +122,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
 
             // compliance
             TraversalCoverageTest.class,
+            CoreTraversalTest.class,
 
             // algorithms
             // PageRankVertexProgramTest.class
@@ -181,7 +182,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             MemoryTest.class,
 
             // compliance
-            TraversalCoverageTest.class
+            TraversalCoverageTest.class,
+            CoreTraversalTest.class
     };
 
     /**

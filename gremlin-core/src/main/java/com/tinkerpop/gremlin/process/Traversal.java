@@ -36,7 +36,10 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public void addStarts(final Iterator<Traverser<S>> starts);
 
-    public <S, E, T extends Traversal<S, E>> T addStep(final Step<?, E> step);
+    public default <E2> Traversal<S,E2> addStep(final Step<?, E2> step) {
+        TraversalHelper.insertStep(step, this.getSteps().size(), this);
+        return (Traversal) this;
+    }
 
     public List<Step> getSteps();
 

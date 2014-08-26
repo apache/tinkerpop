@@ -6,6 +6,7 @@ package com.tinkerpop.gremlin.neo4j.process.graph;
 import com.tinkerpop.gremlin.neo4j.process.graph.step.map.Neo4jCypherStep;
 import com.tinkerpop.gremlin.neo4j.process.graph.util.DefaultNeo4jTraversal;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Element;
@@ -32,11 +33,15 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
         return new DefaultNeo4jTraversal<>();
     }
 
-    public default <E2> Neo4jTraversal<S, Map<String,E2>> cypher(final String query) {
+    public default <E2> Neo4jTraversal<S, E2> addStep(final Step<?, E2> step) {
+        return (Neo4jTraversal) GraphTraversal.super.addStep((Step) step);
+    }
+
+    public default <E2> Neo4jTraversal<S, Map<String, E2>> cypher(final String query) {
         return (Neo4jTraversal) this.addStep(new Neo4jCypherStep<>(this, query));
     }
 
-    public default <E2> Neo4jTraversal<S, Map<String,E2>> cypher(final String query, final Map<String, Object> parameters) {
+    public default <E2> Neo4jTraversal<S, Map<String, E2>> cypher(final String query, final Map<String, Object> parameters) {
         return (Neo4jTraversal) this.addStep(new Neo4jCypherStep<>(this, query, parameters));
     }
 

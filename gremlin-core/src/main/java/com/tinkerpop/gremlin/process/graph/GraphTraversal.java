@@ -112,12 +112,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return new DefaultGraphTraversal<>();
     }
 
+    public default <E2> GraphTraversal<S, E2> addStep(final Step<?, E2> step) {
+        return (GraphTraversal) Traversal.super.addStep((Step)step);
+    }
+
     public default GraphTraversal<S, E> trackPaths() {
-        return (GraphTraversal) this.addStep(new PathIdentityStep<>(this));
+        return this.addStep(new PathIdentityStep<>(this));
     }
 
     public default GraphTraversal<S, Long> count() {
-        return (GraphTraversal) this.addStep(new CountStep<>(this));
+        return this.addStep(new CountStep<>(this));
     }
 
     ///////////////////// TRANSFORM STEPS /////////////////////
@@ -125,29 +129,29 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default <E2> GraphTraversal<S, E2> map(final SFunction<Traverser<E>, E2> function) {
         final MapStep<E, E2> mapStep = new MapStep<>(this);
         mapStep.setFunction(function);
-        return (GraphTraversal) this.addStep(mapStep);
+        return this.addStep(mapStep);
     }
 
     public default <E2> GraphTraversal<S, E2> flatMap(final SFunction<Traverser<E>, Iterator<E2>> function) {
         final FlatMapStep<E, E2> flatMapStep = new FlatMapStep<>(this);
         flatMapStep.setFunction(function);
-        return (GraphTraversal) this.addStep(flatMapStep);
+        return this.addStep(flatMapStep);
     }
 
     public default GraphTraversal<S, Object> id() {
-        return (GraphTraversal) this.addStep(new IdStep<>(this));
+        return this.addStep(new IdStep<>(this));
     }
 
     public default GraphTraversal<S, String> label() {
-        return (GraphTraversal) this.addStep(new LabelStep<>(this));
+        return this.addStep(new LabelStep<>(this));
     }
 
     public default GraphTraversal<S, E> identity() {
-        return (GraphTraversal) this.addStep(new IdentityStep<>(this));
+        return this.addStep(new IdentityStep<>(this));
     }
 
     public default GraphTraversal<S, Vertex> to(final Direction direction, final int branchFactor, final String... edgeLabels) {
-        return (GraphTraversal) this.addStep(new VertexStep(this, Vertex.class, direction, branchFactor, edgeLabels));
+        return this.addStep(new VertexStep<>(this, Vertex.class, direction, branchFactor, edgeLabels));
     }
 
     public default GraphTraversal<S, Vertex> to(final Direction direction, final String... edgeLabels) {
@@ -179,7 +183,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, Edge> toE(final Direction direction, final int branchFactor, final String... edgeLabels) {
-        return (GraphTraversal) this.addStep(new VertexStep(this, Edge.class, direction, branchFactor, edgeLabels));
+        return this.addStep(new VertexStep<>(this, Edge.class, direction, branchFactor, edgeLabels));
     }
 
     public default GraphTraversal<S, Edge> toE(final Direction direction, final String... edgeLabels) {
@@ -211,7 +215,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, Vertex> toV(final Direction direction) {
-        return (GraphTraversal) this.addStep(new EdgeVertexStep(this, direction));
+        return this.addStep(new EdgeVertexStep(this, direction));
     }
 
     public default GraphTraversal<S, Vertex> inV() {
@@ -227,51 +231,51 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, Vertex> otherV() {
-        return (GraphTraversal) this.addStep(new EdgeOtherVertexStep(this));
+        return this.addStep(new EdgeOtherVertexStep(this));
     }
 
     public default GraphTraversal<S, E> order() {
-        return (GraphTraversal) this.addStep(new OrderStep<E>(this, (a, b) -> ((Comparable<E>) a.get()).compareTo(b.get())));
+        return this.addStep(new OrderStep<E>(this, (a, b) -> ((Comparable<E>) a.get()).compareTo(b.get())));
     }
 
     public default GraphTraversal<S, E> order(final Comparator<Traverser<E>> comparator) {
-        return (GraphTraversal) this.addStep(new OrderStep<>(this, comparator));
+        return this.addStep(new OrderStep<>(this, comparator));
     }
 
     public default <E2> GraphTraversal<S, Property<E2>> property(final String propertyKey) {
-        return (GraphTraversal) this.addStep(new PropertyStep<>(this, propertyKey));
+        return this.addStep(new PropertyStep<>(this, propertyKey));
     }
 
     public default GraphTraversal<S, E> shuffle() {
-        return (GraphTraversal) this.addStep(new ShuffleStep<>(this));
+        return this.addStep(new ShuffleStep<>(this));
     }
 
     public default <E2> GraphTraversal<S, E2> value() {
-        return (GraphTraversal) this.addStep(new PropertyValueStep<>(this));
+        return this.addStep(new PropertyValueStep<>(this));
     }
 
     public default <E2> GraphTraversal<S, E2> value(final String propertyKey) {
-        return (GraphTraversal) this.addStep(new ValueStep<>(this, propertyKey));
+        return this.addStep(new ValueStep<>(this, propertyKey));
     }
 
     public default <E2> GraphTraversal<S, E2> value(final String propertyKey, final E2 defaultValue) {
-        return (GraphTraversal) this.addStep(new ValueStep<>(this, propertyKey, defaultValue));
+        return this.addStep(new ValueStep<>(this, propertyKey, defaultValue));
     }
 
     public default <E2> GraphTraversal<S, E2> value(final String propertyKey, final Supplier<E2> defaultSupplier) {
-        return (GraphTraversal) this.addStep(new ValueStep<>(this, propertyKey, defaultSupplier));
+        return this.addStep(new ValueStep<>(this, propertyKey, defaultSupplier));
     }
 
     public default GraphTraversal<S, Map<String, Object>> values(final String... propertyKeys) {
-        return (GraphTraversal) this.addStep(new ValuesStep(this, propertyKeys));
+        return this.addStep(new ValuesStep(this, propertyKeys));
     }
 
     public default GraphTraversal<S, Path> path(final SFunction... pathFunctions) {
-        return (GraphTraversal) this.addStep(new PathStep<>(this, pathFunctions));
+        return this.addStep(new PathStep<>(this, pathFunctions));
     }
 
     public default <E2> GraphTraversal<S, E2> back(final String stepLabel) {
-        return (GraphTraversal) this.addStep(new BackStep<>(this, stepLabel));
+        return this.addStep(new BackStep<>(this, stepLabel));
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> match(final String startLabel, final Traversal... traversals) {
@@ -286,8 +290,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final SFunction... stepFunctions) {
-        this.addStep(new SelectStep(this, Arrays.asList(), stepFunctions));
-        return (GraphTraversal) this.addStep(new PathIdentityStep<>(this));
+        this.addStep(new SelectStep<>(this, Arrays.asList(), stepFunctions));
+        return this.addStep(new PathIdentityStep<>(this));
     }
 
     public default <E2> GraphTraversal<S, E2> select(final String label, SFunction stepFunction) {
@@ -310,25 +314,25 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }*/
 
     public default <E2> GraphTraversal<S, E2> unfold() {
-        return (GraphTraversal) this.addStep(new UnfoldStep<>(this));
+        return this.addStep(new UnfoldStep<>(this));
     }
 
     public default GraphTraversal<S, List<E>> fold() {
-        return (GraphTraversal) this.addStep(new FoldStep<>(this));
+        return this.addStep(new FoldStep<>(this));
     }
 
     public default <E2> GraphTraversal<S, E2> fold(final E2 seed, final SBiFunction<E2, E, E2> foldFunction) {
-        return (GraphTraversal) this.addStep(new FoldStep<>(this, seed, foldFunction));
+        return this.addStep(new FoldStep<>(this, seed, foldFunction));
     }
 
     ///////////////////// EXPERIMENTAL STEPS /////////////////////
 
     public default <E2> GraphTraversal<S, E2> choose(final SPredicate<Traverser<S>> choosePredicate, final Traversal trueChoice, final Traversal falseChoice) {
-        return (GraphTraversal) this.addStep(new ChooseStep(this, choosePredicate, trueChoice, falseChoice));
+        return this.addStep(new ChooseStep(this, choosePredicate, trueChoice, falseChoice));
     }
 
     public default <E2, M> GraphTraversal<S, E2> choose(final SFunction<Traverser<S>, M> mapFunction, final Map<M, Traversal<S, E2>> choices) {
-        return (GraphTraversal) this.addStep(new ChooseStep<>(this, mapFunction, choices));
+        return this.addStep(new ChooseStep<>(this, mapFunction, choices));
     }
 
     ///////////////////// FILTER STEPS /////////////////////
@@ -336,35 +340,35 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, E> filter(final SPredicate<Traverser<E>> predicate) {
         final FilterStep<E> filterStep = new FilterStep<>(this);
         filterStep.setPredicate(predicate);
-        return (GraphTraversal) this.addStep(filterStep);
+        return this.addStep(filterStep);
     }
 
     public default GraphTraversal<S, E> inject(final E... injections) {
-        return (GraphTraversal) this.addStep(new InjectStep(this, injections));
+        return this.addStep(new InjectStep<>(this, injections));
     }
 
     public default GraphTraversal<S, E> dedup() {
-        return (GraphTraversal) this.addStep(new DedupStep<>(this));
+        return this.addStep(new DedupStep<>(this));
     }
 
     public default GraphTraversal<S, E> dedup(final SFunction<Traverser<E>, ?> uniqueFunction) {
-        return (GraphTraversal) this.addStep(new DedupStep<>(this, uniqueFunction));
+        return this.addStep(new DedupStep<>(this, uniqueFunction));
     }
 
     public default GraphTraversal<S, E> except(final String variable) {
-        return (GraphTraversal) this.addStep(new ExceptStep<E>(this, variable));
+        return this.addStep(new ExceptStep<E>(this, variable));
     }
 
     public default GraphTraversal<S, E> except(final E exceptionObject) {
-        return (GraphTraversal) this.addStep(new ExceptStep<>(this, exceptionObject));
+        return this.addStep(new ExceptStep<>(this, exceptionObject));
     }
 
     public default GraphTraversal<S, E> except(final Collection<E> exceptionCollection) {
-        return (GraphTraversal) this.addStep(new ExceptStep<>(this, exceptionCollection));
+        return this.addStep(new ExceptStep<>(this, exceptionCollection));
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> where(final String firstKey, final String secondKey, final SBiPredicate predicate) {
-        return (GraphTraversal) this.addStep(new WhereStep<>(this, firstKey, secondKey, predicate));
+        return this.addStep(new WhereStep<>(this, firstKey, secondKey, predicate));
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> where(final String firstKey, final SBiPredicate predicate, final String secondKey) {
@@ -376,11 +380,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> where(final Traversal constraint) {
-        return (GraphTraversal) this.addStep(new WhereStep<>(this, constraint));
+        return this.addStep(new WhereStep<>(this, constraint));
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final String key) {
-        return (GraphTraversal) this.addStep(new HasStep(this, new HasContainer(key, Contains.IN)));
+        return this.addStep(new HasStep<>(this, new HasContainer(key, Contains.IN)));
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final String key, final Object value) {
@@ -392,7 +396,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final String key, final SBiPredicate predicate, final Object value) {
-        return (GraphTraversal) this.addStep(new HasStep(this, new HasContainer(key, predicate, value)));
+        return this.addStep(new HasStep<>(this, new HasContainer(key, predicate, value)));
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final String label, final String key, final Object value) {
@@ -404,45 +408,45 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final String label, final String key, final SBiPredicate predicate, final Object value) {
-        return (GraphTraversal) this.addStep(new HasStep(this, new HasContainer(label, key, predicate, value)));
+        return this.addStep(new HasStep<>(this, new HasContainer(label, key, predicate, value)));
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> hasNot(final String key) {
-        return (GraphTraversal) this.addStep(new HasStep(this, new HasContainer(key, Contains.NOT_IN)));
+        return this.addStep(new HasStep<>(this, new HasContainer(key, Contains.NOT_IN)));
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> interval(final String key, final Comparable startValue, final Comparable endValue) {
-        return (GraphTraversal) this.addStep(new IntervalStep(this,
+        return this.addStep(new IntervalStep<>(this,
                 new HasContainer(key, Compare.GREATER_THAN_EQUAL, startValue),
                 new HasContainer(key, Compare.LESS_THAN, endValue)));
     }
 
     public default GraphTraversal<S, E> random(final double probability) {
-        return (GraphTraversal) this.addStep(new RandomStep<>(this, probability));
+        return this.addStep(new RandomStep<>(this, probability));
     }
 
     public default GraphTraversal<S, E> range(final int low, final int high) {
-        return (GraphTraversal) this.addStep(new RangeStep<>(this, low, high));
+        return this.addStep(new RangeStep<>(this, low, high));
     }
 
     public default GraphTraversal<S, E> retain(final String variable) {
-        return (GraphTraversal) this.addStep(new RetainStep<>(this, variable));
+        return this.addStep(new RetainStep<>(this, variable));
     }
 
     public default GraphTraversal<S, E> retain(final E retainObject) {
-        return (GraphTraversal) this.addStep(new RetainStep<>(this, retainObject));
+        return this.addStep(new RetainStep<>(this, retainObject));
     }
 
     public default GraphTraversal<S, E> retain(final Collection<E> retainCollection) {
-        return (GraphTraversal) this.addStep(new RetainStep<>(this, retainCollection));
+        return this.addStep(new RetainStep<>(this, retainCollection));
     }
 
     public default GraphTraversal<S, E> simplePath() {
-        return (GraphTraversal) this.addStep(new SimplePathStep<>(this));
+        return this.addStep(new SimplePathStep<>(this));
     }
 
     public default GraphTraversal<S, E> cyclicPath() {
-        return (GraphTraversal) this.addStep(new CyclicPathStep<E>(this));
+        return this.addStep(new CyclicPathStep<E>(this));
     }
 
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
@@ -450,11 +454,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, E> sideEffect(final SConsumer<Traverser<E>> consumer) {
         final SideEffectStep<E> sideEffectStep = new SideEffectStep<>(this);
         sideEffectStep.setConsumer(consumer);
-        return (GraphTraversal) this.addStep(sideEffectStep);
+        return this.addStep(sideEffectStep);
     }
 
     public default <E2> GraphTraversal<S, E2> cap(final String sideEffecyKey) {
-        return (GraphTraversal) this.addStep(new SideEffectCapStep<>(this, sideEffecyKey));
+        return this.addStep(new SideEffectCapStep<>(this, sideEffecyKey));
     }
 
     public default <E2> GraphTraversal<S, E2> cap() {
@@ -462,7 +466,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> subgraph(final String sideEffectKey, final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final SPredicate<Edge> includeEdge) {
-        return (GraphTraversal) this.addStep(new SubgraphStep<>(this, sideEffectKey, edgeIdHolder, vertexMap, includeEdge));
+        return this.addStep(new SubgraphStep<>(this, sideEffectKey, edgeIdHolder, vertexMap, includeEdge));
     }
 
     public default GraphTraversal<S, E> subgraph(final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final SPredicate<Edge> includeEdge) {
@@ -478,7 +482,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> aggregate(final String sideEffectKey, final SFunction<Traverser<E>, ?> preAggregateFunction) {
-        return (GraphTraversal) this.addStep(new AggregateStep<>(this, sideEffectKey, preAggregateFunction));
+        return this.addStep(new AggregateStep<>(this, sideEffectKey, preAggregateFunction));
     }
 
     public default GraphTraversal<S, E> aggregate(final SFunction<Traverser<E>, ?> preAggregateFunction) {
@@ -494,7 +498,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> groupBy(final String sideEffectKey, final SFunction<Traverser<E>, ?> keyFunction, final SFunction<Traverser<E>, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
-        return (GraphTraversal) this.addStep(new GroupByStep(this, sideEffectKey, keyFunction, valueFunction, reduceFunction));
+        return this.addStep(new GroupByStep(this, sideEffectKey, keyFunction, valueFunction, reduceFunction));
     }
 
     public default GraphTraversal<S, E> groupBy(final SFunction<Traverser<E>, ?> keyFunction, final SFunction<Traverser<E>, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
@@ -518,7 +522,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> groupCount(final String sideEffectKey, final SFunction<Traverser<E>, ?> preGroupFunction) {
-        return (GraphTraversal) this.addStep(new GroupCountStep<>(this, sideEffectKey, preGroupFunction));
+        return this.addStep(new GroupCountStep<>(this, sideEffectKey, preGroupFunction));
     }
 
     public default GraphTraversal<S, E> groupCount(final SFunction<Traverser<E>, ?> preGroupFunction) {
@@ -534,7 +538,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, Vertex> addE(final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
-        return (GraphTraversal) this.addStep(new AddEdgeStep(this, direction, edgeLabel, stepLabel, propertyKeyValues));
+        return this.addStep(new AddEdgeStep(this, direction, edgeLabel, stepLabel, propertyKeyValues));
     }
 
     public default GraphTraversal<S, Vertex> addInE(final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
@@ -550,11 +554,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> timeLimit(final long timeLimit) {
-        return (GraphTraversal) this.addStep(new TimeLimitStep<E>(this, timeLimit));
+        return this.addStep(new TimeLimitStep<E>(this, timeLimit));
     }
 
     public default GraphTraversal<S, E> tree(final String sideEffectKey, final SFunction... branchFunctions) {
-        return (GraphTraversal) this.addStep(new TreeStep<>(this, sideEffectKey, branchFunctions));
+        return this.addStep(new TreeStep<>(this, sideEffectKey, branchFunctions));
     }
 
     public default GraphTraversal<S, E> tree(final SFunction... branchFunctions) {
@@ -562,7 +566,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> store(final String sideEffectKey, final SFunction<Traverser<E>, ?> preStoreFunction) {
-        return (GraphTraversal) this.addStep(new StoreStep<>(this, sideEffectKey, preStoreFunction));
+        return this.addStep(new StoreStep<>(this, sideEffectKey, preStoreFunction));
     }
 
     public default GraphTraversal<S, E> store(final String sideEffectKey) {
@@ -580,23 +584,23 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     ///////////////////// BRANCH STEPS /////////////////////
 
     public default GraphTraversal<S, E> jump(final String jumpLabel, final SPredicate<Traverser<E>> ifPredicate, final SPredicate<Traverser<E>> emitPredicate) {
-        return (GraphTraversal) this.addStep(new JumpStep<>(this, jumpLabel, ifPredicate, emitPredicate));
+        return this.addStep(new JumpStep<>(this, jumpLabel, ifPredicate, emitPredicate));
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel, final SPredicate<Traverser<E>> ifPredicate) {
-        return (GraphTraversal) this.addStep(new JumpStep<>(this, jumpLabel, ifPredicate));
+        return this.addStep(new JumpStep<>(this, jumpLabel, ifPredicate));
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel, final int loops, final SPredicate<Traverser<E>> emitPredicate) {
-        return (GraphTraversal) this.addStep(new JumpStep<>(this, jumpLabel, loops, emitPredicate));
+        return this.addStep(new JumpStep<>(this, jumpLabel, loops, emitPredicate));
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel, final int loops) {
-        return (GraphTraversal) this.addStep(new JumpStep<>(this, jumpLabel, loops));
+        return this.addStep(new JumpStep<>(this, jumpLabel, loops));
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel) {
-        return (GraphTraversal) this.addStep(new JumpStep<>(this, jumpLabel));
+        return this.addStep(new JumpStep<>(this, jumpLabel));
     }
 
     ///////////////////// UTILITY STEPS /////////////////////

@@ -51,7 +51,7 @@ public class TraversalSourceGenerator {
         final List<Method> methods = Arrays.asList(traversalToCloneClass.getMethods());
         Collections.sort(methods, (a, b) -> (a.getName() + a.getParameterCount() + a.toGenericString()).compareTo((b.getName() + b.getParameterCount() + b.toGenericString())));
         for (final Method method : methods) {
-            if (method.getReturnType().equals(traversalToCloneClass) && !Modifier.isStatic(method.getModifiers())) {
+            if (method.getReturnType().equals(traversalToCloneClass) && !Modifier.isStatic(method.getModifiers()) && !method.getName().equals("addStep")) {
                 String methodName = sharedToGenericString(method);
                 methodName = methodName.replace(traversalToCloneClass.getCanonicalName(), resultTraversalClassName);
                 methodName = methodName.replace(resultTraversalClassName + ".", "");
