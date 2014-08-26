@@ -95,32 +95,32 @@ public abstract class GroupByTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_groupByXnameX() {
-            return (Traversal) g.V().groupBy(v -> v.value("name"));
+            return (Traversal) g.V().groupBy(v -> v.get().value("name"));
         }
 
         @Override
         public Traversal<Vertex, Map<String, List<String>>> get_g_V_hasXlangX_groupByXa_lang_nameX_out_capXaX() {
             return (Traversal) g.V().<Vertex>has("lang")
-                    .groupBy("a", v -> v.value("lang"),
-                            v -> v.value("name")).out().cap("a");
+                    .groupBy("a", v -> v.get().value("lang"),
+                            v -> v.get().value("name")).out().cap("a");
         }
 
         @Override
         public Traversal<Vertex, Map<String, Integer>> get_g_V_hasXlangX_groupByXlang_1_sizeX() {
             return (Traversal) g.V().<Vertex>has("lang")
-                    .groupBy(v -> v.value("lang"),
+                    .groupBy(v -> v.get().value("lang"),
                             v -> 1,
                             vv -> vv.size());
         }
 
         @Override
         public Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_2X_capXaX() {
-            return g.V().as("x").out().groupBy("a", v -> v.value("name"), v -> v, vv -> vv.size()).jump("x", 2).cap("a");
+            return g.V().as("x").out().groupBy("a", v -> v.get().value("name"), v -> v, vv -> vv.size()).jump("x", 2).cap("a");
         }
 
         @Override
         public Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_loops_lt_2X_capXaX() {
-            return g.V().as("x").out().groupBy("a", v -> v.value("name"), v -> v, vv -> vv.size()).jump("x", t -> t.getLoops() < 2).cap("a");
+            return g.V().as("x").out().groupBy("a", v -> v.get().value("name"), v -> v, vv -> vv.size()).jump("x", t -> t.getLoops() < 2).cap("a");
         }
     }
 
@@ -128,33 +128,33 @@ public abstract class GroupByTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_groupByXnameX() {
-            return (Traversal) g.V().groupBy(v -> v.value("name")).submit(g.compute());
+            return (Traversal) g.V().groupBy(v -> v.get().value("name")).submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Map<String, List<String>>> get_g_V_hasXlangX_groupByXa_lang_nameX_out_capXaX() {
             // TODO: This doesn't work with GraphComputer cause there are no results so you get a NoSuchElementException
             return (Traversal) g.V().<Vertex>has("lang")
-                    .groupBy("a", v -> v.value("lang"),
-                            v -> v.value("name")).out().cap("a").submit(g.compute());
+                    .groupBy("a", v -> v.get().value("lang"),
+                            v -> v.get().value("name")).out().cap("a").submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Map<String, Integer>> get_g_V_hasXlangX_groupByXlang_1_sizeX() {
             return (Traversal) g.V().<Vertex>has("lang")
-                    .groupBy(v -> v.value("lang"),
+                    .groupBy(v -> v.get().value("lang"),
                             v -> 1,
                             vv -> vv.size()).submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_2X_capXaX() {
-            return g.V().as("x").out().groupBy("a", v -> v.value("name"), v -> v, vv -> vv.size()).jump("x", 2).<Map<String, Integer>>cap("a").submit(g.compute());
+            return g.V().as("x").out().groupBy("a", v -> v.get().value("name"), v -> v, vv -> vv.size()).jump("x", 2).<Map<String, Integer>>cap("a").submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_loops_lt_2X_capXaX() {
-            return g.V().as("x").out().groupBy("a", v -> v.value("name"), v -> v, vv -> vv.size()).jump("x", t -> t.getLoops() < 2).<Map<String, Integer>>cap("a").submit(g.compute());
+            return g.V().as("x").out().groupBy("a", v -> v.get().value("name"), v -> v, vv -> vv.size()).jump("x", t -> t.getLoops() < 2).<Map<String, Integer>>cap("a").submit(g.compute());
         }
     }
 

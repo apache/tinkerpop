@@ -277,7 +277,7 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
         return this.start().dedup();
     }
 
-    public Neo4jTraversal<Edge, Edge> dedup(final SFunction<Edge, ?> uniqueFunction) {
+    public Neo4jTraversal<Edge, Edge> dedup(final SFunction<Traverser<Edge>, ?> uniqueFunction) {
         return this.start().dedup(uniqueFunction);
     }
 
@@ -403,11 +403,11 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
         return this.start().subgraph(null, null, null, includeEdge);
     }
 
-    public Neo4jTraversal<Edge, Edge> aggregate(final String sideEffectKey, final SFunction<Edge, ?> preAggregateFunction) {
+    public Neo4jTraversal<Edge, Edge> aggregate(final String sideEffectKey, final SFunction<Traverser<Edge>, ?> preAggregateFunction) {
         return this.start().aggregate(sideEffectKey, preAggregateFunction);
     }
 
-    public Neo4jTraversal<Edge, Edge> aggregate(final SFunction<Edge, ?> preAggregateFunction) {
+    public Neo4jTraversal<Edge, Edge> aggregate(final SFunction<Traverser<Edge>, ?> preAggregateFunction) {
         return this.start().aggregate(null, preAggregateFunction);
     }
 
@@ -419,36 +419,36 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
         return this.start().aggregate(sideEffectKey, null);
     }
 
-    public Neo4jTraversal<Edge, Edge> groupBy(final String sideEffectKey, final SFunction<Edge, ?> keyFunction, final SFunction<Edge, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
+    public Neo4jTraversal<Edge, Edge> groupBy(final String sideEffectKey, final SFunction<Traverser<Edge>, ?> keyFunction, final SFunction<Traverser<Edge>, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
         return this.start().groupBy(sideEffectKey, keyFunction, valueFunction, reduceFunction);
     }
 
 
-    public Neo4jTraversal<Edge, Edge> groupBy(final SFunction<Edge, ?> keyFunction, final SFunction<Edge, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
+    public Neo4jTraversal<Edge, Edge> groupBy(final SFunction<Traverser<Edge>, ?> keyFunction, final SFunction<Traverser<Edge>, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
         return this.start().groupBy(null, keyFunction, valueFunction, reduceFunction);
     }
 
-    public Neo4jTraversal<Edge, Edge> groupBy(final SFunction<Edge, ?> keyFunction, final SFunction<Edge, ?> valueFunction) {
+    public Neo4jTraversal<Edge, Edge> groupBy(final SFunction<Traverser<Edge>, ?> keyFunction, final SFunction<Traverser<Edge>, ?> valueFunction) {
         return this.start().groupBy(null, keyFunction, valueFunction, null);
     }
 
-    public Neo4jTraversal<Edge, Edge> groupBy(final SFunction<Edge, ?> keyFunction) {
+    public Neo4jTraversal<Edge, Edge> groupBy(final SFunction<Traverser<Edge>, ?> keyFunction) {
         return this.start().groupBy(null, keyFunction, null, null);
     }
 
-    public Neo4jTraversal<Edge, Edge> groupBy(final String sideEffectKey, final SFunction<Edge, ?> keyFunction) {
+    public Neo4jTraversal<Edge, Edge> groupBy(final String sideEffectKey, final SFunction<Traverser<Edge>, ?> keyFunction) {
         return this.start().groupBy(sideEffectKey, keyFunction, null, null);
     }
 
-    public Neo4jTraversal<Edge, Edge> groupBy(final String sideEffectKey, final SFunction<Edge, ?> keyFunction, final SFunction<Edge, ?> valueFunction) {
+    public Neo4jTraversal<Edge, Edge> groupBy(final String sideEffectKey, final SFunction<Traverser<Edge>, ?> keyFunction, final SFunction<Traverser<Edge>, ?> valueFunction) {
         return this.start().groupBy(sideEffectKey, keyFunction, valueFunction, null);
     }
 
-    public Neo4jTraversal<Edge, Edge> groupCount(final String sideEffectKey, final SFunction<Edge, ?> preGroupFunction) {
+    public Neo4jTraversal<Edge, Edge> groupCount(final String sideEffectKey, final SFunction<Traverser<Edge>, ?> preGroupFunction) {
         return this.start().groupCount(sideEffectKey, preGroupFunction);
     }
 
-    public Neo4jTraversal<Edge, Edge> groupCount(final SFunction<Edge, ?> preGroupFunction) {
+    public Neo4jTraversal<Edge, Edge> groupCount(final SFunction<Traverser<Edge>, ?> preGroupFunction) {
         return this.start().groupCount(null, preGroupFunction);
     }
 
@@ -488,7 +488,7 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
         return this.start().tree(null, branchFunctions);
     }
 
-    public Neo4jTraversal<Edge, Edge> store(final String sideEffectKey, final SFunction<Edge, ?> preStoreFunction) {
+    public Neo4jTraversal<Edge, Edge> store(final String sideEffectKey, final SFunction<Traverser<Edge>, ?> preStoreFunction) {
         return this.start().store(sideEffectKey, preStoreFunction);
     }
 
@@ -496,7 +496,7 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
         return this.start().store(sideEffectKey, null);
     }
 
-    public Neo4jTraversal<Edge, Edge> store(final SFunction<Edge, ?> preStoreFunction) {
+    public Neo4jTraversal<Edge, Edge> store(final SFunction<Traverser<Edge>, ?> preStoreFunction) {
         return this.start().store(null, preStoreFunction);
     }
 

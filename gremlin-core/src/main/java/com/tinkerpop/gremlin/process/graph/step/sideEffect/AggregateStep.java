@@ -26,14 +26,14 @@ import java.util.Queue;
  */
 public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCapable, Reversible, Bulkable, VertexCentric, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
 
-    public final SFunction<S, ?> preAggregateFunction;
+    public final SFunction<Traverser<S>, ?> preAggregateFunction;
     Collection aggregate;
     final Queue<Traverser<S>> aggregateTraversers = new LinkedList<>();
     private long bulkCount = 1l;
     private final String sideEffectKey;
     private final String hiddenSideEffectKey;
 
-    public AggregateStep(final Traversal traversal, final String sideEffectKey, final SFunction<S, ?> preAggregateFunction) {
+    public AggregateStep(final Traversal traversal, final String sideEffectKey, final SFunction<Traverser<S>, ?> preAggregateFunction) {
         super(traversal);
         this.preAggregateFunction = preAggregateFunction;
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
@@ -67,7 +67,7 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCa
                     for (int i = 0; i < this.bulkCount; i++) {
                         this.aggregate.add(null == this.preAggregateFunction ?
                                 traverser.get() :
-                                this.preAggregateFunction.apply(traverser.get()));
+                                this.preAggregateFunction.apply(traverser));
                         this.aggregateTraversers.add(traverser.makeSibling());
                     }
                 });

@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
@@ -23,18 +24,18 @@ public class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable
 
     public Collection store;
     public long bulkCount = 1l;
-    public SFunction<S, ?> preStoreFunction;
+    public SFunction<Traverser<S>, ?> preStoreFunction;
     private final String sideEffectKey;
     private final String hiddenSideEffectKey;
 
-    public StoreStep(final Traversal traversal, final String sideEffectKey, final SFunction<S, ?> preStoreFunction) {
+    public StoreStep(final Traversal traversal, final String sideEffectKey, final SFunction<Traverser<S>, ?> preStoreFunction) {
         super(traversal);
         this.preStoreFunction = preStoreFunction;
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         this.hiddenSideEffectKey = Graph.Key.hide(this.sideEffectKey);
         this.store = this.traversal.sideEffects().getOrCreate(this.sideEffectKey, ArrayList::new);
         this.setConsumer(traverser -> {
-            final Object storeObject = null == this.preStoreFunction ? traverser.get() : this.preStoreFunction.apply(traverser.get());
+            final Object storeObject = null == this.preStoreFunction ? traverser.get() : this.preStoreFunction.apply(traverser);
             for (int i = 0; i < this.bulkCount; i++) {
                 this.store.add(storeObject);
             }

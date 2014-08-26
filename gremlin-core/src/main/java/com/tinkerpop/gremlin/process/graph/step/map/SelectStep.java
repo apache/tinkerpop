@@ -70,6 +70,8 @@ public class SelectStep<E> extends MapStep<Object, Map<String, E>> {
     }
 
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.selectLabels);
+        return this.selectLabels.size() > 0 ?
+                TraversalHelper.makeStepString(this, this.selectLabels) :
+                TraversalHelper.makeStepString(this);
     }
 }

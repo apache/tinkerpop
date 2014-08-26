@@ -10,7 +10,7 @@ class GroovyGroupCountTestImpl extends GroupCountTest {
 
     @Override
     public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_groupCountXnameX() {
-        g.V().out('created').groupCount { it.value('name') }
+        g.V().out('created').groupCount { it.get().value('name') }
     }
 
     @Override
@@ -30,11 +30,11 @@ class GroovyGroupCountTestImpl extends GroupCountTest {
 
     @Override
     public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_capXaX() {
-        g.V().as('x').out().groupCount('a') { it.value('name') }.jump('x') { it.loops < 2 }.cap('a')
+        g.V().as('x').out().groupCount('a') { it.get().value('name') }.jump('x') { it.loops < 2 }.cap('a')
     }
 
     @Override
     public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_2X_capXaX() {
-        g.V().as('x').out().groupCount('a') { it.value('name') }.jump('x', 2).cap('a')
+        g.V().as('x').out().groupCount('a') { it.get().value('name') }.jump('x', 2).cap('a')
     }
 }

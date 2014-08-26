@@ -29,6 +29,10 @@ public class WhereStep<E> extends FilterStep<Map<String, E>> {
 
         this.setPredicate(traverser -> {
             final Map<String, E> map = traverser.get();
+            if (!map.containsKey(firstKey))
+                throw new IllegalArgumentException("The provided key is not in the current map: " + firstKey);
+            if (!map.containsKey(secondKey))
+                throw new IllegalArgumentException("The provided key is not in the current map: " + secondKey);
             return biPredicate.test(map.get(firstKey), map.get(secondKey));
         });
     }
@@ -45,8 +49,17 @@ public class WhereStep<E> extends FilterStep<Map<String, E>> {
 
         this.setPredicate(traverser -> {
             final Map<String, E> map = traverser.get();
+            if (!map.containsKey(startStep.getLabel()))
+                throw new IllegalArgumentException("The provided key is not in the current map: " + startStep.getLabel());
             final Object startObject = map.get(startStep.getLabel());
-            final Object endObject = TraversalHelper.isLabeled(endStep) ? map.get(endStep.getLabel()) : null;
+            final Object endObject;
+            if (TraversalHelper.isLabeled(endStep)) {
+                if (!map.containsKey(endStep.getLabel()))
+                    throw new IllegalArgumentException("The provided key is not in the current map: " + endStep.getLabel());
+                endObject = map.get(endStep.getLabel());
+            } else
+                endObject = null;
+
             startStep.addStarts(new TraverserIterator<>(startStep, TraversalHelper.trackPaths(constraint), Arrays.asList(startObject).iterator()));
             if (null == endObject) {
                 if (constraint.hasNext()) {

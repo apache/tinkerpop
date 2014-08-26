@@ -347,7 +347,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new DedupStep<>(this));
     }
 
-    public default GraphTraversal<S, E> dedup(final SFunction<E, ?> uniqueFunction) {
+    public default GraphTraversal<S, E> dedup(final SFunction<Traverser<E>, ?> uniqueFunction) {
         return (GraphTraversal) this.addStep(new DedupStep<>(this, uniqueFunction));
     }
 
@@ -477,11 +477,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.subgraph(null, null, null, includeEdge);
     }
 
-    public default GraphTraversal<S, E> aggregate(final String sideEffectKey, final SFunction<E, ?> preAggregateFunction) {
+    public default GraphTraversal<S, E> aggregate(final String sideEffectKey, final SFunction<Traverser<E>, ?> preAggregateFunction) {
         return (GraphTraversal) this.addStep(new AggregateStep<>(this, sideEffectKey, preAggregateFunction));
     }
 
-    public default GraphTraversal<S, E> aggregate(final SFunction<E, ?> preAggregateFunction) {
+    public default GraphTraversal<S, E> aggregate(final SFunction<Traverser<E>, ?> preAggregateFunction) {
         return this.aggregate(null, preAggregateFunction);
     }
 
@@ -493,36 +493,35 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.aggregate(sideEffectKey, null);
     }
 
-    public default GraphTraversal<S, E> groupBy(final String sideEffectKey, final SFunction<E, ?> keyFunction, final SFunction<E, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
-        return (GraphTraversal) this.addStep(new GroupByStep(this, sideEffectKey, keyFunction, (SFunction) valueFunction, (SFunction) reduceFunction));
+    public default GraphTraversal<S, E> groupBy(final String sideEffectKey, final SFunction<Traverser<E>, ?> keyFunction, final SFunction<Traverser<E>, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
+        return (GraphTraversal) this.addStep(new GroupByStep(this, sideEffectKey, keyFunction, valueFunction, reduceFunction));
     }
 
-
-    public default GraphTraversal<S, E> groupBy(final SFunction<E, ?> keyFunction, final SFunction<E, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
+    public default GraphTraversal<S, E> groupBy(final SFunction<Traverser<E>, ?> keyFunction, final SFunction<Traverser<E>, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
         return this.groupBy(null, keyFunction, valueFunction, reduceFunction);
     }
 
-    public default GraphTraversal<S, E> groupBy(final SFunction<E, ?> keyFunction, final SFunction<E, ?> valueFunction) {
+    public default GraphTraversal<S, E> groupBy(final SFunction<Traverser<E>, ?> keyFunction, final SFunction<Traverser<E>, ?> valueFunction) {
         return this.groupBy(null, keyFunction, valueFunction, null);
     }
 
-    public default GraphTraversal<S, E> groupBy(final SFunction<E, ?> keyFunction) {
+    public default GraphTraversal<S, E> groupBy(final SFunction<Traverser<E>, ?> keyFunction) {
         return this.groupBy(null, keyFunction, null, null);
     }
 
-    public default GraphTraversal<S, E> groupBy(final String sideEffectKey, final SFunction<E, ?> keyFunction) {
+    public default GraphTraversal<S, E> groupBy(final String sideEffectKey, final SFunction<Traverser<E>, ?> keyFunction) {
         return this.groupBy(sideEffectKey, keyFunction, null, null);
     }
 
-    public default GraphTraversal<S, E> groupBy(final String sideEffectKey, final SFunction<E, ?> keyFunction, final SFunction<E, ?> valueFunction) {
+    public default GraphTraversal<S, E> groupBy(final String sideEffectKey, final SFunction<Traverser<E>, ?> keyFunction, final SFunction<Traverser<E>, ?> valueFunction) {
         return this.groupBy(sideEffectKey, keyFunction, valueFunction, null);
     }
 
-    public default GraphTraversal<S, E> groupCount(final String sideEffectKey, final SFunction<E, ?> preGroupFunction) {
+    public default GraphTraversal<S, E> groupCount(final String sideEffectKey, final SFunction<Traverser<E>, ?> preGroupFunction) {
         return (GraphTraversal) this.addStep(new GroupCountStep<>(this, sideEffectKey, preGroupFunction));
     }
 
-    public default GraphTraversal<S, E> groupCount(final SFunction<E, ?> preGroupFunction) {
+    public default GraphTraversal<S, E> groupCount(final SFunction<Traverser<E>, ?> preGroupFunction) {
         return this.groupCount(null, preGroupFunction);
     }
 
@@ -562,7 +561,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.tree(null, branchFunctions);
     }
 
-    public default GraphTraversal<S, E> store(final String sideEffectKey, final SFunction<E, ?> preStoreFunction) {
+    public default GraphTraversal<S, E> store(final String sideEffectKey, final SFunction<Traverser<E>, ?> preStoreFunction) {
         return (GraphTraversal) this.addStep(new StoreStep<>(this, sideEffectKey, preStoreFunction));
     }
 
@@ -570,7 +569,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.store(sideEffectKey, null);
     }
 
-    public default GraphTraversal<S, E> store(final SFunction<E, ?> preStoreFunction) {
+    public default GraphTraversal<S, E> store(final SFunction<Traverser<E>, ?> preStoreFunction) {
         return this.store(null, preStoreFunction);
     }
 

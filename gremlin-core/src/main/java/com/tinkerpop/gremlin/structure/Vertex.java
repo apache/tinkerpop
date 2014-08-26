@@ -303,7 +303,7 @@ public interface Vertex extends Element {
         return this.start().dedup();
     }
 
-    public default GraphTraversal<Vertex, Vertex> dedup(final SFunction<Vertex, ?> uniqueFunction) {
+    public default GraphTraversal<Vertex, Vertex> dedup(final SFunction<Traverser<Vertex>, ?> uniqueFunction) {
         return this.start().dedup(uniqueFunction);
     }
 
@@ -429,11 +429,11 @@ public interface Vertex extends Element {
         return this.start().subgraph(null, null, null, includeEdge);
     }
 
-    public default GraphTraversal<Vertex, Vertex> aggregate(final String sideEffectKey, final SFunction<Vertex, ?> preAggregateFunction) {
+    public default GraphTraversal<Vertex, Vertex> aggregate(final String sideEffectKey, final SFunction<Traverser<Vertex>, ?> preAggregateFunction) {
         return this.start().aggregate(sideEffectKey, preAggregateFunction);
     }
 
-    public default GraphTraversal<Vertex, Vertex> aggregate(final SFunction<Vertex, ?> preAggregateFunction) {
+    public default GraphTraversal<Vertex, Vertex> aggregate(final SFunction<Traverser<Vertex>, ?> preAggregateFunction) {
         return this.start().aggregate(null, preAggregateFunction);
     }
 
@@ -445,36 +445,36 @@ public interface Vertex extends Element {
         return this.start().aggregate(sideEffectKey, null);
     }
 
-    public default GraphTraversal<Vertex, Vertex> groupBy(final String sideEffectKey, final SFunction<Vertex, ?> keyFunction, final SFunction<Vertex, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
+    public default GraphTraversal<Vertex, Vertex> groupBy(final String sideEffectKey, final SFunction<Traverser<Vertex>, ?> keyFunction, final SFunction<Traverser<Vertex>, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
         return this.start().groupBy(sideEffectKey, keyFunction, valueFunction, reduceFunction);
     }
 
 
-    public default GraphTraversal<Vertex, Vertex> groupBy(final SFunction<Vertex, ?> keyFunction, final SFunction<Vertex, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
+    public default GraphTraversal<Vertex, Vertex> groupBy(final SFunction<Traverser<Vertex>, ?> keyFunction, final SFunction<Traverser<Vertex>, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
         return this.start().groupBy(null, keyFunction, valueFunction, reduceFunction);
     }
 
-    public default GraphTraversal<Vertex, Vertex> groupBy(final SFunction<Vertex, ?> keyFunction, final SFunction<Vertex, ?> valueFunction) {
+    public default GraphTraversal<Vertex, Vertex> groupBy(final SFunction<Traverser<Vertex>, ?> keyFunction, final SFunction<Traverser<Vertex>, ?> valueFunction) {
         return this.start().groupBy(null, keyFunction, valueFunction, null);
     }
 
-    public default GraphTraversal<Vertex, Vertex> groupBy(final SFunction<Vertex, ?> keyFunction) {
+    public default GraphTraversal<Vertex, Vertex> groupBy(final SFunction<Traverser<Vertex>, ?> keyFunction) {
         return this.start().groupBy(null, keyFunction, null, null);
     }
 
-    public default GraphTraversal<Vertex, Vertex> groupBy(final String sideEffectKey, final SFunction<Vertex, ?> keyFunction) {
+    public default GraphTraversal<Vertex, Vertex> groupBy(final String sideEffectKey, final SFunction<Traverser<Vertex>, ?> keyFunction) {
         return this.start().groupBy(sideEffectKey, keyFunction, null, null);
     }
 
-    public default GraphTraversal<Vertex, Vertex> groupBy(final String sideEffectKey, final SFunction<Vertex, ?> keyFunction, final SFunction<Vertex, ?> valueFunction) {
+    public default GraphTraversal<Vertex, Vertex> groupBy(final String sideEffectKey, final SFunction<Traverser<Vertex>, ?> keyFunction, final SFunction<Traverser<Vertex>, ?> valueFunction) {
         return this.start().groupBy(sideEffectKey, keyFunction, valueFunction, null);
     }
 
-    public default GraphTraversal<Vertex, Vertex> groupCount(final String sideEffectKey, final SFunction<Vertex, ?> preGroupFunction) {
+    public default GraphTraversal<Vertex, Vertex> groupCount(final String sideEffectKey, final SFunction<Traverser<Vertex>, ?> preGroupFunction) {
         return this.start().groupCount(sideEffectKey, preGroupFunction);
     }
 
-    public default GraphTraversal<Vertex, Vertex> groupCount(final SFunction<Vertex, ?> preGroupFunction) {
+    public default GraphTraversal<Vertex, Vertex> groupCount(final SFunction<Traverser<Vertex>, ?> preGroupFunction) {
         return this.start().groupCount(null, preGroupFunction);
     }
 
@@ -514,7 +514,7 @@ public interface Vertex extends Element {
         return this.start().tree(null, branchFunctions);
     }
 
-    public default GraphTraversal<Vertex, Vertex> store(final String sideEffectKey, final SFunction<Vertex, ?> preStoreFunction) {
+    public default GraphTraversal<Vertex, Vertex> store(final String sideEffectKey, final SFunction<Traverser<Vertex>, ?> preStoreFunction) {
         return this.start().store(sideEffectKey, preStoreFunction);
     }
 
@@ -522,7 +522,7 @@ public interface Vertex extends Element {
         return this.start().store(sideEffectKey, null);
     }
 
-    public default GraphTraversal<Vertex, Vertex> store(final SFunction<Vertex, ?> preStoreFunction) {
+    public default GraphTraversal<Vertex, Vertex> store(final SFunction<Traverser<Vertex>, ?> preStoreFunction) {
         return this.start().store(null, preStoreFunction);
     }
 
