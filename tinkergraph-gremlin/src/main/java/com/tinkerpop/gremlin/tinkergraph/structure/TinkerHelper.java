@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.process.graph.strategy.BackComputerStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.CountCapStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.JumpComputerStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapComputerStrategy;
@@ -168,6 +169,7 @@ public class TinkerHelper {
         traversal.strategies().register(CountCapStrategy.instance());
         traversal.strategies().register(SideEffectCapComputerStrategy.instance());
         traversal.strategies().register(JumpComputerStrategy.instance());
+        traversal.strategies().register(BackComputerStrategy.instance());
     }
 
     private static class TinkerVertexIterator implements Iterator<TinkerVertex> {

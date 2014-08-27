@@ -21,6 +21,42 @@ image::step-types.png[width=650]
 
 A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, or an Edge. A graph traversal is composed of an ordered list of steps. Each step is of particular general form as diagrammed above. A list of all the steps (and their descriptions) are provided in the TinkerPop3 link:http://www.tinkerpop.com/javadocs/current/com/tinkerpop/gremlin/process/graph/GraphTraversal.html[GraphTraversal JavaDoc]. A few of the more interesting/complex steps are presented in the following subsections.
 
+[[lambda-steps]]
+Lambda Steps
+~~~~~~~~~~~~
+
+There are eight generic steps by which all other specific steps described later are instances of.
+
+ * `map(Function<Traverser<S>,E>)`
+ * `map(BiFunction<Traverser<S>, Traversal.SideEffects,E>)`
+ * `flatMap(Function<Traverser<S>, Iterator<E>>)`
+ * `flatMap(BiFunction<Traverser<S>, Traversal.SideEffects, Iterator<E>>)`
+ * `filter(Predicate<Traverser<S>>)`
+ * `filter(BiPredicate<Traverser<S>, Traversal.SideEffects>)`
+ * `sideEffect(Consumer<Traverser<S>>)`
+ * `sideEffect(BiConsumer<Traverser<S>, Traversal.SideEffects>)`
+
+If a `BiXXX`-lambda is provided, then the user has access to `Traversal.SideEffects` which provides access to sideEffect data structures and objects at particular steps. A series of examples are provided below.
+
+[source,groovy]
+gremlin> g.v(1).as('a').out() <1>
+==>v[3]
+==>v[2]
+==>v[4]
+gremlin> g.v(1).as('a').out().map{v,s -> s.get('a')} <2>
+==>v[1]
+==>v[1]
+==>v[1]
+gremlin> g.v(1).as('a').out.back('a') <3>
+==>v[1]
+==>v[1]
+==>v[1]
+
+<1> A standard outgoing traversal from vertex 1.
+<2> For each vertex outgoing adjacent to vertex 1, get the vertex at `a` (which is vertex 1).
+<3> This is exactly how <<back()-step,back-step>> is implemented (a more specific step).
+
+
 [[addedge-step]]
 AddEdge Step
 ~~~~~~~~~~~~
