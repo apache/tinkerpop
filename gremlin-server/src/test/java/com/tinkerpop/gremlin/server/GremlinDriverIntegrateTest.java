@@ -258,16 +258,13 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    @Ignore
     public void shouldFailClientSideWithTooLargeAResponse() {
-        // todo: maybe a netty issue to look into - test won't pass
-
         final Cluster cluster = Cluster.build().maxContentLength(1).create();
         final Client client = cluster.connect();
 
         try {
             final String fatty = IntStream.range(0, 100).mapToObj(String::valueOf).collect(Collectors.joining());
-            client.submitAsync("'" + fatty + "'").get().all();
+            client.submit("'" + fatty + "'").all().get();
             fail("Should throw an exception.");
         } catch (Exception re) {
             // can't seem to catch the server side exception - as the channel is basically closed on this error

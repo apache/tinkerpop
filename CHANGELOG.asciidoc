@@ -11,6 +11,7 @@ TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 
 * `GraphFactory` support for opening a `Graph` with multiple `GraphStrategy` instances - if there are multiple strategies they are wrapped in order via `SequenceGraphStrategy`.
 * The result type for result termination messages returned from Gremlin Server is now set to "no content".
+* The `maxContentLength` setting for Gremlin Driver now blocks incoming frames that are too large.
 * After initialization scripts are executed in Gremlin Server, the `Graph` instances are re-bound back to their global references, thus allowing `GraphStrategy` initialization or even dynamic `Graph` creation through scripts.
 * Add "Modern" graph back which is basically the "Classic" graph with double values for the "weight" property on edges and non-default vertex labels.
 * `Traversal.addStep()` is now hard typed so type casting isn't required and traversal APIs look clean.
