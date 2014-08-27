@@ -2,6 +2,9 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.graph.marker.GraphComputerAnalyzer;
+import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.function.SFunction;
@@ -13,55 +16,48 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SelectStep<E> extends MapStep<Object, Map<String, E>> {
+public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements PathConsumer, GraphComputerAnalyzer {
 
     public final FunctionRing functionRing;
     public final List<String> selectLabels;
     private final boolean wasEmpty;
+    private boolean requiresPaths = false;
 
     public SelectStep(final Traversal traversal, final List<String> selectLabels, SFunction... stepFunctions) {
         super(traversal);
         this.functionRing = new FunctionRing(stepFunctions);
         this.wasEmpty = selectLabels.size() == 0;
-        this.selectLabels = this.wasEmpty ? TraversalHelper.getLabels(this.traversal) : selectLabels;
-        this.setFunction(traverser -> {
-            final Path path = traverser.hasPath() ? traverser.getPath() : null;
-            final Object start = traverser.get();
-            final Map<String, E> temp = new LinkedHashMap<>();
-            if (this.functionRing.hasFunctions()) {   ////////// FUNCTION RING
-                if (null != path)
-                    this.selectLabels.forEach(as -> {   ////// PROCESS PATHS
-                        if (path.hasLabel(as))
-                            temp.put(as, (E) this.functionRing.next().apply(path.get(as)));
-                    });
+        this.selectLabels = this.wasEmpty ? TraversalHelper.getLabelsUpTo(this, this.traversal) : selectLabels;
+        this.setBiFunction((traverser, sideEffects) -> {
+            final S start = traverser.get();
+            final Map<String, E> bindings = new LinkedHashMap<>();
 
-                if (start instanceof Map) {  ////// PROCESS MAPS
-                    if (this.wasEmpty)
-                        ((Map) start).forEach((k, v) -> temp.put((String) k, (E) this.functionRing.next().apply(v)));
-                    else
-                        this.selectLabels.forEach(as -> {
-                            if (((Map) start).containsKey(as))
-                                temp.put(as, (E) this.functionRing.next().apply(((Map) start).get(as)));
-                        });
-                }
-            } else {    ////////// IF NO FUNCTION RING
-                if (path != null)
-                    this.selectLabels.forEach(as -> {  ////// PROCESS PATHS
-                        if (path.hasLabel(as))
-                            temp.put(as, path.get(as));
-                    });
-                if (start instanceof Map) {  ////// PROCESS MAPS
-                    if (this.wasEmpty)
-                        ((Map) start).forEach((k, v) -> temp.put((String) k, (E) v));
-                    else
-                        this.selectLabels.forEach(as -> {
-                            if (((Map) start).containsKey(as))
-                                temp.put(as, (E) ((Map) start).get(as));
-                        });
-                }
+            if (this.requiresPaths) {   ////// PROCESS PATHS
+                final Path path = traverser.getPath();
+                this.selectLabels.forEach(label -> {
+                    if (path.hasLabel(label))
+                        bindings.put(label, (E) this.functionRing.next().apply(path.get(label)));
+                });
+            } else {
+                this.selectLabels.forEach(label -> {
+                    if (sideEffects.exists(label))
+                        bindings.put(label, (E) this.functionRing.next().apply(sideEffects.get(label)));
+                });
             }
+
+            if (start instanceof Map) {  ////// PROCESS MAPS
+                if (this.wasEmpty)
+                    ((Map) start).forEach((k, v) -> bindings.put((String) k, (E) this.functionRing.next().apply(v)));
+                else
+                    this.selectLabels.forEach(label -> {
+                        if (((Map) start).containsKey(label)) {
+                            bindings.put(label, (E) this.functionRing.next().apply(((Map) start).get(label)));
+                        }
+                    });
+            }
+
             this.functionRing.reset();
-            return temp;
+            return bindings;
         });
     }
 
@@ -73,6 +69,16 @@ public class SelectStep<E> extends MapStep<Object, Map<String, E>> {
 
     public boolean hasStepFunctions() {
         return this.functionRing.hasFunctions();
+    }
+
+    @Override
+    public boolean requiresPaths() {
+        return this.requiresPaths;
+    }
+
+    @Override
+    public void registerGraphComputer(final GraphComputer graphComputer) {
+        this.requiresPaths = TraversalHelper.getLabels(this.traversal).stream().filter(label -> this.selectLabels.contains(label)).findFirst().isPresent();
     }
 
     public String toString() {

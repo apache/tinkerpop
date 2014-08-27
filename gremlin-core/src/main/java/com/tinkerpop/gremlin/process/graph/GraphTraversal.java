@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
+import com.tinkerpop.gremlin.process.graph.marker.GraphComputerAnalyzer;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
@@ -76,8 +77,8 @@ import com.tinkerpop.gremlin.util.function.SConsumer;
 import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SPredicate;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -93,6 +94,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> submit(final GraphComputer computer) {
         try {
+            this.getSteps().stream()
+                    .filter(step -> step instanceof GraphComputerAnalyzer)
+                    .forEach(step -> ((GraphComputerAnalyzer) step).registerGraphComputer(computer));
             TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> this).create();
             final ComputerResult result = computer.program(vertexProgram).submit().get();
             final GraphTraversal traversal = new DefaultGraphTraversal<>(); // TODO: of() with resultant graph?
@@ -296,26 +300,19 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final List<String> labels, SFunction... stepFunctions) {
-        this.addStep(new SelectStep<>(this, labels, stepFunctions));
-        if (labels.stream().filter(as -> TraversalHelper.hasLabel(as, this)).findFirst().isPresent())
-            this.addStep(new PathIdentityStep<>(this));
-        return (GraphTraversal) this;
+        return this.addStep(new SelectStep<>(this, labels, stepFunctions));
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final SFunction... stepFunctions) {
-        this.addStep(new SelectStep<>(this, Arrays.asList(), stepFunctions));
-        return this.addStep(new PathIdentityStep<>(this));
+        return this.select(Collections.emptyList(), stepFunctions);
     }
 
     public default <E2> GraphTraversal<S, E2> select(final String label, SFunction stepFunction) {
-        this.addStep(new SelectOneStep<>(this, label, stepFunction));
-        if (TraversalHelper.hasLabel(label, this))
-            this.addStep(new PathIdentityStep<>(this));
-        return (GraphTraversal) this;
+        return this.addStep(new SelectOneStep<>(this, label, stepFunction));
     }
 
     public default <E2> GraphTraversal<S, E2> select(final String label) {
-        return this.select(label, null);
+        return this.select(label, SFunction.identity());
     }
 
     /*public default <E2> GraphTraversal<S, E2> union(final Traversal... traversals) {

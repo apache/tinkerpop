@@ -43,7 +43,7 @@ public interface GraphComputer {
         throw new IllegalStateException("The mergeComputedView method must be defined by the implementing GraphComputer class");
     }
 
-    public default Features getFeatures() {
+    public default Features features() {
         return new Features() {
         };
     }

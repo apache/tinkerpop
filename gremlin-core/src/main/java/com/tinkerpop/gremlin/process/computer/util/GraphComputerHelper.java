@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
 public class GraphComputerHelper {
 
     public static void validateProgramOnComputer(final GraphComputer computer, final VertexProgram vertexProgram) {
-        final GraphComputer.Features graphComputerFeatures = computer.getFeatures();
+        final GraphComputer.Features graphComputerFeatures = computer.features();
         final VertexProgram.Features vertexProgramFeatures = vertexProgram.getFeatures();
 
         for (final Method method : VertexProgram.Features.class.getMethods()) {

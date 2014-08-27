@@ -80,7 +80,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // TODO: Aggregate isn't accessible // RetainTest.JavaComputerRetainTest.class,
             SimplePathTest.JavaComputerSimplePathTest.class,
 
-            // map
+            // map */
             BackTest.JavaComputerBackTest.class,
             // TODO: REMOVE? FoldTest.JavaComputerFoldTest.class,
             JumpTest.JavaComputerJumpTest.class,

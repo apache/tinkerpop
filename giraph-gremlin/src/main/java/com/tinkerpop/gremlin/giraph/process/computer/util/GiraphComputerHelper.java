@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.giraph.process.computer.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.strategy.BackComputerStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.CountCapStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.JumpComputerStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapComputerStrategy;
@@ -17,6 +16,5 @@ public class GiraphComputerHelper {
         traversal.strategies().register(CountCapStrategy.instance());
         traversal.strategies().register(SideEffectCapComputerStrategy.instance());
         traversal.strategies().register(JumpComputerStrategy.instance());
-        traversal.strategies().register(BackComputerStrategy.instance());
     }
 }

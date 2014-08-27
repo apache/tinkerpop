@@ -39,7 +39,7 @@ public class MatchWhereStrategy implements TraversalStrategy {
                     if (((SelectStep) currentStep).hasStepFunctions() || foundWhereWithNoTraversal)
                         break;
                 } else if (currentStep instanceof SelectOneStep) {
-                    if (((SelectOneStep) currentStep).hasStepFunction() || foundWhereWithNoTraversal)
+                    if (((SelectOneStep) currentStep).hasStepFunctions() || foundWhereWithNoTraversal)
                         break;
                 } // else is the identity step
 

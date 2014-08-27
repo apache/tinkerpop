@@ -51,9 +51,21 @@ public class TraversalHelper {
     public static List<String> getLabels(final Traversal traversal) {
         final List<String> labels = new ArrayList<>();
         for (final Step step : (List<Step>) traversal.getSteps()) {
-            final String as = step.getLabel();
-            if (isLabeled(as)) {
-                labels.add(as);
+            final String label = step.getLabel();
+            if (isLabeled(label)) {
+                labels.add(label);
+            }
+        }
+        return labels;
+    }
+
+    public static List<String> getLabelsUpTo(final Step step, final Traversal traversal) {
+        final List<String> labels = new ArrayList<>();
+        for (final Step temp : (List<Step>) traversal.getSteps()) {
+            if (temp == step) break;
+            final String label = temp.getLabel();
+            if (isLabeled(label)) {
+                labels.add(label);
             }
         }
         return labels;
@@ -146,7 +158,7 @@ public class TraversalHelper {
 
     public static boolean trackPaths(final Traversal traversal) {
         return traversal.getSteps().stream()
-                .filter(step -> step instanceof PathConsumer)
+                .filter(step -> step instanceof PathConsumer && ((PathConsumer) step).requiresPaths())
                 .findFirst()
                 .isPresent();
     }
