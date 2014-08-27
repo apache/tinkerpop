@@ -86,6 +86,7 @@
         <skipIntegrationTests>true</skipIntegrationTests>
         <skipPerformanceTests>true</skipPerformanceTests>
         <slf4j.version>1.7.7</slf4j.version>
+        <javadoc-plugin.version>2.9.1</javadoc-plugin.version>
         <tinkerpop.version>3.0.0-SNAPSHOT</tinkerpop.version>
     </properties>
     <build>
@@ -324,7 +325,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.9.1</version>
+                    <version>${javadoc-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -340,6 +341,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${javadoc-plugin.version}</version>
                 <configuration>
                     <additionalparam>-Xdoclint:none</additionalparam>
                 </configuration>
