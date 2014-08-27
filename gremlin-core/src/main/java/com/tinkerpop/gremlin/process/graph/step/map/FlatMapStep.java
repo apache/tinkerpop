@@ -69,6 +69,7 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
 
     @Override
     public void reset() {
+        super.reset();
         this.iterator = null;
     }
 

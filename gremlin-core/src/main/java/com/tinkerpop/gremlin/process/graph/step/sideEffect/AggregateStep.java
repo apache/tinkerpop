@@ -41,6 +41,12 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCa
         this.aggregate = this.traversal.sideEffects().getOrCreate(this.sideEffectKey, ArrayList::new);
     }
 
+    @Override
+    public void reset() {
+        super.reset();
+        this.aggregateTraversers.clear();
+    }
+
     public void setCurrentBulkCount(final long bulkCount) {
         this.bulkCount = bulkCount;
     }

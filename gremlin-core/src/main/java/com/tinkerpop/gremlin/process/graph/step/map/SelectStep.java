@@ -65,6 +65,12 @@ public class SelectStep<E> extends MapStep<Object, Map<String, E>> {
         });
     }
 
+    @Override
+    public void reset() {
+        super.reset();
+        this.functionRing.reset();
+    }
+
     public boolean hasStepFunctions() {
         return this.functionRing.hasFunctions();
     }
