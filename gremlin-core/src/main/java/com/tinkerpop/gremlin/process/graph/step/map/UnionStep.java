@@ -32,4 +32,10 @@ public class UnionStep<S, E> extends AbstractStep<S, E> {
             this.traversalRing.forEach(branch -> branch.addStarts(new SingleIterator<>(start.makeSibling())));
         }
     }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.traversalRing.reset();
+    }
 }

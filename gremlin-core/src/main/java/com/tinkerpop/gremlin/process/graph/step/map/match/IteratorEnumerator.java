@@ -25,7 +25,7 @@ public class IteratorEnumerator<T> implements Enumerator<T> {
 
     // Returns true as soon as iterator.hasNext() returns false.
     // Note that DefaultTraversal has the behavior of returning true after it has first returned false,
-    // but that we exhaust traversals between IteratorEnumerator lifetimes.
+    // but that we reset traversals between IteratorEnumerator lifetimes.
     public boolean isComplete() {
         return !iterator.hasNext();
     }

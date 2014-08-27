@@ -421,7 +421,7 @@ gremlin> g.V().count()
 gremlin> g.V().out().out().value('name')
 ==>ripple
 ==>lop
-gremlin> g.V().groupBy{it.value('name')[1]}{it.value('name')}.next()
+gremlin> g.V().groupBy{it.get().value('name')[1]}{it.get().value('name')}.next()
 ==>a=[marko, vadas]
 ==>e=[peter]
 ==>i=[ripple]
@@ -460,7 +460,7 @@ INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
 ==>ripple
 ==>lop
-gremlin> :> g.V().groupBy('a'){it.value('name')[1]}{it.value('name')}
+gremlin> :> g.V().groupBy('a'){it.get().value('name')[1]}{it.get().value('name')}
 INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, GroupByStep@a]
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0039
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%

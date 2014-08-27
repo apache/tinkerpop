@@ -12,12 +12,14 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class FoldStep<S, E> extends MapStep<S, E> {
 
-    private final AtomicReference<E> seed;
+    private final AtomicReference<E> mutatingSeed;
+    private final E seed;
     public SBiFunction<E, S, E> foldFunction;
 
     public FoldStep(final Traversal traversal) {
         super(traversal);
         this.seed = null;
+        this.mutatingSeed = null;
         this.setFunction(traverser -> {
             final List<S> list = new ArrayList<>();
             final S s = traverser.get();
@@ -29,12 +31,21 @@ public class FoldStep<S, E> extends MapStep<S, E> {
 
     public FoldStep(final Traversal traversal, final E seed, final SBiFunction<E, S, E> foldFunction) {
         super(traversal);
-        this.seed = new AtomicReference<>(seed);
+        this.seed = seed;
+        this.mutatingSeed = new AtomicReference<>(seed);
         this.foldFunction = foldFunction;
         this.setFunction(traverser -> {
-            this.seed.set(this.foldFunction.apply(this.seed.get(), traverser.get()));
-            this.starts.forEachRemaining(previousTraverser -> this.seed.set(this.foldFunction.apply(this.seed.get(), previousTraverser.get())));
-            return (E) this.seed.get();
+            this.mutatingSeed.set(this.foldFunction.apply(this.mutatingSeed.get(), traverser.get()));
+            this.starts.forEachRemaining(previousTraverser -> this.mutatingSeed.set(this.foldFunction.apply(this.mutatingSeed.get(), previousTraverser.get())));
+            return (E) this.mutatingSeed.get();
         });
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        if (null != this.seed) {
+            this.mutatingSeed.set(this.seed);
+        }
     }
 }

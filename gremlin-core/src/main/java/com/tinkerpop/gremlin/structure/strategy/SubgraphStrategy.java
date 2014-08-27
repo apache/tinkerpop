@@ -9,8 +9,8 @@ import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.util.EmptyTraversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -89,7 +89,7 @@ public class SubgraphStrategy implements GraphStrategy {
         // in which case it may not be filtered.  in such cases, the vertices on such edges should be tested.
         return edgePredicate.test(edge)
                 && (edge instanceof StrategyWrapped ? edge.inV().hasNext() && edge.outV().hasNext()
-                    : testVertex(edge.inV().next()) && testVertex(edge.outV().next()));
+                : testVertex(edge.inV().next()) && testVertex(edge.outV().next()));
     }
 
     private boolean testElement(final Element element) {
@@ -231,6 +231,11 @@ public class SubgraphStrategy implements GraphStrategy {
         public GraphTraversal<S, E> submit(final GraphComputer computer) {
             return new EmptyGraphTraversal<>();
         }
+
+        public <E2> GraphTraversal<S, E2> addStep(final Step<?, E2> step) {
+            return (GraphTraversal) this;
+        }
+
     }
 
     private class EdgeIterator implements Iterator<Edge> {

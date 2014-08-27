@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
@@ -22,12 +23,12 @@ import java.util.Map;
 public class GroupCountStep<S> extends SideEffectStep<S> implements SideEffectCapable, Reversible, Bulkable, VertexCentric, MapReducer<Object, Long, Object, Long, Map<Object, Long>> {
 
     public Map<Object, Long> groupCountMap;
-    public SFunction<S, ?> preGroupFunction;
+    public SFunction<Traverser<S>, ?> preGroupFunction;
     private long bulkCount = 1l;
     private final String sideEffectKey;
     private final String hiddenSideEffectKey;
 
-    public GroupCountStep(final Traversal traversal, final String sideEffectKey, final SFunction<S, ?> preGroupFunction) {
+    public GroupCountStep(final Traversal traversal, final String sideEffectKey, final SFunction<Traverser<S>, ?> preGroupFunction) {
         super(traversal);
         this.preGroupFunction = preGroupFunction;
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
@@ -35,7 +36,7 @@ public class GroupCountStep<S> extends SideEffectStep<S> implements SideEffectCa
         this.groupCountMap = this.traversal.sideEffects().getOrCreate(this.sideEffectKey, HashMap::new);
         this.setConsumer(traverser -> {
             MapHelper.incr(this.groupCountMap,
-                    null == this.preGroupFunction ? traverser.get() : this.preGroupFunction.apply(traverser.get()),
+                    null == this.preGroupFunction ? traverser.get() : this.preGroupFunction.apply(traverser),
                     this.bulkCount);
         });
     }

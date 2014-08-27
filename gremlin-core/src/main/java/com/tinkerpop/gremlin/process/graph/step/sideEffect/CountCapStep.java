@@ -31,6 +31,12 @@ public class CountCapStep<S> extends SideEffectStep<S> implements SideEffectCapa
 
     }
 
+    @Override
+    public void reset() {
+        super.reset();
+        this.count.set(0l);
+    }
+
     public void setCurrentBulkCount(final long bulkCount) {
         this.bulkCount = bulkCount;
     }

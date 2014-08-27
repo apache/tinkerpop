@@ -31,4 +31,10 @@ public class TimeLimitStep<S> extends SideEffectStep<S> implements Reversible {
     public String toString() {
         return TraversalHelper.makeStepString(this, this.timeLimit);
     }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.startTime.set(-1l);
+    }
 }

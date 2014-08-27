@@ -21,6 +21,7 @@ public class ElementTraversalMethodsTest {
     public void shouldHaveAllGraphTraversalMethodsOffVertex() {
         final List<Method> graphTraversalMethods = Arrays.asList(GraphTraversal.class.getMethods()).stream()
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
+                .filter(m -> !m.getName().equals("addStep"))
                 .filter(m -> GraphTraversal.class.isAssignableFrom(m.getReturnType())).collect(Collectors.toList());
 
         final List<Method> vertexMethods = new ArrayList<>(Arrays.asList(Vertex.class.getMethods()));
@@ -40,6 +41,7 @@ public class ElementTraversalMethodsTest {
     public void shouldHaveAllGraphTraversalMethodsOffEdge() {
         final List<Method> graphTraversalMethods = Arrays.asList(GraphTraversal.class.getMethods()).stream()
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
+                .filter(m -> !m.getName().equals("addStep"))
                 .filter(m -> GraphTraversal.class.isAssignableFrom(m.getReturnType())).collect(Collectors.toList());
 
         final List<Method> vertexMethods = new ArrayList<>(Arrays.asList(Edge.class.getMethods()));

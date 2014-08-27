@@ -42,8 +42,8 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
 
     }
 
-    public <S, E, T extends Traversal<S, E>> T addStep(final Step<?, E> step) {
-        return (T) this;
+    public <E2> Traversal<S, E2> addStep(final Step<?, E2> step) {
+        return (Traversal) this;
     }
 
     public List<Step> getSteps() {

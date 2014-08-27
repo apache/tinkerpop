@@ -159,11 +159,11 @@ GroupBy Step
 As traversers propagate across a graph as defined by a traversal, sideEffect computations are sometimes required. That is, the actually path taken or the current location of a traverser is not the ultimate output of the computation, but some other representation of the traversal. The `groupBy()`-step (*sideEffect*) is one such sideEffect that organizes the objects according to some function of the object. Then, if required, that organization (a list) is reduced. An example is provided below.
 
 [source,groovy]
-gremlin> g.V().groupBy{it.value('name')[1]}   // group the vertices by the first letter of their name
+gremlin> g.V().groupBy{it.get().value('name')[1]}   // group the vertices by the first letter of their name
 ==>[a:[v[1], v[2]], e:[v[6]], i:[v[5]], o:[v[3], v[4]]]
-gremlin> g.V().groupBy{it.value('name')[1]}{it.value('name')}   // for each vertex in the group, get their name (now the name[1] is apparent)
+gremlin> g.V().groupBy{it.get().value('name')[1]}{it.get().value('name')}   // for each vertex in the group, get their name (now the name[1] is apparent)
 ==>[a:[marko, vadas], e:[peter], i:[ripple], o:[lop, josh]]
-gremlin> g.V().groupBy{it.value('name')[1]}{it.value('name')}{it.size()}   // for each grouping, what is it's size?
+gremlin> g.V().groupBy{it.get().value('name')[1]}{it.get().value('name')}{it.size()}   // for each grouping, what is it's size?
 ==>[a:2, e:1, i:1, o:2]
 
 The three lambda parameters of `groupBy` are discussed below.
@@ -183,7 +183,7 @@ When it is important to know how many times a particular object has been at a pa
 [source,groovy]
 gremlin> g.V().has('age').value('age').groupCount()
 ==>[32:1, 35:1, 27:1, 29:1]
-gremlin> g.V().has('age').groupCount{it.value('age')} // you can also supply a pre-group lambda
+gremlin> g.V().has('age').groupCount{it.get().value('age')} // you can also supply a pre-group lambda
 ==>[32:1, 35:1, 27:1, 29:1]
 
 There is one person that is 32, one person that is 35, one person that is 27, and one person that is 29.
@@ -193,7 +193,7 @@ There is one person that is 32, one person that is 35, one person that is 27, an
 image::groupcount-step.png[width=500]
 
 [source,groovy]
-gremlin> g.V().as('x').both().groupCount('m'){it.value('name')[1]}.jump('x',10).cap('m')
+gremlin> g.V().as('x').both().groupCount('m'){it.get().value('name')[1]}.jump('x',10).cap('m')
 ==>[a:19598, e:5740, i:5740, o:27716]
 
 The above is interesting in that it demonstrates the use of referencing the internal `Map<Object,Long>` of `groupCount` with a string variable. Given that `groupCount` is a sideEffect-step, it simply passes the object it received to its output. Internal to `groupCount`, the object's count is incremented. If `groupCount` is the last step in the traversal, the `SideEffectCapStrategy` (see <<traversalstrategy,Traversal Strategy>>) automatically returns the internal map. However, if the `groupCount` is not the last step, then the sideEffect data structure (i.e. the internal map of `groupCount`) can be accessed with `cap`-step by referencing the desired variable.

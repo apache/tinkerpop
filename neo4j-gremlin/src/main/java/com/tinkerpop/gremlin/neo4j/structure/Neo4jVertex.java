@@ -306,7 +306,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         return this.start().dedup();
     }
 
-    public Neo4jTraversal<Vertex, Vertex> dedup(final SFunction<Vertex, ?> uniqueFunction) {
+    public Neo4jTraversal<Vertex, Vertex> dedup(final SFunction<Traverser<Vertex>, ?> uniqueFunction) {
         return this.start().dedup(uniqueFunction);
     }
 
@@ -432,11 +432,11 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         return this.start().subgraph(null, null, null, includeEdge);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> aggregate(final String sideEffectKey, final SFunction<Vertex, ?> preAggregateFunction) {
+    public Neo4jTraversal<Vertex, Vertex> aggregate(final String sideEffectKey, final SFunction<Traverser<Vertex>, ?> preAggregateFunction) {
         return this.start().aggregate(sideEffectKey, preAggregateFunction);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> aggregate(final SFunction<Vertex, ?> preAggregateFunction) {
+    public Neo4jTraversal<Vertex, Vertex> aggregate(final SFunction<Traverser<Vertex>, ?> preAggregateFunction) {
         return this.start().aggregate(null, preAggregateFunction);
     }
 
@@ -448,36 +448,36 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         return this.start().aggregate(sideEffectKey, null);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> groupBy(final String sideEffectKey, final SFunction<Vertex, ?> keyFunction, final SFunction<Vertex, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
+    public Neo4jTraversal<Vertex, Vertex> groupBy(final String sideEffectKey, final SFunction<Traverser<Vertex>, ?> keyFunction, final SFunction<Traverser<Vertex>, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
         return this.start().groupBy(sideEffectKey, keyFunction, valueFunction, reduceFunction);
     }
 
 
-    public Neo4jTraversal<Vertex, Vertex> groupBy(final SFunction<Vertex, ?> keyFunction, final SFunction<Vertex, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
+    public Neo4jTraversal<Vertex, Vertex> groupBy(final SFunction<Traverser<Vertex>, ?> keyFunction, final SFunction<Traverser<Vertex>, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
         return this.start().groupBy(null, keyFunction, valueFunction, reduceFunction);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> groupBy(final SFunction<Vertex, ?> keyFunction, final SFunction<Vertex, ?> valueFunction) {
+    public Neo4jTraversal<Vertex, Vertex> groupBy(final SFunction<Traverser<Vertex>, ?> keyFunction, final SFunction<Traverser<Vertex>, ?> valueFunction) {
         return this.start().groupBy(null, keyFunction, valueFunction, null);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> groupBy(final SFunction<Vertex, ?> keyFunction) {
+    public Neo4jTraversal<Vertex, Vertex> groupBy(final SFunction<Traverser<Vertex>, ?> keyFunction) {
         return this.start().groupBy(null, keyFunction, null, null);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> groupBy(final String sideEffectKey, final SFunction<Vertex, ?> keyFunction) {
+    public Neo4jTraversal<Vertex, Vertex> groupBy(final String sideEffectKey, final SFunction<Traverser<Vertex>, ?> keyFunction) {
         return this.start().groupBy(sideEffectKey, keyFunction, null, null);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> groupBy(final String sideEffectKey, final SFunction<Vertex, ?> keyFunction, final SFunction<Vertex, ?> valueFunction) {
+    public Neo4jTraversal<Vertex, Vertex> groupBy(final String sideEffectKey, final SFunction<Traverser<Vertex>, ?> keyFunction, final SFunction<Traverser<Vertex>, ?> valueFunction) {
         return this.start().groupBy(sideEffectKey, keyFunction, valueFunction, null);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> groupCount(final String sideEffectKey, final SFunction<Vertex, ?> preGroupFunction) {
+    public Neo4jTraversal<Vertex, Vertex> groupCount(final String sideEffectKey, final SFunction<Traverser<Vertex>, ?> preGroupFunction) {
         return this.start().groupCount(sideEffectKey, preGroupFunction);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> groupCount(final SFunction<Vertex, ?> preGroupFunction) {
+    public Neo4jTraversal<Vertex, Vertex> groupCount(final SFunction<Traverser<Vertex>, ?> preGroupFunction) {
         return this.start().groupCount(null, preGroupFunction);
     }
 
@@ -517,7 +517,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         return this.start().tree(null, branchFunctions);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> store(final String sideEffectKey, final SFunction<Vertex, ?> preStoreFunction) {
+    public Neo4jTraversal<Vertex, Vertex> store(final String sideEffectKey, final SFunction<Traverser<Vertex>, ?> preStoreFunction) {
         return this.start().store(sideEffectKey, preStoreFunction);
     }
 
@@ -525,7 +525,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         return this.start().store(sideEffectKey, null);
     }
 
-    public Neo4jTraversal<Vertex, Vertex> store(final SFunction<Vertex, ?> preStoreFunction) {
+    public Neo4jTraversal<Vertex, Vertex> store(final SFunction<Traverser<Vertex>, ?> preStoreFunction) {
         return this.start().store(null, preStoreFunction);
     }
 

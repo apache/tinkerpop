@@ -44,4 +44,10 @@ public class IntersectStep<S, E> extends AbstractStep<S, E> {
             }
         }
     }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.traversalRing.reset();
+    }
 }

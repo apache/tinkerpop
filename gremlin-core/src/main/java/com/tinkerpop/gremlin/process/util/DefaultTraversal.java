@@ -43,22 +43,17 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     }
 
     public void addStarts(final Iterator<Traverser<S>> starts) {
-        ((Step<S, ?>) this.steps.get(0)).addStarts(starts);
-    }
-
-    public <S, E, T extends Traversal<S, E>> T addStep(final Step<?, E> step) {
-        TraversalHelper.insertStep(step, this.getSteps().size(), this);
-        return (T) this;
+        TraversalHelper.getStart(this).addStarts(starts);
     }
 
     public boolean hasNext() {
         this.applyStrategies();
-        return this.steps.get(this.steps.size() - 1).hasNext();
+        return TraversalHelper.getEnd(this).hasNext();
     }
 
     public E next() {
         this.applyStrategies();
-        return ((Traverser<E>) this.steps.get(this.steps.size() - 1).next()).get();
+        return TraversalHelper.getEnd(this).next().get();
     }
 
     public String toString() {

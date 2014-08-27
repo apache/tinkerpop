@@ -27,4 +27,10 @@ public class PathStep<S> extends MapStep<S, Path> implements PathConsumer {
             return path;
         });
     }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.functionRing.reset();
+    }
 }

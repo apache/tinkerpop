@@ -36,7 +36,7 @@ public abstract class SideEffectCapTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXa_nameX_out_capXaX() {
-            return g.V().<Vertex>has("age").groupCount("a",v -> v.value("name")).out().cap("a");
+            return g.V().<Vertex>has("age").groupCount("a",v -> v.get().value("name")).out().cap("a");
         }
     }
 
@@ -44,7 +44,7 @@ public abstract class SideEffectCapTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXa_nameX_out_capXaX() {
-            return g.V().<Vertex>has("age").groupCount("a",v -> v.value("name")).out().<Map<String, Long>>cap("a").submit(g.compute());
+            return g.V().<Vertex>has("age").groupCount("a",v -> v.get().value("name")).out().<Map<String, Long>>cap("a").submit(g.compute());
         }
     }
 }

@@ -58,4 +58,10 @@ public class TreeStep<S> extends SideEffectStep<S> implements Reversible, PathCo
     public MapReduce<Object, Tree, Object, Tree, Tree> getMapReduce() {
         return new TreeMapReduce(this);
     }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.functionRing.reset();
+    }
 }

@@ -65,11 +65,19 @@ public class SelectStep<E> extends MapStep<Object, Map<String, E>> {
         });
     }
 
+    @Override
+    public void reset() {
+        super.reset();
+        this.functionRing.reset();
+    }
+
     public boolean hasStepFunctions() {
         return this.functionRing.hasFunctions();
     }
 
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.selectLabels);
+        return this.selectLabels.size() > 0 ?
+                TraversalHelper.makeStepString(this, this.selectLabels) :
+                TraversalHelper.makeStepString(this);
     }
 }

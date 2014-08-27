@@ -280,7 +280,7 @@ public interface Edge extends Element {
         return this.start().dedup();
     }
 
-    public default GraphTraversal<Edge, Edge> dedup(final SFunction<Edge, ?> uniqueFunction) {
+    public default GraphTraversal<Edge, Edge> dedup(final SFunction<Traverser<Edge>, ?> uniqueFunction) {
         return this.start().dedup(uniqueFunction);
     }
 
@@ -406,11 +406,11 @@ public interface Edge extends Element {
         return this.start().subgraph(null, null, null, includeEdge);
     }
 
-    public default GraphTraversal<Edge, Edge> aggregate(final String sideEffectKey, final SFunction<Edge, ?> preAggregateFunction) {
+    public default GraphTraversal<Edge, Edge> aggregate(final String sideEffectKey, final SFunction<Traverser<Edge>, ?> preAggregateFunction) {
         return this.start().aggregate(sideEffectKey, preAggregateFunction);
     }
 
-    public default GraphTraversal<Edge, Edge> aggregate(final SFunction<Edge, ?> preAggregateFunction) {
+    public default GraphTraversal<Edge, Edge> aggregate(final SFunction<Traverser<Edge>, ?> preAggregateFunction) {
         return this.start().aggregate(null, preAggregateFunction);
     }
 
@@ -422,36 +422,36 @@ public interface Edge extends Element {
         return this.start().aggregate(sideEffectKey, null);
     }
 
-    public default GraphTraversal<Edge, Edge> groupBy(final String sideEffectKey, final SFunction<Edge, ?> keyFunction, final SFunction<Edge, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
+    public default GraphTraversal<Edge, Edge> groupBy(final String sideEffectKey, final SFunction<Traverser<Edge>, ?> keyFunction, final SFunction<Traverser<Edge>, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
         return this.start().groupBy(sideEffectKey, keyFunction, valueFunction, reduceFunction);
     }
 
 
-    public default GraphTraversal<Edge, Edge> groupBy(final SFunction<Edge, ?> keyFunction, final SFunction<Edge, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
+    public default GraphTraversal<Edge, Edge> groupBy(final SFunction<Traverser<Edge>, ?> keyFunction, final SFunction<Traverser<Edge>, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
         return this.start().groupBy(null, keyFunction, valueFunction, reduceFunction);
     }
 
-    public default GraphTraversal<Edge, Edge> groupBy(final SFunction<Edge, ?> keyFunction, final SFunction<Edge, ?> valueFunction) {
+    public default GraphTraversal<Edge, Edge> groupBy(final SFunction<Traverser<Edge>, ?> keyFunction, final SFunction<Traverser<Edge>, ?> valueFunction) {
         return this.start().groupBy(null, keyFunction, valueFunction, null);
     }
 
-    public default GraphTraversal<Edge, Edge> groupBy(final SFunction<Edge, ?> keyFunction) {
+    public default GraphTraversal<Edge, Edge> groupBy(final SFunction<Traverser<Edge>, ?> keyFunction) {
         return this.start().groupBy(null, keyFunction, null, null);
     }
 
-    public default GraphTraversal<Edge, Edge> groupBy(final String sideEffectKey, final SFunction<Edge, ?> keyFunction) {
+    public default GraphTraversal<Edge, Edge> groupBy(final String sideEffectKey, final SFunction<Traverser<Edge>, ?> keyFunction) {
         return this.start().groupBy(sideEffectKey, keyFunction, null, null);
     }
 
-    public default GraphTraversal<Edge, Edge> groupBy(final String sideEffectKey, final SFunction<Edge, ?> keyFunction, final SFunction<Edge, ?> valueFunction) {
+    public default GraphTraversal<Edge, Edge> groupBy(final String sideEffectKey, final SFunction<Traverser<Edge>, ?> keyFunction, final SFunction<Traverser<Edge>, ?> valueFunction) {
         return this.start().groupBy(sideEffectKey, keyFunction, valueFunction, null);
     }
 
-    public default GraphTraversal<Edge, Edge> groupCount(final String sideEffectKey, final SFunction<Edge, ?> preGroupFunction) {
+    public default GraphTraversal<Edge, Edge> groupCount(final String sideEffectKey, final SFunction<Traverser<Edge>, ?> preGroupFunction) {
         return this.start().groupCount(sideEffectKey, preGroupFunction);
     }
 
-    public default GraphTraversal<Edge, Edge> groupCount(final SFunction<Edge, ?> preGroupFunction) {
+    public default GraphTraversal<Edge, Edge> groupCount(final SFunction<Traverser<Edge>, ?> preGroupFunction) {
         return this.start().groupCount(null, preGroupFunction);
     }
 
@@ -491,7 +491,7 @@ public interface Edge extends Element {
         return this.start().tree(null, branchFunctions);
     }
 
-    public default GraphTraversal<Edge, Edge> store(final String sideEffectKey, final SFunction<Edge, ?> preStoreFunction) {
+    public default GraphTraversal<Edge, Edge> store(final String sideEffectKey, final SFunction<Traverser<Edge>, ?> preStoreFunction) {
         return this.start().store(sideEffectKey, preStoreFunction);
     }
 
@@ -499,7 +499,7 @@ public interface Edge extends Element {
         return this.start().store(sideEffectKey, null);
     }
 
-    public default GraphTraversal<Edge, Edge> store(final SFunction<Edge, ?> preStoreFunction) {
+    public default GraphTraversal<Edge, Edge> store(final SFunction<Traverser<Edge>, ?> preStoreFunction) {
         return this.start().store(null, preStoreFunction);
     }
 

@@ -11,6 +11,6 @@ import java.util.Collection;
  */
 public class TraversalSupplier3 implements SSupplier<Traversal> {
     public Traversal get() {
-        return GiraphGraph.open().V().<String>value("name").groupBy(s -> s.substring(1, 2), v -> v, Collection::size);
+        return GiraphGraph.open().V().<String>value("name").groupBy(s -> s.get().substring(1, 2), v -> v, Collection::size);
     }
 }
