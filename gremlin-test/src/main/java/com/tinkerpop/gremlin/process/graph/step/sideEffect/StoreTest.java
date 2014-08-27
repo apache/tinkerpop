@@ -19,6 +19,8 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Collection> get_g_v1_storeXa_nameX_out_storeXa_nameX_name_capXaX(final Object v1Id);
 
+    public abstract Traversal<Vertex, Vertex> get_g_V_asXaX_out_storeXaX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_storeXa_nameX_out_capXaX() {
@@ -49,6 +51,19 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_out_storeXaX() {
+        try {
+            get_g_V_asXaX_out_storeXaX();
+            fail("Should throw an illegal argument exception");
+        } catch (IllegalArgumentException e) {
+
+        } catch (Exception e) {
+            fail("Should throw an illegal argument exception");
+        }
+    }
+
     public static class JavaStoreTest extends StoreTest {
         public JavaStoreTest() {
             requiresGraphComputer = false;
@@ -62,6 +77,11 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Collection> get_g_v1_storeXa_nameX_out_storeXa_nameX_name_capXaX(final Object v1Id) {
             return g.v(v1Id).store("a", v -> v.get().value("name")).out().store("a", v -> v.get().value("name")).value("name").cap("a");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_asXaX_out_storeXaX() {
+            return g.V().as("a").out().store("a");
         }
     }
 
@@ -78,6 +98,12 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Collection> get_g_v1_storeXa_nameX_out_storeXa_nameX_name_capXaX(final Object v1Id) {
             return g.v(v1Id).store("a", v -> v.get().value("name")).out().store("a", v -> v.get().value("name")).value("name").<Collection>cap("a").submit(g.compute());
+        }
+
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_asXaX_out_storeXaX() {
+            return g.V().as("a").out().store("a").submit(g.compute());
         }
     }
 

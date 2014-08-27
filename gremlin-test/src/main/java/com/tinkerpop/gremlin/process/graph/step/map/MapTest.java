@@ -23,6 +23,8 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_asXaX_out_mapXa_nameX();
 
+    public abstract Traversal<Vertex, String> get_g_V_asXaX_out_out_mapXa_name_it_nameX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_v1_mapXnameX() {
@@ -79,6 +81,21 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
         assertEquals(other, 0);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_out_out_mapXa_name_it_nameX() {
+        final Traversal<Vertex, String> traversal = get_g_V_asXaX_out_out_mapXa_name_it_nameX();
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            final String doubleName = traversal.next();
+            assertTrue("markoripple".equals(doubleName) || "markolop".equals(doubleName));
+        }
+        assertEquals(2, counter);
+        assertFalse(traversal.hasNext());
+    }
+
+
     public static class JavaMapTest extends MapTest {
         public JavaMapTest() {
             requiresGraphComputer = false;
@@ -101,7 +118,13 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_mapXa_nameX() {
-            return g.V().as("a").out().<String>map(v -> ((Vertex) v.getPath().get("a")).value("name")).trackPaths();
+            return g.V().as("a").out().<String>map((v, s) -> s.<Vertex>get("a").value("name"));
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_asXaX_out_out_mapXa_name_it_nameX() {
+            // TODO: Doesn't work for graph computer because sideEffects are not accessible
+            return g.V().as("a").out().out().map((v, s) -> s.<Vertex>get("a").<String>value("name") + v.get().<String>value("name"));
         }
     }
 
@@ -127,8 +150,14 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_mapXa_nameX() {
-            // TODO: Doesn't work for graph computer because of DetachedElements not having properties
-            return g.V().as("a").out().<String>map(t -> ((Vertex) t.getPath().get("a")).value("name")).trackPaths();
+            // TODO: Doesn't work for graph computer because sideEffects are not accessible
+            return g.V().as("a").out().<String>map((v, s) -> s.<Vertex>get("a").value("name"));
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_asXaX_out_out_mapXa_name_it_nameX() {
+            // TODO: Doesn't work for graph computer because sideEffects are not accessible
+            return g.V().as("a").out().out().map((v, s) -> s.<Vertex>get("a").<String>value("name") + v.get().<String>value("name"));
         }
     }
 }
