@@ -7,13 +7,13 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
+import com.tinkerpop.gremlin.util.function.SBiConsumer;
 import com.tinkerpop.gremlin.util.function.SBiFunction;
 import com.tinkerpop.gremlin.util.function.SBiPredicate;
 import com.tinkerpop.gremlin.util.function.SConsumer;
@@ -91,8 +91,16 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
         return this.start().map(function);
     }
 
+    public <E2> Neo4jTraversal<Edge, E2> map(final SBiFunction<Traverser<Edge>, Traversal.SideEffects, E2> biFunction) {
+        return this.start().map(biFunction);
+    }
+
     public <E2> Neo4jTraversal<Edge, E2> flatMap(final SFunction<Traverser<Edge>, Iterator<E2>> function) {
         return this.start().flatMap(function);
+    }
+
+    public <E2> Neo4jTraversal<Edge, E2> flatMap(final SBiFunction<Traverser<Edge>, Traversal.SideEffects, Iterator<E2>> biFunction) {
+        return this.start().flatMap(biFunction);
     }
 
     public Neo4jTraversal<Edge, Edge> identity() {
@@ -269,6 +277,10 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
         return this.start().filter(predicate);
     }
 
+    public Neo4jTraversal<Edge, Edge> filter(final SBiPredicate<Traverser<Edge>, Traversal.SideEffects> biPredicate) {
+        return this.start().filter(biPredicate);
+    }
+
     public Neo4jTraversal<Edge, Edge> inject(final Object... injections) {
         return this.start().inject((Edge[]) injections);
     }
@@ -377,6 +389,10 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
 
     public Neo4jTraversal<Edge, Edge> sideEffect(final SConsumer<Traverser<Edge>> consumer) {
         return this.start().sideEffect(consumer);
+    }
+
+    public Neo4jTraversal<Edge, Edge> sideEffect(final SBiConsumer<Traverser<Edge>, Traversal.SideEffects> biConsumer) {
+        return this.start().sideEffect(biConsumer);
     }
 
     public <E2> Neo4jTraversal<Edge, E2> cap(final String sideEffectKey) {

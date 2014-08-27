@@ -12,23 +12,28 @@ import java.util.Set;
  */
 public class DefaultSideEffects implements Traversal.SideEffects {
 
-    private Map<String, Object> memory;
+    private Map<String, Object> sideEffects;
+    private Traversal traversal;
+
+    public DefaultSideEffects(final Traversal traversal) {
+        this.traversal = traversal;
+    }
 
     public boolean exists(final String key) {
-        return (null != this.memory && this.memory.containsKey(key));
+        return (null != this.sideEffects && this.sideEffects.containsKey(key));
     }
 
-    public <T> void set(final String key, final T value) {
+    public <V> void set(final String key, final V value) {
         SideEffectHelper.validateSideEffect(key, value);
-        if (null == this.memory) this.memory = new HashMap<>();
-        this.memory.put(key, value);
+        if (null == this.sideEffects) this.sideEffects = new HashMap<>();
+        this.sideEffects.put(key, value);
     }
 
-    public <T> T get(final String key) throws IllegalArgumentException {
-        if (null == this.memory)
+    public <V> V get(final String key) throws IllegalArgumentException {
+        if (null == this.sideEffects)
             throw Traversal.SideEffects.Exceptions.sideEffectDoesNotExist(key);
         else {
-            final T t = (T) this.memory.get(key);
+            final V t = (V) this.sideEffects.get(key);
             if (null == t)
                 throw Traversal.SideEffects.Exceptions.sideEffectDoesNotExist(key);
             else
@@ -37,11 +42,10 @@ public class DefaultSideEffects implements Traversal.SideEffects {
     }
 
     public void remove(final String key) {
-        if (null != this.memory) this.memory.remove(key);
+        if (null != this.sideEffects) this.sideEffects.remove(key);
     }
 
     public Set<String> keys() {
-        return null == this.memory ? Collections.emptySet() : this.memory.keySet();
+        return null == this.sideEffects ? Collections.emptySet() : this.sideEffects.keySet();
     }
-
 }

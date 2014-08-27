@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* A labeled step now stores its current traverser value in `Traversal.SideEffects` (no longer can sideEffectKeys and step labels be the same).
+* `map()`, `filter()`, `flatMap()`, and `sideEffect()` can all take `BiXXX`-lambda versions which contains `<Traverser,Traversal.SideEffects>`.
 * `GraphFactory` support for opening a `Graph` with multiple `GraphStrategy` instances - if there are multiple strategies they are wrapped in order via `SequenceGraphStrategy`.
 * The result type for result termination messages returned from Gremlin Server is now set to "no content".
 * The `maxContentLength` setting for Gremlin Driver now blocks incoming frames that are too large.

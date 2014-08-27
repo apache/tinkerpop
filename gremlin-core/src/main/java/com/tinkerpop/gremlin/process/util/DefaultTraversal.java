@@ -18,7 +18,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     protected final List<Step> steps = new ArrayList<>();
     protected final Strategies strategies = new DefaultStrategies(this);
-    protected final SideEffects sideEffects = new DefaultSideEffects();
+    protected final SideEffects sideEffects = new DefaultSideEffects(this);
 
     public DefaultTraversal() {
         this.strategies.register(TraverserSourceStrategy.instance());

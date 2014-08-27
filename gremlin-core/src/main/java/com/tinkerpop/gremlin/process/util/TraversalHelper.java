@@ -39,7 +39,7 @@ public class TraversalHelper {
         return (Step) traversal.getSteps().stream()
                 .filter(step -> label.equals(step.getLabel()))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("The provided name does not exist: " + label));
+                .orElseThrow(() -> new IllegalArgumentException("The provided step label does not exist: " + label));
     }
 
     public static boolean hasLabel(final String label, final Traversal<?, ?> traversal) {
@@ -170,5 +170,20 @@ public class TraversalHelper {
                 steps.add((S) step);
         }
         return steps;
+    }
+
+    public static void verifySideEffectKeyIsNotAStepLabel(final String key, final Traversal traversal) {
+        if (TraversalHelper.hasLabel(key, traversal))
+            throw new IllegalArgumentException("The provided side effect key is already used as a step label: " + key);
+    }
+
+    public static void verifyStepLabelIsNotASideEffectKey(final String label, final Traversal traversal) {
+        if (traversal.sideEffects().exists(label))
+            throw new IllegalArgumentException("The provided step label is already used as a side effect key: " + label);
+    }
+
+    public static void verifyStepLabelIsNotAlreadyAStepLabel(final String label, final Traversal traversal) {
+        if (TraversalHelper.hasLabel(label, traversal))
+            throw new IllegalArgumentException("The provided step label is already being used as a step label: " + label);
     }
 }

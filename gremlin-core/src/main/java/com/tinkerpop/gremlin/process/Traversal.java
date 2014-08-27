@@ -98,7 +98,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
         }
 
         public default <V> V getOrCreate(final String key, final Supplier<V> orCreate) {
-            if (this.keys().contains(key))
+            if (this.exists(key))
                 return this.<V>get(key);
             else {
                 V t = orCreate.get();
@@ -130,7 +130,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
             }
 
             public static IllegalArgumentException sideEffectDoesNotExist(final String key) {
-                return new IllegalArgumentException("The sideEffects do not have a value for provided key: " + key);
+                return new IllegalArgumentException("Side effects do not have a value for provided key: " + key);
             }
 
             public static UnsupportedOperationException dataTypeOfSideEffectValueNotSupported(final Object val) {
@@ -196,10 +196,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
             }
         } catch (final NoSuchElementException ignored) {
         }
-        return this;
-    }
-
-    public default Traversal<S, E> getTraversal() {
         return this;
     }
 

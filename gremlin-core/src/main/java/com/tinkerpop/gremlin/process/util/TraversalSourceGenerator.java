@@ -60,6 +60,7 @@ public class TraversalSourceGenerator {
                 }
                 final String parameters = Arrays.asList(method.getParameters()).stream().map(p -> p.getName()).collect(Collectors.toList()).toString().replace("[", "").replace("]", "");
                 methodName = "\t" + methodName + " {\n\t\treturn (" + resultTraversalClassName + ") " + traversalToCloneClass.getCanonicalName() + ".super." + method.getName() + "(" + parameters + ");\n\t}\n\n";
+                methodName = methodName.replace("$", ".");
                 builder.append(methodName);
             }
         }

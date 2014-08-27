@@ -15,8 +15,8 @@ import java.util.List;
 public class EmptyTraversal<S, E> implements Traversal<S, E> {
 
     private static final EmptyTraversal INSTANCE = new EmptyTraversal();
-    private static final SideEffects SIDE_EFFECTS = new DefaultSideEffects();         // TODO: make "empty sideEffects?"
-    private static final Strategies TRAVERSAL_STRATEGIES = new DefaultStrategies(new EmptyTraversal<>());
+    private static final SideEffects SIDE_EFFECTS = new DefaultSideEffects(EmptyTraversal.instance());
+    private static final Strategies TRAVERSAL_STRATEGIES = new DefaultStrategies(EmptyTraversal.instance());
 
     public static EmptyTraversal instance() {
         return INSTANCE;
@@ -47,10 +47,10 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
     }
 
     public List<Step> getSteps() {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     public Traversal<S, E> submit(final GraphComputer computer) {
-        return new EmptyTraversal<>();
+        return INSTANCE;
     }
 }

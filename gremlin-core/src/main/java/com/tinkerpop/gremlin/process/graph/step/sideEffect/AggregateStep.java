@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.AggregateMapReduce;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SFunction;
@@ -38,7 +39,9 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCa
         this.preAggregateFunction = preAggregateFunction;
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         this.hiddenSideEffectKey = Graph.Key.hide(this.sideEffectKey);
+        TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
         this.aggregate = this.traversal.sideEffects().getOrCreate(this.sideEffectKey, ArrayList::new);
+
     }
 
     @Override

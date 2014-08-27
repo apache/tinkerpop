@@ -69,6 +69,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
+import com.tinkerpop.gremlin.util.function.SBiConsumer;
 import com.tinkerpop.gremlin.util.function.SBiFunction;
 import com.tinkerpop.gremlin.util.function.SBiPredicate;
 import com.tinkerpop.gremlin.util.function.SConsumer;
@@ -113,7 +114,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, E2> addStep(final Step<?, E2> step) {
-        return (GraphTraversal) Traversal.super.addStep((Step)step);
+        return (GraphTraversal) Traversal.super.addStep((Step) step);
     }
 
     public default GraphTraversal<S, E> trackPaths() {
@@ -132,9 +133,21 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.addStep(mapStep);
     }
 
+    public default <E2> GraphTraversal<S, E2> map(final SBiFunction<Traverser<E>, SideEffects, E2> biFunction) {
+        final MapStep<E, E2> mapStep = new MapStep<>(this);
+        mapStep.setBiFunction(biFunction);
+        return this.addStep(mapStep);
+    }
+
     public default <E2> GraphTraversal<S, E2> flatMap(final SFunction<Traverser<E>, Iterator<E2>> function) {
         final FlatMapStep<E, E2> flatMapStep = new FlatMapStep<>(this);
         flatMapStep.setFunction(function);
+        return this.addStep(flatMapStep);
+    }
+
+    public default <E2> GraphTraversal<S, E2> flatMap(final SBiFunction<Traverser<E>, SideEffects, Iterator<E2>> biFunction) {
+        final FlatMapStep<E, E2> flatMapStep = new FlatMapStep<>(this);
+        flatMapStep.setBiFunction(biFunction);
         return this.addStep(flatMapStep);
     }
 
@@ -343,6 +356,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.addStep(filterStep);
     }
 
+    public default GraphTraversal<S, E> filter(final SBiPredicate<Traverser<E>, SideEffects> biPredicate) {
+        final FilterStep<E> filterStep = new FilterStep<>(this);
+        filterStep.setBiPredicate(biPredicate);
+        return this.addStep(filterStep);
+    }
+
     public default GraphTraversal<S, E> inject(final E... injections) {
         return this.addStep(new InjectStep<>(this, injections));
     }
@@ -454,6 +473,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, E> sideEffect(final SConsumer<Traverser<E>> consumer) {
         final SideEffectStep<E> sideEffectStep = new SideEffectStep<>(this);
         sideEffectStep.setConsumer(consumer);
+        return this.addStep(sideEffectStep);
+    }
+
+    public default GraphTraversal<S, E> sideEffect(final SBiConsumer<Traverser<E>, SideEffects> biConsumer) {
+        final SideEffectStep<E> sideEffectStep = new SideEffectStep<>(this);
+        sideEffectStep.setBiConsumer(biConsumer);
         return this.addStep(sideEffectStep);
     }
 
@@ -606,8 +631,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     ///////////////////// UTILITY STEPS /////////////////////
 
     public default GraphTraversal<S, E> as(final String label) {
-        if (TraversalHelper.hasLabel(label, this))
-            throw new IllegalStateException("The labeled step already exists: " + label);
+        TraversalHelper.verifyStepLabelIsNotAlreadyAStepLabel(label, this);
+        TraversalHelper.verifyStepLabelIsNotASideEffectKey(label, this);
         final List<Step> steps = this.getSteps();
         steps.get(steps.size() - 1).setLabel(label);
         return this;

@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
+import com.tinkerpop.gremlin.util.function.SBiConsumer;
 import com.tinkerpop.gremlin.util.function.SBiFunction;
 import com.tinkerpop.gremlin.util.function.SBiPredicate;
 import com.tinkerpop.gremlin.util.function.SConsumer;
@@ -117,8 +118,16 @@ public interface Vertex extends Element {
         return this.start().map(function);
     }
 
+    public default <E2> GraphTraversal<Vertex, E2> map(final SBiFunction<Traverser<Vertex>, Traversal.SideEffects, E2> biFunction) {
+        return this.start().map(biFunction);
+    }
+
     public default <E2> GraphTraversal<Vertex, E2> flatMap(final SFunction<Traverser<Vertex>, Iterator<E2>> function) {
         return this.start().flatMap(function);
+    }
+
+    public default <E2> GraphTraversal<Vertex, E2> flatMap(final SBiFunction<Traverser<Vertex>, Traversal.SideEffects, Iterator<E2>> biFunction) {
+        return this.start().flatMap(biFunction);
     }
 
     public default GraphTraversal<Vertex, Vertex> identity() {
@@ -295,6 +304,10 @@ public interface Vertex extends Element {
         return this.start().filter(predicate);
     }
 
+    public default GraphTraversal<Vertex, Vertex> filter(final SBiPredicate<Traverser<Vertex>, Traversal.SideEffects> biPredicate) {
+        return this.start().filter(biPredicate);
+    }
+
     public default GraphTraversal<Vertex, Vertex> inject(final Object... injections) {
         return this.start().inject((Vertex[]) injections);
     }
@@ -403,6 +416,10 @@ public interface Vertex extends Element {
 
     public default GraphTraversal<Vertex, Vertex> sideEffect(final SConsumer<Traverser<Vertex>> consumer) {
         return this.start().sideEffect(consumer);
+    }
+
+    public default GraphTraversal<Vertex, Vertex> sideEffect(final SBiConsumer<Traverser<Vertex>, Traversal.SideEffects> biConsumer) {
+        return this.start().sideEffect(biConsumer);
     }
 
     public default <E2> GraphTraversal<Vertex, E2> cap(final String sideEffectKey) {

@@ -153,8 +153,16 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.except(arg0);
 	}
 
+	public default Neo4jTraversal<S, E> filter(com.tinkerpop.gremlin.util.function.SBiPredicate<com.tinkerpop.gremlin.process.Traverser<E>, com.tinkerpop.gremlin.process.Traversal.SideEffects> arg0) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.filter(arg0);
+	}
+
 	public default Neo4jTraversal<S, E> filter(com.tinkerpop.gremlin.util.function.SPredicate<com.tinkerpop.gremlin.process.Traverser<E>> arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.filter(arg0);
+	}
+
+	public default <E2> Neo4jTraversal<S, E2> flatMap(com.tinkerpop.gremlin.util.function.SBiFunction<com.tinkerpop.gremlin.process.Traverser<E>, com.tinkerpop.gremlin.process.Traversal.SideEffects, java.util.Iterator<E2>> arg0) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.flatMap(arg0);
 	}
 
 	public default <E2> Neo4jTraversal<S, E2> flatMap(com.tinkerpop.gremlin.util.function.SFunction<com.tinkerpop.gremlin.process.Traverser<E>, java.util.Iterator<E2>> arg0) {
@@ -301,6 +309,10 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.label();
 	}
 
+	public default <E2> Neo4jTraversal<S, E2> map(com.tinkerpop.gremlin.util.function.SBiFunction<com.tinkerpop.gremlin.process.Traverser<E>, com.tinkerpop.gremlin.process.Traversal.SideEffects, E2> arg0) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.map(arg0);
+	}
+
 	public default <E2> Neo4jTraversal<S, E2> map(com.tinkerpop.gremlin.util.function.SFunction<com.tinkerpop.gremlin.process.Traverser<E>, E2> arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.map(arg0);
 	}
@@ -387,6 +399,10 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 
 	public default Neo4jTraversal<S, E> shuffle() {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.shuffle();
+	}
+
+	public default Neo4jTraversal<S, E> sideEffect(com.tinkerpop.gremlin.util.function.SBiConsumer<com.tinkerpop.gremlin.process.Traverser<E>, com.tinkerpop.gremlin.process.Traversal.SideEffects> arg0) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.sideEffect(arg0);
 	}
 
 	public default Neo4jTraversal<S, E> sideEffect(com.tinkerpop.gremlin.util.function.SConsumer<com.tinkerpop.gremlin.process.Traverser<E>> arg0) {

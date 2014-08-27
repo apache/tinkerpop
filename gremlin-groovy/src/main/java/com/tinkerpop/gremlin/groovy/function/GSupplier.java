@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.groovy;
+package com.tinkerpop.gremlin.groovy.function;
 
 import com.tinkerpop.gremlin.util.function.SSupplier;
 import groovy.lang.Closure;

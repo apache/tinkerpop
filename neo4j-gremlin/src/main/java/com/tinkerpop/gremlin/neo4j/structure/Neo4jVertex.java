@@ -15,6 +15,7 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.function.SBiConsumer;
 import com.tinkerpop.gremlin.util.function.SBiFunction;
 import com.tinkerpop.gremlin.util.function.SBiPredicate;
 import com.tinkerpop.gremlin.util.function.SConsumer;
@@ -120,8 +121,16 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         return this.start().map(function);
     }
 
+    public <E2> Neo4jTraversal<Vertex, E2> map(final SBiFunction<Traverser<Vertex>, Traversal.SideEffects, E2> biFunction) {
+        return this.start().map(biFunction);
+    }
+
     public <E2> Neo4jTraversal<Vertex, E2> flatMap(final SFunction<Traverser<Vertex>, Iterator<E2>> function) {
         return this.start().flatMap(function);
+    }
+
+    public <E2> Neo4jTraversal<Vertex, E2> flatMap(final SBiFunction<Traverser<Vertex>, Traversal.SideEffects, Iterator<E2>> biFunction) {
+        return this.start().flatMap(biFunction);
     }
 
     public Neo4jTraversal<Vertex, Vertex> identity() {
@@ -298,6 +307,10 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         return this.start().filter(predicate);
     }
 
+    public Neo4jTraversal<Vertex, Vertex> filter(final SBiPredicate<Traverser<Vertex>, Traversal.SideEffects> biPredicate) {
+        return this.start().filter(biPredicate);
+    }
+
     public Neo4jTraversal<Vertex, Vertex> inject(final Object... injections) {
         return this.start().inject((Vertex[]) injections);
     }
@@ -406,6 +419,10 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
 
     public Neo4jTraversal<Vertex, Vertex> sideEffect(final SConsumer<Traverser<Vertex>> consumer) {
         return this.start().sideEffect(consumer);
+    }
+
+    public Neo4jTraversal<Vertex, Vertex> sideEffect(final SBiConsumer<Traverser<Vertex>, Traversal.SideEffects> biConsumer) {
+        return this.start().sideEffect(biConsumer);
     }
 
     public <E2> Neo4jTraversal<Vertex, E2> cap(final String sideEffectKey) {

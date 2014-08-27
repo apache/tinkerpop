@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.TreeMapReduce;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SFunction;
@@ -30,6 +31,7 @@ public class TreeStep<S> extends SideEffectStep<S> implements Reversible, PathCo
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         this.hiddenSideEffectKey = Graph.Key.hide(this.sideEffectKey);
         this.functionRing = new FunctionRing(branchFunctions);
+        TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
         this.tree = traversal.sideEffects().getOrCreate(this.sideEffectKey, Tree::new);
 
         this.setConsumer(traverser -> {

@@ -115,5 +115,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         if (!this.futureSetByChild)
             traverser.setFuture(this.nextStep.getLabel());
         if (traverser instanceof PathTraverser) traverser.getPath().addLabel(this.getLabel());
+        if (TraversalHelper.isLabeled(this.label))
+            this.traversal.sideEffects().set(this.label, traverser.get());
     }
 }

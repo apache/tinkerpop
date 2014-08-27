@@ -60,6 +60,10 @@ public class EmptyStep<S, E> implements Step<S, E> {
         return false;
     }
 
+    public E getLast() {
+        return (E) NO_OBJECT;
+    }
+
     public Traverser<E> next() {
         throw FastNoSuchElementException.instance();
     }

@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.StoreMapReduce;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SFunction;
@@ -33,6 +34,7 @@ public class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable
         this.preStoreFunction = preStoreFunction;
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         this.hiddenSideEffectKey = Graph.Key.hide(this.sideEffectKey);
+        TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
         this.store = this.traversal.sideEffects().getOrCreate(this.sideEffectKey, ArrayList::new);
         this.setConsumer(traverser -> {
             final Object storeObject = null == this.preStoreFunction ? traverser.get() : this.preStoreFunction.apply(traverser);

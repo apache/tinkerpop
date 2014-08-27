@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupByMapReduce;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SFunction;
@@ -36,6 +37,7 @@ public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEf
         super(traversal);
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         this.hiddenSideEffectKey = Graph.Key.hide(this.sideEffectKey);
+        TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
         this.groupByMap = this.traversal.sideEffects().getOrCreate(this.sideEffectKey, HashMap<K, Collection<V>>::new);
         this.reduceMap = new HashMap<>();
         this.keyFunction = keyFunction;

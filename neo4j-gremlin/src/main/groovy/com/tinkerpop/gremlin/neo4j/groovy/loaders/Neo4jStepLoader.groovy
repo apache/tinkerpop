@@ -1,10 +1,9 @@
 package com.tinkerpop.gremlin.neo4j.groovy.loaders
 
-import com.tinkerpop.gremlin.groovy.GFunction
-import com.tinkerpop.gremlin.groovy.GSupplier
+import com.tinkerpop.gremlin.groovy.function.GFunction
+import com.tinkerpop.gremlin.groovy.function.GSupplier
 import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jTraversal
-import com.tinkerpop.gremlin.process.graph.GraphTraversal
 import com.tinkerpop.gremlin.util.function.SFunction
 
 /**

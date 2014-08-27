@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -44,6 +45,7 @@ public class SubgraphStep<S> extends SideEffectStep<S> implements SideEffectCapa
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         this.edgeIdsAdded = null == edgeIdHolder ? new HashSet<>() : edgeIdHolder;
         this.idVertexMap = null == idVertexMap ? new HashMap<>() : idVertexMap;
+        TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
         this.subgraph = this.traversal.sideEffects().getOrCreate(this.sideEffectKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION));
         this.subgraphSupportsUserIds = this.subgraph.features().vertex().supportsUserSuppliedIds();
 

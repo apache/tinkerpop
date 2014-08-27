@@ -67,6 +67,7 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable, Clonea
 
     /**
      * Reset the state of the step such that it has no incoming starts.
+     * Internal states are to be reset, but any sideEffect data structures are not to be recreated.
      */
     public void reset();
 
