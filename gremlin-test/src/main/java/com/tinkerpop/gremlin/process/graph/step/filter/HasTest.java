@@ -217,15 +217,11 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @LoadGraphWith(MODERN)
     public void g_V_hasXperson_name_markoX_age() {
-        this.g.addVertex(Element.LABEL, "person", "name", "marko", "age", 34);
-        this.g.addVertex(Element.LABEL, "animal", "name", "marko", "age", 1);
-        this.g.addVertex(Element.LABEL, "alien", "name", "c");
-        this.g.addVertex(Element.LABEL, "spirit", "name", "d");
         final Traversal<Vertex, Integer> traversal = get_g_V_hasXperson_name_markoX_age();
         printTraversalForm(traversal);
-        assertEquals(34, traversal.next().intValue());
+        assertEquals(29, traversal.next().intValue());
         assertFalse(traversal.hasNext());
     }
 
