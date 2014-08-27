@@ -262,11 +262,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         private Consumer<Transaction> readWriteConsumer;
         private Consumer<Transaction> closeConsumer;
 
-        protected final ThreadLocal<org.neo4j.graphdb.Transaction> threadLocalTx = new ThreadLocal<org.neo4j.graphdb.Transaction>() {
-            protected org.neo4j.graphdb.Transaction initialValue() {
-                return null;
-            }
-        };
+        protected final ThreadLocal<org.neo4j.graphdb.Transaction> threadLocalTx = ThreadLocal.withInitial(() -> null);
 
         public Neo4jTransaction() {
             // auto transaction behavior
