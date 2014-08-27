@@ -108,10 +108,10 @@ gremlin> g.v(1).as('a').out('created').in('created')
 ==>v[1]
 ==>v[4]
 ==>v[6]
-gremlin> g.v(1).as('a').out('created').in('created').except(g.v(1)) // marko can't be a co-developer with himself
+gremlin> g.v(1).as('a').out('created').in('created').except('a') // marko can't be a co-developer with himself
 ==>v[4]
 ==>v[6]
-gremlin> g.v(1).as('a').out('created').in('created').except(g.v(1)).addBothE('co-developer','a')
+gremlin> g.v(1).as('a').out('created').in('created').except('a').addBothE('co-developer','a')
 ==>v[4]
 ==>v[6]
 gremlin> g.v(1).out('co-developer').value('name')
