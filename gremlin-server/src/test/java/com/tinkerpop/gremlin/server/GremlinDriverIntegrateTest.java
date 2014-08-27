@@ -294,6 +294,30 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldExecuteScriptInSessionWithBindingsSavedOnServerBetweenRequests() throws Exception {
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect(name.getMethodName());
+
+        final Map<String,Object> bindings1 = new HashMap<>();
+        bindings1.put("a", 100);
+        bindings1.put("b", 200);
+        final ResultSet results1 = client.submit("x = a + b", bindings1);
+        assertEquals(300, results1.one().getInt());
+
+        final Map<String,Object> bindings2 = new HashMap<>();
+        bindings2.put("b", 100);
+        final ResultSet results2 = client.submit("x + b + a", bindings2);
+        assertEquals(500, results2.one().getInt());
+
+        final Map<String,Object> bindings3 = new HashMap<>();
+        bindings3.put("x", 100);
+        final ResultSet results3 = client.submit("x + b + a + 1", bindings3);
+        assertEquals(301, results3.one().getInt());
+
+        cluster.close();
+    }
+
+    @Test
     public void shouldExecuteScriptsInMultipleSession() throws Exception {
         final Cluster cluster = Cluster.build().create();
         final Client client1 = cluster.connect(name.getMethodName() + "1");
