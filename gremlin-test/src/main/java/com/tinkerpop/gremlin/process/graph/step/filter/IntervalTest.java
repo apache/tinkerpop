@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -19,7 +19,7 @@ public abstract class IntervalTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id);
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_outE_intervalXweight_0_06X_inV() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_outE_intervalXweight_0_06X_inV(convertToVertexId("marko"));
         printTraversalForm(traversal);

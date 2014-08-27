@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
 
 /**
@@ -38,7 +38,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Path> get_g_v1_asXxX_bothEXcreatedX_exceptXeX_aggregateXeX_otherV_jumpXx_true_trueX_path(final Object v1Id);
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_out_exceptXg_v2X() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_out_exceptXg_v2X(convertToVertexId("marko"), convertToVertexId("vadas"));
         printTraversalForm(traversal);
@@ -55,7 +55,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_out_aggregateXxX_out_exceptXxX() {
         Traversal<Vertex, Vertex> traversal = get_g_v1_out_aggregateXxX_out_exceptXxX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -64,7 +64,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX() {
         Traversal<Vertex, String> traversal = get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -76,7 +76,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_exceptXg_VX() {
         Traversal<Vertex, Vertex> traversal = get_g_V_exceptXg_VX();
         printTraversalForm(traversal);
@@ -86,7 +86,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_exceptXX() {
         Traversal<Vertex, Vertex> traversal = get_g_V_exceptXX();
         printTraversalForm(traversal);
@@ -96,7 +96,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_asXxX_bothEXcreatedX_exceptXeX_aggregateXeX_otherV_jumpXx_true_trueX_path() {
         Traversal<Vertex, Path> traversal = get_g_v1_asXxX_bothEXcreatedX_exceptXeX_aggregateXeX_otherV_jumpXx_true_trueX_path(convertToVertexId("marko"));
         printTraversalForm(traversal);

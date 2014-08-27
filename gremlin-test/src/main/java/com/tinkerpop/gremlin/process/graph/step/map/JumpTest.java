@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
 
 /**
@@ -51,7 +51,7 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_v1_asXaX_jumpXb_loops_gt_1X_out_jumpXaX_asXbX_name(final Object v1Id);
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX() {
         final List<Traversal<Vertex, String>> traversals = new ArrayList<>();
         traversals.add(get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(convertToVertexId("marko")));
@@ -69,7 +69,7 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_asXxX_out_jumpXx_loops_lt_2_trueX_path() {
         final List<Traversal<Vertex, Path>> traversals = new ArrayList<>();
         traversals.add(get_g_V_asXxX_out_jumpXx_loops_lt_2_trueX_path());
@@ -90,7 +90,7 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_asXxX_out_jumpXx_2X_asXyX_in_jumpXy_2X_name() {
         final List<Traversal<Vertex, String>> traversals = new ArrayList<>();
         traversals.add(get_g_V_asXxX_out_jumpXx_loops_lt_2X_asXyX_in_jumpXy_loops_lt_2X_name());
@@ -108,7 +108,7 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_asXxX_out_jumpXx_2() {
         final List<Traversal<Vertex, Vertex>> traversals = new ArrayList<>();
         traversals.add(get_g_V_asXxX_out_jumpXx_2X());
@@ -127,7 +127,7 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_asXxX_out_jumpXx_2_trueX() {
         final List<Traversal<Vertex, Vertex>> traversals = new ArrayList<>();
         traversals.add(get_g_V_asXxX_out_jumpXx_2_trueX());
@@ -152,7 +152,7 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_out_jumpXx_t_out_hasNextX_in_jumpXyX_asXxX_out_asXyX_path() {
         Traversal<Vertex, Path> traversal = get_g_v1_out_jumpXx_t_out_hasNextX_in_jumpXyX_asXxX_out_asXyX_path(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -162,7 +162,7 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_jumpXxX_out_out_asXxX() {
         Traversal<Vertex, Vertex> traversal = get_g_V_jumpXxX_out_out_asXxX();
         printTraversalForm(traversal);

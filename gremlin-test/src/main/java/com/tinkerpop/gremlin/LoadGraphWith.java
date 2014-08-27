@@ -44,11 +44,11 @@ public @interface LoadGraphWith {
         CLASSIC,
 
         /**
-         * Loads the "classic" TinkerPop toy graph with the "weight" value on edges stored as double.  This should
-         * be the most commonly used graph instance for testing as graphs that support string, double and int should
-         * comprise the largest number of implementations.
+         * Loads the "modern" TinkerPop toy graph which is like "classic", but with the "weight" value on edges stored
+         * as double and labels added for vertices.  This should be the most commonly used graph instance for testing
+         * as graphs that support string, double and int should comprise the largest number of implementations.
          */
-        CLASSIC_DOUBLE,
+        MODERN,
 
         /**
          * Loads the "grateful dead" graph which is a "large" graph which provides for the construction of more
@@ -77,8 +77,8 @@ public @interface LoadGraphWith {
             switch (this) {
                 case CLASSIC:
                     return RESOURCE_PATH_PREFIX + "tinkerpop-classic.gio";
-                case CLASSIC_DOUBLE:
-                    return RESOURCE_PATH_PREFIX + "tinkerpop-classic-double.gio";
+                case MODERN:
+                    return RESOURCE_PATH_PREFIX + "tinkerpop-modern.gio";
                 case GRATEFUL:
                     return RESOURCE_PATH_PREFIX + "grateful-dead.gio";
             }
@@ -90,7 +90,7 @@ public @interface LoadGraphWith {
             switch (this) {
                 case CLASSIC:
                     return featuresRequiredByClassic;
-                case CLASSIC_DOUBLE:
+                case MODERN:
                     return featuresRequiredByClassicDouble;
                 case GRATEFUL:
                     return featuresRequiredByGrateful;

@@ -54,8 +54,8 @@ public class GiraphGraphProvider extends AbstractGraphProvider {
     public void loadGraphData(final Graph g, final LoadGraphWith.GraphData graphData) {
         if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL)) {
             ((GiraphGraph) g).variables().getConfiguration().setInputLocation(KryoInputFormat.class.getResource("grateful-dead-vertices.gio").getPath());
-        } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC_DOUBLE)) {
-            ((GiraphGraph) g).variables().getConfiguration().setInputLocation(KryoInputFormat.class.getResource("tinkerpop-classic-vertices-double.gio").getPath());
+        } else if (graphData.equals(LoadGraphWith.GraphData.MODERN)) {
+            ((GiraphGraph) g).variables().getConfiguration().setInputLocation(KryoInputFormat.class.getResource("tinkerpop-modern-vertices.gio").getPath());
         } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC)) {
             ((GiraphGraph) g).variables().getConfiguration().setInputLocation(KryoInputFormat.class.getResource("tinkerpop-classic-vertices.gio").getPath());
         } else {

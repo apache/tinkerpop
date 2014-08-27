@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -26,7 +26,7 @@ public abstract class FoldTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Integer> get_g_V_hasXageX_foldX0_plusX();
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_fold() {
         final Traversal<Vertex, List<Vertex>> traversal = get_g_V_fold();
         printTraversalForm(traversal);
@@ -37,7 +37,7 @@ public abstract class FoldTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_fold_unfold() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_fold_unfold();
         printTraversalForm(traversal);
@@ -53,7 +53,7 @@ public abstract class FoldTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_hasXageX_foldX0_plusX() {
         final Traversal<Vertex, Integer> traversal = get_g_V_hasXageX_foldX0_plusX();
         printTraversalForm(traversal);

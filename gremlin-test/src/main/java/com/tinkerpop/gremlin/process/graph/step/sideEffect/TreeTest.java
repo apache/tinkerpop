@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
 
 /**
@@ -31,7 +31,7 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Tree> get_g_v1_out_out_treeXa_nameX_both_both_capXaX(final Object v1Id);
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_out_out_treeXnameX() {
         List<Traversal<Vertex, Tree>> traversals = Arrays.asList(
                 get_g_v1_out_out_treeXnameX(convertToVertexId("marko")),
@@ -50,7 +50,7 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_out_out_treeXidX() {
         List<Traversal<Vertex, Tree>> traversals = Arrays.asList(get_g_V_out_out_treeXidX(), get_g_V_out_out_treeXa_idX());
         traversals.forEach(traversal -> {
@@ -67,7 +67,7 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_out_out_treeXaX() {
         List<Traversal<Vertex, Tree>> traversals = Arrays.asList(get_g_V_out_out_treeXaX());
         traversals.forEach(traversal -> {

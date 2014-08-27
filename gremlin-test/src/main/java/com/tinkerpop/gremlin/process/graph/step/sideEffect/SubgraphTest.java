@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -25,7 +25,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, String> get_g_V_inE_subgraphXcreatedX_name(final Graph subgraph);
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
     public void g_v1_outE_subgraphXknowsX() throws Exception {
         final Configuration config = graphProvider.newGraphConfiguration("subgraph", this.getClass(), name.getMethodName());
@@ -39,7 +39,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
             assertEquals("knows", e.label());
             assertEquals("marko", e.outV().value("name").next());
             assertEquals(new Integer(29), e.outV().<Integer>value("age").next());
-            assertEquals(Vertex.DEFAULT_LABEL, e.outV().label().next());
+            assertEquals("person", e.outV().label().next());
 
             final String name = e.inV().<String>value("name").next();
             if (name.equals("vadas"))
@@ -54,7 +54,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
     public void g_V_inE_subgraphXcreatedX_name() throws Exception {
         final Configuration config = graphProvider.newGraphConfiguration("subgraph", this.getClass(), name.getMethodName());

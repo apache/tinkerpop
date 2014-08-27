@@ -10,7 +10,7 @@ import org.junit.Test;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
 
 /**
@@ -27,7 +27,7 @@ public abstract class DedupTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, String> get_g_V_both_name_orderXa_bX_dedup();
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_both_dedup_name() {
         final Traversal<Vertex, String> traversal = get_g_V_both_dedup_name();
         printTraversalForm(traversal);
@@ -43,7 +43,7 @@ public abstract class DedupTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_both_dedupXlangX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_both_dedupXlangX_name();
         printTraversalForm(traversal);
@@ -55,7 +55,7 @@ public abstract class DedupTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_both_name_orderXa_bX_dedup() {
         final Traversal<Vertex, String> traversal = get_g_V_both_name_orderXa_bX_dedup();
         printTraversalForm(traversal);

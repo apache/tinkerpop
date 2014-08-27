@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -21,7 +21,7 @@ public abstract class RetainTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Vertex> get_g_v1_out_aggregateXxX_out_retainXxX(final Object v1Id);
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_out_retainXg_v2X() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_out_retainXg_v2X(convertToVertexId("marko"), convertToVertexId("vadas"));
         printTraversalForm(traversal);
@@ -30,7 +30,7 @@ public abstract class RetainTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_out_aggregateXxX_out_retainXxX() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_out_aggregateXxX_out_retainXxX(convertToVertexId("marko"));
         printTraversalForm(traversal);

@@ -294,7 +294,7 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldMigrateGraph() throws Exception {
@@ -314,7 +314,7 @@ public class IoTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldReadWriteClassicToKryo() throws Exception {
@@ -784,7 +784,7 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldReadWriteVerticesNoEdgesToKryo() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final KryoWriter writer = KryoWriter.build().create();

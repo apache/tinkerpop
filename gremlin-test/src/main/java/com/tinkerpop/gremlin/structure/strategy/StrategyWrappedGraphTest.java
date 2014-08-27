@@ -1,12 +1,9 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -15,7 +12,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_STRING_VALUES;
 import static org.junit.Assert.*;
 
 /**
@@ -63,7 +59,7 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldWrapETraversalEdges() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
@@ -72,7 +68,7 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldWrapVTraversalVertices() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
@@ -81,7 +77,7 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldWrapv() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
@@ -89,7 +85,7 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldWrape() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
@@ -97,7 +93,7 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldWrapvTraversalVertices() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
@@ -106,7 +102,7 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldWrapvTraversalEdges() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
@@ -115,7 +111,7 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldWrapvEdges() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
@@ -124,7 +120,7 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldWrapvAdjacentVertices() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
@@ -133,7 +129,7 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC_DOUBLE)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldWrapeDirectionVertices() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);

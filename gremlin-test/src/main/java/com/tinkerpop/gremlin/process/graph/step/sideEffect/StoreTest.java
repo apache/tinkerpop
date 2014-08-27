@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import java.util.Collection;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
 
 /**
@@ -20,7 +20,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Collection> get_g_v1_storeXa_nameX_out_storeXa_nameX_name_capXaX(final Object v1Id);
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_storeXa_nameX_out_capXaX() {
         final Traversal<Vertex, Collection> traversal = get_g_V_storeXa_nameX_out_capXaX();
         printTraversalForm(traversal);
@@ -36,7 +36,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_storeXa_nameX_out_storeXa_nameX_name_capXaX() {
         final Traversal<Vertex, Collection> traversal = get_g_v1_storeXa_nameX_out_storeXa_nameX_name_capXaX(convertToVertexId("marko"));
         printTraversalForm(traversal);

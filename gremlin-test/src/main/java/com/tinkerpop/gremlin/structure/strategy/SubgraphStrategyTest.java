@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -10,7 +9,7 @@ import org.junit.Test;
 import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -23,7 +22,7 @@ import static org.junit.Assert.fail;
 public class SubgraphStrategyTest extends AbstractGremlinTest {
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void testVertexCriterion() throws Exception {
         Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
         Predicate<Edge> edgeCriterion = edge -> true;
@@ -110,7 +109,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void shouldFilterEdgeCriterion() throws Exception {
 
         Predicate<Vertex> vertexCriterion = vertex -> true;
@@ -206,7 +205,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void shouldFilterMixedCriteria() throws Exception {
         Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
         Predicate<Edge> edgeCriterion = edge -> {
@@ -292,7 +291,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test(expected = NoSuchElementException.class)
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void shouldGetExcludedVertex() throws Exception {
 
         Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
@@ -306,7 +305,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test(expected = NoSuchElementException.class)
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void shouldGetExcludedEdge() throws Exception {
 
         Predicate<Vertex> vertexCriterion = vertex -> true;

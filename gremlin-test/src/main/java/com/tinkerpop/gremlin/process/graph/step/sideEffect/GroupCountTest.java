@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -34,7 +34,7 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_2X_capXaX();
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_outXcreatedX_groupCountXnameX() {
         final Traversal<Vertex, Map<Object, Long>> traversal = get_g_V_outXcreatedX_groupCountXnameX();
         printTraversalForm(traversal);
@@ -46,7 +46,7 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_outXcreatedX_name_groupCount() {
         Arrays.asList(get_g_V_outXcreatedX_name_groupCount(), get_g_V_outXcreatedX_name_groupCountXaX()).forEach(traversal -> {
             printTraversalForm(traversal);
@@ -59,7 +59,7 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_filterXfalseX_groupCount() {
         final Traversal<Vertex, Map<Object, Long>> traversal = get_g_V_filterXfalseX_groupCount();
         printTraversalForm(traversal);
@@ -69,7 +69,7 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_asXxX_out_groupCountXnameX_asXaX_jumpXx_2X_capXaX() {
         List<Traversal<Vertex, Map<Object, Long>>> traversals = new ArrayList<>();
         traversals.add(get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_2X_capXaX());

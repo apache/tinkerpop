@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import java.util.Map;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
 
 /**
@@ -27,7 +27,7 @@ public abstract class ValuesTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id);
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_values() {
         final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_values();
         printTraversalForm(traversal);
@@ -57,7 +57,7 @@ public abstract class ValuesTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_valuesXname_ageX() {
         final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_valuesXname_ageX();
         printTraversalForm(traversal);
@@ -92,7 +92,7 @@ public abstract class ValuesTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_E_valuesXid_label_weightX() {
         final Traversal<Edge, Map<String, Object>> traversal = get_g_E_valuesXid_label_weightX();
         printTraversalForm(traversal);
@@ -119,7 +119,7 @@ public abstract class ValuesTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_outXcreatedX_values() {
         final Traversal<Vertex, Map<String, Object>> traversal = get_g_v1_outXcreatedX_values(convertToVertexId("marko"));
         printTraversalForm(traversal);

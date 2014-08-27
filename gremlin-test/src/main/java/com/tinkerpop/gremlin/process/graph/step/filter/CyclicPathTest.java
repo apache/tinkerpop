@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -21,7 +21,7 @@ public abstract class CyclicPathTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Path> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath_path(final Object v1);
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_outXcreatedX_inXcreatedX_cyclicPath() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -36,7 +36,7 @@ public abstract class CyclicPathTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_outXcreatedX_inXcreatedX_cyclicPath_path() {
         final Traversal<Vertex, Path> traversal = get_g_v1_outXcreatedX_inXcreatedX_cyclicPath_path(convertToVertexId("marko"));
         printTraversalForm(traversal);

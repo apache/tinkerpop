@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
 
 /**
@@ -16,7 +16,7 @@ public abstract class MemoryTest extends AbstractGremlinProcessTest {
     public abstract Traversal.SideEffects get_g_V_memory();
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_memory() {
         final Traversal.SideEffects sideEffects = get_g_V_memory();
         try {

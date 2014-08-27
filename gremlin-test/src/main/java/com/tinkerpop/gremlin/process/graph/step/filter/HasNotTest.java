@@ -11,7 +11,7 @@ import org.junit.Test;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -25,7 +25,7 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String prop);
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void get_g_v1_hasNotXprop() {
         Traversal<Vertex, Vertex> traversal = get_g_v1_hasNotXprop(convertToVertexId("marko"), "circumference");
         printTraversalForm(traversal);
@@ -37,7 +37,7 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void get_g_V_hasNotXprop() {
         Traversal<Vertex, Vertex> traversal = get_g_V_hasNotXprop("circumference");
         printTraversalForm(traversal);

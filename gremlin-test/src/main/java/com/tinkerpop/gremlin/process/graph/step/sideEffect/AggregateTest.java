@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
 
 /**
@@ -30,7 +30,7 @@ public abstract class AggregateTest extends AbstractGremlinTest {
     //public abstract Traversal<Vertex, Path> get_g_v1_asXxX_bothE_asXeX_valueXweightX_exceptXwX_aggregateXwX_backXeX_otherV_jumpXx_true_trueX_path(final Object v1Id);
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_valueXnameX_aggregate() {
         Traversal<Vertex, List<String>> traversal = get_g_V_valueXnameX_aggregate();
         printTraversalForm(traversal);
@@ -40,7 +40,7 @@ public abstract class AggregateTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_aggregateXnameX() {
         Traversal<Vertex, List<String>> traversal = get_g_V_aggregateXnameX();
         printTraversalForm(traversal);
@@ -60,7 +60,7 @@ public abstract class AggregateTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_out_aggregateXaX_path() {
         final Traversal<Vertex, Path> traversal = get_g_V_out_aggregateXaX_path();
         printTraversalForm(traversal);

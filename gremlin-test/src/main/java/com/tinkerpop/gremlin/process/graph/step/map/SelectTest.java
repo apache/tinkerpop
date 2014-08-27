@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import java.util.Map;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -28,7 +28,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, String>> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id);
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_asXaX_outXknowsX_asXbX_select() {
         final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_v1_asXaX_outXknowsX_asXbX_select(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -44,7 +44,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_asXaX_outXknowsX_asXbX_selectXnameX() {
         final Traversal<Vertex, Map<String, String>> traversal = get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -60,7 +60,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_asXaX_outXknowsX_asXbX_selectXaX() {
         final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -75,7 +75,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX() {
         final Traversal<Vertex, Map<String, String>> traversal = get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(convertToVertexId("marko"));
         printTraversalForm(traversal);

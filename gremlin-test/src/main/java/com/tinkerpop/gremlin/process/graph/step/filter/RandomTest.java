@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -20,7 +20,7 @@ public abstract class RandomTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Vertex> get_g_V_randomX0X();
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_randomX1X() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_randomX1X();
         printTraversalForm(traversal);
@@ -34,7 +34,7 @@ public abstract class RandomTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_V_randomX0X() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_randomX0X();
         printTraversalForm(traversal);

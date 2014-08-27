@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
 
 /**
@@ -36,7 +36,7 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Edge> get_g_v1_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_backXhereX(final Object v1Id);
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_asXhereX_out_backXhereX() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_asXhereX_out_backXhereX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -50,7 +50,7 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
 
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v4_out_asXhereX_hasXlang_javaX_backXhereX() {
         final Traversal<Vertex, Vertex> traversal = get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX(convertToVertexId("josh"));
         printTraversalForm(traversal);
@@ -65,7 +65,7 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX() {
         final Traversal<Vertex, Edge> traversal = get_g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -78,7 +78,7 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX() {
         final Traversal<Vertex, String> traversal = get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(convertToVertexId("josh"));
         printTraversalForm(traversal);
@@ -95,7 +95,7 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX() {
         final List<Traversal<Vertex, Edge>> traversals = Arrays.asList(
                 get_g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(convertToVertexId("marko")),

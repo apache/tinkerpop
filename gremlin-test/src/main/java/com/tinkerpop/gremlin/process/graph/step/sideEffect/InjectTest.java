@@ -11,7 +11,7 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -25,7 +25,7 @@ public abstract class InjectTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Path> get_g_v1_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id);
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_out_injectXv2X_name() {
         final Traversal<Vertex, String> traversal = get_g_v1_out_injectXv2X_name(convertToVertexId("marko"), convertToVertexId("vadas"));
         printTraversalForm(traversal);
@@ -41,7 +41,7 @@ public abstract class InjectTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void g_v1_out_name_injectXdanielX_asXaX_mapXlengthX_path() {
         final Traversal<Vertex, Path> traversal = get_g_v1_out_name_injectXdanielX_asXaX_mapXlengthX_path(convertToVertexId("marko"));
         printTraversalForm(traversal);

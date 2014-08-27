@@ -11,7 +11,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -27,7 +27,7 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Vertex> get_g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(final Object v1Id);
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void g_v1_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(convertToVertexId("marko"));
@@ -56,7 +56,7 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_aX() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_aX(convertToVertexId("marko"));
@@ -75,7 +75,7 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X() {
         final Traversal<Vertex, Vertex> traversal = get_g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(convertToVertexId("marko"));

@@ -9,7 +9,7 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.Random;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC_DOUBLE;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
 
 /**
@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
 public class CoreTraversalTest extends AbstractGremlinProcessTest {
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void shouldAddStartsProperly() {
         final Traversal<Object, Vertex> traversal = g.of().out().out();
         assertFalse(traversal.hasNext());
@@ -43,7 +43,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(CLASSIC_DOUBLE)
+    @LoadGraphWith(MODERN)
     public void shouldTraversalResetProperly() {
         final Traversal<Object, Vertex> traversal = g.of().as("a").out().out().<Vertex>has("name", Contains.IN, Arrays.asList("ripple","lop")).as("b");
         if (new Random().nextBoolean()) traversal.reset();
