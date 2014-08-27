@@ -202,14 +202,14 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         throw Graph.Exceptions.variablesNotSupported();
     }
 
+    /**
+     * This implementation of {@code close} will also close the current transaction on the the thread, but it
+     * is up to the caller to deal with dangling transactions in other threads prior to calling this method.
+     */
     @Override
     public void close() throws Exception {
-        // need to close any dangling transactions
-        // todo: does this need to be done across threads to keep shutdown fast???
         this.tx().close();
-
-        if (this.baseGraph != null)
-            this.baseGraph.shutdown();
+        if (this.baseGraph != null) this.baseGraph.shutdown();
     }
 
     public String toString() {
