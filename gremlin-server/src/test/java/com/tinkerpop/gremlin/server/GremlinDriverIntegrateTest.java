@@ -13,7 +13,6 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.util.TimeUtil;
 import com.tinkerpop.gremlin.util.function.SFunction;
 import groovy.json.JsonBuilder;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
