@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.FileConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.tools.shell.Groovysh;
 
 import java.io.File;
@@ -80,8 +81,10 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     public Object submit(final List<String> args) {
         try {
             final StringBuilder builder = new StringBuilder();
-            if (this.useSugarPlugin)
+            if (this.useSugarPlugin) {
+                // builder.append(InvokerHelper.class.getCanonicalName() + ".getMetaRegistry().removeMetaClass(" + GiraphGraph.class.getCanonicalName() + ".class)\n");
                 builder.append(SugarLoader.class.getCanonicalName() + ".load()\n");
+            }
             builder.append(this.graphVariable + " = " + GiraphGraph.class.getCanonicalName() + ".open()\n");
             builder.append("traversal = " + args.get(0) + "\n");
             builder.append(GiraphComputerHelper.class.getCanonicalName() + ".prepareTraversalForComputer(traversal)\n");
