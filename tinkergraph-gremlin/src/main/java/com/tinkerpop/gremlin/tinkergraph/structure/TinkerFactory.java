@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class TinkerFactory {
     public static TinkerGraph createClassic() {
@@ -32,6 +33,27 @@ public class TinkerFactory {
         josh.addEdge("created", ripple, Element.ID, 10, "weight", 1.0f);
         josh.addEdge("created", lop, Element.ID, 11, "weight", 0.4f);
         peter.addEdge("created", lop, Element.ID, 12, "weight", 0.2f);
+    }
+
+    public static TinkerGraph createModern() {
+        final TinkerGraph g = TinkerGraph.open();
+        generateModern(g);
+        return g;
+    }
+
+    public static void generateModern(final TinkerGraph g) {
+        final Vertex marko = g.addVertex(Element.ID, 1, Element.LABEL, "person", "name", "marko", "age", 29);
+        final Vertex vadas = g.addVertex(Element.ID, 2, Element.LABEL, "person", "name", "vadas", "age", 27);
+        final Vertex lop = g.addVertex(Element.ID, 3, Element.LABEL, "software", "name", "lop", "lang", "java");
+        final Vertex josh = g.addVertex(Element.ID, 4, Element.LABEL, "person", "name", "josh", "age", 32);
+        final Vertex ripple = g.addVertex(Element.ID, 5, Element.LABEL, "software", "name", "ripple", "lang", "java");
+        final Vertex peter = g.addVertex(Element.ID, 6, Element.LABEL, "person", "name", "peter", "age", 35);
+        marko.addEdge("knows", vadas, Element.ID, 7, "weight", 0.5d);
+        marko.addEdge("knows", josh, Element.ID, 8, "weight", 1.0d);
+        marko.addEdge("created", lop, Element.ID, 9, "weight", 0.4d);
+        josh.addEdge("created", ripple, Element.ID, 10, "weight", 1.0d);
+        josh.addEdge("created", lop, Element.ID, 11, "weight", 0.4d);
+        peter.addEdge("created", lop, Element.ID, 12, "weight", 0.2d);
     }
 
     public interface SocialTraversal<S, E> extends Traversal<S, E> {
