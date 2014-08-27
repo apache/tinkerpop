@@ -314,6 +314,10 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final ResultSet results3 = client.submit("x + b + a + 1", bindings3);
         assertEquals(301, results3.one().getInt());
 
+        final Map<String,Object> bindings4 = new HashMap<>();
+        final ResultSet results4 = client.submit("x + b + a + 1", bindings4);
+        assertEquals(301, results4.one().getInt());
+
         cluster.close();
     }
 
