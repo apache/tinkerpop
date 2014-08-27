@@ -27,17 +27,22 @@ Lambda Steps
 
 There are eight generic steps by which all other specific steps described later are instances of.
 
- * `map(Function<Traverser<S>,E>)`
- * `map(BiFunction<Traverser<S>, Traversal.SideEffects,E>)`
- * `flatMap(Function<Traverser<S>, Iterator<E>>)`
- * `flatMap(BiFunction<Traverser<S>, Traversal.SideEffects, Iterator<E>>)`
- * `filter(Predicate<Traverser<S>>)`
- * `filter(BiPredicate<Traverser<S>, Traversal.SideEffects>)`
- * `sideEffect(Consumer<Traverser<S>>)`
- * `sideEffect(BiConsumer<Traverser<S>, Traversal.SideEffects>)`
+[width="100%",cols="12,10",options="header"]
+|=========================================================
+| Step| Description
+| `map(Function<Traverser<S>,E>)` | map the traverser to some object of type `E` for the next step to process.
+| `map(BiFunction<Traverser<S>, Traversal.SideEffects,E>)` | like previous, but access to traversal side effects is allowed.
+| `flatMap(Function<Traverser<S>, Iterator<E>>)` | map the traverser to an iterator of `E` objects that are streamed to the next step.
+| `flatMap(BiFunction<Traverser<S>, Traversal.SideEffects, Iterator<E>>)` | like previous, but access to traversal side effects is allowed.
+| `filter(Predicate<Traverser<S>>)` | map the traverser to either true or false, where false will not pass the traverser to the next step.
+| `filter(BiPredicate<Traverser<S>, Traversal.SideEffects>)` | like previous, but access to traversal side effects is allowed.
+| `sideEffect(Consumer<Traverser<S>>)` | perform some operation on the traverser and pass it to the next step.
+| `sideEffect(BiConsumer<Traverser<S>, Traversal.SideEffects>)` | like previous, but access to traversal side effects is allowed.
+|=========================================================
 
-If a `BiXXX`-lambda is provided, then the user has access to `Traversal.SideEffects` which provides access to sideEffect data structures and objects at particular steps. A series of examples are provided below.
+If a `BiXXX`-lambda is provided, then the user has access to `Traversal.SideEffects` which contains side effect data structures as well as objects at particular labeled steps. A series of examples are provided below.
 
+image:map-lambda.png[width=150,float=right]
 [source,groovy]
 gremlin> g.v(1).as('a').out() <1>
 ==>v[3]
@@ -54,7 +59,38 @@ gremlin> g.v(1).as('a').out.back('a') <3>
 
 <1> A standard outgoing traversal from vertex 1.
 <2> For each vertex outgoing adjacent to vertex 1, get the vertex at `a` (which is vertex 1).
-<3> This is exactly how <<back()-step,back-step>> is implemented (a more specific step).
+<3> The <<back-step,`back()`-step>> is implemented as a `map()`-step that accesses side effects.
+
+image:filter-lambda.png[width=160,float=right]
+[source,groovy]
+gremlin> g.V().filter{it.get().property('age').isPresent()} <1>
+==>v[1]
+==>v[2]
+==>v[4]
+==>v[6]
+gremlin> g.V().has('age') <2>
+==>v[1]
+==>v[2]
+==>v[4]
+==>v[6]
+
+<1> A filter that only allows the vertex to pass if it has an age property.
+<2> The more specific `has()`-step is implemented as a `filter()` with respective predicate.
+
+
+image:side-effect-lambda.png[width=175,float=right]
+[source,groovy]
+gremlin> g.V().has('age').sideEffect{println it} <1>
+v[1]
+==>v[1]
+v[2]
+==>v[2]
+v[4]
+==>v[4]
+v[6]
+==>v[6]
+
+<1> Whatever enters sideEffect is passed to the next step, but some intervening process can occur.
 
 
 [[addedge-step]]
