@@ -309,7 +309,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
 
                 threadLocalTx.get().failure();
             } catch (SystemException e) {
-                throw new RuntimeException(e); // todo: generalize and make consistent
+                throw new RuntimeException(e);
             } finally {
                 threadLocalTx.get().close();
                 threadLocalTx.remove();
