@@ -85,7 +85,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadGraphML() throws IOException {
         readGraphMLIntoGraph(g);
-        assertClassicGraph(g, false, true);
+        assertToyGraph(g, false, true, false);
     }
 
     @Test
@@ -287,7 +287,7 @@ public class IoTest extends AbstractGremlinTest {
 
         GraphMigrator.migrateGraph(g, g1);
 
-        assertClassicGraph(g1, false, false);
+        assertToyGraph(g1, false, false, false);
 
         // need to manually close the "g1" instance
         graphProvider.clear(g1, configuration);
@@ -305,16 +305,44 @@ public class IoTest extends AbstractGremlinTest {
         GraphMigrator.migrateGraph(g, g1);
 
         // by making this lossy for float it will assert floats for doubles
-        assertClassicGraph(g1, true, false);
+        assertToyGraph(g1, true, false, true);
 
         // need to manually close the "g1" instance
         graphProvider.clear(g1, configuration);
     }
 
     @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    public void shouldReadWriteModernToKryo() throws Exception {
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = KryoWriter.build().create();
+            writer.writeGraph(os, g);
+
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
+            graphProvider.clear(configuration);
+            final Graph g1 = graphProvider.openTestGraph(configuration);
+            final KryoReader reader = KryoReader.build()
+                    .setWorkingDirectory(File.separator + "tmp").create();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readGraph(bais, g1);
+            }
+
+            // by making this lossy for float it will assert floats for doubles
+            assertToyGraph(g1, true, false, true);
+
+            // need to manually close the "g1" instance
+            graphProvider.clear(g1, configuration);
+        }
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldReadWriteClassicToKryo() throws Exception {
@@ -331,35 +359,7 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readGraph(bais, g1);
             }
 
-            // by making this lossy for float it will assert floats for doubles
-            assertClassicGraph(g1, true, false);
-
-            // need to manually close the "g1" instance
-            graphProvider.clear(g1, configuration);
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    public void shouldReadWriteClassicFloatToKryo() throws Exception {
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
-            writer.writeGraph(os, g);
-
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
-            graphProvider.clear(configuration);
-            final Graph g1 = graphProvider.openTestGraph(configuration);
-            final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readGraph(bais, g1);
-            }
-
-            assertClassicGraph(g1, false, false);
+            assertToyGraph(g1, false, false, false);
 
             // need to manually close the "g1" instance
             graphProvider.clear(g1, configuration);
@@ -383,7 +383,31 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readGraph(bais, g1);
             }
 
-            assertClassicGraph(g1, true, false);
+            assertToyGraph(g1, true, false, false);
+
+            // need to manually close the "g1" instance
+            graphProvider.clear(g1, configuration);
+        }
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    public void shouldReadWriteModernToGraphSON() throws Exception {
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = GraphSONWriter.build().create();
+            writer.writeGraph(os, g);
+
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
+            graphProvider.clear(configuration);
+            final Graph g1 = graphProvider.openTestGraph(configuration);
+            final GraphSONReader reader = GraphSONReader.build().create();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readGraph(bais, g1);
+            }
+
+            assertToyGraph(g1, true, false, true);
 
             // need to manually close the "g1" instance
             graphProvider.clear(g1, configuration);
@@ -1732,45 +1756,46 @@ public class IoTest extends AbstractGremlinTest {
         }
 
         // the id is lossy in migration because TP2 treated ID as String
-        assertClassicGraph(g, false, true);
+        assertToyGraph(g, false, true, false);
     }
 
-    public static void assertClassicGraph(final Graph g1, final boolean lossyForFloat, final boolean lossyForId) {
+    public static void assertToyGraph(final Graph g1, final boolean assertDouble, final boolean lossyForId, final boolean assertSpecificLabel) {
         assertEquals(new Long(6), g1.V().count().next());
         assertEquals(new Long(6), g1.E().count().next());
 
         final Vertex v1 = (Vertex) g1.V().has("name", "marko").next();
         assertEquals(29, v1.<Integer>value("age").intValue());
         assertEquals(2, v1.keys().size());
-        assertClassicId(g1, lossyForId, v1, 1);
+        assertEquals(assertSpecificLabel ? "person" : Vertex.DEFAULT_LABEL, v1.label());
+        assertId(g1, lossyForId, v1, 1);
 
         final List<Edge> v1Edges = v1.bothE().toList();
         assertEquals(3, v1Edges.size());
         v1Edges.forEach(e -> {
             if (e.inV().value("name").next().equals("vadas")) {
                 assertEquals("knows", e.label());
-                if (lossyForFloat)
+                if (assertDouble)
                     assertEquals(0.5d, e.value("weight"), 0.0001d);
                 else
                     assertEquals(0.5f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
-                assertClassicId(g1, lossyForId, e, 7);
+                assertId(g1, lossyForId, e, 7);
             } else if (e.inV().value("name").next().equals("josh")) {
                 assertEquals("knows", e.label());
-                if (lossyForFloat)
+                if (assertDouble)
                     assertEquals(1.0, e.value("weight"), 0.0001d);
                 else
                     assertEquals(1.0f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
-                assertClassicId(g1, lossyForId, e, 8);
+                assertId(g1, lossyForId, e, 8);
             } else if (e.inV().value("name").next().equals("lop")) {
                 assertEquals("created", e.label());
-                if (lossyForFloat)
+                if (assertDouble)
                     assertEquals(0.4d, e.value("weight"), 0.0001d);
                 else
                     assertEquals(0.4f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
-                assertClassicId(g1, lossyForId, e, 9);
+                assertId(g1, lossyForId, e, 9);
             } else {
                 fail("Edge not expected");
             }
@@ -1779,19 +1804,20 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v2 = (Vertex) g1.V().has("name", "vadas").next();
         assertEquals(27, v2.<Integer>value("age").intValue());
         assertEquals(2, v2.keys().size());
-        assertClassicId(g1, lossyForId, v2, 2);
+        assertEquals(assertSpecificLabel ? "person" : Vertex.DEFAULT_LABEL, v2.label());
+        assertId(g1, lossyForId, v2, 2);
 
         final List<Edge> v2Edges = v2.bothE().toList();
         assertEquals(1, v2Edges.size());
         v2Edges.forEach(e -> {
             if (e.outV().value("name").next().equals("marko")) {
                 assertEquals("knows", e.label());
-                if (lossyForFloat)
+                if (assertDouble)
                     assertEquals(0.5d, e.value("weight"), 0.0001d);
                 else
                     assertEquals(0.5f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
-                assertClassicId(g1, lossyForId, e, 7);
+                assertId(g1, lossyForId, e, 7);
             } else {
                 fail("Edge not expected");
             }
@@ -1800,35 +1826,36 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v3 = (Vertex) g1.V().has("name", "lop").next();
         assertEquals("java", v3.<String>value("lang"));
         assertEquals(2, v2.keys().size());
-        assertClassicId(g1, lossyForId, v3, 3);
+        assertEquals(assertSpecificLabel ? "software" : Vertex.DEFAULT_LABEL, v3.label());
+        assertId(g1, lossyForId, v3, 3);
 
         final List<Edge> v3Edges = v3.bothE().toList();
         assertEquals(3, v3Edges.size());
         v3Edges.forEach(e -> {
             if (e.outV().value("name").next().equals("peter")) {
                 assertEquals("created", e.label());
-                if (lossyForFloat)
+                if (assertDouble)
                     assertEquals(0.2d, e.value("weight"), 0.0001d);
                 else
                     assertEquals(0.2f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
-                assertClassicId(g1, lossyForId, e, 12);
+                assertId(g1, lossyForId, e, 12);
             } else if (e.outV().next().value("name").equals("josh")) {
                 assertEquals("created", e.label());
-                if (lossyForFloat)
+                if (assertDouble)
                     assertEquals(0.4d, e.value("weight"), 0.0001d);
                 else
                     assertEquals(0.4f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
-                assertClassicId(g1, lossyForId, e, 11);
+                assertId(g1, lossyForId, e, 11);
             } else if (e.outV().value("name").next().equals("marko")) {
                 assertEquals("created", e.label());
-                if (lossyForFloat)
+                if (assertDouble)
                     assertEquals(0.4d, e.value("weight"), 0.0001d);
                 else
                     assertEquals(0.4f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
-                assertClassicId(g1, lossyForId, e, 9);
+                assertId(g1, lossyForId, e, 9);
             } else {
                 fail("Edge not expected");
             }
@@ -1837,35 +1864,36 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v4 = (Vertex) g1.V().has("name", "josh").next();
         assertEquals(32, v4.<Integer>value("age").intValue());
         assertEquals(2, v4.keys().size());
-        assertClassicId(g1, lossyForId, v4, 4);
+        assertEquals(assertSpecificLabel ? "person" : Vertex.DEFAULT_LABEL, v4.label());
+        assertId(g1, lossyForId, v4, 4);
 
         final List<Edge> v4Edges = v4.bothE().toList();
         assertEquals(3, v4Edges.size());
         v4Edges.forEach(e -> {
             if (e.inV().value("name").next().equals("ripple")) {
                 assertEquals("created", e.label());
-                if (lossyForFloat)
+                if (assertDouble)
                     assertEquals(1.0d, e.value("weight"), 0.0001d);
                 else
                     assertEquals(1.0f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
-                assertClassicId(g1, lossyForId, e, 10);
+                assertId(g1, lossyForId, e, 10);
             } else if (e.inV().value("name").next().equals("lop")) {
                 assertEquals("created", e.label());
-                if (lossyForFloat)
+                if (assertDouble)
                     assertEquals(0.4d, e.value("weight"), 0.0001d);
                 else
                     assertEquals(0.4f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
-                assertClassicId(g1, lossyForId, e, 11);
+                assertId(g1, lossyForId, e, 11);
             } else if (e.outV().value("name").next().equals("marko")) {
                 assertEquals("knows", e.label());
-                if (lossyForFloat)
+                if (assertDouble)
                     assertEquals(1.0d, e.value("weight"), 0.0001d);
                 else
                     assertEquals(1.0f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
-                assertClassicId(g1, lossyForId, e, 8);
+                assertId(g1, lossyForId, e, 8);
             } else {
                 fail("Edge not expected");
             }
@@ -1874,19 +1902,20 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v5 = (Vertex) g1.V().has("name", "ripple").next();
         assertEquals("java", v5.<String>value("lang"));
         assertEquals(2, v5.keys().size());
-        assertClassicId(g1, lossyForId, v5, 5);
+        assertEquals(assertSpecificLabel ? "software" : Vertex.DEFAULT_LABEL, v5.label());
+        assertId(g1, lossyForId, v5, 5);
 
         final List<Edge> v5Edges = v5.bothE().toList();
         assertEquals(1, v5Edges.size());
         v5Edges.forEach(e -> {
             if (e.outV().value("name").next().equals("josh")) {
                 assertEquals("created", e.label());
-                if (lossyForFloat)
+                if (assertDouble)
                     assertEquals(1.0d, e.value("weight"), 0.0001d);
                 else
                     assertEquals(1.0f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
-                assertClassicId(g1, lossyForId, e, 10);
+                assertId(g1, lossyForId, e, 10);
             } else {
                 fail("Edge not expected");
             }
@@ -1895,26 +1924,27 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v6 = (Vertex) g1.V().has("name", "peter").next();
         assertEquals(35, v6.<Integer>value("age").intValue());
         assertEquals(2, v6.keys().size());
-        assertClassicId(g1, lossyForId, v6, 6);
+        assertEquals(assertSpecificLabel ? "person" : Vertex.DEFAULT_LABEL, v6.label());
+        assertId(g1, lossyForId, v6, 6);
 
         final List<Edge> v6Edges = v6.bothE().toList();
         assertEquals(1, v6Edges.size());
         v6Edges.forEach(e -> {
             if (e.inV().value("name").next().equals("lop")) {
                 assertEquals("created", e.label());
-                if (lossyForFloat)
+                if (assertDouble)
                     assertEquals(0.2d, e.value("weight"), 0.0001d);
                 else
                     assertEquals(0.2f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
-                assertClassicId(g1, lossyForId, e, 12);
+                assertId(g1, lossyForId, e, 12);
             } else {
                 fail("Edge not expected");
             }
         });
     }
 
-    private static void assertClassicId(final Graph g, final boolean lossyForId, final Element e, final Object expected) {
+    private static void assertId(final Graph g, final boolean lossyForId, final Element e, final Object expected) {
         if (g.features().edge().supportsUserSuppliedIds()) {
             if (lossyForId)
                 assertEquals(expected.toString(), e.id().toString());

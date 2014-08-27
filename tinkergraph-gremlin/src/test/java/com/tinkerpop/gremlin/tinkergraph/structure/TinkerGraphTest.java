@@ -434,7 +434,7 @@ public class TinkerGraphTest implements Serializable {
 
     @Test
     public void shouldSerializeGraph() throws Exception {
-        final TinkerGraph g = TinkerFactory.createClassic();
+        final TinkerGraph g = TinkerFactory.createModern();
         final String fileName = UUID.randomUUID().toString() + ".bin";
         final String location = tempPath + "tp" + File.separator + "tinkergraph-serialization-test" + File.separator;
         deleteFile(location);
@@ -452,7 +452,7 @@ public class TinkerGraphTest implements Serializable {
 
         try {
             final TinkerGraph g1 = (TinkerGraph) input.readObject();
-            IoTest.assertClassicGraph(g1, false, false);
+            IoTest.assertToyGraph(g1, true, false, true);
         } catch (ClassNotFoundException cnfe) {
             throw new RuntimeException(cnfe);
         } finally {
