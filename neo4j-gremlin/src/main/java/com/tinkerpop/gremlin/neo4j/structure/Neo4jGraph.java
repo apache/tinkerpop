@@ -159,7 +159,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
             throw Graph.Exceptions.elementNotFound(Vertex.class, id);
         } catch (final NumberFormatException e) {
             throw Graph.Exceptions.elementNotFound(Vertex.class, id);
-        } catch (final NotInTransactionException e) {     // todo: is this right?
+        } catch (final NotInTransactionException e) {
             throw Graph.Exceptions.elementNotFound(Vertex.class, id);
         }
     }
@@ -175,7 +175,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
             throw Graph.Exceptions.elementNotFound(Edge.class, id);
         } catch (final NumberFormatException e) {
             throw Graph.Exceptions.elementNotFound(Edge.class, id);
-        } catch (final NotInTransactionException e) {     // todo: is this right?
+        } catch (final NotInTransactionException e) {
             throw Graph.Exceptions.elementNotFound(Edge.class, id);
         }
     }
