@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -136,6 +137,20 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
+    @Test
+    public void shouldNotThrowNoSuchElementException() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        try {
+            // this should return "nothing" - there should be no exception
+            assertNull(client.submit("g.V().has('name','kadfjaldjfla')").one());
+        } catch (Exception re) {
+            throw re;
+        } finally {
+            cluster.close();
+        }
+    }
 
     @Test
     public void shouldReceiveFailureTimeOutOnScriptEval() throws Exception {
