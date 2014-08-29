@@ -73,11 +73,22 @@ public class Session {
 
     public void touch() {
         // if the task of killing is cancelled successfully then reset the session monitor. otherwise this session
-        // has already been killed and there's nothing left to do with tis session.
+        // has already been killed and there's nothing left to do with this session.
         final ScheduledFuture killFuture = kill.get();
         if (null == killFuture || !killFuture.isDone()) {
             if (killFuture != null) killFuture.cancel(false);
             kill.set(this.scheduledExecutorService.schedule(() -> {
+                // when the session is killed open transaction should be rolled back
+                graphs.getGraphs().values().forEach(g -> {
+                    if (g.features().graph().supportsTransactions()) {
+                        // have to execute the rollback in the executor because the transaction is associated with
+                        // that thread of execution from this session
+                        this.executor.execute(() -> {
+                            logger.info("Rolling back any open transactions from session: {}", this.session);
+                            if (g.tx().isOpen()) g.tx().rollback();
+                        });
+                    }
+                });
                 sessions.remove(this.session);
                 logger.info("Kill idle session named {} after {} milliseconds", this.session, this.configuredSessionTimeout);
             }, this.configuredSessionTimeout, TimeUnit.MILLISECONDS));
