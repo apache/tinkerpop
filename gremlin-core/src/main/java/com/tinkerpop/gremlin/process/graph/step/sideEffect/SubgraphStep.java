@@ -89,4 +89,9 @@ public class SubgraphStep<S> extends SideEffectStep<S> implements SideEffectCapa
         }
         return foundVertex;
     }
+
+    @Override
+    public String toString() {
+        return Graph.Key.isHidden(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
+    }
 }

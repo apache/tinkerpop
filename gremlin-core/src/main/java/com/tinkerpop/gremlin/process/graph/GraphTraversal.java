@@ -9,7 +9,6 @@ import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
-import com.tinkerpop.gremlin.process.graph.marker.GraphComputerAnalyzer;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
@@ -58,6 +57,8 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.step.util.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
+import com.tinkerpop.gremlin.process.graph.strategy.GraphComputerStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.SideEffectHelper;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -95,12 +96,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     @Override
     public default GraphTraversal<S, E> submit(final GraphComputer computer) {
         try {
-            this.getSteps().stream()
-                    .filter(step -> step instanceof GraphComputerAnalyzer)
-                    .forEach(step -> ((GraphComputerAnalyzer) step).registerGraphComputer(computer));
+            this.sideEffects().removeGraph();
+            this.strategies().unregister(TraverserSourceStrategy.class);
+            this.strategies().register(GraphComputerStrategy.instance());
             TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> this).create();
             final ComputerResult result = computer.program(vertexProgram).submit().get();
-            final GraphTraversal traversal = new DefaultGraphTraversal<>(); // TODO: of() with resultant graph?
+            final GraphTraversal traversal = result.getGraph().of();
             traversal.addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
             return traversal;
         } catch (Exception e) {

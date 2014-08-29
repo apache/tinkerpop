@@ -23,12 +23,10 @@ import java.util.stream.Stream;
  */
 public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
 
-    public TinkerGraph graph;
     public final List<HasContainer> hasContainers = new ArrayList<>();
 
-    public TinkerGraphStep(final Traversal traversal, final Class<E> returnClass, final TinkerGraph graph) {
+    public TinkerGraphStep(final Traversal traversal, final Class<E> returnClass) {
         super(traversal, returnClass);
-        this.graph = graph;
     }
 
     @Override
@@ -40,8 +38,8 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
     private Iterator<? extends Edge> edges() {
         final HasContainer indexedContainer = getIndexKey(Edge.class);
         final Stream<? extends Edge> edgeStream = (null == indexedContainer) ?
-                TinkerHelper.getEdges(this.graph).stream() :
-                TinkerHelper.queryEdgeIndex(this.graph, indexedContainer.key, indexedContainer.value).stream();
+                TinkerHelper.getEdges((TinkerGraph)this.traversal.sideEffects().getGraph()).stream() :
+                TinkerHelper.queryEdgeIndex((TinkerGraph)this.traversal.sideEffects().getGraph(), indexedContainer.key, indexedContainer.value).stream();
 
         // the copy to a new List is intentional as remove() operations will cause ConcurrentModificationException otherwise
         return edgeStream.filter(e -> HasContainer.testAll(e, hasContainers)).collect(Collectors.<Edge>toList()).iterator();
@@ -50,15 +48,15 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
     private Iterator<? extends Vertex> vertices() {
         final HasContainer indexedContainer = getIndexKey(Vertex.class);
         final Stream<? extends Vertex> vertexStream = (null == indexedContainer) ?
-                TinkerHelper.getVertices(this.graph).stream() :
-                TinkerHelper.queryVertexIndex(this.graph, indexedContainer.key, indexedContainer.value).stream();
+                TinkerHelper.getVertices((TinkerGraph)this.traversal.sideEffects().getGraph()).stream() :
+                TinkerHelper.queryVertexIndex((TinkerGraph)this.traversal.sideEffects().getGraph(), indexedContainer.key, indexedContainer.value).stream();
 
         // the copy to a new List is intentional as remove() operations will cause ConcurrentModificationException otherwise
         return vertexStream.filter(v -> HasContainer.testAll(v, this.hasContainers)).collect(Collectors.<Vertex>toList()).iterator();
     }
 
     private HasContainer getIndexKey(final Class<? extends Element> indexedClass) {
-        final Set<String> indexedKeys = this.graph.getIndexedKeys(indexedClass);
+        final Set<String> indexedKeys = ((TinkerGraph)this.traversal.sideEffects().getGraph()).getIndexedKeys(indexedClass);
         return this.hasContainers.stream()
                 .filter(c -> indexedKeys.contains(c.key) && c.predicate.equals(Compare.EQUAL))
                 .findFirst()

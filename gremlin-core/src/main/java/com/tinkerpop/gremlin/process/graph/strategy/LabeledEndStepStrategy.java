@@ -9,11 +9,11 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LabeledStepStrategy implements TraversalStrategy {
+public class LabeledEndStepStrategy implements TraversalStrategy {
 
-    private static final LabeledStepStrategy INSTANCE = new LabeledStepStrategy();
+    private static final LabeledEndStepStrategy INSTANCE = new LabeledEndStepStrategy();
 
-    private LabeledStepStrategy() {
+    private LabeledEndStepStrategy() {
     }
 
     @Override
@@ -23,7 +23,7 @@ public class LabeledStepStrategy implements TraversalStrategy {
             TraversalHelper.insertStep(new LabelIdentityStep<>(traversal), traversal.getSteps().size(), traversal);
     }
 
-    public static LabeledStepStrategy instance() {
+    public static LabeledEndStepStrategy instance() {
         return INSTANCE;
     }
 

@@ -17,7 +17,7 @@ public class TinkerGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
     public TinkerGraphTraversal(final TinkerGraph graph, final Class<? extends Element> elementClass) {
         super(graph);
         this.strategies().register(TinkerGraphStepStrategy.instance());
-        this.addStep(new TinkerGraphStep(this, elementClass, graph));
+        this.addStep(new TinkerGraphStep(this, elementClass));
     }
 
     @Override

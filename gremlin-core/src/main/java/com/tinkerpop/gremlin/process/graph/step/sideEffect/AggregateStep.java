@@ -68,6 +68,11 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCa
     }
 
     @Override
+    public String toString() {
+        return Graph.Key.isHidden(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
+    }
+
+    @Override
     public MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> getMapReduce() {
         return new AggregateMapReduce(this);
     }

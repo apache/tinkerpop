@@ -69,4 +69,9 @@ public class TreeStep<S> extends SideEffectStep<S> implements Reversible, PathCo
         super.reset();
         this.functionRing.reset();
     }
+
+    @Override
+    public String toString() {
+        return Graph.Key.isHidden(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
+    }
 }

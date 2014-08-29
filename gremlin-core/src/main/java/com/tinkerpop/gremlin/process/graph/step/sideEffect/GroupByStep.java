@@ -98,4 +98,9 @@ public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEf
     public MapReduce<Object, Collection, Object, Object, Map> getMapReduce() {
         return new GroupByMapReduce(this);
     }
+
+    @Override
+    public String toString() {
+        return Graph.Key.isHidden(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
+    }
 }

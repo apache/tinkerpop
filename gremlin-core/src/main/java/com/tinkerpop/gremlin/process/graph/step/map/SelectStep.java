@@ -2,8 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.marker.GraphComputerAnalyzer;
+import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -16,7 +15,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements PathConsumer, GraphComputerAnalyzer {
+public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements PathConsumer, EngineDependent {
 
     public final FunctionRing functionRing;
     public final List<String> selectLabels;
@@ -77,8 +76,11 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
     }
 
     @Override
-    public void registerGraphComputer(final GraphComputer graphComputer) {
-        this.requiresPaths = TraversalHelper.getLabelsUpTo(this, this.traversal).stream().filter(label -> this.selectLabels.contains(label)).findFirst().isPresent();
+    public void onEngine(final Engine engine) {
+        if (engine.equals(Engine.COMPUTER))
+            this.requiresPaths = TraversalHelper.getLabelsUpTo(this, this.traversal).stream().filter(label -> this.selectLabels.contains(label)).findFirst().isPresent();
+        else
+            this.requiresPaths = false;
     }
 
     public String toString() {

@@ -10,12 +10,12 @@ import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.SideEffectCapComputerStep;
 import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraversalResultMapReduce;
 import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -78,7 +78,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                 this.computeKeys.put(Graph.Key.hide(mapReduce.getSideEffectKey()), KeyType.CONSTANT);
             });
 
-            if (!(TraversalHelper.getEnd(traversal) instanceof SideEffectCapComputerStep))
+            if (!(TraversalHelper.getEnd(traversal) instanceof SideEffectCapStep))
                 this.mapReducers.add(new TraversalResultMapReduce());
 
         } catch (final Exception e) {

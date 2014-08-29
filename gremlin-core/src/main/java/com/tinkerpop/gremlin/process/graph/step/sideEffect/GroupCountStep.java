@@ -64,4 +64,9 @@ public class GroupCountStep<S> extends SideEffectStep<S> implements SideEffectCa
     public MapReduce<Object, Long, Object, Long, Map<Object, Long>> getMapReduce() {
         return new GroupCountMapReduce(this);
     }
+
+    @Override
+    public String toString() {
+        return Graph.Key.isHidden(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
+    }
 }

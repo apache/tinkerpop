@@ -4,9 +4,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.graph.strategy.CountCapStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.JumpComputerStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapComputerStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.MultiIterator;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -16,7 +13,6 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect.TinkerGraphStep;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerGraphStepStrategy;
 
 import java.util.ArrayList;
@@ -160,14 +156,8 @@ public class TinkerHelper {
     }
 
     public static void prepareTraversalForComputer(final Traversal traversal) {
-        if (traversal.getSteps().get(0) instanceof TinkerGraphStep)
-            ((TinkerGraphStep) traversal.getSteps().get(0)).graph = null;
-        traversal.sideEffects().removeGraph();
         traversal.strategies().unregister(TinkerGraphStepStrategy.class);
-        traversal.strategies().unregister(TraverserSourceStrategy.class);
         traversal.strategies().register(CountCapStrategy.instance());
-        traversal.strategies().register(SideEffectCapComputerStrategy.instance());
-        traversal.strategies().register(JumpComputerStrategy.instance());
     }
 
     private static class TinkerVertexIterator implements Iterator<TinkerVertex> {
