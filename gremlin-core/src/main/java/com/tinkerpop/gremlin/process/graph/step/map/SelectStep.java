@@ -32,7 +32,7 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
             final S start = traverser.get();
             final Map<String, E> bindings = new LinkedHashMap<>();
 
-            if (this.requiresPaths) {   ////// PROCESS PATHS
+            if (this.requiresPaths) {   ////// PROCESS STEP BINDINGS
                 final Path path = traverser.getPath();
                 this.selectLabels.forEach(label -> {
                     if (path.hasLabel(label))
@@ -45,7 +45,7 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
                 });
             }
 
-            if (start instanceof Map) {  ////// PROCESS MAPS
+            if (start instanceof Map) {  ////// PROCESS MAP BINDINGS
                 if (this.wasEmpty)
                     ((Map) start).forEach((k, v) -> bindings.put((String) k, (E) this.functionRing.next().apply(v)));
                 else
@@ -78,7 +78,7 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
 
     @Override
     public void registerGraphComputer(final GraphComputer graphComputer) {
-        this.requiresPaths = TraversalHelper.getLabels(this.traversal).stream().filter(label -> this.selectLabels.contains(label)).findFirst().isPresent();
+        this.requiresPaths = TraversalHelper.getLabelsUpTo(this, this.traversal).stream().filter(label -> this.selectLabels.contains(label)).findFirst().isPresent();
     }
 
     public String toString() {
