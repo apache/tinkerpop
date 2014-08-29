@@ -33,6 +33,7 @@ public abstract class MemoryTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = false;
         }
 
+        @Override
         public Traversal.SideEffects get_g_V_memory() {
             return g.V().sideEffects();
         }

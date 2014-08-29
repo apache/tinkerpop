@@ -32,6 +32,7 @@ public class StrategyWrappedTraversalStrategy implements TraversalStrategy.NoDep
         this.graph = graph;
     }
 
+    @Override
     public void apply(final Traversal traversal) {
         // MapStep after each GraphStep, VertexStep or EdgeVertexStep
         final List<Class> stepsToLookFor = Arrays.<Class>asList(GraphStep.class, VertexStep.class, EdgeVertexStep.class);

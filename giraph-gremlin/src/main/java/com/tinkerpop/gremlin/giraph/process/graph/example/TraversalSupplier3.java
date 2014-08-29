@@ -10,6 +10,7 @@ import java.util.Collection;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class TraversalSupplier3 implements SSupplier<Traversal> {
+    @Override
     public Traversal get() {
         return GiraphGraph.open().V().<String>value("name").groupBy(s -> s.get().substring(1, 2), v -> v, Collection::size);
     }

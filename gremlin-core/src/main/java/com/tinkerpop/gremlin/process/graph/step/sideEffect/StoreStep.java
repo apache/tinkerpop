@@ -44,20 +44,24 @@ public class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable
         });
     }
 
+    @Override
     public String getSideEffectKey() {
         return this.sideEffectKey;
     }
 
+    @Override
     public void setCurrentBulkCount(final long bulkCount) {
         this.bulkCount = bulkCount;
     }
 
+    @Override
     public void setCurrentVertex(final Vertex vertex) {
         this.store = vertex.<Collection>property(this.hiddenSideEffectKey).orElse(new ArrayList());
         if (!vertex.property(this.hiddenSideEffectKey).isPresent())
             vertex.property(this.hiddenSideEffectKey, this.store);
     }
 
+    @Override
     public MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> getMapReduce() {
         return new StoreMapReduce(this);
     }

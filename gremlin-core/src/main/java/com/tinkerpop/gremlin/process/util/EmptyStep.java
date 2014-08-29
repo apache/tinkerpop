@@ -16,46 +16,57 @@ public class EmptyStep<S, E> implements Step<S, E> {
     private EmptyStep() {
     }
 
+    @Override
     public void addStarts(final Iterator<Traverser<S>> iterator) {
 
     }
 
+    @Override
     public void setPreviousStep(final Step<?, S> step) {
 
     }
 
+    @Override
     public void reset() {
 
     }
 
+    @Override
     public Step<?, S> getPreviousStep() {
         return instance();
     }
 
+    @Override
     public void setNextStep(final Step<E, ?> step) {
 
     }
 
+    @Override
     public Step<E, ?> getNextStep() {
         return instance();
     }
 
+    @Override
     public <A, B> Traversal<A, B> getTraversal() {
         return EmptyTraversal.instance();
     }
 
+    @Override
     public Object clone() throws CloneNotSupportedException {
         return instance();
     }
 
+    @Override
     public String getLabel() {
         return Traverser.NO_FUTURE;
     }
 
+    @Override
     public void setLabel(String label) {
 
     }
 
+    @Override
     public boolean hasNext() {
         return false;
     }
@@ -64,6 +75,7 @@ public class EmptyStep<S, E> implements Step<S, E> {
         return (E) NO_OBJECT;
     }
 
+    @Override
     public Traverser<E> next() {
         throw FastNoSuchElementException.instance();
     }

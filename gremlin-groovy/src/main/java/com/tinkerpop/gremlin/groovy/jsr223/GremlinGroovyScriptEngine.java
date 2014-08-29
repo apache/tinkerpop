@@ -226,10 +226,12 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         use(artifact.getGroup(), artifact.getArtifact(), artifact.getVersion());
     }
 
+    @Override
     public Object eval(final Reader reader, final ScriptContext context) throws ScriptException {
         return eval(readFully(reader), context);
     }
 
+    @Override
     public Object eval(final String script, final ScriptContext context) throws ScriptException {
         try {
             final String val = (String) context.getAttribute(KEY_REFERENCE_TYPE, ScriptContext.ENGINE_SCOPE);
@@ -257,10 +259,12 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         }
     }
 
+    @Override
     public Bindings createBindings() {
         return new SimpleBindings();
     }
 
+    @Override
     public ScriptEngineFactory getFactory() {
         if (this.factory == null) {
             synchronized (this) {
@@ -272,6 +276,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         return this.factory;
     }
 
+    @Override
     public CompiledScript compile(final String scriptSource) throws ScriptException {
         try {
             return new GroovyCompiledScript(this, getScriptClass(scriptSource));
@@ -285,14 +290,17 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         }
     }
 
+    @Override
     public CompiledScript compile(final Reader reader) throws ScriptException {
         return compile(readFully(reader));
     }
 
+    @Override
     public Object invokeFunction(final String name, final Object args[]) throws ScriptException, NoSuchMethodException {
         return invokeImpl(null, name, args);
     }
 
+    @Override
     public Object invokeMethod(final Object thiz, final String name, final Object args[]) throws ScriptException, NoSuchMethodException {
         if (thiz == null) {
             throw new IllegalArgumentException("Script object can not be null");
@@ -301,10 +309,12 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         }
     }
 
+    @Override
     public <T> T getInterface(final Class<T> clazz) {
         return makeInterface(null, clazz);
     }
 
+    @Override
     public <T> T getInterface(final Object thiz, final Class<T> clazz) {
         if (null == thiz) throw new IllegalArgumentException("script object is null");
 
@@ -329,6 +339,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         final Writer writer = context.getWriter();
         context.setAttribute("out", writer instanceof PrintWriter ? writer : new PrintWriter(writer), ScriptContext.ENGINE_SCOPE);
         final Binding binding = new Binding() {
+            @Override
             public Object getVariable(final String name) {
                 synchronized (context) {
                     final int scope = context.getAttributesScope(name);
@@ -339,6 +350,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
                 }
             }
 
+            @Override
             public void setVariable(final String name, final Object value) {
                 synchronized (context) {
                     int scope = context.getAttributesScope(name);
@@ -359,6 +371,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
             final MetaClass oldMetaClass = scriptObject.getMetaClass();
             scriptObject.setMetaClass(new DelegatingMetaClass(oldMetaClass) {
+                @Override
                 public Object invokeMethod(Object object, String name, Object args) {
                     if (args == null) {
                         return invokeMethod(object, name, MetaClassHelper.EMPTY_ARRAY);
@@ -371,6 +384,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
                     }
                 }
 
+                @Override
                 public Object invokeMethod(Object object, String name, Object args[]) {
                     try {
                         return super.invokeMethod(object, name, args);
@@ -379,6 +393,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
                     }
                 }
 
+                @Override
                 public Object invokeStaticMethod(Object object, String name, Object args[]) {
                     try {
                         return super.invokeStaticMethod(object, name, args);

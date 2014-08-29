@@ -22,6 +22,7 @@ public class IntersectStep<S, E> extends AbstractStep<S, E> {
         this.traversalRing = new TraversalRing<>(traversals);
     }
 
+    @Override
     protected Traverser<E> processNextStart() {
         while (true) {
             if (this.drainState) {

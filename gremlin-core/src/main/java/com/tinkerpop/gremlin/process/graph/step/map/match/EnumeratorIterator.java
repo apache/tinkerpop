@@ -23,10 +23,12 @@ public class EnumeratorIterator<T> implements Iterator<Map<String, T>> {
         this.enumerator = enumerator;
     }
 
+    @Override
     public boolean hasNext() {
         return index < enumerator.size() || !enumerator.isComplete();
     }
 
+    @Override
     public Map<String, T> next() {
         reuseMe.clear();
         if (!enumerator.visitSolution(index, setCur)) {

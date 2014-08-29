@@ -14,6 +14,7 @@ public class GConsumer<A> implements SConsumer<A> {
         this.closure = closure;
     }
 
+    @Override
     public void accept(A a) {
         this.closure.call(a);
     }

@@ -19,6 +19,7 @@ public class PropertyStep<E> extends MapStep<Element, Property<E>> implements Re
         this.setFunction(traverser -> traverser.get().property(this.propertyKey));
     }
 
+    @Override
     public void reverse() {
         TraversalHelper.replaceStep(this, new PropertyElementStep(this.traversal), this.traversal);
     }

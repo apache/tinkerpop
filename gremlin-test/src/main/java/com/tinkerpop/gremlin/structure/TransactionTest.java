@@ -291,6 +291,7 @@ public class TransactionTest extends AbstractGremlinTest {
         final AtomicInteger completedThreads = new AtomicInteger(0);
         for (int i = 0; i < totalThreads; i++) {
             new Thread() {
+                @Override
                 public void run() {
                     final Random random = new Random();
                     if (random.nextBoolean()) {
@@ -345,6 +346,7 @@ public class TransactionTest extends AbstractGremlinTest {
         final Graph g1 = graphProvider.openTestGraph(configuration);
 
         final Thread threadModFirstGraph = new Thread() {
+            @Override
             public void run() {
                 g.addVertex();
                 g.tx().commit();
@@ -355,6 +357,7 @@ public class TransactionTest extends AbstractGremlinTest {
         threadModFirstGraph.join();
 
         final Thread threadReadBothGraphs = new Thread() {
+            @Override
             public void run() {
                 final long gCounter = g.V().count().next();
                 assertEquals(1l, gCounter);
@@ -386,6 +389,7 @@ public class TransactionTest extends AbstractGremlinTest {
 
         // this thread starts a transaction then waits while the second thread tries to commit it.
         final Thread threadTxStarter = new Thread() {
+            @Override
             public void run() {
                 graph.addVertex();
                 latchCommitInOtherThread.countDown();
@@ -407,6 +411,7 @@ public class TransactionTest extends AbstractGremlinTest {
 
         // this thread tries to commit the transaction started in the first thread above.
         final Thread threadTryCommitTx = new Thread() {
+            @Override
             public void run() {
                 try {
                     latchCommitInOtherThread.await();
@@ -654,6 +659,7 @@ public class TransactionTest extends AbstractGremlinTest {
         final CountDownLatch latchSecondRead = new CountDownLatch(1);
 
         final Thread threadMod = new Thread() {
+            @Override
             public void run() {
                 graph.addVertex();
 
@@ -677,6 +683,7 @@ public class TransactionTest extends AbstractGremlinTest {
         final AtomicLong afterCommitInOtherThreadButBeforeRollbackInCurrentThread = new AtomicLong(0);
         final AtomicLong afterCommitInOtherThread = new AtomicLong(0);
         final Thread threadRead = new Thread() {
+            @Override
             public void run() {
                 try {
                     latchFirstRead.await();

@@ -20,6 +20,7 @@ public class TinkerGraphStepStrategy implements TraversalStrategy.NoDependencies
     private TinkerGraphStepStrategy() {
     }
 
+    @Override
     public void apply(final Traversal traversal) {
 
         if (TraversalHelper.getStart(traversal) instanceof TinkerGraphStep) {

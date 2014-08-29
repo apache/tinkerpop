@@ -25,9 +25,11 @@ public class SideEffectCapComputerStep<S> extends FilterStep<S> implements Rever
         this.setPredicate(traverser -> false);
     }
 
+    @Override
     public void setCurrentBulkCount(final long bulkCount) {
     }
 
+    @Override
     public MapReduce getMapReduce() {
         return new SideEffectCapMapReduce(this);
     }
@@ -36,6 +38,7 @@ public class SideEffectCapComputerStep<S> extends FilterStep<S> implements Rever
         return Graph.Key.isHidden(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
     }
 
+    @Override
     public String getSideEffectKey() {
         return this.sideEffectKey;
     }

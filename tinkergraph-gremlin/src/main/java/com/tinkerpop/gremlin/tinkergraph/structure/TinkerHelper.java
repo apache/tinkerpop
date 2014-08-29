@@ -180,10 +180,12 @@ public class TinkerHelper {
             this.direction = direction;
         }
 
+        @Override
         public boolean hasNext() {
             return this.edges.hasNext();
         }
 
+        @Override
         public TinkerVertex next() {
             if (this.direction.equals(Direction.IN))
                 return (TinkerVertex) this.edges.next().outVertex;
@@ -203,10 +205,12 @@ public class TinkerHelper {
             this.branchFactor = branchFactor;
         }
 
+        @Override
         public boolean hasNext() {
             return this.currentCount < this.branchFactor && this.edges.hasNext();
         }
 
+        @Override
         public TinkerEdge next() {
             if (this.currentCount++ < this.branchFactor) {
                 return this.edges.next();

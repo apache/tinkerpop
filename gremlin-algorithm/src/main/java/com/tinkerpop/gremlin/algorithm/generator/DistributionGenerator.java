@@ -45,6 +45,7 @@ public class DistributionGenerator extends AbstractGenerator {
         this.allowLoops = allowLoops;
     }
 
+    @Override
     public int generate() {
         final long seed = this.seedSupplier.get();
         Random outRandom = new Random(seed);

@@ -15,6 +15,7 @@ public class TraverserSourceStrategy implements TraversalStrategy {
     private TraverserSourceStrategy() {
     }
 
+    @Override
     public void apply(final Traversal traversal) {
         final boolean trackPaths = TraversalHelper.trackPaths(traversal);
         traversal.getSteps().forEach(step -> {
@@ -23,6 +24,7 @@ public class TraverserSourceStrategy implements TraversalStrategy {
         });
     }
 
+    @Override
     public int compareTo(final TraversalStrategy traversalStrategy) {
         return 1;
     }

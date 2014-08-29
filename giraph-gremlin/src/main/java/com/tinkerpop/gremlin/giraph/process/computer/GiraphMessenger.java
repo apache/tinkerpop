@@ -22,10 +22,12 @@ public class GiraphMessenger implements Messenger<Serializable> {
         this.messages = messages;
     }
 
+    @Override
     public Iterable<Serializable> receiveMessages(final MessageType messageType) {
         return (Iterable) StreamFactory.iterable(StreamFactory.stream(this.messages).map(m -> m.get()));
     }
 
+    @Override
     public void sendMessage(final MessageType messageType, final Serializable message) {
         if (messageType instanceof MessageType.Local) {
             final MessageType.Local<Object, Double> localMessageType = (MessageType.Local) messageType;

@@ -13,6 +13,7 @@ public class GSSupplier<A> extends GLambda implements SSupplier<A> {
         super(gremlinGroovyScript);
     }
 
+    @Override
     public A get() {
         try {
             return (A) STATIC_ENGINE.eval(this.gremlinGroovyScript);

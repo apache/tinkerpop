@@ -20,10 +20,12 @@ public class InjectStep<S> extends SideEffectStep<S> implements TraverserSource 
         this.injections = Arrays.asList(injections);
     }
 
+    @Override
     public void generateTraverserIterator(final boolean trackPaths) {
         this.addStarts(new TraverserIterator<>(this, trackPaths, this.injections.iterator()));
     }
 
+    @Override
     public void clear() {
         this.starts.clear();
     }

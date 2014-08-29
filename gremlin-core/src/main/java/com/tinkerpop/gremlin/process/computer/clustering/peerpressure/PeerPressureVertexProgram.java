@@ -172,6 +172,7 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
 
     ////////////////////////////
 
+    @Override
     public Features getFeatures() {
         return new Features() {
             @Override

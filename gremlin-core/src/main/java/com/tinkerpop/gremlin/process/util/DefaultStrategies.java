@@ -21,17 +21,20 @@ public class DefaultStrategies implements Traversal.Strategies {
         this.traversal = traversal;
     }
 
+    @Override
     public void register(final TraversalStrategy traversalStrategy) {
         this.traversalStrategies.add(traversalStrategy);
         // TODO: make this a LinkedHashSet so repeats are not allowed? Or check for repeats first?
     }
 
+    @Override
     public void unregister(final Class<? extends TraversalStrategy> optimizerClass) {
         this.traversalStrategies.stream().filter(c -> optimizerClass.isAssignableFrom(c.getClass()))
                 .collect(Collectors.toList())
                 .forEach(this.traversalStrategies::remove);
     }
 
+    @Override
     public void apply() {
         if (!this.complete) {
             this.complete = true;
@@ -40,10 +43,12 @@ public class DefaultStrategies implements Traversal.Strategies {
         }
     }
 
+    @Override
     public void clear() {
         this.traversalStrategies.clear();
     }
 
+    @Override
     public boolean complete() {
         return this.complete;
     }

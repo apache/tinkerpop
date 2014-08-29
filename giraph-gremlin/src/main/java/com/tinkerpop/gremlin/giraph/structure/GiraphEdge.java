@@ -34,12 +34,15 @@ public class GiraphEdge extends GiraphElement implements Edge, Serializable, Wra
         super(edge, graph);
     }
 
+    @Override
     public Iterator<Vertex> vertices(final Direction direction) {
         return GiraphHelper.getVertices(this.graph, this, direction);
     }
 
+    @Override
     public GraphTraversal<Edge, Edge> start() {
         final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>(this.graph) {
+            @Override
             public GraphTraversal<Vertex, Vertex> submit(final GraphComputer computer) {
                 GiraphComputerHelper.prepareTraversalForComputer(this);
                 final String label = this.getSteps().get(0).getLabel();
@@ -58,6 +61,7 @@ public class GiraphEdge extends GiraphElement implements Edge, Serializable, Wra
         return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 
+    @Override
     public TinkerEdge getBaseEdge() {
         return (TinkerEdge) this.element;
     }

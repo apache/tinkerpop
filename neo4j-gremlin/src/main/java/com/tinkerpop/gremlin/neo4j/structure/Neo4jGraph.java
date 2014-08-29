@@ -216,10 +216,12 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         return StringFactory.graphString(this, baseGraph.toString());
     }
 
+    @Override
     public Features features() {
         return new Neo4jGraphFeatures();
     }
 
+    @Override
     public GraphDatabaseService getBaseGraph() {
         return this.baseGraph;
     }

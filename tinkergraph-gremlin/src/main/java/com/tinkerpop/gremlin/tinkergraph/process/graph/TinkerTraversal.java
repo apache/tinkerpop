@@ -19,6 +19,7 @@ public class TinkerTraversal<S, E> extends DefaultGraphTraversal<S, E> {
         this.addStep(new StartStep<>(this));
     }
 
+    @Override
     public GraphTraversal<S, E> submit(final GraphComputer computer) {
         TinkerHelper.prepareTraversalForComputer(this);
         return super.submit(computer);

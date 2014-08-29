@@ -26,6 +26,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         super(id, label, graph);
     }
 
+    @Override
     public <V> Property<V> property(final String key, final V value) {
         if (this.graph.graphView != null && this.graph.graphView.getInUse()) {
             return this.graph.graphView.setProperty(this, key, value);
@@ -43,10 +44,12 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         return StringFactory.vertexString(this);
     }
 
+    @Override
     public Edge addEdge(final String label, final Vertex vertex, final Object... keyValues) {
         return TinkerHelper.addEdge(this.graph, this, (TinkerVertex) vertex, label, keyValues);
     }
 
+    @Override
     public void remove() {
         this.bothE().forEach(Edge::remove);
         this.properties().clear();
@@ -56,14 +59,17 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
     //////////////////////
 
+    @Override
     public GraphTraversal<Vertex, Vertex> start() {
         return new TinkerElementTraversal<>(this, this.graph);
     }
 
+    @Override
     public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
         return (Iterator) TinkerHelper.getEdges(this, direction, branchFactor, labels);
     }
 
+    @Override
     public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
         return (Iterator) TinkerHelper.getVertices(this, direction, branchFactor, labels);
     }

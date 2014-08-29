@@ -14,6 +14,7 @@ public class GFunction<A, B> implements SFunction<A, B> {
         this.closure = closure;
     }
 
+    @Override
     public B apply(A a) {
         return (B) this.closure.call(a);
     }

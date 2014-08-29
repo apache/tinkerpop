@@ -30,40 +30,49 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         this.label = Graph.Key.hide(Integer.toString(this.traversal.getSteps().size()));
     }
 
+    @Override
     public void reset() {
         this.starts.clear();
         this.available = false;
         this.nextEnd = null;
     }
 
+    @Override
     public void addStarts(final Iterator<Traverser<S>> starts) {
         this.starts.add((Iterator) starts);
     }
 
+    @Override
     public void setPreviousStep(final Step<?, S> step) {
         this.previousStep = step;
     }
 
+    @Override
     public Step<?, S> getPreviousStep() {
         return this.previousStep;
     }
 
+    @Override
     public void setNextStep(final Step<E, ?> step) {
         this.nextStep = step;
     }
 
+    @Override
     public Step<E, ?> getNextStep() {
         return this.nextStep;
     }
 
+    @Override
     public void setLabel(final String label) {
         this.label = label;
     }
 
+    @Override
     public String getLabel() {
         return this.label;
     }
 
+    @Override
     public Traverser<E> next() {
         if (this.available) {
             this.available = false;
@@ -76,6 +85,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         }
     }
 
+    @Override
     public boolean hasNext() {
         if (this.available)
             return true;
@@ -91,6 +101,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         }
     }
 
+    @Override
     public <A, B> Traversal<A, B> getTraversal() {
         return this.traversal;
     }
@@ -101,6 +112,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         return TraversalHelper.makeStepString(this);
     }
 
+    @Override
     public Object clone() throws CloneNotSupportedException {
         final AbstractStep step = (AbstractStep) super.clone();
         step.starts = new ExpandableStepIterator<S>(step);

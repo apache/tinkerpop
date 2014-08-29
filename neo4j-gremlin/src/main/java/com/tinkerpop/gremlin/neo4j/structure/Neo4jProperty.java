@@ -26,22 +26,27 @@ public class Neo4jProperty<V> implements Property<V>, Serializable {
         this.graph = ((Neo4jElement) element).graph;
     }
 
+    @Override
     public <E extends Element> E getElement() {
         return (E) this.element;
     }
 
+    @Override
     public String key() {
         return Graph.Key.unHide(this.key);
     }
 
+    @Override
     public V value() {
         return this.value;
     }
 
+    @Override
     public boolean isPresent() {
         return null != this.value;
     }
 
+    @Override
     public boolean isHidden() {
         return Graph.Key.isHidden(this.key);
     }
@@ -58,6 +63,7 @@ public class Neo4jProperty<V> implements Property<V>, Serializable {
         return this.key.hashCode() + this.value.hashCode() + this.element.hashCode();
     }
 
+    @Override
     public void remove() {
         final PropertyContainer rawElement = ((Neo4jElement) element).getBaseElement();
         if (rawElement.hasProperty(key)) {

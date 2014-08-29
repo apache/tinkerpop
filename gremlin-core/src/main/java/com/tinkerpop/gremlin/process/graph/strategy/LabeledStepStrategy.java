@@ -16,6 +16,7 @@ public class LabeledStepStrategy implements TraversalStrategy {
     private LabeledStepStrategy() {
     }
 
+    @Override
     public void apply(final Traversal traversal) {
         final Step step = TraversalHelper.getEnd(traversal);
         if (TraversalHelper.isLabeled(step))
@@ -26,6 +27,7 @@ public class LabeledStepStrategy implements TraversalStrategy {
         return INSTANCE;
     }
 
+    @Override
     public int compareTo(final TraversalStrategy traversalStrategy) {
         return traversalStrategy instanceof TraverserSourceStrategy ? -1 : 1;
     }

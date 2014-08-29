@@ -45,6 +45,7 @@ public final class GraphMigrator {
         final PipedInputStream inPipe = new PipedInputStream(1024);
 
         final PipedOutputStream outPipe = new PipedOutputStream(inPipe) {
+            @Override
             public void close() throws IOException {
                 while (inPipe.available() > 0) {
                     try {

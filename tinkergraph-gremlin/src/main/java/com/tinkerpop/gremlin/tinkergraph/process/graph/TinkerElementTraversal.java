@@ -30,6 +30,7 @@ public class TinkerElementTraversal<S, E> extends DefaultGraphTraversal<S, E> {
         this.addStep(new StartStep<>(this, element));
     }
 
+    @Override
     public GraphTraversal<S, E> submit(final GraphComputer computer) {
         TinkerHelper.prepareTraversalForComputer(this);
         final String label = this.getSteps().get(0).getLabel();

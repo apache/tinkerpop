@@ -43,20 +43,24 @@ public class GroupCountStep<S> extends SideEffectStep<S> implements SideEffectCa
         });
     }
 
+    @Override
     public String getSideEffectKey() {
         return this.sideEffectKey;
     }
 
+    @Override
     public void setCurrentBulkCount(final long bulkCount) {
         this.bulkCount = bulkCount;
     }
 
+    @Override
     public void setCurrentVertex(final Vertex vertex) {
         this.groupCountMap = vertex.<java.util.Map<Object, Long>>property(this.hiddenSideEffectKey).orElse(new HashMap<>());
         if (!vertex.property(this.hiddenSideEffectKey).isPresent())
             vertex.property(this.hiddenSideEffectKey, this.groupCountMap);
     }
 
+    @Override
     public MapReduce<Object, Long, Object, Long, Map<Object, Long>> getMapReduce() {
         return new GroupCountMapReduce(this);
     }

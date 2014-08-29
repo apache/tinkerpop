@@ -27,6 +27,7 @@ public class StartStep<S> extends SideEffectStep<S> implements TraverserSource, 
         this(traversal, null);
     }
 
+    @Override
     public void clear() {
         this.starts.clear();
     }
@@ -35,6 +36,7 @@ public class StartStep<S> extends SideEffectStep<S> implements TraverserSource, 
         return null == this.start ? TraversalHelper.makeStepString(this) : TraversalHelper.makeStepString(this, this.start);
     }
 
+    @Override
     public void generateTraverserIterator(final boolean trackPaths) {
         if (null != this.start) {
             this.starts.clear();

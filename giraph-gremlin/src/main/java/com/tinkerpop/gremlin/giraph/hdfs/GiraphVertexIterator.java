@@ -24,6 +24,7 @@ public class GiraphVertexIterator extends GiraphElementIterator<GiraphVertex> {
         super(graph);
     }
 
+    @Override
     public GiraphVertex next() {
         try {
             if (this.nextVertex != null) {
@@ -44,6 +45,7 @@ public class GiraphVertexIterator extends GiraphElementIterator<GiraphVertex> {
         }
     }
 
+    @Override
     public boolean hasNext() {
         try {
             if (null != this.nextVertex) return true;

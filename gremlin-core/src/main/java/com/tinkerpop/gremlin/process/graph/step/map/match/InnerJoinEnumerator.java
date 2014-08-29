@@ -54,10 +54,12 @@ public class InnerJoinEnumerator<T> implements Enumerator<T> {
                 advanceToNext();
             }
 
+            @Override
             public boolean hasNext() {
                 return currentIndex >= 0;
             }
 
+            @Override
             public Integer next() {
                 int tmp = currentIndex;
                 advanceToNext();
@@ -88,10 +90,12 @@ public class InnerJoinEnumerator<T> implements Enumerator<T> {
         };
     }
 
+    @Override
     public int size() {
         return joinIndices.size();
     }
 
+    @Override
     public boolean isComplete() {
         return !iterator.hasNext();
     }
@@ -103,6 +107,7 @@ public class InnerJoinEnumerator<T> implements Enumerator<T> {
         }
     }
 
+    @Override
     public boolean visitSolution(int i, BiConsumer<String, T> visitor) {
         while (i >= joinIndices.size()) {
             if (isComplete()) {

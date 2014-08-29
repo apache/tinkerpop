@@ -13,6 +13,7 @@ public class GSTriConsumer<A, B, C> extends GLambda implements STriConsumer<A, B
         super(gremlinGroovyScript);
     }
 
+    @Override
     public void accept(final A a, B b, C c) {
         try {
             STATIC_ENGINE.eval(this.gremlinGroovyScript, makeBindings(a, b, c));

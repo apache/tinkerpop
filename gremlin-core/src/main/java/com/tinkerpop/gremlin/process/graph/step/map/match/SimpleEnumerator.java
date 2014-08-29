@@ -20,14 +20,17 @@ public class SimpleEnumerator<T> implements Enumerator<T> {
         this.iterator = iterator;
     }
 
+    @Override
     public int size() {
         return null == element ? 0 : 1;
     }
 
+    @Override
     public boolean isComplete() {
         return null == iterator || !iterator.hasNext();
     }
 
+    @Override
     public boolean visitSolution(int index, BiConsumer<String, T> visitor) {
         if (0 != index) {
             return false;

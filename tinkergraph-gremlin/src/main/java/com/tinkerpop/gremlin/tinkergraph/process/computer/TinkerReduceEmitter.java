@@ -13,6 +13,7 @@ class TinkerReduceEmitter<OK, OV> implements MapReduce.ReduceEmitter<OK, OV> {
 
     public List<Pair<OK, OV>> resultList = new ArrayList<>();
 
+    @Override
     public void emit(final OK key, final OV value) {
         this.resultList.add(new Pair<>(key, value));
     }

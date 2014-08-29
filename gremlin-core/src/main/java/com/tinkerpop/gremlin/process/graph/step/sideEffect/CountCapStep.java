@@ -37,14 +37,17 @@ public class CountCapStep<S> extends SideEffectStep<S> implements SideEffectCapa
         this.count.set(0l);
     }
 
+    @Override
     public void setCurrentBulkCount(final long bulkCount) {
         this.bulkCount = bulkCount;
     }
 
+    @Override
     public String getSideEffectKey() {
         return COUNT_KEY;
     }
 
+    @Override
     public void setCurrentVertex(final Vertex vertex) {
         this.vertexCentric = true;
         this.count = vertex.<AtomicLong>property(COUNT_KEY).orElse(new AtomicLong(0));
@@ -52,6 +55,7 @@ public class CountCapStep<S> extends SideEffectStep<S> implements SideEffectCapa
             vertex.property(COUNT_KEY, this.count);
     }
 
+    @Override
     public MapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> getMapReduce() {
         return new CountCapMapReduce(this);
     }

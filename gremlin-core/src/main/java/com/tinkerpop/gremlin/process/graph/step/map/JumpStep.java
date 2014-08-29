@@ -54,6 +54,7 @@ public class JumpStep<S> extends AbstractStep<S, S> {
         this(traversal, jumpLabel, t -> true);
     }
 
+    @Override
     protected Traverser<S> processNextStart() {
         if (null == this.jumpToStep)
             this.jumpToStep = TraversalHelper.getStep(this.jumpLabel, this.traversal).getNextStep();

@@ -22,12 +22,14 @@ public class KryoVertexInputFormat extends VertexInputFormat implements GiraphGr
         fileInputFormat = new KryoInputFormat();
     }
 
+    @Override
     public List<InputSplit> getSplits(final JobContext context,
                                       final int minSplitCountHint) throws IOException, InterruptedException {
         // note: hint ignored
         return fileInputFormat.getSplits(context);
     }
 
+    @Override
     public VertexReader createVertexReader(final InputSplit split,
                                            final TaskAttemptContext context) throws IOException {
         VertexReader reader = new KryoVertexReader();
@@ -39,6 +41,7 @@ public class KryoVertexInputFormat extends VertexInputFormat implements GiraphGr
         return reader;
     }
 
+    @Override
     public Class<InputFormat> getInputFormatClass() {
         return (Class) KryoInputFormat.class;
     }

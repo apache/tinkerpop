@@ -22,6 +22,7 @@ class TinkerMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {
         this.doReduce = doReduce;
     }
 
+    @Override
     public void emit(K key, V value) {
         if (this.doReduce)
             MapHelper.incr(this.reduceMap, key, value);

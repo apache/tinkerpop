@@ -17,11 +17,13 @@ public class SideEffectCapComputerStrategy implements TraversalStrategy {
     }
 
 
+    @Override
     public void apply(final Traversal traversal) {
         TraversalHelper.getStepsOfClass(SideEffectCapStep.class, traversal)
                 .forEach(step -> TraversalHelper.replaceStep(step, new SideEffectCapComputerStep<>(traversal, step), traversal));
     }
 
+    @Override
     public int compareTo(final TraversalStrategy traversalStrategy) {
         return traversalStrategy instanceof TraverserSourceStrategy ? -1 : 1;
     }

@@ -26,6 +26,7 @@ public class MultiIterator<T> implements Iterator<T> {
         this.iterators.add(iterator);
     }
 
+    @Override
     public boolean hasNext() {
         if(this.count >= this.limit)
             return false;
@@ -48,6 +49,7 @@ public class MultiIterator<T> implements Iterator<T> {
         return false;
     }
 
+    @Override
     public T next() {
         if(this.count >= this.limit)
             throw FastNoSuchElementException.instance();

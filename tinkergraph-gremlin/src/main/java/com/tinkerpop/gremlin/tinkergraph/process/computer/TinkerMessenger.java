@@ -29,6 +29,7 @@ public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
         this.combiner = combiner;
     }
 
+    @Override
     public Iterable<M> receiveMessages(final MessageType messageType) {
         if (messageType instanceof MessageType.Local) {
             final MessageType.Local<Object, M> localMessageType = (MessageType.Local) messageType;
@@ -50,6 +51,7 @@ public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
         }
     }
 
+    @Override
     public void sendMessage(final MessageType messageType, final M message) {
         if (messageType instanceof MessageType.Local) {
             getMessageList(this.vertex.id()).add(message);

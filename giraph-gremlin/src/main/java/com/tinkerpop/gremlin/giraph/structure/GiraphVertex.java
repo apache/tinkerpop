@@ -34,20 +34,25 @@ public class GiraphVertex extends GiraphElement implements Vertex, Serializable,
         super(vertex, graph);
     }
 
+    @Override
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
         throw Vertex.Exceptions.edgeAdditionsNotSupported();
     }
 
+    @Override
     public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
         return GiraphHelper.getVertices(this.graph, this, direction, branchFactor, labels);
     }
 
+    @Override
     public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
         return GiraphHelper.getEdges(this.graph, this, direction, branchFactor, labels);
     }
 
+    @Override
     public GraphTraversal<Vertex, Vertex> start() {
         final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>(this.graph) {
+            @Override
             public GraphTraversal<Vertex, Vertex> submit(final GraphComputer computer) {
 
                 GiraphComputerHelper.prepareTraversalForComputer(this);
@@ -67,6 +72,7 @@ public class GiraphVertex extends GiraphElement implements Vertex, Serializable,
         return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 
+    @Override
     public TinkerVertex getBaseVertex() {
         return (TinkerVertex) this.element;
     }

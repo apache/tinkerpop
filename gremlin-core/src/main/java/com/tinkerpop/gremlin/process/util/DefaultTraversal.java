@@ -30,27 +30,33 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
         this.sideEffects().setGraph(graph);
     }
 
+    @Override
     public List<Step> getSteps() {
         return this.steps;
     }
 
+    @Override
     public SideEffects sideEffects() {
         return this.sideEffects;
     }
 
+    @Override
     public Strategies strategies() {
         return this.strategies;
     }
 
+    @Override
     public void addStarts(final Iterator<Traverser<S>> starts) {
         TraversalHelper.getStart(this).addStarts(starts);
     }
 
+    @Override
     public boolean hasNext() {
         this.applyStrategies();
         return TraversalHelper.getEnd(this).hasNext();
     }
 
+    @Override
     public E next() {
         this.applyStrategies();
         return TraversalHelper.getEnd(this).next().get();

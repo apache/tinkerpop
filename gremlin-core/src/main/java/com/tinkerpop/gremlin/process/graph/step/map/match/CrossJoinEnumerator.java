@@ -15,10 +15,12 @@ public class CrossJoinEnumerator<T> implements Enumerator<T> {
         this.yEnum = yEnum;
     }
 
+    @Override
     public int size() {
         return xEnum.size() * yEnum.size();
     }
 
+    @Override
     public boolean isComplete() {
         boolean xc = xEnum.isComplete(), yc = yEnum.isComplete();
         return xc && 0 == xEnum.size()
@@ -27,6 +29,7 @@ public class CrossJoinEnumerator<T> implements Enumerator<T> {
     }
 
     // note: permits random access
+    @Override
     public boolean visitSolution(final int index,
                                  final BiConsumer<String, T> visitor) {
         int sq = (int) Math.sqrt(index);

@@ -32,6 +32,7 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
             this.setFunction(traverser -> (Iterator<E>) traverser.get().edges(this.direction, this.branchFactor, this.edgeLabels));
     }
 
+    @Override
     public void reverse() {
         this.direction = this.direction.opposite();
     }

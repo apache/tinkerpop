@@ -43,6 +43,7 @@ public class VertexStreamIterator implements Iterator<Vertex> {
         this.reader = reader;
     }
 
+    @Override
     public boolean hasNext() {
         if (null != currentVertex) {
             return true;
@@ -58,6 +59,7 @@ public class VertexStreamIterator implements Iterator<Vertex> {
         }
     }
 
+    @Override
     public Vertex next() {
         try {
             if (null == currentVertex) {

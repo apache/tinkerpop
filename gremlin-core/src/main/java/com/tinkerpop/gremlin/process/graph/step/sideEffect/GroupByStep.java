@@ -54,6 +54,7 @@ public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEf
         });
     }
 
+    @Override
     public String getSideEffectKey() {
         return this.sideEffectKey;
     }
@@ -85,6 +86,7 @@ public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEf
         }
     }
 
+    @Override
     public void setCurrentVertex(final Vertex vertex) {
         this.vertexCentric = true;
         this.groupByMap = vertex.<java.util.Map<K, Collection<V>>>property(this.hiddenSideEffectKey).orElse(new HashMap<>());
@@ -92,6 +94,7 @@ public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEf
             vertex.property(this.hiddenSideEffectKey, this.groupByMap);
     }
 
+    @Override
     public MapReduce<Object, Collection, Object, Object, Map> getMapReduce() {
         return new GroupByMapReduce(this);
     }

@@ -24,6 +24,7 @@ public class EdgeVertexStep extends FlatMapStep<Edge, Vertex> implements Reversi
         return TraversalHelper.makeStepString(this, this.direction);
     }
 
+    @Override
     public void reverse() {
         this.direction = this.direction.opposite();
     }

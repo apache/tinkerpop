@@ -23,6 +23,7 @@ public class DefaultNeo4jTraversal<S, E> extends DefaultGraphTraversal<S, E> imp
         this.sideEffects().setGraph(neo4jGraph);
     }
 
+    @Override
     public <E2> Neo4jTraversal<S,E2> addStep(final Step<?, E2> step) {
         TraversalHelper.insertStep(step, this.getSteps().size(), this);
         return (Neo4jTraversal) this;

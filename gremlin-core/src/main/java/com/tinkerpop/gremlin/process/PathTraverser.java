@@ -28,18 +28,22 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
         this.path.add(as, t);
     }
 
+    @Override
     public boolean hasPath() {
         return true;
     }
 
+    @Override
     public Path getPath() {
         return this.path;
     }
 
+    @Override
     public void setPath(final Path path) {
         this.path = path;
     }
 
+    @Override
     public <R> PathTraverser<R> makeChild(final String label, final R r) {
         final PathTraverser<R> traverser = new PathTraverser<>(r);
         traverser.loops = this.loops;
@@ -49,6 +53,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
         return traverser;
     }
 
+    @Override
     public PathTraverser<T> makeSibling() {
         final PathTraverser<T> traverser = new PathTraverser<>(this.t);
         traverser.loops = this.loops;
@@ -57,6 +62,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
         return traverser;
     }
 
+    @Override
     public PathTraverser<T> deflate() {
         if (this.t instanceof Vertex) {
             this.t = (T) DetachedVertex.detach((Vertex) this.t);
@@ -69,6 +75,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
         return this;
     }
 
+    @Override
     public PathTraverser<T> inflate(final Vertex vertex) {
         if (this.t instanceof DetachedVertex) {
             this.t = (T) ((DetachedVertex) this.t).attach(vertex);

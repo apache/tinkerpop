@@ -14,6 +14,7 @@ public class GBiFunction<A, B, C> implements SBiFunction<A, B, C> {
         this.closure = closure;
     }
 
+    @Override
     public C apply(A a, B b) {
         return (C) this.closure.call(a, b);
     }

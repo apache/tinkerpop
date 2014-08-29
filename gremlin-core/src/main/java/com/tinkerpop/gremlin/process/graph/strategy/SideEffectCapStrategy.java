@@ -17,12 +17,14 @@ public class SideEffectCapStrategy implements TraversalStrategy {
     }
 
 
+    @Override
     public void apply(final Traversal traversal) {
         final Step endStep = TraversalHelper.getEnd(traversal);
         if (endStep instanceof SideEffectCapable)
             traversal.cap();
     }
 
+    @Override
     public int compareTo(final TraversalStrategy traversalStrategy) {
         return traversalStrategy instanceof TraverserSourceStrategy || traversalStrategy instanceof LabeledStepStrategy ? -1 : 1;
     }

@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.util.function.SSupplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class TraversalSupplier1 implements SSupplier<Traversal> {
+    @Override
     public Traversal get() {
         return GiraphGraph.open().V().out().out().value("name");
     }

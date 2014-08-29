@@ -30,6 +30,7 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
         this.biFunction = biFunction;
     }
 
+    @Override
     protected Traverser<E> processNextStart() {
         while (true) {
             final Traverser<E> traverser = this.getNext();
@@ -66,10 +67,12 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
             this.step = step;
         }
 
+        @Override
         public boolean hasNext() {
             return this.iterator.hasNext();
         }
 
+        @Override
         public Traverser<B> next() {
             return this.head.makeChild(this.step.getLabel(), this.iterator.next());
         }

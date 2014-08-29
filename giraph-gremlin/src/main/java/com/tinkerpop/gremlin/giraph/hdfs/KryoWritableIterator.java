@@ -31,6 +31,7 @@ public class KryoWritableIterator implements Iterator<Pair> {
         }
     }
 
+    @Override
     public boolean hasNext() {
         try {
             if (this.available) {
@@ -51,6 +52,7 @@ public class KryoWritableIterator implements Iterator<Pair> {
         }
     }
 
+    @Override
     public Pair next() {
         try {
             if (this.available) {

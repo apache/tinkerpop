@@ -21,6 +21,7 @@ public class UnionStep<S, E> extends AbstractStep<S, E> {
         this.traversalRing = new TraversalRing<>(branchTraversals);
     }
 
+    @Override
     protected Traverser<E> processNextStart() {
         while (true) {
             int counter = 0;

@@ -16,6 +16,7 @@ public class JumpComputerStrategy implements TraversalStrategy {
     private JumpComputerStrategy() {
     }
 
+    @Override
     public void apply(final Traversal traversal) {
 
         TraversalHelper.getStepsOfClass(JumpStep.class, traversal)
@@ -23,6 +24,7 @@ public class JumpComputerStrategy implements TraversalStrategy {
 
     }
 
+    @Override
     public int compareTo(final TraversalStrategy traversalStrategy) {
         return (traversalStrategy instanceof TraverserSourceStrategy || traversalStrategy instanceof UnrollJumpStrategy) ? -1 : 1;
     }

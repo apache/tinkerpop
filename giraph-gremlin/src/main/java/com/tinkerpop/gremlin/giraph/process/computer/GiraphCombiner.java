@@ -9,9 +9,11 @@ import org.apache.hadoop.io.LongWritable;
  */
 public class GiraphCombiner extends Combiner<LongWritable, KryoWritable> {
 
+    @Override
     public void combine(final LongWritable vertexIndex, final KryoWritable originalMessage, final KryoWritable messageToCombine) {
     }
 
+    @Override
     public KryoWritable createInitialMessage() {
         return null;
     }

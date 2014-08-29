@@ -17,6 +17,7 @@ public class CountCapStrategy implements TraversalStrategy.NoDependencies {
     }
 
 
+    @Override
     public void apply(final Traversal traversal) {
         if (TraversalHelper.getEnd(traversal) instanceof CountStep) {
             TraversalHelper.replaceStep(TraversalHelper.getEnd(traversal), new CountCapStep<>(traversal), traversal);

@@ -64,6 +64,7 @@ public class GiraphConfiguration extends BaseConfiguration implements Serializab
         this.setProperty(Constants.GREMLIN_OUTPUT_LOCATION, outputLocation);
     }
 
+    @Override
     public Iterator iterator() {
         return StreamFactory.stream(this.getKeys()).map(k -> new Pair(k, this.getProperty(k))).iterator();
     }

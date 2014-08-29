@@ -18,6 +18,7 @@ public class UnrollJumpStrategy implements TraversalStrategy {
     private UnrollJumpStrategy() {
     }
 
+    @Override
     public void apply(final Traversal traversal) {
 
         TraversalHelper.getStepsOfClass(JumpStep.class, traversal).stream()
@@ -42,6 +43,7 @@ public class UnrollJumpStrategy implements TraversalStrategy {
                 });
     }
 
+    @Override
     public int compareTo(final TraversalStrategy traversalStrategy) {
         return traversalStrategy instanceof TraverserSourceStrategy ? -1 : 1;
     }

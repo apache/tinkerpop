@@ -15,10 +15,12 @@ public class UnTraverserIterator<T> implements Iterator<T> {
         this.iterator = iterator;
     }
 
+    @Override
     public boolean hasNext() {
         return this.iterator.hasNext();
     }
 
+    @Override
     public T next() {
         return this.iterator.next().get();
     }

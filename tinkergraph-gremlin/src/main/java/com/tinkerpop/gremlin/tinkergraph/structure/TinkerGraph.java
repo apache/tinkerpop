@@ -83,6 +83,7 @@ public class TinkerGraph implements Graph, Serializable {
 
     ////////////// STRUCTURE API METHODS //////////////////
 
+    @Override
     public Vertex v(final Object id) {
         if (null == id) throw Graph.Exceptions.elementNotFound(Vertex.class, null);
         final Vertex vertex = this.vertices.get(id);
@@ -92,6 +93,7 @@ public class TinkerGraph implements Graph, Serializable {
             return vertex;
     }
 
+    @Override
     public Edge e(final Object id) {
         if (null == id) throw Graph.Exceptions.elementNotFound(Edge.class, null);
         final Edge edge = this.edges.get(id);
@@ -101,18 +103,22 @@ public class TinkerGraph implements Graph, Serializable {
             return edge;
     }
 
+    @Override
     public GraphTraversal<Vertex, Vertex> V() {
         return new TinkerGraphTraversal<>(this, Vertex.class);
     }
 
+    @Override
     public GraphTraversal<Edge, Edge> E() {
         return new TinkerGraphTraversal<>(this, Edge.class);
     }
 
+    @Override
     public <S> GraphTraversal<S, S> of() {
         return new TinkerTraversal<>(this);
     }
 
+    @Override
     public Vertex addVertex(final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
         Object idValue = ElementHelper.getIdValue(keyValues).orElse(null);
@@ -131,6 +137,7 @@ public class TinkerGraph implements Graph, Serializable {
         return vertex;
     }
 
+    @Override
     public GraphComputer compute(final Class... graphComputerClass) {
         GraphComputerHelper.validateComputeArguments(graphComputerClass);
         if (graphComputerClass.length == 0 || graphComputerClass[0].equals(TinkerGraphComputer.class))
@@ -140,6 +147,7 @@ public class TinkerGraph implements Graph, Serializable {
     }
 
 
+    @Override
     public Variables variables() {
         return this.variables;
     }
@@ -157,10 +165,12 @@ public class TinkerGraph implements Graph, Serializable {
         this.edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
     }
 
+    @Override
     public void close() {
 
     }
 
+    @Override
     public Transaction tx() {
         throw Exceptions.transactionsNotSupported();
     }
@@ -171,6 +181,7 @@ public class TinkerGraph implements Graph, Serializable {
      * <b>Reference Implementation Help:</b> Implementers only need to implement features for which there are
      * negative or instance configured features.  By default, all {@link Features} return true.
      */
+    @Override
     public Features features() {
         return new TinkerGraphFeatures();
     }

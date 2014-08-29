@@ -28,6 +28,7 @@ public class DedupOptimizerStrategy implements TraversalStrategy.NoDependencies{
                     OrderStep.class
             ));
 
+    @Override
     public void apply(final Traversal traversal) {
         boolean done = false;
         while (!done) {

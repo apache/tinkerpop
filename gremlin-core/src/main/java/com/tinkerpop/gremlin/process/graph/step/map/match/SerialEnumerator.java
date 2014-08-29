@@ -38,6 +38,7 @@ public class SerialEnumerator<T> implements Enumerator<T> {
         return variables;
     }
 
+    @Override
     public int size() {
         // TODO: restore the more efficient implementation of size() while taking into account that
         // traversal iterators such as DefaultTraversal may return hasNext=true after first returning hasNext=false
@@ -56,11 +57,13 @@ public class SerialEnumerator<T> implements Enumerator<T> {
         //*/
     }
 
+    @Override
     public boolean isComplete() {
         return !iterator.hasNext() && (memory.isEmpty() || memory.get(memory.size() - 1).isComplete());
     }
 
     // note: *not* intended for random access; use binary search if this is ever needed
+    @Override
     public boolean visitSolution(final int i,
                                  final BiConsumer<String, T> visitor) {
         int totalSize = 0;

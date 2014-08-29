@@ -14,6 +14,7 @@ public class GBiPredicate<A, B> implements SBiPredicate<A, B> {
         this.closure = closure;
     }
 
+    @Override
     public boolean test(A a, B b) {
         return (boolean) this.closure.call(a, b);
     }

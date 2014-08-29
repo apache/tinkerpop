@@ -24,10 +24,12 @@ public class Neo4jCypherIterator<T> implements Iterator<Map<String, T>> {
         this.graph = graph;
     }
 
+    @Override
     public boolean hasNext() {
         return this.iterator.hasNext();
     }
 
+    @Override
     public Map<String, T> next() {
         return this.iterator.next().entrySet().stream().collect(Collectors.toMap(
                 Map.Entry::getKey,

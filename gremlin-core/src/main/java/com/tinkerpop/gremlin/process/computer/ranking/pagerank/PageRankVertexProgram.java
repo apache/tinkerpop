@@ -141,6 +141,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
     ////////////////////////////
 
+    @Override
     public Features getFeatures() {
         return new Features() {
             @Override

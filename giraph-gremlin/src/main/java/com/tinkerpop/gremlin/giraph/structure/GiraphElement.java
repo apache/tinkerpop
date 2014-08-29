@@ -25,14 +25,17 @@ public abstract class GiraphElement implements Element, Serializable {
         this.graph = graph;
     }
 
+    @Override
     public Object id() {
         return this.element.id();
     }
 
+    @Override
     public String label() {
         return this.element.label();
     }
 
+    @Override
     public void remove() {
         if (this.element instanceof Vertex)
             throw Vertex.Exceptions.vertexRemovalNotSupported();
@@ -40,18 +43,22 @@ public abstract class GiraphElement implements Element, Serializable {
             throw Edge.Exceptions.edgeRemovalNotSupported();
     }
 
+    @Override
     public Map<String, Property> properties() {
         return this.element.properties();
     }
 
+    @Override
     public Map<String, Property> hiddens() {
         return this.element.hiddens();
     }
 
+    @Override
     public <V> Property<V> property(final String key) {
         return this.element.property(key);
     }
 
+    @Override
     public <V> Property<V> property(final String key, final V value) {
         throw Element.Exceptions.propertyAdditionNotSupported();
     }

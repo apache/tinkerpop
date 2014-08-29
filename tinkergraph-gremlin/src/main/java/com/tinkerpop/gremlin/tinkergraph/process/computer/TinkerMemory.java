@@ -42,23 +42,28 @@ public class TinkerMemory implements Memory.Administrative {
         }
     }
 
+    @Override
     public Set<String> keys() {
         return this.previousMap.keySet();
     }
 
+    @Override
     public void incrIteration() {
         this.iteration.getAndIncrement();
     }
 
+    @Override
     public int getIteration() {
         return this.iteration.get();
     }
 
+    @Override
     public void setRuntime(final long runTime) {
         if (this.complete) throw Memory.Exceptions.memoryCompleteAndImmutable();
         this.runtime.set(runTime);
     }
 
+    @Override
     public long getRuntime() {
         return this.runtime.get();
     }
@@ -74,10 +79,12 @@ public class TinkerMemory implements Memory.Administrative {
 
     }
 
+    @Override
     public boolean isInitialIteration() {
         return this.getIteration() == 0;
     }
 
+    @Override
     public <R> R get(final String key) throws IllegalArgumentException {
         final R r = (R) this.previousMap.get(key);
         if (null == r)
@@ -86,6 +93,7 @@ public class TinkerMemory implements Memory.Administrative {
             return r;
     }
 
+    @Override
     public long incr(final String key, final long delta) {
         checkKeyValue(key, delta);
         final Long currentValue = (Long) this.currentMap.getOrDefault(key, 0l);
@@ -95,6 +103,7 @@ public class TinkerMemory implements Memory.Administrative {
         return previousValue + delta;
     }
 
+    @Override
     public boolean and(final String key, final boolean bool) {
         checkKeyValue(key, bool);
         final Boolean currentValue = (Boolean) this.currentMap.getOrDefault(key, true);
@@ -104,6 +113,7 @@ public class TinkerMemory implements Memory.Administrative {
         return previousValue && bool;
     }
 
+    @Override
     public boolean or(final String key, final boolean bool) {
         checkKeyValue(key, bool);
         final Boolean currentValue = (Boolean) this.currentMap.getOrDefault(key, true);
@@ -113,6 +123,7 @@ public class TinkerMemory implements Memory.Administrative {
         return previousValue || bool;
     }
 
+    @Override
     public void set(final String key, final Object value) {
         checkKeyValue(key, value);
         this.currentMap.put(key, value);

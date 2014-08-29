@@ -45,6 +45,7 @@ public class Bindings<T> {
             this.toStringFunction = toStringFunction;
         }
 
+        @Override
         public int compare(Bindings<T> left, Bindings<T> right) {
             int cmp = ((Integer) left.map.size()).compareTo(right.map.size());
             if (0 != cmp) return cmp;

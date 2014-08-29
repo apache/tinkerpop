@@ -92,6 +92,7 @@ import java.util.function.Supplier;
  */
 public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
+    @Override
     public default GraphTraversal<S, E> submit(final GraphComputer computer) {
         try {
             this.getSteps().stream()
@@ -117,14 +118,17 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return new DefaultGraphTraversal<>();
     }
 
+    @Override
     public default <E2> GraphTraversal<S, E2> addStep(final Step<?, E2> step) {
         return (GraphTraversal) Traversal.super.addStep((Step) step);
     }
 
+    @Override
     public default GraphTraversal<S, E> trackPaths() {
         return this.addStep(new PathIdentityStep<>(this));
     }
 
+    @Override
     public default GraphTraversal<S, Long> count() {
         return this.addStep(new CountStep<>(this));
     }
@@ -479,10 +483,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.addStep(sideEffectStep);
     }
 
+    @Override
     public default <E2> GraphTraversal<S, E2> cap(final String sideEffecyKey) {
         return this.addStep(new SideEffectCapStep<>(this, sideEffecyKey));
     }
 
+    @Override
     public default <E2> GraphTraversal<S, E2> cap() {
         return this.cap(((SideEffectCapable) TraversalHelper.getEnd(this)).getSideEffectKey());
     }
@@ -635,6 +641,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this;
     }
 
+    @Override
     public default void remove() {
         try {
             while (true) {

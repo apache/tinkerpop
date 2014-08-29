@@ -36,6 +36,7 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
         this.incidentTraversal = incidentTraversal;
     }
 
+    @Override
     public Traverser<Pair<Vertex, Double>> processNextStart() {
         try {
             if (this.firstNext) {

@@ -39,10 +39,12 @@ class GremlinClassResolver implements ClassResolver {
     private Class memoizedClass;
     private Registration memoizedClassValue;
 
+    @Override
     public void setKryo(Kryo kryo) {
         this.kryo = kryo;
     }
 
+    @Override
     public Registration register(final Registration registration) {
         if (null == registration) throw new IllegalArgumentException("Registration cannot be null.");
         if (registration.getId() != NAME) idToRegistration.put(registration.getId(), registration);
@@ -53,10 +55,12 @@ class GremlinClassResolver implements ClassResolver {
         return registration;
     }
 
+    @Override
     public Registration registerImplicit(final Class type) {
         return register(new Registration(type, kryo.getDefaultSerializer(type), NAME));
     }
 
+    @Override
     public Registration getRegistration(final Class clazz) {
         // force all instances of Vertex and Edge to that respective interface
         final Class type;
@@ -77,10 +81,12 @@ class GremlinClassResolver implements ClassResolver {
         return registration;
     }
 
+    @Override
     public Registration getRegistration(final int classID) {
         return idToRegistration.get(classID);
     }
 
+    @Override
     public Registration writeClass(final Output output, final Class type) {
         if (null == type) {
             output.writeVarInt(Kryo.NULL, true);
@@ -113,6 +119,7 @@ class GremlinClassResolver implements ClassResolver {
         output.writeString(type.getName());
     }
 
+    @Override
     public Registration readClass(final Input input) {
         final int classID = input.readVarInt(true);
         switch (classID) {
@@ -156,6 +163,7 @@ class GremlinClassResolver implements ClassResolver {
         return nameToClass != null ? nameToClass.get(className) : null;
     }
 
+    @Override
     public void reset() {
         if (!kryo.isRegistrationRequired()) {
             if (classToNameId != null) classToNameId.clear();

@@ -65,6 +65,7 @@ public class SubgraphStep<S> extends SideEffectStep<S> implements SideEffectCapa
         });
     }
 
+    @Override
     public String getSideEffectKey() {
         return this.sideEffectKey;
     }

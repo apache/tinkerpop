@@ -28,6 +28,7 @@ public class TinkerEdge extends TinkerElement implements Edge {
         this.graph.edgeIndex.autoUpdate(Element.LABEL, this.label, null, this);
     }
 
+    @Override
     public <V> Property<V> property(final String key, final V value) {
         if (this.graph.graphView != null && this.graph.graphView.getInUse()) {
             return this.graph.graphView.setProperty(this, key, value);
@@ -41,6 +42,7 @@ public class TinkerEdge extends TinkerElement implements Edge {
         }
     }
 
+    @Override
     public void remove() {
         final TinkerVertex outVertex = (TinkerVertex) this.outVertex;
         final TinkerVertex inVertex = (TinkerVertex) this.inVertex;
@@ -68,10 +70,12 @@ public class TinkerEdge extends TinkerElement implements Edge {
 
     //////
 
+    @Override
     public GraphTraversal<Edge, Edge> start() {
         return new TinkerElementTraversal<>(this, this.graph);
     }
 
+    @Override
     public Iterator<Vertex> vertices(final Direction direction) {
         return (Iterator) TinkerHelper.getVertices(this, direction);
     }

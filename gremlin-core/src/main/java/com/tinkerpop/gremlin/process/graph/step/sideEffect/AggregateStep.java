@@ -50,25 +50,30 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCa
         this.aggregateTraversers.clear();
     }
 
+    @Override
     public void setCurrentBulkCount(final long bulkCount) {
         this.bulkCount = bulkCount;
     }
 
+    @Override
     public void setCurrentVertex(final Vertex vertex) {
         this.aggregate = vertex.<Collection>property(this.hiddenSideEffectKey).orElse(new ArrayList());
         if (!vertex.property(this.hiddenSideEffectKey).isPresent())
             vertex.property(this.hiddenSideEffectKey, this.aggregate);
     }
 
+    @Override
     public String getSideEffectKey() {
         return this.sideEffectKey;
     }
 
+    @Override
     public MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> getMapReduce() {
         return new AggregateMapReduce(this);
     }
 
     // TODO: Make work for vertex centric computations
+    @Override
     protected Traverser<S> processNextStart() {
         while (true) {
             if (this.starts.hasNext()) {

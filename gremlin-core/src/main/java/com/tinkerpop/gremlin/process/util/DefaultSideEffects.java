@@ -19,16 +19,19 @@ public class DefaultSideEffects implements Traversal.SideEffects {
         this.traversal = traversal;
     }
 
+    @Override
     public boolean exists(final String key) {
         return (null != this.sideEffects && this.sideEffects.containsKey(key));
     }
 
+    @Override
     public <V> void set(final String key, final V value) {
         SideEffectHelper.validateSideEffect(key, value);
         if (null == this.sideEffects) this.sideEffects = new HashMap<>();
         this.sideEffects.put(key, value);
     }
 
+    @Override
     public <V> V get(final String key) throws IllegalArgumentException {
         if (null == this.sideEffects)
             throw Traversal.SideEffects.Exceptions.sideEffectDoesNotExist(key);
@@ -41,10 +44,12 @@ public class DefaultSideEffects implements Traversal.SideEffects {
         }
     }
 
+    @Override
     public void remove(final String key) {
         if (null != this.sideEffects) this.sideEffects.remove(key);
     }
 
+    @Override
     public Set<String> keys() {
         return null == this.sideEffects ? Collections.emptySet() : this.sideEffects.keySet();
     }

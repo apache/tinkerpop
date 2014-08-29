@@ -58,6 +58,7 @@ public class Neo4jHelper {
             }
         }
 
+        @Override
         public Iterator<Neo4jVertex> iterator() {
             final Iterator<Relationship> itty;
             if (labels.length > 0)
@@ -66,14 +67,17 @@ public class Neo4jHelper {
                 itty = node.getRelationships(direction).iterator();
 
             return new Iterator<Neo4jVertex>() {
+                @Override
                 public Neo4jVertex next() {
                     return new Neo4jVertex(itty.next().getOtherNode(node), graph);
                 }
 
+                @Override
                 public boolean hasNext() {
                     return itty.hasNext();
                 }
 
+                @Override
                 public void remove() {
                     itty.remove();
                 }
@@ -98,6 +102,7 @@ public class Neo4jHelper {
             }
         }
 
+        @Override
         public Iterator<Neo4jEdge> iterator() {
             final Iterator<Relationship> itty;
             if (labels.length > 0)
@@ -106,14 +111,17 @@ public class Neo4jHelper {
                 itty = node.getRelationships(direction).iterator();
 
             return new Iterator<Neo4jEdge>() {
+                @Override
                 public Neo4jEdge next() {
                     return new Neo4jEdge(itty.next(), graph);
                 }
 
+                @Override
                 public boolean hasNext() {
                     return itty.hasNext();
                 }
 
+                @Override
                 public void remove() {
                     itty.remove();
                 }

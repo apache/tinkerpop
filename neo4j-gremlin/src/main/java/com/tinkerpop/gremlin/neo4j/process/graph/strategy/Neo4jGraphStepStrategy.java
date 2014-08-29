@@ -20,6 +20,7 @@ public class Neo4jGraphStepStrategy implements TraversalStrategy.NoDependencies 
     private Neo4jGraphStepStrategy() {
     }
 
+    @Override
     public void apply(final Traversal traversal) {
         if (traversal.getSteps().get(0) instanceof Neo4jGraphStep) {
             final Neo4jGraphStep neo4jGraphStep = (Neo4jGraphStep) traversal.getSteps().get(0);

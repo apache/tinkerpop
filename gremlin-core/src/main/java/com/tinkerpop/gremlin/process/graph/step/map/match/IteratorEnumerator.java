@@ -19,6 +19,7 @@ public class IteratorEnumerator<T> implements Enumerator<T> {
         this.iterator = iterator;
     }
 
+    @Override
     public int size() {
         return memory.size();
     }
@@ -26,10 +27,12 @@ public class IteratorEnumerator<T> implements Enumerator<T> {
     // Returns true as soon as iterator.hasNext() returns false.
     // Note that DefaultTraversal has the behavior of returning true after it has first returned false,
     // but that we reset traversals between IteratorEnumerator lifetimes.
+    @Override
     public boolean isComplete() {
         return !iterator.hasNext();
     }
 
+    @Override
     public boolean visitSolution(final int index,
                                  final BiConsumer<String, T> visitor) {
         T value;

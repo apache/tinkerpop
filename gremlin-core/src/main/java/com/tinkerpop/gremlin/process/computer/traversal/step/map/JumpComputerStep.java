@@ -35,6 +35,7 @@ public class JumpComputerStep<S> extends AbstractStep<S, S> {
         this.futureSetByChild = true;
     }
 
+    @Override
     protected Traverser<S> processNextStart() {
         final String loopFuture = TraversalHelper.getStep(this.jumpLabel, this.traversal).getNextStep().getLabel();
         if (null == this.jumpBack)
@@ -67,6 +68,7 @@ public class JumpComputerStep<S> extends AbstractStep<S, S> {
         return null == this.ifPredicate ? traverser.getLoops() < this.loops : this.ifPredicate.test(traverser);
     }
 
+    @Override
     public Traverser<S> next() {
         if (this.available) {
             this.available = false;
@@ -76,6 +78,7 @@ public class JumpComputerStep<S> extends AbstractStep<S, S> {
         }
     }
 
+    @Override
     public boolean hasNext() {
         if (this.available)
             return true;

@@ -195,6 +195,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         return this.traversalSupplier;
     }
 
+    @Override
     public Features getFeatures() {
         return new Features() {
             @Override

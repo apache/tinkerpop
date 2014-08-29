@@ -13,13 +13,16 @@ import java.io.IOException;
  * @author Joshua Shinavier (http://fortytwo.net)
  */
 public class KryoVertexOutputFormat extends VertexOutputFormat {
+    @Override
     public VertexWriter createVertexWriter(TaskAttemptContext context) throws IOException, InterruptedException {
         return new KryoVertexWriter();
     }
 
+    @Override
     public void checkOutputSpecs(JobContext context) throws IOException, InterruptedException {
     }
 
+    @Override
     public OutputCommitter getOutputCommitter(TaskAttemptContext context) throws IOException, InterruptedException {
         return new FileOutputCommitter();
     }

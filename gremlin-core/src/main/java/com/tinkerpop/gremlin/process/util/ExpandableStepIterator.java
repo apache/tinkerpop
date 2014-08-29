@@ -24,10 +24,12 @@ public class ExpandableStepIterator<E> implements Iterator<Traverser<E>>, Serial
         this.expander.clear();
     }
 
+    @Override
     public boolean hasNext() {
         return this.hostStep.getPreviousStep().hasNext() || this.expander.hasNext();
     }
 
+    @Override
     public Traverser<E> next() {
         if (this.hostStep.getPreviousStep().hasNext())
             return (Traverser<E>) this.hostStep.getPreviousStep().next();
@@ -55,6 +57,7 @@ public class ExpandableStepIterator<E> implements Iterator<Traverser<E>>, Serial
             this.queue.clear();
         }
 
+        @Override
         public boolean hasNext() {
             for (final Iterator<T> itty : this.queue) {
                 if (itty.hasNext())
@@ -63,6 +66,7 @@ public class ExpandableStepIterator<E> implements Iterator<Traverser<E>>, Serial
             return false;
         }
 
+        @Override
         public T next() {
             while (true) {
                 final Iterator<T> itty = this.queue.element();

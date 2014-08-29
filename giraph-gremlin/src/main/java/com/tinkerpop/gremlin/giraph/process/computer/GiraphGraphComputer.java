@@ -70,12 +70,14 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
         this.giraphConfiguration.setClass("giraph.vertexValueClass", Text.class, Text.class);
     }
 
+    @Override
     public GraphComputer isolation(final Isolation isolation) {
         if (!isolation.equals(Isolation.BSP))
             throw GraphComputer.Exceptions.isolationNotSupported(isolation);
         return this;
     }
 
+    @Override
     public GraphComputer program(final VertexProgram vertexProgram) {
         this.vertexProgram = vertexProgram;
         final Configuration apacheConfiguration = new BaseConfiguration();
@@ -84,6 +86,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
         return this;
     }
 
+    @Override
     public GraphComputer mapReduce(final MapReduce mapReduce) {
         this.mapReduces.add(mapReduce);
         return this;
@@ -97,6 +100,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
         return StringFactory.computerString(this);
     }
 
+    @Override
     public Future<ComputerResult> submit() {
         if (this.executed)
             throw Exceptions.computerHasAlreadyBeenSubmittedAVertexProgram();
@@ -127,6 +131,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
         });
     }
 
+    @Override
     public int run(final String[] args) {
         try {
             // it is possible to run graph computer without a vertex program (and thus, only map reduce jobs if they exist)

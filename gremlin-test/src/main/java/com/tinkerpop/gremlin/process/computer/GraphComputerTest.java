@@ -377,18 +377,22 @@ public class GraphComputerTest extends AbstractGremlinTest {
     }
 
     class BadGraphComputer implements GraphComputer {
+        @Override
         public GraphComputer isolation(final Isolation isolation) {
             return null;
         }
 
+        @Override
         public GraphComputer program(final VertexProgram vertexProgram) {
             return null;
         }
 
+        @Override
         public GraphComputer mapReduce(final MapReduce mapReduce) {
             return null;
         }
 
+        @Override
         public Future<ComputerResult> submit() {
             return null;
         }

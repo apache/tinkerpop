@@ -36,6 +36,7 @@ public class KryoWritable<T> implements WritableComparable<KryoWritable> {
         return this.t.toString();
     }
 
+    @Override
     public void readFields(final DataInput input) throws IOException {
         final int objectLength = WritableUtils.readVInt(input);
         final byte[] objectBytes = new byte[objectLength];
@@ -53,6 +54,7 @@ public class KryoWritable<T> implements WritableComparable<KryoWritable> {
         //in.close();
     }
 
+    @Override
     public void write(final DataOutput output) throws IOException {
         final byte[] objectBytes = Serializer.serializeObject(this.t);
         WritableUtils.writeVInt(output, objectBytes.length);
@@ -66,6 +68,7 @@ public class KryoWritable<T> implements WritableComparable<KryoWritable> {
 
     }
 
+    @Override
     public int compareTo(final KryoWritable kryoWritable) {
         return this.t instanceof Comparable ? ((Comparable) this.t).compareTo(kryoWritable.get()) : 1;
     }

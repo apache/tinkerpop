@@ -20,14 +20,17 @@ public class KryoVertexWriter extends VertexWriter {
         outputFormat = new KryoOutputFormat();
     }
 
+    @Override
     public void initialize(TaskAttemptContext context) throws IOException, InterruptedException {
         recordWriter = outputFormat.getRecordWriter(context);
     }
 
+    @Override
     public void close(TaskAttemptContext context) throws IOException, InterruptedException {
         recordWriter.close(context);
     }
 
+    @Override
     public void writeVertex(Vertex vertex) throws IOException, InterruptedException {
         recordWriter.write(NullWritable.get(), (GiraphInternalVertex) vertex);
     }

@@ -28,6 +28,7 @@ public class CountStep<S> extends MapStep<S, Long> implements Bulkable {
         });
     }
 
+    @Override
     protected Traverser<Long> processNextStart() {
         if (!this.done.get()) {
             this.done.set(true);
@@ -41,6 +42,7 @@ public class CountStep<S> extends MapStep<S, Long> implements Bulkable {
         }
     }
 
+    @Override
     public void setCurrentBulkCount(final long bulkCount) {
         this.bulkCount = bulkCount;
     }

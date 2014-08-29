@@ -53,6 +53,7 @@ public interface Transaction extends Closeable {
     /**
      * Closes the transaction where the default close behavior will be executed.
      */
+    @Override
     public void close();
 
     /**

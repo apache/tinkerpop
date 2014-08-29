@@ -48,6 +48,7 @@ public class TinkerGraphView implements Serializable {
         ElementHelper.validateProperty(key, value);
         if (isComputeKey(key)) {
             final TinkerProperty<V> property = new TinkerProperty<V>(element, key, value) {
+                @Override
                 public void remove() {
                     removeProperty(element, key);
                 }

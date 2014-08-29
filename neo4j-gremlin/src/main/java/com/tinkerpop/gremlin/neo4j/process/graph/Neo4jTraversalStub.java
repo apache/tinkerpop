@@ -30,6 +30,7 @@ public interface Neo4jTraversalStub<S, E> extends GraphTraversal<S, E> {
         return new DefaultNeo4jTraversal<>();
     }
 
+    @Override
     public default <E2> Neo4jTraversal<S, E2> addStep(final Step<?, E2> step) {
         return (Neo4jTraversal) GraphTraversal.super.addStep((Step) step);
     }

@@ -31,6 +31,7 @@ public class DetachedVertex extends DetachedElement implements Vertex {
         super(vertex);
     }
 
+    @Override
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
         throw new UnsupportedOperationException("Detached vertices do not store edges: " + this);
     }
@@ -39,14 +40,17 @@ public class DetachedVertex extends DetachedElement implements Vertex {
         return StringFactory.vertexString(this);
     }
 
+    @Override
     public GraphTraversal<Vertex, Vertex> as(final String label) {
         throw new IllegalStateException();
     }
 
+    @Override
     public GraphTraversal<Vertex, Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
         throw new IllegalStateException();
     }
 
+    @Override
     public GraphTraversal<Vertex, Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
         throw new IllegalStateException();
     }

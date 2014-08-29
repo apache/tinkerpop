@@ -18,6 +18,7 @@ public class MapStep<S, E> extends AbstractStep<S, E> {
         super(traversal);
     }
 
+    @Override
     protected Traverser<E> processNextStart() {
         while (true) {
             final Traverser<S> traverser = this.starts.next();

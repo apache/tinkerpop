@@ -19,6 +19,7 @@ public class TraversalResultMapReduce implements MapReduce<MapReduce.NullObject,
 
     public static final String TRAVERSERS = Graph.Key.hide("traversers");
 
+    @Override
     public boolean doStage(final Stage stage) {
         return stage.equals(Stage.MAP);
     }
@@ -59,10 +60,12 @@ public class TraversalResultMapReduce implements MapReduce<MapReduce.NullObject,
     @Override
     public Iterator<Object> generateSideEffect(final Iterator<Pair<MapReduce.NullObject, Object>> keyValues) {
         return new Iterator<Object>() {
+            @Override
             public boolean hasNext() {
                 return keyValues.hasNext();
             }
 
+            @Override
             public Object next() {
                 return keyValues.next().getValue1();
             }

@@ -27,46 +27,57 @@ public class SimpleTraverser<T> implements Traverser<T> {
         this.t = t;
     }
 
+    @Override
     public T get() {
         return this.t;
     }
 
+    @Override
     public void set(final T t) {
         this.t = t;
     }
 
+    @Override
     public String getFuture() {
         return this.future;
     }
 
+    @Override
     public void setFuture(final String label) {
         this.future = label;
     }
 
+    @Override
     public boolean hasPath() {
         return false;
     }
 
+    @Override
     public Path getPath() {
         throw new IllegalStateException(PATH_ERROR_MESSAGE);
     }
 
+    @Override
     public void setPath(final Path path) {
         throw new IllegalStateException(PATH_ERROR_MESSAGE);
     }
 
+    @Override
     public int getLoops() {
         return this.loops;
     }
 
+    @Override
     public void incrLoops() {
         this.loops++;
     }
 
+    @Override
     public void resetLoops() {
         this.loops = 0;
     }
 
+    @Override
     public <R> SimpleTraverser<R> makeChild(final String label, final R r) {
         final SimpleTraverser<R> traverser = new SimpleTraverser<>(r);
         traverser.future = this.future;
@@ -74,6 +85,7 @@ public class SimpleTraverser<T> implements Traverser<T> {
         return traverser;
     }
 
+    @Override
     public SimpleTraverser<T> makeSibling() {
         final SimpleTraverser<T> traverser = new SimpleTraverser<>(this.t);
         traverser.future = this.future;
@@ -98,6 +110,7 @@ public class SimpleTraverser<T> implements Traverser<T> {
 
     }
 
+    @Override
     public SimpleTraverser<T> deflate() {
         if (this.t instanceof Vertex) {
             this.t = (T) DetachedVertex.detach((Vertex) this.t);
@@ -109,6 +122,7 @@ public class SimpleTraverser<T> implements Traverser<T> {
         return this;
     }
 
+    @Override
     public SimpleTraverser<T> inflate(final Vertex vertex) {
         if (this.t instanceof DetachedVertex) {
             this.t = (T) ((DetachedVertex) this.t).attach(vertex);

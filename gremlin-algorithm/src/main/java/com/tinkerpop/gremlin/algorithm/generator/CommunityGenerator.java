@@ -60,6 +60,7 @@ public class CommunityGenerator extends AbstractGenerator {
      *
      * @return The actual number of edges generated. May be different from the expected number.
      */
+    @Override
     public int generate() {
         int numVertices = SizableIterable.sizeOf(vertices);
         final Iterator<Vertex> iter = vertices.iterator();

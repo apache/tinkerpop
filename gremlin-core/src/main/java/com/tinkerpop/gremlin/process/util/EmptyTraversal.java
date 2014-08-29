@@ -22,34 +22,42 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
         return INSTANCE;
     }
 
+    @Override
     public boolean hasNext() {
         return false;
     }
 
+    @Override
     public E next() {
         throw FastNoSuchElementException.instance();
     }
 
+    @Override
     public SideEffects sideEffects() {
         return SIDE_EFFECTS;
     }
 
+    @Override
     public Strategies strategies() {
         return TRAVERSAL_STRATEGIES;
     }
 
+    @Override
     public void addStarts(final Iterator<Traverser<S>> starts) {
 
     }
 
+    @Override
     public <E2> Traversal<S, E2> addStep(final Step<?, E2> step) {
         return (Traversal) this;
     }
 
+    @Override
     public List<Step> getSteps() {
         return Collections.emptyList();
     }
 
+    @Override
     public Traversal<S, E> submit(final GraphComputer computer) {
         return INSTANCE;
     }

@@ -51,26 +51,32 @@ public class DetachedProperty<V> implements Property, Serializable {
                 DetachedEdge.detach((Edge) element);
     }
 
+    @Override
     public boolean isPresent() {
         return true;
     }
 
+    @Override
     public boolean isHidden() {
         return Graph.Key.isHidden(this.key);
     }
 
+    @Override
     public String key() {
         return Graph.Key.unHide(this.key);
     }
 
+    @Override
     public V value() {
         return this.value;
     }
 
+    @Override
     public Element getElement() {
         return this.element;
     }
 
+    @Override
     public void remove() {
         throw new UnsupportedOperationException("Detached properties are readonly: " + this.toString());
     }

@@ -23,6 +23,7 @@ public class MemoryMapReduce implements MapReduce<String, Object, String, Object
 
     public Set<String> memoryKeys = new HashSet<>();
 
+    @Override
     public String getSideEffectKey() {
         return Constants.HIDDEN_MEMORY;
     }

@@ -30,6 +30,7 @@ public class SideEffectStep<S> extends AbstractStep<S, S> implements Reversible 
         this.biConsumer = biConsumer;
     }
 
+    @Override
     protected Traverser<S> processNextStart() {
         final Traverser<S> traverser = this.starts.next();
         if (NO_OP_CONSUMER != this.consumer) this.consumer.accept(traverser);

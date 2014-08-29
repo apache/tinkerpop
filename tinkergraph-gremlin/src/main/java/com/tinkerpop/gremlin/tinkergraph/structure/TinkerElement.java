@@ -29,14 +29,17 @@ public abstract class TinkerElement implements Element, Serializable {
         return this.id.hashCode();
     }
 
+    @Override
     public Object id() {
         return this.id;
     }
 
+    @Override
     public String label() {
         return this.label;
     }
 
+    @Override
     public Map<String, Property> hiddens() {
         final Map<String, Property> temp = new HashMap<>();
         this.properties.forEach((key, property) -> {
@@ -54,6 +57,7 @@ public abstract class TinkerElement implements Element, Serializable {
         return temp;
     }
 
+    @Override
     public Map<String, Property> properties() {
         final Map<String, Property> temp = new HashMap<>();
         this.properties.forEach((key, property) -> {
@@ -72,6 +76,7 @@ public abstract class TinkerElement implements Element, Serializable {
     }
 
 
+    @Override
     public <V> Property<V> property(final String key) {
         if (this.graph.graphView != null && this.graph.graphView.getInUse()) {
             return this.graph.graphView.getProperty(this, key);
@@ -84,5 +89,6 @@ public abstract class TinkerElement implements Element, Serializable {
         return ElementHelper.areEqual(this, object);
     }
 
+    @Override
     public abstract void remove();
 }

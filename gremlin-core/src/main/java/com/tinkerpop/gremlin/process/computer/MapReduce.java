@@ -70,6 +70,7 @@ public interface MapReduce<MK, MV, RK, RV, R> {
             return object instanceof NullObject;
         }
 
+        @Override
         public int compareTo(final NullObject nullObject) {
             return 0;
         }

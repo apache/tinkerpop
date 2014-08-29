@@ -43,6 +43,7 @@ public class GiraphMemory extends MasterCompute implements Memory {
         // use compute() initial iteration instead
     }
 
+    @Override
     public void compute() {
         this.isMasterCompute = true;
         if (0 == this.getSuperstep()) { // setup
@@ -73,6 +74,7 @@ public class GiraphMemory extends MasterCompute implements Memory {
         }
     }
 
+    @Override
     public int getIteration() {
         if (this.isMasterCompute) {
             final int temp = (int) this.getSuperstep();
@@ -82,19 +84,23 @@ public class GiraphMemory extends MasterCompute implements Memory {
         }
     }
 
+    @Override
     public long getRuntime() {
         return System.currentTimeMillis() - this.<Long>get(Constants.RUNTIME);
     }
 
+    @Override
     public Set<String> keys() {
         return this.memoryKeys;
     }
 
+    @Override
     public boolean exists(final String key) {
         final RuleWritable rule = this.isMasterCompute ? this.getAggregatedValue(key) : this.giraphInternalVertex.getAggregatedValue(key);
         return null != rule.getObject();
     }
 
+    @Override
     public <R> R get(final String key) throws IllegalArgumentException {
         //this.checkKey(key);
         final RuleWritable rule = this.isMasterCompute ? this.getAggregatedValue(key) : this.giraphInternalVertex.getAggregatedValue(key);
@@ -104,6 +110,7 @@ public class GiraphMemory extends MasterCompute implements Memory {
             return rule.getObject();
     }
 
+    @Override
     public void set(final String key, Object value) {
         this.checkKeyValue(key, value);
         if (this.isMasterCompute)
@@ -112,6 +119,7 @@ public class GiraphMemory extends MasterCompute implements Memory {
             this.giraphInternalVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.SET, value));
     }
 
+    @Override
     public boolean and(final String key, final boolean bool) {
         this.checkKeyValue(key, bool);
         if (this.isMasterCompute) {  // only called on setup() and terminate()
@@ -126,6 +134,7 @@ public class GiraphMemory extends MasterCompute implements Memory {
         }
     }
 
+    @Override
     public boolean or(final String key, final boolean bool) {
         this.checkKeyValue(key, bool);
         if (this.isMasterCompute) {   // only called on setup() and terminate()
@@ -140,6 +149,7 @@ public class GiraphMemory extends MasterCompute implements Memory {
         }
     }
 
+    @Override
     public long incr(final String key, final long delta) {
         this.checkKeyValue(key, delta);
         if (this.isMasterCompute) {   // only called on setup() and terminate()
@@ -154,11 +164,13 @@ public class GiraphMemory extends MasterCompute implements Memory {
         }
     }
 
+    @Override
     public void write(final DataOutput output) {
         // no need to serialize the master compute as it gets its data from aggregators
         // is this true?
     }
 
+    @Override
     public void readFields(final DataInput input) {
         // no need to serialize the master compute as it gets its data from aggregators
         // is this true?

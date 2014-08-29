@@ -43,6 +43,7 @@ public class ComputerResultStep<S> extends AbstractStep<S, S> {
                 (Iterator<Traverser<S>>) this.memory.get(TraversalResultMapReduce.TRAVERSERS);
     }
 
+    @Override
     public Traverser<S> processNextStart() {
         final Traverser<S> traverser = this.traversers.next();
         if (this.resolveElements && traverser.get() instanceof Element) {

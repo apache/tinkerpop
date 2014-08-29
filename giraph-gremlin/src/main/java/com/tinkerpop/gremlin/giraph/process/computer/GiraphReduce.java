@@ -61,6 +61,7 @@ public class GiraphReduce extends Reducer<KryoWritable, KryoWritable, KryoWritab
             this.context = context;
         }
 
+        @Override
         public void emit(final OK key, final OV value) {
             this.keyWritable.set(key);
             this.valueWritable.set(value);

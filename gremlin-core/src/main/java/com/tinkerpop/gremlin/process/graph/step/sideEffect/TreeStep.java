@@ -47,16 +47,19 @@ public class TreeStep<S> extends SideEffectStep<S> implements Reversible, PathCo
         });
     }
 
+    @Override
     public String getSideEffectKey() {
         return this.sideEffectKey;
     }
 
+    @Override
     public void setCurrentVertex(final Vertex vertex) {
         this.tree = vertex.<Tree>property(this.hiddenSideEffectKey).orElse(new Tree());
         if (!vertex.property(this.hiddenSideEffectKey).isPresent())
             vertex.property(this.hiddenSideEffectKey, this.tree);
     }
 
+    @Override
     public MapReduce<Object, Tree, Object, Tree, Tree> getMapReduce() {
         return new TreeMapReduce(this);
     }

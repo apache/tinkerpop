@@ -39,6 +39,7 @@ public class RuleWritable implements Writable {
 
     // TODO: Don't use Kryo (its sin)
 
+    @Override
     public void readFields(final DataInput input) throws IOException {
         this.rule = Rule.values()[WritableUtils.readVInt(input)];
         final int objectLength = WritableUtils.readVInt(input);
@@ -63,6 +64,7 @@ public class RuleWritable implements Writable {
         in.close();*/
     }
 
+    @Override
     public void write(final DataOutput output) throws IOException {
         WritableUtils.writeVInt(output, this.rule.ordinal());
         final byte[] objectBytes = Serializer.serializeObject(this.object);

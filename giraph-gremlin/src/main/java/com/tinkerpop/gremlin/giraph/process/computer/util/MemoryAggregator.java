@@ -14,6 +14,7 @@ public class MemoryAggregator implements Aggregator<RuleWritable> {
         this.value = null;
     }
 
+    @Override
     public RuleWritable getAggregatedValue() {
         if (null == this.value)
             return createInitialValue();
@@ -38,6 +39,7 @@ public class MemoryAggregator implements Aggregator<RuleWritable> {
         return new RuleWritable(RuleWritable.Rule.NO_OP, null);
     }
 
+    @Override
     public void aggregate(RuleWritable ruleWritable) {
         final RuleWritable.Rule rule = ruleWritable.getRule();
         final Object object = ruleWritable.getObject();

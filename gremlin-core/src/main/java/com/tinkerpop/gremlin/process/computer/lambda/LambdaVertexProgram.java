@@ -38,6 +38,7 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
     private LambdaVertexProgram() {
     }
 
+    @Override
     public void loadState(final Configuration configuration) {
         try {
             this.setupLambda = configuration.containsKey(SETUP_LAMBDA_KEY) ?
@@ -57,6 +58,7 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
         }
     }
 
+    @Override
     public void storeState(final Configuration configuration) {
         configuration.setProperty(GraphComputer.VERTEX_PROGRAM, this.getClass().getName());
         try {
@@ -70,23 +72,28 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
         }
     }
 
+    @Override
     public void setup(final Memory memory) {
         this.setupLambda.accept(memory);
     }
 
 
+    @Override
     public void execute(final Vertex vertex, final Messenger<M> messenger, final Memory memory) {
         this.executeLambda.accept(vertex, messenger, memory);
     }
 
+    @Override
     public boolean terminate(final Memory memory) {
         return this.terminateLambda.test(memory);
     }
 
+    @Override
     public Map<String, KeyType> getElementComputeKeys() {
         return this.elementComputeKeys;
     }
 
+    @Override
     public Set<String> getMemoryComputeKeys() {
         return this.memoryKeys;
     }

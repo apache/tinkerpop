@@ -50,6 +50,7 @@ public class GiraphMap extends Mapper<NullWritable, GiraphInternalVertex, KryoWr
             this.context = context;
         }
 
+        @Override
         public void emit(final K key, final V value) {
             this.keyWritable.set(key);
             this.valueWritable.set(value);

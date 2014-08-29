@@ -14,6 +14,7 @@ public class GSupplier<A> implements SSupplier<A> {
         this.closure = closure;
     }
 
+    @Override
     public A get() {
         return (A) this.closure.call();
     }

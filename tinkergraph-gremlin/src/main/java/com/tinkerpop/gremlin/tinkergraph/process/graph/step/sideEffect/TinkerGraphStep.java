@@ -31,6 +31,7 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
         this.graph = graph;
     }
 
+    @Override
     public void generateTraverserIterator(final boolean trackPaths) {
         this.start = Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges();
         super.generateTraverserIterator(trackPaths);

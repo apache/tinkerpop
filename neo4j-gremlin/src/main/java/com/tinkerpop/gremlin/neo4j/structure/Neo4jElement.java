@@ -113,6 +113,7 @@ public abstract class Neo4jElement implements Element, WrappedElement<PropertyCo
         return this.id().hashCode();
     }
 
+    @Override
     public PropertyContainer getBaseElement() {
         return this.baseElement;
     }

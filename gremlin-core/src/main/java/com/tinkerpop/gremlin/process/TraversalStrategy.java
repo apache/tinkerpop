@@ -18,6 +18,7 @@ public interface TraversalStrategy extends Serializable, Comparable<TraversalStr
     public void apply(final Traversal traversal);
 
     public interface NoDependencies extends TraversalStrategy {
+        @Override
         public default int compareTo(final TraversalStrategy traversalStrategy) {
             return traversalStrategy instanceof NoDependencies ? -1 : -1 * traversalStrategy.compareTo(this);
         }

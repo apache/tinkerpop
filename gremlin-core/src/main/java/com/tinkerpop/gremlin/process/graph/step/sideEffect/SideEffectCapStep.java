@@ -24,6 +24,7 @@ public class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements SideE
         this.sideEffectKey = sideEffectKey;
     }
 
+    @Override
     public Traverser<E> processNextStart() {
         if (!this.done) {
             Traverser<E> traverser = new SimpleTraverser<>((E) NO_OBJECT);
@@ -44,6 +45,7 @@ public class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements SideE
         return Graph.Key.isHidden(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
     }
 
+    @Override
     public String getSideEffectKey() {
         return this.sideEffectKey;
     }

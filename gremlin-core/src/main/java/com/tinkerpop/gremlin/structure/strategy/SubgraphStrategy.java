@@ -105,6 +105,7 @@ public class SubgraphStrategy implements GraphStrategy {
 
     private class SubgraphTraversalStrategy implements TraversalStrategy.NoDependencies {
 
+        @Override
         public void apply(final Traversal traversal) {
             // modify the traversal by appending filters after some steps, replacing others.  the idea is to
             // find VertexStep instances and replace them with SubgraphVertexStep. after each GraphStep,
@@ -228,10 +229,12 @@ public class SubgraphStrategy implements GraphStrategy {
 
     private class EmptyGraphTraversal<S, E> extends EmptyTraversal<S, E> implements GraphTraversal<S, E> {
 
+        @Override
         public GraphTraversal<S, E> submit(final GraphComputer computer) {
             return new EmptyGraphTraversal<>();
         }
 
+        @Override
         public <E2> GraphTraversal<S, E2> addStep(final Step<?, E2> step) {
             return (GraphTraversal) this;
         }
@@ -248,10 +251,12 @@ public class SubgraphStrategy implements GraphStrategy {
             advanceToNext();
         }
 
+        @Override
         public boolean hasNext() {
             return null != nextElement;
         }
 
+        @Override
         public Edge next() {
             if (null == nextElement) throw new NoSuchElementException();
             final Edge tmp = nextElement;
@@ -289,10 +294,12 @@ public class SubgraphStrategy implements GraphStrategy {
             advanceToNext();
         }
 
+        @Override
         public boolean hasNext() {
             return null != nextVertex;
         }
 
+        @Override
         public Vertex next() {
             if (null == nextVertex) throw new NoSuchElementException();
             final Vertex tmp = nextVertex;
@@ -342,10 +349,12 @@ public class SubgraphStrategy implements GraphStrategy {
             this.baseIterator = baseIterator;
         }
 
+        @Override
         public boolean hasNext() {
             return count < branchFactor && baseIterator.hasNext();
         }
 
+        @Override
         public V next() {
             if (count >= branchFactor) throw new NoSuchElementException();
             count++;
@@ -365,10 +374,12 @@ public class SubgraphStrategy implements GraphStrategy {
             advanceToNext();
         }
 
+        @Override
         public boolean hasNext() {
             return null != nextItem;
         }
 
+        @Override
         public V next() {
             if (null == nextItem) throw new NoSuchElementException();
             V tmp = nextItem;

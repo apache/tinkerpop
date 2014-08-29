@@ -391,6 +391,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
             return 0 == this.totalInputs ? 1 : this.totalOutputs / ((double) this.totalInputs);
         }
 
+        @Override
         public int compareTo(final TraversalWrapper<A, B> other) {
             return ((Double) this.orderingFactor).compareTo(other.orderingFactor);
         }
@@ -440,10 +441,12 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         }
 
         // note: may return true after first returning false (inheriting this behavior from e.g. DefaultTraversal)
+        @Override
         public boolean hasNext() {
             return w.traversal.hasNext();
         }
 
+        @Override
         public B next() {
             outputs++;
             B b = w.traversal.next();
@@ -467,6 +470,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
             this.baseIterator = baseIterator;
         }
 
+        @Override
         public boolean hasNext() {
             if (this.ready) {
                 this.onHasNext.accept(null);
@@ -475,6 +479,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
             return this.baseIterator.hasNext();
         }
 
+        @Override
         public T next() {
             T value = this.baseIterator.next();
             this.ready = true;
@@ -491,10 +496,12 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
             this.baseIterator = baseIterator;
         }
 
+        @Override
         public boolean hasNext() {
             return this.baseIterator.hasNext();
         }
 
+        @Override
         public B next() {
             return this.map.apply(this.baseIterator.next());
         }

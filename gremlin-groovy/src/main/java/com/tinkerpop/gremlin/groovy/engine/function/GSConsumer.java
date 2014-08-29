@@ -13,6 +13,7 @@ public class GSConsumer<A> extends GLambda implements SConsumer<A> {
         super(gremlinGroovyScript);
     }
 
+    @Override
     public void accept(final A a) {
         try {
             STATIC_ENGINE.eval(this.gremlinGroovyScript, makeBindings(a));

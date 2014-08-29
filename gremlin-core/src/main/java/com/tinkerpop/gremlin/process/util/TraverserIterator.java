@@ -22,10 +22,12 @@ public class TraverserIterator<T> implements Iterator<Traverser<T>> {
         this.trackPaths = trackPaths;
     }
 
+    @Override
     public boolean hasNext() {
         return this.iterator.hasNext();
     }
 
+    @Override
     public Traverser<T> next() {
         return this.trackPaths ?
                 new PathTraverser<>(this.step.getLabel(), this.iterator.next()) :

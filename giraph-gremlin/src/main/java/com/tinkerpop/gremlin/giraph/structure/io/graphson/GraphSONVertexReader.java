@@ -17,23 +17,28 @@ public class GraphSONVertexReader extends VertexReader {
         recordReader = new GraphSONRecordReader();
     }
 
+    @Override
     public void initialize(final InputSplit inputSplit,
                            final TaskAttemptContext context) throws IOException, InterruptedException {
         recordReader.initialize(inputSplit, context);
     }
 
+    @Override
     public boolean nextVertex() throws IOException, InterruptedException {
         return recordReader.nextKeyValue();
     }
 
+    @Override
     public Vertex getCurrentVertex() throws IOException, InterruptedException {
         return recordReader.getCurrentValue();
     }
 
+    @Override
     public void close() throws IOException {
         recordReader.close();
     }
 
+    @Override
     public float getProgress() throws IOException, InterruptedException {
         return recordReader.getProgress();
     }

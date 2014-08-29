@@ -14,6 +14,7 @@ public class GBiConsumer<A, B> implements SBiConsumer<A, B> {
         this.closure = closure;
     }
 
+    @Override
     public void accept(A a, B b) {
         this.closure.call(a, b);
     }

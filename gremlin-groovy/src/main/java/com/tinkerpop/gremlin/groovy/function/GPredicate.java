@@ -14,6 +14,7 @@ public class GPredicate<A> implements SPredicate<A> {
         this.closure = closure;
     }
 
+    @Override
     public boolean test(A a) {
         return (boolean) this.closure.call(a);
     }

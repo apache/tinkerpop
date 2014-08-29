@@ -26,22 +26,27 @@ public class TinkerProperty<V> implements Property<V>, Serializable {
         this.graph = ((TinkerElement) element).graph;
     }
 
+    @Override
     public <E extends Element> E getElement() {
         return (E) this.element;
     }
 
+    @Override
     public String key() {
         return Graph.Key.unHide(this.key);
     }
 
+    @Override
     public V value() {
         return this.value;
     }
 
+    @Override
     public boolean isPresent() {
         return null != this.value;
     }
 
+    @Override
     public boolean isHidden() {
         return Graph.Key.isHidden(this.key);
     }
@@ -58,6 +63,7 @@ public class TinkerProperty<V> implements Property<V>, Serializable {
         return this.key.hashCode() + this.value.hashCode() + this.element.hashCode();
     }
 
+    @Override
     public void remove() {
         ((TinkerElement) this.element).properties.remove(key);
         if (this.element instanceof Vertex)

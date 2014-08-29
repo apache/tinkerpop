@@ -34,6 +34,7 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
 
     }
 
+    @Override
     public void storeState(final Configuration configuration) {
         try {
             VertexProgramHelper.serialize(this.mapLambda, configuration, LAMBDA_MAP_REDUCE_MAP_LAMBDA);
@@ -46,6 +47,7 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
         }
     }
 
+    @Override
     public void loadState(final Configuration configuration) {
         try {
             this.mapLambda = configuration.containsKey(LAMBDA_MAP_REDUCE_MAP_LAMBDA) ?
@@ -62,6 +64,7 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
         }
     }
 
+    @Override
     public boolean doStage(final Stage stage) {
         if (stage.equals(Stage.MAP))
             return null != this.mapLambda;
@@ -71,22 +74,27 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
             return null != this.reduceLambda;
     }
 
+    @Override
     public void map(final Vertex vertex, final MapEmitter<MK, MV> emitter) {
         this.mapLambda.accept(vertex, emitter);
     }
 
+    @Override
     public void combine(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter) {
         this.combineLambda.accept(key, values, emitter);
     }
 
+    @Override
     public void reduce(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter) {
         this.reduceLambda.accept(key, values, emitter);
     }
 
+    @Override
     public R generateSideEffect(final Iterator<Pair<RK, RV>> keyValues) {
         return this.memoryLambda.apply(keyValues);
     }
 
+    @Override
     public String getSideEffectKey() {
         return this.sideEffectKey;
     }

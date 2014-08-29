@@ -29,6 +29,7 @@ public class TextIterator implements Iterator<String> {
         }
     }
 
+    @Override
     public boolean hasNext() {
         try {
             if (this.available) {
@@ -49,6 +50,7 @@ public class TextIterator implements Iterator<String> {
         }
     }
 
+    @Override
     public String next() {
         try {
             if (this.available) {

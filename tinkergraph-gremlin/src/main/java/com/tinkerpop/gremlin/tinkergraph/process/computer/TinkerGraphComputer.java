@@ -35,21 +35,25 @@ public class TinkerGraphComputer implements GraphComputer {
         this.graph = graph;
     }
 
+    @Override
     public GraphComputer isolation(final Isolation isolation) {
         this.isolation = isolation;
         return this;
     }
 
+    @Override
     public GraphComputer program(final VertexProgram vertexProgram) {
         this.vertexProgram = vertexProgram;
         return this;
     }
 
+    @Override
     public GraphComputer mapReduce(final MapReduce mapReduce) {
         this.mapReduces.add(mapReduce);
         return this;
     }
 
+    @Override
     public Future<ComputerResult> submit() {
         if (this.executed)
             throw Exceptions.computerHasAlreadyBeenSubmittedAVertexProgram();

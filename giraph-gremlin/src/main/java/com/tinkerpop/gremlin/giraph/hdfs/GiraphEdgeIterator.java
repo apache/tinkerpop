@@ -29,6 +29,7 @@ public class GiraphEdgeIterator extends GiraphElementIterator<GiraphEdge> {
         super(graph);
     }
 
+    @Override
     public GiraphEdge next() {
         try {
             while (true) {
@@ -47,6 +48,7 @@ public class GiraphEdgeIterator extends GiraphElementIterator<GiraphEdge> {
         }
     }
 
+    @Override
     public boolean hasNext() {
         try {
             while (true) {

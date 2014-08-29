@@ -15,10 +15,12 @@ public class SingleIterator<T> implements Iterator<T>, Serializable {
         this.t = t;
     }
 
+    @Override
     public boolean hasNext() {
         return this.alive;
     }
 
+    @Override
     public T next() {
         if (!this.alive)
             throw FastNoSuchElementException.instance();

@@ -13,6 +13,7 @@ public class GSFunction<A, B> extends GLambda implements SFunction<A, B> {
         super(gremlinGroovyScript);
     }
 
+    @Override
     public B apply(final A a) {
         try {
             return (B) STATIC_ENGINE.eval(this.gremlinGroovyScript, makeBindings(a));

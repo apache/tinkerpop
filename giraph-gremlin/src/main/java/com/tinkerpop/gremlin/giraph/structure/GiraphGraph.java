@@ -66,8 +66,10 @@ public class GiraphGraph implements Graph, Serializable {
         return (G) graph;
     }
 
+    @Override
     public GraphTraversal<Vertex, Vertex> V() {
         final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>() {
+            @Override
             public GraphTraversal<Vertex, Vertex> submit(final GraphComputer computer) {
                 GiraphComputerHelper.prepareTraversalForComputer(this);
                 return super.submit(computer);
@@ -78,8 +80,10 @@ public class GiraphGraph implements Graph, Serializable {
         return traversal;
     }
 
+    @Override
     public GraphTraversal<Edge, Edge> E() {
         final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<Edge, Edge>() {
+            @Override
             public GraphTraversal<Edge, Edge> submit(final GraphComputer computer) {
                 GiraphComputerHelper.prepareTraversalForComputer(this);
                 return super.submit(computer);
@@ -98,18 +102,22 @@ public class GiraphGraph implements Graph, Serializable {
         return traversal;
     }
 
+    @Override
     public Vertex v(final Object id) {
         return this.V().<Vertex>has(Element.ID, id).next();
     }
 
+    @Override
     public Edge e(final Object id) {
         return this.E().<Edge>has(Element.ID, id).next();
     }
 
+    @Override
     public Vertex addVertex(final Object... keyValues) {
         throw Exceptions.vertexAdditionsNotSupported();
     }
 
+    @Override
     public GraphComputer compute(final Class... graphComputerClass) {
         GraphComputerHelper.validateComputeArguments(graphComputerClass);
         if (graphComputerClass.length == 0 || graphComputerClass[0].equals(GiraphGraphComputer.class))
@@ -119,6 +127,7 @@ public class GiraphGraph implements Graph, Serializable {
     }
 
 
+    @Override
     public GiraphGraphVariables variables() {
         return this.variables;
     }
@@ -134,14 +143,17 @@ public class GiraphGraph implements Graph, Serializable {
         return StringFactory.graphString(this, fromString.toLowerCase() + "->" + toString.toLowerCase());
     }
 
+    @Override
     public void close() {
         this.variables().getConfiguration().clear();
     }
 
+    @Override
     public Transaction tx() {
         throw Exceptions.transactionsNotSupported();
     }
 
+    @Override
     public Features features() {
         return new Features() {
             @Override
