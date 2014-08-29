@@ -8,11 +8,11 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -20,6 +20,8 @@ import static org.junit.Assert.assertFalse;
 public abstract class UnfoldTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, Edge> get_g_V_mapXoutEX_unfold();
+
+    public abstract Traversal<Vertex, String> get_V_values_unfold_mapXkeyX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -37,11 +39,45 @@ public abstract class UnfoldTest extends AbstractGremlinTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_values_unfold_mapXkeyX() {
+        final Traversal<Vertex, String> traversal = get_V_values_unfold_mapXkeyX();
+        printTraversalForm(traversal);
+        int counter = 0;
+        int ageCounter = 0;
+        int nameCounter = 0;
+        int langCounter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            final String key = traversal.next();
+            if (key.equals("name"))
+                nameCounter++;
+            else if (key.equals("age"))
+                ageCounter++;
+            else if (key.equals("lang"))
+                langCounter++;
+            else
+                fail("The provided key is not known: " + key);
+        }
+        assertEquals(12, counter);
+        assertEquals(4, ageCounter);
+        assertEquals(2, langCounter);
+        assertEquals(6, nameCounter);
+        assertEquals(counter, ageCounter + langCounter + nameCounter);
+        assertFalse(traversal.hasNext());
+    }
+
     public static class JavaUnfoldTest extends UnfoldTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_mapXoutEX_unfold() {
-            return g.V().map(t -> t.get().outE()).unfold();
+            return g.V().map(v -> v.get().outE()).unfold();
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_V_values_unfold_mapXkeyX() {
+            return g.V().values().<Map.Entry<String, Object>>unfold().map(m -> m.get().getKey());
         }
     }
 
@@ -49,7 +85,12 @@ public abstract class UnfoldTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_mapXoutEX_unfold() {
-            return (Traversal) g.V().map(t -> t.get().outE()).unfold().submit(g.compute());
+            return (Traversal) g.V().map(v -> v.get().outE()).unfold().submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_V_values_unfold_mapXkeyX() {
+            return g.V().values().<Map.Entry<String, Object>>unfold().map(m -> m.get().getKey()).submit(g.compute());
         }
     }
 }

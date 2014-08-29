@@ -18,7 +18,7 @@ public class BackStep<S, E> extends MapStep<S, E> implements PathConsumer, Graph
         super(traversal);
         this.stepLabel = stepLabel;
         TraversalHelper.getStep(this.stepLabel, this.traversal);
-        this.setBiFunction((traverser, sideEffects) -> this.requiresPaths() ? traverser.getPath().get(this.stepLabel) : sideEffects.get(stepLabel));
+        this.setBiFunction((traverser, sideEffects) -> this.requiresPaths() ? traverser.getPath().get(this.stepLabel) : sideEffects.get(this.stepLabel));
     }
 
     @Override
