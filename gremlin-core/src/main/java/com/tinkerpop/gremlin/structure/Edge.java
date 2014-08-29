@@ -263,7 +263,7 @@ public interface Edge extends Element {
         return this.start().fold();
     }
 
-    public default <E2> GraphTraversal<Edge, E2> fold(final E2 seed, final SBiFunction<E2, Edge, E2> foldFunction) {
+    public default <E2> GraphTraversal<Edge, E2> fold(final E2 seed, final SBiFunction<E2, Traverser<Edge>, E2> foldFunction) {
         return this.start().fold(seed, foldFunction);
     }
 

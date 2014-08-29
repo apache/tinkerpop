@@ -286,7 +286,7 @@ public interface Vertex extends Element {
         return this.start().fold();
     }
 
-    public default <E2> GraphTraversal<Vertex, E2> fold(final E2 seed, final SBiFunction<E2, Vertex, E2> foldFunction) {
+    public default <E2> GraphTraversal<Vertex, E2> fold(final E2 seed, final SBiFunction<E2, Traverser<Vertex>, E2> foldFunction) {
         return this.start().fold(seed, foldFunction);
     }
 

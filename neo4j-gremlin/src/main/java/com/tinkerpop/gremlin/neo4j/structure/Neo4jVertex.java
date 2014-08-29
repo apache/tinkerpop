@@ -336,7 +336,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
     }
 
     @Override
-    public <E2> Neo4jTraversal<Vertex, E2> fold(final E2 seed, final SBiFunction<E2, Vertex, E2> foldFunction) {
+    public <E2> Neo4jTraversal<Vertex, E2> fold(final E2 seed, final SBiFunction<E2, Traverser<Vertex>, E2> foldFunction) {
         return this.start().fold(seed, foldFunction);
     }
 

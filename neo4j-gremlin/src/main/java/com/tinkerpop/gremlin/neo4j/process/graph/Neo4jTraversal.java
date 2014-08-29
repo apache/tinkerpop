@@ -174,7 +174,7 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.fold();
 	}
 
-	public default <E2> Neo4jTraversal<S, E2> fold(E2 arg0, com.tinkerpop.gremlin.util.function.SBiFunction<E2, E, E2> arg1) {
+	public default <E2> Neo4jTraversal<S, E2> fold(E2 arg0, com.tinkerpop.gremlin.util.function.SBiFunction<E2, com.tinkerpop.gremlin.process.Traverser<E>, E2> arg1) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.fold(arg0, arg1);
 	}
 

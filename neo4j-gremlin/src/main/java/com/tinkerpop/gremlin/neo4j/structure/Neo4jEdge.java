@@ -306,7 +306,7 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
     }
 
     @Override
-    public <E2> Neo4jTraversal<Edge, E2> fold(final E2 seed, final SBiFunction<E2, Edge, E2> foldFunction) {
+    public <E2> Neo4jTraversal<Edge, E2> fold(final E2 seed, final SBiFunction<E2, Traverser<Edge>, E2> foldFunction) {
         return this.start().fold(seed, foldFunction);
     }
 

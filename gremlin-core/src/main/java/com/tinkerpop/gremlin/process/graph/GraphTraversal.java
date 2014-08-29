@@ -335,7 +335,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.addStep(new FoldStep<>(this));
     }
 
-    public default <E2> GraphTraversal<S, E2> fold(final E2 seed, final SBiFunction<E2, E, E2> foldFunction) {
+    public default <E2> GraphTraversal<S, E2> fold(final E2 seed, final SBiFunction<E2, Traverser<E>, E2> foldFunction) {
         return this.addStep(new FoldStep<>(this, seed, foldFunction));
     }
 

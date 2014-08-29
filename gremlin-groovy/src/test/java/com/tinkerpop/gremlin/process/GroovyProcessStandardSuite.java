@@ -15,6 +15,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.GroovySimplePathTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyWhereTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyBackTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyChooseTestImpl;
+import com.tinkerpop.gremlin.process.graph.step.map.GroovyFoldTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyJumpTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyMapTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyMatchTestImpl;
@@ -22,8 +23,8 @@ import com.tinkerpop.gremlin.process.graph.step.map.GroovyOrderTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyPathTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovySelectTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyUnfoldTestImpl;
-import com.tinkerpop.gremlin.process.graph.step.map.GroovyVertexTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyValuesTestImpl;
+import com.tinkerpop.gremlin.process.graph.step.map.GroovyVertexTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyAggregateTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupByTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupCountTestImpl;
@@ -64,6 +65,7 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             // map
             GroovyBackTestImpl.class,
             GroovyChooseTestImpl.class,
+            GroovyFoldTestImpl.class,
             GroovyJumpTestImpl.class,
             GroovyMapTestImpl.class,
             GroovyMatchTestImpl.class,

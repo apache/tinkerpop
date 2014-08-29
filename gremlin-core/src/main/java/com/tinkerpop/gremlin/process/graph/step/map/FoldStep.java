@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.util.function.SBiFunction;
 
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ public class FoldStep<S, E> extends MapStep<S, E> {
 
     private final AtomicReference<E> mutatingSeed;
     private final E seed;
-    public SBiFunction<E, S, E> foldFunction;
+    public SBiFunction<E, Traverser<S>, E> foldFunction;
 
     public FoldStep(final Traversal traversal) {
         super(traversal);
@@ -29,14 +30,14 @@ public class FoldStep<S, E> extends MapStep<S, E> {
         });
     }
 
-    public FoldStep(final Traversal traversal, final E seed, final SBiFunction<E, S, E> foldFunction) {
+    public FoldStep(final Traversal traversal, final E seed, final SBiFunction<E, Traverser<S>, E> foldFunction) {
         super(traversal);
         this.seed = seed;
         this.mutatingSeed = new AtomicReference<>(seed);
         this.foldFunction = foldFunction;
         this.setFunction(traverser -> {
-            this.mutatingSeed.set(this.foldFunction.apply(this.mutatingSeed.get(), traverser.get()));
-            this.starts.forEachRemaining(previousTraverser -> this.mutatingSeed.set(this.foldFunction.apply(this.mutatingSeed.get(), previousTraverser.get())));
+            this.mutatingSeed.set(this.foldFunction.apply(this.mutatingSeed.get(), traverser));
+            this.starts.forEachRemaining(previousTraverser -> this.mutatingSeed.set(this.foldFunction.apply(this.mutatingSeed.get(), previousTraverser)));
             return (E) this.mutatingSeed.get();
         });
     }
