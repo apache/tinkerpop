@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.IoTest;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -10,7 +11,9 @@ import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -201,6 +204,38 @@ public class TinkerGraphTest implements Serializable {
 
         final OutputStream os = new FileOutputStream(tempPath + "grateful-dead.json");
         GraphSONWriter.build().embedTypes(true).create().writeGraph(os, g);
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteGratefulVerticesAsKryo() throws IOException {
+        final Graph g = TinkerGraph.open();
+        final GraphReader reader = KryoReader.build().create();
+        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/util/io/kryo/grateful-dead.gio")) {
+            reader.readGraph(stream, g);
+        }
+
+        final OutputStream os = new FileOutputStream(tempPath + "grateful-dead-vertices.gio");
+        KryoWriter.build().create().writeVertices(os, g.V(), Direction.BOTH);
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteGratefulVerticesAsGraphSON() throws IOException {
+        final Graph g = TinkerGraph.open();
+        final GraphReader reader = KryoReader.build().create();
+        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/util/io/kryo/grateful-dead.gio")) {
+            reader.readGraph(stream, g);
+        }
+
+        final OutputStream os = new FileOutputStream(tempPath + "grateful-dead-vertices.ldjson");
+        GraphSONWriter.build().create().writeVertices(os, g.V(), Direction.BOTH);
         os.close();
     }
 
@@ -458,6 +493,58 @@ public class TinkerGraphTest implements Serializable {
         } finally {
             input.close();
         }
+    }
+
+    // TODO: kill this test below once we're sure we're happy with grateful dead
+    @Test
+    @Ignore
+    public void shouldConvertGratefulDeadTypesToLabels() throws IOException {
+        final Graph g = TinkerGraph.open();
+        final GraphReader reader = KryoReader.build().create();
+        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/util/io/kryo/grateful-dead.gio")) {
+            reader.readGraph(stream, g);
+        }
+
+        /*
+        final Graph ng = TinkerGraph.open();
+        g.V().sideEffect(ov -> {
+            Vertex v = ov.get();
+            if (v.value("type").equals("song"))
+                ng.addVertex(Element.ID, v.id(), Element.LABEL, "song", "name", v.value("name"), "performances", v.property("performances").orElse(0), "songType", v.property("songType").orElse(""));
+            else if (v.value("type").equals("artist"))
+                ng.addVertex(Element.ID, v.id(), Element.LABEL, "artist", "name", v.value("name"));
+            else
+                throw new RuntimeException("damn");
+        }).iterate();
+
+        g.E().sideEffect(oe -> {
+            Edge e = oe.get();
+            Vertex v2 = ng.v(e.inV().next().id());
+            Vertex v1 = ng.v(e.outV().next().id());
+
+            if (e.label().equals("followedBy"))
+                v1.addEdge("followedBy", v2, Element.ID, e.id(), "weight", e.value("weight"));
+            else if (e.label().equals("sungBy"))
+                v1.addEdge("sungBy", v2, Element.ID, e.id());
+            else if (e.label().equals("writtenBy"))
+                v1.addEdge("writtenBy", v2, Element.ID, e.id());
+            else
+                throw new RuntimeException("bah");
+
+        }).iterate();
+
+        final OutputStream os = new FileOutputStream(tempPath + "grateful-dead.gio");
+        KryoWriter.build().create().writeGraph(os, ng);
+        os.close();
+        */
+
+        final OutputStream os2 = new FileOutputStream(tempPath + "grateful-dead.json");
+        GraphSONWriter.build().embedTypes(true).create().writeGraph(os2, g);
+        os2.close();
+
+        final OutputStream os3 = new FileOutputStream(tempPath + "grateful-dead.xml");
+        GraphMLWriter.build().create().writeGraph(os3, g);
+        os3.close();
     }
 
     protected void deleteFile(final String path) throws IOException {
