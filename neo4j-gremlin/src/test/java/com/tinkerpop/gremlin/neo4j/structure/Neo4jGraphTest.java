@@ -2,17 +2,10 @@ package com.tinkerpop.gremlin.neo4j.structure;
 
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.neo4j.BaseNeo4jGraphTest;
-import com.tinkerpop.gremlin.neo4j.Neo4jGraphProvider;
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
-import org.apache.commons.configuration.Configuration;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestName;
 import org.neo4j.graphdb.ConstraintViolationException;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.Node;
@@ -23,11 +16,6 @@ import org.neo4j.graphdb.schema.Schema;
 
 import javax.script.Bindings;
 import javax.script.ScriptException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -45,7 +33,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
-    public void testNoConcurrentModificationException() {
+    public void shoulNotThrowConcurrentModificationException() {
         this.g.addVertex("name", "a");
         this.g.addVertex("name", "b");
         this.g.addVertex("name", "c");
@@ -56,7 +44,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
-    public void testLabeledIndexOnVertexWithHasHas() {
+    public void shouldReturnResultsLabeledIndexOnVertexWithHasHas() {
         this.g.tx().readWrite();
         final Schema schema = this.g.getBaseGraph().schema();
         schema.indexFor(DynamicLabel.label("Person")).on("name").create();
@@ -69,7 +57,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
-    public void testColonedKeyIsTreatedAsNormalKey() {
+    public void shouldEnsureColonedKeyIsTreatedAsNormalKey() {
         this.g.tx().readWrite();
         final Schema schema = this.g.getBaseGraph().schema();
         schema.indexFor(DynamicLabel.label("Person")).on("name").create();
@@ -83,7 +71,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
-    public void testLabeledIndexOnVertexWithHasHasHas() {
+    public void shouldReturnResultsUsingLabeledIndexOnVertexWithHasHasHas() {
         this.g.tx().readWrite();
         final Schema schema = this.g.getBaseGraph().schema();
         schema.indexFor(DynamicLabel.label("Person")).on("name").create();
@@ -96,7 +84,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
-    public void testVertexWithHasHasHasNoIndex() {
+    public void shouldReturnResultsOnVertexWithHasHasHasNoIndex() {
         this.g.tx().commit();
         this.g.addVertex(Element.LABEL, "Person", "name", "marko", "color", "blue");
         this.g.addVertex(Element.LABEL, "Person", "name", "marko", "color", "green");
@@ -106,7 +94,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
-    public void testLabeledIndexOnVertexWithColonFails() {
+    public void shouldReturnResultsUsingLabeledIndexOnVertexWithColonFails() {
         this.g.tx().readWrite();
         final Schema schema = this.g.getBaseGraph().schema();
         schema.indexFor(DynamicLabel.label("Person")).on("name").create();
@@ -119,7 +107,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
-    public void testLegacyIndexOnVertex() {
+    public void shouldReturnResultsUsingLegacyIndexOnVertex() {
         g.tx().readWrite();
         final AutoIndexer<Node> nodeAutoIndexer = this.g.getBaseGraph().index().getNodeAutoIndexer();
         nodeAutoIndexer.startAutoIndexingProperty("name");
@@ -133,7 +121,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
-    public void testLegacyIndexOnEdge() {
+    public void shouldUseLegacyIndexOnEdge() {
         g.tx().readWrite();
         final AutoIndexer<Relationship> relAutoIndexer = this.g.getBaseGraph().index().getRelationshipAutoIndexer();
         relAutoIndexer.startAutoIndexingProperty("weight");
@@ -149,7 +137,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
-    public void testUniqueConstraintPass() {
+    public void shouldEnforceUniqueConstraint() {
         this.g.tx().readWrite();
         final Schema schema = this.g.getBaseGraph().schema();
         schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("name").create();
@@ -160,7 +148,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
-    public void testMultipleUniqueConstraintPass() {
+    public void shouldEnforceMultipleUniqueConstraint() {
         this.g.tx().readWrite();
         final Schema schema = this.g.getBaseGraph().schema();
         schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("name").create();
@@ -187,7 +175,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
-    public void testDropMultipleUniqueConstraintPass() {
+    public void shouldDropMultipleUniqueConstraint() {
         this.g.tx().readWrite();
         final Schema schema = this.g.getBaseGraph().schema();
         schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("name").create();
@@ -229,7 +217,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test(expected = ConstraintViolationException.class)
-    public void testUniqueConstraintFail() {
+    public void shouldFailUniqueConstraint() {
         this.g.tx().readWrite();
         final Schema schema = this.g.getBaseGraph().schema();
         schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("name").create();
@@ -241,7 +229,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
-    public void testTraverseRelationshipNeedsTx() throws ScriptException {
+    public void shouldEnsureTraverseRelationshipNeedsTx() throws ScriptException {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
         final Bindings bindings = engine.createBindings();
         bindings.put("g", g);
@@ -262,7 +250,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
-    public void testTraverseVertexesNeedsTx() throws ScriptException {
+    public void shouldEnsureTraversalOfVerticesNeedsTx() throws ScriptException {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
         final Bindings bindings = engine.createBindings();
         bindings.put("g", g);
@@ -283,7 +271,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
-    public void testLabelSearch() {
+    public void shouldDoLabelSearch() {
         this.g.addVertex(Element.LABEL, "Person", "name", "marko");
         this.g.addVertex(Element.LABEL, "Person", "name", "john");
         Vertex pete = this.g.addVertex(Element.LABEL, "Person", "name", "pete");
@@ -296,7 +284,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
-    public void testLabelAndIndexSearch() {
+    public void shouldDoLabelAndIndexSearch() {
         g.tx().readWrite();
 
         final Schema schema = g.getBaseGraph().schema();
@@ -313,7 +301,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
-    public void testLabelAndLegacyIndexSearch() {
+    public void shouldDoLabelAndLegacyIndexSearch() {
         g.tx().readWrite();
 
         final Schema schema = g.getBaseGraph().schema();
@@ -334,7 +322,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
-    public void testLabelsNameSpaceBehavior() {
+    public void shouldDoLabelsNameSpaceBehavior() {
         g.tx().readWrite();
 
         final Schema schema = g.getBaseGraph().schema();
