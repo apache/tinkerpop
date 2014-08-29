@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -18,6 +19,8 @@ public class UnfoldStep<S, E> extends FlatMapStep<S, E> {
                 return (Iterator) s;
             else if (s instanceof Iterable)
                 return ((Iterable) s).iterator();
+            else if (s instanceof Map)
+                return ((Map) s).entrySet().iterator();
             else
                 return new SingleIterator(s);
         });
