@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.driver.Tokens;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
-import com.tinkerpop.gremlin.driver.message.ResultType;
 import com.tinkerpop.gremlin.server.Settings;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
@@ -64,8 +63,7 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter {
                         if (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
                             ctx.writeAndFlush(ResponseMessage.build(requestMessage)
                                     .code(ResultCode.SUCCESS)
-                                    .result(aggregate)
-                                    .contents(ResultType.COLLECTION).create());
+                                    .result(aggregate).create());
                             aggregate = new ArrayList<>(resultIterationBatchSize);
                         }
 
@@ -88,7 +86,7 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter {
                         ctx.writeAndFlush(ResponseMessage.build(requestMessage).code(ResultCode.SERVER_ERROR_TIMEOUT).result(errorMessage).create());
                     }
 
-                    ctx.writeAndFlush(ResponseMessage.build(requestMessage).contents(ResultType.EMPTY).code(ResultCode.SUCCESS_TERMINATOR).create());
+                    ctx.writeAndFlush(ResponseMessage.build(requestMessage).code(ResultCode.SUCCESS_TERMINATOR).create());
                 });
             } finally {
                 ReferenceCountUtil.release(msg);

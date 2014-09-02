@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.driver.message;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -11,41 +13,34 @@ public class ResponseMessage {
      * The current request that generated this response.
      */
     private final UUID requestId;
-    private final ResultCode code;
-    private final Object result;
-    private final ResultType resultType;
+    private final ResponseStatus responseStatus;
+    private final ResponseResult responseResult;
 
-    private ResponseMessage(final UUID requestId, final ResultCode code,
-                            final Object result, final ResultType resultType) {
+    private ResponseMessage(final UUID requestId, final ResponseStatus responseStatus,
+                            final ResponseResult responseResult) {
         this.requestId = requestId;
-        this.code = code;
-        this.result = result;
-        this.resultType = resultType;
-    }
-
-    public ResultType getResultType() {
-        return resultType;
+        this.responseResult = responseResult;
+        this.responseStatus = responseStatus;
     }
 
     public UUID getRequestId() {
         return requestId;
     }
 
-    public ResultCode getCode() {
-        return code;
+    public ResponseStatus getStatus() {
+        return responseStatus;
     }
 
-    public Object getResult() {
-        return result;
+    public ResponseResult getResult() {
+        return responseResult;
     }
 
     @Override
     public String toString() {
         return "ResponseMessage{" +
                 "requestId=" + requestId +
-                ", code=" + code +
-                ", result=" + result +
-                ", resultType=" + resultType +
+                ", status=" + responseStatus +
+                ", result=" + responseResult +
                 '}';
     }
 
@@ -62,7 +57,9 @@ public class ResponseMessage {
         private final UUID requestId;
         private ResultCode code = ResultCode.SUCCESS;
         private Object result = null;
-        private ResultType contents = ResultType.OBJECT;
+        private String statusMessage = "";
+        private Map<String,Object> attributes = Collections.emptyMap();
+        private Map<String,Object> metaData = Collections.emptyMap();
 
         private Builder(final RequestMessage requestMessage) {
             this.requestId = requestMessage.getRequestId();
@@ -77,18 +74,30 @@ public class ResponseMessage {
             return this;
         }
 
+        public Builder statusMessage(final String message) {
+            this.statusMessage = message;
+            return this;
+        }
+
+        public Builder statusAttributes(final Map<String,Object> attributes) {
+            this.attributes = attributes;
+            return this;
+        }
+
         public Builder result(final Object result) {
             this.result = result;
             return this;
         }
 
-        public Builder contents(final ResultType contents) {
-            this.contents = contents;
+        public Builder responseMetaData(final Map<String,Object> metaData) {
+            this.metaData = metaData;
             return this;
         }
 
         public ResponseMessage create() {
-            return new ResponseMessage(requestId, code, result, contents);
+            final ResponseResult responseResult = new ResponseResult(result, metaData);
+            final ResponseStatus responseStatus = new ResponseStatus(code, statusMessage, attributes);
+            return new ResponseMessage(requestId, responseStatus, responseResult);
         }
     }
 }

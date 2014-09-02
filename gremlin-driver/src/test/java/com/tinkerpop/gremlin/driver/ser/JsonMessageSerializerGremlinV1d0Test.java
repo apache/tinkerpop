@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.driver.ser;
 import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
-import com.tinkerpop.gremlin.driver.message.ResultType;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -47,7 +46,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
         final ResponseMessage response = convert(list);
         assertCommon(response);
 
-        final List<Integer> deserializedFunList = (List<Integer>) response.getResult();
+        final List<Integer> deserializedFunList = (List<Integer>) response.getResult().getData();
         assertEquals(2, deserializedFunList.size());
         assertEquals(new Integer(1), deserializedFunList.get(0));
         assertEquals(new Integer(100), deserializedFunList.get(1));
@@ -63,7 +62,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
         final ResponseMessage response = convert(list);
         assertCommon(response);
 
-        final List<Integer> deserializedFunList = (List<Integer>) response.getResult();
+        final List<Integer> deserializedFunList = (List<Integer>) response.getResult().getData();
         assertEquals(3, deserializedFunList.size());
         assertEquals(new Integer(1), deserializedFunList.get(0));
         assertNull(deserializedFunList.get(1));
@@ -83,7 +82,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
         final ResponseMessage response = convert(map);
         assertCommon(response);
 
-        final Map<String, Object> deserializedMap = (Map<String, Object>) response.getResult();
+        final Map<String, Object> deserializedMap = (Map<String, Object>) response.getResult().getData();
         assertEquals(3, deserializedMap.size());
         assertEquals(1, deserializedMap.get("x"));
         assertEquals("some", deserializedMap.get("y"));
@@ -106,7 +105,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
         final ResponseMessage response = convert(iterable);
         assertCommon(response);
 
-        final List<Map<String, Object>> edgeList = (List<Map<String, Object>>) response.getResult();
+        final List<Map<String, Object>> edgeList = (List<Map<String, Object>>) response.getResult().getData();
         assertEquals(1, edgeList.size());
 
         final Map<String, Object> deserializedEdge = edgeList.get(0);
@@ -144,7 +143,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
         final ResponseMessage response = convert(list);
         assertCommon(response);
 
-        final List<Map<String, Object>> vertexList = (List<Map<String, Object>>) response.getResult();
+        final List<Map<String, Object>> vertexList = (List<Map<String, Object>>) response.getResult().getData();
         assertEquals(1, vertexList.size());
 
         final Map<String, Object> deserializedVertex = vertexList.get(0);
@@ -174,7 +173,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
         final ResponseMessage response = convert(map);
         assertCommon(response);
 
-        final Map<String, Integer> deserializedMap = (Map<String, Integer>) response.getResult();
+        final Map<String, Integer> deserializedMap = (Map<String, Integer>) response.getResult().getData();
         assertEquals(1, deserializedMap.size());
 
         // with no embedded types the key (which is a vertex) simply serializes out to an id
@@ -184,8 +183,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
 
     private void assertCommon(final ResponseMessage response) {
         assertEquals(requestId, response.getRequestId());
-        assertEquals(ResultCode.SUCCESS, response.getCode());
-        assertEquals(ResultType.OBJECT, response.getResultType());
+        assertEquals(ResultCode.SUCCESS, response.getStatus().getCode());
     }
 
     private ResponseMessage convert(final Object toSerialize) throws SerializationException {

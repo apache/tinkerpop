@@ -4,7 +4,6 @@ import com.codahale.metrics.Meter;
 import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
-import com.tinkerpop.gremlin.driver.message.ResultType;
 import com.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import com.tinkerpop.gremlin.server.GremlinServer;
 import com.tinkerpop.gremlin.server.util.MetricManager;
@@ -33,11 +32,11 @@ public class NioGremlinResponseEncoder extends MessageToByteEncoder<ResponseMess
 
         try {
             if (useBinary) {
-                if (responseMessage.getCode().isSuccess())
+                if (responseMessage.getStatus().getCode().isSuccess())
                     byteBuf.writeBytes(serializer.serializeResponseAsBinary(responseMessage, channelHandlerContext.alloc()));
                 else {
                     byteBuf.writeBytes(serializer.serializeResponseAsBinary(responseMessage, channelHandlerContext.alloc()));
-                    final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).contents(ResultType.EMPTY).code(ResultCode.SUCCESS_TERMINATOR).create();
+                    final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).code(ResultCode.SUCCESS_TERMINATOR).create();
                     byteBuf.writeBytes(serializer.serializeResponseAsBinary(terminator, channelHandlerContext.alloc()));
                     errorMeter.mark();
                 }
@@ -45,11 +44,11 @@ public class NioGremlinResponseEncoder extends MessageToByteEncoder<ResponseMess
                 // the expectation is that the GremlinTextRequestDecoder will have placed a MessageTextSerializer
                 // instance on the channel.
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
-                if (responseMessage.getCode().isSuccess())
+                if (responseMessage.getStatus().getCode().isSuccess())
                     byteBuf.writeBytes(textSerializer.serializeResponseAsString(responseMessage).getBytes(UTF8));
                 else {
                     byteBuf.writeBytes(textSerializer.serializeResponseAsString(responseMessage).getBytes(UTF8));
-                    final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).contents(ResultType.EMPTY).code(ResultCode.SUCCESS_TERMINATOR).create();
+                    final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).code(ResultCode.SUCCESS_TERMINATOR).create();
                     byteBuf.writeBytes(textSerializer.serializeResponseAsString(terminator).getBytes(UTF8));
                     errorMeter.mark();
                 }
@@ -60,16 +59,16 @@ public class NioGremlinResponseEncoder extends MessageToByteEncoder<ResponseMess
             final String errorMessage = String.format("Error during serialization: %s",
                     ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
             final ResponseMessage error = ResponseMessage.build(responseMessage.getRequestId())
-                    .result(errorMessage)
+                    .statusMessage(errorMessage)
                     .code(ResultCode.SERVER_ERROR_SERIALIZATION).create();
             if (useBinary) {
                 channelHandlerContext.write(serializer.serializeResponseAsBinary(error, channelHandlerContext.alloc()));
-                final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).contents(ResultType.EMPTY).code(ResultCode.SUCCESS_TERMINATOR).create();
+                final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).code(ResultCode.SUCCESS_TERMINATOR).create();
                 channelHandlerContext.writeAndFlush(serializer.serializeResponseAsBinary(terminator, channelHandlerContext.alloc()));
             } else {
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
                 channelHandlerContext.write(textSerializer.serializeResponseAsString(error));
-                final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).contents(ResultType.EMPTY).code(ResultCode.SUCCESS_TERMINATOR).create();
+                final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).code(ResultCode.SUCCESS_TERMINATOR).create();
                 channelHandlerContext.writeAndFlush(textSerializer.serializeResponseAsString(terminator));
             }
         }

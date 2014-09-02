@@ -40,7 +40,7 @@ public class JsonMessageSerializerV1d0Test {
         final JSONObject json = new JSONObject(results);
         assertNotNull(json);
         assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
-        assertEquals(JSONObject.NULL, json.get(SerTokens.TOKEN_RESULT));
+        assertEquals(JSONObject.NULL, json.getJSONObject(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA));
     }
 
     @Test
@@ -54,7 +54,7 @@ public class JsonMessageSerializerV1d0Test {
 
         assertNotNull(json);
         assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
-        final JSONArray converted = json.getJSONArray(SerTokens.TOKEN_RESULT);
+        final JSONArray converted = json.getJSONObject(SerTokens.TOKEN_RESULT).getJSONArray(SerTokens.TOKEN_DATA);
 
         assertEquals(2, converted.length());
 
@@ -73,7 +73,7 @@ public class JsonMessageSerializerV1d0Test {
 
         assertNotNull(json);
         assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
-        final JSONArray converted = json.getJSONArray(SerTokens.TOKEN_RESULT);
+        final JSONArray converted = json.getJSONObject(SerTokens.TOKEN_RESULT).getJSONArray(SerTokens.TOKEN_DATA);
 
         assertEquals(2, converted.length());
 
@@ -94,7 +94,7 @@ public class JsonMessageSerializerV1d0Test {
 
         assertNotNull(json);
         assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
-        final JSONArray converted = json.getJSONArray(SerTokens.TOKEN_RESULT);
+        final JSONArray converted = json.getJSONObject(SerTokens.TOKEN_RESULT).getJSONArray(SerTokens.TOKEN_DATA);
 
         assertEquals(3, converted.length());
 
@@ -118,7 +118,7 @@ public class JsonMessageSerializerV1d0Test {
 
         assertNotNull(json);
         assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
-        final JSONObject jsonObject = json.getJSONObject(SerTokens.TOKEN_RESULT);
+        final JSONObject jsonObject = json.getJSONObject(SerTokens.TOKEN_RESULT).getJSONObject(SerTokens.TOKEN_DATA);
 
         assertNotNull(jsonObject);
         assertEquals("some", jsonObject.optString("y"));
@@ -141,7 +141,7 @@ public class JsonMessageSerializerV1d0Test {
 
         assertNotNull(json);
         assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
-        final JSONArray converted = json.getJSONArray(SerTokens.TOKEN_RESULT);
+        final JSONArray converted = json.getJSONObject(SerTokens.TOKEN_RESULT).getJSONArray(SerTokens.TOKEN_DATA);
 
         assertNotNull(converted);
         assertEquals(1, converted.length());
@@ -180,7 +180,7 @@ public class JsonMessageSerializerV1d0Test {
 
         assertNotNull(json);
         assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
-        final JSONArray converted = json.getJSONArray(SerTokens.TOKEN_RESULT);
+        final JSONArray converted = json.getJSONObject(SerTokens.TOKEN_RESULT).getJSONArray(SerTokens.TOKEN_DATA);
 
         assertNotNull(converted);
         assertEquals(1, converted.length());
@@ -221,7 +221,7 @@ public class JsonMessageSerializerV1d0Test {
 
         assertNotNull(json);
         assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
-        final JSONArray converted = json.getJSONArray(SerTokens.TOKEN_RESULT);
+        final JSONArray converted = json.getJSONObject(SerTokens.TOKEN_RESULT).getJSONArray(SerTokens.TOKEN_DATA);
 
         assertNotNull(converted);
         assertEquals(1, converted.length());
@@ -258,7 +258,7 @@ public class JsonMessageSerializerV1d0Test {
 
         assertNotNull(json);
         assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
-        final JSONObject converted = json.getJSONObject(SerTokens.TOKEN_RESULT);
+        final JSONObject converted = json.getJSONObject(SerTokens.TOKEN_RESULT).getJSONObject(SerTokens.TOKEN_DATA);
 
         assertNotNull(converted);
 

@@ -14,7 +14,7 @@ public class Item {
     final Object resultItem;
 
     public Item(final ResponseMessage response) {
-        this.resultItem = response.getResult();
+        this.resultItem = response.getResult().getData();
     }
 
     public String getString() {

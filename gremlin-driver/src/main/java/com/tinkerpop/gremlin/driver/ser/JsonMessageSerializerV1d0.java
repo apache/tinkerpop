@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
-import com.tinkerpop.gremlin.driver.message.ResultType;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,10 +59,14 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
     public ResponseMessage deserializeResponse(final String msg) throws SerializationException {
         try {
             final Map<String, Object> responseData = obtainMapper().readValue(msg, mapTypeReference);
+            final Map<String, Object> status = (Map<String,Object>) responseData.get(SerTokens.TOKEN_STATUS);
+            final Map<String, Object> result = (Map<String,Object>) responseData.get(SerTokens.TOKEN_RESULT);
             return ResponseMessage.build(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
-                    .code(ResultCode.getFromValue((Integer) responseData.get(SerTokens.TOKEN_CODE)))
-                    .result(responseData.get(SerTokens.TOKEN_RESULT))
-                    .contents(ResultType.getFromValue((Integer) responseData.get(SerTokens.TOKEN_TYPE)))
+                    .code(ResultCode.getFromValue((Integer) status.get(SerTokens.TOKEN_CODE)))
+                    .statusMessage(status.get(SerTokens.TOKEN_MESSAGE).toString())
+                    .statusAttributes((Map<String,Object>) status.get(SerTokens.TOKEN_ATTRIBUTES))
+                    .result(result.get(SerTokens.TOKEN_DATA))
+                    .responseMetaData((Map<String,Object>) result.get(SerTokens.TOKEN_META))
                     .create();
         } catch (Exception ex) {
             logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractJsonMessageSerializerV1d0.class.getName());
@@ -75,12 +78,20 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
     public String serializeResponseAsString(final ResponseMessage responseMessage) throws SerializationException {
         try {
             final Map<String, Object> result = new HashMap<>();
-            result.put(SerTokens.TOKEN_CODE, responseMessage.getCode().getValue());
-            result.put(SerTokens.TOKEN_RESULT, responseMessage.getResult());
-            result.put(SerTokens.TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
-            result.put(SerTokens.TOKEN_TYPE, responseMessage.getResultType().getValue());
+            result.put(SerTokens.TOKEN_DATA, responseMessage.getResult().getData());
+            result.put(SerTokens.TOKEN_META, responseMessage.getResult().getMeta());
 
-            return obtainMapper().writeValueAsString(result);
+            final Map<String, Object> status = new HashMap<>();
+            status.put(SerTokens.TOKEN_MESSAGE, responseMessage.getStatus().getMessage());
+            status.put(SerTokens.TOKEN_CODE, responseMessage.getStatus().getCode().getValue());
+            status.put(SerTokens.TOKEN_ATTRIBUTES, responseMessage.getStatus().getAttributes());
+
+            final Map<String, Object> message = new HashMap<>();
+            message.put(SerTokens.TOKEN_STATUS, status);
+            message.put(SerTokens.TOKEN_RESULT, result);
+            message.put(SerTokens.TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
+
+            return obtainMapper().writeValueAsString(responseMessage);
         } catch (Exception ex) {
             logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), AbstractJsonMessageSerializerV1d0.class.getName());
             throw new RuntimeException("Error during serialization.", ex);
