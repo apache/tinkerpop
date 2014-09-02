@@ -448,25 +448,27 @@ When Gremlin Server receives that request, it will decode it given the "mime typ
 |=========================================================
 |Key |Description
 |requestId |The identifier of the `RequestMessage` that generated this `ResponseMessage`.
-|code |A `ResultCode` that is somewhat analagous to an link:http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html[HTTP status code].
-|type |Helps identify the "type" of value in the `result` - will be an integer value where "0" signifies an "object", "1" signifies a "collection", and "2" signifies an "empty" result.
-|result |The return value as classified by the `resultType`.
+|status | The `status` contains a `Map` of three keys: `code` which refers to a `ResultCode` that is somewhat analogous to an link:http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html[HTTP status code], `attributes` that represent a `Map` of protocol-level information, and `message` which is just a human-readable `String` usually associated with errors.
+|result | The `result` contains a `Map` of two keys: `data` which refers to the actual data returned from the server (the type of data is determined by the operation requested) and `meta` which is a `Map` of meta-data related to the response.
 |========================================================= 
 
-Gremlin Server will send a single response when the `resultType` is of type object (`resultType=0`) or empty (`resultType=2`). In this case the `ResponseMessage` returned to the client would look something like this:
+In this case the `ResponseMessage` returned to the client would look something like this:
 
 [source,js]
 ----
-{"result":{"id":2,"label":"vertex","type":"vertex","hiddens":{},"properties":{"name":"vadas","age":27}},
- "code":200,
+{"result":{"data":[{"id":2,"label":"vertex","type":"vertex","hiddens":{},"properties":{"name":"vadas","age":27}}],
+           "meta":{}},
  "requestId":"1d6d02bd-8e56-421d-9438-3bd6d0079ff1",
- "type":0}
+ "status":{"code":200,"attributes":{},"message":""}}
 ----
 
-Gremlin Server is capable of streaming results when the `resultType` is of type collection (`resultType=1`). When Gremlin Server is streaming results, additional responses will arrive over the WebSocket until the iteration of the result on the server is complete.  Each successful incremental message will have a `ResultCode` of 200. The response stream is always marked as "complete" by a terminating message.  The "terminator" will look like this:
+Gremlin Server is capable of streaming results such that additional responses will arrive over the WebSocket until the iteration of the result on the server is complete.  Each successful incremental message will have a `ResultCode` of 200. The response stream is always marked as "complete" by a terminating message.  The "terminator" will look like this:
 
 [source,js]
-{"result":null,"code":299,"requestId":"1d6d02bd-8e56-421d-9438-3bd6d0079ff1","type":0}
+{"result":{"data":null,
+           "meta":{}},
+ "requestId":"1d6d02bd-8e56-421d-9438-3bd6d0079ff1",
+ "status":{"code":299,"attributes":{},"message":""}}
 
 The `299` code signifies stream termination which means that all processing for the request `1d6d02bd-8e56-421d-9438-3bd6d0079ff1` is complete.  Please see the link:http://www.tinkerpop.com/javadocs/current/com/tinkerpop/gremlin/driver/message/ResultCode.html[javadoc] for more information on the various `code` values that are available.
 
