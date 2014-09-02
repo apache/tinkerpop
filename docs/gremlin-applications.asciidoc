@@ -432,13 +432,15 @@ This message can be serialized in any fashion that is supported by Gremlin Serve
           "language":"gremlin-groovy"}}
 ----
 
-The above JSON represents the "body" of the request to send to Gremlin Server. When sending this "body" over websockets you can configure your packet frame to use a "text" (1) opcode. If you do so you can just place the body in the packet payload and Gremlin Server will interpret it as being JSON.
-If you set the packet frame opcode to "binary" (2) Then you will also have to add a "header" to your "body".  The "header" basically consists of a "mime type" so that Gremlin Server knows how to deserialize the `RequestMessage`. So, the actual byte array sent to Gremlin Server would be formatted as follows:
+The above JSON represents the "body" of the request to send to Gremlin Server. When sending this "body" over websockets Gremlin Server can accept a packet frame using a "text" (1) or a "binary" (2) opcode. Using "text" is a bit more limited in that Gremlin Server will always process the body of that request as JSON.  Generally speaking "text" is just for testing purposes.
+
+The preferred method for sending requests to Gremlin Server is to use the "binary" opcode.  In this case, a "header" will need be sent in addition to to the "body".  The "header" basically consists of a "mime type" so that Gremlin Server knows how to deserialize the `RequestMessage`. So, the actual byte array sent to Gremlin Server would be formatted as follows:
 
 image::gremlin-server-request.png[]
 
 The first byte represents the length of the "mime type" string value that follows.  Given the default configuration of Gremlin Server, this value should be set to `application/json`.  The "payload" represents the JSON message above encoded as bytes.
-'It is worth noting that Gremlin Server will only accept masked packets.'
+
+NOTE: Gremlin Server will only accept masked packets as it pertains to websocket packet header construction.
 
 When Gremlin Server receives that request, it will decode it given the "mime type", pass it to the requested `OpProcessor` which will execute the `op` defined in the message.  In this case, it will evaluate the script `g.v(x).out` using the `bindings` supplied in the `args` and stream back the results in a series of `ResponseMessages`.  A `ResponseMessage` looks like this:
 
@@ -468,135 +470,94 @@ Gremlin Server is capable of streaming results when the `resultType` is of type 
 
 The `299` code signifies stream termination which means that all processing for the request `1d6d02bd-8e56-421d-9438-3bd6d0079ff1` is complete.  Please see the link:http://www.tinkerpop.com/javadocs/current/com/tinkerpop/gremlin/driver/message/ResultCode.html[javadoc] for more information on the various `code` values that are available.
 
-opProcessors and their arguments
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OpProcessors Arguments
+^^^^^^^^^^^^^^^^^^^^^^
 
-Bellow is a non-exhaustive list of available operation and args for embedded opProcessors.
+The following sections define a non-exhaustive list of available operations and arguments for embedded `OpProcessors` (i.e. ones packaged with Gremlin Server).
 
-*args common to all opProcessors*
+Common
+++++++
+
+All `OpProcessor` instances support these arguments.
 
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
-|batchSize |Int |When the result is an iterator this defines the number of iterations each result packet should contain. 
+|batchSize |Int |When the result is an iterator this value defines the number of iterations each `ResponseMessage` should contain - overrides the `resultIterationBatchSize` server setting.
 |=========================================================
 
-
-Standard opProcessor
+Standard OpProcessor
 ++++++++++++++++++++
 
+The "standard" `OpProcessor` handles requests for the primary function of Gremlin Server - executing Gremlin. Requests made to this `OpProcessor` are "sessionless" in the sense that a request must encapsulate the entirety of a transaction.  There is no state maintained between requests.  A transaction is started when the script is first evaluated and is committed when the script completes (or rolled back if an error occurred).
 
-[width="100%",cols="3,a",options="header"]
+[width="100%",cols="3,10a",options="header"]
 |=========================================================
 |Key |Description
-|processor |''
+|processor |As this is the default `OpProcessor` this value can be set to an empty string
 |op |[width="100%",cols="3,10",options="header"]
 !=========================================================
 !Key !Description
-!`eval` !evaluate a gremlin script 
-!`traverse` !NA
+!`eval` !evaluate a Gremlin script provided as a `String`
+!`traverse` !evaluate a serialized `Traversal` object - available to JVM clients only
 !=========================================================
 |=========================================================
-
 
 '`eval` operation arguments'
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
-|gremlin |String | *Required* The gremlin script that you wish to evaluate against gremlin server
-|bindings |Collection |A key value collection of bindings
-|language |String |The flavor used. ex: `gremlin-groovy`
+|gremlin |String | *Required* The Gremlin script to evaluate
+|bindings |Map |A set of key/value pairs to apply as variables in the context of the Gremlin script
+|language |String |The flavor used (e.g. `gremlin-groovy`)
 |=========================================================
 
 '`traverse` operation arguments'
 [width="100%",cols="2,2,10",options="header"]
 |=========================================================
 |Key |Type |Description
-|gremlin |String | *Required* The gremlin script that you wish to evaluate against gremlin server
+|gremlin |String | *Required* The Gremlin `Traversal` to evaluate
 |graphName |String | *Required* The name of graph to traverse. This graph name is set in the Gremlin Server configuration
-|bindings |Collection |A key value collection of bindings
-|language |String |The flavor used. ex: `gremlin-groovy`
+|bindings |Map |A set of key/value pairs to apply as variables in the context of the Gremlin script
+|language |String |The flavor used (e.g. `gremlin-groovy`)
 |=========================================================
 
-
-Session opProcessor
+Session OpProcessor
 +++++++++++++++++++
 
+The "session" `OpProcessor` handles requests for the primary function of Gremlin Server - executing Gremlin. It is like the "standard" `OpProcessor`, but instead maintains state between sessions and leaves all transaction management up to the calling client.  It is important that clients that open sessions, commit or roll them back, however Gremlin Server will try to clean up such things when a session is killed that has been abandoned.  It is important to consider that a session can only be maintained with a single machine.  In the event that multiple Gremlin Server are deployed, session state is not shared among them.
 
 [width="100%",cols="3,10a",options="header"]
 |=========================================================
 |Key |Description
-|processor |`session`
+|processor |This value should be set to `session`
 |op |
 [cols="3,10",options="header"]
 !=========================================================
 !Key !Description
-!`eval` !evaluate a gremlin script 
-!`traverse` !NA
+!`eval` !evaluate a Gremlin script
+!`traverse` !evaluate a serialized `Traversal` object - available to JVM clients only
 !=========================================================
 |=========================================================
-
 
 '`eval` operation arguments'
 [width="100%",options="header"]
 |=========================================================
 |Key |Type |Description
-|gremlin |String | *Required* The gremlin script that you wish to evaluate against gremlin server
-|session |String | *Required* The session id for the current session. (the session will be created if it doesn't exist)
-|bindings |Collection |A key value collection of bindings
-|language |String |The flavor used. ex: `gremlin-groovy`
+|gremlin |String | *Required* The Gremlin script to evaluate
+|session |String | *Required* The session identifier for the current session - typically this value should be a UUID (the session will be created if it doesn't exist)
+|bindings |Map |A set of key/value pairs to apply as variables in the context of the Gremlin script
+|language |String |The flavor used (e.g. `gremlin-groovy`)
 |=========================================================
 
 '`traverse` operation arguments'
 [width="100%",cols="1,1,10",options="header"]
 |=========================================================
 |Key |Type |Description
-|gremlin |String | *Required* The gremlin script that you wish to evaluate against gremlin server
+|gremlin |String | *Required* The Gremlin `Traversal` to evaluate
 |graphName |String | *Required* The name of graph to traverse. This graph name is set in the Gremlin Server configuration
-|bindings |Collection |A key value collection of bindings
-|language |String |The flavor used. ex: `gremlin-groovy`
-|=========================================================
-
-
-Control opProcessor
-+++++++++++++++++++
-
-
-[width="100%",cols="3,10a",options="header"]
-|=========================================================
-|Key |Description
-|processor |'control'
-|op | [width="100%",cols="3,10",options="header"]
-!=========================================================
-!Key !Description
-!`version` ! NA 
-!`import` ! NA
-!`reset` ! NA
-!`show` ! NA
-!`use` ! NA
-!=========================================================
-|=========================================================
-
-
-'`import` operation arguments'
-[width="100%",cols="2,2,9",options="header"]
-|=========================================================
-|Key |Type |Description
-|imports |NA | *Required* NA
-|=========================================================
-
-'`show` operation arguments'
-[width="100%",cols="2,2,9",options="header"]
-|=========================================================
-|Key |Type |Description
-|infoType |NA | *Required* NA
-|=========================================================
-
-'`use` operation arguments'
-[width="100%",cols="2,2,9",options="header"]
-|=========================================================
-|Key |Type |Description
-|coordinates |NA | *Required* NA
+|bindings |Map |A set of key/value pairs to apply as variables in the context of the Gremlin script
+|language |String |The flavor used (e.g. `gremlin-groovy`)
 |=========================================================
 
 [[gremlin-plugins]]
