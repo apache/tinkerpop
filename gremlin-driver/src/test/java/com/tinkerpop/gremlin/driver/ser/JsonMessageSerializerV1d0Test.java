@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.driver.ser;
 
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
+import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -9,6 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import io.netty.buffer.ByteBuf;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -290,6 +292,39 @@ public class JsonMessageSerializerV1d0Test {
     @Test(expected = SerializationException.class)
     public void deserializeRequestParseMessage() throws Exception {
         SERIALIZER.deserializeRequest("{\"requestId\":\"%s\",\"op\":\"eval\",\"args\":{\"x\":\"y\"}}");
+    }
+
+    @Test
+    public void serializeFullResponseMessage() throws Exception {
+        final UUID id = UUID.randomUUID();
+
+        final Map<String,Object> metaData = new HashMap<>();
+        metaData.put("test", "this");
+        metaData.put("one", 1);
+
+        final Map<String,Object> attributes = new HashMap<>();
+        attributes.put("test", "that");
+        attributes.put("two", 2);
+
+        final ResponseMessage response = ResponseMessage.build(id)
+                .responseMetaData(metaData)
+                .code(ResponseStatusCode.SUCCESS)
+                .result("some-result")
+                .statusAttributes(attributes)
+                .statusMessage("worked")
+                .create();
+
+        final String results = SERIALIZER.serializeResponseAsString(response);
+        final ResponseMessage deserialized = SERIALIZER.deserializeResponse(results);
+
+        assertEquals(id, deserialized.getRequestId());
+        assertEquals("this", deserialized.getResult().getMeta().get("test"));
+        assertEquals(1, deserialized.getResult().getMeta().get("one"));
+        assertEquals("some-result", deserialized.getResult().getData());
+        assertEquals("that", deserialized.getStatus().getAttributes().get("test"));
+        assertEquals(2, deserialized.getStatus().getAttributes().get("two"));
+        assertEquals(ResponseStatusCode.SUCCESS.getValue(), deserialized.getStatus().getCode().getValue());
+        assertEquals("worked", deserialized.getStatus().getMessage());
     }
 
     private class FunObject {

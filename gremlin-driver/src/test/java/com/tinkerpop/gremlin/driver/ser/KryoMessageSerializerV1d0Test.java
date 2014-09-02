@@ -163,7 +163,7 @@ public class KryoMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeToJsonMapWithElementForKey() throws Exception {
+    public void serializeToMapWithElementForKey() throws Exception {
         final TinkerGraph g = TinkerFactory.createClassic();
         final Map<Vertex, Integer> map = new HashMap<>();
         map.put(g.V().<Vertex>has("name", Compare.EQUAL, "marko").next(), 1000);
@@ -182,6 +182,39 @@ public class KryoMessageSerializerV1d0Test {
         assertEquals(2, deserializedMarko.properties().size());
 
         assertEquals(new Integer(1000), deserializedMap.values().iterator().next());
+    }
+
+    @Test
+    public void serializeFullResponseMessage() throws Exception {
+        final UUID id = UUID.randomUUID();
+
+        final Map<String,Object> metaData = new HashMap<>();
+        metaData.put("test", "this");
+        metaData.put("one", 1);
+
+        final Map<String,Object> attributes = new HashMap<>();
+        attributes.put("test", "that");
+        attributes.put("two", 2);
+
+        final ResponseMessage response = ResponseMessage.build(id)
+                .responseMetaData(metaData)
+                .code(ResponseStatusCode.SUCCESS)
+                .result("some-result")
+                .statusAttributes(attributes)
+                .statusMessage("worked")
+                .create();
+
+        final ByteBuf bb = serializer.serializeResponseAsBinary(response, allocator);
+        final ResponseMessage deserialized = serializer.deserializeResponse(bb);
+
+        assertEquals(id, deserialized.getRequestId());
+        assertEquals("this", deserialized.getResult().getMeta().get("test"));
+        assertEquals(1, deserialized.getResult().getMeta().get("one"));
+        assertEquals("some-result", deserialized.getResult().getData());
+        assertEquals("that", deserialized.getStatus().getAttributes().get("test"));
+        assertEquals(2, deserialized.getStatus().getAttributes().get("two"));
+        assertEquals(ResponseStatusCode.SUCCESS.getValue(), deserialized.getStatus().getCode().getValue());
+        assertEquals("worked", deserialized.getStatus().getMessage());
     }
 
     private void assertCommon(final ResponseMessage response) {

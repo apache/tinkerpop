@@ -91,7 +91,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
             message.put(SerTokens.TOKEN_RESULT, result);
             message.put(SerTokens.TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
 
-            return obtainMapper().writeValueAsString(responseMessage);
+            return obtainMapper().writeValueAsString(message);
         } catch (Exception ex) {
             logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), AbstractJsonMessageSerializerV1d0.class.getName());
             throw new RuntimeException("Error during serialization.", ex);
