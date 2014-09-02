@@ -7,7 +7,7 @@ import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
-import com.tinkerpop.gremlin.driver.message.ResultCode;
+import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -143,11 +143,11 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
                 final Map<String, Object> status = (Map<String,Object>) responseData.get(SerTokens.TOKEN_STATUS);
                 final Map<String, Object> result = (Map<String,Object>) responseData.get(SerTokens.TOKEN_RESULT);
                 return ResponseMessage.build(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
-                        .code(ResultCode.getFromValue((Integer) status.get(SerTokens.TOKEN_CODE)))
+                        .code(ResponseStatusCode.getFromValue((Integer) status.get(SerTokens.TOKEN_CODE)))
                         .statusMessage(Optional.ofNullable((String) status.get(SerTokens.TOKEN_MESSAGE)).orElse(""))
                         .statusAttributes((Map<String,Object>) status.get(SerTokens.TOKEN_ATTRIBUTES))
                         .result(result.get(SerTokens.TOKEN_DATA))
-                        .responseMetaData((Map<String,Object>) result.get(SerTokens.TOKEN_META))
+                        .responseMetaData((Map<String, Object>) result.get(SerTokens.TOKEN_META))
                         .create();
             }
         } catch (Exception ex) {

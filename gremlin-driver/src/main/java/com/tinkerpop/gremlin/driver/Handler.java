@@ -2,12 +2,10 @@ package com.tinkerpop.gremlin.driver;
 
 import com.tinkerpop.gremlin.driver.exception.ResponseException;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
-import com.tinkerpop.gremlin.driver.message.ResultCode;
+import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.ReferenceCountUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,7 +28,7 @@ class Handler {
         @Override
         protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) throws Exception {
             try {
-                if (response.getStatus().getCode() == ResultCode.SUCCESS) {
+                if (response.getStatus().getCode() == ResponseStatusCode.SUCCESS) {
                     final Object data = response.getResult().getData();
                     if (data instanceof List) {
                         // unrolls the collection into individual response messages to be handled by the queue
@@ -43,7 +41,7 @@ class Handler {
                         // since this is not a list it can just be added to the queue
                         pending.get(response.getRequestId()).add(response);
                     }
-                } else if (response.getStatus().getCode() == ResultCode.SUCCESS_TERMINATOR)
+                } else if (response.getStatus().getCode() == ResponseStatusCode.SUCCESS_TERMINATOR)
                     pending.remove(response.getRequestId()).markComplete();
                 else
                     pending.get(response.getRequestId()).markError(new ResponseException(response.getStatus().getCode(), response.getResult().toString()));

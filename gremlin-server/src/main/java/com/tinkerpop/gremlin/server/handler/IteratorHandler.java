@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.server.handler;
 import com.tinkerpop.gremlin.driver.Tokens;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
-import com.tinkerpop.gremlin.driver.message.ResultCode;
+import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.server.Settings;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
@@ -62,7 +62,7 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter {
                         // iterated
                         if (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
                             ctx.writeAndFlush(ResponseMessage.build(requestMessage)
-                                    .code(ResultCode.SUCCESS)
+                                    .code(ResponseStatusCode.SUCCESS)
                                     .result(aggregate).create());
                             aggregate = new ArrayList<>(resultIterationBatchSize);
                         }
@@ -83,10 +83,10 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter {
                     if (!f.isSuccess()) {
                         final String errorMessage = String.format("Response iteration and serialization exceeded the configured threshold for request [%s] - %s", msg, f.cause().getMessage());
                         logger.warn(errorMessage);
-                        ctx.writeAndFlush(ResponseMessage.build(requestMessage).code(ResultCode.SERVER_ERROR_TIMEOUT).result(errorMessage).create());
+                        ctx.writeAndFlush(ResponseMessage.build(requestMessage).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).result(errorMessage).create());
                     }
 
-                    ctx.writeAndFlush(ResponseMessage.build(requestMessage).code(ResultCode.SUCCESS_TERMINATOR).create());
+                    ctx.writeAndFlush(ResponseMessage.build(requestMessage).code(ResponseStatusCode.SUCCESS_TERMINATOR).create());
                 });
             } finally {
                 ReferenceCountUtil.release(msg);

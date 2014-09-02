@@ -4,7 +4,7 @@ import com.codahale.metrics.Timer;
 import com.tinkerpop.gremlin.driver.Tokens;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
-import com.tinkerpop.gremlin.driver.message.ResultCode;
+import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.server.Context;
@@ -53,7 +53,7 @@ final class StandardOps {
         future.thenAccept(o -> ctx.write(Pair.with(msg, convertToIterator(o))));
         future.exceptionally(se -> {
             logger.warn(String.format("Exception processing a script on request [%s].", msg), se);
-            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResultCode.SERVER_ERROR_SCRIPT_EVALUATION).result(se.getMessage()).create());
+            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION).result(se.getMessage()).create());
             return null;
         });
     }
@@ -74,7 +74,7 @@ final class StandardOps {
             bindings.put("____trvrslScrpt", traversal);
         } catch (Exception ex) {
             logger.warn(String.format("Exception processing a traversal on request [%s].", msg), ex);
-            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResultCode.SERVER_ERROR_TRAVERSAL_EVALUATION).result(ex.getMessage()).create());
+            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TRAVERSAL_EVALUATION).result(ex.getMessage()).create());
             return;
         }
 
@@ -84,7 +84,7 @@ final class StandardOps {
         future.thenAccept(o -> ctx.write(Pair.with(msg, convertToIterator(o))));
         future.exceptionally(se -> {
             logger.warn(String.format("Exception processing a traversal on request [%s].", msg), se);
-            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResultCode.SERVER_ERROR_TRAVERSAL_EVALUATION).result(se.getMessage()).create());
+            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TRAVERSAL_EVALUATION).result(se.getMessage()).create());
             return null;
         });
     }

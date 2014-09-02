@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.server.handler;
 import com.codahale.metrics.Meter;
 import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
-import com.tinkerpop.gremlin.driver.message.ResultCode;
+import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import com.tinkerpop.gremlin.server.GremlinServer;
 import com.tinkerpop.gremlin.server.util.MetricManager;
@@ -36,7 +36,7 @@ public class WsGremlinResponseEncoder extends MessageToMessageEncoder<ResponseMe
                     objects.add(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(o, channelHandlerContext.alloc())));
                 else {
                     objects.add(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(o, channelHandlerContext.alloc())));
-                    final ResponseMessage terminator = ResponseMessage.build(o.getRequestId()).code(ResultCode.SUCCESS_TERMINATOR).create();
+                    final ResponseMessage terminator = ResponseMessage.build(o.getRequestId()).code(ResponseStatusCode.SUCCESS_TERMINATOR).create();
                     objects.add(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(terminator, channelHandlerContext.alloc())));
                     errorMeter.mark();
                 }
@@ -48,7 +48,7 @@ public class WsGremlinResponseEncoder extends MessageToMessageEncoder<ResponseMe
                     objects.add(new TextWebSocketFrame(true, 0, textSerializer.serializeResponseAsString(o)));
                 else {
                     objects.add(new TextWebSocketFrame(true, 0, textSerializer.serializeResponseAsString(o)));
-                    final ResponseMessage terminator = ResponseMessage.build(o.getRequestId()).code(ResultCode.SUCCESS_TERMINATOR).create();
+                    final ResponseMessage terminator = ResponseMessage.build(o.getRequestId()).code(ResponseStatusCode.SUCCESS_TERMINATOR).create();
                     objects.add(new TextWebSocketFrame(true, 0, textSerializer.serializeResponseAsString(terminator)));
                     errorMeter.mark();
                 }
@@ -60,15 +60,15 @@ public class WsGremlinResponseEncoder extends MessageToMessageEncoder<ResponseMe
                     ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
             final ResponseMessage error = ResponseMessage.build(o.getRequestId())
                     .statusMessage(errorMessage)
-                    .code(ResultCode.SERVER_ERROR_SERIALIZATION).create();
+                    .code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION).create();
             if (useBinary) {
                 channelHandlerContext.write(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(error, channelHandlerContext.alloc())));
-                final ResponseMessage terminator = ResponseMessage.build(o.getRequestId()).code(ResultCode.SUCCESS_TERMINATOR).create();
+                final ResponseMessage terminator = ResponseMessage.build(o.getRequestId()).code(ResponseStatusCode.SUCCESS_TERMINATOR).create();
                 channelHandlerContext.writeAndFlush(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(terminator, channelHandlerContext.alloc())));
             } else {
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
                 channelHandlerContext.write(new TextWebSocketFrame(textSerializer.serializeResponseAsString(error)));
-                final ResponseMessage terminator = ResponseMessage.build(o.getRequestId()).code(ResultCode.SUCCESS_TERMINATOR).create();
+                final ResponseMessage terminator = ResponseMessage.build(o.getRequestId()).code(ResponseStatusCode.SUCCESS_TERMINATOR).create();
                 channelHandlerContext.writeAndFlush(new TextWebSocketFrame(textSerializer.serializeResponseAsString(terminator)));
             }
         }

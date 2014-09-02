@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.server.op.control;
 import com.tinkerpop.gremlin.driver.Tokens;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
-import com.tinkerpop.gremlin.driver.message.ResultCode;
+import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import com.tinkerpop.gremlin.groovy.engine.ScriptEngines;
 import com.tinkerpop.gremlin.server.Context;
@@ -24,7 +24,7 @@ class ControlOps {
 
     public static void versionOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
-        context.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(msg).code(ResultCode.SUCCESS).result(Gremlin.version()));
+        context.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SUCCESS).result(Gremlin.version()));
     }
 
     /**
@@ -57,7 +57,7 @@ class ControlOps {
         }
 
         try {
-            context.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(msg).code(ResultCode.SUCCESS).result(infoToShow).create());
+            context.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SUCCESS).result(infoToShow).create());
         } catch (Exception ex) {
             logger.warn("The result [{}] in the request {} could not be serialized and returned.",
                     infoToShow, context.getRequestMessage(), ex);
@@ -70,7 +70,7 @@ class ControlOps {
     public static void resetOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
         context.getGremlinExecutor().getScriptEngines().reset();
-        context.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(msg).code(ResultCode.SUCCESS).create());
+        context.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SUCCESS).create());
     }
 
     /**
@@ -92,7 +92,7 @@ class ControlOps {
                 put("version", version);
             }};
 
-            context.getChannelHandlerContext().write(ResponseMessage.build(msg).code(ResultCode.SUCCESS).result(coords).create());
+            context.getChannelHandlerContext().write(ResponseMessage.build(msg).code(ResponseStatusCode.SUCCESS).result(coords).create());
         });
     }
 }

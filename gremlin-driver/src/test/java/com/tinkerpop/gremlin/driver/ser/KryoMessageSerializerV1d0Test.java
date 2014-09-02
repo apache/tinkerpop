@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.driver.ser;
 
 import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
-import com.tinkerpop.gremlin.driver.message.ResultCode;
+import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -186,7 +186,7 @@ public class KryoMessageSerializerV1d0Test {
 
     private void assertCommon(final ResponseMessage response) {
         assertEquals(requestId, response.getRequestId());
-        assertEquals(ResultCode.SUCCESS, response.getStatus().getCode());
+        assertEquals(ResponseStatusCode.SUCCESS, response.getStatus().getCode());
     }
 
     private ResponseMessage convert(final Object toSerialize) throws SerializationException {

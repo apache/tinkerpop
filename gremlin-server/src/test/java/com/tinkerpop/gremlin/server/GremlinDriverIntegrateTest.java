@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.driver.Cluster;
 import com.tinkerpop.gremlin.driver.Item;
 import com.tinkerpop.gremlin.driver.ResultSet;
 import com.tinkerpop.gremlin.driver.exception.ResponseException;
-import com.tinkerpop.gremlin.driver.message.ResultCode;
+import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.driver.ser.JsonBuilderKryoSerializer;
 import com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0;
 import com.tinkerpop.gremlin.process.Traversal;
@@ -201,7 +201,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception ex) {
             final Throwable inner = ex.getCause().getCause();
             assertTrue(inner instanceof ResponseException);
-            assertEquals(ResultCode.SERVER_ERROR_SERIALIZATION, ((ResponseException) inner).getResultCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR_SERIALIZATION, ((ResponseException) inner).getResponseStatusCode());
         }
 
         cluster.close();

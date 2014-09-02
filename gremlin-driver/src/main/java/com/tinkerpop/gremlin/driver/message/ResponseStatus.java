@@ -6,17 +6,17 @@ import java.util.Map;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ResponseStatus {
-    private final ResultCode code;
+    private final ResponseStatusCode code;
     private final String message;
     private final Map<String, Object> attributes;
 
-    public ResponseStatus(final ResultCode code, final String message, final Map<String,Object> attributes){
+    public ResponseStatus(final ResponseStatusCode code, final String message, final Map<String,Object> attributes){
         this.code = code;
         this.message = message;
         this.attributes = attributes;
     }
 
-    public ResultCode getCode() {
+    public ResponseStatusCode getCode() {
         return code;
     }
 

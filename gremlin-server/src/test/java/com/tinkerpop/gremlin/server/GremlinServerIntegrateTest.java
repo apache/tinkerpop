@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.driver.ResultSet;
 import com.tinkerpop.gremlin.driver.Tokens;
 import com.tinkerpop.gremlin.driver.exception.ResponseException;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
-import com.tinkerpop.gremlin.driver.message.ResultCode;
+import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.driver.ser.Serializers;
 import com.tinkerpop.gremlin.driver.simple.NioClient;
 import com.tinkerpop.gremlin.driver.simple.SimpleClient;
@@ -284,7 +284,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception ex) {
             final Exception cause = (Exception) ex.getCause().getCause();
             assertTrue(cause instanceof ResponseException);
-            assertEquals(ResultCode.SERVER_ERROR_SCRIPT_EVALUATION, ((ResponseException) cause).getResultCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, ((ResponseException) cause).getResponseStatusCode());
         }
 
         cluster.close();

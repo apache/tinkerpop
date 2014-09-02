@@ -5,13 +5,13 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 /**
- * Result codes for Gremlin Server responses. Result codes tend to map to
+ * Response status codes for Gremlin Server responses. Result codes tend to map to
  * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html">HTTP status codes</a>.  It is not a one-to-one
  * mapping and there are custom status codes to be considered.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public enum ResultCode {
+public enum ResponseStatusCode {
     /**
      * The server successfully processed a request.
      */
@@ -66,17 +66,17 @@ public enum ResultCode {
     SERVER_ERROR_SERIALIZATION(599);
 
     private final int value;
-    private static Map<Integer, ResultCode> codeValueMap = new HashMap<>();
+    private static Map<Integer, ResponseStatusCode> codeValueMap = new HashMap<>();
 
     static {
-        Stream.of(ResultCode.values()).forEach(code -> codeValueMap.put(code.getValue(), code));
+        Stream.of(ResponseStatusCode.values()).forEach(code -> codeValueMap.put(code.getValue(), code));
     }
 
-    public static ResultCode getFromValue(final int codeValue) {
+    public static ResponseStatusCode getFromValue(final int codeValue) {
         return codeValueMap.get(codeValue);
     }
 
-    private ResultCode(final int value) {
+    private ResponseStatusCode(final int value) {
         this.value = value;
     }
 

@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.driver.ser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
-import com.tinkerpop.gremlin.driver.message.ResultCode;
+import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +62,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
             final Map<String, Object> status = (Map<String,Object>) responseData.get(SerTokens.TOKEN_STATUS);
             final Map<String, Object> result = (Map<String,Object>) responseData.get(SerTokens.TOKEN_RESULT);
             return ResponseMessage.build(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
-                    .code(ResultCode.getFromValue((Integer) status.get(SerTokens.TOKEN_CODE)))
+                    .code(ResponseStatusCode.getFromValue((Integer) status.get(SerTokens.TOKEN_CODE)))
                     .statusMessage(status.get(SerTokens.TOKEN_MESSAGE).toString())
                     .statusAttributes((Map<String,Object>) status.get(SerTokens.TOKEN_ATTRIBUTES))
                     .result(result.get(SerTokens.TOKEN_DATA))

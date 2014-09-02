@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.server.handler;
 
 import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
-import com.tinkerpop.gremlin.driver.message.ResultCode;
+import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0;
 import com.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
@@ -71,7 +71,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
             try {
                 final ResponseMessage responseMessage = ResponseMessage.build(UUID.randomUUID())
-                        .code(ResultCode.SUCCESS)
+                        .code(ResponseStatusCode.SUCCESS)
                         .result(gremlinExecutor.eval(script).get()).create();
 
                 final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(

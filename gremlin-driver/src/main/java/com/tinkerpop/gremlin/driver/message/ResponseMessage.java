@@ -55,7 +55,7 @@ public class ResponseMessage {
     public static class Builder {
 
         private final UUID requestId;
-        private ResultCode code = ResultCode.SUCCESS;
+        private ResponseStatusCode code = ResponseStatusCode.SUCCESS;
         private Object result = null;
         private String statusMessage = "";
         private Map<String,Object> attributes = Collections.emptyMap();
@@ -69,7 +69,7 @@ public class ResponseMessage {
             this.requestId = requestId;
         }
 
-        public Builder code(final ResultCode code) {
+        public Builder code(final ResponseStatusCode code) {
             this.code = code;
             return this;
         }

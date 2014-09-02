@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
-import com.tinkerpop.gremlin.driver.message.ResultCode;
+import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import groovy.json.JsonBuilder;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -108,11 +108,11 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
             final Map<String, Object> status = (Map<String,Object>) responseData.get(SerTokens.TOKEN_STATUS);
             final Map<String, Object> result = (Map<String,Object>) responseData.get(SerTokens.TOKEN_RESULT);
             return ResponseMessage.build(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
-                    .code(ResultCode.getFromValue((Integer) status.get(SerTokens.TOKEN_CODE)))
+                    .code(ResponseStatusCode.getFromValue((Integer) status.get(SerTokens.TOKEN_CODE)))
                     .statusMessage(status.get(SerTokens.TOKEN_MESSAGE).toString())
-                    .statusAttributes((Map<String,Object>) status.get(SerTokens.TOKEN_ATTRIBUTES))
+                    .statusAttributes((Map<String, Object>) status.get(SerTokens.TOKEN_ATTRIBUTES))
                     .result(result.get(SerTokens.TOKEN_DATA))
-                    .responseMetaData((Map<String,Object>) result.get(SerTokens.TOKEN_META))
+                    .responseMetaData((Map<String, Object>) result.get(SerTokens.TOKEN_META))
                     .create();
         } catch (Exception ex) {
             logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractJsonMessageSerializerV1d0.class.getName());

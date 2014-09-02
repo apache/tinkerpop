@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.server.handler;
 import com.codahale.metrics.Meter;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
-import com.tinkerpop.gremlin.driver.message.ResultCode;
+import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import com.tinkerpop.gremlin.server.Context;
 import com.tinkerpop.gremlin.server.Graphs;
@@ -61,7 +61,7 @@ public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
             else {
                 // invalid op processor selected so write back an error by way of OpProcessorException.
                 final String errorMessage = String.format("Invalid OpProcessor requested [%s]", msg.getProcessor());
-                throw new OpProcessorException(errorMessage, ResponseMessage.build(msg).code(ResultCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(errorMessage).create());
+                throw new OpProcessorException(errorMessage, ResponseMessage.build(msg).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(errorMessage).create());
             }
         } catch (OpProcessorException ope) {
             errorMeter.mark();

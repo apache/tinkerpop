@@ -1,19 +1,19 @@
 package com.tinkerpop.gremlin.driver.exception;
 
-import com.tinkerpop.gremlin.driver.message.ResultCode;
+import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ResponseException extends Exception {
-    private ResultCode resultCode;
+    private ResponseStatusCode responseStatusCode;
 
-    public ResponseException(final ResultCode resultCode, final String serverMessage) {
+    public ResponseException(final ResponseStatusCode responseStatusCode, final String serverMessage) {
         super(serverMessage);
-        this.resultCode = resultCode;
+        this.responseStatusCode = responseStatusCode;
     }
 
-    public ResultCode getResultCode() {
-        return resultCode;
+    public ResponseStatusCode getResponseStatusCode() {
+        return responseStatusCode;
     }
 }
