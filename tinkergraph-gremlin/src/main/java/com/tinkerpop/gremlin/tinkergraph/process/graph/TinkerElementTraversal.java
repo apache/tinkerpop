@@ -2,11 +2,11 @@ package com.tinkerpop.gremlin.tinkergraph.process.graph;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
-import com.tinkerpop.gremlin.process.graph.step.util.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
+import com.tinkerpop.gremlin.process.graph.step.util.IdentityStep;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Element;
@@ -35,11 +35,11 @@ public class TinkerElementTraversal<S, E> extends DefaultGraphTraversal<S, E> {
         TinkerHelper.prepareTraversalForComputer(this);
         final String label = this.getSteps().get(0).getLabel();
         TraversalHelper.removeStep(0, this);
-        final Step identityStep = new IdentityStep(this);
-        if (TraversalHelper.isLabeled(label))
+        if (TraversalHelper.isLabeled(label)) {
+            final Step identityStep = new IdentityStep(this);
             identityStep.setLabel(label);
-
-        TraversalHelper.insertStep(identityStep, 0, this);
+            TraversalHelper.insertStep(identityStep, 0, this);
+        }
         TraversalHelper.insertStep(new HasStep(this, new HasContainer(Element.ID, Compare.EQUAL, this.id)), 0, this);
         TraversalHelper.insertStep(new TinkerGraphStep<>(this, this.elementClass), 0, this);
         return super.submit(computer);
