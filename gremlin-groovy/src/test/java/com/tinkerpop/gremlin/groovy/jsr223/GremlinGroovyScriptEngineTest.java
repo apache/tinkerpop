@@ -3,8 +3,10 @@ package com.tinkerpop.gremlin.groovy.jsr223;
 import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
@@ -573,6 +575,28 @@ public class GremlinGroovyScriptEngineTest {
         } finally {
             provider.unregisterInterceptors();
         }
+    }
+
+    @Test
+    public void shouldProcessScriptWithUTF8Characters() throws Exception {
+        final ScriptEngine engine = new GremlinGroovyScriptEngine();
+        assertEquals("轉注", engine.eval("'轉注'"));
+    }
+
+    @Test
+    public void shouldProcessUTF8Query() throws Exception {
+        final TinkerGraph graph = TinkerGraph.open();
+
+        Vertex nonUtf8 = graph.addVertex(Element.ID, "1", "name", "marko", "age", 29);
+        Vertex utf8Name = graph.addVertex(Element.ID, "2", "name", "轉注", "age", 32);
+
+        ScriptEngine engine = new GremlinGroovyScriptEngine();
+
+        engine.put("g", graph);
+        Traversal eval = (Traversal) engine.eval("g.V().has('name', 'marko')");
+        assertEquals(nonUtf8, eval.next());
+        eval = (Traversal) engine.eval("g.V().has('name','轉注')");
+        assertEquals(utf8Name, eval.next());
     }
 
     public static class DenyAll extends GroovyValueFilter {
