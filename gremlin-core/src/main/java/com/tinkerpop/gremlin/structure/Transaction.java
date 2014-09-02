@@ -8,6 +8,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
+ * A set of methods that allow for control of transactional behavior of a {@link Graph} instance.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author TinkerPop Community (http://tinkerpop.com)
@@ -36,7 +38,7 @@ public interface Transaction extends Closeable {
     public <R> Workload<R> submit(final Function<Graph, R> work);
 
     /**
-     * Creaes a transaction that can be executed across multiple threads.
+     * Creates a transaction that can be executed across multiple threads.
      */
     public <G extends Graph> G create();
 
