@@ -44,22 +44,22 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
                 s -> s.<V>getElementGetProperty(elementStrategyContext),
                 this.baseElement::property).apply(key), this.strategyWrappedGraph);
     }
-         // TODO
-   /* @Override
+
+    @Override
     public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
         return StreamFactory.stream(this.strategyWrappedGraph.strategy().compose(
                 s -> s.getElementPropertiesGetter(elementStrategyContext),
                 () -> this.baseElement.properties(propertyKeys)).get())
-                .map(property -> new StrategyWrappedProperty<V>(property, strategyWrappedGraph)).iterator();
+                .map(property -> new StrategyWrappedProperty<>((Property<V>) property, strategyWrappedGraph)).iterator();
     }
 
     @Override
     public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys) {
         return StreamFactory.stream(this.strategyWrappedGraph.strategy().compose(
                 s -> s.getElementHiddens(elementStrategyContext),
-                this.baseElement::hiddens).get())
-                .map(property -> new StrategyWrappedProperty<V>(property, strategyWrappedGraph)).iterator();
-    }*/
+                () -> this.baseElement.hiddens(propertyKeys)).get())
+                .map(property -> new StrategyWrappedProperty<>((Property<V>) property, strategyWrappedGraph)).iterator();
+    }
 
     @Override
     public Set<String> keys() {
