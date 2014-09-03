@@ -491,37 +491,8 @@ gremlin> g.v(0l).value('name')
 ==>stephen
 ----
 
-By getting the "base graph" (i.e. the underlying `TinkerGraph`) it is possible to mutate the graph.  The above code demonstrates that and also shows that it then possible to read back that added vertex.
+By getting the "base graph" (i.e. the underlying `TinkerGraph`) it is possible to mutate the graph.  The above code demonstrates that and also shows that it then possible to read back that added vertex. The following sections explain details of the specific `GraphStrategy` implementations.
 
-Further details on specific GraphStrategy implementations follow.
-
-SubgraphStrategy
-~~~~~~~~~~~~~~~~
-
-A general-purpose `SubgraphStrategy` is created by defining a "vertex criterion" and an "edge criterion" as Java 8 `Predicates` and applying them to a `Graph`.  All vertices present in the base `Graph` which pass the vertex criterion will be present in the `StrategyWrappedGraph`.  All edges present in the base `Graph` which pass the edge criterion *and* whose in- and out-vertices both pass the vertex criterion will be present in the `StrategyWrappedGraph`.
-
-NOTE: edges are either entirely visible, or entirely invisible to a subgraph.  You will never find an edge which cannot be traversed due to a missing in- or out-vertex.
-
-For example:
-
-[source,java]
-----
-Graph g = TinkerFactory.createClassic();              
-
-Predicate<Vertex> vertexCriterion = vertex -> true;
-Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
-
-GraphStrategy strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion);
-StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
-sg.strategy().setGraphStrategy(strategy);
-
-// all vertices are here
-System.out.println("" + sg.V().count() + " of " + g.V().count() + " vertices");
-
-// only the given edges are included
-System.out.println("" + sg.E().count() + " of " + g.E().count() + " edges");
-----
- 
 PartitionGraphStrategy
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -577,3 +548,30 @@ gremlin> "in B: " + sg.V().count().next() + ", " + sg.E().count().next()
 ----
 
 Note that there are no edges in the set B, as the only edge added to partition B is incident on a vertex of A.
+
+SubgraphStrategy
+~~~~~~~~~~~~~~~~
+
+A general-purpose `SubgraphStrategy` is created by defining a "vertex criterion" and an "edge criterion" as Java 8 `Predicates` and applying them to a `Graph`.  All vertices present in the base `Graph` which pass the vertex criterion will be present in the `StrategyWrappedGraph`.  All edges present in the base `Graph` which pass the edge criterion *and* whose in- and out-vertices both pass the vertex criterion will be present in the `StrategyWrappedGraph`.
+
+NOTE: edges are either entirely visible, or entirely invisible to a subgraph.  You will never find an edge which cannot be traversed due to a missing in- or out-vertex.
+
+For example:
+
+[source,java]
+----
+Graph g = TinkerFactory.createClassic();
+
+Predicate<Vertex> vertexCriterion = vertex -> true;
+Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
+
+GraphStrategy strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion);
+StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+sg.strategy().setGraphStrategy(strategy);
+
+// all vertices are here
+System.out.println("" + sg.V().count() + " of " + g.V().count() + " vertices");
+
+// only the given edges are included
+System.out.println("" + sg.E().count() + " of " + g.E().count() + " edges");
+----
