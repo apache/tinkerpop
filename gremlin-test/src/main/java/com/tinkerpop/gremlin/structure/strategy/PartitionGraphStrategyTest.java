@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
 import java.util.NoSuchElementException;
@@ -196,10 +197,10 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         final Edge e = v.addEdge("to", v, "all", "a");
 
         assertTrue(v.property("any") instanceof StrategyWrappedProperty);
-        // TODO assertTrue(v.properties().get("any") instanceof StrategyWrappedProperty);
+        assertTrue(StreamFactory.stream(v.properties()).allMatch(p -> p  instanceof StrategyWrappedProperty));
 
         assertTrue(e.property("all") instanceof StrategyWrappedProperty);
-       // TODO assertTrue(e.properties().get("all") instanceof StrategyWrappedProperty);
+        assertTrue(StreamFactory.stream(e.properties()).allMatch(p -> p  instanceof StrategyWrappedProperty));
 
         assertTrue(g.V().property("any").next() instanceof StrategyWrappedProperty);
         assertTrue(g.E().property("any").next() instanceof StrategyWrappedProperty);

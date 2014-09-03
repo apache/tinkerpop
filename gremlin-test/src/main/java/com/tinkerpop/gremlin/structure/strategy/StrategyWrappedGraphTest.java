@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
+import com.tinkerpop.gremlin.IteratorUtil;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Property;
@@ -45,7 +46,7 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
         final Vertex toRemove = g.addVertex("name", "pieter");
         toRemove.addEdge("likes", g.addVertex("feature", "Strategy"));
 
-        // TODO assertEquals(1, toRemove.properties().size());
+        assertEquals(1, IteratorUtil.count(toRemove.properties()));
         assertEquals(new Long(1), toRemove.bothE().count().next());
         assertFalse(toRemove.property("deleted").isPresent());
 
@@ -53,7 +54,7 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
 
         final Vertex removed = g.v(toRemove.id());
         assertNotNull(removed);
-        // TODO assertEquals(1, removed.properties().size());
+        assertEquals(1, IteratorUtil.count(removed.properties()));
         assertEquals(new Long(0), removed.bothE().count().next());
         assertTrue(toRemove.property("deleted").isPresent());
     }
