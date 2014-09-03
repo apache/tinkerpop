@@ -317,11 +317,6 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
             return spy();
         }
 
-        /*@Override
-        public <V> UnaryOperator<Supplier<Iterator<? extends Property<V>>>> getElementPropertiesGetter(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
-            return spy();
-        } */ // TODO
-
         @Override
         public UnaryOperator<Supplier<Map<String, ? extends Object>>> getElementValues(Strategy.Context<? extends StrategyWrappedElement> ctx) {
             return spy();
@@ -331,11 +326,6 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         public UnaryOperator<Supplier<Map<String, ? extends Object>>> getElementHiddenValues(Strategy.Context<? extends StrategyWrappedElement> ctx) {
             return spy();
         }
-
-       /* @Override
-        public <V> UnaryOperator<Supplier<Iterator<? extends Property<V>>>> getElementHiddens(Strategy.Context<? extends StrategyWrappedElement> ctx) {
-            return spy();
-        }*/ // TODO
 
         @Override
         public <V> UnaryOperator<Function<String, V>> getElementValue(Strategy.Context<? extends StrategyWrappedElement> ctx) {
@@ -376,6 +366,16 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         public GraphTraversal applyStrategyToTraversal(final GraphTraversal traversal) {
             spy();
             return traversal;
+        }
+
+        @Override
+        public <V> UnaryOperator<Supplier<Iterator<? extends Property<V>>>> getElementPropertiesGetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+            return spy();
+        }
+
+        @Override
+        public <V> UnaryOperator<Supplier<Iterator<? extends Property<V>>>> getElementHiddens(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+            return spy();
         }
     }
 }
