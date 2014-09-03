@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure.util;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.javatuples.Pair;
@@ -290,10 +291,10 @@ public class ElementHelper {
 
     }
 
-    public static Map<String, Object> propertyMap(final Element element, final String... propertyKeys) {
+    public static Map<String, Object> propertyValueMap(final Element element, final String... propertyKeys) {
         final Map<String, Object> values = new HashMap<>();
         if (null == propertyKeys || propertyKeys.length == 0) {
-            element.keys().forEach(key -> values.put(key, element.value(key)));
+            element.properties().forEachRemaining(property -> values.put(property.key(), property.value()));
         } else {
             for (final String key : propertyKeys) {
                 if (key.equals(Element.ID))
@@ -302,6 +303,80 @@ public class ElementHelper {
                     values.put(Element.LABEL, element.label());
                 else
                     element.property(key).ifPresent(v -> values.put(key, v));
+            }
+        }
+        return values;
+    }
+
+    public static Map<String, Property> propertyMap(final Element element, final String... propertyKeys) {
+        final Map<String, Property> values = new HashMap<>();
+        if (null == propertyKeys || propertyKeys.length == 0) {
+            element.properties().forEachRemaining(property -> values.put(property.key(), property));
+        } else {
+            for (final String key : propertyKeys) {
+                final Property property = element.property(key);
+                if (property.isPresent()) values.put(key, property);
+            }
+        }
+        return values;
+    }
+
+    public static Map<String, List> metaPropertyValueMap(final Vertex vertex, final String... propertyKeys) {
+        final Map<String, List> values = new HashMap<>();
+        if (null == propertyKeys || propertyKeys.length == 0) {
+            vertex.properties().forEachRemaining(property -> {
+                if (values.containsKey(property.key()))
+                    values.get(property.key()).add(property.value());
+                else {
+                    final List list = new ArrayList();
+                    list.add(property.value());
+                    values.put(property.key(), list);
+                }
+            });
+        } else {
+            for (final String key : propertyKeys) {
+                if (key.equals(Element.ID))
+                    values.put(Element.ID, Arrays.asList(vertex.id()));
+                else if (key.equals(Element.LABEL))
+                    values.put(Element.LABEL, Arrays.asList(vertex.label()));
+                else {
+                    if (values.containsKey(key)) {
+                        final List list = values.get(key);
+                        vertex.properties(key).forEachRemaining(property -> list.add(property.value()));
+                    } else {
+                        final List list = new ArrayList();
+                        values.put(key, list);
+                        vertex.properties(key).forEachRemaining(property -> list.add(property.value()));
+                    }
+                }
+
+            }
+        }
+        return values;
+    }
+
+    public static Map<String, List<MetaProperty>> metaPropertyMap(final Vertex vertex, final String... propertyKeys) {
+        final Map<String, List<MetaProperty>> values = new HashMap<>();
+        if (null == propertyKeys || propertyKeys.length == 0) {
+            vertex.properties().forEachRemaining(property -> {
+                if (values.containsKey(property.key()))
+                    values.get(property.key()).add(property);
+                else {
+                    final List list = new ArrayList();
+                    list.add(property);
+                    values.put(property.key(), list);
+                }
+            });
+        } else {
+            for (final String key : propertyKeys) {
+                if (values.containsKey(key)) {
+                    final List list = values.get(key);
+                    vertex.properties(key).forEachRemaining(property -> list.add(property));
+                } else {
+                    final List list = new ArrayList();
+                    values.put(key, list);
+                    vertex.properties(key).forEachRemaining(property -> list.add(property));
+                }
             }
         }
         return values;

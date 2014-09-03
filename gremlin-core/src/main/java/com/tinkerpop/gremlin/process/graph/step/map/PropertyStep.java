@@ -6,17 +6,20 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 
+import java.util.Arrays;
+import java.util.Iterator;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PropertyStep<E> extends MapStep<Element, Property<E>> implements Reversible {
+public class PropertyStep<E> extends FlatMapStep<Element, Property<E>> implements Reversible {
 
-    public String propertyKey;
+    public String[] propertyKeys;
 
-    public PropertyStep(final Traversal traversal, final String propertyKey) {
+    public PropertyStep(final Traversal traversal, final String... propertyKeys) {
         super(traversal);
-        this.propertyKey = propertyKey;
-        this.setFunction(traverser -> traverser.get().property(this.propertyKey));
+        this.propertyKeys = propertyKeys;
+        this.setFunction(traverser -> (Iterator) traverser.get().properties(this.propertyKeys));
     }
 
     @Override
@@ -25,6 +28,6 @@ public class PropertyStep<E> extends MapStep<Element, Property<E>> implements Re
     }
 
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.propertyKey);
+        return this.propertyKeys.length == 0 ? super.toString() : TraversalHelper.makeStepString(this, Arrays.asList(this.propertyKeys));
     }
 }

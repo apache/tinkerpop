@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.util.function.SBiConsumer;
 import com.tinkerpop.gremlin.util.function.SBiFunction;
 import com.tinkerpop.gremlin.util.function.SBiPredicate;
@@ -86,7 +87,12 @@ public interface Vertex extends Element {
 
     public <V> MetaProperty<V> property(final String key, final V value);
 
-    //public <V> MetaProperty<V> property(final String key, final V value, final String... keyValues);
+    public default <V> MetaProperty<V> property(final String key, final V value, final String... keyValues) {
+        ElementHelper.legalPropertyKeyValueArray(keyValues);
+        final MetaProperty<V> property = this.property(key, value);
+        ElementHelper.attachProperties(property, keyValues);
+        return property;
+    }
 
     /**
      * Get the values of non-hidden properties as a {@link Map} of keys and values.
