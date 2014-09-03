@@ -14,12 +14,14 @@ import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Iterator;
 
 /**
@@ -28,6 +30,16 @@ import java.util.Iterator;
 public class GiraphVertex extends GiraphElement implements Vertex, Serializable, WrappedVertex<TinkerVertex> {
 
     protected GiraphVertex() {
+    }
+
+    @Override
+    public <V> Iterator<MetaProperty<V>> metaProperties(final String... metaPropertyKeys) {
+        return Collections.emptyIterator(); // TODO
+    }
+
+    @Override
+    public <V> MetaProperty<V> metaProperty(final String key, final V value, final Object... propertyKeyValues) {
+        return null; // TODO
     }
 
     public GiraphVertex(final TinkerVertex vertex, final GiraphGraph graph) {

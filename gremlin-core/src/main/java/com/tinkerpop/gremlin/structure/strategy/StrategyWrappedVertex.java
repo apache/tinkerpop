@@ -3,9 +3,11 @@ package com.tinkerpop.gremlin.structure.strategy;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 
+import java.util.Collections;
 import java.util.Iterator;
 
 /**
@@ -43,6 +45,16 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     @Override
     public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
         return new StrategyWrappedEdge.StrategyWrappedEdgeIterator(this.baseVertex.edges(direction, branchFactor, labels), this.strategyWrappedGraph);
+    }
+
+    @Override
+    public <V> Iterator<MetaProperty<V>> metaProperties(final String... metaPropertyKeys) {
+        return Collections.emptyIterator(); // TODO
+    }
+
+    @Override
+    public <V> MetaProperty<V> metaProperty(final String key, final V value, final Object... propertyKeyValues) {
+        return null; // TODO
     }
 
     @Override

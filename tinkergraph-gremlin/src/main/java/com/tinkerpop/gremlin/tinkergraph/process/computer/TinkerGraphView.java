@@ -50,7 +50,7 @@ public class TinkerGraphView implements Serializable {
             final TinkerProperty<V> property = new TinkerProperty<V>(element, key, value) {
                 @Override
                 public void remove() {
-                    removeProperty(element, key);
+                    removeProperty((TinkerElement)element, key);
                 }
             };
             this.setValue(element.id(), key, property);

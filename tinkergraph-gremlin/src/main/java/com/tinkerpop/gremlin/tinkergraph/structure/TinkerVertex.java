@@ -3,14 +3,18 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerElementTraversal;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,6 +25,8 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
     protected Map<String, Set<Edge>> outEdges = new HashMap<>();
     protected Map<String, Set<Edge>> inEdges = new HashMap<>();
+    protected Map<String, List<MetaProperty>> metaProperties = new HashMap<>();
+
 
     protected TinkerVertex(final Object id, final String label, final TinkerGraph graph) {
         super(id, label, graph);
@@ -38,6 +44,27 @@ public class TinkerVertex extends TinkerElement implements Vertex {
             this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.value() : null, this);
             return newProperty;
         }
+    }
+
+    @Override
+    public <V> Iterator<MetaProperty<V>> metaProperties(final String... metaPropertyKeys) {
+        return (Iterator) this.metaProperties.entrySet().stream()
+                .filter(entry -> Arrays.binarySearch(metaPropertyKeys, entry.getKey()) > 0)
+                .flatMap(entry -> entry.getValue().stream())
+                .iterator();
+    }
+
+    @Override
+    public <V> MetaProperty<V> metaProperty(final String key, final V value, final Object... propertyKeyValues) {
+        final MetaProperty<V> metaProperty = new TinkerMetaProperty<>(this, key, value, propertyKeyValues);
+        if (this.metaProperties.containsKey(key)) {
+            this.metaProperties.get(key).add(metaProperty);
+        } else {
+            final List<MetaProperty> list = new ArrayList<>();
+            list.add(metaProperty);
+            this.metaProperties.put(key, list);
+        }
+        return metaProperty;
     }
 
     public String toString() {

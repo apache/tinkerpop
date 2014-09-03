@@ -4,9 +4,12 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -17,6 +20,16 @@ public class DetachedVertex extends DetachedElement implements Vertex {
 
     private DetachedVertex() {
 
+    }
+
+    @Override
+    public <V> Iterator<MetaProperty<V>> metaProperties(final String... metaPropertyKeys) {
+        return Collections.emptyIterator(); // TODO
+    }
+
+    @Override
+    public <V> MetaProperty<V> metaProperty(final String key, final V value, final Object... propertyKeyValues) {
+        return null; // TODO
     }
 
     protected DetachedVertex(final Object id, final String label) {

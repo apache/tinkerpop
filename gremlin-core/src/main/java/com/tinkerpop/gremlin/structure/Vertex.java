@@ -14,8 +14,11 @@ import com.tinkerpop.gremlin.util.function.SConsumer;
 import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SPredicate;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +78,30 @@ public interface Vertex extends Element {
      * @return An iterator of vertices meeting the provided specification
      */
     public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels);
+
+    public <V> Iterator<MetaProperty<V>> metaProperties(final String... metaPropertyKeys);
+
+    public <V> MetaProperty<V> metaProperty(final String key, final V value, final Object... propertyKeyValues);
+
+    public default Set<String> metaKeys() {
+        final Set<String> metaKeys = new HashSet<>();
+        this.metaProperties().forEachRemaining(metaProperty -> metaKeys.add(metaProperty.key()));
+        return metaKeys;
+    }
+
+    public default Map<String, List> metaValues(final String... metaPropertyKeys) {
+        final Map<String, List> metaValues = new HashMap<>();
+        this.metaProperties(metaPropertyKeys).forEachRemaining(metaProperty -> {
+            if (metaValues.containsKey(metaProperty.key()))
+                metaValues.get(metaProperty.key()).add(metaProperty.value());
+            else {
+                final List list = new ArrayList();
+                list.add(metaProperty.value());
+                metaValues.put(metaProperty.key(), list);
+            }
+        });
+        return metaValues;
+    }
 
     /**
      * Common exceptions to use with a vertex.

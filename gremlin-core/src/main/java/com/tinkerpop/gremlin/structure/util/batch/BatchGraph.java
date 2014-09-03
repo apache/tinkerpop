@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -15,6 +16,7 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.batch.cache.VertexCache;
 import com.tinkerpop.gremlin.util.function.SConsumer;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -436,6 +438,16 @@ public class BatchGraph<T extends Graph> implements Graph {
         @Override
         public <V> V value(final String key) throws NoSuchElementException {
             return getCachedVertex(externalID).value(key);
+        }
+
+        @Override
+        public <V> Iterator<MetaProperty<V>> metaProperties(final String... metaPropertyKeys) {
+            return Collections.emptyIterator(); // TODO
+        }
+
+        @Override
+        public <V> MetaProperty<V> metaProperty(final String key, final V value, final Object... propertyKeyValues) {
+            return null; // TODO
         }
 
         @Override

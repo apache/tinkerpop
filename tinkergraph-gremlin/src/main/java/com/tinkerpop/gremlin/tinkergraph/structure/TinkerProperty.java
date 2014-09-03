@@ -14,10 +14,10 @@ import java.io.Serializable;
  */
 public class TinkerProperty<V> implements Property<V>, Serializable {
 
-    private final Element element;
-    private final String key;
-    private final TinkerGraph graph;
-    private V value;
+    protected final Element element;
+    protected final String key;
+    protected final TinkerGraph graph;
+    protected V value;
 
     public TinkerProperty(final Element element, final String key, final V value) {
         this.element = element;

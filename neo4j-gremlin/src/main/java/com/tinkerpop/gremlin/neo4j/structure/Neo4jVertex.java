@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -27,6 +28,7 @@ import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Relationship;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -41,6 +43,16 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
     public Neo4jVertex(final Node node, final Neo4jGraph graph) {
         super(graph);
         this.baseElement = node;
+    }
+
+    @Override
+    public <V> Iterator<MetaProperty<V>> metaProperties(final String... metaPropertyKeys) {
+        return Collections.emptyIterator(); // TODO
+    }
+
+    @Override
+    public <V> MetaProperty<V> metaProperty(final String key, final V value, final Object... propertyKeyValues) {
+        return null; // TODO
     }
 
     @Override
