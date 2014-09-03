@@ -3,10 +3,13 @@ package com.tinkerpop.gremlin.structure.strategy;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
 
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -19,6 +22,28 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
         super(baseEdge, strategyWrappedGraph);
         this.strategyContext = new Strategy.Context<>(strategyWrappedGraph.getBaseGraph(), this);
         this.baseEdge = baseEdge;
+    }
+
+    @Override
+    public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
+       // TODO return (Iterator) super.properties(propertyKeys);
+        return Collections.emptyIterator();
+    }
+
+    @Override
+    public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
+       // TODO return (Iterator) super.hiddens(propertyKeys);
+        return Collections.emptyIterator();
+    }
+
+    @Override
+    public Map<String, Object> values() {
+        return (Map) super.values();
+    }
+
+    @Override
+    public Map<String, Object> hiddenValues() {
+        return (Map) super.hiddenValues();
     }
 
     @Override

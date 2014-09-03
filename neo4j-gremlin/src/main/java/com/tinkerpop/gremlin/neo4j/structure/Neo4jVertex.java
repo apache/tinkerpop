@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -47,13 +48,38 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
     }
 
     @Override
-    public <V> Iterator<MetaProperty<V>> metaProperties(final String... metaPropertyKeys) {
-        return Collections.emptyIterator(); // TODO
+    public <V> Iterator<MetaProperty<V>> properties(final String... keys) {
+        this.graph.tx().readWrite();
+        return (Iterator) keys().stream().map(key -> new Neo4jProperty<V>(this, key, (V) this.baseElement.getProperty(key))).iterator();
     }
 
     @Override
-    public <V> MetaProperty<V> metaProperty(final String key, final V value, final Object... propertyKeyValues) {
-        return null; // TODO
+    public <V> Iterator<MetaProperty<V>> hiddens(final String... keys) {
+        this.graph.tx().readWrite();
+        return (Iterator) hiddenKeys().stream().map(key -> new Neo4jProperty<V>(this, key, (V) this.baseElement.getProperty(key))).iterator();
+    }
+
+    @Override
+    public <V> MetaProperty<V> property(final String key) {
+        this.graph.tx().readWrite();
+
+        if (this.baseElement.hasProperty(key))
+            return (MetaProperty) new Neo4jProperty<>(this, key, (V) this.baseElement.getProperty(key));
+        else
+            return (MetaProperty) Property.empty();
+    }
+
+    @Override
+    public <V> MetaProperty<V> property(final String key, final V value) {
+        ElementHelper.validateProperty(key, value);
+        this.graph.tx().readWrite();
+
+        try {
+            this.baseElement.setProperty(key, value);
+            return (MetaProperty) new Neo4jProperty<>(this, key, value);
+        } catch (IllegalArgumentException iae) {
+            throw Property.Exceptions.dataTypeOfPropertyValueNotSupported(value);
+        }
     }
 
     @Override
@@ -278,11 +304,6 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
     @Override
     public Neo4jTraversal<Vertex, Vertex> shuffle() {
         return this.start().shuffle();
-    }
-
-    @Override
-    public <E2> Neo4jTraversal<Vertex, MetaProperty<E2>> metas(final String... metaPropertyKeys) {
-        return this.start().metas(metaPropertyKeys);
     }
 
     @Override

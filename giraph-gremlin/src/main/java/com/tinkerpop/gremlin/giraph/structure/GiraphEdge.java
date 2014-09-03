@@ -6,14 +6,15 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
-import com.tinkerpop.gremlin.process.graph.step.util.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
+import com.tinkerpop.gremlin.process.graph.step.util.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
@@ -37,6 +38,16 @@ public class GiraphEdge extends GiraphElement implements Edge, Serializable, Wra
     @Override
     public Iterator<Vertex> vertices(final Direction direction) {
         return GiraphHelper.getVertices(this.graph, this, direction);
+    }
+
+    @Override
+    public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
+        return ((Edge) this.element).properties(propertyKeys);
+    }
+
+    @Override
+    public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
+        return ((Edge) this.element).hiddens(propertyKeys);
     }
 
     @Override

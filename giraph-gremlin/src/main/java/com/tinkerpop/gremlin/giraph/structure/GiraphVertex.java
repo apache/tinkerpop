@@ -6,8 +6,8 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
-import com.tinkerpop.gremlin.process.graph.step.util.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
+import com.tinkerpop.gremlin.process.graph.step.util.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
@@ -15,13 +15,13 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Iterator;
 
 /**
@@ -33,13 +33,23 @@ public class GiraphVertex extends GiraphElement implements Vertex, Serializable,
     }
 
     @Override
-    public <V> Iterator<MetaProperty<V>> metaProperties(final String... metaPropertyKeys) {
-        return Collections.emptyIterator(); // TODO
+    public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
+        return ((Vertex) this.element).properties(propertyKeys);
     }
 
     @Override
-    public <V> MetaProperty<V> metaProperty(final String key, final V value, final Object... propertyKeyValues) {
-        return null; // TODO
+    public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
+        return ((Vertex) this.element).hiddens(propertyKeys);
+    }
+
+    @Override
+    public <V> MetaProperty<V> property(final String key) {
+        return ((Vertex)this.element).property(key);
+    }
+
+    @Override
+    public <V> MetaProperty<V> property(final String key, final V value) {
+        throw Element.Exceptions.propertyAdditionNotSupported();
     }
 
     public GiraphVertex(final TinkerVertex vertex, final GiraphGraph graph) {

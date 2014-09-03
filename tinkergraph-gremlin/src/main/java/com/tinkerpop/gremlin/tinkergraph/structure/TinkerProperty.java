@@ -27,13 +27,6 @@ public class TinkerProperty<V> implements Property<V>, Serializable {
         this.graph = ((TinkerElement) this.element).graph;
     }
 
-    public TinkerProperty(final String key, final V value) {
-        this.key = key;
-        this.value = value;
-        this.element = null;
-        this.graph = null;
-    }
-
     @Override
     public <E extends Element> E getElement() {
         return (E) this.element;

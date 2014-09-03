@@ -16,6 +16,7 @@ import com.tinkerpop.gremlin.util.function.SPredicate;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,18 @@ public interface Edge extends Element {
      * @return An iterator with 1 or 2 vertices
      */
     public Iterator<Vertex> vertices(final Direction direction);
+
+    public <V> Iterator<Property<V>> properties(final String... propertyKeys);
+
+    public <V> Iterator<Property<V>> hiddens(final String... propertyKeys);
+
+    public default Map<String, Object> values() {
+        return (Map) Element.super.values();
+    }
+
+    public default Map<String, Object> hiddenValues() {
+       return (Map) Element.super.hiddenValues();
+    }
 
     /**
      * Common exceptions to use with an edge.
@@ -205,10 +218,6 @@ public interface Edge extends Element {
 
     public default GraphTraversal<Edge, Edge> shuffle() {
         return this.start().shuffle();
-    }
-
-    public default <E2> GraphTraversal<Edge, MetaProperty<E2>> metas(final String... metaPropertyKeys) {
-        return this.start().metas(metaPropertyKeys);
     }
 
     public default <E2> GraphTraversal<Edge, E2> value() {

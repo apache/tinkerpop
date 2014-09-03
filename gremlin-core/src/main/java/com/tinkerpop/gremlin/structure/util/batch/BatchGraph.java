@@ -16,7 +16,6 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.batch.cache.VertexCache;
 import com.tinkerpop.gremlin.util.function.SConsumer;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -411,43 +410,28 @@ public class BatchGraph<T extends Graph> implements Graph {
         }
 
         @Override
-        public Map<String, Property> properties() {
-            return getCachedVertex(externalID).properties();
+        public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
+            return getCachedVertex(externalID).properties(propertyKeys);
         }
 
         @Override
-        public Map<String, Property> hiddens() {
-            return getCachedVertex(externalID).hiddens();
+        public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
+            return getCachedVertex(externalID).hiddens(propertyKeys);
         }
 
         @Override
-        public <V> Property<V> property(final String key) {
+        public <V> MetaProperty<V> property(final String key) {
             return getCachedVertex(externalID).property(key);
         }
 
         @Override
-        public <V> Property<V> property(final String key, final V value) {
+        public <V> MetaProperty<V> property(final String key, final V value) {
             return getCachedVertex(externalID).property(key, value);
-        }
-
-        @Override
-        public void properties(final Object... keyValues) {
-            getCachedVertex(externalID).properties(keyValues);
         }
 
         @Override
         public <V> V value(final String key) throws NoSuchElementException {
             return getCachedVertex(externalID).value(key);
-        }
-
-        @Override
-        public <V> Iterator<MetaProperty<V>> metaProperties(final String... metaPropertyKeys) {
-            return Collections.emptyIterator(); // TODO
-        }
-
-        @Override
-        public <V> MetaProperty<V> metaProperty(final String key, final V value, final Object... propertyKeyValues) {
-            return null; // TODO
         }
 
         @Override
@@ -509,13 +493,13 @@ public class BatchGraph<T extends Graph> implements Graph {
         }
 
         @Override
-        public Map<String, Property> properties() {
-            return getWrappedEdge().properties();
+        public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
+            return getWrappedEdge().properties(propertyKeys);
         }
 
         @Override
-        public Map<String, Property> hiddens() {
-            return getWrappedEdge().hiddens();
+        public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
+            return getWrappedEdge().hiddens(propertyKeys);
         }
 
         @Override
@@ -531,11 +515,6 @@ public class BatchGraph<T extends Graph> implements Graph {
         @Override
         public Set<String> keys() {
             return getWrappedEdge().keys();
-        }
-
-        @Override
-        public void properties(final Object... keyValues) {
-            getWrappedEdge().properties(keyValues);
         }
 
         @Override

@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerElementTraversal;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -36,10 +37,18 @@ public class TinkerEdge extends TinkerElement implements Edge {
             ElementHelper.validateProperty(key, value);
             final Property oldProperty = super.property(key);
             final Property newProperty = new TinkerProperty<>(this, key, value);
-            this.properties.put(key, newProperty);
+            this.properties.put(key, Arrays.asList(newProperty));
             this.graph.edgeIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.value() : null, this);
             return newProperty;
         }
+    }
+
+    public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
+        return (Iterator) super.properties(propertyKeys);
+    }
+
+    public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
+        return (Iterator) super.hiddens(propertyKeys);
     }
 
     @Override

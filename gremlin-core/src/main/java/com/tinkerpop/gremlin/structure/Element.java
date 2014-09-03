@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.structure.util.ElementHelper;
-
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -45,7 +45,9 @@ public abstract interface Element {
      * @return The non-hidden key set
      */
     public default Set<String> keys() {
-        return this.properties().keySet();
+        final Set<String> keys = new HashSet<>();
+        this.properties().forEachRemaining(property -> keys.add(property.key()));
+        return keys;
     }
 
     /**
@@ -54,36 +56,38 @@ public abstract interface Element {
      * @return The hidden key set
      */
     public default Set<String> hiddenKeys() {
-        return this.hiddens().keySet();
+        final Set<String> hiddenKeys = new HashSet<>();
+        this.hiddens().forEachRemaining(property -> hiddenKeys.add(property.key()));
+        return hiddenKeys;
     }
 
     /**
      * Get the values of non-hidden properties as a {@link Map} of keys and values.
      */
-    public default Map<String, Object> values() {
+    public default Map<String, ? extends Object> values() {
         final Map<String, Object> values = new HashMap<>();
-        this.properties().forEach((k, p) -> values.put(k, p.value()));
+        this.properties().forEachRemaining(property -> values.put(property.key(), property.value()));
         return values;
     }
 
     /**
      * Get the values of hidden properties as a {@link Map} of keys and values.
      */
-    public default Map<String, Object> hiddenValues() {
+    public default Map<String, ? extends Object> hiddenValues() {
         final Map<String, Object> values = new HashMap<>();
-        this.hiddens().forEach((k, p) -> values.put(k, p.value()));
+        this.hiddens().forEachRemaining(hidden -> values.put(hidden.key(), hidden.value()));
         return values;
     }
 
     /**
-     * Get a {@link Map} of non-hidden properties.
+     * Get an {@link Iterator} of non-hidden properties.
      */
-    public Map<String, Property> properties();
+    public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys);
 
     /**
-     * Get a {@link Map} of hidden properties.
+     * Get an {@link Iterator} of hidden properties.
      */
-    public Map<String, Property> hiddens();
+    public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys);
 
     /**
      * Get a {@link Property} for the {@code Element} given its key.  Hidden properties can be retrieved by specifying
@@ -96,17 +100,6 @@ public abstract interface Element {
      * the key as {@link com.tinkerpop.gremlin.structure.Graph.Key#hide}.
      */
     public <V> Property<V> property(final String key, final V value);
-
-    /**
-     * Set a series of properties on the {@code Element} by specifying a series of key/value pairs.  These key/values
-     * must be provided in an even number where the odd numbered arguments are {@link String} key values and the
-     * even numbered arguments are the related property values.  Hidden properties can be set by specifying
-     * the key as {@link com.tinkerpop.gremlin.structure.Graph.Key#hide}.
-     */
-    public default void properties(final Object... keyValues) {
-        ElementHelper.legalPropertyKeyValueArray(keyValues);
-        ElementHelper.attachProperties(this, keyValues);
-    }
 
     /**
      * Get the value of a {@link Property} given it's key.

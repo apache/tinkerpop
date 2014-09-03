@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -79,29 +78,50 @@ public interface Vertex extends Element {
      */
     public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels);
 
-    public <V> Iterator<MetaProperty<V>> metaProperties(final String... metaPropertyKeys);
+    public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys);
 
-    public <V> MetaProperty<V> metaProperty(final String key, final V value, final Object... propertyKeyValues);
+    public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys);
 
-    public default Set<String> metaKeys() {
-        final Set<String> metaKeys = new HashSet<>();
-        this.metaProperties().forEachRemaining(metaProperty -> metaKeys.add(metaProperty.key()));
-        return metaKeys;
-    }
+    public <V> MetaProperty<V> property(final String key);
 
-    public default Map<String, List> metaValues(final String... metaPropertyKeys) {
-        final Map<String, List> metaValues = new HashMap<>();
-        this.metaProperties(metaPropertyKeys).forEachRemaining(metaProperty -> {
-            if (metaValues.containsKey(metaProperty.key()))
-                metaValues.get(metaProperty.key()).add(metaProperty.value());
+    public <V> MetaProperty<V> property(final String key, final V value);
+
+    //public <V> MetaProperty<V> property(final String key, final V value, final String... keyValues);
+
+    /**
+     * Get the values of non-hidden properties as a {@link Map} of keys and values.
+     */
+    public default Map<String, List> values() {
+        final Map<String, List> values = new HashMap<>();
+        this.properties().forEachRemaining(property -> {
+            if (values.containsKey(property.key()))
+                values.get(property.key()).add(property.value());
             else {
                 final List list = new ArrayList();
-                list.add(metaProperty.value());
-                metaValues.put(metaProperty.key(), list);
+                list.add(property.value());
+                values.put(property.key(), list);
             }
         });
-        return metaValues;
+        return values;
     }
+
+    /**
+     * Get the values of hidden properties as a {@link Map} of keys and values.
+     */
+    public default Map<String, List> hiddenValues() {
+        final Map<String, List> values = new HashMap<>();
+        this.hiddens().forEachRemaining(hidden -> {
+            if (values.containsKey(hidden.key()))
+                values.get(hidden.key()).add(hidden.value());
+            else {
+                final List list = new ArrayList();
+                list.add(hidden.value());
+                values.put(hidden.key(), list);
+            }
+        });
+        return values;
+    }
+
 
     /**
      * Common exceptions to use with a vertex.
@@ -255,10 +275,6 @@ public interface Vertex extends Element {
 
     public default GraphTraversal<Vertex, Vertex> shuffle() {
         return this.start().shuffle();
-    }
-
-    public default <E2> GraphTraversal<Vertex, MetaProperty<E2>> metas(final String... metaPropertyKeys) {
-        return this.start().metas(metaPropertyKeys);
     }
 
     public default <E2> GraphTraversal<Vertex, E2> value() {

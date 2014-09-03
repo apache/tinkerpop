@@ -104,7 +104,7 @@ public class TinkerHelper {
         return graph.graphView = new TinkerGraphView(isolation, computeKeys);
     }
 
-    public static Map<String, Property> getProperties(final TinkerElement element) {
+    public static Map<String, List<? extends Property>> getProperties(final TinkerElement element) {
         return element.properties;
     }
 

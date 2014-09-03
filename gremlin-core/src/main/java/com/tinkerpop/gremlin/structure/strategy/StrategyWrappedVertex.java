@@ -4,11 +4,15 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
+import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -48,13 +52,49 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     }
 
     @Override
-    public <V> Iterator<MetaProperty<V>> metaProperties(final String... metaPropertyKeys) {
-        return Collections.emptyIterator(); // TODO
+    public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
+        /*return (Iterator) StreamFactory.stream(this.strategyWrappedGraph.strategy().compose(
+                s -> s.getElementPropertiesGetter(strategyContext),
+                () -> this.baseVertex.properties(propertyKeys)).get())
+                .map(property -> new StrategyWrappedProperty(property, strategyWrappedGraph)).iterator();  // TODO */
+        return Collections.emptyIterator();
     }
 
     @Override
-    public <V> MetaProperty<V> metaProperty(final String key, final V value, final Object... propertyKeyValues) {
-        return null; // TODO
+    public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
+        /*return (Iterator) StreamFactory.stream(this.strategyWrappedGraph.strategy().compose(
+                s -> s.getElementHiddens(strategyContext),
+                this.baseVertex::hiddens).get())
+                .map(property -> new StrategyWrappedProperty(property, strategyWrappedGraph)).iterator();  // TODO  */
+        return Collections.emptyIterator();
+    }
+
+    @Override
+    public <V> MetaProperty<V> property(final String key, final V value) {
+        return (MetaProperty) this.strategyWrappedGraph.strategy().compose(
+                s -> s.<V>getElementProperty(strategyContext),
+                this.baseVertex::property).apply(key, value);
+    }
+
+    @Override
+    public <V> MetaProperty<V> property(final String key) {
+        return (MetaProperty) this.strategyWrappedGraph.strategy().compose(
+                s -> s.<V>getElementGetProperty(strategyContext),
+                this.baseVertex::property).apply(key);
+    }
+
+    @Override
+    public Map<String, List> values() {
+        return (Map) this.strategyWrappedGraph.strategy().compose(
+                s -> s.getElementValues(strategyContext),
+                this.baseVertex::values).get();
+    }
+
+    @Override
+    public Map<String, List> hiddenValues() {
+        return (Map) this.strategyWrappedGraph.strategy().compose(
+                s -> s.getElementHiddenValues(strategyContext),
+                this.baseVertex::hiddenValues).get();
     }
 
     @Override

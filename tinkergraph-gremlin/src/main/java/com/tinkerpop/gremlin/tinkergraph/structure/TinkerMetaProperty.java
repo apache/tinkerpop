@@ -7,8 +7,8 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -61,43 +61,26 @@ public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty
         return this.key.hashCode() + this.value.hashCode();
     }
 
-    @Override
-    public String label() {
-        return META_PROPERTY;
+
+    public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
+        return (Iterator) super.properties(propertyKeys);
     }
 
-    @Override
-    public <U> Property<U> property(final String key, final U value) {
-        ElementHelper.validateProperty(key, value);
-        final Property newProperty = new TinkerProperty<>(this, key, value);
-        this.properties.put(key, newProperty);
-        return newProperty;
-    }
-
-    @Override
-    public Map<String, Property> hiddens() {
-        final Map<String, Property> temp = new HashMap<>();
-        this.properties.forEach((key, property) -> {
-            if (Graph.Key.isHidden(key))
-                temp.put(Graph.Key.unHide(key), property);
-        });
-        return temp;
-    }
-
-    @Override
-    public Map<String, Property> properties() {
-        final Map<String, Property> temp = new HashMap<>();
-        this.properties.forEach((key, property) -> {
-            if (!Graph.Key.isHidden(key))
-                temp.put(key, property);
-        });
-        return temp;
+    public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
+        return (Iterator) super.hiddens(propertyKeys);
     }
 
 
     @Override
     public <U> Property<U> property(final String key) {
-        return this.properties.getOrDefault(key, Property.empty());
+        return this.properties.containsKey(key) ? this.properties.get(key).get(0) : Property.empty();
+    }
+
+    @Override
+    public <U> Property<U> property(final String key, final U value) {
+        final Property<U> property = new TinkerProperty<U>(this, key, value);
+        this.properties.put(key, Arrays.asList(property));
+        return property;
     }
 
     @Override
@@ -107,6 +90,6 @@ public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty
 
     @Override
     public void remove() {
-        ((TinkerVertex) this.vertex).metaProperties.get(this.key).remove(this);
+        ((TinkerVertex) this.vertex).properties.get(this.key).remove(this);
     }
 }

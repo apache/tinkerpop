@@ -6,7 +6,10 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -14,7 +17,7 @@ import java.util.Map;
  */
 public abstract class TinkerElement implements Element, Serializable {
 
-    protected Map<String, Property> properties = new HashMap<>();
+    protected Map<String, List<? extends Property>> properties = new HashMap<>();
     protected final Object id;
     protected final String label;
     protected final TinkerGraph graph;
@@ -40,13 +43,12 @@ public abstract class TinkerElement implements Element, Serializable {
     }
 
     @Override
-    public Map<String, Property> hiddens() {
-        final Map<String, Property> temp = new HashMap<>();
-        this.properties.forEach((key, property) -> {
-            if (Graph.Key.isHidden(key))
-                temp.put(Graph.Key.unHide(key), property);
-        });
-        if (this.graph.graphView != null && this.graph.graphView.getInUse()) {
+    public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys) {
+        return (Iterator) this.properties.entrySet().stream()
+                .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
+                .filter(entry -> Graph.Key.isHidden(entry.getKey()))
+                .flatMap(entry -> entry.getValue().stream()).iterator();
+        /*if (this.graph.graphView != null && this.graph.graphView.getInUse()) {
             this.graph.graphView.getComputeKeys().keySet().forEach(key -> {
                 if (Graph.Key.isHidden(key)) {
                     final Property property = this.graph.graphView.getProperty(this, key);
@@ -54,17 +56,16 @@ public abstract class TinkerElement implements Element, Serializable {
                 }
             });
         }
-        return temp;
+        return temp.values().iterator();*/
     }
 
     @Override
-    public Map<String, Property> properties() {
-        final Map<String, Property> temp = new HashMap<>();
-        this.properties.forEach((key, property) -> {
-            if (!Graph.Key.isHidden(key))
-                temp.put(key, property);
-        });
-        if (this.graph.graphView != null && this.graph.graphView.getInUse()) {
+    public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
+        return (Iterator) this.properties.entrySet().stream()
+                .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
+                .filter(entry -> !Graph.Key.isHidden(entry.getKey()))
+                .flatMap(entry -> entry.getValue().stream()).iterator();
+        /*if (this.graph.graphView != null && this.graph.graphView.getInUse()) {
             this.graph.graphView.getComputeKeys().keySet().forEach(key -> {
                 if (!Graph.Key.isHidden(key)) {
                     final Property property = this.graph.graphView.getProperty(this, key);
@@ -72,16 +73,16 @@ public abstract class TinkerElement implements Element, Serializable {
                 }
             });
         }
-        return temp;
+        return temp.values().iterator();*/
     }
 
 
     @Override
     public <V> Property<V> property(final String key) {
         if (this.graph.graphView != null && this.graph.graphView.getInUse()) {
-            return this.graph.graphView.getProperty(this, key);
+            return (Property<V>) this.graph.graphView.getProperty(this, key);
         } else {
-            return this.properties.getOrDefault(key, Property.empty());
+            return this.properties.containsKey(key) ? this.properties.get(key).get(0) : Property.<V>empty();
         }
     }
 

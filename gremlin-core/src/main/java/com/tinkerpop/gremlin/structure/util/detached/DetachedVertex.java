@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -23,13 +24,23 @@ public class DetachedVertex extends DetachedElement implements Vertex {
     }
 
     @Override
-    public <V> Iterator<MetaProperty<V>> metaProperties(final String... metaPropertyKeys) {
-        return Collections.emptyIterator(); // TODO
+    public <V> MetaProperty<V> property(final String key, final V value) {
+        throw new UnsupportedOperationException("Detached elements are readonly: " + this);
     }
 
     @Override
-    public <V> MetaProperty<V> metaProperty(final String key, final V value, final Object... propertyKeyValues) {
-        return null; // TODO
+    public <V> MetaProperty<V> property(final String key) {
+        return this.properties.containsKey(key) ? (MetaProperty) this.properties.get(key) : null; // TODO:
+    }
+
+    @Override
+    public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
+        return (Iterator) super.properties(propertyKeys);
+    }
+
+    @Override
+    public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
+        return (Iterator) super.hiddens(propertyKeys);
     }
 
     protected DetachedVertex(final Object id, final String label) {

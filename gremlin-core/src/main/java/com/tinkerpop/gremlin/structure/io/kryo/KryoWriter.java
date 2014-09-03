@@ -9,13 +9,13 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
+import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -144,20 +144,17 @@ public class KryoWriter implements GraphWriter {
     }
 
     private void writeProperties(final Output output, final Element e) {
-        final Map<String, Property> properties = e.properties();
-        final int propertyCount = properties.size();
+        final int propertyCount = (int) StreamFactory.stream(e.properties()).count();
         output.writeInt(propertyCount);
-        properties.forEach((key, val) -> {
-            output.writeString(key);
-            writePropertyValue(output, val);
+        e.properties().forEachRemaining(property -> {
+            output.writeString(property.key());
+            writePropertyValue(output, property);
         });
-
-        final Map<String, Property> hiddens = e.hiddens();
-        final int hiddenCount = hiddens.size();
+        final int hiddenCount = (int) StreamFactory.stream(e.hiddens()).count();
         output.writeInt(hiddenCount);
-        hiddens.forEach((key, val) -> {
-            output.writeString(key);
-            writePropertyValue(output, val);
+        e.hiddens().forEachRemaining(hidden -> {
+            output.writeString(hidden.key());
+            writePropertyValue(output, hidden);
         });
     }
 

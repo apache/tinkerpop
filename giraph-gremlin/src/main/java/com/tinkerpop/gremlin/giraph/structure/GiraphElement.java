@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.io.Serializable;
-import java.util.Map;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -44,13 +44,13 @@ public abstract class GiraphElement implements Element, Serializable {
     }
 
     @Override
-    public Map<String, Property> properties() {
-        return this.element.properties();
+    public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
+        return this.element.properties(propertyKeys);
     }
 
     @Override
-    public Map<String, Property> hiddens() {
-        return this.element.hiddens();
+    public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys) {
+        return this.element.hiddens(propertyKeys);
     }
 
     @Override

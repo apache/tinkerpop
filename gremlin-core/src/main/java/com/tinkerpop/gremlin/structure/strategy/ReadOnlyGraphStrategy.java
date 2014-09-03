@@ -32,15 +32,8 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getElementProperty(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public <V> UnaryOperator<BiFunction<String, V, ? extends Property<V>>> getElementProperty(Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return readOnlyBiFunction();
-    }
-
-    @Override
-    public UnaryOperator<Consumer<Object[]>> getElementPropertiesSetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
-        return (f) -> (t) -> {
-            throw Exceptions.graphUsesReadOnlyStrategy();
-        };
     }
 
     @Override
@@ -82,7 +75,7 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
         };
     }
 
-    public static <T, U> UnaryOperator<BiFunction<T, U, Property<U>>> readOnlyBiFunction() {
+    public static <T, U> UnaryOperator<BiFunction<T, U, ? extends Property<U>>> readOnlyBiFunction() {
         return (f) -> (t, u) -> {
             throw Exceptions.graphUsesReadOnlyStrategy();
         };

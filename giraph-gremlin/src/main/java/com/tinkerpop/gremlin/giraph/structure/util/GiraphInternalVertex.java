@@ -43,22 +43,23 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
 
     public GiraphInternalVertex() {
     }
+    // TODO: hidden property mapping
 
     public GiraphInternalVertex(final TinkerVertex tinkerVertex) {
         this.tinkerGraph = TinkerGraph.open();
         this.tinkerVertex = tinkerVertex;
         this.tinkerGraph.variables().set(VERTEX_ID, this.tinkerVertex.id());
         final TinkerVertex vertex = (TinkerVertex) this.tinkerGraph.addVertex(Element.ID, this.tinkerVertex.id(), Element.LABEL, this.tinkerVertex.label());
-        this.tinkerVertex.properties().forEach((k, v) -> vertex.property(k, v.value()));
+        this.tinkerVertex.properties().forEachRemaining(property -> vertex.<Object>property(property.key(), property.value()));
         this.tinkerVertex.outE().forEach(edge -> {
             final TinkerVertex otherVertex = (TinkerVertex) ElementHelper.getOrAddVertex(this.tinkerGraph, edge.inV().id().next(), edge.inV().label().next());
             final TinkerEdge tinkerEdge = (TinkerEdge) vertex.addEdge(edge.label(), otherVertex, Element.ID, edge.id());
-            edge.properties().forEach((k, v) -> tinkerEdge.property(k, v.value()));
+            edge.properties().forEachRemaining(property -> tinkerEdge.<Object>property(property.key(), property.value()));
         });
         this.tinkerVertex.inE().forEach(edge -> {
             final TinkerVertex otherVertex = (TinkerVertex) ElementHelper.getOrAddVertex(this.tinkerGraph, edge.outV().id().next(), edge.outV().label().next());
             final TinkerEdge tinkerEdge = (TinkerEdge) otherVertex.addEdge(edge.label(), vertex, Element.ID, edge.id());
-            edge.properties().forEach((k, v) -> tinkerEdge.property(k, v.value()));
+            edge.properties().forEachRemaining(property -> tinkerEdge.<Object>property(property.key(), property.value()));
         });
         this.initialize(new LongWritable(Long.valueOf(this.tinkerVertex.id().toString())), this.deflateTinkerVertex(), EmptyOutEdges.instance());
         // TODO? this.tinkerVertex = vertex;

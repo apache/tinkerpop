@@ -13,6 +13,7 @@ import org.junit.Test;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -277,12 +278,12 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         }
 
         @Override
-        public <V> UnaryOperator<Function<String, Property<V>>> getElementGetProperty(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        public <V> UnaryOperator<Function<String, ? extends Property<V>>> getElementGetProperty(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
             return spy();
         }
 
         @Override
-        public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getElementProperty(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        public <V> UnaryOperator<BiFunction<String, V, ? extends Property<V>>> getElementProperty(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
             return spy();
         }
 
@@ -316,30 +317,25 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
             return spy();
         }
 
+        /*@Override
+        public <V> UnaryOperator<Supplier<Iterator<? extends Property<V>>>> getElementPropertiesGetter(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+            return spy();
+        } */ // TODO
+
         @Override
-        public UnaryOperator<Consumer<Object[]>> getElementPropertiesSetter(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        public UnaryOperator<Supplier<Map<String, ? extends Object>>> getElementValues(Strategy.Context<? extends StrategyWrappedElement> ctx) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<Supplier<Map<String, Property>>> getElementPropertiesGetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        public UnaryOperator<Supplier<Map<String, ? extends Object>>> getElementHiddenValues(Strategy.Context<? extends StrategyWrappedElement> ctx) {
             return spy();
         }
 
-        @Override
-        public UnaryOperator<Supplier<Map<String, Object>>> getElementValues(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+       /* @Override
+        public <V> UnaryOperator<Supplier<Iterator<? extends Property<V>>>> getElementHiddens(Strategy.Context<? extends StrategyWrappedElement> ctx) {
             return spy();
-        }
-
-        @Override
-        public UnaryOperator<Supplier<Map<String, Object>>> getElementHiddenValues(Strategy.Context<? extends StrategyWrappedElement> ctx) {
-            return spy();
-        }
-
-        @Override
-        public UnaryOperator<Supplier<Map<String, Property>>> getElementHiddens(Strategy.Context<? extends StrategyWrappedElement> ctx) {
-            return spy();
-        }
+        }*/ // TODO
 
         @Override
         public <V> UnaryOperator<Function<String, V>> getElementValue(Strategy.Context<? extends StrategyWrappedElement> ctx) {

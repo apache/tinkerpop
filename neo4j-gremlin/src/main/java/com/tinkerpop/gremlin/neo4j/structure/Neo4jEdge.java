@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
@@ -72,6 +73,18 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
     @Override
     public Relationship getBaseEdge() {
         return (Relationship) this.baseElement;
+    }
+
+    @Override
+    public <V> Iterator<Property<V>> properties(final String... keys) {
+        this.graph.tx().readWrite();
+        return (Iterator) keys().stream().map(key -> new Neo4jProperty<V>(this, key, (V) this.baseElement.getProperty(key))).iterator();
+    }
+
+    @Override
+    public <V> Iterator<Property<V>> hiddens(final String... keys) {
+        this.graph.tx().readWrite();
+        return (Iterator) hiddenKeys().stream().map(key -> new Neo4jProperty<V>(this, key, (V) this.baseElement.getProperty(key))).iterator();
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -236,11 +249,6 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
     @Override
     public Neo4jTraversal<Edge, Edge> shuffle() {
         return this.start().shuffle();
-    }
-
-    @Override
-    public <E2> Neo4jTraversal<Edge, MetaProperty<E2>> metas(final String... metaPropertyKeys) {
-        return this.start().metas(metaPropertyKeys);
     }
 
     @Override

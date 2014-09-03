@@ -11,6 +11,7 @@ import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -45,19 +46,15 @@ public abstract class Neo4jElement implements Element, WrappedElement<PropertyCo
     }
 
     @Override
-    public Map<String, Property> properties() {
+    public <V> Iterator<? extends Property<V>> properties(final String... keys) {
         this.graph.tx().readWrite();
-        return keys().stream()
-                .map(key -> Pair.<String, Property>with(key, new Neo4jProperty<>(this, key, this.baseElement.getProperty(key))))
-                .collect(Collectors.toMap(kv -> kv.getValue0(), kv -> kv.getValue1()));
+        return keys().stream().map(key -> new Neo4jProperty<V>(this, key, (V) this.baseElement.getProperty(key))).iterator();
     }
 
     @Override
-    public Map<String, Property> hiddens() {
+    public <V> Iterator<? extends Property<V>> hiddens(final String... keys) {
         this.graph.tx().readWrite();
-        return hiddenKeys().stream()
-                .map(key -> Pair.<String, Property>with(key, new Neo4jProperty<>(this, key, this.baseElement.getProperty(Graph.Key.hide(key)))))
-                .collect(Collectors.toMap(kv -> kv.getValue0(), kv -> kv.getValue1()));
+        return hiddenKeys().stream().map(key -> new Neo4jProperty<V>(this, key, (V) this.baseElement.getProperty(key))).iterator();
     }
 
     @Override

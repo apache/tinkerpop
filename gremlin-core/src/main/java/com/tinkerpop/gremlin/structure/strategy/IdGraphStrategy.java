@@ -91,18 +91,10 @@ public class IdGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getElementProperty(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public <V> UnaryOperator<BiFunction<String, V, ? extends Property<V>>> getElementProperty(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return (f) -> (k, v) -> {
             throwIfIdKeyIsSet(ctx.getCurrent().getClass(), k);
             return f.apply(k, v);
-        };
-    }
-
-    @Override
-    public UnaryOperator<Consumer<Object[]>> getElementPropertiesSetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
-        return (f) -> (kvs) -> {
-            throwIfIdKeyIsSet(ctx.getCurrent().getClass(), ElementHelper.getKeys(kvs));
-            f.accept(kvs);
         };
     }
 

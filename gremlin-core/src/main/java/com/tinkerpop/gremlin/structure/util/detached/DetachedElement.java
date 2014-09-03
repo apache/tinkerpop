@@ -7,8 +7,9 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.javatuples.Pair;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -20,8 +21,8 @@ public abstract class DetachedElement implements Element, Serializable {
 
     Object id;
     String label;
-    Map<String, DetachedProperty> properties = Collections.emptyMap();
-    Map<String, DetachedProperty> hiddenProperties = Collections.emptyMap();
+    Map<String, ? extends Property> properties = Collections.emptyMap();
+    Map<String, ? extends Property> hiddenProperties = Collections.emptyMap();
 
     protected DetachedElement() {
 
@@ -85,23 +86,17 @@ public abstract class DetachedElement implements Element, Serializable {
     }
 
     @Override
-    public Map<String, Property> properties() {
-        final Map<String, Property> temp = new HashMap<>();
-        this.properties.forEach((key, property) -> {
-            if (!Graph.Key.isHidden(key))
-                temp.put(key, property);
-        });
-        return temp;
+    public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
+        return this.properties.entrySet().stream()
+                .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
+                .map(entry -> (Property<V>) entry.getValue()).iterator();
     }
 
     @Override
-    public Map<String, Property> hiddens() {
-        final Map<String, Property> temp = new HashMap<>();
-        this.properties.forEach((key, property) -> {
-            if (Graph.Key.isHidden(key))
-                temp.put(key, property);
-        });
-        return temp;
+    public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys) {
+        return this.hiddenProperties.entrySet().stream()
+                .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
+                .map(entry -> (Property<V>) entry.getValue()).iterator();
     }
 
     @Override

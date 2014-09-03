@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.util.function.STriFunction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,12 +63,12 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public <V> UnaryOperator<Function<String, Property<V>>> getElementGetProperty(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public <V> UnaryOperator<Function<String, ? extends Property<V>>> getElementGetProperty(Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementGetProperty(ctx));
     }
 
     @Override
-    public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getElementProperty(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public <V> UnaryOperator<BiFunction<String, V, ? extends Property<V>>> getElementProperty(Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementProperty(ctx));
     }
 
@@ -92,17 +93,12 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Consumer<Object[]>> getElementPropertiesSetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public <V> UnaryOperator<Supplier<Iterator<? extends Property<V>>>> getElementPropertiesGetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementId(ctx));
     }
 
     @Override
-    public UnaryOperator<Supplier<Map<String, Property>>> getElementPropertiesGetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
-        return this.composeStrategyUnaryOperator(s -> s.getElementId(ctx));
-    }
-
-    @Override
-    public UnaryOperator<Supplier<Map<String, Property>>> getElementHiddens(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public <V> UnaryOperator<Supplier<Iterator<? extends Property<V>>>> getElementHiddens(Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementId(ctx));
     }
 
@@ -117,12 +113,12 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Supplier<Map<String, Object>>> getElementValues(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public UnaryOperator<Supplier<Map<String, ? extends Object>>> getElementValues(Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementValues(ctx));
     }
 
     @Override
-    public UnaryOperator<Supplier<Map<String, Object>>> getElementHiddenValues(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public UnaryOperator<Supplier<Map<String, ? extends Object>>> getElementHiddenValues(Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementHiddenValues(ctx));
     }
 
