@@ -270,7 +270,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.addStep(new PropertyStep<>(this, propertyKey));
     }
 
-    public default <E2> GraphTraversal<S, MetaProperty<E2>> metaProperties(final String... metaPropertyKeys) {
+    public default <E2> GraphTraversal<S, MetaProperty<E2>> metas(final String... metaPropertyKeys) {
         return this.addStep(new MetaPropertyStep<>(this, metaPropertyKeys));
     }
 

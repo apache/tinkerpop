@@ -257,6 +257,10 @@ public interface Vertex extends Element {
         return this.start().shuffle();
     }
 
+    public default <E2> GraphTraversal<Vertex, MetaProperty<E2>> metas(final String... metaPropertyKeys) {
+        return this.start().metas(metaPropertyKeys);
+    }
+
     public default <E2> GraphTraversal<Vertex, E2> value() {
         return this.start().value();
     }

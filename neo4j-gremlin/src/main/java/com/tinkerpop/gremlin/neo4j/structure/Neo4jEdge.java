@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
@@ -235,6 +236,11 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
     @Override
     public Neo4jTraversal<Edge, Edge> shuffle() {
         return this.start().shuffle();
+    }
+
+    @Override
+    public <E2> Neo4jTraversal<Edge, MetaProperty<E2>> metas(final String... metaPropertyKeys) {
+        return this.start().metas(metaPropertyKeys);
     }
 
     @Override

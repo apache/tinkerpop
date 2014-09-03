@@ -49,7 +49,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     @Override
     public <V> Iterator<MetaProperty<V>> metaProperties(final String... metaPropertyKeys) {
         return (Iterator) this.metaProperties.entrySet().stream()
-                .filter(entry -> Arrays.binarySearch(metaPropertyKeys, entry.getKey()) > 0)
+                .filter(entry -> metaPropertyKeys.length == 0 || Arrays.binarySearch(metaPropertyKeys, entry.getKey()) >= 0)
                 .flatMap(entry -> entry.getValue().stream())
                 .iterator();
     }

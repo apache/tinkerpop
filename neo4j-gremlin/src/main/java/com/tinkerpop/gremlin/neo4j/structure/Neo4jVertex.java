@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -277,6 +278,11 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
     @Override
     public Neo4jTraversal<Vertex, Vertex> shuffle() {
         return this.start().shuffle();
+    }
+
+    @Override
+    public <E2> Neo4jTraversal<Vertex, MetaProperty<E2>> metas(final String... metaPropertyKeys) {
+        return this.start().metas(metaPropertyKeys);
     }
 
     @Override

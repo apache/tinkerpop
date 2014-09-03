@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -16,14 +17,21 @@ public class TinkerProperty<V> implements Property<V>, Serializable {
 
     protected final Element element;
     protected final String key;
-    protected final TinkerGraph graph;
     protected V value;
+    protected final TinkerGraph graph;
 
     public TinkerProperty(final Element element, final String key, final V value) {
         this.element = element;
         this.key = key;
         this.value = value;
-        this.graph = ((TinkerElement) element).graph;
+        this.graph = ((TinkerElement) this.element).graph;
+    }
+
+    public TinkerProperty(final String key, final V value) {
+        this.key = key;
+        this.value = value;
+        this.element = null;
+        this.graph = null;
     }
 
     @Override

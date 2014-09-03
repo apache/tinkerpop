@@ -6,4 +6,6 @@ package com.tinkerpop.gremlin.structure;
 public interface MetaProperty<V> extends Property<V>, Element {
 
     public static final String META_PROPERTY = "metaProperty";
+
+    public Vertex getElement();
 }

@@ -137,11 +137,11 @@ public abstract interface Element {
         }
 
         public static IllegalStateException propertyAdditionNotSupported() {
-            return new IllegalStateException("Property additions are not supported");
+            return new IllegalStateException("Property addition is not supported");
         }
 
         public static IllegalStateException propertyRemovalNotSupported() {
-            return new IllegalStateException("Property removal are not supported");
+            return new IllegalStateException("Property removal is not supported");
         }
     }
 
