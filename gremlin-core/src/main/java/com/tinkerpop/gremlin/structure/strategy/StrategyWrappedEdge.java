@@ -26,14 +26,12 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
 
     @Override
     public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-       // TODO return (Iterator) super.properties(propertyKeys);
-        return Collections.emptyIterator();
+       return (Iterator) super.properties(propertyKeys);
     }
 
     @Override
     public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-       // TODO return (Iterator) super.hiddens(propertyKeys);
-        return Collections.emptyIterator();
+       return (Iterator) super.hiddens(propertyKeys);
     }
 
     @Override
