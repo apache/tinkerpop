@@ -22,6 +22,7 @@ public class ElementTraversalMethodsTest {
         final List<Method> graphTraversalMethods = Arrays.asList(GraphTraversal.class.getMethods()).stream()
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
                 .filter(m -> !m.getName().equals("addStep"))
+                .filter(m -> !m.getName().equals("property"))
                 .filter(m -> GraphTraversal.class.isAssignableFrom(m.getReturnType())).collect(Collectors.toList());
 
         final List<Method> vertexMethods = new ArrayList<>(Arrays.asList(Vertex.class.getMethods()));

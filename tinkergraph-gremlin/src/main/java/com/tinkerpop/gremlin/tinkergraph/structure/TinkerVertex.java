@@ -61,13 +61,6 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         return (Iterator) super.hiddens(propertyKeys);
     }
 
-   /* public <V> MetaProperty<V> property(final String key, final V value, final String... keyValues) {
-        ElementHelper.legalPropertyKeyValueArray(keyValues);
-        MetaProperty<V> property = this.property(key, value);
-        ElementHelper.attachProperties(property, keyValues);
-        return property;
-    }*/
-
     public String toString() {
         return StringFactory.vertexString(this);
     }
