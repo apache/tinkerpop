@@ -144,6 +144,10 @@ public interface Vertex extends Element {
         public static IllegalStateException edgeAdditionsNotSupported() {
             return new IllegalStateException("Edge additions not supported");
         }
+
+        public static IllegalStateException multiplePropertiesExistForProvidedKey(final String propertyKey) {
+            return new IllegalStateException("Multiple properties exist for the provided key, use properties(" + propertyKey + ")");
+        }
     }
 
     public default GraphTraversal<Vertex, Vertex> start() {

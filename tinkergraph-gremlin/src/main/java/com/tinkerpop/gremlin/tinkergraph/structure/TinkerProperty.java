@@ -1,10 +1,9 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
+import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -66,10 +65,8 @@ public class TinkerProperty<V> implements Property<V>, Serializable {
 
     @Override
     public void remove() {
-        ((TinkerElement) this.element).properties.remove(key);
-        if (this.element instanceof Vertex)
-            this.graph.vertexIndex.remove(key, value, (TinkerVertex) this.element);
-        else
+        ((TinkerElement) this.element).properties.remove(this.key);
+        if (this.element instanceof Edge)
             this.graph.edgeIndex.remove(key, value, (TinkerEdge) this.element);
     }
 }

@@ -57,7 +57,7 @@ public abstract interface Element {
      */
     public default Set<String> hiddenKeys() {
         final Set<String> hiddenKeys = new HashSet<>();
-        this.hiddens().forEachRemaining(property -> hiddenKeys.add(property.key()));
+        this.hiddens().forEachRemaining(property -> hiddenKeys.add(Graph.Key.unHide(property.key())));
         return hiddenKeys;
     }
 

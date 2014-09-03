@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -12,7 +13,10 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,9 +26,9 @@ public class TinkerGraphView implements Serializable {
 
     protected final Map<String, VertexProgram.KeyType> computeKeys;
     protected final GraphComputer.Isolation isolation;
-    private Map<Object, Map<String, Object>> getMap;
-    private Map<Object, Map<String, Object>> setMap;
-    private Map<Object, Map<String, Object>> constantMap;
+    private Map<Element, Map<String, List<Property>>> getMap;
+    private Map<Element, Map<String, List<Property>>> setMap;
+    private Map<Element, Map<String, List<Property>>> constantMap;
     private boolean inUse = true;
 
     public TinkerGraphView(final GraphComputer.Isolation isolation, final Map<String, VertexProgram.KeyType> computeKeys) {
@@ -47,27 +51,27 @@ public class TinkerGraphView implements Serializable {
         }
     }
 
-    public <V, P extends Property<V>> P setProperty(final TinkerElement element, final String key, final V value) {
+    public <V> Property<V> setProperty(final TinkerElement element, final String key, final V value) {
         ElementHelper.validateProperty(key, value);
         if (isComputeKey(key)) {
             if (element instanceof Vertex) {
                 final TinkerMetaProperty<V> property = new TinkerMetaProperty<V>((TinkerVertex) element, key, value) {
                     @Override
                     public void remove() {
-                        removeProperty((TinkerElement) element, key);
+                        removeProperty((TinkerVertex) element, key, this);
                     }
                 };
-                this.setValue(element.id(), key, property);
-                return (P) property;
+                this.setValue(element, key, property);
+                return property;
             } else {
                 final TinkerProperty<V> property = new TinkerProperty<V>(element, key, value) {
                     @Override
                     public void remove() {
-                        removeProperty((TinkerElement) element, key);
+                        removeProperty((TinkerElement) element, key, this);
                     }
                 };
-                this.setValue(element.id(), key, property);
-                return (P) property;
+                this.setValue(element, key, property);
+                return property;
             }
         } else {
             throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
@@ -75,19 +79,21 @@ public class TinkerGraphView implements Serializable {
     }
 
 
-    public <V, P extends Property<V>> P getProperty(final TinkerElement element, final String key) {
+    public List<Property> getProperty(final TinkerElement element, final String key) {
         if (isComputeKey(key)) {
-            return (P) this.getValue(element.id(), key);
+            return this.getValue(element, key);
         } else {
-            // return (P) TinkerHelper.getProperties(element).getOrDefault(key, Property.empty());
-            return null;
+            return (List) TinkerHelper.getProperties(element).getOrDefault(key, Collections.emptyList());
         }
     }
 
 
-    public void removeProperty(final TinkerElement element, final String key) {
+    public void removeProperty(final TinkerElement element, final String key, final Property property) {
         if (isComputeKey(key)) {
-            this.removeValue(element.id(), key);
+            if (element instanceof Vertex)
+                this.removeValue(element, key, property);
+            else
+                this.removeValue(element, key);
         } else {
             throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
         }
@@ -103,29 +109,41 @@ public class TinkerGraphView implements Serializable {
 
     //////////////////////
 
-    private void setValue(final Object id, final String key, final Object value) {
-        final Map<Object, Map<String, Object>> map = isConstantKey(key) ? this.constantMap : this.setMap;
-        final Map<String, Object> nextMap = map.getOrDefault(id, new HashMap<>());
-        map.put(id, nextMap);
+    private void setValue(final Element element, final String key, final Property property) {
+        final Map<Element, Map<String, List<Property>>> map = isConstantKey(key) ? this.constantMap : this.setMap;
+        final Map<String, List<Property>> nextMap = map.getOrDefault(element, new HashMap<>());
+        map.put(element, nextMap);
         if (isConstantKey(key) && nextMap.containsKey(key))
-            throw GraphComputer.Exceptions.constantComputeKeyHasAlreadyBeenSet(key, id);
-        nextMap.put(key, value);
+            throw GraphComputer.Exceptions.constantComputeKeyHasAlreadyBeenSet(key, element);
+        if (nextMap.containsKey(key)) {
+            if (element instanceof Vertex) {
+                nextMap.get(key).add(property);
+            } else {
+                nextMap.get(key).clear();
+                nextMap.get(key).add(property);
+            }
+        } else {
+            final List<Property> list = new ArrayList<>();
+            list.add(property);
+            nextMap.put(key, list);
+        }
     }
 
-    private void removeValue(final Object id, final String key) {
-        final Map<String, Object> map = this.setMap.get(id);
+    private void removeValue(final Element element, final String key) {
+        final Map<String, List<Property>> map = this.setMap.get(element);
         if (null != map)
             map.remove(key);
     }
 
-    private <V, P extends Property<V>> P getValue(final Object id, final String key) {
-        final Map<String, Object> map = this.isConstantKey(key) ? this.constantMap.get(id) : this.getMap.get(id);
-        if (null == map)
-            return (P) Property.empty();
-        else {
-            final P property = (P) map.get(key);
-            return null == property ? (P) Property.empty() : property;
-        }
+    private void removeValue(final Element element, final String key, final Property property) {
+        final Map<String, List<Property>> map = this.setMap.get(element);
+        if (null != map)
+            map.get(key).remove(property);
+    }
+
+    private List<Property> getValue(final Element element, final String key) {
+        final Map<String, List<Property>> map = this.isConstantKey(key) ? this.constantMap.get(element) : this.getMap.get(element);
+        return (null == map) ? Collections.emptyList() : map.getOrDefault(key, Collections.emptyList());
     }
 
     public boolean isComputeKey(final String key) {

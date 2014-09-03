@@ -7,15 +7,17 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty<V> {
+public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty<V>, Serializable {
 
-    private final Vertex vertex;
+    private final TinkerVertex vertex;
     private final String key;
     private final V value;
 
@@ -48,10 +50,12 @@ public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty
         return Graph.Key.isHidden(this.key);
     }
 
+    @Override
     public String toString() {
-        return StringFactory.propertyString(this);
+        return StringFactory.metaPropertyString(this);
     }
 
+    @Override
     public int hashCode() {
         return this.key.hashCode() + this.value.hashCode() + this.vertex.hashCode();
     }
@@ -62,11 +66,13 @@ public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty
     }
 
 
-    public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
+    @Override
+    public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
         return (Iterator) super.properties(propertyKeys);
     }
 
-    public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
+    @Override
+    public <U> Iterator<Property<U>> hiddens(final String... propertyKeys) {
         return (Iterator) super.hiddens(propertyKeys);
     }
 
@@ -90,6 +96,17 @@ public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty
 
     @Override
     public void remove() {
-        ((TinkerVertex) this.vertex).properties.get(this.key).remove(this);
+        this.vertex.properties.get(this.key).remove(this);
+        if (this.vertex.properties.get(this.key).size() == 0) {
+            this.vertex.properties.remove(this.key);
+            this.graph.vertexIndex.remove(this.key, this.value, this.vertex);
+        }
+        final AtomicBoolean delete = new AtomicBoolean(true);
+        this.vertex.properties(this.key).forEachRemaining(property -> {
+            if (property.value().equals(this.value))
+                delete.set(false);
+        });
+        if (delete.get()) this.graph.vertexIndex.remove(this.key, this.value, this.vertex);
+
     }
 }

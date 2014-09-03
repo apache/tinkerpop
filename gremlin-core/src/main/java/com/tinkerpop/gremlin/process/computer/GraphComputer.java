@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.computer;
 
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Map;
@@ -116,8 +117,8 @@ public interface GraphComputer {
             return new IllegalArgumentException("The provided key is not a memory key: " + key);
         }
 
-        public static IllegalStateException constantComputeKeyHasAlreadyBeenSet(final String key, final Object id) {
-            return new IllegalStateException("The constant compute " + key + " has already been set for annotation " + id + ":" + key);
+        public static IllegalStateException constantComputeKeyHasAlreadyBeenSet(final String key, final Element element) {
+            return new IllegalStateException("The constant compute key " + key + " has already been set for " + element);
         }
 
         public static IllegalStateException adjacentVerticesCanNotBeQueried() {

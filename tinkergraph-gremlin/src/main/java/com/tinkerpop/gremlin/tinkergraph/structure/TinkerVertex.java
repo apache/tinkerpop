@@ -31,24 +31,36 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     @Override
     public <V> MetaProperty<V> property(final String key) {
         if (this.graph.graphView != null && this.graph.graphView.getInUse()) {
-            return (MetaProperty<V>) this.graph.graphView.getProperty(this, key);
+            final List list = this.graph.graphView.getProperty(this, key);
+            if (list.size() == 0)
+                return MetaProperty.<V>empty();
+            else if (list.size() == 1)
+                return (MetaProperty<V>) list.get(0);
+            else
+                throw Vertex.Exceptions.multiplePropertiesExistForProvidedKey(key);
         } else {
-            return this.properties.containsKey(key) ? (MetaProperty) this.properties.get(key).get(0) : MetaProperty.<V>empty();
+            if (this.properties.containsKey(key)) {
+                final List<MetaProperty> list = (List) this.properties.get(key);
+                if (list.size() > 1)
+                    throw Vertex.Exceptions.multiplePropertiesExistForProvidedKey(key);
+                else
+                    return list.get(0);
+            } else
+                return MetaProperty.<V>empty();
         }
     }
 
     @Override
     public <V> MetaProperty<V> property(final String key, final V value) {
         if (this.graph.graphView != null && this.graph.graphView.getInUse()) {
-            return this.graph.graphView.setProperty(this, key, value);
+            return (MetaProperty<V>) this.graph.graphView.setProperty(this, key, value);
         } else {
             ElementHelper.validateProperty(key, value);
-            // final MetaProperty oldProperty = this.property(key);
-            final MetaProperty newProperty = new TinkerMetaProperty<>(this, key, value);
+            final MetaProperty<V> newProperty = new TinkerMetaProperty<>(this, key, value);
             final List<MetaProperty> list = (List<MetaProperty>) this.properties.getOrDefault(key, new ArrayList<MetaProperty>());
             list.add(newProperty);
             this.properties.put(key, list);
-            //this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.value() : null, this);
+            this.graph.vertexIndex.autoUpdate(key, value, null, this);
             return newProperty;
         }
     }
