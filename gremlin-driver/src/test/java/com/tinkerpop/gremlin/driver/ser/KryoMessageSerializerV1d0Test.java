@@ -1,17 +1,18 @@
 package com.tinkerpop.gremlin.driver.ser;
 
+import com.tinkerpop.gremlin.IteratorUtil;
 import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
@@ -114,7 +115,7 @@ public class KryoMessageSerializerV1d0Test {
         assertEquals("test", deserialiedEdge.label());
 
         assertEquals(new Integer(123), (Integer) deserialiedEdge.value("abc"));
-        assertEquals(1, deserialiedEdge.properties().size());
+        assertEquals(1, StreamFactory.stream(deserialiedEdge.properties()).count());
         assertEquals(0l, deserialiedEdge.outV().id().next());
         assertEquals(Vertex.DEFAULT_LABEL, deserialiedEdge.outV().label().next());
         assertEquals(1l, deserialiedEdge.inV().id().next());
@@ -148,10 +149,9 @@ public class KryoMessageSerializerV1d0Test {
         assertEquals(0l, deserializedVertex.id());
         assertEquals(Vertex.DEFAULT_LABEL, deserializedVertex.label());
 
-        final Map<String, Property> properties = deserializedVertex.properties();
-        assertEquals(1, properties.size());
+        assertEquals(1, IteratorUtil.count(deserializedVertex.properties()));
 
-        final List<Object> deserializedInnerList = (List<Object>) properties.get("friends").value();
+        final List<Object> deserializedInnerList = deserializedVertex.value("friends");
         assertEquals(3, deserializedInnerList.size());
         assertEquals("x", deserializedInnerList.get(0));
         assertEquals(5, deserializedInnerList.get(1));
@@ -179,7 +179,7 @@ public class KryoMessageSerializerV1d0Test {
         assertEquals(1, deserializedMarko.id());
         assertEquals(Vertex.DEFAULT_LABEL, deserializedMarko.label());
         assertEquals(new Integer(29), (Integer) deserializedMarko.value("age"));
-        assertEquals(2, deserializedMarko.properties().size());
+        assertEquals(2, StreamFactory.stream(deserializedMarko.properties()).count());
 
         assertEquals(new Integer(1000), deserializedMap.values().iterator().next());
     }
