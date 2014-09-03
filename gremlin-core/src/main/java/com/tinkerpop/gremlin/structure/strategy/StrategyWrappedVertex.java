@@ -53,20 +53,18 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
 
     @Override
     public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
-        /*return (Iterator) StreamFactory.stream(this.strategyWrappedGraph.strategy().compose(
+        return (Iterator) StreamFactory.stream(this.strategyWrappedGraph.strategy().compose(
                 s -> s.getElementPropertiesGetter(strategyContext),
                 () -> this.baseVertex.properties(propertyKeys)).get())
-                .map(property -> new StrategyWrappedProperty(property, strategyWrappedGraph)).iterator();  // TODO */
-        return Collections.emptyIterator();
+                .map(property -> new StrategyWrappedProperty<>((Property<V>) property, strategyWrappedGraph)).iterator();
     }
 
     @Override
     public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
-        /*return (Iterator) StreamFactory.stream(this.strategyWrappedGraph.strategy().compose(
+        return (Iterator) StreamFactory.stream(this.strategyWrappedGraph.strategy().compose(
                 s -> s.getElementHiddens(strategyContext),
-                this.baseVertex::hiddens).get())
-                .map(property -> new StrategyWrappedProperty(property, strategyWrappedGraph)).iterator();  // TODO  */
-        return Collections.emptyIterator();
+                () -> this.baseVertex.hiddens(propertyKeys)).get())
+                .map(property -> new StrategyWrappedProperty<>((Property<V>) property, strategyWrappedGraph)).iterator();
     }
 
     @Override
