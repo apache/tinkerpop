@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.GraphManager;
+import com.tinkerpop.gremlin.IteratorUtil;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -12,6 +13,7 @@ import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -124,8 +126,8 @@ public class VertexTest extends AbstractGremlinTest {
         v.property("location").remove();
         StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
         assertEquals(2, StreamFactory.stream(v.properties()).count());
-        // TODO v.properties().values().stream().forEach(Property::remove);
-        // TODO assertEquals(0, v.properties().size());
+        StreamFactory.stream(v.properties()).forEach(Property::remove);
+        assertEquals(0, IteratorUtil.count(v.properties()));
         StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
     }
 
@@ -252,14 +254,14 @@ public class VertexTest extends AbstractGremlinTest {
         assertTrue(keys.contains("location"));
         assertTrue(keys.contains("status"));
 
-        /*final Map<String, Property> m = v.properties();
+        final List<Property> m = IteratorUtil.toList(v.properties());
         assertEquals(3, m.size());
-        assertEquals("name", m.get("name").key());
-        assertEquals("location", m.get("location").key());
-        assertEquals("status", m.get("status").key());
-        assertEquals("marko", m.get("name").orElse(""));
-        assertEquals("desert", m.get("location").orElse(""));
-        assertEquals("dope", m.get("status").orElse(""));
+        assertTrue(m.stream().anyMatch(p -> p.key().equals("name")));
+        assertTrue( m.stream().anyMatch(p -> p.key().equals("location")));
+        assertTrue( m.stream().anyMatch(p -> p.key().equals("status")));
+        assertEquals("marko", m.stream().filter(p -> p.key().equals("name")).map(Property::value).findFirst().orElse(null));
+        assertEquals("desert", m.stream().filter(p -> p.key().equals("location")).map(Property::value).findFirst().orElse(null));
+        assertEquals("dope", m.stream().filter(p -> p.key().equals("status")).map(Property::value).findFirst().orElse(null));
 
         v.property("status").remove();
 
@@ -268,7 +270,7 @@ public class VertexTest extends AbstractGremlinTest {
         assertTrue(keys.contains("name"));
         assertTrue(keys.contains("location"));
 
-        v.properties().values().stream().forEach(p -> p.remove());*/ // TODO
+        StreamFactory.stream(v.properties()).forEach(Property::remove);
 
         keys = v.keys();
         assertEquals(0, keys.size());
@@ -293,11 +295,9 @@ public class VertexTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    public void shouldReturnEmptyMapIfNoProperties() {
+    public void shouldReturnEmptyIteratorIfNoProperties() {
         final Vertex v = g.addVertex();
-        /*final Map<String, Property> m = v.properties();
-        assertNotNull(m);
-        assertEquals(0, m.size());   */ // TODO
+        assertEquals(0, IteratorUtil.count(v.properties()));
     }
 
     @Test

@@ -4,9 +4,12 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
+import com.tinkerpop.gremlin.IteratorUtil;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -141,15 +144,14 @@ public class EdgeTest extends AbstractGremlinTest {
         assertTrue(keys.contains("location"));
         assertTrue(keys.contains("status"));
 
-        // TODO
-        /*final Map<String, Property> m = e.properties();
+        final List<Property> m = IteratorUtil.toList(e.properties());
         assertEquals(3, m.size());
-        assertEquals("name", m.get("name").key());
-        assertEquals("location", m.get("location").key());
-        assertEquals("status", m.get("status").key());
-        assertEquals("marko", m.get("name").orElse(""));
-        assertEquals("desert", m.get("location").orElse(""));
-        assertEquals("dope", m.get("status").orElse(""));*/
+        assertTrue(m.stream().anyMatch(p -> p.key().equals("name")));
+        assertTrue( m.stream().anyMatch(p -> p.key().equals("location")));
+        assertTrue( m.stream().anyMatch(p -> p.key().equals("status")));
+        assertEquals("marko", m.stream().filter(p -> p.key().equals("name")).map(Property::value).findFirst().orElse(null));
+        assertEquals("desert", m.stream().filter(p -> p.key().equals("location")).map(Property::value).findFirst().orElse(null));
+        assertEquals("dope", m.stream().filter(p -> p.key().equals("status")).map(Property::value).findFirst().orElse(null));
 
         e.property("status").remove();
 
@@ -158,7 +160,7 @@ public class EdgeTest extends AbstractGremlinTest {
         assertTrue(keys.contains("name"));
         assertTrue(keys.contains("location"));
 
-        //e.properties().values().stream().forEach(p -> p.remove());
+        StreamFactory.stream(e.properties()).forEach(Property::remove);
 
         keys = e.keys();
         assertEquals(0, keys.size());
@@ -186,14 +188,11 @@ public class EdgeTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    public void shouldReturnEmptyMapIfNoProperties() {
+    public void shouldReturnEmptyIteratorIfNoProperties() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("knows", v);
-        /*final Map<String, Property> m = e.properties();
-        assertNotNull(m);
-        assertEquals(0, m.size()); */ // TODO
+        assertEquals(0, IteratorUtil.count(e.properties()));
     }
-
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
