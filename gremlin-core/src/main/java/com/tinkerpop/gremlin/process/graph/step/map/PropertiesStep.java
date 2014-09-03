@@ -20,10 +20,9 @@ public class PropertiesStep<E> extends MapStep<Element, Map<String, E>> {
         super(traversal);
         this.propertyKeys = propertyKeys;
         this.setFunction(traverser ->
-                        traverser.get() instanceof Vertex ?
-                                (Map) ElementHelper.metaPropertyMap((Vertex) traverser.get(), propertyKeys) :
-                                (Map) ElementHelper.propertyMap(traverser.get(), propertyKeys)
-        );
+                traverser.get() instanceof Vertex ?
+                        (Map) ElementHelper.metaPropertyMap((Vertex) traverser.get(), propertyKeys) :
+                        (Map) ElementHelper.propertyMap(traverser.get(), propertyKeys));
     }
 
     public String toString() {

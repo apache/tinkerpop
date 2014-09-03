@@ -102,7 +102,7 @@ public abstract class ChooseTest extends AbstractGremlinTest {
         assertFalse(traversal.hasNext());
         assertEquals(2, counter);
         assertEquals(2, counts.size());
-        assertEquals(Long.valueOf(1), counts.get("{name=marko, age=29}"));
+        assertEquals(Long.valueOf(1), counts.get("{name=[marko], age=[29]}"));
         assertEquals(Long.valueOf(1), counts.get("josh"));
     }
 
