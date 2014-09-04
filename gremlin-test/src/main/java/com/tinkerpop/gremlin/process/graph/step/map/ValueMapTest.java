@@ -16,7 +16,7 @@ import static org.junit.Assert.*;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class ValuesTest extends AbstractGremlinProcessTest {
+public abstract class ValueMapTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_values();
 
@@ -131,57 +131,57 @@ public abstract class ValuesTest extends AbstractGremlinProcessTest {
         assertEquals(2, values.size());
     }
 
-    public static class JavaValuesTest extends ValuesTest {
+    public static class JavaValueMapTest extends ValueMapTest {
 
-        public JavaValuesTest() {
+        public JavaValueMapTest() {
             requiresGraphComputer = false;
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_values() {
-            return g.V().values();
+            return g.V().valueMap();
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_valuesXname_ageX() {
-            return g.V().values("name", "age");
+            return g.V().valueMap("name", "age");
         }
 
         @Override
         public Traversal<Edge, Map<String, Object>> get_g_E_valuesXid_label_weightX() {
-            return g.E().values("id", "label", "weight");
+            return g.E().valueMap("id", "label", "weight");
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id) {
-            return g.v(v1Id).out("created").values();
+            return g.v(v1Id).out("created").valueMap();
         }
     }
 
-    public static class JavaComputerValuesTest extends ValuesTest {
+    public static class JavaComputerValueMapTest extends ValueMapTest {
 
-        public JavaComputerValuesTest() {
+        public JavaComputerValueMapTest() {
             requiresGraphComputer = true;
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_values() {
-            return g.V().values().submit(g.compute());
+            return g.V().valueMap().submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_valuesXname_ageX() {
-            return g.V().values("name", "age").submit(g.compute());
+            return g.V().valueMap("name", "age").submit(g.compute());
         }
 
         @Override
         public Traversal<Edge, Map<String, Object>> get_g_E_valuesXid_label_weightX() {
-            return g.E().values("id", "label", "weight").submit(g.compute());
+            return g.E().valueMap("id", "label", "weight").submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id) {
-            return g.v(v1Id).out("created").values().submit(g.compute());
+            return g.v(v1Id).out("created").valueMap().submit(g.compute());
         }
     }
 }

@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
@@ -14,7 +13,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HiddenMapStep<E> extends MapStep<Element, Map<String, ? extends Property<E>>> {
+public class HiddenMapStep<E> extends MapStep<Element, Map<String, E>> {
 
     public String[] propertyKeys;
 
@@ -26,8 +25,8 @@ public class HiddenMapStep<E> extends MapStep<Element, Map<String, ? extends Pro
         }
         this.setFunction(traverser ->
                 traverser.get() instanceof Vertex ?
-                        (Map) ElementHelper.metaPropertyMap((Vertex) traverser.get(), propertyKeys) :
-                        (Map) ElementHelper.propertyMap(traverser.get(), propertyKeys));
+                        (Map) ElementHelper.metaPropertyValueMap((Vertex) traverser.get(), propertyKeys) :
+                        (Map) ElementHelper.propertyValueMap(traverser.get(), propertyKeys));
     }
 
     public String toString() {

@@ -67,7 +67,7 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
             assertEquals(convertToVertexId("lop"), vertex.id());
             assertEquals(1, vertex.out("createdBy").count().next().longValue());
             assertEquals(convertToVertexId("marko"), vertex.out("createdBy").id().next());
-            assertEquals(0, vertex.outE("createdBy").values().next().size());
+            assertEquals(0, vertex.outE("createdBy").valueMap().next().size());
             count++;
 
         }
@@ -87,7 +87,7 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
             assertEquals(Long.valueOf(1l), vertex.out("createdBy").count().next());
             assertEquals(convertToVertexId("marko"), vertex.out("createdBy").id().next());
             assertEquals(2, vertex.outE("createdBy").value("weight").next());
-            assertEquals(1, vertex.outE("createdBy").values().next().size());
+            assertEquals(1, vertex.outE("createdBy").valueMap().next().size());
             count++;
 
 

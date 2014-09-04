@@ -232,8 +232,8 @@ public interface Edge extends Element {
         return (GraphTraversal) this.start().hiddens(propertyKeys);
     }
 
-    public default <E2> GraphTraversal<Edge, Map<String, Property<E2>>> hiddenMap(final String... propertyKeys) {
-        return (GraphTraversal) this.start().hiddenMap(propertyKeys);
+    public default <E2> GraphTraversal<Edge, Map<String, E2>> hiddenMap(final String... propertyKeys) {
+        return this.start().hiddenMap(propertyKeys);
     }
 
     public default <E2> GraphTraversal<Edge, E2> hiddenValue(final String propertyKey) {

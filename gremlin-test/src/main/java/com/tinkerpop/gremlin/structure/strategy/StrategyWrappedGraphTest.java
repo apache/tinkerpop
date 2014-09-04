@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
-import com.tinkerpop.gremlin.IteratorUtil;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Property;
@@ -46,7 +45,7 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
         final Vertex toRemove = g.addVertex("name", "pieter");
         toRemove.addEdge("likes", g.addVertex("feature", "Strategy"));
 
-        assertEquals(1, IteratorUtil.count(toRemove.properties()));
+        assertEquals(1, toRemove.properties().count().next().intValue());
         assertEquals(new Long(1), toRemove.bothE().count().next());
         assertFalse(toRemove.property("deleted").isPresent());
 
@@ -54,7 +53,7 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
 
         final Vertex removed = g.v(toRemove.id());
         assertNotNull(removed);
-        assertEquals(1, IteratorUtil.count(removed.properties()));
+        assertEquals(1, removed.properties().count().next().intValue());
         assertEquals(new Long(0), removed.bothE().count().next());
         assertTrue(toRemove.property("deleted").isPresent());
     }
@@ -116,8 +115,8 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
     public void shouldWrapvEdges() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-        assertTrue(swg.v(convertToVertexId("marko")).edges(Direction.BOTH, 1).hasNext());
-        assertTrue(swg.v(convertToVertexId("marko")).edges(Direction.BOTH, 1).next() instanceof StrategyWrappedEdge);
+        assertTrue(swg.v(convertToVertexId("marko")).iterators().edges(Direction.BOTH, 1).hasNext());
+        assertTrue(swg.v(convertToVertexId("marko")).iterators().edges(Direction.BOTH, 1).next() instanceof StrategyWrappedEdge);
     }
 
     @Test
@@ -125,8 +124,8 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
     public void shouldWrapvAdjacentVertices() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-        assertTrue(swg.v(convertToVertexId("marko")).vertices(Direction.BOTH, 1).hasNext());
-        assertTrue(swg.v(convertToVertexId("marko")).vertices(Direction.BOTH, 1).next() instanceof StrategyWrappedVertex);
+        assertTrue(swg.v(convertToVertexId("marko")).iterators().vertices(Direction.BOTH, 1).hasNext());
+        assertTrue(swg.v(convertToVertexId("marko")).iterators().vertices(Direction.BOTH, 1).next() instanceof StrategyWrappedVertex);
     }
 
     @Test
@@ -135,10 +134,10 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
         final Object id = convertToEdgeId("josh", "created", "lop");
-        assertTrue(swg.e(id).vertices(Direction.IN).hasNext());
-        assertTrue(swg.e(id).vertices(Direction.IN).next() instanceof StrategyWrappedVertex);
-        assertTrue(swg.e(id).vertices(Direction.OUT).hasNext());
-        assertTrue(swg.e(id).vertices(Direction.OUT).next() instanceof StrategyWrappedVertex);
+        assertTrue(swg.e(id).iterators().vertices(Direction.IN).hasNext());
+        assertTrue(swg.e(id).iterators().vertices(Direction.IN).next() instanceof StrategyWrappedVertex);
+        assertTrue(swg.e(id).iterators().vertices(Direction.OUT).hasNext());
+        assertTrue(swg.e(id).iterators().vertices(Direction.OUT).next() instanceof StrategyWrappedVertex);
     }
 
     @Test

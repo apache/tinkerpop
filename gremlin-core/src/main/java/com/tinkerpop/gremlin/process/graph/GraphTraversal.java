@@ -285,7 +285,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.addStep(new HiddensStep<>(this, propertyKeys));
     }
 
-    public default <E2> GraphTraversal<S, Map<String, ? extends Property<E2>>> hiddenMap(final String... propertyKeys) {
+    public default <E2> GraphTraversal<S, Map<String, E2>> hiddenMap(final String... propertyKeys) {
         return this.addStep(new HiddenMapStep<>(this, propertyKeys));
     }
 

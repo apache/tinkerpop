@@ -5,16 +5,13 @@ import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.GraphManager;
-import com.tinkerpop.gremlin.IteratorUtil;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.*;
@@ -95,7 +92,7 @@ public class VertexTest extends AbstractGremlinTest {
         assertEquals("marko", v.<String>value("name"));
         assertEquals(34, (int) v.property("age").value());
         assertEquals("marko", v.<String>property("name").value());
-        assertEquals(2, StreamFactory.stream(v.properties()).count());
+        assertEquals(2, v.properties().count().next().intValue());
         assertEquals(2, v.keys().size());
         assertTrue(v.keys().contains("name"));
         assertTrue(v.keys().contains("age"));
@@ -107,7 +104,7 @@ public class VertexTest extends AbstractGremlinTest {
         assertEquals("marko rodriguez", v.<String>value("name"));
         assertEquals(34, (int) v.property("age").value());
         assertEquals("marko rodriguez", v.<String>property("name").value());
-        assertEquals(2, StreamFactory.stream(v.properties()).count());
+        assertEquals(2, v.properties().count().next().intValue());
         assertEquals(2, v.keys().size());
         assertTrue(v.keys().contains("name"));
         assertTrue(v.keys().contains("age"));
@@ -115,7 +112,7 @@ public class VertexTest extends AbstractGremlinTest {
         StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
 
         v.property("location", "santa fe");
-        assertEquals(3, StreamFactory.stream(v.properties()).count());
+        assertEquals(3, v.properties().count().next().intValue());
         assertEquals(3, v.keys().size());
         assertEquals("santa fe", v.property("location").value());
         assertEquals(v.property("location"), v.property("location"));
@@ -125,9 +122,9 @@ public class VertexTest extends AbstractGremlinTest {
         assertTrue(v.keys().contains("location"));
         v.property("location").remove();
         StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
-        assertEquals(2, StreamFactory.stream(v.properties()).count());
-        StreamFactory.stream(v.properties()).forEach(Property::remove);
-        assertEquals(0, IteratorUtil.count(v.properties()));
+        assertEquals(2, v.properties().count().next().intValue());
+        v.properties().remove();
+        assertEquals(0, v.properties().count().next().intValue());
         StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
     }
 
@@ -254,11 +251,11 @@ public class VertexTest extends AbstractGremlinTest {
         assertTrue(keys.contains("location"));
         assertTrue(keys.contains("status"));
 
-        final List<Property> m = IteratorUtil.toList(v.properties());
+        final List<MetaProperty<Object>> m = v.properties().toList();
         assertEquals(3, m.size());
         assertTrue(m.stream().anyMatch(p -> p.key().equals("name")));
-        assertTrue( m.stream().anyMatch(p -> p.key().equals("location")));
-        assertTrue( m.stream().anyMatch(p -> p.key().equals("status")));
+        assertTrue(m.stream().anyMatch(p -> p.key().equals("location")));
+        assertTrue(m.stream().anyMatch(p -> p.key().equals("status")));
         assertEquals("marko", m.stream().filter(p -> p.key().equals("name")).map(Property::value).findFirst().orElse(null));
         assertEquals("desert", m.stream().filter(p -> p.key().equals("location")).map(Property::value).findFirst().orElse(null));
         assertEquals("dope", m.stream().filter(p -> p.key().equals("status")).map(Property::value).findFirst().orElse(null));
@@ -270,7 +267,7 @@ public class VertexTest extends AbstractGremlinTest {
         assertTrue(keys.contains("name"));
         assertTrue(keys.contains("location"));
 
-        StreamFactory.stream(v.properties()).forEach(Property::remove);
+        v.properties().remove();
 
         keys = v.keys();
         assertEquals(0, keys.size());
@@ -297,7 +294,7 @@ public class VertexTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldReturnEmptyIteratorIfNoProperties() {
         final Vertex v = g.addVertex();
-        assertEquals(0, IteratorUtil.count(v.properties()));
+        assertEquals(0, v.properties().count().next().intValue());
     }
 
     @Test

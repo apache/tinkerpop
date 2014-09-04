@@ -3,26 +3,15 @@ package com.tinkerpop.gremlin.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
-import com.tinkerpop.gremlin.FeatureRequirementSet;
-import com.tinkerpop.gremlin.IteratorUtil;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_BOOLEAN_VALUES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_DOUBLE_VALUES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_FLOAT_VALUES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_INTEGER_VALUES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_LONG_VALUES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.*;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -144,11 +133,11 @@ public class EdgeTest extends AbstractGremlinTest {
         assertTrue(keys.contains("location"));
         assertTrue(keys.contains("status"));
 
-        final List<Property> m = IteratorUtil.toList(e.properties());
+        final List<Property<Object>> m = e.properties().toList();
         assertEquals(3, m.size());
         assertTrue(m.stream().anyMatch(p -> p.key().equals("name")));
-        assertTrue( m.stream().anyMatch(p -> p.key().equals("location")));
-        assertTrue( m.stream().anyMatch(p -> p.key().equals("status")));
+        assertTrue(m.stream().anyMatch(p -> p.key().equals("location")));
+        assertTrue(m.stream().anyMatch(p -> p.key().equals("status")));
         assertEquals("marko", m.stream().filter(p -> p.key().equals("name")).map(Property::value).findFirst().orElse(null));
         assertEquals("desert", m.stream().filter(p -> p.key().equals("location")).map(Property::value).findFirst().orElse(null));
         assertEquals("dope", m.stream().filter(p -> p.key().equals("status")).map(Property::value).findFirst().orElse(null));
@@ -191,15 +180,15 @@ public class EdgeTest extends AbstractGremlinTest {
     public void shouldReturnEmptyIteratorIfNoProperties() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("knows", v);
-        assertEquals(0, IteratorUtil.count(e.properties()));
+        assertEquals(0, e.properties().count().next().intValue());
     }
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldSupportIdempotentRemoval() {
-        final Vertex v1 =g.addVertex();
-        final Vertex v2 =g.addVertex();
+        final Vertex v1 = g.addVertex();
+        final Vertex v2 = g.addVertex();
         final Edge e = v1.addEdge("test", v2);
         tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(2, 1));
 

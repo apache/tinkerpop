@@ -686,7 +686,7 @@ public class IoTest extends AbstractGremlinTest {
 
                             assertEquals(2, m.size());
                             assertEquals(v1.value("name"), m.get("name").toString());
-                            assertEquals(v1.hiddenValues().get("acl"), m.get(Graph.Key.hide("acl")).toString());
+                            assertEquals(v1.hiddenMap().next().get("acl"), m.get(Graph.Key.hide("acl")).toString());
 
                             called.set(true);
                             return mock(Vertex.class);
@@ -727,7 +727,7 @@ public class IoTest extends AbstractGremlinTest {
 
                             assertEquals(2, m.size());
                             assertEquals(v1.value("name"), m.get("name").toString());
-                            assertEquals(v1.hiddenValues().get("acl"), m.get(Graph.Key.hide("acl")).toString());
+                            assertEquals(v1.hiddenMap().next().get("acl"), m.get(Graph.Key.hide("acl")).toString());
 
                             called.set(true);
                             return mock(Vertex.class);
