@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
+import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Iterator;
 
@@ -15,31 +16,18 @@ import java.util.Iterator;
 public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge, StrategyWrapped, WrappedEdge<Edge> {
     private final Edge baseEdge;
     private final Strategy.Context<StrategyWrappedEdge> strategyContext;
+    private final StrategyWrappedEdgeIterators iterators;
 
     public StrategyWrappedEdge(final Edge baseEdge, final StrategyWrappedGraph strategyWrappedGraph) {
         super(baseEdge, strategyWrappedGraph);
         this.strategyContext = new Strategy.Context<>(strategyWrappedGraph.getBaseGraph(), this);
         this.baseEdge = baseEdge;
+        this.iterators = new StrategyWrappedEdgeIterators();
     }
 
     @Override
-    public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-        return (Iterator) super.properties(propertyKeys);
-    }
-
-    @Override
-    public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-        return (Iterator) super.hiddens(propertyKeys);
-    }
-
-    @Override
-    public <V> Iterator<V> values(final String... propertyKeys) {
-        return super.values(propertyKeys);
-    }
-
-    @Override
-    public <V> Iterator<V> hiddenValues(final String... propertyKeys) {
-        return super.hiddenValues(propertyKeys);
+    public Edge.Iterators iterators() {
+        return this.iterators;
     }
 
     @Override
@@ -48,13 +36,31 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
     }
 
     @Override
-    public Iterator<Vertex> vertices(final Direction direction) {
-        return new StrategyWrappedVertex.StrategyWrappedVertexIterator(this.baseEdge.vertices(direction), strategyWrappedGraph);
-    }
-
-    @Override
     public GraphTraversal<Edge, Edge> start() {
         return applyStrategy(this.baseEdge.start());
+    }
+
+    public class StrategyWrappedEdgeIterators extends StrategyWrappedElementIterators implements Edge.Iterators {
+        @Override
+        public Iterator<Vertex> vertices(final Direction direction) {
+            return new StrategyWrappedVertex.StrategyWrappedVertexIterator(baseEdge.iterators().vertices(direction), strategyWrappedGraph);
+        }
+
+        @Override
+        public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
+            return StreamFactory.stream(strategyWrappedGraph.strategy().compose(
+                    s -> s.<V>getElementPropertiesGetter(elementStrategyContext),
+                    (String[] pks) -> ((Edge) baseElement).iterators().properties(pks)).apply(propertyKeys))
+                    .map(property -> (Property<V>) new StrategyWrappedProperty<>(property, strategyWrappedGraph)).iterator();
+        }
+
+        @Override
+        public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
+            return StreamFactory.stream(strategyWrappedGraph.strategy().compose(
+                    s -> s.<V>getElementHiddens(elementStrategyContext),
+                    (String[] pks) -> ((Edge) baseElement).iterators().hiddens(pks)).apply(propertyKeys))
+                    .map(property -> (Property<V>) new StrategyWrappedProperty<>(property, strategyWrappedGraph)).iterator();
+        }
     }
 
     public static class StrategyWrappedEdgeIterator implements Iterator<Edge> {

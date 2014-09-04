@@ -21,8 +21,8 @@ public abstract class IoElement {
     protected static <T extends IoElement, E extends Element> T from(final E element, final T ioe) {
         ioe.id = element.id();
         ioe.label = element.label();
-        ioe.properties = StreamFactory.stream(element.properties()).collect(Collectors.toMap(property -> ((Property) property).key(), property -> ((Property) property).value()));
-        ioe.hiddenProperties = StreamFactory.stream(element.hiddens()).collect(Collectors.toMap(property -> ((Property) property).key(), property -> ((Property) property).value()));
+        ioe.properties = StreamFactory.stream(element.iterators().properties()).collect(Collectors.toMap(property -> ((Property) property).key(), property -> ((Property) property).value()));
+        ioe.hiddenProperties = StreamFactory.stream(element.iterators().hiddens()).collect(Collectors.toMap(property -> ((Property) property).key(), property -> ((Property) property).value()));
         return ioe;
     }
 }

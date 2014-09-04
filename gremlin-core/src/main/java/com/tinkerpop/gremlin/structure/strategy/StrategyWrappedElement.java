@@ -16,8 +16,8 @@ import java.util.function.Supplier;
  */
 public abstract class StrategyWrappedElement implements Element, StrategyWrapped {
     protected final StrategyWrappedGraph strategyWrappedGraph;
-    private final Element baseElement;
-    private final Strategy.Context<StrategyWrappedElement> elementStrategyContext;
+    protected final Element baseElement;
+    protected final Strategy.Context<StrategyWrappedElement> elementStrategyContext;
 
     protected StrategyWrappedElement(final Element baseElement, final StrategyWrappedGraph strategyWrappedGraph) {
         if (baseElement instanceof StrategyWrapped) throw new IllegalArgumentException(
@@ -46,22 +46,6 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
     }
 
     @Override
-    public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
-        return StreamFactory.stream(this.strategyWrappedGraph.strategy().compose(
-                s -> s.getElementPropertiesGetter(elementStrategyContext),
-                () -> this.baseElement.iterators().properties(propertyKeys)).get())
-                .map(property -> new StrategyWrappedProperty<>((Property<V>) property, strategyWrappedGraph)).iterator();
-    }
-
-    @Override
-    public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys) {
-        return StreamFactory.stream(this.strategyWrappedGraph.strategy().compose(
-                s -> s.getElementHiddens(elementStrategyContext),
-                () -> this.baseElement.iterators().hiddens(propertyKeys)).get())
-                .map(property -> new StrategyWrappedProperty<>((Property<V>) property, strategyWrappedGraph)).iterator();
-    }
-
-    @Override
     public Set<String> keys() {
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.getElementKeys(elementStrategyContext),
@@ -73,20 +57,6 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.getElementHiddenKeys(elementStrategyContext),
                 this.baseElement::hiddenKeys).get();
-    }
-
-    @Override
-    public <V> Iterator<V> values(final String... propertyKeys) {
-        return this.strategyWrappedGraph.strategy().compose(
-                s -> s.getElementValues(elementStrategyContext),
-                this.baseElement.values(propertyKeys)).get();
-    }
-
-    @Override
-    public <V> Iterator<V> hiddenValues(final String... propertyKeys) {
-        return this.strategyWrappedGraph.strategy().compose(
-                s -> s.getElementHiddenValues(elementStrategyContext),
-                this.baseElement.hiddenValues(propertyKeys)).get();
     }
 
     @Override
@@ -140,5 +110,22 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
         traversal.strategies().register(new StrategyWrappedTraversalStrategy(this.strategyWrappedGraph));
         this.strategyWrappedGraph.strategy().getGraphStrategy().ifPresent(s -> s.applyStrategyToTraversal(traversal));
         return traversal;
+    }
+
+    public abstract class StrategyWrappedElementIterators implements Iterators {
+        // todo: multi-property concerns
+        @Override
+        public <V> Iterator<V> values(final String... propertyKeys) {
+            return strategyWrappedGraph.strategy().compose(
+                    s -> s.<V>getElementValues(elementStrategyContext),
+                    (String[] pks) -> baseElement.iterators().values(pks)).apply(propertyKeys);
+        }
+
+        @Override
+        public <V> Iterator<V> hiddenValues(final String... propertyKeys) {
+            return strategyWrappedGraph.strategy().compose(
+                    s -> s.<V>getElementHiddenValues(elementStrategyContext),
+                    (String[] pks) -> baseElement.iterators().hiddenValues(pks)).apply(propertyKeys);
+        }
     }
 }

@@ -144,15 +144,15 @@ public class KryoWriter implements GraphWriter {
     }
 
     private void writeProperties(final Output output, final Element e) {
-        final int propertyCount = (int) StreamFactory.stream(e.properties()).count();
+        final int propertyCount = (int) StreamFactory.stream(e.iterators().properties()).count();
         output.writeInt(propertyCount);
-        e.properties().forEachRemaining(property -> {
+        e.iterators().properties().forEachRemaining(property -> {
             output.writeString(property.key());
             writePropertyValue(output, property);
         });
-        final int hiddenCount = (int) StreamFactory.stream(e.hiddens()).count();
+        final int hiddenCount = (int) StreamFactory.stream(e.iterators().hiddens()).count();
         output.writeInt(hiddenCount);
-        e.hiddens().forEachRemaining(hidden -> {
+        e.iterators().hiddens().forEachRemaining(hidden -> {
             output.writeString(hidden.key());
             writePropertyValue(output, hidden);
         });
