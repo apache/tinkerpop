@@ -53,7 +53,15 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         this.graph.tx().readWrite();
         if (this.baseElement.hasProperty(key))
             return new Neo4jMetaProperty<>(this, key, (V) this.baseElement.getProperty(key));
-        else
+        else if (this.baseElement.hasProperty(Neo4jMetaProperty.META_PROPERTY_PREFIX.concat(key))) {
+            final Iterable<Relationship> relationships = ((Node) this.baseElement).getRelationships(org.neo4j.graphdb.Direction.OUTGOING, DynamicRelationshipType.withName(Neo4jMetaProperty.META_PROPERTY_PREFIX.concat(key)));
+            if (StreamFactory.stream(relationships).count() > 1)
+                throw Vertex.Exceptions.multiplePropertiesExistForProvidedKey(key);
+            else {
+                final Node node = relationships.iterator().next().getEndNode();
+                return new Neo4jMetaProperty<>(this, node, key, (V) node.getProperty(Neo4jMetaProperty.META_PROPERTY_KEY));
+            }
+        } else
             return MetaProperty.<V>empty();
     }
 
@@ -62,8 +70,17 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         ElementHelper.validateProperty(key, value);
         this.graph.tx().readWrite();
         try {
-            this.baseElement.setProperty(key, value);
-            return new Neo4jMetaProperty<>(this, key, value);
+            final String prefixedKey = Neo4jMetaProperty.META_PROPERTY_PREFIX.concat(key);
+            if (this.baseElement.hasProperty(prefixedKey)) {
+                final Node node = this.graph.getBaseGraph().createNode(Neo4jMetaProperty.META_PROPERTY_LABEL);
+                node.setProperty(Neo4jMetaProperty.META_PROPERTY_KEY, value);
+                this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
+                this.getBaseVertex().setProperty(prefixedKey, true);
+                return new Neo4jMetaProperty<>(this, node, key, value);
+            } else {
+                this.baseElement.setProperty(key, value);
+                return new Neo4jMetaProperty<>(this, key, value);
+            }
         } catch (IllegalArgumentException iae) {
             throw Property.Exceptions.dataTypeOfPropertyValueNotSupported(value);
         }
@@ -72,16 +89,20 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
     @Override
     public void remove() {
         this.graph.tx().readWrite();
-
         try {
             final Node node = (Node) this.baseElement;
             for (final Relationship relationship : node.getRelationships(org.neo4j.graphdb.Direction.BOTH)) {
+                final Node otherNode = relationship.getOtherNode(node);
+                if (otherNode.getLabels().iterator().next().equals(Neo4jMetaProperty.META_PROPERTY_LABEL)) {
+                    relationship.getOtherNode(node).getRelationships().forEach(Relationship::delete);
+                    otherNode.delete();
+                }
                 relationship.delete();
             }
             node.delete();
-        } catch (NotFoundException ignored) {
+        } catch (final NotFoundException ignored) {
             // this one happens if the vertex is committed
-        } catch (IllegalStateException ignored) {
+        } catch (final IllegalStateException ignored) {
             // this one happens if the vertex is still chilling in the tx
         }
     }

@@ -66,6 +66,7 @@ public class Neo4jHelper {
             else
                 itty = node.getRelationships(direction).iterator();
 
+            // TODO: remove %$% prefixed labels
             return new Iterator<Neo4jVertex>() {
                 @Override
                 public Neo4jVertex next() {
@@ -110,6 +111,7 @@ public class Neo4jHelper {
             else
                 itty = node.getRelationships(direction).iterator();
 
+            // TODO: remove %$% prefixed labels
             return new Iterator<Neo4jEdge>() {
                 @Override
                 public Neo4jEdge next() {

@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.neo4j.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import com.tinkerpop.gremlin.neo4j.structure.Neo4jMetaProperty;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
@@ -52,7 +53,9 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         final Stream<? extends Edge> edgeStream = (null == indexedContainer) ?
                 getEdges() :
                 getEdgesUsingIndex(indexedContainer);
-        return edgeStream.filter(v -> HasContainer.testAll((Edge) v, this.hasContainers)).iterator();
+        return edgeStream
+                .filter(edge -> !((Neo4jEdge) edge).getBaseEdge().getType().name().startsWith(Neo4jMetaProperty.META_PROPERTY_PREFIX))
+                .filter(edge -> HasContainer.testAll((Edge) edge, this.hasContainers)).iterator();
     }
 
     private Iterator<? extends Vertex> vertices() {
@@ -85,7 +88,9 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
                 vertexStream = getVertices();
             }
         }
-        return vertexStream.filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers)).iterator();
+        return vertexStream
+                .filter(vertex -> !((Neo4jVertex) vertex).getBaseVertex().getLabels().iterator().next().equals(Neo4jMetaProperty.META_PROPERTY_LABEL))
+                .filter(vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers)).iterator();
     }
 
     private Stream<Neo4jVertex> getVertices() {
