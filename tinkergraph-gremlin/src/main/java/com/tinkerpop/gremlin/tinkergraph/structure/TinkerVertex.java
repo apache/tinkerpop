@@ -98,12 +98,12 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
         @Override
         public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
-            return (Iterator<MetaProperty<V>>) super.properties(propertyKeys);
+            return (Iterator) super.properties(propertyKeys);
         }
 
         @Override
         public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
-            return (Iterator<MetaProperty<V>>) super.hiddens(propertyKeys);
+            return (Iterator) super.hiddens(propertyKeys);
         }
 
         @Override

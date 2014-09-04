@@ -85,12 +85,12 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
 
         @Override
         public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-            return (Iterator<Property<V>>) super.properties(propertyKeys);
+            return (Iterator) super.properties(propertyKeys);
         }
 
         @Override
         public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-            return (Iterator<Property<V>>) super.hiddens(propertyKeys);
+            return (Iterator) super.hiddens(propertyKeys);
         }
 
         @Override
