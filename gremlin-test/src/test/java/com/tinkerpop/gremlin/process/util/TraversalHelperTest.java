@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.step.map.PropertyStep;
+import com.tinkerpop.gremlin.process.graph.step.map.PropertiesStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ValueMapStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
@@ -68,11 +68,11 @@ public class TraversalHelperTest {
         traversal.addStep(new HasStep(traversal, null));
         traversal.addStep(new FilterStep(traversal));
 
-        traversal.addStep(new PropertyStep(traversal, "marko"));
+        traversal.addStep(new PropertiesStep(traversal, "marko"));
         TraversalHelper.removeStep(3, traversal);
         validateToyTraversal(traversal);
 
-        TraversalHelper.insertStep(new PropertyStep(traversal, "marko"), 0, traversal);
+        TraversalHelper.insertStep(new PropertiesStep(traversal, "marko"), 0, traversal);
         TraversalHelper.removeStep(0, traversal);
         validateToyTraversal(traversal);
 

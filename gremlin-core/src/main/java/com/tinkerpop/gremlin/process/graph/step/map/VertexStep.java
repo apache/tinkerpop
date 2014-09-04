@@ -27,9 +27,9 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
         this.branchFactor = branchFactor;
         this.returnClass = returnClass;
         if (Vertex.class.isAssignableFrom(this.returnClass))
-            this.setFunction(traverser -> (Iterator<E>) traverser.get().vertices(this.direction, this.branchFactor, this.edgeLabels));
+            this.setFunction(traverser -> (Iterator<E>) traverser.get().iterators().vertices(this.direction, this.branchFactor, this.edgeLabels));
         else
-            this.setFunction(traverser -> (Iterator<E>) traverser.get().edges(this.direction, this.branchFactor, this.edgeLabels));
+            this.setFunction(traverser -> (Iterator<E>) traverser.get().iterators().edges(this.direction, this.branchFactor, this.edgeLabels));
     }
 
     @Override

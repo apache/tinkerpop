@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -18,16 +19,6 @@ public class EmptyMetaProperty<V> implements MetaProperty<V> {
 
     @Override
     public Object id() {
-        return null;
-    }
-
-    @Override
-    public <U> Iterator<Property<U>> properties(String... propertyKeys) {
-        return null;
-    }
-
-    @Override
-    public <U> Iterator<Property<U>> hiddens(String... propertyKeys) {
         return null;
     }
 
@@ -64,5 +55,20 @@ public class EmptyMetaProperty<V> implements MetaProperty<V> {
     @Override
     public void remove() {
 
+    }
+
+    @Override
+    public MetaProperty.Iterators iterators() {
+        return new Iterators() {
+            @Override
+            public <U> Iterator<Property<U>> properties(String... propertyKeys) {
+                return Collections.emptyIterator();
+            }
+
+            @Override
+            public <U> Iterator<Property<U>> hiddens(String... propertyKeys) {
+                return Collections.emptyIterator();
+            }
+        };
     }
 }

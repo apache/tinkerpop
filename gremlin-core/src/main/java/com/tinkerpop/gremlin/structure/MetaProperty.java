@@ -17,14 +17,18 @@ public interface MetaProperty<V> extends Property<V>, Element {
         return META_PROPERTY;
     }
 
-    public <U> Iterator<Property<U>> properties(final String... propertyKeys);
-
-    public default <U> Iterator<Property<U>> hiddens(final String... propertyKeys) {
-        return (Iterator) Element.super.hiddens(propertyKeys);
-    }
+    public MetaProperty.Iterators iterators();
 
     public static <V> MetaProperty<V> empty() {
         return new EmptyMetaProperty<>();
+    }
+
+    public interface Iterators extends Element.Iterators {
+        public <U> Iterator<Property<U>> properties(final String... propertyKeys);
+
+        public default <U> Iterator<Property<U>> hiddens(final String... propertyKeys) {
+            return (Iterator) Element.Iterators.super.hiddens(propertyKeys);
+        }
     }
 
 }

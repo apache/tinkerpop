@@ -202,8 +202,8 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         assertTrue(e.property("all") instanceof StrategyWrappedProperty);
         assertTrue(StreamFactory.stream(e.properties()).allMatch(p -> p  instanceof StrategyWrappedProperty));
 
-        assertTrue(g.V().property("any").next() instanceof StrategyWrappedProperty);
-        assertTrue(g.E().property("any").next() instanceof StrategyWrappedProperty);
+        assertTrue(g.V().properties("any").next() instanceof StrategyWrappedProperty);
+        assertTrue(g.E().properties("any").next() instanceof StrategyWrappedProperty);
 
     }
 }

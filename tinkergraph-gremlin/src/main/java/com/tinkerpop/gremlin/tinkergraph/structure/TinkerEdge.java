@@ -43,13 +43,6 @@ public class TinkerEdge extends TinkerElement implements Edge {
         }
     }
 
-    public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-        return (Iterator) super.properties(propertyKeys);
-    }
-
-    public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-        return (Iterator) super.hiddens(propertyKeys);
-    }
 
     @Override
     public void remove() {
@@ -72,20 +65,41 @@ public class TinkerEdge extends TinkerElement implements Edge {
         this.properties.clear();
     }
 
-    public String toString() {
-        return StringFactory.edgeString(this);
-
-    }
-
-    //////
-
     @Override
     public GraphTraversal<Edge, Edge> start() {
         return new TinkerElementTraversal<>(this, this.graph);
     }
 
     @Override
-    public Iterator<Vertex> vertices(final Direction direction) {
-        return (Iterator) TinkerHelper.getVertices(this, direction);
+    public String toString() {
+        return StringFactory.edgeString(this);
+
+    }
+
+    @Override
+    public Edge.Iterators iterators() {
+        return new Iterators(this);
+    }
+
+    public class Iterators extends TinkerElement.Iterators implements Edge.Iterators {
+
+        public Iterators(final TinkerEdge edge) {
+            super(edge);
+        }
+
+        @Override
+        public Iterator<Vertex> vertices(final Direction direction) {
+            return (Iterator) TinkerHelper.getVertices((TinkerEdge) this.element, direction);
+        }
+
+        @Override
+        public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
+            return (Iterator) super.properties(propertyKeys);
+        }
+
+        @Override
+        public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
+            return (Iterator) super.hiddens(propertyKeys);
+        }
     }
 }

@@ -12,14 +12,14 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PropertyStep<E> extends FlatMapStep<Element, Property<E>> implements Reversible {
+public class PropertiesStep<E> extends FlatMapStep<Element, Property<E>> implements Reversible {
 
     public String[] propertyKeys;
 
-    public PropertyStep(final Traversal traversal, final String... propertyKeys) {
+    public PropertiesStep(final Traversal traversal, final String... propertyKeys) {
         super(traversal);
         this.propertyKeys = propertyKeys;
-        this.setFunction(traverser -> (Iterator) traverser.get().properties(this.propertyKeys));
+        this.setFunction(traverser -> (Iterator) traverser.get().iterators().properties(this.propertyKeys));
     }
 
     @Override

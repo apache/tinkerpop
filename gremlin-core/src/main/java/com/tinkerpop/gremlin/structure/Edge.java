@@ -45,22 +45,27 @@ public interface Edge extends Element {
      */
     public static final String DEFAULT_LABEL = "edge";
 
-    /**
-     * Retrieve the vertex (or vertices) associated with this edge as defined by the direction.
-     *
-     * @param direction Get the incoming vertex, outgoing vertex, or both vertices
-     * @return An iterator with 1 or 2 vertices
-     */
-    public Iterator<Vertex> vertices(final Direction direction);
+    public Edge.Iterators iterators();
 
-    public <V> Iterator<Property<V>> properties(final String... propertyKeys);
+    public interface Iterators extends Element.Iterators {
 
-    public default <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-        return (Iterator) Element.super.hiddens(propertyKeys);
-    }
+        /**
+         * Retrieve the vertex (or vertices) associated with this edge as defined by the direction.
+         *
+         * @param direction Get the incoming vertex, outgoing vertex, or both vertices
+         * @return An iterator with 1 or 2 vertices
+         */
+        public Iterator<Vertex> vertices(final Direction direction);
 
-    public default <V> Iterator<V> values(final String... propertyKeys) {
-        return Element.super.values(propertyKeys);
+        public <V> Iterator<Property<V>> properties(final String... propertyKeys);
+
+        public default <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
+            return (Iterator) Element.Iterators.super.hiddens(propertyKeys);
+        }
+
+        public default <V> Iterator<V> values(final String... propertyKeys) {
+            return Element.Iterators.super.values(propertyKeys);
+        }
     }
 
     /**
@@ -215,6 +220,10 @@ public interface Edge extends Element {
 
     public default GraphTraversal<Edge, Edge> shuffle() {
         return this.start().shuffle();
+    }
+
+    public default <E2> GraphTraversal<Vertex, Property<E2>> properties(final String... propertyKeys) {
+        return (GraphTraversal) this.start().properties(propertyKeys);
     }
 
     public default <E2> GraphTraversal<Edge, E2> value() {

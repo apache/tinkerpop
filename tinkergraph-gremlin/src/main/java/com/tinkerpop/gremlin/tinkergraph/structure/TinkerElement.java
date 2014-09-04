@@ -45,45 +45,6 @@ public abstract class TinkerElement implements Element, Serializable {
     }
 
     @Override
-    public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys) {
-        if (null != this.graph.graphView && this.graph.graphView.getInUse()) {
-            if (propertyKeys.length == 0) {
-                final Set<String> keys = new HashSet<>();
-                keys.addAll(this.properties.keySet());
-                keys.addAll(this.graph.graphView.getComputeKeys().keySet());
-                return (Iterator) keys.stream().filter(key -> Graph.Key.isHidden(key)).flatMap(key -> this.graph.graphView.getProperty(this, key).stream()).iterator();
-            } else
-                return (Iterator) Arrays.stream(propertyKeys).map(key -> Graph.Key.hide(key)).flatMap(key -> this.graph.graphView.getProperty(this, key).stream()).iterator();
-
-        } else {
-            return (Iterator) this.properties.entrySet().stream()
-                    .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, Graph.Key.unHide(entry.getKey())) >= 0)
-                    .filter(entry -> Graph.Key.isHidden(entry.getKey()))
-                    .flatMap(entry -> entry.getValue().stream()).iterator();
-        }
-    }
-
-    @Override
-    public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
-        if (null != this.graph.graphView && this.graph.graphView.getInUse()) {
-            if (propertyKeys.length == 0) {
-                final Set<String> keys = new HashSet<>();
-                keys.addAll(this.properties.keySet());
-                keys.addAll(this.graph.graphView.getComputeKeys().keySet());
-                return (Iterator) keys.stream().filter(key -> !Graph.Key.isHidden(key)).flatMap(key -> this.graph.graphView.getProperty(this, key).stream()).iterator();
-            } else
-                return (Iterator) Arrays.stream(propertyKeys).flatMap(key -> this.graph.graphView.getProperty(this, key).stream()).iterator();
-
-        } else {
-            return (Iterator) this.properties.entrySet().stream()
-                    .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
-                    .filter(entry -> !Graph.Key.isHidden(entry.getKey()))
-                    .flatMap(entry -> entry.getValue().stream()).iterator();
-        }
-    }
-
-
-    /*@Override
     public <V> Property<V> property(final String key) {
         if (this.graph.graphView != null && this.graph.graphView.getInUse()) {
             final List<Property> list = this.graph.graphView.getProperty(this, key);
@@ -91,12 +52,65 @@ public abstract class TinkerElement implements Element, Serializable {
         } else {
             return this.properties.containsKey(key) ? this.properties.get(key).get(0) : Property.<V>empty();
         }
-    }*/
+    }
 
+    @Override
     public boolean equals(final Object object) {
         return ElementHelper.areEqual(this, object);
     }
 
     @Override
     public abstract void remove();
+
+    @Override
+    public Element.Iterators iterators() {
+        return new Iterators(this);
+    }
+
+    public class Iterators implements Element.Iterators {
+
+        protected final TinkerElement element;
+
+        public Iterators(final TinkerElement element) {
+            this.element = element;
+        }
+
+        @Override
+        public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys) {
+            if (null != graph.graphView && graph.graphView.getInUse()) {
+                if (propertyKeys.length == 0) {
+                    final Set<String> keys = new HashSet<>();
+                    keys.addAll(this.element.properties.keySet());
+                    keys.addAll(graph.graphView.getComputeKeys().keySet());
+                    return (Iterator) keys.stream().filter(key -> Graph.Key.isHidden(key)).flatMap(key -> graph.graphView.getProperty(this.element, key).stream()).iterator();
+                } else
+                    return (Iterator) Arrays.stream(propertyKeys).map(key -> Graph.Key.hide(key)).flatMap(key -> graph.graphView.getProperty(this.element, key).stream()).iterator();
+
+            } else {
+                return (Iterator) this.element.properties.entrySet().stream()
+                        .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, Graph.Key.unHide(entry.getKey())) >= 0)
+                        .filter(entry -> Graph.Key.isHidden(entry.getKey()))
+                        .flatMap(entry -> entry.getValue().stream()).iterator();
+            }
+        }
+
+        @Override
+        public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
+            if (null != graph.graphView && graph.graphView.getInUse()) {
+                if (propertyKeys.length == 0) {
+                    final Set<String> keys = new HashSet<>();
+                    keys.addAll(this.element.properties.keySet());
+                    keys.addAll(graph.graphView.getComputeKeys().keySet());
+                    return (Iterator) keys.stream().filter(key -> !Graph.Key.isHidden(key)).flatMap(key -> graph.graphView.getProperty(this.element, key).stream()).iterator();
+                } else
+                    return (Iterator) Arrays.stream(propertyKeys).flatMap(key -> graph.graphView.getProperty(this.element, key).stream()).iterator();
+
+            } else {
+                return (Iterator) this.element.properties.entrySet().stream()
+                        .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
+                        .filter(entry -> !Graph.Key.isHidden(entry.getKey()))
+                        .flatMap(entry -> entry.getValue().stream()).iterator();
+            }
+        }
+    }
 }

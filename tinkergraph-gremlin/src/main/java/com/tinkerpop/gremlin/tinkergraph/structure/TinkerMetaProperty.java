@@ -65,17 +65,6 @@ public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty
         return this.key.hashCode() + this.value.hashCode();
     }
 
-
-    @Override
-    public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
-        return (Iterator) super.properties(propertyKeys);
-    }
-
-    @Override
-    public <U> Iterator<Property<U>> hiddens(final String... propertyKeys) {
-        return (Iterator) super.hiddens(propertyKeys);
-    }
-
     @Override
     public <U> Property<U> property(final String key, final U value) {
         final Property<U> property = new TinkerProperty<U>(this, key, value);
@@ -102,5 +91,26 @@ public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty
         });
         if (delete.get()) this.graph.vertexIndex.remove(this.key, this.value, this.vertex);
 
+    }
+
+    public MetaProperty.Iterators iterators() {
+        return new Iterators(this);
+    }
+
+    public class Iterators extends TinkerElement.Iterators implements MetaProperty.Iterators {
+
+        public Iterators(final TinkerMetaProperty metaProperty) {
+            super(metaProperty);
+        }
+
+        @Override
+        public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
+            return (Iterator) super.properties(propertyKeys);
+        }
+
+        @Override
+        public <U> Iterator<Property<U>> hiddens(final String... propertyKeys) {
+            return (Iterator) super.hiddens(propertyKeys);
+        }
     }
 }

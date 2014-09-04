@@ -65,13 +65,6 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         }
     }
 
-    public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
-        return (Iterator) super.properties(propertyKeys);
-    }
-
-    public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
-        return (Iterator) super.hiddens(propertyKeys);
-    }
 
     public String toString() {
         return StringFactory.vertexString(this);
@@ -90,20 +83,41 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         this.graph.vertices.remove(this.id);
     }
 
-    //////////////////////
-
     @Override
+    public Iterators iterators() {
+        return new Iterators(this);
+    }
+
+    public class Iterators extends TinkerElement.Iterators implements Vertex.Iterators {
+
+        public Iterators(final TinkerVertex vertex) {
+            super(vertex);
+        }
+
+        @Override
+        public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
+            return (Iterator) super.properties(propertyKeys);
+        }
+
+        @Override
+        public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
+            return (Iterator) super.hiddens(propertyKeys);
+        }
+
+        @Override
+        public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
+            return (Iterator) TinkerHelper.getEdges((TinkerVertex) this.element, direction, branchFactor, labels);
+        }
+
+        @Override
+        public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
+            return (Iterator) TinkerHelper.getVertices((TinkerVertex) this.element, direction, branchFactor, labels);
+        }
+    }
+
     public GraphTraversal<Vertex, Vertex> start() {
         return new TinkerElementTraversal<>(this, this.graph);
     }
 
-    @Override
-    public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
-        return (Iterator) TinkerHelper.getEdges(this, direction, branchFactor, labels);
-    }
 
-    @Override
-    public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
-        return (Iterator) TinkerHelper.getVertices(this, direction, branchFactor, labels);
-    }
 }

@@ -49,7 +49,7 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
     public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
         return StreamFactory.stream(this.strategyWrappedGraph.strategy().compose(
                 s -> s.getElementPropertiesGetter(elementStrategyContext),
-                () -> this.baseElement.properties(propertyKeys)).get())
+                () -> this.baseElement.iterators().properties(propertyKeys)).get())
                 .map(property -> new StrategyWrappedProperty<>((Property<V>) property, strategyWrappedGraph)).iterator();
     }
 
@@ -57,7 +57,7 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
     public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys) {
         return StreamFactory.stream(this.strategyWrappedGraph.strategy().compose(
                 s -> s.getElementHiddens(elementStrategyContext),
-                () -> this.baseElement.hiddens(propertyKeys)).get())
+                () -> this.baseElement.iterators().hiddens(propertyKeys)).get())
                 .map(property -> new StrategyWrappedProperty<>((Property<V>) property, strategyWrappedGraph)).iterator();
     }
 

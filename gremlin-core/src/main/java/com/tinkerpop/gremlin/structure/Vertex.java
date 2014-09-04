@@ -56,35 +56,8 @@ public interface Vertex extends Element {
      */
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues);
 
-    /**
-     * The following iterators need to be implemented by the vendor as these define how edges are
-     * retrieved off of a vertex. All other steps are derivatives of this and thus, defaulted in Vertex.
-     */
-
-    /**
-     * @param direction    The incident direction of the edges to retrieve off this vertex
-     * @param branchFactor The max number of edges to retrieve
-     * @param labels       The labels of the edges to retrieve
-     * @return An iterator of edges meeting the provided specification
-     */
-    public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels);
-
-    /**
-     * @param direction    The adjacency direction of the vertices to retrieve off this vertex
-     * @param branchFactor The max number of vertices to retrieve
-     * @param labels       The labels of the edges associated with the vertices to retrieve
-     * @return An iterator of vertices meeting the provided specification
-     */
-    public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels);
-
-    public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys);
-
-    public default <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
-        return (Iterator) Element.super.hiddens(propertyKeys);
-    }
-
     public default <V> MetaProperty<V> property(final String key) {
-        final Iterator<MetaProperty<V>> iterator = this.properties(key);
+        final Iterator<MetaProperty<V>> iterator = this.iterators().properties(key);
         if (iterator.hasNext()) {
             final MetaProperty<V> property = iterator.next();
             if (iterator.hasNext())
@@ -105,6 +78,31 @@ public interface Vertex extends Element {
         return property;
     }
 
+    public Vertex.Iterators iterators();
+
+    public interface Iterators extends Element.Iterators {
+        /**
+         * @param direction    The incident direction of the edges to retrieve off this vertex
+         * @param branchFactor The max number of edges to retrieve
+         * @param labels       The labels of the edges to retrieve
+         * @return An iterator of edges meeting the provided specification
+         */
+        public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels);
+
+        /**
+         * @param direction    The adjacency direction of the vertices to retrieve off this vertex
+         * @param branchFactor The max number of vertices to retrieve
+         * @param labels       The labels of the edges associated with the vertices to retrieve
+         * @return An iterator of vertices meeting the provided specification
+         */
+        public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels);
+
+        public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys);
+
+        public default <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
+            return (Iterator) Element.Iterators.super.hiddens(propertyKeys);
+        }
+    }
 
     /**
      * Common exceptions to use with a vertex.
@@ -266,6 +264,10 @@ public interface Vertex extends Element {
 
     public default <E2> GraphTraversal<Vertex, E2> value() {
         return this.start().value();
+    }
+
+    public default <E2> GraphTraversal<Vertex, MetaProperty<E2>> properties(final String... propertyKeys) {
+        return (GraphTraversal) this.start().properties(propertyKeys);
     }
 
     public default <E2> GraphTraversal<Vertex, E2> value(final String propertyKey, final Supplier<E2> defaultSupplier) {

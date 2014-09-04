@@ -294,7 +294,7 @@ public class ElementHelper {
     public static Map<String, Object> propertyValueMap(final Element element, final String... propertyKeys) {
         final Map<String, Object> values = new HashMap<>();
         if (null == propertyKeys || propertyKeys.length == 0) {
-            element.properties().forEachRemaining(property -> values.put(property.key(), property.value()));
+            element.iterators().properties().forEachRemaining(property -> values.put(property.key(), property.value()));
         } else {
             for (final String key : propertyKeys) {
                 if (key.equals(Element.ID))
@@ -311,7 +311,7 @@ public class ElementHelper {
     public static Map<String, Property> propertyMap(final Element element, final String... propertyKeys) {
         final Map<String, Property> values = new HashMap<>();
         if (null == propertyKeys || propertyKeys.length == 0) {
-            element.properties().forEachRemaining(property -> values.put(property.key(), property));
+            element.iterators().properties().forEachRemaining(property -> values.put(property.key(), property));
         } else {
             for (final String key : propertyKeys) {
                 final Property property = element.property(key);
@@ -324,7 +324,7 @@ public class ElementHelper {
     public static Map<String, List> metaPropertyValueMap(final Vertex vertex, final String... propertyKeys) {
         final Map<String, List> values = new HashMap<>();
         if (null == propertyKeys || propertyKeys.length == 0) {
-            vertex.properties().forEachRemaining(property -> {
+            vertex.iterators().properties().forEachRemaining(property -> {
                 if (values.containsKey(property.key()))
                     values.get(property.key()).add(property.value());
                 else {
@@ -342,11 +342,11 @@ public class ElementHelper {
                 else {
                     if (values.containsKey(key)) {
                         final List list = values.get(key);
-                        vertex.properties(key).forEachRemaining(property -> list.add(property.value()));
+                        vertex.iterators().properties(key).forEachRemaining(property -> list.add(property.value()));
                     } else {
                         final List list = new ArrayList();
                         values.put(key, list);
-                        vertex.properties(key).forEachRemaining(property -> list.add(property.value()));
+                        vertex.iterators().properties(key).forEachRemaining(property -> list.add(property.value()));
                     }
                 }
 
@@ -358,7 +358,7 @@ public class ElementHelper {
     public static Map<String, List<MetaProperty>> metaPropertyMap(final Vertex vertex, final String... propertyKeys) {
         final Map<String, List<MetaProperty>> values = new HashMap<>();
         if (null == propertyKeys || propertyKeys.length == 0) {
-            vertex.properties().forEachRemaining(property -> {
+            vertex.iterators().properties().forEachRemaining(property -> {
                 if (values.containsKey(property.key()))
                     values.get(property.key()).add(property);
                 else {
@@ -371,11 +371,11 @@ public class ElementHelper {
             for (final String key : propertyKeys) {
                 if (values.containsKey(key)) {
                     final List list = values.get(key);
-                    vertex.properties(key).forEachRemaining(property -> list.add(property));
+                    vertex.iterators().properties(key).forEachRemaining(property -> list.add(property));
                 } else {
                     final List list = new ArrayList();
                     values.put(key, list);
-                    vertex.properties(key).forEachRemaining(property -> list.add(property));
+                    vertex.iterators().properties(key).forEachRemaining(property -> list.add(property));
                 }
             }
         }
