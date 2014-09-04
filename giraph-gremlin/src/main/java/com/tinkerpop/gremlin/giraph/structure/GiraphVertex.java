@@ -83,33 +83,35 @@ public class GiraphVertex extends GiraphElement implements Vertex, Serializable,
         return this.iterators;
     }
 
-    private final Vertex.Iterators iterators = new Iterators(this.getBaseVertex());
+    private final Vertex.Iterators iterators = new Iterators(this);
 
-    protected class Iterators extends GiraphElement.Iterators implements Vertex.Iterators {
+    protected class Iterators implements Vertex.Iterators {
 
-        public Iterators(final TinkerVertex vertex) {
-            super(vertex);
+        private final GiraphVertex vertex;
+
+        public Iterators(final GiraphVertex vertex) {
+            this.vertex = vertex;
         }
 
         // TODO: if GiraphHelper is not needed, then just call direct TinkerVertex methods
         @Override
         public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
-            return GiraphHelper.getVertices(graph, (TinkerVertex) this.element, direction, branchFactor, labels);
+            return GiraphHelper.getVertices(graph, this.vertex, direction, branchFactor, labels);
         }
 
         @Override
         public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
-            return GiraphHelper.getEdges(graph, (TinkerVertex) this.element, direction, branchFactor, labels);
+            return GiraphHelper.getEdges(graph, this.vertex, direction, branchFactor, labels);
         }
 
         @Override
         public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
-            return (Iterator) super.properties(propertyKeys);
+            return this.vertex.getBaseVertex().iterators().properties(propertyKeys);
         }
 
         @Override
         public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
-            return (Iterator) super.properties(propertyKeys);
+            return this.vertex.getBaseVertex().iterators().hiddens(propertyKeys);
         }
     }
 }

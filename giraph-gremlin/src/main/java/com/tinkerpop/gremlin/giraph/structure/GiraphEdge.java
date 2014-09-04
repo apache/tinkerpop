@@ -67,27 +67,29 @@ public class GiraphEdge extends GiraphElement implements Edge, Serializable, Wra
         return this.iterators;
     }
 
-    private final Edge.Iterators iterators = new Iterators(this.getBaseEdge());
+    private final Edge.Iterators iterators = new Iterators(this);
 
-    protected class Iterators extends GiraphElement.Iterators implements Edge.Iterators {
+    protected class Iterators implements Edge.Iterators {
 
-        public Iterators(final TinkerEdge edge) {
-            super(edge);
+        private final GiraphEdge edge;
+
+        public Iterators(final GiraphEdge edge) {
+            this.edge = edge;
         }
 
         @Override
         public Iterator<Vertex> vertices(final Direction direction) {
-            return GiraphHelper.getVertices(graph, (TinkerEdge) this.element, direction);
+            return GiraphHelper.getVertices(graph, this.edge, direction);
         }
 
         @Override
         public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-            return ((TinkerEdge) this.element).iterators().properties(propertyKeys);
+            return this.edge.getBaseEdge().iterators().properties(propertyKeys);
         }
 
         @Override
         public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-            return ((TinkerEdge) this.element).iterators().hiddens(propertyKeys);
+            return this.edge.getBaseEdge().iterators().hiddens(propertyKeys);
         }
     }
 }

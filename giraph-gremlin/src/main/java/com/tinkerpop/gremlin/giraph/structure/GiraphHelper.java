@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
@@ -15,22 +17,22 @@ import java.util.Iterator;
 public class GiraphHelper {
 
     public static Iterator<Vertex> getVertices(final GiraphGraph graph, final Vertex vertex, final Direction direction, final int branchFactor, final String... labels) {
-        /*return vertex instanceof GiraphVertex ?
-                StreamFactory.stream(((GiraphVertex) vertex).getBaseVertex().iterators().vertices(direction, branchFactor, labels)).map(v -> graph.v(v.id())).iterator() :*/
-        return vertex.iterators().vertices(direction, branchFactor, labels);
+        return vertex instanceof GiraphVertex ?
+                StreamFactory.stream(((GiraphVertex) vertex).getBaseVertex().iterators().vertices(direction, branchFactor, labels)).map(v -> graph.v(v.id())).iterator() :
+                vertex.iterators().vertices(direction, branchFactor, labels);
     }
 
     public static Iterator<Edge> getEdges(final GiraphGraph graph, final Vertex vertex, final Direction direction, final int branchFactor, final String... labels) {
-        /*return vertex instanceof GiraphVertex ?
-                (Iterator) StreamFactory.stream(((GiraphVertex) vertex).getBaseVertex().iterators().edges(direction, branchFactor, labels)).map(e -> new GiraphEdge((TinkerEdge) e, graph)).iterator() :*/
-        return vertex.iterators().edges(direction, branchFactor, labels);
+        return vertex instanceof GiraphVertex ?
+                (Iterator) StreamFactory.stream(((GiraphVertex) vertex).getBaseVertex().iterators().edges(direction, branchFactor, labels)).map(e -> new GiraphEdge((TinkerEdge) e, graph)).iterator() :
+                vertex.iterators().edges(direction, branchFactor, labels);
 
     }
 
     public static Iterator<Vertex> getVertices(final GiraphGraph graph, final Edge edge, final Direction direction) {
-        /*return edge instanceof GiraphEdge ?
-                ((GiraphEdge) edge).getBaseEdge().flatMap(e -> e.get().iterators().vertices(direction)).map(v -> graph.v(v.get().id())) :  */
-        return edge.iterators().vertices(direction);
+        return edge instanceof GiraphEdge ?
+                ((GiraphEdge) edge).getBaseEdge().flatMap(e -> e.get().iterators().vertices(direction)).map(v -> graph.v(v.get().id())) :
+                edge.iterators().vertices(direction);
     }
 
     public static GiraphGraph getOutputGraph(final GiraphGraph giraphGraph) {

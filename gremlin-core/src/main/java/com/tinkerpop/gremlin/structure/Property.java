@@ -14,7 +14,7 @@ import java.util.function.Supplier;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract interface Property<V> {
+public interface Property<V> {
 
     /**
      * The key of the property.

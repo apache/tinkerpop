@@ -8,7 +8,6 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
 
 import java.io.Serializable;
-import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -68,24 +67,5 @@ public abstract class GiraphElement implements Element, Serializable {
     @Override
     public String toString() {
         return this.element.toString();
-    }
-
-    protected class Iterators implements Element.Iterators {
-
-        protected final Element element;
-
-        public Iterators(final Element element) {
-            this.element = element;
-        }
-
-        @Override
-        public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
-            return this.element.iterators().properties(propertyKeys);
-        }
-
-        @Override
-        public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys) {
-            return this.element.iterators().hiddens(propertyKeys);
-        }
     }
 }
