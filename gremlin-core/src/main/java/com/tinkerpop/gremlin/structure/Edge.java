@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * An {@link Edge} links two {@link Vertex} objects. Along with its {@link Property} objects, an {@link Edge} has both
@@ -225,6 +226,26 @@ public interface Edge extends Element {
 
     public default <E2> GraphTraversal<Edge, Map<String, Property<E2>>> propertyMap(final String... propertyKeys) {
         return (GraphTraversal) this.start().propertyMap(propertyKeys);
+    }
+
+    public default <E2> GraphTraversal<Edge, Property<E2>> hiddens(final String... propertyKeys) {
+        return (GraphTraversal) this.start().hiddens(propertyKeys);
+    }
+
+    public default <E2> GraphTraversal<Edge, Map<String, Property<E2>>> hiddenMap(final String... propertyKeys) {
+        return (GraphTraversal) this.start().hiddenMap(propertyKeys);
+    }
+
+    public default <E2> GraphTraversal<Edge, E2> hiddenValue(final String propertyKey) {
+        return this.start().hiddenValue(propertyKey);
+    }
+
+    public default <E2> GraphTraversal<Edge, E2> hiddenValue(final String propertyKey, final E2 defaultValue) {
+        return this.start().hiddenValue(propertyKey, defaultValue);
+    }
+
+    public default <E2> GraphTraversal<Edge, E2> hiddenValue(final String propertyKey, final Supplier<E2> defaultSupplier) {
+        return this.start().hiddenValue(propertyKey, defaultSupplier);
     }
 
     public default <E2> GraphTraversal<Edge, E2> value() {
