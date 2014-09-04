@@ -16,7 +16,6 @@ import com.tinkerpop.gremlin.util.function.SPredicate;
 
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -56,14 +55,12 @@ public interface Edge extends Element {
 
     public <V> Iterator<Property<V>> properties(final String... propertyKeys);
 
-    public <V> Iterator<Property<V>> hiddens(final String... propertyKeys);
-
-    public default Map<String, Object> values() {
-        return (Map) Element.super.values();
+    public default <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
+        return (Iterator) Element.super.hiddens(propertyKeys);
     }
 
-    public default Map<String, Object> hiddenValues() {
-       return (Map) Element.super.hiddenValues();
+    public default <V> Iterator<V> values(final String... propertyKeys) {
+        return Element.super.values(propertyKeys);
     }
 
     /**
@@ -228,8 +225,8 @@ public interface Edge extends Element {
         return this.start().value(propertyKey, defaultSupplier);
     }
 
-    public default GraphTraversal<Edge, Map<String, Object>> values(final String... propertyKeys) {
-        return this.start().values(propertyKeys);
+    public default GraphTraversal<Edge, Map<String, Object>> valuesMap(final String... propertyKeys) {
+        return this.start().valueMap(propertyKeys);
     }
 
     public default GraphTraversal<Edge, Path> path(final SFunction... pathFunctions) {

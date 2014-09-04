@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertyStep;
-import com.tinkerpop.gremlin.process.graph.step.map.ValuesStep;
+import com.tinkerpop.gremlin.process.graph.step.map.ValueMapStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
@@ -87,7 +87,7 @@ public class TraversalHelperTest {
         Step step1 = new IdentityStep(traversal);
         Step step2 = new TimeLimitStep<>(traversal, 100);
         Step step3 = new RandomStep<>(traversal, 0.5);
-        Step step4 = new ValuesStep(traversal, "name");
+        Step step4 = new ValueMapStep(traversal, "name");
         Step step5 = new ShuffleStep<>(traversal);
         traversal.addStep(step1);
         traversal.addStep(step2);

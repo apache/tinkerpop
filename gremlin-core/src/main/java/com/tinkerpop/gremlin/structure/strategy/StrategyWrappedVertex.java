@@ -9,10 +9,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -82,17 +79,17 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     }
 
     @Override
-    public Map<String, List> values() {
-        return (Map) this.strategyWrappedGraph.strategy().compose(
+    public <V> Iterator<V> values(final String... propertyKeys) {
+        return this.strategyWrappedGraph.strategy().compose(
                 s -> s.getElementValues(strategyContext),
-                this.baseVertex::values).get();
+                this.baseVertex.values(propertyKeys)).get();
     }
 
     @Override
-    public Map<String, List> hiddenValues() {
-        return (Map) this.strategyWrappedGraph.strategy().compose(
+    public <V> Iterator<V> hiddenValues(final String... propertyKeys) {
+        return this.strategyWrappedGraph.strategy().compose(
                 s -> s.getElementHiddenValues(strategyContext),
-                this.baseVertex::hiddenValues).get();
+                this.baseVertex.hiddenValues(propertyKeys)).get();
     }
 
     @Override

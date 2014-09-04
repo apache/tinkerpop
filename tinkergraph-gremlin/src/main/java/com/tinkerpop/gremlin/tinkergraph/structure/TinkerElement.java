@@ -83,7 +83,7 @@ public abstract class TinkerElement implements Element, Serializable {
     }
 
 
-    @Override
+    /*@Override
     public <V> Property<V> property(final String key) {
         if (this.graph.graphView != null && this.graph.graphView.getInUse()) {
             final List<Property> list = this.graph.graphView.getProperty(this, key);
@@ -91,7 +91,7 @@ public abstract class TinkerElement implements Element, Serializable {
         } else {
             return this.properties.containsKey(key) ? this.properties.get(key).get(0) : Property.<V>empty();
         }
-    }
+    }*/
 
     public boolean equals(final Object object) {
         return ElementHelper.areEqual(this, object);

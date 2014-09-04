@@ -76,12 +76,6 @@ public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty
         return (Iterator) super.hiddens(propertyKeys);
     }
 
-
-    @Override
-    public <U> Property<U> property(final String key) {
-        return this.properties.containsKey(key) ? this.properties.get(key).get(0) : Property.empty();
-    }
-
     @Override
     public <U> Property<U> property(final String key, final U value) {
         final Property<U> property = new TinkerProperty<U>(this, key, value);

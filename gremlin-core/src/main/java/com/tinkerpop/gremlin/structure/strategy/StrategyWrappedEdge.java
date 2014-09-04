@@ -7,9 +7,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
 
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.Map;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -26,22 +24,22 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
 
     @Override
     public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-       return (Iterator) super.properties(propertyKeys);
+        return (Iterator) super.properties(propertyKeys);
     }
 
     @Override
     public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-       return (Iterator) super.hiddens(propertyKeys);
+        return (Iterator) super.hiddens(propertyKeys);
     }
 
     @Override
-    public Map<String, Object> values() {
-        return (Map) super.values();
+    public <V> Iterator<V> values(final String... propertyKeys) {
+        return super.values(propertyKeys);
     }
 
     @Override
-    public Map<String, Object> hiddenValues() {
-        return (Map) super.hiddenValues();
+    public <V> Iterator<V> hiddenValues(final String... propertyKeys) {
+        return super.hiddenValues(propertyKeys);
     }
 
     @Override

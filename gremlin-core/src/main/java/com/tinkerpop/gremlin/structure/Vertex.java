@@ -15,10 +15,8 @@ import com.tinkerpop.gremlin.util.function.SConsumer;
 import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SPredicate;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -81,9 +79,22 @@ public interface Vertex extends Element {
 
     public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys);
 
-    public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys);
+    public default <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
+        return (Iterator) Element.super.hiddens(propertyKeys);
+    }
 
-    public <V> MetaProperty<V> property(final String key);
+    public default <V> MetaProperty<V> property(final String key) {
+        final Iterator<MetaProperty<V>> iterator = this.properties(key);
+        if (iterator.hasNext()) {
+            final MetaProperty<V> property = iterator.next();
+            if (iterator.hasNext())
+                throw Vertex.Exceptions.multiplePropertiesExistForProvidedKey(key);
+            else
+                return property;
+        } else {
+            return MetaProperty.<V>empty();
+        }
+    }
 
     public <V> MetaProperty<V> property(final String key, final V value);
 
@@ -92,40 +103,6 @@ public interface Vertex extends Element {
         final MetaProperty<V> property = this.property(key, value);
         ElementHelper.attachProperties(property, keyValues);
         return property;
-    }
-
-    /**
-     * Get the values of non-hidden properties as a {@link Map} of keys and values.
-     */
-    public default Map<String, List> values() {
-        final Map<String, List> values = new HashMap<>();
-        this.properties().forEachRemaining(property -> {
-            if (values.containsKey(property.key()))
-                values.get(property.key()).add(property.value());
-            else {
-                final List list = new ArrayList();
-                list.add(property.value());
-                values.put(property.key(), list);
-            }
-        });
-        return values;
-    }
-
-    /**
-     * Get the values of hidden properties as a {@link Map} of keys and values.
-     */
-    public default Map<String, List> hiddenValues() {
-        final Map<String, List> values = new HashMap<>();
-        this.hiddens().forEachRemaining(hidden -> {
-            if (values.containsKey(hidden.key()))
-                values.get(hidden.key()).add(hidden.value());
-            else {
-                final List list = new ArrayList();
-                list.add(hidden.value());
-                values.put(hidden.key(), list);
-            }
-        });
-        return values;
     }
 
 
@@ -295,8 +272,8 @@ public interface Vertex extends Element {
         return this.start().value(propertyKey, defaultSupplier);
     }
 
-    public default GraphTraversal<Vertex, Map<String, Object>> values(final String... propertyKeys) {
-        return this.start().values(propertyKeys);
+    public default GraphTraversal<Vertex, Map<String, Object>> valuesMap(final String... propertyKeys) {
+        return this.start().valueMap(propertyKeys);
     }
 
     public default GraphTraversal<Vertex, Path> path(final SFunction... pathFunctions) {

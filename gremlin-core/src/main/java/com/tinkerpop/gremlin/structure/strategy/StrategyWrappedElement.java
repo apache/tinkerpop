@@ -7,9 +7,9 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Iterator;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -76,17 +76,17 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
     }
 
     @Override
-    public Map<String, ? extends Object> values() {
+    public <V> Iterator<V> values(final String... propertyKeys) {
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.getElementValues(elementStrategyContext),
-                this.baseElement::values).get();
+                this.baseElement.values(propertyKeys)).get();
     }
 
     @Override
-    public Map<String, ? extends Object> hiddenValues() {
+    public <V> Iterator<V> hiddenValues(final String... propertyKeys) {
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.getElementHiddenValues(elementStrategyContext),
-                this.baseElement::hiddenValues).get();
+                this.baseElement.hiddenValues(propertyKeys)).get();
     }
 
     @Override

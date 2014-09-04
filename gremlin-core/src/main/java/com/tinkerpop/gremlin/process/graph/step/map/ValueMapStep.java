@@ -12,17 +12,17 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PropertiesStep<E> extends MapStep<Element, Map<String, E>> {
+public class ValueMapStep<E> extends MapStep<Element, Map<String, E>> {
 
     public String[] propertyKeys;
 
-    public PropertiesStep(final Traversal traversal, final String... propertyKeys) {
+    public ValueMapStep(final Traversal traversal, final String... propertyKeys) {
         super(traversal);
         this.propertyKeys = propertyKeys;
         this.setFunction(traverser ->
                 traverser.get() instanceof Vertex ?
-                        (Map) ElementHelper.metaPropertyMap((Vertex) traverser.get(), propertyKeys) :
-                        (Map) ElementHelper.propertyMap(traverser.get(), propertyKeys));
+                        (Map) ElementHelper.metaPropertyValueMap((Vertex) traverser.get(), propertyKeys) :
+                        (Map) ElementHelper.propertyValueMap(traverser.get(), propertyKeys));
     }
 
     public String toString() {

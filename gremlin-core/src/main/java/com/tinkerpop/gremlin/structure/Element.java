@@ -1,6 +1,8 @@
 package com.tinkerpop.gremlin.structure;
 
-import java.util.HashMap;
+import com.tinkerpop.gremlin.util.StreamFactory;
+
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -64,19 +66,15 @@ public abstract interface Element {
     /**
      * Get the values of non-hidden properties as a {@link Map} of keys and values.
      */
-    public default Map<String, ? extends Object> values() {
-        final Map<String, Object> values = new HashMap<>();
-        this.properties().forEachRemaining(property -> values.put(property.key(), property.value()));
-        return values;
+    public default <V> Iterator<V> values(final String... propertyKeys) {
+        return StreamFactory.stream(this.properties(propertyKeys)).map(property -> (V) property.value()).iterator();
     }
 
     /**
      * Get the values of hidden properties as a {@link Map} of keys and values.
      */
-    public default Map<String, ? extends Object> hiddenValues() {
-        final Map<String, Object> values = new HashMap<>();
-        this.hiddens().forEachRemaining(hidden -> values.put(hidden.key(), hidden.value()));
-        return values;
+    public default <V> Iterator<V> hiddenValues(final String... propertyKeys) {
+        return StreamFactory.stream(this.hiddens(propertyKeys)).map(property -> (V) property.value()).iterator();
     }
 
     /**
@@ -87,13 +85,18 @@ public abstract interface Element {
     /**
      * Get an {@link Iterator} of hidden properties.
      */
-    public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys);
+    public default <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys) {
+        return this.properties((String[]) Arrays.stream(propertyKeys).map(Graph.Key::hide).toArray());
+    }
 
     /**
      * Get a {@link Property} for the {@code Element} given its key.  Hidden properties can be retrieved by specifying
      * the key as {@link com.tinkerpop.gremlin.structure.Graph.Key#hide}.
      */
-    public <V> Property<V> property(final String key);
+    public default <V> Property<V> property(final String key) {
+        final Iterator<? extends Property<V>> iterator = this.properties(key);
+        return iterator.hasNext() ? iterator.next() : Property.<V>empty();
+    }
 
     /**
      * Add or set a property value for the {@code Element} given its key.  Hidden properties can be set by specifying
