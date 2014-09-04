@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.computer.traversal;
 import com.tinkerpop.gremlin.process.PathTraverser;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 
@@ -41,6 +42,8 @@ public abstract class TraversalMessage implements Serializable {
             return Arrays.asList((Vertex) object);
         else if (object instanceof Edge)
             return Arrays.asList(((Edge) object).outV().next());
+        //else if (object instanceof MetaProperty)
+        //    return getHostingVertices(((MetaProperty) object).getElement());
         else if (object instanceof Property)
             return getHostingVertices(((Property) object).getElement());
         else

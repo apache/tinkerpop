@@ -60,9 +60,6 @@ public abstract class TinkerElement implements Element, Serializable {
         return ElementHelper.areEqual(this, object);
     }
 
-    @Override
-    public abstract void remove();
-
     protected class Iterators implements Element.Iterators {
 
         protected final TinkerElement element;

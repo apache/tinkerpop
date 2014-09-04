@@ -291,6 +291,44 @@ public class ElementHelper {
 
     }
 
+    /**
+     * A standard method for determining if two {@link com.tinkerpop.gremlin.structure.MetaProperty} objects are equal. This method should be used by any
+     * {@link Object#equals(Object)} implementation to ensure consistent behavior. Because MetaProperty implements both Element and Property, it is best to
+     * ElementHelper.areEquals((MetaProperty)a,b).
+     *
+     * @param a the first {@link com.tinkerpop.gremlin.structure.MetaProperty}
+     * @param b the second {@link com.tinkerpop.gremlin.structure.MetaProperty}
+     * @return true if equal and false otherwise
+     */
+    public static boolean areEqual(final MetaProperty a, final Object b) {
+        if (null == a)
+            throw Graph.Exceptions.argumentCanNotBeNull("a");
+        if (null == b)
+            throw Graph.Exceptions.argumentCanNotBeNull("b");
+
+        if (a == b)
+            return true;
+        if (!(b instanceof MetaProperty))
+            return false;
+        if (!a.isPresent() && !((MetaProperty) b).isPresent())
+            return true;
+        if (!a.isPresent() && ((MetaProperty) b).isPresent() || a.isPresent() && !((MetaProperty) b).isPresent())
+            return false;
+        if (!a.key().equals(((MetaProperty) b).key()) || !a.value().equals(((MetaProperty) b).value()) || areEqual(a.getElement(), ((MetaProperty) b).getElement()))
+            return false;
+        final Set<String> bKeys = ((MetaProperty) b).keys();
+        final Set<String> aKeys = a.keys();
+        if (bKeys.size() != aKeys.size())
+            return false;
+        for (final String key : a.keys()) {
+            if (!bKeys.contains(key))
+                return false;
+            if (!areEqual(a.property(key), ((MetaProperty) b).property(key)))
+                return false;
+        }
+        return true;
+    }
+
     public static Map<String, Object> propertyValueMap(final Element element, final String... propertyKeys) {
         final Map<String, Object> values = new HashMap<>();
         if (null == propertyKeys || propertyKeys.length == 0) {

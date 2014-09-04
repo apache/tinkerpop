@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -22,7 +21,7 @@ public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty
     private final V value;
 
     public TinkerMetaProperty(final TinkerVertex vertex, final String key, final V value, final Object... propertyKeyValues) {
-        super(key.hashCode() + value.hashCode(), META_PROPERTY, vertex.graph);
+        super(TinkerHelper.getNextId(vertex.graph), META_PROPERTY, vertex.graph);
         this.vertex = vertex;
         this.key = key;
         this.value = value;
@@ -52,12 +51,17 @@ public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty
 
     @Override
     public int hashCode() {
-        return this.key.hashCode() + this.value.hashCode() + this.vertex.hashCode();
+        return this.key.hashCode() + this.value.hashCode() + this.vertex.hashCode() + this.properties.hashCode();
     }
 
     @Override
     public Object id() {
-        return this.key.hashCode() + this.value.hashCode();
+        return this.id;
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return ElementHelper.areEqual((MetaProperty) this, object);
     }
 
     @Override
