@@ -55,6 +55,7 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             GraphConstructionTest.class,
             IdGraphStrategyTest.class,
             IoTest.class,
+            MetaPropertyTest.class,
             VariablesTest.class,
             PartitionGraphStrategyTest.class,
             PropertyTest.class,

@@ -30,9 +30,9 @@ class GroovyChooseTestImpl extends ChooseTest {
     }
 
     @Override
-    public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_valueXnameX_3L_valuesX() {
+    public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_valueXnameX_3L_valueMapX() {
         return g.V().choose({it.get().out().count().next();},[
             2L:g.of().value("name"),
-            3L:g.of().values()])
+            3L:g.of().valueMap()])
     }
 }

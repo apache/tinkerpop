@@ -31,11 +31,11 @@ public class MetaPropertyTest extends AbstractGremlinTest {
         } catch (final Exception e) {
             fail("This should throw a: " + Vertex.Exceptions.multiplePropertiesExistForProvidedKey("name"));
         }
-        assertEquals(2, v.properties("name").count().next().intValue());
         assertEquals(3, v.properties().count().next().intValue());
+        assertEquals(2, v.properties("name").count().next().intValue());
         assertTrue(v.valueMap().next().get("name") instanceof List);
         assertTrue(((List) v.valueMap().next().get("name")).contains("marko"));
-        assertTrue(((List) v.valueMap().next().get("name")).contains("mrodriguez"));
+        assertTrue(((List) v.valueMap().next().get("name")).contains("marko a. rodriguez"));
 
         v.property("name", "mrodriguez");
         assertEquals(3, v.properties("name").count().next().intValue());

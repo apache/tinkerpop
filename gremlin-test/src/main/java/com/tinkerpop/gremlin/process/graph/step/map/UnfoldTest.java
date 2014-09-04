@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,7 +22,7 @@ public abstract class UnfoldTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, Edge> get_g_V_mapXoutEX_unfold();
 
-    public abstract Traversal<Vertex, String> get_V_values_unfold_mapXkeyX();
+    public abstract Traversal<Vertex, String> get_V_valueMap_unfold_mapXkeyX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -42,7 +43,7 @@ public abstract class UnfoldTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_values_unfold_mapXkeyX() {
-        final Traversal<Vertex, String> traversal = get_V_values_unfold_mapXkeyX();
+        final Traversal<Vertex, String> traversal = get_V_valueMap_unfold_mapXkeyX();
         printTraversalForm(traversal);
         int counter = 0;
         int ageCounter = 0;
@@ -76,8 +77,8 @@ public abstract class UnfoldTest extends AbstractGremlinTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_V_values_unfold_mapXkeyX() {
-            return g.V().values().<Map.Entry<String, Object>>unfold().map(m -> m.get().getKey());
+        public Traversal<Vertex, String> get_V_valueMap_unfold_mapXkeyX() {
+            return g.V().valueMap().<Map.Entry<String, List>>unfold().map(m -> m.get().getKey());
         }
     }
 
@@ -89,8 +90,8 @@ public abstract class UnfoldTest extends AbstractGremlinTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_V_values_unfold_mapXkeyX() {
-            return g.V().values().<Map.Entry<String, Object>>unfold().map(m -> m.get().getKey()).submit(g.compute());
+        public Traversal<Vertex, String> get_V_valueMap_unfold_mapXkeyX() {
+            return g.V().valueMap().<Map.Entry<String, List>>unfold().map(m -> m.get().getKey()).submit(g.compute());
         }
     }
 }

@@ -4,13 +4,13 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 
 import java.util.Arrays;
@@ -26,6 +26,8 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V> {
     public static final Label META_PROPERTY_LABEL = DynamicLabel.label(MetaProperty.LABEL);
     public static final String META_PROPERTY_PREFIX = "%$%";
     public static final String META_PROPERTY_KEY = "%$%key";
+    public static final String META_PROPERTY_VALUE = "%$%value";
+    public static final String META_PROPERTY_TOKEN = "%$%metaProperty";
 
     private Node node;
     private final Neo4jVertex vertex;
@@ -34,14 +36,17 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V> {
 
 
     public Neo4jMetaProperty(final Neo4jVertex vertex, final String key, final V value) {
-        this(vertex, null, key, value);
-    }
-
-    public Neo4jMetaProperty(final Neo4jVertex vertex, final Node node, final String key, final V value) {
         this.vertex = vertex;
         this.key = key;
         this.value = value;
+        this.node = null;
+    }
+
+    public Neo4jMetaProperty(final Neo4jVertex vertex, final Node node) {
+        this.vertex = vertex;
         this.node = node;
+        this.key = (String) node.getProperty(META_PROPERTY_KEY);
+        this.value = (V) node.getProperty(META_PROPERTY_VALUE);
     }
 
     @Override
@@ -51,22 +56,34 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V> {
 
     @Override
     public Object id() {
-        return this.key.hashCode() + this.value.hashCode();
+        return this.key.hashCode() + this.value.hashCode() + this.vertex.id().hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return ElementHelper.areEqual((MetaProperty) this, object);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.key.hashCode() + this.value.hashCode() + this.vertex.hashCode();
     }
 
     @Override
     public <U> Property<U> property(String key, U value) {
         this.vertex.graph.tx().readWrite();
         if (isNode()) {
+            if (key.equals(META_PROPERTY_KEY) || key.equals(META_PROPERTY_VALUE))
+                throw new IllegalArgumentException("The following key is a reserved key for Neo4jMetaProperty: " + key);
             this.node.setProperty(key, value);
             return new Neo4jProperty<>(this, key, value);
         } else {
             this.node = this.vertex.graph.getBaseGraph().createNode(META_PROPERTY_LABEL);
-            this.node.setProperty(META_PROPERTY_KEY, this.value);
+            this.node.setProperty(META_PROPERTY_KEY, this.key);
+            this.node.setProperty(META_PROPERTY_VALUE, this.value);
             this.node.setProperty(key, value);
-            final String prefixedKey = META_PROPERTY_PREFIX.concat(key);
-            this.vertex.getBaseVertex().createRelationshipTo(this.node, DynamicRelationshipType.withName(prefixedKey));
-            this.vertex.getBaseVertex().setProperty(prefixedKey, true);
+            this.vertex.getBaseVertex().createRelationshipTo(this.node, DynamicRelationshipType.withName(META_PROPERTY_PREFIX.concat(this.key)));
+            this.vertex.getBaseVertex().setProperty(this.key, META_PROPERTY_TOKEN);
             return new Neo4jProperty<>(this, key, value);
         }
     }
@@ -90,18 +107,15 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V> {
     public void remove() {
         this.vertex.graph.tx().readWrite();
         if (isNode()) {
-            final String prefixedKey = META_PROPERTY_PREFIX.concat(this.key);
-            final PropertyContainer rawElement = this.vertex.getBaseElement();
-            if (rawElement.hasProperty(prefixedKey)) {
-                if (this.vertex.getBaseVertex().getDegree(DynamicRelationshipType.withName(prefixedKey), Direction.OUTGOING) == 1)
-                    rawElement.removeProperty(prefixedKey);
+            if (this.vertex.getBaseVertex().hasProperty(this.key)) {
+                if (this.vertex.getBaseVertex().getDegree(DynamicRelationshipType.withName(META_PROPERTY_PREFIX.concat(this.key)), Direction.OUTGOING) == 1)
+                    this.vertex.getBaseVertex().removeProperty(this.key);
             }
             this.node.getRelationships().forEach(Relationship::delete);
             this.node.delete();
         } else {
-            final PropertyContainer rawElement = this.vertex.getBaseElement();
-            if (rawElement.hasProperty(this.key)) {
-                rawElement.removeProperty(this.key);
+            if (this.vertex.getBaseVertex().hasProperty(this.key)) {
+                this.vertex.getBaseVertex().removeProperty(this.key);
             }
         }
     }
@@ -138,9 +152,10 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V> {
                 vertex.graph.tx().readWrite();
                 return (Iterator) StreamFactory.stream(node.getPropertyKeys())
                         .filter(key -> !key.equals(META_PROPERTY_KEY))
+                        .filter(key -> !key.equals(META_PROPERTY_VALUE))
                         .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, key) >= 0)
                         .filter(key -> !Graph.Key.isHidden(key))
-                        .map(key -> new Neo4jProperty<>(metaProperty, key, (V) node.getProperty(key))).iterator();
+                        .map(key -> new Neo4jProperty<>(this.metaProperty, key, (V) node.getProperty(key))).iterator();
             }
         }
 
@@ -151,9 +166,10 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V> {
                 vertex.graph.tx().readWrite();
                 return (Iterator) StreamFactory.stream(node.getPropertyKeys())
                         .filter(key -> !key.equals(META_PROPERTY_KEY))
+                        .filter(key -> !key.equals(META_PROPERTY_VALUE))
                         .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, key) >= 0)
                         .filter(Graph.Key::isHidden)
-                        .map(key -> new Neo4jProperty<>(metaProperty, key, (V) node.getProperty(key))).iterator();
+                        .map(key -> new Neo4jProperty<>(this.metaProperty, key, (V) node.getProperty(key))).iterator();
             }
         }
     }

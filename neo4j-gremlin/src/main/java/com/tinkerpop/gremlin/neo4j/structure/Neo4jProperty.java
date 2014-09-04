@@ -24,7 +24,9 @@ public class Neo4jProperty<V> implements Property<V>, Serializable {
         this.element = element;
         this.key = key;
         this.value = value;
-        this.graph = ((Neo4jElement) element).graph;
+        this.graph = element instanceof Neo4jMetaProperty ?
+                ((Neo4jVertex) (((Neo4jMetaProperty) element).getElement())).graph :
+                ((Neo4jElement) element).graph;
     }
 
     @Override

@@ -310,23 +310,7 @@ public class ElementHelper {
             return true;
         if (!(b instanceof MetaProperty))
             return false;
-        if (!a.isPresent() && !((MetaProperty) b).isPresent())
-            return true;
-        if (!a.isPresent() && ((MetaProperty) b).isPresent() || a.isPresent() && !((MetaProperty) b).isPresent())
-            return false;
-        if (!a.key().equals(((MetaProperty) b).key()) || !a.value().equals(((MetaProperty) b).value()) || areEqual(a.getElement(), ((MetaProperty) b).getElement()))
-            return false;
-        final Set<String> bKeys = ((MetaProperty) b).keys();
-        final Set<String> aKeys = a.keys();
-        if (bKeys.size() != aKeys.size())
-            return false;
-        for (final String key : a.keys()) {
-            if (!bKeys.contains(key))
-                return false;
-            if (!areEqual(a.property(key), ((MetaProperty) b).property(key)))
-                return false;
-        }
-        return true;
+        return haveEqualIds(a, (MetaProperty) b);
     }
 
     public static Map<String, Object> propertyValueMap(final Element element, final String... propertyKeys) {
@@ -361,7 +345,7 @@ public class ElementHelper {
 
     public static Map<String, List> metaPropertyValueMap(final Vertex vertex, final String... propertyKeys) {
         final Map<String, List> values = new HashMap<>();
-        if (null == propertyKeys || propertyKeys.length == 0) {
+        if (propertyKeys.length == 0 || null == propertyKeys) {
             vertex.iterators().properties().forEachRemaining(property -> {
                 if (values.containsKey(property.key()))
                     values.get(property.key()).add(property.value());
@@ -383,8 +367,9 @@ public class ElementHelper {
                         vertex.iterators().properties(key).forEachRemaining(property -> list.add(property.value()));
                     } else {
                         final List list = new ArrayList();
-                        values.put(key, list);
                         vertex.iterators().properties(key).forEachRemaining(property -> list.add(property.value()));
+                        if (list.size() > 0)
+                            values.put(key, list);
                     }
                 }
 
@@ -412,8 +397,9 @@ public class ElementHelper {
                     vertex.iterators().properties(key).forEachRemaining(property -> list.add(property));
                 } else {
                     final List list = new ArrayList();
-                    values.put(key, list);
                     vertex.iterators().properties(key).forEachRemaining(property -> list.add(property));
+                    if (list.size() > 0)
+                        values.put(key, list);
                 }
             }
         }

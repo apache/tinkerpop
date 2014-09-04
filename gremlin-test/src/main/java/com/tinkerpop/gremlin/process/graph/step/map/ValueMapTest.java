@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -18,37 +19,37 @@ import static org.junit.Assert.*;
  */
 public abstract class ValueMapTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_values();
+    public abstract Traversal<Vertex, Map<String, List>> get_g_V_valueMap();
 
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_valuesXname_ageX();
+    public abstract Traversal<Vertex, Map<String, List>> get_g_V_valueMapXname_ageX();
 
-    public abstract Traversal<Edge, Map<String, Object>> get_g_E_valuesXid_label_weightX();
+    public abstract Traversal<Edge, Map<String, Object>> get_g_E_valueMapXid_label_weightX();
 
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id);
+    public abstract Traversal<Vertex, Map<String, List<String>>> get_g_v1_outXcreatedX_valueMap(final Object v1Id);
 
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_values() {
-        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_values();
+        final Traversal<Vertex, Map<String, List>> traversal = get_g_V_valueMap();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
-            final Map<String, Object> values = traversal.next();
-            final String name = (String) values.get("name");
+            final Map<String, List> values = traversal.next();
+            final String name = (String) values.get("name").get(0);
             assertEquals(2, values.size());
             if (name.equals("marko")) {
-                assertEquals(29, values.get("age"));
+                assertEquals(29, values.get("age").get(0));
             } else if (name.equals("josh")) {
-                assertEquals(32, values.get("age"));
+                assertEquals(32, values.get("age").get(0));
             } else if (name.equals("peter")) {
-                assertEquals(35, values.get("age"));
+                assertEquals(35, values.get("age").get(0));
             } else if (name.equals("vadas")) {
-                assertEquals(27, values.get("age"));
+                assertEquals(27, values.get("age").get(0));
             } else if (name.equals("lop")) {
-                assertEquals("java", values.get("lang"));
+                assertEquals("java", values.get("lang").get(0));
             } else if (name.equals("ripple")) {
-                assertEquals("java", values.get("lang"));
+                assertEquals("java", values.get("lang").get(0));
             } else {
                 throw new IllegalStateException("It is not possible to reach here: " + values);
             }
@@ -59,24 +60,24 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_valuesXname_ageX() {
-        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_valuesXname_ageX();
+        final Traversal<Vertex, Map<String, List>> traversal = get_g_V_valueMapXname_ageX();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
-            final Map<String, Object> values = traversal.next();
-            final String name = (String) values.get("name");
+            final Map<String, List> values = traversal.next();
+            final String name = (String) values.get("name").get(0);
             if (name.equals("marko")) {
-                assertEquals(29, values.get("age"));
+                assertEquals(29, values.get("age").get(0));
                 assertEquals(2, values.size());
             } else if (name.equals("josh")) {
-                assertEquals(32, values.get("age"));
+                assertEquals(32, values.get("age").get(0));
                 assertEquals(2, values.size());
             } else if (name.equals("peter")) {
-                assertEquals(35, values.get("age"));
+                assertEquals(35, values.get("age").get(0));
                 assertEquals(2, values.size());
             } else if (name.equals("vadas")) {
-                assertEquals(27, values.get("age"));
+                assertEquals(27, values.get("age").get(0));
                 assertEquals(2, values.size());
             } else if (name.equals("lop")) {
                 assertNull(values.get("lang"));
@@ -94,7 +95,7 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_E_valuesXid_label_weightX() {
-        final Traversal<Edge, Map<String, Object>> traversal = get_g_E_valuesXid_label_weightX();
+        final Traversal<Edge, Map<String, Object>> traversal = get_g_E_valueMapXid_label_weightX();
         printTraversalForm(traversal);
         int counter = 0;
         int counter2 = 0;
@@ -121,13 +122,13 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_v1_outXcreatedX_values() {
-        final Traversal<Vertex, Map<String, Object>> traversal = get_g_v1_outXcreatedX_values(convertToVertexId("marko"));
+        final Traversal<Vertex, Map<String, List<String>>> traversal = get_g_v1_outXcreatedX_valueMap(convertToVertexId("marko"));
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
-        final Map<String, Object> values = traversal.next();
+        final Map<String, List<String>> values = traversal.next();
         assertFalse(traversal.hasNext());
-        assertEquals("lop", values.get("name"));
-        assertEquals("java", values.get("lang"));
+        assertEquals("lop", values.get("name").get(0));
+        assertEquals("java", values.get("lang").get(0));
         assertEquals(2, values.size());
     }
 
@@ -138,22 +139,22 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_values() {
+        public Traversal<Vertex, Map<String, List>> get_g_V_valueMap() {
             return g.V().valueMap();
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_valuesXname_ageX() {
+        public Traversal<Vertex, Map<String, List>> get_g_V_valueMapXname_ageX() {
             return g.V().valueMap("name", "age");
         }
 
         @Override
-        public Traversal<Edge, Map<String, Object>> get_g_E_valuesXid_label_weightX() {
+        public Traversal<Edge, Map<String, Object>> get_g_E_valueMapXid_label_weightX() {
             return g.E().valueMap("id", "label", "weight");
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id) {
+        public Traversal<Vertex, Map<String, List<String>>> get_g_v1_outXcreatedX_valueMap(final Object v1Id) {
             return g.v(v1Id).out("created").valueMap();
         }
     }
@@ -165,23 +166,23 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_values() {
-            return g.V().valueMap().submit(g.compute());
+        public Traversal<Vertex, Map<String, List>> get_g_V_valueMap() {
+            return (Traversal) g.V().valueMap().submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_valuesXname_ageX() {
-            return g.V().valueMap("name", "age").submit(g.compute());
+        public Traversal<Vertex, Map<String, List>> get_g_V_valueMapXname_ageX() {
+            return (Traversal) g.V().valueMap("name", "age").submit(g.compute());
         }
 
         @Override
-        public Traversal<Edge, Map<String, Object>> get_g_E_valuesXid_label_weightX() {
+        public Traversal<Edge, Map<String, Object>> get_g_E_valueMapXid_label_weightX() {
             return g.E().valueMap("id", "label", "weight").submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id) {
-            return g.v(v1Id).out("created").valueMap().submit(g.compute());
+        public Traversal<Vertex, Map<String, List<String>>> get_g_v1_outXcreatedX_valueMap(final Object v1Id) {
+            return (Traversal) g.v(v1Id).out("created").valueMap().submit(g.compute());
         }
     }
 }
