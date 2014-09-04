@@ -84,11 +84,13 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     @Override
-    public Iterators iterators() {
-        return new Iterators(this);
+    public Vertex.Iterators iterators() {
+        return this.iterators;
     }
 
-    public class Iterators extends TinkerElement.Iterators implements Vertex.Iterators {
+    private final Vertex.Iterators iterators = new Iterators(this);
+
+    protected class Iterators extends TinkerElement.Iterators implements Vertex.Iterators {
 
         public Iterators(final TinkerVertex vertex) {
             super(vertex);
@@ -96,12 +98,12 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
         @Override
         public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
-            return (Iterator) super.properties(propertyKeys);
+            return (Iterator<MetaProperty<V>>) super.properties(propertyKeys);
         }
 
         @Override
         public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
-            return (Iterator) super.hiddens(propertyKeys);
+            return (Iterator<MetaProperty<V>>) super.hiddens(propertyKeys);
         }
 
         @Override

@@ -24,7 +24,7 @@ public abstract interface Property<V> {
     public String key();
 
     /**
-     * The varlue of the property.
+     * The value of the property.
      *
      * @return The property value
      * @throws NoSuchElementException thrown if the property is empty
@@ -87,7 +87,9 @@ public abstract interface Property<V> {
      *
      * @return True if the property key is hidden
      */
-    public boolean isHidden();
+    public default boolean isHidden() {
+        return Graph.Key.isHidden(this.key());
+    }
 
     /**
      * Get the element that this property is associated with.

@@ -25,12 +25,12 @@ public class Neo4jHelper {
             return org.neo4j.graphdb.Direction.BOTH;
     }
 
-    public static Iterator<Neo4jVertex> getVertices(final Neo4jVertex vertex, final Direction direction, final String... labels) {
-        return new Neo4jVertexVertexIterable<>(vertex, direction, labels).iterator();
+    public static Iterable<Neo4jVertex> getVertices(final Neo4jVertex vertex, final Direction direction, final String... labels) {
+        return new Neo4jVertexVertexIterable<>(vertex, direction, labels);
     }
 
-    public static Iterator<Neo4jEdge> getEdges(final Neo4jVertex vertex, final Direction direction, final String... labels) {
-        return new Neo4jVertexEdgeIterable<>(vertex, direction, labels).iterator();
+    public static Iterable<Neo4jEdge> getEdges(final Neo4jVertex vertex, final Direction direction, final String... labels) {
+        return new Neo4jVertexEdgeIterable<>(vertex, direction, labels);
     }
 
     public static Iterator<Neo4jVertex> getVertices(final Neo4jEdge edge, final Direction direction) {

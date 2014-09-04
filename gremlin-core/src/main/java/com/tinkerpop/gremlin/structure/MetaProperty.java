@@ -24,11 +24,10 @@ public interface MetaProperty<V> extends Property<V>, Element {
     }
 
     public interface Iterators extends Element.Iterators {
+
         public <U> Iterator<Property<U>> properties(final String... propertyKeys);
 
-        public default <U> Iterator<Property<U>> hiddens(final String... propertyKeys) {
-            return (Iterator) Element.Iterators.super.hiddens(propertyKeys);
-        }
+        public <U> Iterator<Property<U>> hiddens(final String... propertyKeys);
     }
 
 }

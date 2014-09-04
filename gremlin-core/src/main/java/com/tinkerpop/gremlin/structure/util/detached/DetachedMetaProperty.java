@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Optional;
 
@@ -44,16 +45,6 @@ public class DetachedMetaProperty<V> extends DetachedElement implements MetaProp
         this.value = (V) property.value();
         this.hashCode = property.hashCode();
         this.vertex = DetachedVertex.detach(property.getElement());
-    }
-
-    @Override
-    public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-        return (Iterator) super.properties(propertyKeys);
-    }
-
-    @Override
-    public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-        return (Iterator) super.hiddens(propertyKeys);
     }
 
     @Override
@@ -128,4 +119,25 @@ public class DetachedMetaProperty<V> extends DetachedElement implements MetaProp
     public static DetachedMetaProperty detach(final DetachedMetaProperty property) {
         return new DetachedMetaProperty(property);
     }
+
+    @Override
+    public MetaProperty.Iterators iterators() {
+        return this.iterators;
+    }
+
+    private final MetaProperty.Iterators iterators = new MetaProperty.Iterators() {
+        @Override
+        public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
+            return properties.entrySet().stream()
+                    .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
+                    .map(entry -> (Property<U>) entry.getValue()).iterator();
+        }
+
+        @Override
+        public <U> Iterator<Property<U>> hiddens(final String... propertyKeys) {
+            return hiddens.entrySet().stream()
+                    .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
+                    .map(entry -> (Property<U>) entry.getValue()).iterator();
+        }
+    };
 }

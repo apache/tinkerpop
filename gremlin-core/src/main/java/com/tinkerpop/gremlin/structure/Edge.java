@@ -58,9 +58,7 @@ public interface Edge extends Element {
 
         public <V> Iterator<Property<V>> properties(final String... propertyKeys);
 
-        public default <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-            return (Iterator<Property<V>>) Element.Iterators.super.hiddens(propertyKeys);
-        }
+        public <V> Iterator<Property<V>> hiddens(final String... propertyKeys);
 
         public default <V> Iterator<V> values(final String... propertyKeys) {
             return Element.Iterators.super.values(propertyKeys);

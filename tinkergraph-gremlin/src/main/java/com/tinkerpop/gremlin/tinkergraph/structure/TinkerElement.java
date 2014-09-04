@@ -30,6 +30,7 @@ public abstract class TinkerElement implements Element, Serializable {
         this.label = label;
     }
 
+    @Override
     public int hashCode() {
         return this.id.hashCode();
     }
@@ -62,12 +63,7 @@ public abstract class TinkerElement implements Element, Serializable {
     @Override
     public abstract void remove();
 
-    @Override
-    public Element.Iterators iterators() {
-        return new Iterators(this);
-    }
-
-    public class Iterators implements Element.Iterators {
+    protected class Iterators implements Element.Iterators {
 
         protected final TinkerElement element;
 

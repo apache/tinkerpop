@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -33,16 +33,6 @@ public class DetachedVertex extends DetachedElement implements Vertex {
         return this.properties.containsKey(key) ? (MetaProperty) this.properties.get(key) : null; // TODO:
     }
 
-    @Override
-    public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
-        return (Iterator) super.properties(propertyKeys);
-    }
-
-    @Override
-    public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
-        return (Iterator) super.hiddens(propertyKeys);
-    }
-
     protected DetachedVertex(final Object id, final String label) {
         super(id, label);
     }
@@ -60,24 +50,16 @@ public class DetachedVertex extends DetachedElement implements Vertex {
         throw new UnsupportedOperationException("Detached vertices do not store edges: " + this);
     }
 
+    @Override
     public String toString() {
         return StringFactory.vertexString(this);
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> as(final String label) {
+    public GraphTraversal<Vertex, Vertex> start() {
         throw new IllegalStateException();
     }
 
-    @Override
-    public GraphTraversal<Vertex, Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
-        throw new IllegalStateException();
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
-        throw new IllegalStateException();
-    }
 
     public Vertex attach(final Vertex hostVertex) {
         if (!hostVertex.id().toString().equals(this.id.toString())) // TODO: Why is this bad?
@@ -95,4 +77,36 @@ public class DetachedVertex extends DetachedElement implements Vertex {
         if (null == vertex) throw Graph.Exceptions.argumentCanNotBeNull("vertex");
         return new DetachedVertex(vertex);
     }
+
+    @Override
+    public Vertex.Iterators iterators() {
+        return this.iterators;
+    }
+
+    public final Vertex.Iterators iterators = new Vertex.Iterators() {
+        @Override
+        public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
+            return (Iterator) properties.entrySet().stream()
+                    .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
+                    .map(entry -> (Property<V>) entry.getValue()).iterator();
+        }
+
+        @Override
+        public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
+            return (Iterator) hiddens.entrySet().stream()
+                    .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
+                    .map(entry -> (Property<V>) entry.getValue()).iterator();
+        }
+
+        @Override
+        public GraphTraversal<Vertex, Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
+            throw new IllegalStateException();
+        }
+
+        @Override
+        public GraphTraversal<Vertex, Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
+            throw new IllegalStateException();
+        }
+    };
+
 }

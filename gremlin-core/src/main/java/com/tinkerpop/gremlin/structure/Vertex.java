@@ -98,9 +98,7 @@ public interface Vertex extends Element {
 
         public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys);
 
-        public default <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
-            return (Iterator<MetaProperty<V>>) Element.Iterators.super.hiddens(propertyKeys);
-        }
+        public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys);
     }
 
     /**

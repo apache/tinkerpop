@@ -36,21 +36,6 @@ public class GiraphEdge extends GiraphElement implements Edge, Serializable, Wra
     }
 
     @Override
-    public Iterator<Vertex> vertices(final Direction direction) {
-        return GiraphHelper.getVertices(this.graph, this, direction);
-    }
-
-    @Override
-    public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-        return ((Edge) this.element).properties(propertyKeys);
-    }
-
-    @Override
-    public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-        return ((Edge) this.element).hiddens(propertyKeys);
-    }
-
-    @Override
     public GraphTraversal<Edge, Edge> start() {
         final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>(this.graph) {
             @Override
@@ -75,5 +60,34 @@ public class GiraphEdge extends GiraphElement implements Edge, Serializable, Wra
     @Override
     public TinkerEdge getBaseEdge() {
         return (TinkerEdge) this.element;
+    }
+
+    @Override
+    public Edge.Iterators iterators() {
+        return this.iterators;
+    }
+
+    private final Edge.Iterators iterators = new Iterators(this.getBaseEdge());
+
+    protected class Iterators extends GiraphElement.Iterators implements Edge.Iterators {
+
+        public Iterators(final TinkerEdge edge) {
+            super(edge);
+        }
+
+        @Override
+        public Iterator<Vertex> vertices(final Direction direction) {
+            return GiraphHelper.getVertices(graph, (TinkerEdge) this.element, direction);
+        }
+
+        @Override
+        public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
+            return ((TinkerEdge) this.element).iterators().properties(propertyKeys);
+        }
+
+        @Override
+        public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
+            return ((TinkerEdge) this.element).iterators().hiddens(propertyKeys);
+        }
     }
 }

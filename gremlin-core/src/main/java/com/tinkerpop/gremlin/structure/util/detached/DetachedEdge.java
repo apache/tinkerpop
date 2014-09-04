@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -45,32 +46,12 @@ public class DetachedEdge extends DetachedElement implements Edge {
         this.inVertex = DetachedVertex.detach(edge.inV().next());
     }
 
-    @Override
-    public Iterator<Vertex> vertices(final Direction direction) {
-        final List<Vertex> vertices = new ArrayList<>(2);
-        if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
-            vertices.add(this.outVertex);
-        if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH))
-            vertices.add(this.inVertex);
-        return vertices.iterator();
-    }
-
-    @Override
-    public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-        return (Iterator) super.properties(propertyKeys);
-    }
-
-    @Override
-    public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-        return (Iterator) super.hiddens(propertyKeys);
-    }
-
     public String toString() {
         return StringFactory.edgeString(this);
     }
 
     public Edge attach(final Vertex hostVertex) {
-        return StreamFactory.stream(hostVertex.edges(Direction.OUT, Integer.MAX_VALUE, this.label))
+        return StreamFactory.stream(hostVertex.iterators().edges(Direction.OUT, Integer.MAX_VALUE, this.label))
                 .filter(e -> e.id().equals(this.id))
                 .findFirst().orElseThrow(() -> new IllegalStateException("The detached edge could not be be found incident to the provided vertex: " + this));
     }
@@ -98,4 +79,36 @@ public class DetachedEdge extends DetachedElement implements Edge {
             });
         }
     }
+
+    @Override
+    public Edge.Iterators iterators() {
+        return this.iterators;
+    }
+
+    private final Edge.Iterators iterators = new Edge.Iterators() {
+        @Override
+        public Iterator<Vertex> vertices(final Direction direction) {
+            final List<Vertex> vertices = new ArrayList<>(2);
+            if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
+                vertices.add(outVertex);
+            if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH))
+                vertices.add(inVertex);
+            return vertices.iterator();
+        }
+
+        @Override
+        public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
+            return properties.entrySet().stream()
+                    .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
+                    .map(entry -> (Property<V>) entry.getValue()).iterator();
+        }
+
+        @Override
+        public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
+            return hiddens.entrySet().stream()
+                    .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
+                    .map(entry -> (Property<V>) entry.getValue()).iterator();
+        }
+
+    };
 }

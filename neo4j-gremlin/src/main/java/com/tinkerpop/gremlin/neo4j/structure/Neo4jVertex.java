@@ -7,10 +7,10 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -29,54 +29,40 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Relationship;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<Node> {
+
     public Neo4jVertex(final Node node, final Neo4jGraph graph) {
         super(graph);
         this.baseElement = node;
     }
 
     @Override
-    public <V> Iterator<MetaProperty<V>> properties(final String... keys) {
-        this.graph.tx().readWrite();
-        return (Iterator) keys().stream().map(key -> new Neo4jProperty<V>(this, key, (V) this.baseElement.getProperty(key))).iterator();
-    }
-
-    @Override
-    public <V> Iterator<MetaProperty<V>> hiddens(final String... keys) {
-        this.graph.tx().readWrite();
-        return (Iterator) hiddenKeys().stream().map(key -> new Neo4jProperty<V>(this, key, (V) this.baseElement.getProperty(key))).iterator();
-    }
-
-    @Override
     public <V> MetaProperty<V> property(final String key) {
         this.graph.tx().readWrite();
-
         if (this.baseElement.hasProperty(key))
-            return (MetaProperty) new Neo4jProperty<>(this, key, (V) this.baseElement.getProperty(key));
+            return new Neo4jMetaProperty<>(this, key, (V) this.baseElement.getProperty(key));
         else
-            return (MetaProperty) Property.empty();
+            return MetaProperty.<V>empty();
     }
 
     @Override
     public <V> MetaProperty<V> property(final String key, final V value) {
         ElementHelper.validateProperty(key, value);
         this.graph.tx().readWrite();
-
         try {
             this.baseElement.setProperty(key, value);
-            return (MetaProperty) new Neo4jProperty<>(this, key, value);
+            return new Neo4jMetaProperty<>(this, key, value);
         } catch (IllegalArgumentException iae) {
             throw Property.Exceptions.dataTypeOfPropertyValueNotSupported(value);
         }
@@ -116,18 +102,6 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
     }
 
     @Override
-    public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
-        this.graph.tx().readWrite();
-        return (Iterator) StreamFactory.stream(Neo4jHelper.getVertices(this, direction, labels)).limit(branchFactor).iterator();
-    }
-
-    @Override
-    public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
-        this.graph.tx().readWrite();
-        return (Iterator) StreamFactory.stream(Neo4jHelper.getEdges(this, direction, labels)).limit(branchFactor).iterator();
-    }
-
-    @Override
     public Neo4jTraversal<Vertex, Vertex> start() {
         final Neo4jTraversal<Vertex, Vertex> traversal = new DefaultNeo4jTraversal<>(this.graph);
         return (Neo4jTraversal) traversal.addStep(new StartStep<>(traversal, this));
@@ -138,13 +112,56 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         return (Node) this.baseElement;
     }
 
+    @Override
     public String toString() {
         return StringFactory.vertexString(this);
     }
 
-    //////////////////////////////////////////////////////////////////////
-
     @Override
+    public Vertex.Iterators iterators() {
+        return this.iterators;
+    }
+
+    private final Vertex.Iterators iterators = new Iterators(this);
+
+    protected class Iterators extends Neo4jElement.Iterators implements Vertex.Iterators {
+
+        public Iterators(final Neo4jVertex vertex) {
+            super(vertex);
+        }
+
+        @Override
+        public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
+            graph.tx().readWrite();
+            return (Iterator) StreamFactory.stream(Neo4jHelper.getVertices((Neo4jVertex) this.element, direction, labels)).limit(branchFactor).iterator();
+        }
+
+        @Override
+        public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
+            graph.tx().readWrite();
+            return (Iterator) StreamFactory.stream(Neo4jHelper.getEdges((Neo4jVertex) this.element, direction, labels)).limit(branchFactor).iterator();
+        }
+
+        @Override
+        public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
+            graph.tx().readWrite();
+            return (Iterator) StreamFactory.stream(baseElement.getPropertyKeys())
+                    .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, key) >= 0)
+                    .filter(key -> !Graph.Key.isHidden(key))
+                    .map(key -> new Neo4jMetaProperty<>((Neo4jVertex) this.element, key, (V) baseElement.getProperty(key))).iterator();
+        }
+
+        @Override
+        public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
+            graph.tx().readWrite();
+            return (Iterator) StreamFactory.stream(baseElement.getPropertyKeys())
+                    .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, key) >= 0)
+                    .filter(Graph.Key::isHidden)
+                    .map(key -> new Neo4jMetaProperty<>((Neo4jVertex) this.element, key, (V) baseElement.getProperty(key))).iterator();
+        }
+    }
+
+
     public Neo4jTraversal<Vertex, Vertex> trackPaths() {
         return this.start().trackPaths();
     }
@@ -307,17 +324,27 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
     }
 
     @Override
+    public <E2> Neo4jTraversal<Vertex, MetaProperty<E2>> properties(final String... propertyKeys) {
+        return (Neo4jTraversal) this.start().properties(propertyKeys);
+    }
+
+    @Override
+    public <E2> Neo4jTraversal<Vertex, Map<String, MetaProperty<E2>>> propertyMap(final String... propertyKeys) {
+        return (Neo4jTraversal) this.start().propertyMap(propertyKeys);
+    }
+
+    @Override
     public <E2> Neo4jTraversal<Vertex, E2> value() {
         return this.start().value();
     }
 
     @Override
-    public <E2> Neo4jTraversal<Vertex, E2> value(final String propertyKey, final Supplier<E2> defaultSupplier) {
-        return this.start().value(propertyKey, defaultSupplier);
+    public <E2> Neo4jTraversal<Vertex, Map<String, E2>> valueMap(final String... propertyKeys) {
+        return this.start().valueMap(propertyKeys);
     }
 
     @Override
-    public Neo4jTraversal<Vertex, Map<String, Object>> values(final String... propertyKeys) {
+    public <E2> Neo4jTraversal<Vertex, E2> values(final String... propertyKeys) {
         return this.start().values(propertyKeys);
     }
 

@@ -15,7 +15,6 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.MetaProperty;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
@@ -33,18 +32,8 @@ public class GiraphVertex extends GiraphElement implements Vertex, Serializable,
     }
 
     @Override
-    public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
-        return ((Vertex) this.element).properties(propertyKeys);
-    }
-
-    @Override
-    public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
-        return ((Vertex) this.element).hiddens(propertyKeys);
-    }
-
-    @Override
     public <V> MetaProperty<V> property(final String key) {
-        return ((Vertex)this.element).property(key);
+        return ((Vertex) this.element).property(key);
     }
 
     @Override
@@ -59,16 +48,6 @@ public class GiraphVertex extends GiraphElement implements Vertex, Serializable,
     @Override
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
         throw Vertex.Exceptions.edgeAdditionsNotSupported();
-    }
-
-    @Override
-    public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
-        return GiraphHelper.getVertices(this.graph, this, direction, branchFactor, labels);
-    }
-
-    @Override
-    public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
-        return GiraphHelper.getEdges(this.graph, this, direction, branchFactor, labels);
     }
 
     @Override
@@ -97,5 +76,39 @@ public class GiraphVertex extends GiraphElement implements Vertex, Serializable,
     @Override
     public TinkerVertex getBaseVertex() {
         return (TinkerVertex) this.element;
+    }
+
+    @Override
+    public Vertex.Iterators iterators() {
+        return this.iterators;
+    }
+
+    private final Vertex.Iterators iterators = new Iterators(this.getBaseVertex());
+
+    protected class Iterators extends GiraphElement.Iterators implements Vertex.Iterators {
+
+        public Iterators(final TinkerVertex vertex) {
+            super(vertex);
+        }
+
+        @Override
+        public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
+            return GiraphHelper.getVertices(graph, (TinkerVertex) this.element, direction, branchFactor, labels);
+        }
+
+        @Override
+        public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
+            return GiraphHelper.getEdges(graph, (TinkerVertex) this.element, direction, branchFactor, labels);
+        }
+
+        @Override
+        public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
+            return (Iterator) super.properties(propertyKeys);
+        }
+
+        @Override
+        public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
+            return (Iterator) super.properties(propertyKeys);
+        }
     }
 }

@@ -22,7 +22,7 @@ public abstract class DetachedElement implements Element, Serializable {
     Object id;
     String label;
     Map<String, ? extends Property> properties = Collections.emptyMap();
-    Map<String, ? extends Property> hiddenProperties = Collections.emptyMap();
+    Map<String, ? extends Property> hiddens = Collections.emptyMap();
 
     protected DetachedElement() {
 
@@ -34,7 +34,7 @@ public abstract class DetachedElement implements Element, Serializable {
 
     protected DetachedElement(final Object id, final String label,
                               final Map<String, Object> properties,
-                              final Map<String, Object> hiddenProperties) {
+                              final Map<String, Object> hiddens) {
         if (null == id) throw Graph.Exceptions.argumentCanNotBeNull("id");
         if (null == label) throw Graph.Exceptions.argumentCanNotBeNull("label");
 
@@ -50,8 +50,8 @@ public abstract class DetachedElement implements Element, Serializable {
                             return Pair.with(entry.getKey(), new DetachedProperty(entry.getKey(), entry.getValue(), this));
                     }).collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
 
-        if (null != hiddenProperties)
-            this.hiddenProperties = hiddenProperties.entrySet().stream()
+        if (null != hiddens)
+            this.hiddens = hiddens.entrySet().stream()
                     .map(entry -> {
                         if (entry.getValue() instanceof Property)
                             return Pair.with(entry.getKey(), DetachedProperty.detach((Property) entry.getValue()));
@@ -86,20 +86,6 @@ public abstract class DetachedElement implements Element, Serializable {
     }
 
     @Override
-    public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
-        return this.properties.entrySet().stream()
-                .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
-                .map(entry -> (Property<V>) entry.getValue()).iterator();
-    }
-
-    @Override
-    public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys) {
-        return this.hiddenProperties.entrySet().stream()
-                .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
-                .map(entry -> (Property<V>) entry.getValue()).iterator();
-    }
-
-    @Override
     public void remove() {
         throw new UnsupportedOperationException("Detached elements are readonly: " + this);
     }
@@ -114,4 +100,25 @@ public abstract class DetachedElement implements Element, Serializable {
     public boolean equals(final Object object) {
         return ElementHelper.areEqual(this, object);
     }
+
+    @Override
+    public Element.Iterators iterators() {
+        return this.iterators;
+    }
+
+    private final Element.Iterators iterators = new Element.Iterators() {
+        @Override
+        public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
+            return properties.entrySet().stream()
+                    .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
+                    .map(entry -> (Property<V>) entry.getValue()).iterator();
+        }
+
+        @Override
+        public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys) {
+            return hiddens.entrySet().stream()
+                    .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
+                    .map(entry -> (Property<V>) entry.getValue()).iterator();
+        }
+    };
 }

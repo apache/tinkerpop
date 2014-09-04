@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -55,12 +56,6 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
     }
 
     @Override
-    public Iterator<Vertex> vertices(final Direction direction) {
-        this.graph.tx().readWrite();
-        return (Iterator) Neo4jHelper.getVertices(this, direction);
-    }
-
-    @Override
     public Neo4jTraversal<Edge, Edge> start() {
         final Neo4jTraversal<Edge, Edge> traversal = new DefaultNeo4jTraversal<>(this.graph);
         return (Neo4jTraversal) traversal.addStep(new StartStep<>(traversal, this));
@@ -76,20 +71,36 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
     }
 
     @Override
-    public <V> Iterator<Property<V>> properties(final String... keys) {
-        this.graph.tx().readWrite();
-        return (Iterator) keys().stream().map(key -> new Neo4jProperty<V>(this, key, (V) this.baseElement.getProperty(key))).iterator();
+    public Edge.Iterators iterators() {
+        return this.iterators;
     }
 
-    @Override
-    public <V> Iterator<Property<V>> hiddens(final String... keys) {
-        this.graph.tx().readWrite();
-        return (Iterator) hiddenKeys().stream().map(key -> new Neo4jProperty<V>(this, key, (V) this.baseElement.getProperty(key))).iterator();
+    private final Edge.Iterators iterators = new Iterators(this);
+
+    protected class Iterators extends Neo4jElement.Iterators implements Edge.Iterators {
+
+        public Iterators(final Neo4jEdge edge) {
+            super(edge);
+        }
+
+        @Override
+        public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
+            return (Iterator<Property<V>>) super.properties(propertyKeys);
+        }
+
+        @Override
+        public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
+            return (Iterator<Property<V>>) super.hiddens(propertyKeys);
+        }
+
+        @Override
+        public Iterator<Vertex> vertices(final Direction direction) {
+            graph.tx().readWrite();
+            return (Iterator) Neo4jHelper.getVertices((Neo4jEdge) this.element, direction);
+        }
+
     }
 
-    //////////////////////////////////////////////////////////////////////
-
-    @Override
     public Neo4jTraversal<Edge, Edge> trackPaths() {
         return this.start().trackPaths();
     }
@@ -252,17 +263,27 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
     }
 
     @Override
+    public <E2> Neo4jTraversal<Edge, Property<E2>> properties(final String... propertyKeys) {
+        return (Neo4jTraversal) this.start().properties(propertyKeys);
+    }
+
+    @Override
+    public <E2> Neo4jTraversal<Edge, Map<String, Property<E2>>> propertyMap(final String... propertyKeys) {
+        return (Neo4jTraversal) this.start().propertyMap(propertyKeys);
+    }
+
+    @Override
     public <E2> Neo4jTraversal<Edge, E2> value() {
         return this.start().value();
     }
 
     @Override
-    public <E2> Neo4jTraversal<Edge, E2> value(final String propertyKey, final Supplier<E2> defaultSupplier) {
-        return this.start().value(propertyKey, defaultSupplier);
+    public <E2> Neo4jTraversal<Edge, Map<String, E2>> valueMap(final String... propertyKeys) {
+        return this.start().valueMap(propertyKeys);
     }
 
     @Override
-    public Neo4jTraversal<Edge, Map<String, Object>> values(final String... propertyKeys) {
+    public <E2> Neo4jTraversal<Edge, E2> values(final String... propertyKeys) {
         return this.start().values(propertyKeys);
     }
 

@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.util.StreamFactory;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -120,9 +119,7 @@ public abstract interface Element {
         /**
          * Get an {@link Iterator} of hidden properties.
          */
-        public default <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys) {
-            return this.properties((String[]) Arrays.stream(propertyKeys).map(Graph.Key::hide).toArray());
-        }
+        public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys);
     }
 
     /**

@@ -46,11 +46,6 @@ public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty
     }
 
     @Override
-    public boolean isHidden() {
-        return Graph.Key.isHidden(this.key);
-    }
-
-    @Override
     public String toString() {
         return StringFactory.metaPropertyString(this);
     }
@@ -94,10 +89,12 @@ public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty
     }
 
     public MetaProperty.Iterators iterators() {
-        return new Iterators(this);
+        return this.iterators;
     }
 
-    public class Iterators extends TinkerElement.Iterators implements MetaProperty.Iterators {
+    private final MetaProperty.Iterators iterators = new Iterators(this);
+
+    protected class Iterators extends TinkerElement.Iterators implements MetaProperty.Iterators {
 
         public Iterators(final TinkerMetaProperty metaProperty) {
             super(metaProperty);

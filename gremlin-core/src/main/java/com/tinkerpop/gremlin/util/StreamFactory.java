@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.util;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -18,14 +17,14 @@ public class StreamFactory {
      * Construct a {@link java.util.stream.Stream} from an {@link Iterable}.
      */
     public static <T> Stream<T> stream(final Iterable<T> iterable) {
-        return StreamFactory.stream(iterable.iterator());
+        return StreamSupport.stream(iterable.spliterator(), false);
     }
 
     /**
      * Construct a parallel {@link java.util.stream.Stream} from an {@link Iterable}.
      */
     public static <T> Stream<T> parallelStream(final Iterable<T> iterable) {
-        return StreamFactory.parallelStream(iterable.iterator());
+        return StreamSupport.stream(iterable.spliterator(), true);
     }
 
     /**
@@ -46,10 +45,10 @@ public class StreamFactory {
      * Construct an {@link Iterable} from an {@link java.util.stream.Stream}.
      */
     public static <T> Iterable<T> iterable(final Stream<T> stream) {
-        return () -> stream.iterator();
+        return stream::iterator;
     }
 
     public static <T> Stream<T> stream(final T t) {
-        return Arrays.asList(t).stream();
+        return Stream.of(t);
     }
 }

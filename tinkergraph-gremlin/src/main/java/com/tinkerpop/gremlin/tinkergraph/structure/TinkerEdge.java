@@ -78,10 +78,12 @@ public class TinkerEdge extends TinkerElement implements Edge {
 
     @Override
     public Edge.Iterators iterators() {
-        return new Iterators(this);
+        return this.iterators;
     }
 
-    public class Iterators extends TinkerElement.Iterators implements Edge.Iterators {
+    private final Edge.Iterators iterators = new Iterators(this);
+
+    protected class Iterators extends TinkerElement.Iterators implements Edge.Iterators {
 
         public Iterators(final TinkerEdge edge) {
             super(edge);
