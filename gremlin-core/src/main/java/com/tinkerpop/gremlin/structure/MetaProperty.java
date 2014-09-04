@@ -18,11 +18,11 @@ public interface MetaProperty<V> extends Property<V>, Element {
         return META_PROPERTY;
     }
 
-    public MetaProperty.Iterators iterators();
-
     public static <V> MetaProperty<V> empty() {
         return new EmptyMetaProperty<>();
     }
+
+    public MetaProperty.Iterators iterators();
 
     public interface Iterators extends Element.Iterators {
 

@@ -91,6 +91,7 @@ public class GiraphVertex extends GiraphElement implements Vertex, Serializable,
             super(vertex);
         }
 
+        // TODO: if GiraphHelper is not needed, then just call direct TinkerVertex methods
         @Override
         public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
             return GiraphHelper.getVertices(graph, (TinkerVertex) this.element, direction, branchFactor, labels);

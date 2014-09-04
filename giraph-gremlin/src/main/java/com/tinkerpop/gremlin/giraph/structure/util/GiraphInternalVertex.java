@@ -43,23 +43,25 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
 
     public GiraphInternalVertex() {
     }
-    // TODO: hidden property mapping
 
     public GiraphInternalVertex(final TinkerVertex tinkerVertex) {
         this.tinkerGraph = TinkerGraph.open();
         this.tinkerVertex = tinkerVertex;
         this.tinkerGraph.variables().set(VERTEX_ID, this.tinkerVertex.id());
         final TinkerVertex vertex = (TinkerVertex) this.tinkerGraph.addVertex(Element.ID, this.tinkerVertex.id(), Element.LABEL, this.tinkerVertex.label());
-        this.tinkerVertex.properties().forEachRemaining(property -> vertex.<Object>property(property.key(), property.value()));
+        this.tinkerVertex.iterators().properties().forEachRemaining(property -> vertex.<Object>property(property.key(), property.value()));
+        this.tinkerVertex.iterators().hiddens().forEachRemaining(property -> vertex.<Object>property(Graph.Key.hide(property.key()), property.value()));
         this.tinkerVertex.outE().forEach(edge -> {
             final TinkerVertex otherVertex = (TinkerVertex) ElementHelper.getOrAddVertex(this.tinkerGraph, edge.inV().id().next(), edge.inV().label().next());
             final TinkerEdge tinkerEdge = (TinkerEdge) vertex.addEdge(edge.label(), otherVertex, Element.ID, edge.id());
-            edge.properties().forEachRemaining(property -> tinkerEdge.<Object>property(property.key(), property.value()));
+            edge.iterators().properties().forEachRemaining(property -> tinkerEdge.<Object>property(property.key(), property.value()));
+            edge.iterators().hiddens().forEachRemaining(property -> tinkerEdge.<Object>property(Graph.Key.hide(property.key()), property.value()));
         });
         this.tinkerVertex.inE().forEach(edge -> {
             final TinkerVertex otherVertex = (TinkerVertex) ElementHelper.getOrAddVertex(this.tinkerGraph, edge.outV().id().next(), edge.outV().label().next());
             final TinkerEdge tinkerEdge = (TinkerEdge) otherVertex.addEdge(edge.label(), vertex, Element.ID, edge.id());
-            edge.properties().forEachRemaining(property -> tinkerEdge.<Object>property(property.key(), property.value()));
+            edge.iterators().properties().forEachRemaining(property -> tinkerEdge.<Object>property(property.key(), property.value()));
+            edge.iterators().hiddens().forEachRemaining(property -> tinkerEdge.<Object>property(Graph.Key.hide(property.key()), property.value()));
         });
         this.initialize(new LongWritable(Long.valueOf(this.tinkerVertex.id().toString())), this.deflateTinkerVertex(), EmptyOutEdges.instance());
         // TODO? this.tinkerVertex = vertex;
@@ -79,7 +81,7 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
             this.memory = new GiraphMemory(this, this.vertexProgram);
         final boolean deriveMemory = this.getConf().getBoolean(Constants.GREMLIN_DERIVE_MEMORY, false);
 
-
+        // TODO: if/else logic weird here
         if (!deriveMemory || !(Boolean) ((RuleWritable) this.getAggregatedValue(Constants.GREMLIN_HALT)).getObject())
             this.vertexProgram.execute(this.tinkerVertex, new GiraphMessenger(this, messages), this.memory);
         else if (deriveMemory) {
