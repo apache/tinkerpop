@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 
 /**
  * A {@link Vertex} maintains pointers to both a set of incoming and outgoing {@link Edge} objects. The outgoing edges
@@ -100,7 +99,7 @@ public interface Vertex extends Element {
         public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys);
 
         public default <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
-            return (Iterator) Element.Iterators.super.hiddens(propertyKeys);
+            return (Iterator<MetaProperty<V>>) Element.Iterators.super.hiddens(propertyKeys);
         }
     }
 
@@ -262,20 +261,24 @@ public interface Vertex extends Element {
         return this.start().shuffle();
     }
 
-    public default <E2> GraphTraversal<Vertex, E2> value() {
-        return this.start().value();
-    }
-
     public default <E2> GraphTraversal<Vertex, MetaProperty<E2>> properties(final String... propertyKeys) {
         return (GraphTraversal) this.start().properties(propertyKeys);
     }
 
-    public default <E2> GraphTraversal<Vertex, E2> value(final String propertyKey, final Supplier<E2> defaultSupplier) {
-        return this.start().value(propertyKey, defaultSupplier);
+    public default <E2> GraphTraversal<Vertex, Map<String, MetaProperty<E2>>> propertyMap(final String... propertyKeys) {
+        return (GraphTraversal) this.start().propertyMap(propertyKeys);
     }
 
-    public default GraphTraversal<Vertex, Map<String, Object>> valuesMap(final String... propertyKeys) {
+    public default <E2> GraphTraversal<Vertex, E2> value() {
+        return this.start().value();
+    }
+
+    public default <E2> GraphTraversal<Vertex, Map<String, E2>> valueMap(final String... propertyKeys) {
         return this.start().valueMap(propertyKeys);
+    }
+
+    public default <E2> GraphTraversal<Vertex, E2> values(final String... propertyKeys) {
+        return this.start().values(propertyKeys);
     }
 
     public default GraphTraversal<Vertex, Path> path(final SFunction... pathFunctions) {

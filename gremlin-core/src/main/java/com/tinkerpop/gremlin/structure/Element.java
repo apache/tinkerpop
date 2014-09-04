@@ -36,10 +36,6 @@ public abstract interface Element {
      */
     public String label();
 
-    /**
-     * Removes the {@code Element} from the graph.
-     */
-    public void remove();
 
     /**
      * Get the keys from non-hidden properties.
@@ -93,9 +89,15 @@ public abstract interface Element {
         return property.orElse(orElse);
     }
 
+    /**
+     * Removes the {@code Element} from the graph.
+     */
+    public void remove();
+
     public Element.Iterators iterators();
 
     public interface Iterators {
+
         /**
          * Get the values of non-hidden properties as a {@link Map} of keys and values.
          */

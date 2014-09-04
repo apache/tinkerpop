@@ -266,16 +266,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.addStep(new OrderStep<>(this, comparator));
     }
 
+    public default GraphTraversal<S, E> shuffle() {
+        return this.addStep(new ShuffleStep<>(this));
+    }
+
     public default <E2> GraphTraversal<S, ? extends Property<E2>> properties(final String... propertyKeys) {
         return this.addStep(new PropertiesStep<>(this, propertyKeys));
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> propertyMap(final String... propertyKeys) {
+    public default <E2> GraphTraversal<S, Map<String, ? extends Property<E2>>> propertyMap(final String... propertyKeys) {
         return this.addStep(new PropertyMapStep<>(this, propertyKeys));
-    }
-
-    public default GraphTraversal<S, E> shuffle() {
-        return this.addStep(new ShuffleStep<>(this));
     }
 
     public default <E2> GraphTraversal<S, E2> value() {

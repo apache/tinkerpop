@@ -20,7 +20,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 
 /**
  * An {@link Edge} links two {@link Vertex} objects. Along with its {@link Property} objects, an {@link Edge} has both
@@ -60,7 +59,7 @@ public interface Edge extends Element {
         public <V> Iterator<Property<V>> properties(final String... propertyKeys);
 
         public default <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-            return (Iterator) Element.Iterators.super.hiddens(propertyKeys);
+            return (Iterator<Property<V>>) Element.Iterators.super.hiddens(propertyKeys);
         }
 
         public default <V> Iterator<V> values(final String... propertyKeys) {
@@ -222,20 +221,24 @@ public interface Edge extends Element {
         return this.start().shuffle();
     }
 
-    public default <E2> GraphTraversal<Vertex, Property<E2>> properties(final String... propertyKeys) {
+    public default <E2> GraphTraversal<Edge, Property<E2>> properties(final String... propertyKeys) {
         return (GraphTraversal) this.start().properties(propertyKeys);
+    }
+
+    public default <E2> GraphTraversal<Edge, Map<String, Property<E2>>> propertyMap(final String... propertyKeys) {
+        return (GraphTraversal) this.start().propertyMap(propertyKeys);
     }
 
     public default <E2> GraphTraversal<Edge, E2> value() {
         return this.start().value();
     }
 
-    public default <E2> GraphTraversal<Edge, E2> value(final String propertyKey, final Supplier<E2> defaultSupplier) {
-        return this.start().value(propertyKey, defaultSupplier);
+    public default <E2> GraphTraversal<Edge, Map<String, E2>> valueMap(final String... propertyKeys) {
+        return this.start().valueMap(propertyKeys);
     }
 
-    public default GraphTraversal<Edge, Map<String, Object>> valuesMap(final String... propertyKeys) {
-        return this.start().valueMap(propertyKeys);
+    public default <E2> GraphTraversal<Edge, E2> values(final String... propertyKeys) {
+        return this.start().values(propertyKeys);
     }
 
     public default GraphTraversal<Edge, Path> path(final SFunction... pathFunctions) {
