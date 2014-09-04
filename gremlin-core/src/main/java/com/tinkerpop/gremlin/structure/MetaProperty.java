@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.structure.util.EmptyMetaProperty;
 import java.util.Iterator;
 
 /**
+ * @author Matthias Broecheler (me@matthiasb.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface MetaProperty<V> extends Property<V>, Element {

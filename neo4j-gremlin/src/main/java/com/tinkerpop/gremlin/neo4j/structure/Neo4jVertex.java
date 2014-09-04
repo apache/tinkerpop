@@ -36,6 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -331,6 +332,31 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
     @Override
     public <E2> Neo4jTraversal<Vertex, Map<String, MetaProperty<E2>>> propertyMap(final String... propertyKeys) {
         return (Neo4jTraversal) this.start().propertyMap(propertyKeys);
+    }
+
+    @Override
+    public <E2> Neo4jTraversal<Vertex, MetaProperty<E2>> hiddens(final String... propertyKeys) {
+        return (Neo4jTraversal) this.start().hiddens(propertyKeys);
+    }
+
+    @Override
+    public <E2> Neo4jTraversal<Vertex, Map<String, E2>> hiddenMap(final String... propertyKeys) {
+        return this.start().hiddenMap(propertyKeys);
+    }
+
+    @Override
+    public <E2> Neo4jTraversal<Vertex, E2> hiddenValue(final String propertyKey) {
+        return this.start().hiddenValue(propertyKey);
+    }
+
+    @Override
+    public <E2> Neo4jTraversal<Vertex, E2> hiddenValue(final String propertyKey, final E2 defaultValue) {
+        return this.start().hiddenValue(propertyKey, defaultValue);
+    }
+
+    @Override
+    public <E2> Neo4jTraversal<Vertex, E2> hiddenValue(final String propertyKey, final Supplier<E2> defaultSupplier) {
+        return this.start().hiddenValue(propertyKey, defaultSupplier);
     }
 
     @Override
