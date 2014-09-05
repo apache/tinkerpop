@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -15,21 +16,35 @@ import java.util.Map;
  */
 public class HiddenMapStep<E> extends MapStep<Element, Map<String, E>> {
 
-    public String[] propertyKeys;
+    public String[] hiddenPropertyKeys;
 
     public HiddenMapStep(final Traversal traversal, final String... propertyKeys) {
         super(traversal);
-        this.propertyKeys = propertyKeys;
+        this.hiddenPropertyKeys = propertyKeys;
+
+        // convert keys to hidden transparently
         for (int i = 0; i < propertyKeys.length; i++) {
-            this.propertyKeys[i] = Graph.Key.hide(this.propertyKeys[i]);
+            this.hiddenPropertyKeys[i] = Graph.Key.hide(this.hiddenPropertyKeys[i]);
         }
-        this.setFunction(traverser ->
-                traverser.get() instanceof Vertex ?
-                        (Map) ElementHelper.metaPropertyValueMap((Vertex) traverser.get(), propertyKeys) :
-                        (Map) ElementHelper.propertyValueMap(traverser.get(), propertyKeys));
+
+        this.setFunction(traverser -> {
+            final Element element = traverser.get();
+
+            // if no keys were supplied to the step then all the keys are required.  in that case the hidden keys
+            // need to be identified from the Element
+            final String [] hiddens = null == this.hiddenPropertyKeys ?
+                    element.hiddenKeys().toArray(new String[element.hiddenKeys().size()]) : this.hiddenPropertyKeys;
+
+            // since the hidden keys need to be explicitly identified there is no need to built a Map if none are
+            // in the hiddens String array.
+            return hiddens.length == 0 ?
+                    Collections.emptyMap() : element instanceof Vertex ?
+                      (Map) ElementHelper.metaPropertyValueMap((Vertex) traverser.get(), hiddens) :
+                      (Map) ElementHelper.propertyValueMap(traverser.get(), hiddens);
+        });
     }
 
     public String toString() {
-        return TraversalHelper.makeStepString(this, Arrays.asList(this.propertyKeys));
+        return TraversalHelper.makeStepString(this, Arrays.asList(this.hiddenPropertyKeys));
     }
 }

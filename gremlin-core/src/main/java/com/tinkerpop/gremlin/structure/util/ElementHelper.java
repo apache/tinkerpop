@@ -345,7 +345,7 @@ public class ElementHelper {
 
     public static Map<String, List> metaPropertyValueMap(final Vertex vertex, final String... propertyKeys) {
         final Map<String, List> values = new HashMap<>();
-        if (propertyKeys.length == 0 || null == propertyKeys) {
+        if (null == propertyKeys || propertyKeys.length == 0) {
             vertex.iterators().properties().forEachRemaining(property -> {
                 if (values.containsKey(property.key()))
                     values.get(property.key()).add(property.value());
