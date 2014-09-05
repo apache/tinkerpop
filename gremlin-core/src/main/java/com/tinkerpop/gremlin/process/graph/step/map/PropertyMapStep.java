@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PropertyMapStep<E> extends MapStep<Element, Map<String, ? extends Property<E>>> {
+public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> {
 
     public String[] propertyKeys;
 

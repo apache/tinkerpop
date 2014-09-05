@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
+import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jEdgeTraversal;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;

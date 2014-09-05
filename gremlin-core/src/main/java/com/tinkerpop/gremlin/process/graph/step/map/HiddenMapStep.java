@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HiddenMapStep<E> extends MapStep<Element, Map<String, ? extends Property<E>>> {
+public class HiddenMapStep<E> extends MapStep<Element, Map<String, E>> {
 
     public String[] hiddenPropertyKeys;
 

@@ -250,7 +250,7 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.hasNot(arg0);
 	}
 
-	public default <E2> Neo4jTraversal<S, java.util.Map<java.lang.String, ? extends com.tinkerpop.gremlin.structure.Property<E2>>> hiddenMap(java.lang.String... arg0) {
+	public default <E2> Neo4jTraversal<S, java.util.Map<java.lang.String, E2>> hiddenMap(java.lang.String... arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.hiddenMap(arg0);
 	}
 
@@ -386,7 +386,7 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.properties(arg0);
 	}
 
-	public default <E2> Neo4jTraversal<S, java.util.Map<java.lang.String, ? extends com.tinkerpop.gremlin.structure.Property<E2>>> propertyMap(java.lang.String... arg0) {
+	public default <E2> Neo4jTraversal<S, java.util.Map<java.lang.String, E2>> propertyMap(java.lang.String... arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.propertyMap(arg0);
 	}
 

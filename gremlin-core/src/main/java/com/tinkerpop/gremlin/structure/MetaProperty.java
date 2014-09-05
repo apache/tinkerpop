@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
+import com.tinkerpop.gremlin.process.graph.MetaPropertyTraversal;
 import com.tinkerpop.gremlin.structure.util.EmptyMetaProperty;
 
 import java.util.Iterator;
@@ -8,7 +9,7 @@ import java.util.Iterator;
  * @author Matthias Broecheler (me@matthiasb.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface MetaProperty<V> extends Property<V>, Element {
+public interface MetaProperty<V> extends Property<V>, Element, MetaPropertyTraversal {
 
     public static final String META_PROPERTY = "metaProperty";
     public static final String VALUE = "value";
@@ -37,5 +38,4 @@ public interface MetaProperty<V> extends Property<V>, Element {
         @Override
         public <U> Iterator<Property<U>> hiddens(final String... propertyKeys);
     }
-
 }

@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
+import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jMetaPropertyTraversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
@@ -21,7 +22,7 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Neo4jMetaProperty<V> implements MetaProperty<V> {
+public class Neo4jMetaProperty<V> implements MetaProperty<V>, Neo4jMetaPropertyTraversal {
 
     public static final Label META_PROPERTY_LABEL = DynamicLabel.label(MetaProperty.LABEL);
     public static final String META_PROPERTY_PREFIX = "%$%";

@@ -1,12 +1,29 @@
 package com.tinkerpop.gremlin.structure;
 
+import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.function.SBiConsumer;
+import com.tinkerpop.gremlin.util.function.SBiFunction;
+import com.tinkerpop.gremlin.util.function.SBiPredicate;
+import com.tinkerpop.gremlin.util.function.SConsumer;
+import com.tinkerpop.gremlin.util.function.SFunction;
+import com.tinkerpop.gremlin.util.function.SPredicate;
 
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * An {@link Element} is the base class for both {@link Vertex} and {@link Edge}. An {@link Element} has an identifier
@@ -143,5 +160,4 @@ public abstract interface Element {
             return new IllegalStateException("Property removal is not supported");
         }
     }
-
 }
