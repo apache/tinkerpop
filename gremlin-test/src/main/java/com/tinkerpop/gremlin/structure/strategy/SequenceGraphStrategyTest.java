@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
 public class SequenceGraphStrategyTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-    public void shouldAppendPropertyValuesInOrderToVertex() {
+    public void shouldAppendMultiPropertyValuesToVertex() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy().setGraphStrategy(new SequenceGraphStrategy(
                 new GraphStrategy() {
