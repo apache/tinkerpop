@@ -272,8 +272,8 @@ public interface Vertex extends Element {
         return (GraphTraversal) this.start().hiddens(propertyKeys);
     }
 
-    public default <E2> GraphTraversal<Vertex, Map<String, E2>> hiddenMap(final String... propertyKeys) {
-        return this.start().hiddenMap(propertyKeys);
+    public default <E2> GraphTraversal<Vertex, Map<String, E2>> hiddenValueMap(final String... propertyKeys) {
+        return this.start().hiddenValueMap(propertyKeys);
     }
 
     public default <E2> GraphTraversal<Vertex, E2> hiddenValue(final String propertyKey) {

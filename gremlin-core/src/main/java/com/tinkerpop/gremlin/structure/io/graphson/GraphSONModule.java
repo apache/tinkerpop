@@ -58,7 +58,7 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.OUT, outV.id());
             m.put(GraphSONTokens.OUT_LABEL, outV.label());
             m.put(GraphSONTokens.PROPERTIES, edge.valueMap().next());
-            m.put(GraphSONTokens.HIDDENS, edge.hiddenMap().next());
+            m.put(GraphSONTokens.HIDDENS, edge.hiddenValueMap().next());
 
             jsonGenerator.writeObject(m);
         }
@@ -90,7 +90,7 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.LABEL, vertex.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
             m.put(GraphSONTokens.PROPERTIES, vertex.valueMap().next());
-            m.put(GraphSONTokens.HIDDENS, vertex.hiddenMap().next());
+            m.put(GraphSONTokens.HIDDENS, vertex.hiddenValueMap().next());
 
             jsonGenerator.writeObject(m);
         }

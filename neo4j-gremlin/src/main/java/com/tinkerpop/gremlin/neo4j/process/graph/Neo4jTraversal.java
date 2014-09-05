@@ -250,8 +250,8 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.hasNot(arg0);
 	}
 
-	public default <E2> Neo4jTraversal<S, java.util.Map<java.lang.String, E2>> hiddenMap(java.lang.String... arg0) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.hiddenMap(arg0);
+	public default <E2> Neo4jTraversal<S, java.util.Map<java.lang.String, E2>> hiddenValueMap(java.lang.String... arg0) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.hiddenValueMap(arg0);
 	}
 
 	public default <E2> Neo4jTraversal<S, E2> hiddenValue(java.lang.String arg0) {
