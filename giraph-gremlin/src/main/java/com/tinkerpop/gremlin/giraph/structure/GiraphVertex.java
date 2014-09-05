@@ -19,6 +19,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
+import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.io.Serializable;
 import java.util.Iterator;
@@ -83,35 +84,28 @@ public class GiraphVertex extends GiraphElement implements Vertex, Serializable,
         return this.iterators;
     }
 
-    private final Vertex.Iterators iterators = new Iterators(this);
+    private final Vertex.Iterators iterators = new Iterators();
 
-    protected class Iterators implements Vertex.Iterators {
+    protected class Iterators implements Vertex.Iterators, Serializable {
 
-        private final GiraphVertex vertex;
-
-        public Iterators(final GiraphVertex vertex) {
-            this.vertex = vertex;
-        }
-
-        // TODO: if GiraphHelper is not needed, then just call direct TinkerVertex methods
         @Override
         public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
-            return GiraphHelper.getVertices(graph, this.vertex, direction, branchFactor, labels);
+            return StreamFactory.stream(getBaseVertex().iterators().vertices(direction, branchFactor, labels)).map(v -> graph.v(v.id())).iterator();
         }
 
         @Override
         public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
-            return GiraphHelper.getEdges(graph, this.vertex, direction, branchFactor, labels);
+            return StreamFactory.stream(getBaseVertex().iterators().edges(direction, branchFactor, labels)).map(e -> graph.e(e.id())).iterator();
         }
 
         @Override
         public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
-            return this.vertex.getBaseVertex().iterators().properties(propertyKeys);
+            return getBaseVertex().iterators().properties(propertyKeys);
         }
 
         @Override
         public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
-            return this.vertex.getBaseVertex().iterators().hiddens(propertyKeys);
+            return getBaseVertex().iterators().hiddens(propertyKeys);
         }
     }
 }

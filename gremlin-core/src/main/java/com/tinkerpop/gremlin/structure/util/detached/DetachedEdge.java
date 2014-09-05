@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Pair;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -65,27 +66,15 @@ public class DetachedEdge extends DetachedElement implements Edge {
         return new DetachedEdge(edge);
     }
 
-    class DetachedEdgeVertexStep extends EdgeVertexStep {
-        public DetachedEdgeVertexStep(final Traversal traversal, final Direction direction) {
-            super(traversal, direction);
-            this.setFunction(traverser -> {
-                final List<Vertex> vertices = new ArrayList<>();
-                if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
-                    vertices.add(outVertex);
-                if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH))
-                    vertices.add(inVertex);
-
-                return vertices.iterator();
-            });
-        }
-    }
-
     @Override
     public Edge.Iterators iterators() {
         return this.iterators;
     }
 
-    private final Edge.Iterators iterators = new Edge.Iterators() {
+    private final Edge.Iterators iterators = new Iterators();
+
+    protected class Iterators extends DetachedElement.Iterators implements Edge.Iterators, Serializable {
+
         @Override
         public Iterator<Vertex> vertices(final Direction direction) {
             final List<Vertex> vertices = new ArrayList<>(2);
@@ -110,5 +99,7 @@ public class DetachedEdge extends DetachedElement implements Edge {
                     .map(entry -> (Property<V>) entry.getValue()).iterator();
         }
 
-    };
+    }
+
+    ;
 }

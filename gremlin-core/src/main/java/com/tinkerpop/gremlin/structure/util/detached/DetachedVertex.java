@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
@@ -83,7 +84,10 @@ public class DetachedVertex extends DetachedElement implements Vertex {
         return this.iterators;
     }
 
-    public final Vertex.Iterators iterators = new Vertex.Iterators() {
+    private final Vertex.Iterators iterators = new Iterators();
+
+    protected class Iterators extends DetachedElement.Iterators implements Vertex.Iterators, Serializable {
+
         @Override
         public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
             return (Iterator) properties.entrySet().stream()
@@ -107,6 +111,5 @@ public class DetachedVertex extends DetachedElement implements Vertex {
         public GraphTraversal<Vertex, Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
             throw new IllegalStateException();
         }
-    };
-
+    }
 }

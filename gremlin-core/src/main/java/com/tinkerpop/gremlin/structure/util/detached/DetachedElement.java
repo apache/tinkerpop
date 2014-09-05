@@ -106,7 +106,9 @@ public abstract class DetachedElement implements Element, Serializable {
         return this.iterators;
     }
 
-    private final Element.Iterators iterators = new Element.Iterators() {
+    private final Element.Iterators iterators = new Iterators();
+
+    protected class Iterators implements Element.Iterators, Serializable {
         @Override
         public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
             return properties.entrySet().stream()
@@ -120,5 +122,5 @@ public abstract class DetachedElement implements Element, Serializable {
                     .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
                     .map(entry -> (Property<V>) entry.getValue()).iterator();
         }
-    };
+    }
 }

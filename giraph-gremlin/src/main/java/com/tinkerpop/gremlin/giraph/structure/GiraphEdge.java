@@ -21,7 +21,9 @@ import com.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -67,29 +69,28 @@ public class GiraphEdge extends GiraphElement implements Edge, Serializable, Wra
         return this.iterators;
     }
 
-    private final Edge.Iterators iterators = new Iterators(this);
+    private final Edge.Iterators iterators = new Iterators();
 
-    protected class Iterators implements Edge.Iterators {
-
-        private final GiraphEdge edge;
-
-        public Iterators(final GiraphEdge edge) {
-            this.edge = edge;
-        }
+    protected class Iterators implements Edge.Iterators, Serializable {
 
         @Override
         public Iterator<Vertex> vertices(final Direction direction) {
-            return GiraphHelper.getVertices(graph, this.edge, direction);
+            final List<Vertex> vertices = new ArrayList<>();
+            if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
+                vertices.add(graph.v(getBaseEdge().iterators().vertices(Direction.OUT).next().id()));
+            if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH))
+                vertices.add(graph.v(getBaseEdge().iterators().vertices(Direction.IN).next().id()));
+            return vertices.iterator();
         }
 
         @Override
         public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-            return this.edge.getBaseEdge().iterators().properties(propertyKeys);
+            return getBaseEdge().iterators().properties(propertyKeys);
         }
 
         @Override
         public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-            return this.edge.getBaseEdge().iterators().hiddens(propertyKeys);
+            return getBaseEdge().iterators().hiddens(propertyKeys);
         }
     }
 }

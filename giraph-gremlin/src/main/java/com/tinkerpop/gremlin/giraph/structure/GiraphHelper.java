@@ -16,25 +16,6 @@ import java.util.Iterator;
  */
 public class GiraphHelper {
 
-    public static Iterator<Vertex> getVertices(final GiraphGraph graph, final Vertex vertex, final Direction direction, final int branchFactor, final String... labels) {
-        return vertex instanceof GiraphVertex ?
-                StreamFactory.stream(((GiraphVertex) vertex).getBaseVertex().iterators().vertices(direction, branchFactor, labels)).map(v -> graph.v(v.id())).iterator() :
-                vertex.iterators().vertices(direction, branchFactor, labels);
-    }
-
-    public static Iterator<Edge> getEdges(final GiraphGraph graph, final Vertex vertex, final Direction direction, final int branchFactor, final String... labels) {
-        return vertex instanceof GiraphVertex ?
-                (Iterator) StreamFactory.stream(((GiraphVertex) vertex).getBaseVertex().iterators().edges(direction, branchFactor, labels)).map(e -> new GiraphEdge((TinkerEdge) e, graph)).iterator() :
-                vertex.iterators().edges(direction, branchFactor, labels);
-
-    }
-
-    public static Iterator<Vertex> getVertices(final GiraphGraph graph, final Edge edge, final Direction direction) {
-        return edge instanceof GiraphEdge ?
-                ((GiraphEdge) edge).getBaseEdge().flatMap(e -> e.get().iterators().vertices(direction)).map(v -> graph.v(v.get().id())) :
-                edge.iterators().vertices(direction);
-    }
-
     public static GiraphGraph getOutputGraph(final GiraphGraph giraphGraph) {
         final Configuration conf = new BaseConfiguration();
         giraphGraph.variables().getConfiguration().getKeys().forEachRemaining(key -> {
