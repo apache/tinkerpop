@@ -56,7 +56,7 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V> {
 
     @Override
     public Object id() {
-        return this.key.hashCode() + this.value.hashCode() + this.vertex.id().hashCode();
+        return isNode() ? this.node.getId() : (long) (this.key.hashCode() + this.value.hashCode() + this.vertex.id().hashCode());
     }
 
     @Override
@@ -66,7 +66,7 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V> {
 
     @Override
     public int hashCode() {
-        return this.key.hashCode() + this.value.hashCode() + this.vertex.hashCode();
+        return this.id().hashCode();
     }
 
     @Override
@@ -118,6 +118,7 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V> {
                 this.vertex.getBaseVertex().removeProperty(this.key);
             }
         }
+        // TODO: if only one MetaProperty with no properties for the key, then go back to vertex key/value pair
     }
 
     private boolean isNode() {
