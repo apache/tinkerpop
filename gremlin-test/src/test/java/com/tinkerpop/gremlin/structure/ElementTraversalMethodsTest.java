@@ -22,6 +22,9 @@ public class ElementTraversalMethodsTest {
         final List<Method> graphTraversalMethods = Arrays.asList(GraphTraversal.class.getMethods()).stream()
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
                 .filter(m -> !m.getName().equals("addStep"))
+                .filter(m -> !m.getName().equals("value"))
+                .filter(m -> !m.getName().equals("id"))
+                .filter(m -> !m.getName().equals("label"))
                 .filter(m -> GraphTraversal.class.isAssignableFrom(m.getReturnType())).collect(Collectors.toList());
 
         final List<Method> vertexMethods = new ArrayList<>(Arrays.asList(Vertex.class.getMethods()));
@@ -42,12 +45,15 @@ public class ElementTraversalMethodsTest {
         final List<Method> graphTraversalMethods = Arrays.asList(GraphTraversal.class.getMethods()).stream()
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
                 .filter(m -> !m.getName().equals("addStep"))
+                .filter(m -> !m.getName().equals("value"))
+                .filter(m -> !m.getName().equals("id"))
+                .filter(m -> !m.getName().equals("label"))
                 .filter(m -> GraphTraversal.class.isAssignableFrom(m.getReturnType())).collect(Collectors.toList());
 
-        final List<Method> vertexMethods = new ArrayList<>(Arrays.asList(Edge.class.getMethods()));
+        final List<Method> edgeMethods = new ArrayList<>(Arrays.asList(Edge.class.getMethods()));
 
         final List<Method> nonExistent = graphTraversalMethods.stream()
-                .filter(m -> !existsInList(m, vertexMethods))
+                .filter(m -> !existsInList(m, edgeMethods))
                 .collect(Collectors.toList());
         if (nonExistent.size() > 0) {
             for (Method method : nonExistent) {
@@ -58,9 +64,35 @@ public class ElementTraversalMethodsTest {
 
     }
 
+    @Test
+    public void shouldHaveAllGraphTraversalMethodsOffMetaProperty() {
+        final List<Method> graphTraversalMethods = Arrays.asList(GraphTraversal.class.getMethods()).stream()
+                .filter(m -> !Modifier.isStatic(m.getModifiers()))
+                .filter(m -> !m.getName().equals("addStep"))
+                .filter(m -> !m.getName().equals("value"))
+                .filter(m -> !m.getName().equals("id"))
+                .filter(m -> !m.getName().equals("label"))
+                .filter(m -> GraphTraversal.class.isAssignableFrom(m.getReturnType())).collect(Collectors.toList());
+
+        final List<Method> metaPropertyMethods = new ArrayList<>(Arrays.asList(MetaProperty.class.getMethods()));
+
+        final List<Method> nonExistent = graphTraversalMethods.stream()
+                .filter(m -> !existsInList(m, metaPropertyMethods))
+                .collect(Collectors.toList());
+        if (nonExistent.size() > 0) {
+            for (Method method : nonExistent) {
+                System.out.println("Requirement implementation: " + method);
+            }
+            fail("The following methods are not implemented by Edge: " + nonExistent);
+        }
+
+    }
+
+
     private static boolean existsInList(final Method method, final List<Method> methods) {
         final List<Method> nonMatches = methods.stream()
                 .filter(m -> m.getName().equals(method.getName()))
+                .filter(m -> m.getReturnType().equals(method.getReturnType()))
                 .filter(m -> m.getParameterCount() == method.getParameterCount())
                 .filter(m -> {
                     boolean equals = true;

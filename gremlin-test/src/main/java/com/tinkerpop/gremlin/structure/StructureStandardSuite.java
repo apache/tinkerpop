@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.structure;
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.algorithm.generator.CommunityGeneratorTest;
 import com.tinkerpop.gremlin.algorithm.generator.DistributionGeneratorTest;
-import com.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import com.tinkerpop.gremlin.structure.strategy.IdGraphStrategyTest;
 import com.tinkerpop.gremlin.structure.strategy.PartitionGraphStrategyTest;
 import com.tinkerpop.gremlin.structure.strategy.ReadOnlyGraphStrategyTest;
@@ -29,9 +28,10 @@ import java.util.stream.Stream;
  * implements StructureStandardSuite.GraphProvider as a convenience only...it could be implemented in a separate class
  * file):
  * <code>
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  * @RunWith(StructureStandardSuite.class)
- * @StructureStandardSuite.GraphProviderClass(TinkerGraphStructureStandardTest.class)
- * public class TinkerGraphStructureStandardTest implements GraphProvider {
+ * @StructureStandardSuite.GraphProviderClass(TinkerGraphStructureStandardTest.class) public class TinkerGraphStructureStandardTest implements GraphProvider {
  * }
  * </code>
  * Implementing {@link com.tinkerpop.gremlin.GraphProvider} provides a way for the StructureStandardSuite to
@@ -40,8 +40,6 @@ import java.util.stream.Stream;
  * <br/>
  * Set the {@code gremlin.structure.tests} environment variable to a comma separated list of test classes to execute.
  * This setting can be helpful to restrict execution of tests to specific ones being focused on during development.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class StructureStandardSuite extends AbstractGremlinSuite {
 

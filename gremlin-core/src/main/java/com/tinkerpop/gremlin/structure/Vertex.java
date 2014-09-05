@@ -54,14 +54,14 @@ public interface Vertex extends Element, VertexTraversal {
 
     public <V> MetaProperty<V> property(final String key, final V value);
 
-    public default <V> MetaProperty<V> property(final String key, final V value, final String... keyValues) {
+    public default <V> MetaProperty<V> property(final String key, final V value, final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
         final MetaProperty<V> property = this.property(key, value);
         ElementHelper.attachProperties(property, keyValues);
         return property;
     }
 
-    public default <V> MetaProperty<V> propertyOverwrite(final String key, final V value, final String... keyValues) {
+    public default <V> MetaProperty<V> singleProperty(final String key, final V value, final Object... keyValues) {
         this.iterators().properties(key).forEachRemaining(MetaProperty::remove);
         return this.property(key, value, keyValues);
     }

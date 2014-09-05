@@ -233,9 +233,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
                         vertex.property("nameLengthCounter", vertex.<String>value("name").length());
                         memory.incr("b", vertex.<String>value("name").length());
                     } else {
-                        int nameLengthCounter = vertex.value("nameLengthCounter");
-                        vertex.property("nameLengthCounter").remove();
-                        vertex.property("nameLengthCounter", vertex.<String>value("name").length() + nameLengthCounter);
+                        vertex.singleProperty("nameLengthCounter", vertex.<String>value("name").length() + vertex.<Integer>value("nameLengthCounter"));
                     }
                 }).
                 terminate(memory -> memory.getIteration() == 1).
@@ -270,12 +268,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
     public void shouldSupportMultipleMapReduceJobs() throws Exception {
         final ComputerResult results = g.compute().program(LambdaVertexProgram.build()
                 .execute((vertex, messenger, memory) -> {
-                    if (memory.isInitialIteration()) vertex.property("counter", 1);
-                    else {
-                        int counter = vertex.value("counter");
-                        vertex.property("counter").remove();
-                        vertex.property("counter", ++counter);
-                    }
+                    vertex.singleProperty("counter", memory.isInitialIteration() ? 1 : vertex.<Integer>value("counter") + 1);
                 })
                 .terminate(memory -> memory.getIteration() > 8)
                 .elementComputeKeys("counter", VertexProgram.KeyType.VARIABLE).create())

@@ -57,7 +57,8 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, Neo4jMetaPropertyT
 
     @Override
     public Object id() {
-        return isNode() ? this.node.getId() : (long) (this.key.hashCode() + this.value.hashCode() + this.vertex.id().hashCode());
+        // TODO: Neo4j needs a better ID system for MetaProperties
+        return (long) (this.key.hashCode() + this.value.hashCode() + this.vertex.id().hashCode());
     }
 
     @Override

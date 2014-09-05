@@ -103,8 +103,12 @@ public class MetaPropertyTest extends AbstractGremlinTest {
         assertEquals(1, g.V().count().next().intValue());
         assertEquals(0, g.E().count().next().intValue());
 
+        // TODO: Neo4j needs a better ID system for MetaProperties
         assertEquals(v.property("name"), v.property("name").property("acl", "public").getElement());
         assertEquals(v.property("age"), v.property("age").property("acl", "private").getElement());
+
+        v.property("name").property("acl", "public");
+        v.property("age").property("acl", "private");
 
         assertEquals(2, g.V().properties().count().next().intValue());
         assertEquals(1, g.V().properties("age").count().next().intValue());
@@ -179,5 +183,29 @@ public class MetaPropertyTest extends AbstractGremlinTest {
         assertEquals(0, marko.properties("blah").count().next().intValue());*/
 
 
+    }
+
+    @Test
+    public void shouldHandleMetaPropertyTraversals() {
+        Vertex v = g.addVertex("i", 1, "i", 2, "i", 3);
+        assertEquals(3, v.properties().count().next().intValue());
+        assertEquals(3, v.properties("i").count().next().intValue());
+        v.properties("i").sideEffect(m -> m.get().<Object>property("aKey", "aValue")).iterate();
+        v.properties("i").properties("aKey").forEach(p -> assertEquals("aValue", p.value()));
+        assertEquals(3, v.properties("i").properties("aKey").count().next().intValue());
+        assertEquals(3, g.V().properties("i").properties("aKey").count().next().intValue());
+        assertEquals(1, g.V().properties("i").has(MetaProperty.VALUE, 1).properties("aKey").count().next().intValue());
+        assertEquals(3, g.V().properties("i").has(MetaProperty.KEY, "i").properties().count().next().intValue());
+    }
+
+    @Test
+    public void shouldHandleSingleMetaProperties() {
+        Vertex v = g.addVertex("name", "marko", "name", "marko a. rodriguez", "name", "marko rodriguez");
+        assertEquals(3, v.properties().count().next().intValue());
+        v.singleProperty("name", "okram", "acl", "private", "date", 2014);
+        assertEquals(1, v.properties().count().next().intValue());
+        assertEquals(2, v.property("name").valueMap().next().size());
+        assertEquals("private", v.property("name").valueMap().next().get("acl"));
+        assertEquals(2014, v.property("name").valueMap().next().get("date"));
     }
 }
