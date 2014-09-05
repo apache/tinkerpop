@@ -16,12 +16,14 @@ import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import com.tinkerpop.gremlin.util.function.SQuintFunction;
 import com.tinkerpop.gremlin.util.function.STriFunction;
+import org.javatuples.Pair;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -175,11 +177,16 @@ public class GraphSONReader implements GraphReader {
     }
 
     private static Vertex readVertexData(final Map<String, Object> vertexData, final STriFunction<Object, String, Object[], Vertex> vertexMaker) throws IOException {
-        final Map<String, Object> properties = (Map<String, Object>) vertexData.get(GraphSONTokens.PROPERTIES);
-        final Map<String, Object> hiddens = (Map<String, Object>) vertexData.get(GraphSONTokens.HIDDENS);
+        final Map<String, Object> metaProperties = (Map<String, Object>) vertexData.get(GraphSONTokens.PROPERTIES);
+        final Map<String, Object> hiddensMetaProperties = (Map<String, Object>) vertexData.get(GraphSONTokens.HIDDENS);
+
         final Object[] propsAsArray = Stream.concat(
-                properties.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue())),
-                hiddens.entrySet().stream().flatMap(e -> Stream.of(Graph.Key.hide(e.getKey()), e.getValue()))).toArray();
+                metaProperties.entrySet().stream()
+                        .flatMap(e -> ((List<Object>) e.getValue()).stream().map(p -> Pair.with(e.getKey(), p)))
+                        .flatMap(e -> Stream.of(((Pair) e).getValue0(), ((Map) ((Pair) e).getValue1()).get(GraphSONTokens.VALUE))),
+                hiddensMetaProperties.entrySet().stream().flatMap(e -> Stream.of(Graph.Key.hide(e.getKey()), ((Map) e.getValue()).get(GraphSONTokens.VALUE)))).toArray();
+
+        // todo: properties on properties
 
         return vertexMaker.apply(vertexData.get(GraphSONTokens.ID), vertexData.get(GraphSONTokens.LABEL).toString(), propsAsArray);
     }

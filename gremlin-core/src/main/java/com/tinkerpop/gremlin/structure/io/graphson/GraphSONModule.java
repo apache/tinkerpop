@@ -8,11 +8,15 @@ import com.fasterxml.jackson.databind.ser.std.StdKeySerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -25,6 +29,36 @@ public class GraphSONModule extends SimpleModule {
         addSerializer(Vertex.class, new VertexJacksonSerializer());
         addSerializer(GraphSONVertex.class, new GraphSONVertex.VertexJacksonSerializer());
         addSerializer(GraphSONGraph.class, new GraphSONGraph.GraphJacksonSerializer(normalize));
+        addSerializer(MetaProperty.class, new MetaPropertyJacksonSerializer());
+    }
+
+    static class MetaPropertyJacksonSerializer extends StdSerializer<MetaProperty> {
+        public MetaPropertyJacksonSerializer() {
+            super(MetaProperty.class);
+        }
+
+        @Override
+        public void serialize(final MetaProperty property, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException {
+            ser(property, jsonGenerator);
+        }
+
+        @Override
+        public void serializeWithType(final MetaProperty property, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
+            ser(property, jsonGenerator);
+        }
+
+        private void ser(final MetaProperty property, final JsonGenerator jsonGenerator) throws IOException {
+            final Map<String, Object> m = new HashMap<>();
+            m.put(GraphSONTokens.ID, property.id());
+            m.put(GraphSONTokens.LABEL, property.label());
+            m.put(GraphSONTokens.VALUE, property.value());
+            m.put(GraphSONTokens.PROPERTIES, StreamFactory.<Property<Object>>stream(property.iterators().properties()).collect(Collectors.toMap(Property::key, Property::value)));
+            m.put(GraphSONTokens.HIDDENS, StreamFactory.<Property<Object>>stream(property.iterators().hiddens()).collect(Collectors.toMap(Property::key, Property::value)));
+
+            jsonGenerator.writeObject(m);
+        }
     }
 
     static class EdgeJacksonSerializer extends StdSerializer<Edge> {
@@ -89,8 +123,8 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.ID, vertex.id());
             m.put(GraphSONTokens.LABEL, vertex.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
-            m.put(GraphSONTokens.PROPERTIES, vertex.valueMap().next());
-            m.put(GraphSONTokens.HIDDENS, vertex.hiddenValueMap().next());
+            m.put(GraphSONTokens.PROPERTIES, vertex.propertyMap().next());
+            m.put(GraphSONTokens.HIDDENS, vertex.hiddenMap().next());
 
             jsonGenerator.writeObject(m);
         }

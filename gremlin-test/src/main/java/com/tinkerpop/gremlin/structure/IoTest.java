@@ -767,7 +767,7 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), ((List) m.get("name")).get(0));
+                            assertEquals(v1.value("name"), m.get("name"));
 
                             called.set(true);
                             return mock(Vertex.class);
@@ -978,7 +978,7 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), ((List) m.get("name")).get(0));
+                            assertEquals(v1.value("name"), m.get("name"));
                             calledVertex.set(true);
                             return null;
                         },
@@ -1096,7 +1096,7 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), ((List) m.get("name")).get(0));
+                            assertEquals(v1.value("name"), m.get("name"));
                             calledVertex.set(true);
                             return null;
                         },
@@ -1272,7 +1272,7 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), ((List) m.get("name")).get(0));
+                            assertEquals(v1.value("name"), m.get("name"));
 
                             vertexCalled.set(true);
 
@@ -1339,6 +1339,8 @@ public class IoTest extends AbstractGremlinTest {
                             assertEquals(v1.id(), vertexId);
                             assertEquals(v1.label(), label);
 
+                            // todo: multiple properties with the same key can appear in the properties list
+
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
                                 if (!properties[i].equals(Element.ID))
@@ -1346,7 +1348,7 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), ((List) m.get("name")).get(0));
+                            assertEquals(v1.value("name"), m.get("name"));
 
                             vertexCalled.set(true);
 
@@ -1485,7 +1487,7 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), ((List) m.get("name")).get(0));
+                            assertEquals(v1.value("name"), m.get("name"));
 
                             vertexCalled.set(true);
 
@@ -1614,7 +1616,7 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), ((List) m.get("name")).get(0));
+                            assertEquals(v1.value("name"), m.get("name"));
 
                             vertexCalled.set(true);
 

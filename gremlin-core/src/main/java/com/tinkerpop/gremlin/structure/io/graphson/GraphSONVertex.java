@@ -55,8 +55,8 @@ class GraphSONVertex {
             m.put(GraphSONTokens.ID, vertex.id());
             m.put(GraphSONTokens.LABEL, vertex.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
-            m.put(GraphSONTokens.PROPERTIES, vertex.valueMap().next());
-            m.put(GraphSONTokens.HIDDENS, vertex.hiddenValueMap().next());
+            m.put(GraphSONTokens.PROPERTIES, vertex.propertyMap().next());
+            m.put(GraphSONTokens.HIDDENS, vertex.hiddenMap().next());
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.OUT) {
                 m.put(GraphSONTokens.OUT_E, vertex.outE().toList());
