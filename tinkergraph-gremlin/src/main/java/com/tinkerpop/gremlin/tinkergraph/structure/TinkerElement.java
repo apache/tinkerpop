@@ -61,7 +61,7 @@ public abstract class TinkerElement implements Element, Serializable {
         return ElementHelper.areEqual(this, object);
     }
 
-    protected class Iterators implements Element.Iterators {
+    protected class Iterators implements Element.Iterators, Serializable {
 
         protected final TinkerElement element;
 

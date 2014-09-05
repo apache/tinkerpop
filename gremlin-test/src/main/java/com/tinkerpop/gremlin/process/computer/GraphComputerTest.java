@@ -232,8 +232,11 @@ public class GraphComputerTest extends AbstractGremlinTest {
                     if (memory.isInitialIteration()) {
                         vertex.property("nameLengthCounter", vertex.<String>value("name").length());
                         memory.incr("b", vertex.<String>value("name").length());
-                    } else
-                        vertex.property("nameLengthCounter", vertex.<String>value("name").length() + vertex.<Integer>value("nameLengthCounter"));
+                    } else {
+                        int nameLengthCounter = vertex.value("nameLengthCounter");
+                        vertex.property("nameLengthCounter").remove();
+                        vertex.property("nameLengthCounter", vertex.<String>value("name").length() + nameLengthCounter);
+                    }
                 }).
                 terminate(memory -> memory.getIteration() == 1).
                 elementComputeKeys("nameLengthCounter", VertexProgram.KeyType.VARIABLE).
@@ -266,7 +269,14 @@ public class GraphComputerTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldSupportMultipleMapReduceJobs() throws Exception {
         final ComputerResult results = g.compute().program(LambdaVertexProgram.build()
-                .execute((vertex, messenger, memory) -> vertex.<Integer>property("counter", memory.isInitialIteration() ? 1 : vertex.<Integer>value("counter") + 1))
+                .execute((vertex, messenger, memory) -> {
+                    if (memory.isInitialIteration()) vertex.property("counter", 1);
+                    else {
+                        int counter = vertex.value("counter");
+                        vertex.property("counter").remove();
+                        vertex.property("counter", ++counter);
+                    }
+                })
                 .terminate(memory -> memory.getIteration() > 8)
                 .elementComputeKeys("counter", VertexProgram.KeyType.VARIABLE).create())
                 .mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()

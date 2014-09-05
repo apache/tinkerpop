@@ -78,6 +78,11 @@ public interface Vertex extends Element {
         return property;
     }
 
+    public default <V> MetaProperty<V> propertyOverwrite(final String key, final V value, final String... keyValues) {
+        this.iterators().properties(key).forEachRemaining(MetaProperty::remove);
+        return this.property(key, value, keyValues);
+    }
+
     public Vertex.Iterators iterators();
 
     public interface Iterators extends Element.Iterators {
@@ -119,7 +124,7 @@ public interface Vertex extends Element {
         }
 
         public static IllegalStateException multiplePropertiesExistForProvidedKey(final String propertyKey) {
-            return new IllegalStateException("Multiple properties exist for the provided key, use properties(" + propertyKey + ")");
+            return new IllegalStateException("Multiple properties exist for the provided key, use Vertex.properties(" + propertyKey + ")");
         }
     }
 
