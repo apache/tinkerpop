@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.step.map.HiddenMapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.util.function.SBiConsumer;
@@ -279,6 +280,10 @@ public interface Vertex extends Element {
 
     public default <E2> GraphTraversal<Vertex, Map<String, List<E2>>> hiddenValueMap(final String... propertyKeys) {
         return this.start().hiddenValueMap(propertyKeys);
+    }
+
+    public default <E2> GraphTraversal<Vertex, Map<String, MetaProperty<E2>>> hiddenMap(final String... propertyKeys) {
+        return (GraphTraversal) this.start().hiddenMap(propertyKeys);
     }
 
     public default <E2> GraphTraversal<Vertex, E2> hiddenValue(final String propertyKey) {

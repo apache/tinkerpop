@@ -387,6 +387,11 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
     }
 
     @Override
+    public <E2> Neo4jTraversal<Vertex, Map<String, MetaProperty<E2>>> hiddenMap(final String... propertyKeys) {
+        return (Neo4jTraversal) this.start().hiddenMap(propertyKeys);
+    }
+
+    @Override
     public <E2> Neo4jTraversal<Vertex, E2> hiddenValue(final String propertyKey) {
         return this.start().hiddenValue(propertyKey);
     }

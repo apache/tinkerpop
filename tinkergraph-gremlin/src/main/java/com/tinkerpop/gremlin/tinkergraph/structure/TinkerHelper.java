@@ -100,6 +100,10 @@ public class TinkerHelper {
         return graph.graphView;
     }
 
+    public static boolean inComputerMode(final TinkerGraph graph) {
+        return null != graph.graphView && graph.graphView.getInUse();
+    }
+
     public static TinkerGraphView createGraphView(final TinkerGraph graph, final GraphComputer.Isolation isolation, final Map<String, VertexProgram.KeyType> computeKeys) {
         return graph.graphView = new TinkerGraphView(isolation, computeKeys);
     }

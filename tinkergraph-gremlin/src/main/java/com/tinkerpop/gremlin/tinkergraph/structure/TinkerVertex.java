@@ -30,7 +30,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
     @Override
     public <V> MetaProperty<V> property(final String key) {
-        if (this.graph.graphView != null && this.graph.graphView.getInUse()) {
+        if (TinkerHelper.inComputerMode(this.graph)) {
             final List list = this.graph.graphView.getProperty(this, key);
             if (list.size() == 0)
                 return MetaProperty.<V>empty();
