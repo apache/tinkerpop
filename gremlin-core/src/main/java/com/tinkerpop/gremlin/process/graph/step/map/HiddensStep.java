@@ -20,10 +20,7 @@ public class HiddensStep<E> extends FlatMapStep<Element, Property<E>> implements
     public HiddensStep(final Traversal traversal, final String... propertyKeys) {
         super(traversal);
         this.propertyKeys = propertyKeys;
-        for (int i = 0; i < propertyKeys.length; i++) {
-            this.propertyKeys[i] = Graph.Key.hide(this.propertyKeys[i]);
-        }
-        this.setFunction(traverser -> (Iterator) traverser.get().iterators().properties(this.propertyKeys));
+        this.setFunction(traverser -> (Iterator) traverser.get().iterators().hiddens(this.propertyKeys));
     }
 
     @Override
