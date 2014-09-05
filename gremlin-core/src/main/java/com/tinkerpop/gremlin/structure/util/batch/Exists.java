@@ -26,6 +26,9 @@ public enum Exists implements BiConsumer<Element, Object[]> {
     OVERWRITE {
         @Override
         public void accept(final Element element, final Object[] keyValues) {
+            // TODO: if (element instanceof Vertex) {
+            // remove properties if overwrite
+            // } else
             ElementHelper.attachProperties(element, keyValues);
         }
     }

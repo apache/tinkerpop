@@ -59,17 +59,14 @@ public class StringFactory {
     }
 
     /**
-     * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Property}.
+     * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Property} or {@link com.tinkerpop.gremlin.structure.MetaProperty}.
      */
     public static String propertyString(final Property property) {
-        return property.isPresent() ? P + L_BRACKET + property.key() + ARROW + property.value() + R_BRACKET : EMPTY_PROPERTY;
-    }
-
-    /**
-     * Construct the representation for a {@link com.tinkerpop.gremlin.structure.MetaProperty}.
-     */
-    public static String metaPropertyString(final MetaProperty property) {
-        return property.isPresent() ? MP + L_BRACKET + property.key() + ARROW + property.value() + R_BRACKET : EMPTY_META_PROPERTY;
+        if (property instanceof MetaProperty) {
+            return property.isPresent() ? MP + L_BRACKET + property.key() + ARROW + property.value() + R_BRACKET : EMPTY_META_PROPERTY;
+        } else {
+            return property.isPresent() ? P + L_BRACKET + property.key() + ARROW + property.value() + R_BRACKET : EMPTY_PROPERTY;
+        }
     }
 
     /**

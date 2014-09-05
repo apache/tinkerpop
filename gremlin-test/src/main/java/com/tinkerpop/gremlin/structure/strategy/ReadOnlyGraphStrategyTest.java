@@ -67,7 +67,7 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowVertexSetProperties() {
         g.addVertex();
-        assertException(g -> g.V().next().properties("test", "test"));
+        assertException(g -> g.V().next().<String>property("test", "test"));
     }
 
     @Test
@@ -82,7 +82,7 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     public void shouldNotAllowEdgeSetProperties() {
         final Vertex v = g.addVertex();
         v.addEdge("friend", v);
-        assertException(g -> g.E().next().properties("test", "test"));
+        assertException(g -> g.E().next().<String>property("test", "test"));
     }
 
     @Test
@@ -112,7 +112,7 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     public void shouldNotAllowEdgePropertyRemoval() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("friend", v);
-        e.properties("test", "test");
+        e.property("test", "test");
         final Property<String> p = e.property("test");
         assertEquals("test", p.value());
 

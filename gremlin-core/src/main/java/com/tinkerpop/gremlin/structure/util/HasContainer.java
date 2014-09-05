@@ -3,11 +3,12 @@ package com.tinkerpop.gremlin.structure.util;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SBiPredicate;
 
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.List;
-import java.util.function.BiPredicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -48,8 +49,17 @@ public class HasContainer implements Serializable {
             else if (this.key.equals(Element.LABEL))
                 return this.predicate.test(element.label(), this.value);
             else {
-                final Property property = element.property(this.key);
-                return property.isPresent() && this.predicate.test(property.value(), this.value);
+                if (element instanceof Vertex) {
+                    final Iterator<? extends Property> itty = element.iterators().properties(this.key);
+                    while (itty.hasNext()) {
+                        if (this.predicate.test(itty.next().value(), this.value))
+                            return true;
+                    }
+                    return false;
+                } else {
+                    final Property property = element.property(this.key);
+                    return property.isPresent() && this.predicate.test(property.value(), this.value);
+                }
             }
         } else {
             return Contains.IN.equals(this.predicate) ?

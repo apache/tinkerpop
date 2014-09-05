@@ -80,7 +80,10 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
 
         assertNotNull(v);
         assertEquals("thing", v.property("any").value());
-        assertEquals("working3", v.property("anonymous").value());
+        assertEquals(3, v.values("anonymous").toList().size());
+        assertTrue(v.values("anonymous").toList().contains("working1"));
+        assertTrue(v.values("anonymous").toList().contains("working2"));
+        assertTrue(v.values("anonymous").toList().contains("working3"));
         assertEquals("anything", v.property("try").value());
     }
 
@@ -168,10 +171,16 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
                     @Override
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
                         return (f) -> (args) -> {
-                            final List<Object> o = new ArrayList<>(Arrays.asList(args));
-                            o.addAll(Arrays.asList("anonymous", "working1"));
-                            return f.apply(o.toArray());
+                            final Vertex v = f.apply(args);
+                            // this  means that the next strategy and those below it executed including
+                            // the implementation
+                            assertEquals("working2", v.property("anonymous").value());
+                            // now do something with that vertex after the fact
+                            v.properties("anonymous").remove();
+                            v.property("anonymous", "working1");
+                            return v;
                         };
+
                     }
                 },
                 new GraphStrategy() {
@@ -179,14 +188,12 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
                         return (f) -> (args) -> {
                             final Vertex v = f.apply(args);
-
                             // this  means that the next strategy and those below it executed including
                             // the implementation
                             assertEquals("working3", v.property("anonymous").value());
-
                             // now do something with that vertex after the fact
+                            v.properties("anonymous").remove();
                             v.property("anonymous", "working2");
-
                             return v;
                         };
                     }
@@ -207,7 +214,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
 
         assertNotNull(v);
         assertEquals("thing", v.property("any").value());
-        assertEquals("working2", v.property("anonymous").value());
+        assertEquals("working1", v.property("anonymous").value());
     }
 
     @Test

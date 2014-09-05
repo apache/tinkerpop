@@ -150,6 +150,7 @@ public class BatchTest extends AbstractGremlinTest {
         assertEquals(new Long(1), vStephen.outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
 
         final Vertex vMarko = g.V().<Vertex>has("name", "marko").next();
+        // TODO: We need an overwrite strategy. Do we have a Graph.configuration().allowMultiProperties() EEK! or is this Exists.OVERWRITE sufficient?
         assertEquals(34, vMarko.property("age").value());
     }
 

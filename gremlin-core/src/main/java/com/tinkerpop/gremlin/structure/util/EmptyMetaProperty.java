@@ -12,34 +12,41 @@ import java.util.NoSuchElementException;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class EmptyMetaProperty<V> implements MetaProperty<V> {
+
+    private static final EmptyMetaProperty INSTANCE = new EmptyMetaProperty();
+
+    public static <U> MetaProperty<U> instance() {
+        return INSTANCE;
+    }
+
     @Override
     public Vertex getElement() {
-        return null;
+        throw Property.Exceptions.propertyDoesNotExist();
     }
 
     @Override
     public Object id() {
-        return null;
+        throw Property.Exceptions.propertyDoesNotExist();
     }
 
     @Override
-    public <V> Property<V> property(String key) {
-        return null;
+    public <U> Property<U> property(String key) {
+        return Property.<U>empty();
     }
 
     @Override
-    public <V> Property<V> property(String key, V value) {
-        return null;
+    public <U> Property<U> property(String key, U value) {
+        return Property.<U>empty();
     }
 
     @Override
     public String key() {
-        return null;
+        throw Property.Exceptions.propertyDoesNotExist();
     }
 
     @Override
     public V value() throws NoSuchElementException {
-        return null;
+        throw Property.Exceptions.propertyDoesNotExist();
     }
 
     @Override
@@ -54,7 +61,12 @@ public class EmptyMetaProperty<V> implements MetaProperty<V> {
 
     @Override
     public void remove() {
+        throw Property.Exceptions.propertyDoesNotExist();
+    }
 
+    @Override
+    public String toString() {
+        return StringFactory.propertyString(this);
     }
 
     @Override

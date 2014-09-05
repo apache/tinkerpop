@@ -19,7 +19,7 @@ public interface MetaProperty<V> extends Property<V>, Element {
     }
 
     public static <V> MetaProperty<V> empty() {
-        return new EmptyMetaProperty<>();
+        return EmptyMetaProperty.instance();
     }
 
     public MetaProperty.Iterators iterators();

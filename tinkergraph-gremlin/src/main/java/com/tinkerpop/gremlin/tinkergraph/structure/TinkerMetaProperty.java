@@ -46,7 +46,7 @@ public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty
 
     @Override
     public String toString() {
-        return StringFactory.metaPropertyString(this);
+        return StringFactory.propertyString(this);
     }
 
     @Override
@@ -78,18 +78,19 @@ public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty
 
     @Override
     public void remove() {
-        this.vertex.properties.get(this.key).remove(this);
-        if (this.vertex.properties.get(this.key).size() == 0) {
-            this.vertex.properties.remove(this.key);
-            this.graph.vertexIndex.remove(this.key, this.value, this.vertex);
+        if (this.vertex.properties.containsKey(this.key)) {
+            this.vertex.properties.get(this.key).remove(this);
+            if (this.vertex.properties.get(this.key).size() == 0) {
+                this.vertex.properties.remove(this.key);
+                this.graph.vertexIndex.remove(this.key, this.value, this.vertex);
+            }
+            final AtomicBoolean delete = new AtomicBoolean(true);
+            this.vertex.properties(this.key).forEachRemaining(property -> {
+                if (property.value().equals(this.value))
+                    delete.set(false);
+            });
+            if (delete.get()) this.graph.vertexIndex.remove(this.key, this.value, this.vertex);
         }
-        final AtomicBoolean delete = new AtomicBoolean(true);
-        this.vertex.properties(this.key).forEachRemaining(property -> {
-            if (property.value().equals(this.value))
-                delete.set(false);
-        });
-        if (delete.get()) this.graph.vertexIndex.remove(this.key, this.value, this.vertex);
-
     }
 
     public MetaProperty.Iterators iterators() {

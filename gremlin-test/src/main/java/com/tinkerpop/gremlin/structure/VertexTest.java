@@ -99,6 +99,7 @@ public class VertexTest extends AbstractGremlinTest {
         assertFalse(v.keys().contains("location"));
         StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
 
+        v.properties("name").remove();
         v.property("name", "marko rodriguez");
         assertEquals(34, (int) v.value("age"));
         assertEquals("marko rodriguez", v.<String>value("name"));

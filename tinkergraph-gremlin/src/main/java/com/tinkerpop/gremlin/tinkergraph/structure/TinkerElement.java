@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -75,15 +76,25 @@ public abstract class TinkerElement implements Element, Serializable {
                     final Set<String> keys = new HashSet<>();
                     keys.addAll(this.element.properties.keySet());
                     keys.addAll(graph.graphView.getComputeKeys().keySet());
-                    return (Iterator) keys.stream().filter(key -> Graph.Key.isHidden(key)).flatMap(key -> graph.graphView.getProperty(this.element, key).stream()).iterator();
+                    return (Iterator) keys.stream()
+                            .filter(key -> Graph.Key.isHidden(key))
+                            .flatMap(key -> graph.graphView.getProperty(this.element, key).stream())
+                            .collect(Collectors.toList())
+                            .iterator();
                 } else
-                    return (Iterator) Arrays.stream(propertyKeys).map(key -> Graph.Key.hide(key)).flatMap(key -> graph.graphView.getProperty(this.element, key).stream()).iterator();
+                    return (Iterator) Arrays.stream(propertyKeys)
+                            .map(key -> Graph.Key.hide(key))
+                            .flatMap(key -> graph.graphView.getProperty(this.element, key).stream())
+                            .collect(Collectors.toList())
+                            .iterator();
 
             } else {
                 return (Iterator) this.element.properties.entrySet().stream()
                         .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, Graph.Key.unHide(entry.getKey())) >= 0)
                         .filter(entry -> Graph.Key.isHidden(entry.getKey()))
-                        .flatMap(entry -> entry.getValue().stream()).iterator();
+                        .flatMap(entry -> entry.getValue().stream())
+                        .collect(Collectors.toList())
+                        .iterator();
             }
         }
 
@@ -94,15 +105,21 @@ public abstract class TinkerElement implements Element, Serializable {
                     final Set<String> keys = new HashSet<>();
                     keys.addAll(this.element.properties.keySet());
                     keys.addAll(graph.graphView.getComputeKeys().keySet());
-                    return (Iterator) keys.stream().filter(key -> !Graph.Key.isHidden(key)).flatMap(key -> graph.graphView.getProperty(this.element, key).stream()).iterator();
+                    return (Iterator) keys.stream()
+                            .filter(key -> !Graph.Key.isHidden(key))
+                            .flatMap(key -> graph.graphView.getProperty(this.element, key).stream())
+                            .collect(Collectors.toList()).iterator();
                 } else
-                    return (Iterator) Arrays.stream(propertyKeys).flatMap(key -> graph.graphView.getProperty(this.element, key).stream()).iterator();
+                    return (Iterator) Arrays.stream(propertyKeys)
+                            .flatMap(key -> graph.graphView.getProperty(this.element, key).stream())
+                            .collect(Collectors.toList()).iterator();
 
             } else {
                 return (Iterator) this.element.properties.entrySet().stream()
                         .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
                         .filter(entry -> !Graph.Key.isHidden(entry.getKey()))
-                        .flatMap(entry -> entry.getValue().stream()).iterator();
+                        .flatMap(entry -> entry.getValue().stream())
+                        .collect(Collectors.toList()).iterator();
             }
         }
     }

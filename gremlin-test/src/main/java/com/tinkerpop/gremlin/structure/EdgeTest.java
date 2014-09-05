@@ -149,7 +149,7 @@ public class EdgeTest extends AbstractGremlinTest {
         assertTrue(keys.contains("name"));
         assertTrue(keys.contains("location"));
 
-        StreamFactory.stream(e.properties()).forEach(Property::remove);
+        e.properties().remove();
 
         keys = e.keys();
         assertEquals(0, keys.size());
