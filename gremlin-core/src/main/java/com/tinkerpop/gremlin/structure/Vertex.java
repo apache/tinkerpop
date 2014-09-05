@@ -264,7 +264,7 @@ public interface Vertex extends Element {
         return (GraphTraversal) this.start().properties(propertyKeys);
     }
 
-    public default <E2> GraphTraversal<Vertex, Map<String, MetaProperty<E2>>> propertyMap(final String... propertyKeys) {
+    public default <E2> GraphTraversal<Vertex, Map<String, List<MetaProperty<E2>>>> propertyMap(final String... propertyKeys) {
         return (GraphTraversal) this.start().propertyMap(propertyKeys);
     }
 
@@ -272,7 +272,7 @@ public interface Vertex extends Element {
         return (GraphTraversal) this.start().hiddens(propertyKeys);
     }
 
-    public default <E2> GraphTraversal<Vertex, Map<String, E2>> hiddenValueMap(final String... propertyKeys) {
+    public default <E2> GraphTraversal<Vertex, Map<String, List<E2>>> hiddenValueMap(final String... propertyKeys) {
         return this.start().hiddenValueMap(propertyKeys);
     }
 
@@ -288,11 +288,15 @@ public interface Vertex extends Element {
         return this.start().hiddenValue(propertyKey, defaultSupplier);
     }
 
+    public default <E2> GraphTraversal<Vertex, E2> value(final String propertyKey, final Supplier<E2> defaultSupplier) {
+        return this.start().value(propertyKey, defaultSupplier);
+    }
+
     public default <E2> GraphTraversal<Vertex, E2> value() {
         return this.start().value();
     }
 
-    public default <E2> GraphTraversal<Vertex, Map<String, E2>> valueMap(final String... propertyKeys) {
+    public default <E2> GraphTraversal<Vertex, Map<String, List<E2>>> valueMap(final String... propertyKeys) {
         return this.start().valueMap(propertyKeys);
     }
 

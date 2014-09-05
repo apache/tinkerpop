@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure.util;
 
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SBiPredicate;
@@ -48,6 +49,10 @@ public class HasContainer implements Serializable {
                 return this.predicate.test(element.id(), this.value);
             else if (this.key.equals(Element.LABEL))
                 return this.predicate.test(element.label(), this.value);
+            else if (element instanceof MetaProperty && this.key.equals(MetaProperty.VALUE))
+                return this.predicate.test(((MetaProperty) element).value(), this.value);
+            else if (element instanceof MetaProperty && this.key.equals(MetaProperty.KEY))
+                return this.predicate.test(((MetaProperty) element).key(), this.value);
             else {
                 if (element instanceof Vertex) {
                     final Iterator<? extends Property> itty = element.iterators().properties(this.key);

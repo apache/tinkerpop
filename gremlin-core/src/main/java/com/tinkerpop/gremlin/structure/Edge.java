@@ -248,6 +248,10 @@ public interface Edge extends Element {
         return this.start().hiddenValue(propertyKey, defaultSupplier);
     }
 
+    public default <E2> GraphTraversal<Edge, E2> value(final String propertyKey, final Supplier<E2> defaultSupplier) {
+        return this.start().value(propertyKey, defaultSupplier);
+    }
+
     public default <E2> GraphTraversal<Edge, E2> value() {
         return this.start().value();
     }

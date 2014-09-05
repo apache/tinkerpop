@@ -51,13 +51,12 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
     @Override
     public <V> MetaProperty<V> property(final String key) {
         this.graph.tx().readWrite();
-        if (this.baseElement.hasProperty(key)) {
-            if (this.baseElement.getProperty(key).equals(Neo4jMetaProperty.META_PROPERTY_TOKEN)) {
-                final Iterable<Relationship> relationships = ((Node) this.baseElement).getRelationships(org.neo4j.graphdb.Direction.OUTGOING, DynamicRelationshipType.withName(Neo4jMetaProperty.META_PROPERTY_PREFIX.concat(key)));
-                if (StreamFactory.stream(relationships).count() > 1)
+        if (this.getBaseVertex().hasProperty(key)) {
+            if (this.getBaseVertex().getProperty(key).equals(Neo4jMetaProperty.META_PROPERTY_TOKEN)) {
+                if (this.getBaseVertex().getDegree(DynamicRelationshipType.withName(Neo4jMetaProperty.META_PROPERTY_PREFIX.concat(key)), org.neo4j.graphdb.Direction.OUTGOING) > 1)
                     throw Vertex.Exceptions.multiplePropertiesExistForProvidedKey(key);
                 else
-                    return new Neo4jMetaProperty<>(this, relationships.iterator().next().getEndNode());
+                    return new Neo4jMetaProperty<>(this, this.getBaseVertex().getRelationships(org.neo4j.graphdb.Direction.OUTGOING, DynamicRelationshipType.withName(Neo4jMetaProperty.META_PROPERTY_PREFIX.concat(key))).iterator().next().getEndNode());
             } else {
                 return new Neo4jMetaProperty<>(this, key, (V) this.baseElement.getProperty(key));
             }
@@ -108,9 +107,9 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
                 final Node otherNode = relationship.getOtherNode(node);
                 if (otherNode.getLabels().iterator().next().equals(Neo4jMetaProperty.META_PROPERTY_LABEL)) {
                     relationship.getOtherNode(node).getRelationships().forEach(Relationship::delete);
-                    otherNode.delete();
-                }
-                relationship.delete();
+                    otherNode.delete(); // meta property node
+                } else
+                    relationship.delete();
             }
             node.delete();
         } catch (final NotFoundException ignored) {
@@ -373,7 +372,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
     }
 
     @Override
-    public <E2> Neo4jTraversal<Vertex, Map<String, MetaProperty<E2>>> propertyMap(final String... propertyKeys) {
+    public <E2> Neo4jTraversal<Vertex, Map<String, List<MetaProperty<E2>>>> propertyMap(final String... propertyKeys) {
         return (Neo4jTraversal) this.start().propertyMap(propertyKeys);
     }
 
@@ -383,7 +382,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
     }
 
     @Override
-    public <E2> Neo4jTraversal<Vertex, Map<String, E2>> hiddenValueMap(final String... propertyKeys) {
+    public <E2> Neo4jTraversal<Vertex, Map<String, List<E2>>> hiddenValueMap(final String... propertyKeys) {
         return this.start().hiddenValueMap(propertyKeys);
     }
 
@@ -403,12 +402,17 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
     }
 
     @Override
+    public <E2> Neo4jTraversal<Vertex, E2> value(final String propertyKey, final Supplier<E2> defaultSupplier) {
+        return this.start().value(propertyKey, defaultSupplier);
+    }
+
+    @Override
     public <E2> Neo4jTraversal<Vertex, E2> value() {
         return this.start().value();
     }
 
     @Override
-    public <E2> Neo4jTraversal<Vertex, Map<String, E2>> valueMap(final String... propertyKeys) {
+    public <E2> Neo4jTraversal<Vertex, Map<String, List<E2>>> valueMap(final String... propertyKeys) {
         return this.start().valueMap(propertyKeys);
     }
 

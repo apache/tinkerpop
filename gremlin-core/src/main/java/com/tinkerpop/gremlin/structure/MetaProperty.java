@@ -11,6 +11,8 @@ import java.util.Iterator;
 public interface MetaProperty<V> extends Property<V>, Element {
 
     public static final String META_PROPERTY = "metaProperty";
+    public static final String VALUE = "value";
+    public static final String KEY = "key";
 
     public Vertex getElement();
 

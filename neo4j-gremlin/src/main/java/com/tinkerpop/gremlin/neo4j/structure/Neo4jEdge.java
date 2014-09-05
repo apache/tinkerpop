@@ -296,6 +296,11 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
     }
 
     @Override
+    public <E2> Neo4jTraversal<Edge, E2> value(final String propertyKey, final Supplier<E2> defaultSupplier) {
+        return this.start().value(propertyKey, defaultSupplier);
+    }
+
+    @Override
     public <E2> Neo4jTraversal<Edge, E2> value() {
         return this.start().value();
     }
