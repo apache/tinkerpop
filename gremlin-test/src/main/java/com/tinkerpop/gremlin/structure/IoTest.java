@@ -767,7 +767,7 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), ((List) m.get("name")).get(0));
 
                             called.set(true);
                             return mock(Vertex.class);
@@ -978,7 +978,7 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), ((List) m.get("name")).get(0));
                             calledVertex.set(true);
                             return null;
                         },
@@ -1096,7 +1096,7 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), ((List) m.get("name")).get(0));
                             calledVertex.set(true);
                             return null;
                         },
@@ -1272,7 +1272,7 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), ((List) m.get("name")).get(0));
 
                             vertexCalled.set(true);
 
@@ -1346,7 +1346,7 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), ((List) m.get("name")).get(0));
 
                             vertexCalled.set(true);
 
@@ -1485,7 +1485,7 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), ((List) m.get("name")).get(0));
 
                             vertexCalled.set(true);
 
@@ -1614,7 +1614,7 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), ((List) m.get("name")).get(0));
 
                             vertexCalled.set(true);
 
