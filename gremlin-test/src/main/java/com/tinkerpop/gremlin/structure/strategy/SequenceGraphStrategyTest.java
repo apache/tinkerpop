@@ -87,6 +87,58 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         assertEquals("anything", v.property("try").value());
     }
 
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldAlterArgumentsToAddVertexInOrderOfSequence() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy().setGraphStrategy(new SequenceGraphStrategy(
+                new GraphStrategy() {
+                    @Override
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
+                        return (f) -> (args) -> {
+                            final List<Object> o = new ArrayList<>(Arrays.asList(args));
+                            o.addAll(Arrays.asList("anonymous", "working1"));
+                            return f.apply(o.toArray());
+                        };
+                    }
+                },
+                new GraphStrategy() {
+                    @Override
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
+                        return (f) -> (args) -> {
+                            final List<Object> o = new ArrayList<>(Arrays.asList(args));
+                            o.replaceAll(it -> it.equals("working1") ? "working2" : it);
+                            o.addAll(Arrays.asList("try", "anything"));
+                            return f.apply(o.toArray());
+                        };
+                    }
+                },
+                new GraphStrategy() {
+                    @Override
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
+                        return UnaryOperator.identity();
+                    }
+                },
+                new GraphStrategy() {
+                    @Override
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
+                        return (f) -> (args) -> {
+                            final List<Object> o = new ArrayList<>(Arrays.asList(args));
+                            o.replaceAll(it -> it.equals("working2") ? "working3" : it);
+                            return f.apply(o.toArray());
+                        };
+                    }
+                }
+        ));
+
+        final Vertex v = swg.addVertex("any", "thing");
+
+        assertNotNull(v);
+        assertEquals("thing", v.property("any").value());
+        assertEquals("working3", v.property("anonymous").value());
+        assertEquals("anything", v.property("try").value());
+    }
+
     @Test(expected = RuntimeException.class)
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldShortCircuitStrategyWithException() {
