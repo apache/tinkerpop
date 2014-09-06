@@ -91,21 +91,51 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-    public void shouldWrapProperties() {
+    public void shouldWrapEdgeProperty() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
         final Vertex v = swg.addVertex();
         final Edge e = v.addEdge("to", v, "all", "a");
 
         assertTrue(e.property("all") instanceof StrategyWrappedProperty);
-        assertTrue(StreamFactory.stream(e.properties()).allMatch(p -> p  instanceof StrategyWrappedProperty));
-
-        assertTrue(g.E().properties("any").next() instanceof StrategyWrappedProperty);
     }
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-    public void shouldWrapMetaProperties() {
+    public void shouldWrapEdgeIteratorHiddens() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
+        final Vertex v = swg.addVertex();
+        final Edge e = v.addEdge("to", v, "all", "a", "some", "that");
+
+        assertTrue(StreamFactory.stream(e.iterators().properties()).allMatch(p -> p instanceof StrategyWrappedProperty));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldWrapEdge_Properties() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
+        final Vertex v = swg.addVertex();
+        final Edge e = v.addEdge("to", v, "all", "a", "some", "that");
+
+        assertTrue(StreamFactory.stream(e.properties()).allMatch(p -> p  instanceof StrategyWrappedProperty));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldWrapE_Properties() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
+        final Vertex v = swg.addVertex();
+        v.addEdge("to", v, "all", "a", "some", "that");
+
+        assertTrue(g.E().properties("any").toList().stream().anyMatch(p -> p instanceof StrategyWrappedProperty));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldWrapVertexMetaProperties() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
         final Vertex v = swg.addVertex("any", "a");
