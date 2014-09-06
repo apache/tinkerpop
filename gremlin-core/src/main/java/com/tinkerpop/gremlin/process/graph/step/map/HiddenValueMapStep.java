@@ -32,7 +32,7 @@ public class HiddenValueMapStep<E> extends MapStep<Element, Map<String, E>> {
 
             // if no keys were supplied to the step then all the keys are required.  in that case the hidden keys
             // need to be identified from the Element
-            final String [] hiddens = null == this.hiddenPropertyKeys ?
+            final String [] hiddens = null == this.hiddenPropertyKeys || this.hiddenPropertyKeys.length == 0 ?
                     element.hiddenKeys().toArray(new String[element.hiddenKeys().size()]) : this.hiddenPropertyKeys;
 
             // since the hidden keys need to be explicitly identified there is no need to built a Map if none are
