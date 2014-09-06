@@ -158,6 +158,11 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
+    public <V> UnaryOperator<Supplier<Void>> getRemoveMetaPropertyStrategy(Strategy.Context<StrategyWrappedMetaProperty<V>> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getRemoveMetaPropertyStrategy(ctx));
+    }
+
+    @Override
     public String toString() {
         return String.join("->", graphStrategySequence.stream().map(Object::toString)
                 .map(String::toLowerCase).collect(Collectors.<String>toList()));

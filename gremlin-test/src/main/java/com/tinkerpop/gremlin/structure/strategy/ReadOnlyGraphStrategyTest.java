@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -102,7 +103,7 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
         assertEquals("test", p.value());
 
         assertException(g -> {
-            final Property<String> prop = g.V().next().property("test");
+            final MetaProperty<Object> prop = g.V().next().iterators().properties("test").next();
             prop.remove();
         });
     }

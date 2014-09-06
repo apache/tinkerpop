@@ -59,6 +59,11 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
     }
 
     @Override
+    public <V> UnaryOperator<Supplier<Void>> getRemoveMetaPropertyStrategy(Strategy.Context<StrategyWrappedMetaProperty<V>> ctx) {
+        return readOnlySupplier();
+    }
+
+    @Override
     public String toString() {
         return ReadOnlyGraphStrategy.class.getSimpleName().toLowerCase();
     }

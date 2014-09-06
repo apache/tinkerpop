@@ -4,8 +4,10 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -56,6 +58,33 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
         assertEquals(1, removed.properties().count().next().intValue());
         assertEquals(new Long(0), removed.bothE().count().next());
         assertTrue(toRemove.property("deleted").isPresent());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldWrapProperties() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
+        final Vertex v = swg.addVertex();
+        final Edge e = v.addEdge("to", v, "all", "a");
+
+        assertTrue(e.property("all") instanceof StrategyWrappedProperty);
+        assertTrue(StreamFactory.stream(e.properties()).allMatch(p -> p  instanceof StrategyWrappedProperty));
+
+        assertTrue(g.E().properties("any").next() instanceof StrategyWrappedProperty);
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldWrapMetaProperties() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
+        final Vertex v = swg.addVertex("any", "a");
+
+        assertTrue(v.property("any") instanceof StrategyWrappedMetaProperty);
+        assertTrue(StreamFactory.stream(v.properties()).allMatch(p -> p  instanceof StrategyWrappedMetaProperty));
+
+        assertTrue(g.V().properties("any").next() instanceof StrategyWrappedMetaProperty);
     }
 
     @Test

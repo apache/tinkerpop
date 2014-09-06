@@ -9,11 +9,13 @@ import java.util.NoSuchElementException;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class StrategyWrappedMetaProperty<V> extends StrategyWrappedElement implements MetaProperty<V> {
+public class StrategyWrappedMetaProperty<V> extends StrategyWrappedElement implements MetaProperty<V>, StrategyWrapped {
     private final MetaProperty<V> baseMetaProperty;
+    private final Strategy.Context<StrategyWrappedMetaProperty<V>> strategyContext;
 
     public StrategyWrappedMetaProperty(final MetaProperty<V> baseMetaProperty, final StrategyWrappedGraph strategyWrappedGraph) {
         super(baseMetaProperty, strategyWrappedGraph);
+        this.strategyContext = new Strategy.Context<>(strategyWrappedGraph.getBaseGraph(), this);
         this.baseMetaProperty = baseMetaProperty;
     }
 
@@ -41,5 +43,15 @@ public class StrategyWrappedMetaProperty<V> extends StrategyWrappedElement imple
     @Override
     public boolean isPresent() {
         return this.baseMetaProperty.isPresent();
+    }
+
+    @Override
+    public void remove() {
+        this.strategyWrappedGraph.strategy().compose(
+                s -> s.getRemoveMetaPropertyStrategy(strategyContext),
+                () -> {
+                    this.baseMetaProperty.remove();
+                    return null;
+                }).get();
     }
 }

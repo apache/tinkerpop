@@ -189,21 +189,4 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
             assertTrue(ex instanceof NoSuchElementException);
         }
     }
-
-    @Test
-    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-    public void shouldWrapProperties() {
-        final Vertex v = g.addVertex("any", "a");
-        final Edge e = v.addEdge("to", v, "all", "a");
-
-        assertTrue(v.property("any") instanceof StrategyWrappedProperty);
-        assertTrue(StreamFactory.stream(v.properties()).allMatch(p -> p  instanceof StrategyWrappedProperty));
-
-        assertTrue(e.property("all") instanceof StrategyWrappedProperty);
-        assertTrue(StreamFactory.stream(e.properties()).allMatch(p -> p  instanceof StrategyWrappedProperty));
-
-        assertTrue(g.V().properties("any").next() instanceof StrategyWrappedProperty);
-        assertTrue(g.E().properties("any").next() instanceof StrategyWrappedProperty);
-
-    }
 }
