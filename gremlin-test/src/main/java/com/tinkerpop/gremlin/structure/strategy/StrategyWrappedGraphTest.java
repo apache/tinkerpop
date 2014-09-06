@@ -5,16 +5,28 @@ import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import org.javatuples.Pair;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 
@@ -120,49 +132,50 @@ public class StrategyWrappedGraphTest  {
         }
     }
 
+    @RunWith(Parameterized.class)
     public static class PropertyShouldBeWrappedTests extends AbstractGremlinTest {
-        @Test
-        @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-        public void shouldWrapEdgeProperty() {
-            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-            final Vertex v = swg.addVertex();
-            final Edge e = v.addEdge("to", v, "all", "a");
 
-            assertTrue(e.property("all") instanceof StrategyWrappedProperty);
+        @Parameterized.Parameters(name = "{index}: {0}")
+        public static Iterable<Object[]> data() {
+            final List<Pair<String, BiFunction<Graph, Edge, Stream<? extends Property<Object>>>>> tests = new ArrayList<>();
+            tests.add(Pair.with("e.property(\"all\")", (Graph g, Edge e) -> Stream.of(e.property("all"))));
+            tests.add(Pair.with("e.iterators().properties()", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().properties())));
+            tests.add(Pair.with("e.iterators().properties(\"any\")", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().properties("any"))));
+            tests.add(Pair.with("e.iterators().hiddens()", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().hiddens())));
+            tests.add(Pair.with("e.iterators().hiddens(\"hideme\")", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().hiddens("hideme"))));
+            tests.add(Pair.with("e.properties()", (Graph g, Edge e) -> StreamFactory.stream(e.properties())));
+            tests.add(Pair.with("g.E().properties(\"all\")", (Graph g, Edge e) -> g.E().properties("all").toList().stream()));
+            tests.add(Pair.with("g.E().properties()", (Graph g, Edge e) -> g.E().properties().toList().stream()));
+
+            return tests.stream().map(d -> {
+                final Object[] o = new Object[2];
+                o[0] = d.getValue0();
+                o[1] = d.getValue1();
+                return o;
+            }).collect(Collectors.toList());
         }
 
-        @Test
-        @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-        public void shouldWrapEdgeIteratorHiddens() {
-            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-            final Vertex v = swg.addVertex();
-            final Edge e = v.addEdge("to", v, "all", "a", "some", "that");
+        @Parameterized.Parameter(value = 0)
+        public String name;
 
-            assertTrue(StreamFactory.stream(e.iterators().properties()).allMatch(p -> p instanceof StrategyWrappedProperty));
-        }
+        @Parameterized.Parameter(value = 1)
+        public BiFunction<Graph, Edge, Stream<? extends Property<Object>>> streamGetter;
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-        public void shouldWrapEdge_Properties() {
+        public void shouldWrapProperty() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
             swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
             final Vertex v = swg.addVertex();
-            final Edge e = v.addEdge("to", v, "all", "a", "some", "that");
+            final Edge e = v.addEdge("to", v, "all", "a", "any", "something", Graph.Key.hide("hideme"), "hidden");
 
-            assertTrue(StreamFactory.stream(e.properties()).allMatch(p -> p instanceof StrategyWrappedProperty));
-        }
+            final AtomicBoolean atLeastOne = new AtomicBoolean(false);
+            assertTrue(streamGetter.apply(g, e).allMatch(p -> {
+                atLeastOne.set(true);
+                return p instanceof StrategyWrappedProperty;
+            }));
 
-        @Test
-        @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-        public void shouldWrapE_Properties() {
-            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-            final Vertex v = swg.addVertex();
-            v.addEdge("to", v, "all", "a", "some", "that");
-
-            assertTrue(g.E().properties("any").toList().stream().anyMatch(p -> p instanceof StrategyWrappedProperty));
+            assertTrue(atLeastOne.get());
         }
     }
 
