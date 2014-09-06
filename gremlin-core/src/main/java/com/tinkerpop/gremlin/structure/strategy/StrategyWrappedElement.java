@@ -81,16 +81,6 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
     }
 
     @Override
-    public void remove() {
-        this.strategyWrappedGraph.strategy().compose(
-                s -> s.getRemoveElementStrategy(elementStrategyContext),
-                () -> {
-                    this.baseElement.remove();
-                    return null;
-                }).get();
-    }
-
-    @Override
     public String toString() {
         return baseElement.toString();
     }

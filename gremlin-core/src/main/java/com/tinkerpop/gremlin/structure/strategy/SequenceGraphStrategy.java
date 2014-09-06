@@ -53,112 +53,117 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Supplier<Void>> getRemoveElementStrategy(Strategy.Context<? extends StrategyWrappedElement> ctx) {
-        return this.composeStrategyUnaryOperator(s -> s.getRemoveElementStrategy(ctx));
+    public UnaryOperator<Supplier<Void>> getRemoveEdgeStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getRemoveEdgeStrategy(ctx));
     }
 
     @Override
-    public <V> UnaryOperator<Supplier<Void>> getRemovePropertyStrategy(Strategy.Context<StrategyWrappedProperty<V>> ctx) {
+    public UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getRemoveVertexStrategy(ctx));
+    }
+
+    @Override
+    public <V> UnaryOperator<Supplier<Void>> getRemovePropertyStrategy(final Strategy.Context<StrategyWrappedProperty<V>> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getRemovePropertyStrategy(ctx));
     }
 
     @Override
-    public <V> UnaryOperator<Function<String, ? extends Property<V>>> getElementGetProperty(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public <V> UnaryOperator<Function<String, ? extends Property<V>>> getElementGetProperty(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementGetProperty(ctx));
     }
 
     @Override
-    public <V> UnaryOperator<BiFunction<String, V, ? extends Property<V>>> getElementProperty(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public <V> UnaryOperator<BiFunction<String, V, ? extends Property<V>>> getElementProperty(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementProperty(ctx));
     }
 
     @Override
-    public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(Strategy.Context<StrategyWrappedGraph> ctx) {
+    public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getGraphvStrategy(ctx));
     }
 
     @Override
-    public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(Strategy.Context<StrategyWrappedGraph> ctx) {
+    public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getGrapheStrategy(ctx));
     }
 
     @Override
-    public UnaryOperator<Supplier<Object>> getElementId(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public UnaryOperator<Supplier<Object>> getElementId(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementId(ctx));
     }
 
     @Override
-    public UnaryOperator<Supplier<String>> getElementLabel(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public UnaryOperator<Supplier<String>> getElementLabel(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementLabel(ctx));
     }
 
     @Override
-    public <V> UnaryOperator<Function<String[],Iterator<? extends Property<V>>>> getElementPropertiesGetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public <V> UnaryOperator<Function<String[],Iterator<? extends Property<V>>>> getElementPropertiesGetter(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementId(ctx));
     }
 
     @Override
-    public <V> UnaryOperator<Function<String[],Iterator<? extends Property<V>>>> getElementHiddens(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public <V> UnaryOperator<Function<String[],Iterator<? extends Property<V>>>> getElementHiddens(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementId(ctx));
     }
 
     @Override
-    public UnaryOperator<Supplier<Set<String>>> getElementKeys(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public UnaryOperator<Supplier<Set<String>>> getElementKeys(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementKeys(ctx));
     }
 
     @Override
-    public UnaryOperator<Supplier<Set<String>>> getElementHiddenKeys(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public UnaryOperator<Supplier<Set<String>>> getElementHiddenKeys(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementHiddenKeys(ctx));
     }
 
     @Override
-    public <V> UnaryOperator<Function<String[],Iterator<V>>> getElementValues(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public <V> UnaryOperator<Function<String[],Iterator<V>>> getElementValues(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementValues(ctx));
     }
 
     @Override
-    public <V> UnaryOperator<Function<String[],Iterator<V>>> getElementHiddenValues(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public <V> UnaryOperator<Function<String[],Iterator<V>>> getElementHiddenValues(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementHiddenValues(ctx));
     }
 
     @Override
-    public <V> UnaryOperator<Function<String, V>> getElementValue(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public <V> UnaryOperator<Function<String, V>> getElementValue(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementValue(ctx));
     }
 
     @Override
-    public UnaryOperator<Supplier<Set<String>>> getVariableKeysStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+    public UnaryOperator<Supplier<Set<String>>> getVariableKeysStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getVariableKeysStrategy(ctx));
     }
 
     @Override
-    public <R> UnaryOperator<Function<String, Optional<R>>> getVariableGetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+    public <R> UnaryOperator<Function<String, Optional<R>>> getVariableGetStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getVariableGetStrategy(ctx));
     }
 
     @Override
-    public UnaryOperator<Consumer<String>> getVariableRemoveStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+    public UnaryOperator<Consumer<String>> getVariableRemoveStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getVariableRemoveStrategy(ctx));
     }
 
     @Override
-    public UnaryOperator<BiConsumer<String, Object>> getVariableSetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+    public UnaryOperator<BiConsumer<String, Object>> getVariableSetStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getVariableSetStrategy(ctx));
     }
 
     @Override
-    public UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+    public UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getVariableAsMapStrategy(ctx));
     }
 
     @Override
-    public UnaryOperator<Supplier<Void>> getGraphClose(Strategy.Context<StrategyWrappedGraph> ctx) {
+    public UnaryOperator<Supplier<Void>> getGraphClose(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getGraphClose(ctx));
     }
 
     @Override
-    public <V> UnaryOperator<Supplier<Void>> getRemoveMetaPropertyStrategy(Strategy.Context<StrategyWrappedMetaProperty<V>> ctx) {
+    public <V> UnaryOperator<Supplier<Void>> getRemoveMetaPropertyStrategy(final Strategy.Context<StrategyWrappedMetaProperty<V>> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getRemoveMetaPropertyStrategy(ctx));
     }
 

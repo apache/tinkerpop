@@ -36,6 +36,16 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
     }
 
     @Override
+    public void remove() {
+        this.strategyWrappedGraph.strategy().compose(
+                s -> s.getRemoveEdgeStrategy(strategyContext),
+                () -> {
+                    this.baseElement.remove();
+                    return null;
+                }).get();
+    }
+
+    @Override
     public GraphTraversal<Edge, Edge> start() {
         return applyStrategy(this.baseEdge.start());
     }

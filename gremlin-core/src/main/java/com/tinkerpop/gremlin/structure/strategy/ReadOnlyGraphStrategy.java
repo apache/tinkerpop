@@ -32,12 +32,17 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public <V> UnaryOperator<BiFunction<String, V, ? extends Property<V>>> getElementProperty(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public <V> UnaryOperator<BiFunction<String, V, ? extends Property<V>>> getElementProperty(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return readOnlyBiFunction();
     }
 
     @Override
-    public UnaryOperator<Supplier<Void>> getRemoveElementStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public UnaryOperator<Supplier<Void>> getRemoveEdgeStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
+        return readOnlySupplier();
+    }
+
+    @Override
+    public UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
         return readOnlySupplier();
     }
 
@@ -47,19 +52,19 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<BiConsumer<String, Object>> getVariableSetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+    public UnaryOperator<BiConsumer<String, Object>> getVariableSetStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
         return (f) -> (k, v) -> {
             throw Exceptions.graphUsesReadOnlyStrategy();
         };
     }
 
     @Override
-    public UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+    public UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
         return (f) -> () -> Collections.unmodifiableMap(f.get());
     }
 
     @Override
-    public <V> UnaryOperator<Supplier<Void>> getRemoveMetaPropertyStrategy(Strategy.Context<StrategyWrappedMetaProperty<V>> ctx) {
+    public <V> UnaryOperator<Supplier<Void>> getRemoveMetaPropertyStrategy(final Strategy.Context<StrategyWrappedMetaProperty<V>> ctx) {
         return readOnlySupplier();
     }
 

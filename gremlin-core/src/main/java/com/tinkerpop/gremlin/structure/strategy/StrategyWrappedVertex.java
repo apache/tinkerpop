@@ -32,6 +32,16 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     }
 
     @Override
+    public void remove() {
+        this.strategyWrappedGraph.strategy().compose(
+                s -> s.getRemoveVertexStrategy(strategyContext),
+                () -> {
+                    this.baseElement.remove();
+                    return null;
+                }).get();
+    }
+
+    @Override
     public Vertex getBaseVertex() {
         return this.baseVertex;
     }

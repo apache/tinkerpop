@@ -29,18 +29,14 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
         // but doesn't actually blow it away
         swg.strategy().setGraphStrategy(new GraphStrategy() {
             @Override
-            public UnaryOperator<Supplier<Void>> getRemoveElementStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
-                if (ctx.getCurrent() instanceof StrategyWrappedVertex) {
-                    return (t) -> () -> {
-                        final Vertex v = ((StrategyWrappedVertex) ctx.getCurrent()).getBaseVertex();
-                        v.bothE().remove();
-                        v.properties().forEachRemaining(Property::remove);
-                        v.property("deleted", true);
-                        return null;
-                    };
-                } else {
-                    return UnaryOperator.identity();
-                }
+            public UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+                return (t) -> () -> {
+                    final Vertex v = ctx.getCurrent().getBaseVertex();
+                    v.bothE().remove();
+                    v.properties().forEachRemaining(Property::remove);
+                    v.property("deleted", true);
+                    return null;
+                };
             }
         });
 
@@ -57,7 +53,40 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
         assertNotNull(removed);
         assertEquals(1, removed.properties().count().next().intValue());
         assertEquals(new Long(0), removed.bothE().count().next());
-        assertTrue(toRemove.property("deleted").isPresent());
+        assertTrue(removed.property("deleted").isPresent());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldNotCallBaseFunctionThusNotRemovingTheEdge() throws Exception {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+
+        // create an ad-hoc strategy that only marks a vertex as "deleted" and removes all edges and properties
+        // but doesn't actually blow it away
+        swg.strategy().setGraphStrategy(new GraphStrategy() {
+            @Override
+            public UnaryOperator<Supplier<Void>> getRemoveEdgeStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
+                return (t) -> () -> {
+                    final Edge e = ctx.getCurrent().getBaseEdge();
+                    e.properties().forEachRemaining(Property::remove);
+                    e.property("deleted", true);
+                    return null;
+                };
+            }
+        });
+
+        final Vertex v = g.addVertex("name", "pieter");
+        final Edge e = v.addEdge("likes", g.addVertex("feature", "Strategy"), "this", "something");
+
+        assertEquals(1, e.properties().count().next().intValue());
+        assertFalse(e.property("deleted").isPresent());
+
+        swg.e(e.id()).remove();
+
+        final Edge removed = g.e(e.id());
+        assertNotNull(removed);
+        assertEquals(1, removed.properties().count().next().intValue());
+        assertTrue(removed.property("deleted").isPresent());
     }
 
     @Test
