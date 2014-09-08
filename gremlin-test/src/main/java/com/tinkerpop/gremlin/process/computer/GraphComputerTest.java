@@ -7,6 +7,8 @@ import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaMapReduce;
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
@@ -25,7 +27,9 @@ import static org.junit.Assert.*;
 @ExceptionCoverage(exceptionClass = GraphComputer.Exceptions.class, methods = {
         "providedKeyIsNotAMemoryKey",
         "computerHasNoVertexProgramNorMapReducers",
-        "computerHasAlreadyBeenSubmittedAVertexProgram"
+        "computerHasAlreadyBeenSubmittedAVertexProgram",
+        "constantComputeKeysCanNotBeRemoved",
+        "providedKeyIsNotAComputeKey"
 })
 @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
         "graphDoesNotSupportProvidedGraphComputer",
@@ -228,6 +232,17 @@ public class GraphComputerTest extends AbstractGremlinTest {
                 setup(memory -> {
                 }).
                 execute((vertex, messenger, memory) -> {
+                    /*
+                    // TODO: Implement wrapper for GiraphGraph internal TinkerVertex
+                    try {
+                        vertex.property("blah", "blah");
+                        fail("Should throw an IllegalArgumentException");
+                    } catch (IllegalArgumentException e) {
+                        assertEquals(GraphComputer.Exceptions.providedKeyIsNotAComputeKey("blah").getMessage(), e.getMessage());
+                    } catch (Exception e) {
+                        fail("Should throw an IllegalArgumentException: " + e);
+                    }*/
+
                     memory.incr("a", 1);
                     if (memory.isInitialIteration()) {
                         vertex.property("nameLengthCounter", vertex.<String>value("name").length());
@@ -261,6 +276,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
             assertEquals(Integer.valueOf(v.<String>value("name").length() * 2), Integer.valueOf(v.<Integer>value("nameLengthCounter")));
         });
     }
+
 
     @Test
     @LoadGraphWith(MODERN)
@@ -367,7 +383,95 @@ public class GraphComputerTest extends AbstractGremlinTest {
         assertFalse(results.getMemory().get("c"));
         assertTrue(results.getMemory().get("d"));
         assertTrue(results.getMemory().get("e"));
+    }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
+    public void shouldSupportMetaProperties() throws Exception {
+        GraphComputer computer = g.compute();
+        ComputerResult results = computer.program(LambdaVertexProgram.build().
+                execute((vertex, messenger, memory) -> {
+
+                    if (memory.getIteration() == 0) {
+                        assertEquals(MetaProperty.empty(), vertex.property("a"));
+                        assertEquals(MetaProperty.empty(), vertex.property("b"));
+                        assertFalse(vertex.property("a").isPresent());
+                        assertFalse(vertex.property("b").isPresent());
+                    } else if (memory.getIteration() == 1) {
+                        assertEquals(1, vertex.property("a").value());
+                        assertEquals(1, vertex.property("b").value());
+                    } else if (memory.getIteration() == 2) {
+                        assertEquals(2, vertex.properties("a").count().next().intValue());
+                        assertEquals(1, vertex.properties("a").has(MetaProperty.VALUE, 1).count().next().intValue());
+                        assertEquals(1, vertex.properties("a").has(MetaProperty.VALUE, 2).count().next().intValue());
+                        assertEquals(2, vertex.property("b").value());
+                    } else if (memory.getIteration() == 3) {
+                        assertEquals(3, vertex.properties("a").count().next().intValue());
+                        assertEquals(1, vertex.properties("a").has(MetaProperty.VALUE, 1).count().next().intValue());
+                        assertEquals(2, vertex.properties("a").has(MetaProperty.VALUE, 2).count().next().intValue());
+                        assertEquals(2, vertex.property("b").value());
+                    } else {
+                        fail("There should not be more than 3 iterations in this vertex program");
+                    }
+
+                    ///////////////////////////
+
+
+                    if (memory.isInitialIteration()) {
+                        vertex.property("a", 1);
+                        vertex.property("b", 1);
+                    } else {
+                        vertex.property("a", 2);
+                        vertex.singleProperty("b", 2);
+                        try {
+                            vertex.property("a");
+                            fail("Should fail with IllegalStateException");
+                        } catch (IllegalStateException e) {
+                            assertEquals(Vertex.Exceptions.multiplePropertiesExistForProvidedKey("a").getMessage(), e.getMessage());
+                        } catch (Exception e) {
+                            fail("Should fail with IllegalStateException");
+                        }
+                        vertex.property("b");
+                    }
+
+
+                    ///////////////////////////
+
+                    if (memory.getIteration() == 0) {
+                        assertEquals(1, vertex.properties("a").count().next().intValue());
+                        assertEquals(1, vertex.property("a").value());
+                        assertEquals(1, vertex.property("b").value());
+                    } else if (memory.getIteration() == 1) {
+                        assertEquals(2, vertex.properties("a").count().next().intValue());
+                        assertEquals(1, vertex.properties("a").has(MetaProperty.VALUE, 1).count().next().intValue());
+                        assertEquals(1, vertex.properties("a").has(MetaProperty.VALUE, 2).count().next().intValue());
+                        assertEquals(2, vertex.property("b").value());
+                    } else if (memory.getIteration() == 2) {
+                        assertEquals(3, vertex.properties("a").count().next().intValue());
+                        assertEquals(1, vertex.properties("a").has(MetaProperty.VALUE, 1).count().next().intValue());
+                        assertEquals(2, vertex.properties("a").has(MetaProperty.VALUE, 2).count().next().intValue());
+                        assertEquals(2, vertex.property("b").value());
+                    } else if (memory.getIteration() == 3) {
+                        assertEquals(4, vertex.properties("a").count().next().intValue());
+                        assertEquals(1, vertex.properties("a").has(MetaProperty.VALUE, 1).count().next().intValue());
+                        assertEquals(3, vertex.properties("a").has(MetaProperty.VALUE, 2).count().next().intValue());
+                        assertEquals(2, vertex.property("b").value());
+                    } else {
+                        fail("There should not be more than 3 iterators in this vertex program");
+                    }
+
+                }).
+                terminate(memory -> memory.getIteration() > 2).
+                elementComputeKeys("a", VertexProgram.KeyType.VARIABLE, "b", VertexProgram.KeyType.VARIABLE).create())
+                .submit().get();
+        assertEquals(3, results.getMemory().getIteration());
+        final Vertex vertex = results.getGraph().V().next();
+        assertEquals(2, vertex.property("b").value());
+        assertEquals(4, vertex.properties("a").count().next().intValue());
+        assertEquals(1, vertex.properties("a").has(MetaProperty.VALUE, 1).count().next().intValue());
+        assertEquals(3, vertex.properties("a").has(MetaProperty.VALUE, 2).count().next().intValue());
+        assertEquals(1, vertex.properties("b").count().next().intValue());
     }
 
     private static LambdaVertexProgram identity() {

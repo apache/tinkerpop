@@ -142,7 +142,7 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
             try {
                 final Map<String, KeyType> map = new HashMap<>();
                 for (int i = 0; i < elementComputeKeys.length; i = i + 2) {
-                    map.put((String) elementComputeKeys[0], (KeyType) elementComputeKeys[1]);
+                    map.put((String) elementComputeKeys[i], (KeyType) elementComputeKeys[i+1]);
                 }
                 VertexProgramHelper.serialize(map, configuration, ELEMENT_COMPUTE_KEYS);
                 return this;

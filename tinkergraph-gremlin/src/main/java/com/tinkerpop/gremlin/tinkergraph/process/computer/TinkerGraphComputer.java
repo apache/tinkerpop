@@ -82,7 +82,6 @@ public class TinkerGraphComputer implements GraphComputer {
                             this.vertexProgram.execute(vertex,
                                     new TinkerMessenger(vertex, this.messageBoard, this.vertexProgram.getMessageCombiner()),
                                     this.memory));
-                    graphView.completeIteration();
                     this.messageBoard.completeIteration();
                     this.memory.completeSubRound();
                     if (this.vertexProgram.terminate(this.memory)) {

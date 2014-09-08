@@ -121,6 +121,10 @@ public interface GraphComputer {
             return new IllegalStateException("The constant compute key " + key + " has already been set for " + element);
         }
 
+        public static IllegalStateException constantComputeKeysCanNotBeRemoved(final String key, final Element element) {
+            return new IllegalStateException("The constant compute key " + key + " can not be removed on element " + element);
+        }
+
         public static IllegalStateException adjacentVerticesCanNotBeQueried() {
             return new IllegalStateException("It is not possible to query an adjacent vertex in a vertex program");
         }

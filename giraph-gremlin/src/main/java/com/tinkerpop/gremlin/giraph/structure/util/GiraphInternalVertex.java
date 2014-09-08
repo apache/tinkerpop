@@ -79,15 +79,13 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
             this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getConf()));
         if (null == this.memory)
             this.memory = new GiraphMemory(this, this.vertexProgram);
-        final boolean deriveMemory = this.getConf().getBoolean(Constants.GREMLIN_DERIVE_MEMORY, false);
 
-        // TODO: if/else logic weird here
-        if (!deriveMemory || !(Boolean) ((RuleWritable) this.getAggregatedValue(Constants.GREMLIN_HALT)).getObject())
-            this.vertexProgram.execute(this.tinkerVertex, new GiraphMessenger(this, messages), this.memory);
-        else if (deriveMemory) {
+        if (!(Boolean) ((RuleWritable) this.getAggregatedValue(Constants.GREMLIN_HALT)).getObject())
+            this.vertexProgram.execute(this.tinkerVertex, new GiraphMessenger(this, messages), this.memory);  // TODO provide a wrapper around TinkerVertex for Edge and non-ComputeKeys manipulation
+        else if (this.getConf().getBoolean(Constants.GREMLIN_DERIVE_MEMORY, false)) {
             final Map<String, Object> memoryMap = new HashMap<>(this.memory.asMap());
             memoryMap.put(Constants.ITERATION, this.memory.getIteration() - 1);
-            this.tinkerVertex.property(Constants.MEMORY_MAP, memoryMap);
+            this.tinkerVertex.singleProperty(Constants.MEMORY_MAP, memoryMap);
         }
     }
 

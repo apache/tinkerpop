@@ -26,29 +26,15 @@ public class TinkerGraphView implements Serializable {
 
     protected final Map<String, VertexProgram.KeyType> computeKeys;
     protected final GraphComputer.Isolation isolation;
-    private Map<Element, Map<String, List<Property>>> getMap;
-    private Map<Element, Map<String, List<Property>>> setMap;
+    private Map<Element, Map<String, List<Property>>> variableMap;
     private Map<Element, Map<String, List<Property>>> constantMap;
     private boolean inUse = true;
 
     public TinkerGraphView(final GraphComputer.Isolation isolation, final Map<String, VertexProgram.KeyType> computeKeys) {
         this.isolation = isolation;
-        this.constantMap = new HashMap<>();
         this.computeKeys = computeKeys;
-        if (this.isolation.equals(GraphComputer.Isolation.BSP)) {
-            this.getMap = new HashMap<>();
-            this.setMap = new HashMap<>();
-        } else {
-            this.getMap = this.setMap = new HashMap<>();
-        }
-    }
-
-    public void completeIteration() {
-        //  TODO: is this if statement needed?
-        if (this.isolation.equals(GraphComputer.Isolation.BSP)) {
-            this.getMap = this.setMap;
-            this.setMap = new HashMap<>();
-        }
+        this.constantMap = new HashMap<>();
+        this.variableMap = new HashMap<>();
     }
 
     public <V> Property<V> setProperty(final TinkerElement element, final String key, final V value) {
@@ -58,7 +44,7 @@ public class TinkerGraphView implements Serializable {
                 final TinkerMetaProperty<V> property = new TinkerMetaProperty<V>((TinkerVertex) element, key, value) {
                     @Override
                     public void remove() {
-                        removeProperty((TinkerVertex) element, key, this);
+                        removeProperty(element, key, this);
                     }
                 };
                 this.setValue(element, key, property);
@@ -90,10 +76,14 @@ public class TinkerGraphView implements Serializable {
 
     public void removeProperty(final TinkerElement element, final String key, final Property property) {
         if (isComputeKey(key)) {
-            if (element instanceof Vertex)
-                this.removeValue(element, key, property);
-            else
-                this.removeValue(element, key);
+            if (isConstantKey(key))
+                throw GraphComputer.Exceptions.constantComputeKeysCanNotBeRemoved(key, element);
+            else {
+                if (element instanceof Vertex)
+                    this.removeValue(element, key, property);
+                else
+                    this.removeValue(element, key);
+            }
         } else {
             throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
         }
@@ -110,7 +100,7 @@ public class TinkerGraphView implements Serializable {
     //////////////////////
 
     private void setValue(final Element element, final String key, final Property property) {
-        final Map<Element, Map<String, List<Property>>> map = isConstantKey(key) ? this.constantMap : this.setMap;
+        final Map<Element, Map<String, List<Property>>> map = isConstantKey(key) ? this.constantMap : this.variableMap;
         final Map<String, List<Property>> nextMap = map.getOrDefault(element, new HashMap<>());
         map.put(element, nextMap);
         if (isConstantKey(key) && nextMap.containsKey(key))
@@ -130,19 +120,19 @@ public class TinkerGraphView implements Serializable {
     }
 
     private void removeValue(final Element element, final String key) {
-        final Map<String, List<Property>> map = this.setMap.get(element);
+        final Map<String, List<Property>> map = this.variableMap.get(element);
         if (null != map)
             map.remove(key);
     }
 
     private void removeValue(final Element element, final String key, final Property property) {
-        final Map<String, List<Property>> map = this.setMap.get(element);
+        final Map<String, List<Property>> map = this.variableMap.get(element);
         if (null != map)
             map.get(key).remove(property);
     }
 
     private List<Property> getValue(final Element element, final String key) {
-        final Map<String, List<Property>> map = this.isConstantKey(key) ? this.constantMap.get(element) : this.getMap.get(element);
+        final Map<String, List<Property>> map = this.isConstantKey(key) ? this.constantMap.get(element) : this.variableMap.get(element);
         return (null == map) ? Collections.emptyList() : map.getOrDefault(key, Collections.emptyList());
     }
 

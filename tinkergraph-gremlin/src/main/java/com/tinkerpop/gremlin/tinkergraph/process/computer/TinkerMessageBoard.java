@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
+import com.tinkerpop.gremlin.structure.Vertex;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
@@ -9,9 +11,9 @@ import java.util.Queue;
  */
 class TinkerMessageBoard<M> {
 
-    // Map<VertexId, MessageQueue>
-    public Map<Object, Queue<M>> sendMessages = new HashMap<>();
-    public Map<Object, Queue<M>> receiveMessages = new HashMap<>();
+    // Map<Vertex, MessageQueue>
+    public Map<Vertex, Queue<M>> sendMessages = new HashMap<>();
+    public Map<Vertex, Queue<M>> receiveMessages = new HashMap<>();
 
     public void completeIteration() {
         this.receiveMessages = this.sendMessages;
