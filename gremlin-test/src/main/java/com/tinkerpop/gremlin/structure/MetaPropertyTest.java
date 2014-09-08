@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.ExceptionCoverage;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -8,6 +9,9 @@ import static org.junit.Assert.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@ExceptionCoverage(exceptionClass = Vertex.Exceptions.class, methods = {
+        "multiplePropertiesExistForProvidedKey",
+})
 public class MetaPropertyTest extends AbstractGremlinTest {
 
     @Test
