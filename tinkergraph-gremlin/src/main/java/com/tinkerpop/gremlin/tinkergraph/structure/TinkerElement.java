@@ -90,7 +90,7 @@ public abstract class TinkerElement implements Element, Serializable {
                 if (propertyKeys.length == 0) {
                     final Set<String> keys = new HashSet<>();
                     keys.addAll(properties.keySet());
-                    keys.addAll(graph.graphView.getComputeKeys().keySet());
+                    keys.addAll(graph.graphView.getComputeKeys());
                     return (Iterator) keys.stream()
                             .filter(Graph.Key::isHidden)
                             .flatMap(key -> graph.graphView.getProperty(this.element, key).stream())
@@ -119,7 +119,7 @@ public abstract class TinkerElement implements Element, Serializable {
                 if (propertyKeys.length == 0) {
                     final Set<String> keys = new HashSet<>();
                     keys.addAll(properties.keySet());
-                    keys.addAll(graph.graphView.getComputeKeys().keySet());
+                    keys.addAll(graph.graphView.getComputeKeys());
                     return (Iterator) keys.stream()
                             .filter(key -> !Graph.Key.isHidden(key))
                             .flatMap(key -> graph.graphView.getProperty(this.element, key).stream())

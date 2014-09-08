@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -18,23 +17,22 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class TinkerGraphView implements Serializable {
 
-    protected final Map<String, VertexProgram.KeyType> computeKeys;
+    protected final Set<String> computeKeys;
     protected final GraphComputer.Isolation isolation;
-    private Map<Element, Map<String, List<Property>>> variableMap;
-    private Map<Element, Map<String, List<Property>>> constantMap;
+    private Map<Element, Map<String, List<Property>>> computeProperties;
     private boolean inUse = true;
 
-    public TinkerGraphView(final GraphComputer.Isolation isolation, final Map<String, VertexProgram.KeyType> computeKeys) {
+    public TinkerGraphView(final GraphComputer.Isolation isolation, final Set<String> computeKeys) {
         this.isolation = isolation;
         this.computeKeys = computeKeys;
-        this.constantMap = new HashMap<>();
-        this.variableMap = new HashMap<>();
+        this.computeProperties = new HashMap<>();
     }
 
     public <V> Property<V> setProperty(final TinkerElement element, final String key, final V value) {
@@ -60,7 +58,7 @@ public class TinkerGraphView implements Serializable {
                 return property;
             }
         } else {
-            throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
+            throw GraphComputer.Exceptions.providedKeyIsNotAnElementComputeKey(key);
         }
     }
 
@@ -76,16 +74,12 @@ public class TinkerGraphView implements Serializable {
 
     public void removeProperty(final TinkerElement element, final String key, final Property property) {
         if (isComputeKey(key)) {
-            if (isConstantKey(key))
-                throw GraphComputer.Exceptions.constantComputeKeysCanNotBeRemoved(key, element);
-            else {
-                if (element instanceof Vertex)
-                    this.removeValue(element, key, property);
-                else
-                    this.removeValue(element, key);
-            }
+            if (element instanceof Vertex)
+                this.removeValue(element, key, property);
+            else
+                this.removeValue(element, key);
         } else {
-            throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
+            throw GraphComputer.Exceptions.providedKeyIsNotAnElementComputeKey(key);
         }
     }
 
@@ -100,11 +94,8 @@ public class TinkerGraphView implements Serializable {
     //////////////////////
 
     private void setValue(final Element element, final String key, final Property property) {
-        final Map<Element, Map<String, List<Property>>> map = isConstantKey(key) ? this.constantMap : this.variableMap;
-        final Map<String, List<Property>> nextMap = map.getOrDefault(element, new HashMap<>());
-        map.put(element, nextMap);
-        if (isConstantKey(key) && nextMap.containsKey(key))
-            throw GraphComputer.Exceptions.constantComputeKeyHasAlreadyBeenSet(key, element);
+        final Map<String, List<Property>> nextMap = this.computeProperties.getOrDefault(element, new HashMap<>());
+        this.computeProperties.put(element, nextMap);
         if (nextMap.containsKey(key)) {
             if (element instanceof Vertex) {
                 nextMap.get(key).add(property);
@@ -120,31 +111,27 @@ public class TinkerGraphView implements Serializable {
     }
 
     private void removeValue(final Element element, final String key) {
-        final Map<String, List<Property>> map = this.variableMap.get(element);
+        final Map<String, List<Property>> map = this.computeProperties.get(element);
         if (null != map)
             map.remove(key);
     }
 
     private void removeValue(final Element element, final String key, final Property property) {
-        final Map<String, List<Property>> map = this.variableMap.get(element);
+        final Map<String, List<Property>> map = this.computeProperties.get(element);
         if (null != map)
             map.get(key).remove(property);
     }
 
     private List<Property> getValue(final Element element, final String key) {
-        final Map<String, List<Property>> map = this.isConstantKey(key) ? this.constantMap.get(element) : this.variableMap.get(element);
+        final Map<String, List<Property>> map = this.computeProperties.get(element);
         return (null == map) ? Collections.emptyList() : map.getOrDefault(key, Collections.emptyList());
     }
 
     public boolean isComputeKey(final String key) {
-        return this.computeKeys.containsKey(key);
+        return this.computeKeys.contains(key);
     }
 
-    public boolean isConstantKey(final String key) {
-        return VertexProgram.KeyType.CONSTANT.equals(this.computeKeys.get(key));
-    }
-
-    public Map<String, VertexProgram.KeyType> getComputeKeys() {
+    public Set<String> getComputeKeys() {
         return this.computeKeys;
     }
 

@@ -43,6 +43,8 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
     private int maxIterations = 30;
     private boolean distributeVote = false;
 
+    private static final Set<String> COMPUTE_KEYS = new HashSet<>(Arrays.asList(CLUSTER, VOTE_STRENGTH));
+
     private PeerPressureVertexProgram() {
 
     }
@@ -75,8 +77,8 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
     }
 
     @Override
-    public Map<String, KeyType> getElementComputeKeys() {
-        return VertexProgram.createElementKeys(CLUSTER, KeyType.VARIABLE, VOTE_STRENGTH, KeyType.CONSTANT);
+    public Set<String> getElementComputeKeys() {
+        return COMPUTE_KEYS;
     }
 
     @Override

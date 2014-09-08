@@ -109,20 +109,12 @@ public interface GraphComputer {
             return new IllegalStateException("The properties of an adjacent element can not be written");
         }
 
-        public static IllegalArgumentException providedKeyIsNotAComputeKey(final String key) {
-            return new IllegalArgumentException("The provided key is not a compute key: " + key);
+        public static IllegalArgumentException providedKeyIsNotAnElementComputeKey(final String key) {
+            return new IllegalArgumentException("The provided key is not an element compute key: " + key);
         }
 
-        public static IllegalArgumentException providedKeyIsNotAMemoryKey(final String key) {
-            return new IllegalArgumentException("The provided key is not a memory key: " + key);
-        }
-
-        public static IllegalStateException constantComputeKeyHasAlreadyBeenSet(final String key, final Element element) {
-            return new IllegalStateException("The constant compute key " + key + " has already been set for " + element);
-        }
-
-        public static IllegalStateException constantComputeKeysCanNotBeRemoved(final String key, final Element element) {
-            return new IllegalStateException("The constant compute key " + key + " can not be removed on element " + element);
+        public static IllegalArgumentException providedKeyIsNotAMemoryComputeKey(final String key) {
+            return new IllegalArgumentException("The provided key is not a memory compute key: " + key);
         }
 
         public static IllegalStateException adjacentVerticesCanNotBeQueried() {

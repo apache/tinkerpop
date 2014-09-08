@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `MetaProperty<V>` as the property type for vertices -- provides multi-properties and properties on properties.
+* Changed `VertexProgram` such that `getElementComputeKeys()` is simply a `Set<String>`.
 * Significant changes to the format of the `ResponseMessage` for Gremlin Server - these changes break existing clients.
 * Close any open transactions on any configured `Graph` when a session in Gremlin Server is killed.
 * Grateful Dead Graph now uses vertex labels instead of "type" properties.

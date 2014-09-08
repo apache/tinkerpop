@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.process.computer.lambda;
 
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.Memory;
+import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
@@ -13,9 +13,9 @@ import com.tinkerpop.gremlin.util.function.STriConsumer;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -27,13 +27,13 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
     private static final String EXECUTE_LAMBDA_KEY = "gremlin.lambdaVertexProgram.executeLambdaKey";
     private static final String TERMINATE_LAMBDA_KEY = "gremlin.lambdaVertexProgram.terminateLambdaKey";
     private static final String ELEMENT_COMPUTE_KEYS = "gremlin.lambdaVertexProgram.elementComputeKeys";
-    private static final String MEMORY_KEYS = "gremlin.lambdaVertexProgram.memoryKeys";
+    private static final String MEMORY_COMPUTE_KEYS = "gremlin.lambdaVertexProgram.memoryComputeKeys";
 
     private SConsumer<Memory> setupLambda;
     private STriConsumer<Vertex, Messenger<M>, Memory> executeLambda;
     private SPredicate<Memory> terminateLambda;
-    private Map<String, KeyType> elementComputeKeys;
-    private Set<String> memoryKeys;
+    private Set<String> elementComputeKeys;
+    private Set<String> memoryComputeKeys;
 
     private LambdaVertexProgram() {
     }
@@ -50,9 +50,9 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
             this.terminateLambda = configuration.containsKey(TERMINATE_LAMBDA_KEY) ?
                     VertexProgramHelper.deserialize(configuration, TERMINATE_LAMBDA_KEY) : s -> true;
             this.elementComputeKeys = configuration.containsKey(ELEMENT_COMPUTE_KEYS) ?
-                    VertexProgramHelper.deserialize(configuration, ELEMENT_COMPUTE_KEYS) : Collections.emptyMap();
-            this.memoryKeys = configuration.containsKey(MEMORY_KEYS) ?
-                    VertexProgramHelper.deserialize(configuration, MEMORY_KEYS) : Collections.emptySet();
+                    VertexProgramHelper.deserialize(configuration, ELEMENT_COMPUTE_KEYS) : Collections.emptySet();
+            this.memoryComputeKeys = configuration.containsKey(MEMORY_COMPUTE_KEYS) ?
+                    VertexProgramHelper.deserialize(configuration, MEMORY_COMPUTE_KEYS) : Collections.emptySet();
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -66,7 +66,7 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
             VertexProgramHelper.serialize(this.executeLambda, configuration, EXECUTE_LAMBDA_KEY);
             VertexProgramHelper.serialize(this.terminateLambda, configuration, TERMINATE_LAMBDA_KEY);
             VertexProgramHelper.serialize(this.elementComputeKeys, configuration, ELEMENT_COMPUTE_KEYS);
-            VertexProgramHelper.serialize(this.memoryKeys, configuration, MEMORY_KEYS);
+            VertexProgramHelper.serialize(this.memoryComputeKeys, configuration, MEMORY_COMPUTE_KEYS);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -89,13 +89,13 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
     }
 
     @Override
-    public Map<String, KeyType> getElementComputeKeys() {
+    public Set<String> getElementComputeKeys() {
         return this.elementComputeKeys;
     }
 
     @Override
     public Set<String> getMemoryComputeKeys() {
-        return this.memoryKeys;
+        return this.memoryComputeKeys;
     }
 
     //////////////////////////////
@@ -138,26 +138,30 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
             }
         }
 
-        public Builder elementComputeKeys(final Object... elementComputeKeys) {
+        public Builder memoryComputeKeys(final Set<String> memoryComputeKeys) {
             try {
-                final Map<String, KeyType> map = new HashMap<>();
-                for (int i = 0; i < elementComputeKeys.length; i = i + 2) {
-                    map.put((String) elementComputeKeys[i], (KeyType) elementComputeKeys[i+1]);
-                }
-                VertexProgramHelper.serialize(map, configuration, ELEMENT_COMPUTE_KEYS);
+                VertexProgramHelper.serialize(memoryComputeKeys, configuration, MEMORY_COMPUTE_KEYS);
                 return this;
             } catch (Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
         }
 
-        public Builder memoryComputeKeys(final Set<String> memoryComputeKeys) {
+        public Builder elementComputeKeys(final Set<String> elementComputeKeys) {
             try {
-                VertexProgramHelper.serialize(memoryComputeKeys, configuration, MEMORY_KEYS);
+                VertexProgramHelper.serialize(elementComputeKeys, configuration, ELEMENT_COMPUTE_KEYS);
                 return this;
             } catch (Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
+        }
+
+        public Builder memoryComputeKeys(final String... memoryComputeKeys) {
+            return this.memoryComputeKeys(new HashSet<>(Arrays.asList(memoryComputeKeys)));
+        }
+
+        public Builder elementComputeKeys(final String... elementComputeKeys) {
+            return this.elementComputeKeys(new HashSet<>(Arrays.asList(elementComputeKeys)));
         }
     }
 }

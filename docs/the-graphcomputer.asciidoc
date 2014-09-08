@@ -112,7 +112,7 @@ WARNING: `GraphComputer` makes extensive use of link:http://docs.oracle.com/java
 gremlin> result = g.compute().program(LambdaVertexProgram.build().
                       execute(new GSTriConsumer("a.property('counter', c.isInitialIteration() ? 1 : ++a.value('counter'))")).
                       terminate(new GSPredicate('a.iteration > 9')).
-                      elementComputeKeys('counter',VARIABLE).create()).submit().get()
+                      elementComputeKeys('counter').create()).submit().get()
 ==>result[tinkergraph[vertices:6 edges:6],memory[size:0]]
 gremlin> result.graph.V().value('counter')
 ==>10
@@ -128,7 +128,7 @@ The same example is presented below in Java8 using native lambda syntax.
 ComputerResult results = g.compute().program(LambdaVertexProgram.build().
                         execute((vertex, messenger, memory) -> vertex.<Integer>property("counter", memory.isInitialIteration() ? 1 : vertex.<Integer>value("counter") + 1)).
                         terminate(memory -> memory.getIteration() > 9).
-                        elementComputeKeys("counter", VertexProgram.KeyType.VARIABLE).create()).submit().get();
+                        elementComputeKeys("counter").create()).submit().get();
 results.getGraph().V().value("counter").forEach(System.out::println);
 // 10
 // 10
@@ -144,7 +144,7 @@ gremlin> result = g.compute().
                       program(LambdaVertexProgram.build().
                         execute(new GSTriConsumer("a.property('counter', c.isInitialIteration() ? 1 : ++a.value('counter'))")).
                         terminate(new GSPredicate('a.iteration > 9')).
-                        elementComputeKeys('counter',VARIABLE).create()). 
+                        elementComputeKeys('counter').create()).
                       mapReduce(LambdaMapReduce.build().
                         map(new GSBiConsumer("b.emit(MapReduce.NullObject.instance(), a.value('counter'))")).
                         reduce(new GSTriConsumer("c.emit(a,b.sum())")).
@@ -180,6 +180,8 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
     private double alpha = 0.85d;
     private int totalIterations = 30;
 
+    private static final Set<String> COMPUTE_KEYS = new HashSet<>(Arrays.asList(PAGE_RANK, EDGE_COUNT));
+
     private PageRankVertexProgram() {
 
     }
@@ -214,10 +216,9 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
     }
 
     @Override
-    public Map<String, KeyType> getElementComputeKeys() { <5>
-        return VertexProgram.createElementKeys(PAGE_RANK, KeyType.VARIABLE, EDGE_COUNT, KeyType.CONSTANT);
+    public Set<String> getElementComputeKeys() { <5>
+        return COMPUTE_KEYS;
     }
-
 
     @Override
     public void setup(final Memory memory) {

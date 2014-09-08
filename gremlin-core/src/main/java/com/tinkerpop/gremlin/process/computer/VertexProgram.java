@@ -6,10 +6,7 @@ import org.apache.commons.configuration.Configuration;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -22,11 +19,6 @@ import java.util.Set;
  * @author Matthias Broecheler (me@matthiasb.com)
  */
 public interface VertexProgram<M extends Serializable> {
-
-    public enum KeyType {
-        VARIABLE,
-        CONSTANT
-    }
 
     public default void loadState(final Configuration configuration) {
 
@@ -62,7 +54,9 @@ public interface VertexProgram<M extends Serializable> {
      */
     public boolean terminate(final Memory memory);
 
-    public Map<String, KeyType> getElementComputeKeys();
+    public default Set<String> getElementComputeKeys() {
+        return Collections.emptySet();
+    }
 
     public default Set<String> getMemoryComputeKeys() {
         return Collections.emptySet();
@@ -74,16 +68,6 @@ public interface VertexProgram<M extends Serializable> {
 
     public default List<MapReduce> getMapReducers() {
         return Collections.emptyList();
-    }
-
-    public static Map<String, KeyType> createElementKeys(final Object... computeKeys) {
-        if (computeKeys.length % 2 != 0)
-            throw new IllegalArgumentException("The provided arguments must have a size that is a factor of 2");
-        final Map<String, KeyType> keys = new HashMap<>();
-        for (int i = 0; i < computeKeys.length; i = i + 2) {
-            keys.put(Objects.requireNonNull(computeKeys[i].toString()), (KeyType) Objects.requireNonNull(computeKeys[i + 1]));
-        }
-        return keys;
     }
 
     public static <V extends VertexProgram> V createVertexProgram(final Configuration configuration) {

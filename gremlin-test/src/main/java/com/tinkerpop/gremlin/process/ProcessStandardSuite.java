@@ -93,7 +93,6 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             BackTest.JavaBackTest.class,
             ChooseTest.JavaChooseTest.class,
             FoldTest.JavaFoldTest.class,
-            ChooseTest.JavaChooseTest.class,
             JumpTest.JavaJumpTest.class,
             MapTest.JavaMapTest.class,
             MatchTest.JavaMatchTest.class,

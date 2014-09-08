@@ -25,11 +25,10 @@ import static org.junit.Assert.*;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @ExceptionCoverage(exceptionClass = GraphComputer.Exceptions.class, methods = {
-        "providedKeyIsNotAMemoryKey",
+        "providedKeyIsNotAMemoryComputeKey",
         "computerHasNoVertexProgramNorMapReducers",
         "computerHasAlreadyBeenSubmittedAVertexProgram",
-        "constantComputeKeysCanNotBeRemoved",
-        "providedKeyIsNotAComputeKey"
+        "providedKeyIsNotAnElementComputeKey"
 })
 @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
         "graphDoesNotSupportProvidedGraphComputer",
@@ -110,7 +109,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
                     setup(memory -> memory.set("", true)).
                     execute((vertex, messenger, memory) -> {
                     }).
-                    terminate(memory -> true).memoryComputeKeys(new HashSet<>(Arrays.asList("")))
+                    terminate(memory -> true).memoryComputeKeys("")
                     .create()).submit().get();
             fail("Providing empty memory key should fail");
         } catch (Exception ex) {
@@ -125,7 +124,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
                     execute((vertex, messenger, memory) -> {
                     }).
                     terminate(memory -> true).memoryComputeKeys(new HashSet<>(Arrays.asList(""))).
-                    memoryComputeKeys(new HashSet<>(Arrays.asList("blah")))
+                    memoryComputeKeys("blah")
                     .create()).submit().get();
             fail("Providing null memory key should fail");
         } catch (Exception ex) {
@@ -238,7 +237,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
                         vertex.property("blah", "blah");
                         fail("Should throw an IllegalArgumentException");
                     } catch (IllegalArgumentException e) {
-                        assertEquals(GraphComputer.Exceptions.providedKeyIsNotAComputeKey("blah").getMessage(), e.getMessage());
+                        assertEquals(GraphComputer.Exceptions.providedKeyIsNotAnElementComputeKey("blah").getMessage(), e.getMessage());
                     } catch (Exception e) {
                         fail("Should throw an IllegalArgumentException: " + e);
                     }*/
@@ -252,8 +251,8 @@ public class GraphComputerTest extends AbstractGremlinTest {
                     }
                 }).
                 terminate(memory -> memory.getIteration() == 1).
-                elementComputeKeys("nameLengthCounter", VertexProgram.KeyType.VARIABLE).
-                memoryComputeKeys(new HashSet<>(Arrays.asList("a", "b"))).create()).submit().get();
+                elementComputeKeys("nameLengthCounter").
+                memoryComputeKeys("a", "b").create()).submit().get();
         assertEquals(1, results.getMemory().getIteration());
         assertEquals(2, results.getMemory().asMap().size());
         assertEquals(2, results.getMemory().keys().size());
@@ -287,7 +286,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
                     vertex.singleProperty("counter", memory.isInitialIteration() ? 1 : vertex.<Integer>value("counter") + 1);
                 })
                 .terminate(memory -> memory.getIteration() > 8)
-                .elementComputeKeys("counter", VertexProgram.KeyType.VARIABLE).create())
+                .elementComputeKeys(new HashSet<>(Arrays.asList("counter"))).create())
                 .mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()
                         .map((v, e) -> e.emit(MapReduce.NullObject.instance(), v.value("counter")))
                         .reduce((k, vv, e) -> {
@@ -368,7 +367,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
                     memory.set("e", true);
                     return memory.getIteration() > 1;
                 }).
-                memoryComputeKeys(new HashSet<>(Arrays.asList("a", "b", "c", "d", "e"))).create()).submit().get();
+                memoryComputeKeys("a","b","c","d","e").create()).submit().get();
         assertEquals(2, results.getMemory().getIteration());
         assertEquals(5, results.getMemory().asMap().size());
         assertEquals(5, results.getMemory().keys().size());
@@ -463,7 +462,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
 
                 }).
                 terminate(memory -> memory.getIteration() > 2).
-                elementComputeKeys("a", VertexProgram.KeyType.VARIABLE, "b", VertexProgram.KeyType.VARIABLE).create())
+                elementComputeKeys(new HashSet<>(Arrays.asList("a", "b"))).create())
                 .submit().get();
         assertEquals(3, results.getMemory().getIteration());
         final Vertex vertex = results.getGraph().V().next();

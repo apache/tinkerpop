@@ -2,9 +2,9 @@ package com.tinkerpop.gremlin.process.computer.ranking.pagerank;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
-import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
@@ -17,7 +17,9 @@ import com.tinkerpop.gremlin.util.function.SSupplier;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -37,6 +39,8 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     private double vertexCountAsDouble = 1;
     private double alpha = 0.85d;
     private int totalIterations = 30;
+
+    private static final Set<String> COMPUTE_KEYS = new HashSet<>(Arrays.asList(PAGE_RANK, EDGE_COUNT));
 
     private PageRankVertexProgram() {
 
@@ -72,8 +76,8 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     }
 
     @Override
-    public Map<String, KeyType> getElementComputeKeys() {
-        return VertexProgram.createElementKeys(PAGE_RANK, KeyType.VARIABLE, EDGE_COUNT, KeyType.CONSTANT);
+    public Set<String> getElementComputeKeys() {
+        return COMPUTE_KEYS;
     }
 
     @Override

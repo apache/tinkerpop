@@ -182,7 +182,7 @@ public class GiraphMemory extends MasterCompute implements Memory {
 
     private void checkKeyValue(final String key, final Object value) {
         if (!key.equals(Constants.RUNTIME) && !this.memoryKeys.contains(key))
-            throw GraphComputer.Exceptions.providedKeyIsNotAMemoryKey(key);
+            throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
         MemoryHelper.validateValue(value);
     }
 }

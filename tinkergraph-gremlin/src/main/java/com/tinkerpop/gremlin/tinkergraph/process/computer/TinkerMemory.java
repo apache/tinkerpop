@@ -136,7 +136,7 @@ public class TinkerMemory implements Memory.Administrative {
     private void checkKeyValue(final String key, final Object value) {
         if (this.complete) throw Memory.Exceptions.memoryCompleteAndImmutable();
         if (!this.memoryKeys.contains(key))
-            throw GraphComputer.Exceptions.providedKeyIsNotAMemoryKey(key);
+            throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
         MemoryHelper.validateValue(value);
     }
 }

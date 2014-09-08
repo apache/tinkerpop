@@ -26,10 +26,9 @@ import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -52,9 +51,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     private boolean trackPaths = false;
     public List<MapReduce> mapReducers = new ArrayList<>();
 
-    public Map<String, KeyType> computeKeys = new HashMap<String, KeyType>() {{
-        put(TRAVERSER_TRACKER, KeyType.CONSTANT);
-    }};
+    private Set<String> elementComputeKeys = new HashSet<>(Arrays.asList(TRAVERSER_TRACKER));
 
     private TraversalVertexProgram() {
     }
@@ -75,7 +72,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
             traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
                 final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
                 this.mapReducers.add(mapReduce);
-                this.computeKeys.put(Graph.Key.hide(mapReduce.getSideEffectKey()), KeyType.CONSTANT);
+                this.elementComputeKeys.add(Graph.Key.hide(mapReduce.getSideEffectKey()));
             });
 
             if (!(TraversalHelper.getEnd(traversal) instanceof SideEffectCapStep))
@@ -168,8 +165,8 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     @Override
-    public Map<String, KeyType> getElementComputeKeys() {
-        return this.computeKeys;
+    public Set<String> getElementComputeKeys() {
+        return this.elementComputeKeys;
     }
 
     @Override
