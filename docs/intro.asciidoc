@@ -24,6 +24,7 @@ TinkerPop3 is the third incarnation of the TinkerPop graph computing framework. 
   ** `Vertex`: extends Element and maintains a set of incoming and outgoing edges.
   ** `Edge`: extends Element and maintains an incoming and outgoing vertex.
  * `Property<V>`: a string key associated with a `V` value.
+  ** `MetaProperty<V>`: a string key associated with a `V` value as well as a collection of `Property<U>` properties (*vertices only*)
 
 .Primary components of the TinkerPop3 *process* API
  * `Traversal<S,E>`: a functional data flow process transforming objects of type `S` to type `E`.
@@ -123,16 +124,16 @@ $ bin/gremlin.sh
 -----oOOo-(3)-oOOo-----
 gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> gremlin = g.addVertex(Element.LABEL,'software','name','gremlin')
+gremlin> gremlin = g.addVertex(LABEL,'software','name','gremlin')
 ==>v[0]
 gremlin> gremlin.property('created',2009)
-==>p[created->2009]
-gremlin> blueprints = g.addVertex(Element.LABEL,'software','name','blueprints')
+==>mp[created->2009]
+gremlin> blueprints = g.addVertex(LABEL,'software','name','blueprints')
 ==>v[1]
 gremlin> gremlin.addEdge('dependsOn',blueprints)
 ==>e[2][0-dependsOn->1]
 gremlin> blueprints.property('created',2010)
-==>p[created->2010]
+==>mp[created->2010]
 gremlin> blueprints.property('created').remove()
 ==>null
 gremlin> gremlin.addEdge('encapsulates',blueprints)

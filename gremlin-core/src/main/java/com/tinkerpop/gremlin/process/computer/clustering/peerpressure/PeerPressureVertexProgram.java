@@ -93,8 +93,8 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
     public void execute(final Vertex vertex, Messenger<Pair<Serializable, Double>> messenger, final Memory memory) {
         if (memory.isInitialIteration()) {
             double voteStrength = this.distributeVote ? (1.0d / Double.valueOf((Long) this.messageType.edges(vertex).count().next())) : 1.0d;
-            vertex.property(CLUSTER, vertex.id());
-            vertex.property(VOTE_STRENGTH, voteStrength);
+            vertex.singleProperty(CLUSTER, vertex.id());
+            vertex.singleProperty(VOTE_STRENGTH, voteStrength);
             messenger.sendMessage(this.messageType, new Pair<>((Serializable) vertex.id(), voteStrength));
             memory.and(VOTE_TO_HALT, false);
         } else {
@@ -104,7 +104,7 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
             Serializable cluster = PeerPressureVertexProgram.largestCount(votes);
             if (null == cluster) cluster = (Serializable) vertex.id();
             memory.and(VOTE_TO_HALT, vertex.value(CLUSTER).equals(cluster));
-            vertex.property(CLUSTER, cluster);
+            vertex.singleProperty(CLUSTER, cluster);
             messenger.sendMessage(this.messageType, new Pair<>(cluster, vertex.<Double>value(VOTE_STRENGTH)));
         }
     }

@@ -13,6 +13,77 @@ Features are the means by which vendors can expose nuanced difference between th
  . *Vertex Features*
  . *Edge Features*
 
+Vertex MetaProperties
+---------------------
+
+In TinkerPop3, `MetaProperty<V>` is introduced. All the properties of a `Vertex` are a `MetaProperty`. A `MetaProperty` is like a `Property` in that it has a key/value, but it extends `Property` whereby it can also have a collection of key/value pairs. Moreover, while an `Edge` can only have one property of key "name" (for example), a `Vertex` can have multiple "name" meta-properties. A few examples are presented below.
+
+[source,groovy]
+gremlin> g = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> v = g.addVertex('name','marko','name','marko a. rodriguez')
+==>v[0]
+gremlin> v.properties().count()
+==>2
+gremlin> v.properties('name').count() <1>
+==>2
+gremlin> v.property('name') <2>
+Multiple properties exist for the provided key, use Vertex.properties(name)
+Display stack trace? [yN]
+gremlin> v.properties()
+==>mp[name->marko]
+==>mp[name->marko a. rodriguez]
+gremlin> v.properties('name')
+==>mp[name->marko]
+==>mp[name->marko a. rodriguez]
+gremlin> mp = v.properties('name').has(VALUE,'marko').next()
+==>mp[name->marko]
+gremlin> mp.property('acl','private') <3>
+==>p[acl->private]
+gremlin> mp = v.properties('name').has(VALUE,'marko a. rodriguez').next()
+==>mp[name->marko a. rodriguez]
+gremlin> mp.property('acl','public')
+==>p[acl->public]
+gremlin> v.properties('name').has('acl','public').value()
+==>marko a. rodriguez
+gremlin> v.properties('name').has('acl','public').remove() <4>
+==>null
+gremlin> v.properties('name').has('acl','public').value()
+gremlin> v.properties('name').has('acl','private').value()
+==>marko
+gremlin> mp = v.properties().next()
+==>mp[name->marko]
+gremlin> mp.properties()
+==>p[acl->private]
+gremlin> mp.property('date',2014) <5>
+==>p[date->2014]
+gremlin> mp.property('creator','stephen')
+==>p[creator->stephen]
+gremlin> mp.properties()
+==>p[date->2014]
+==>p[creator->stephen]
+==>p[acl->private]
+gremlin> v.properties('name').valueMap()
+==>[date:2014, creator:stephen, acl:private]
+gremlin> v.singleProperty('name','okram') <6>
+==>mp[name->okram]
+gremlin> v.property('name')
+==>mp[name->okram]
+
+<1> A vertex can have zero or more properties with the same key associated with it.
+<2> If a vertex has multiple meta-properties for the same key, then `Vertex.property()` is not allowed.
+<3> A vertex meta-property can have standard key/value properties attached to it.
+<4> Meta-property removal is identical to property removal.
+<5> A vertex meta-property can have any number of key/value properties attached to it.
+<6> `Vertex.singleProperty()` is a helper method that will remove all existing key'd properties before adding the new single property.
+
+A collection of use cases are itemized below:
+
+ * *Permissions*: Meta-properties can have key/value ACL-type permission information associated with them.
+ * *Auditing*: When a vertex meta-property is manipulated, it can have key/value information attached to it saying who the creator, deletor, etc. are.
+ * *Provenance*: The "name" of a vertex can be declared by multiple users.
+
+
 Hidden Properties
 -----------------
 

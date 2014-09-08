@@ -12,7 +12,9 @@ import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexPro
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
@@ -95,6 +97,8 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
 
         staticImports.add(Direction.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Compare.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(Element.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(MetaProperty.class.getCanonicalName() + DOT_STAR);
     }
 
     @Override
