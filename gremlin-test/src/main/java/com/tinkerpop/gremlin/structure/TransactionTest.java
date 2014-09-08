@@ -179,7 +179,7 @@ public class TransactionTest extends AbstractGremlinTest {
         assertEquals("marko", v1.<String>value("name"));
         assertEquals("marko", g.v(v1.id()).<String>value("name"));
 
-        v1.property("name", "stephen");
+        v1.singleProperty("name", "stephen");
 
         assertEquals("stephen", v1.<String>value("name"));
         assertEquals("stephen", g.v(v1.id()).<String>value("name"));
@@ -220,7 +220,7 @@ public class TransactionTest extends AbstractGremlinTest {
         assertEquals("marko", v1.<String>value("name"));
         assertEquals("marko", g.v(v1.id()).<String>value("name"));
 
-        v1.property("name", "stephen");
+        v1.singleProperty("name", "stephen");
 
         assertEquals("stephen", v1.<String>value("name"));
         assertEquals("stephen", g.v(v1.id()).<String>value("name"));
