@@ -82,10 +82,10 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, WrappedVertex<Node
 
     @Override
     public <U> Property<U> property(String key, U value) {
+        if (key.equals(META_PROPERTY_KEY) || key.equals(META_PROPERTY_VALUE))
+            throw new IllegalArgumentException("The following key is a reserved key for Neo4jMetaProperty: " + key);
         this.vertex.graph.tx().readWrite();
         if (isNode()) {
-            if (key.equals(META_PROPERTY_KEY) || key.equals(META_PROPERTY_VALUE))
-                throw new IllegalArgumentException("The following key is a reserved key for Neo4jMetaProperty: " + key);
             this.node.setProperty(key, value);
             return new Neo4jProperty<>(this, key, value);
         } else {

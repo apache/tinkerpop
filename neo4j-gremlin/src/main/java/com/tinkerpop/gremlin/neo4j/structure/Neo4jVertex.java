@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
-import com.tinkerpop.gremlin.structure.util.PropertyFilterIterator;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -67,7 +66,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
                     node.setProperty(Neo4jMetaProperty.META_PROPERTY_KEY, key);
                     node.setProperty(Neo4jMetaProperty.META_PROPERTY_VALUE, this.getBaseVertex().removeProperty(key));
                     this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
-                    this.baseElement.setProperty(key, Neo4jMetaProperty.META_PROPERTY_TOKEN);
+                    this.getBaseVertex().setProperty(key, Neo4jMetaProperty.META_PROPERTY_TOKEN);
                     node = this.graph.getBaseGraph().createNode(Neo4jMetaProperty.META_PROPERTY_LABEL);
                     node.setProperty(Neo4jMetaProperty.META_PROPERTY_KEY, key);
                     node.setProperty(Neo4jMetaProperty.META_PROPERTY_VALUE, value);
@@ -80,6 +79,33 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
             }
         } catch (IllegalArgumentException iae) {
             throw Property.Exceptions.dataTypeOfPropertyValueNotSupported(value);
+        }
+    }
+
+    @Override
+    // TODO: remove if MetaPropertyTest works with a setProperty() bug in Neo4j fixed.
+    public <V> MetaProperty<V> singleProperty(final String key, final V value, final Object... keyValues) {
+        ElementHelper.legalPropertyKeyValueArray(keyValues);
+        this.graph.tx().readWrite();
+        final String prefixedKey = Neo4jMetaProperty.META_PROPERTY_PREFIX.concat(key);
+        this.getBaseVertex().getRelationships(org.neo4j.graphdb.Direction.OUTGOING, DynamicRelationshipType.withName(prefixedKey)).forEach(relationship -> {
+            final Node multiPropertyNode = relationship.getEndNode();
+            relationship.delete();
+            multiPropertyNode.delete();
+        });
+        if (keyValues.length == 0) {
+            this.getBaseVertex().setProperty(key, value);
+            return new Neo4jMetaProperty<>(this, key, value);
+        } else {
+            this.getBaseVertex().setProperty(key, Neo4jMetaProperty.META_PROPERTY_TOKEN);
+            final Node node = this.graph.getBaseGraph().createNode(Neo4jMetaProperty.META_PROPERTY_LABEL);
+            node.setProperty(Neo4jMetaProperty.META_PROPERTY_KEY, key);
+            node.setProperty(Neo4jMetaProperty.META_PROPERTY_VALUE, value);
+            for (int i = 0; i < keyValues.length; i = i + 2) {
+                node.setProperty((String) keyValues[i], keyValues[i + 1]);
+            }
+            this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
+            return new Neo4jMetaProperty<>(this, node);
         }
     }
 

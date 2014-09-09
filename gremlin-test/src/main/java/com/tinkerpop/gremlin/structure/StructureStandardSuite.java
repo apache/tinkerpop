@@ -44,7 +44,7 @@ import java.util.stream.Stream;
 public class StructureStandardSuite extends AbstractGremlinSuite {
 
     private static final Class<?>[] allTests = new Class<?>[]{
-            BatchTest.class,
+            /*BatchTest.class,
             CommunityGeneratorTest.class,
             DistributionGeneratorTest.class,
             EdgeTest.class,
@@ -52,9 +52,9 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             GraphTest.class,
             GraphConstructionTest.class,
             IdGraphStrategyTest.class,
-            IoTest.class,
+            IoTest.class,*/
             MetaPropertyTest.class,
-            VariablesTest.class,
+            /*VariablesTest.class,
             PartitionGraphStrategyTest.class,
             PropertyTest.class,
             ReadOnlyGraphStrategyTest.class,
@@ -62,7 +62,7 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             SubgraphStrategyTest.class,
             StrategyWrappedGraphTest.class,
             TransactionTest.class,
-            VertexTest.class
+            VertexTest.class */
     };
 
     /**

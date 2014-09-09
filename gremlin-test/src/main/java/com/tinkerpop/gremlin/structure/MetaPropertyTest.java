@@ -99,7 +99,22 @@ public class MetaPropertyTest extends AbstractGremlinTest {
 
         @Test
         public void shouldHandleSingleMetaProperties() {
-            Vertex v = g.addVertex("name", "marko", "name", "marko a. rodriguez", "name", "marko rodriguez");
+            final Vertex v = g.addVertex("name", "marko", "name", "marko a. rodriguez", "name", "marko rodriguez");
+            tryCommit(g, g -> {
+                assertEquals(3, v.properties().count().next().intValue());
+                assertEquals(3, v.properties("name").count().next().intValue());
+                assertTrue(v.properties("name").value().toList().contains("marko"));
+                assertTrue(v.properties("name").value().toList().contains("marko a. rodriguez"));
+                assertTrue(v.properties("name").value().toList().contains("marko rodriguez"));
+            });
+            v.properties("name").remove();
+            tryCommit(g, g -> {
+                assertEquals(0, v.properties().count().next().intValue());
+                assertEquals(0, v.properties("name").count().next().intValue());
+            });
+            v.property("name", "marko");
+            v.property("name", "marko a. rodriguez");
+            v.property("name", "marko rodriguez");
             tryCommit(g, g -> {
                 assertEquals(3, v.properties().count().next().intValue());
                 assertEquals(3, v.properties("name").count().next().intValue());
@@ -108,14 +123,33 @@ public class MetaPropertyTest extends AbstractGremlinTest {
                 assertTrue(v.properties("name").value().toList().contains("marko rodriguez"));
             });
             v.singleProperty("name", "okram", "acl", "private", "date", 2014);
-            //tryCommit(g, g -> {
-                //v.properties().forEach(p -> System.out.println(p + "::" + p.properties().toList()));
+            tryCommit(g, g -> {
                 assertEquals(1, v.properties("name").count().next().intValue());
                 assertEquals(1, v.properties().count().next().intValue());
                 assertEquals(2, v.property("name").valueMap().next().size());
                 assertEquals("private", v.property("name").valueMap().next().get("acl"));
                 assertEquals(2014, v.property("name").valueMap().next().get("date"));
-            //});
+            });
+
+            v.remove();
+            tryCommit(g, g -> {
+                assertEquals(0, g.V().count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
+            });
+
+            final Vertex u = g.addVertex("name", "marko", "name", "marko a. rodriguez", "name", "marko rodriguez");
+            tryCommit(g);
+            // TODO: Neo4j no happy long time ---- u.properties().remove();
+            u.singleProperty("name", "okram", "acl", "private", "date", 2014);
+            tryCommit(g, g -> {
+                // u.properties().forEach(p -> System.out.println(p + "::" + p.properties().toList()));
+                assertEquals(1, u.properties("name").count().next().intValue());
+                assertEquals(1, u.properties().count().next().intValue());
+                assertEquals(2, u.property("name").valueMap().next().size());
+                assertEquals("private", u.property("name").valueMap().next().get("acl"));
+                assertEquals(2014, u.property("name").valueMap().next().get("date"));
+            });
+
         }
     }
 
