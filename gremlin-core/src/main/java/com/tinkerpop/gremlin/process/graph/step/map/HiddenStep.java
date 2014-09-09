@@ -19,26 +19,26 @@ public class HiddenStep<E> extends MapStep<Element, E> {
 
     public HiddenStep(final Traversal traversal, final String key) {
         super(traversal);
-        this.key = Graph.Key.hide(key);
+        this.key = Graph.Key.isHidden(key) ? key : Graph.Key.hide(key);
         this.defaultValue = SOptional.empty();
         this.defaultSupplier = SOptional.empty();
-        this.setFunction(traverser -> traverser.get().<E>property(key).orElse((E) NO_OBJECT));
+        this.setFunction(traverser -> traverser.get().<E>property(this.key).orElse((E) NO_OBJECT));
     }
 
     public HiddenStep(final Traversal traversal, final String key, final E defaultValue) {
         super(traversal);
-        this.key = Graph.Key.hide(key);
+        this.key = Graph.Key.isHidden(key) ? key : Graph.Key.hide(key);
         this.defaultValue = SOptional.of(defaultValue);
         this.defaultSupplier = SOptional.empty();
-        this.setFunction(traverser -> traverser.get().<E>property(key).orElse(this.defaultValue.get()));
+        this.setFunction(traverser -> traverser.get().<E>property(this.key).orElse(this.defaultValue.get()));
     }
 
     public HiddenStep(final Traversal traversal, final String key, final Supplier<E> defaultSupplier) {
         super(traversal);
-        this.key = Graph.Key.hide(key);
+        this.key = Graph.Key.isHidden(key) ? key : Graph.Key.hide(key);
         this.defaultValue = SOptional.empty();
         this.defaultSupplier = SOptional.of(defaultSupplier);
-        this.setFunction(traverser -> traverser.get().<E>property(key).orElse(this.defaultSupplier.get().get()));
+        this.setFunction(traverser -> traverser.get().<E>property(this.key).orElse(this.defaultSupplier.get().get()));
     }
 
     public String toString() {

@@ -83,6 +83,19 @@ public class PropertyTest {
             final Vertex v1 = g.v(v.id());
             assertEquals(2, v1.hiddenKeys().size());
             assertTrue(v1.hiddenKeys().stream().allMatch(Graph.Key::isHidden));
+            assertTrue(v1.hiddenKeys().stream().allMatch(k -> k.equals(Graph.Key.hide("acl")) || k.equals(Graph.Key.hide("other"))));
+        }
+
+        // todo: expand this class of testing around hiddens - needs to happen for edges and vertices
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        public void shouldNotReHideAnAlreadyHiddenKeyWhenGettingHiddenValue() {
+            final Vertex v = g.addVertex("name", "marko", Graph.Key.hide("acl"), "rw", Graph.Key.hide("other"), "rw");
+            tryCommit(g);
+            final Vertex v1 = g.v(v.id());
+            v1.hiddenKeys().stream().forEach(hiddenKey -> assertTrue(v1.hiddenValue(hiddenKey).hasNext()));
+            assertTrue(v1.hiddenValue(Graph.Key.hide("other")).hasNext());
+            assertTrue(v1.hiddenValue("other").hasNext());
         }
     }
 
