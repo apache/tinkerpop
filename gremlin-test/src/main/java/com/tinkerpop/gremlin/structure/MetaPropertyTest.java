@@ -50,6 +50,7 @@ public class MetaPropertyTest extends AbstractGremlinTest {
 
         v.properties("name").sideEffect(meta -> meta.get().<Integer>property("counter", ((String) meta.get().value()).length())).iterate();
         v.properties().forEach(meta -> {
+            assertEquals(MetaProperty.META_PROPERTY, meta.label());
             assertTrue(meta.isPresent());
             assertFalse(meta.isHidden());
             assertEquals(v, meta.getElement());

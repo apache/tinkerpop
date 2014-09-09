@@ -23,9 +23,7 @@ import java.util.Map;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -214,7 +212,9 @@ public class PropertyTest {
             "propertyKeyCanNotBeNull",
             "propertyKeyIdIsReserved",
             "propertyKeyLabelIsReserved",
-            "propertyKeyCanNotBeEmpty"
+            "propertyKeyCanNotBeEmpty",
+            "propertyKeyValueIsReserved",
+            "propertyKeyKeyIsReserved"
     })
     public static class PropertyValidationOnSetExceptionConsistencyTest extends AbstractGremlinTest {
 
@@ -226,6 +226,8 @@ public class PropertyTest {
                     {Element.ID, "v", Property.Exceptions.propertyKeyIdIsReserved()},
                     {Element.LABEL, "v", Property.Exceptions.propertyKeyLabelIsReserved()},
                     {"", "v", Property.Exceptions.propertyKeyCanNotBeEmpty()}});
+                    //{MetaProperty.KEY, "v", Property.Exceptions.propertyKeyKeyIsReserved()},
+                    //{MetaProperty.VALUE, "v", Property.Exceptions.propertyKeyValueIsReserved()}});
         }
 
         @Parameterized.Parameter(value = 0)
@@ -274,7 +276,7 @@ public class PropertyTest {
      */
     @RunWith(Parameterized.class)
     public static class PropertyFeatureSupportTest extends AbstractGremlinTest {
-        private static final Map<String,Object> testMap = new HashMap<String,Object>() {{
+        private static final Map<String, Object> testMap = new HashMap<String, Object>() {{
             put("testString", "try");
             put("testInteger", 123);
         }};

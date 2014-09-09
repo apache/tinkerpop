@@ -130,6 +130,14 @@ public interface Property<V> {
             return propertyKeyIsReserved(Element.LABEL);
         }
 
+        public static IllegalArgumentException propertyKeyKeyIsReserved() {
+            return propertyKeyIsReserved(MetaProperty.KEY);
+        }
+
+        public static IllegalArgumentException propertyKeyValueIsReserved() {
+            return propertyKeyIsReserved(MetaProperty.VALUE);
+        }
+
         public static IllegalArgumentException propertyKeyCanNotBeEmpty() {
             return new IllegalArgumentException("Property key can not be the empty string");
         }
