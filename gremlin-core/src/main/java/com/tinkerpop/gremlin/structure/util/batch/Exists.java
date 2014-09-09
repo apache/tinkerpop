@@ -24,6 +24,12 @@ public enum Exists implements BiConsumer<Element, Object[]> {
                     element.getClass().getSimpleName(), element.id()));
         }
     },
+    OVERWRITE {
+        @Override
+        public void accept(final Element element, final Object[] keyValues) {
+            ElementHelper.attachProperties(element, keyValues);
+        }
+    },
     OVERWRITE_SINGLE {
         @Override
         public void accept(final Element element, final Object[] keyValues) {
