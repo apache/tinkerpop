@@ -109,7 +109,9 @@ public interface Vertex extends Element, VertexTraversal {
         }
 
         public static IllegalStateException multiplePropertiesExistForProvidedKey(final String propertyKey) {
-            return new IllegalStateException("Multiple properties exist for the provided key, use Vertex.properties(" + propertyKey + ")");
+            return Graph.Key.isHidden(propertyKey) ?
+                    new IllegalStateException("Multiple properties exist for the provided hidden key, use Vertex.properties(Graph.Key.hide(" + propertyKey + "))") :
+                    new IllegalStateException("Multiple properties exist for the provided key, use Vertex.properties(" + propertyKey + ")");
         }
     }
 }
