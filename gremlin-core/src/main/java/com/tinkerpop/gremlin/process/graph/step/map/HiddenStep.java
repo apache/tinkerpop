@@ -19,6 +19,8 @@ public class HiddenStep<E> extends MapStep<Element, E> {
 
     public HiddenStep(final Traversal traversal, final String key) {
         super(traversal);
+
+        // todo: why did this not pass IO tests for neo4j - hide doesn't re-hide!?!?!???
         this.key = Graph.Key.isHidden(key) ? key : Graph.Key.hide(key);
         this.defaultValue = SOptional.empty();
         this.defaultSupplier = SOptional.empty();
