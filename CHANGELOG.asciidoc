@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* The property keys "key" and "value" are now reserved as they are the accessors for `MetaProperty.key()` and `MetaProperty.value()`.
 * Added `MetaProperty<V>` as the property type for vertices -- provides multi-properties and properties on properties.
 * Changed `VertexProgram` such that `getElementComputeKeys()` is simply a `Set<String>`.
 * Significant changes to the format of the `ResponseMessage` for Gremlin Server - these changes break existing clients.

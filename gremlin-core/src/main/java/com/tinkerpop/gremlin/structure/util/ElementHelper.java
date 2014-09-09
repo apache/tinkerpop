@@ -55,6 +55,10 @@ public class ElementHelper {
             throw Property.Exceptions.propertyKeyIdIsReserved();
         if (key.equals(Element.LABEL))
             throw Property.Exceptions.propertyKeyLabelIsReserved();
+        /*if (key.equals(MetaProperty.KEY))
+            throw Property.Exceptions.propertyKeyKeyIsReserved();
+        if (key.equals(MetaProperty.VALUE))
+            throw Property.Exceptions.propertyKeyValueIsReserved();*/
         if (key.isEmpty())
             throw Property.Exceptions.propertyKeyCanNotBeEmpty();
     }
@@ -199,7 +203,7 @@ public class ElementHelper {
      * Assign key/value pairs as properties to an {@link com.tinkerpop.gremlin.structure.Vertex}.  If the value of {@link com.tinkerpop.gremlin.structure.Vertex#ID} or
      * {@link com.tinkerpop.gremlin.structure.Vertex#LABEL} is in the set of pairs, then they are ignored.
      *
-     * @param vertex           the vertex to assign the {@code propertyKeyValues}
+     * @param vertex            the vertex to assign the {@code propertyKeyValues}
      * @param propertyKeyValues the key/value pairs to assign to the {@code vertex}
      * @throws ClassCastException       if the value of the key is not a {@link String}
      * @throws IllegalArgumentException if the value of {@code vertex} is null
