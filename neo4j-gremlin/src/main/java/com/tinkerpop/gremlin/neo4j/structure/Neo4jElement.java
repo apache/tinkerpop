@@ -72,7 +72,6 @@ public abstract class Neo4jElement implements Element, WrappedElement<PropertyCo
     @Override
     public <V> Property<V> property(final String key) {
         this.graph.tx().readWrite();
-
         if (this.baseElement.hasProperty(key))
             return new Neo4jProperty<>(this, key, (V) this.baseElement.getProperty(key));
         else

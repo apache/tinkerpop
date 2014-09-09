@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -72,7 +73,7 @@ public abstract class AbstractGremlinTest {
         final FeatureRequirementSet[] featureRequirementSets = testMethod.getAnnotationsByType(FeatureRequirementSet.class);
         if (featureRequirementSets.length > 0)
             frs.addAll(Arrays.stream(featureRequirementSets)
-                             .flatMap(f -> f.value().featuresRequired().stream()).collect(Collectors.toList()));
+                    .flatMap(f -> f.value().featuresRequired().stream()).collect(Collectors.toList()));
 
         // process the unique set of feature requirements
         final Set<FeatureRequirement> featureRequirementSet = new HashSet<>(frs);
@@ -145,6 +146,11 @@ public abstract class AbstractGremlinTest {
      */
     protected void tryCommit(final Graph g) {
         if (g.features().graph().supportsTransactions())
+            g.tx().commit();
+    }
+
+    protected void tryRandomCommit(final Graph g) {
+        if (g.features().graph().supportsTransactions() && new Random().nextBoolean())
             g.tx().commit();
     }
 

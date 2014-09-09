@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 
 import java.io.Serializable;
@@ -70,11 +71,14 @@ public class Neo4jProperty<V> implements Property<V>, Serializable {
     public void remove() {
         this.graph.tx().readWrite();
         if (this.element instanceof MetaProperty) {
-            ((Neo4jMetaProperty) this.element).removeProperty(this);
+            final Node node = ((Neo4jMetaProperty) this.element).getBaseVertex();
+            if (null != node && node.hasProperty(this.key)) {
+                node.removeProperty(this.key);
+            }
         } else {
-            final PropertyContainer rawElement = ((Neo4jElement) element).getBaseElement();
-            if (rawElement.hasProperty(key)) {
-                rawElement.removeProperty(key);
+            final PropertyContainer propertyContainer = ((Neo4jElement) this.element).getBaseElement();
+            if (propertyContainer.hasProperty(this.key)) {
+                propertyContainer.removeProperty(this.key);
             }
         }
     }

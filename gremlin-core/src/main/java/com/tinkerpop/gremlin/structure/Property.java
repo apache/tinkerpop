@@ -87,9 +87,7 @@ public interface Property<V> {
      *
      * @return True if the property key is hidden
      */
-    public default boolean isHidden() {
-        return Graph.Key.isHidden(this.key());
-    }
+    public boolean isHidden();
 
     /**
      * Get the element that this property is associated with.

@@ -39,7 +39,9 @@ public interface Vertex extends Element, VertexTraversal {
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues);
 
     public default <V> MetaProperty<V> property(final String key) {
-        final Iterator<MetaProperty<V>> iterator = this.iterators().properties(key);
+        final Iterator<MetaProperty<V>> iterator = Graph.Key.isHidden(key) ?
+                this.iterators().hiddens(Graph.Key.unHide(key)) :
+                this.iterators().properties(key);
         if (iterator.hasNext()) {
             final MetaProperty<V> property = iterator.next();
             if (iterator.hasNext())
@@ -55,9 +57,9 @@ public interface Vertex extends Element, VertexTraversal {
 
     public default <V> MetaProperty<V> property(final String key, final V value, final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
-        final MetaProperty<V> property = this.property(key, value);
-        ElementHelper.attachProperties(property, keyValues);
-        return property;
+        final MetaProperty<V> metaProperty = this.property(key, value);
+        ElementHelper.attachProperties(metaProperty, keyValues);
+        return metaProperty;
     }
 
     public default <V> MetaProperty<V> singleProperty(final String key, final V value, final Object... keyValues) {

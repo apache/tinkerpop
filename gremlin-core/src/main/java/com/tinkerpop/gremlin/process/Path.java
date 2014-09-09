@@ -58,7 +58,7 @@ public class Path implements Serializable {
             if (this.labels.get(i).contains(label))
                 return (A) this.objects.get(i);
         }
-        throw new IllegalArgumentException("The as-step does not exist: " + label);
+        throw new IllegalArgumentException("The step with label " + label + "  does not exist");
     }
 
     public <A> A get(final int index) {

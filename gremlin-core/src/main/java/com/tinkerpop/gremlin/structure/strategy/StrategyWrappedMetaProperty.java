@@ -41,6 +41,11 @@ public class StrategyWrappedMetaProperty<V> extends StrategyWrappedElement imple
     }
 
     @Override
+    public boolean isHidden() {
+        return this.baseMetaProperty.isHidden();
+    }
+
+    @Override
     public boolean isPresent() {
         return this.baseMetaProperty.isPresent();
     }

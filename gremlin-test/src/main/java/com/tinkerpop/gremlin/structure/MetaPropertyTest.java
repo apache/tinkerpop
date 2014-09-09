@@ -29,19 +29,21 @@ public class MetaPropertyTest extends AbstractGremlinTest {
 
         @Test
         public void shouldAddMultiProperties() {
-            Vertex v = g.addVertex("name", "marko", "age", 34);
-            tryCommit(g);
-            assertEquals("marko", v.property("name").value());
-            assertEquals("marko", v.value("name"));
-            assertEquals(34, v.property("age").value());
-            assertEquals(34, v.<Integer>value("age").intValue());
-            assertEquals(1, v.properties("name").count().next().intValue());
-            assertEquals(2, v.properties().count().next().intValue());
-            assertEquals(1, g.V().count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
+            final Vertex v = g.addVertex("name", "marko", "age", 34);
+            tryCommit(g, g -> {
+                assertEquals("marko", v.property("name").value());
+                assertEquals("marko", v.value("name"));
+                assertEquals(34, v.property("age").value());
+                assertEquals(34, v.<Integer>value("age").intValue());
+                assertEquals(1, v.properties("name").count().next().intValue());
+                assertEquals(2, v.properties().count().next().intValue());
+                assertEquals(1, g.V().count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
+            });
 
-            assertEquals(v, v.property("name", "marko a. rodriguez").getElement());
-            tryCommit(g);
+            final MetaProperty<String> property = v.property("name", "marko a. rodriguez");
+            tryCommit(g, g -> assertEquals(v, property.getElement()));
+
             try {
                 v.property("name");
                 fail("This should throw a: " + Vertex.Exceptions.multiplePropertiesExistForProvidedKey("name"));
@@ -58,42 +60,62 @@ public class MetaPropertyTest extends AbstractGremlinTest {
             assertEquals(0, g.E().count().next().intValue());
 
             assertEquals(v, v.property("name", "mrodriguez").getElement());
-            tryCommit(g);
-            assertEquals(3, v.properties("name").count().next().intValue());
-            assertEquals(4, v.properties().count().next().intValue());
-            assertEquals(1, g.V().count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
-
-            v.properties("name").sideEffect(meta -> meta.get().<Integer>property("counter", ((String) meta.get().value()).length())).iterate();
-            v.properties().forEach(meta -> {
-                assertEquals(MetaProperty.META_PROPERTY, meta.label());
-                assertTrue(meta.isPresent());
-                assertFalse(meta.isHidden());
-                assertEquals(v, meta.getElement());
-                if (meta.key().equals("age")) {
-                    assertEquals(meta.value(), 34);
-                    // assertEquals(0, p.properties());
-                }
-                if (meta.key().equals("name")) {
-                    assertEquals(((String) meta.value()).length(), meta.<Integer>value("counter").intValue());
-                    // assertEquals(1, p.properties());
-                }
+            tryCommit(g, g -> {
+                assertEquals(3, v.properties("name").count().next().intValue());
+                assertEquals(4, v.properties().count().next().intValue());
+                assertEquals(1, g.V().count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
             });
-            assertEquals(1, g.V().count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
+
+            v.<String>properties("name").sideEffect(meta -> {
+                meta.get().property("counter", meta.get().value().length());
+                meta.get().property(Graph.Key.hide("counter"), meta.get().value().length());
+            }).iterate();
+            tryCommit(g, g -> {
+                v.properties().forEach(meta -> {
+                    assertEquals(MetaProperty.META_PROPERTY, meta.label());
+                    assertTrue(meta.isPresent());
+                    assertFalse(meta.isHidden());
+                    assertEquals(v, meta.getElement());
+                    if (meta.key().equals("age")) {
+                        assertEquals(meta.value(), 34);
+                        assertEquals(0, meta.properties().count().next().intValue());
+                    }
+                    if (meta.key().equals("name")) {
+                        assertEquals(((String) meta.value()).length(), meta.<Integer>value("counter").intValue());
+                        assertEquals(((String) meta.value()).length(), meta.<Integer>value(Graph.Key.hide("counter")).intValue());
+                        assertEquals(1, meta.properties().count().next().intValue());
+                        assertEquals(1, meta.keys().size());
+                        assertTrue(meta.keys().contains("counter"));
+                        assertEquals(1, meta.hiddens().count().next().intValue());
+                        assertEquals(1, meta.hiddenKeys().size());
+                        assertTrue(meta.hiddenKeys().contains("counter"));
+                    }
+                });
+                assertEquals(1, g.V().count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
+            });
         }
 
         @Test
         public void shouldHandleSingleMetaProperties() {
             Vertex v = g.addVertex("name", "marko", "name", "marko a. rodriguez", "name", "marko rodriguez");
-            tryCommit(g);
-            assertEquals(3, v.properties().count().next().intValue());
+            tryCommit(g, g -> {
+                assertEquals(3, v.properties().count().next().intValue());
+                assertEquals(3, v.properties("name").count().next().intValue());
+                assertTrue(v.properties("name").value().toList().contains("marko"));
+                assertTrue(v.properties("name").value().toList().contains("marko a. rodriguez"));
+                assertTrue(v.properties("name").value().toList().contains("marko rodriguez"));
+            });
             v.singleProperty("name", "okram", "acl", "private", "date", 2014);
-            /// TODO: Eek for Neo4j --- tryCommit(g);
-            assertEquals(1, v.properties().count().next().intValue());
-            assertEquals(2, v.property("name").valueMap().next().size());
-            assertEquals("private", v.property("name").valueMap().next().get("acl"));
-            assertEquals(2014, v.property("name").valueMap().next().get("date"));
+            //tryCommit(g, g -> {
+                //v.properties().forEach(p -> System.out.println(p + "::" + p.properties().toList()));
+                assertEquals(1, v.properties("name").count().next().intValue());
+                assertEquals(1, v.properties().count().next().intValue());
+                assertEquals(2, v.property("name").valueMap().next().size());
+                assertEquals("private", v.property("name").valueMap().next().get("acl"));
+                assertEquals(2014, v.property("name").valueMap().next().get("date"));
+            //});
         }
     }
 
@@ -106,80 +128,92 @@ public class MetaPropertyTest extends AbstractGremlinTest {
             tryCommit(g);
             v.property("name", "marko rodriguez");
             v.property("name", "marko");
-            tryCommit(g);
-            assertEquals(5, v.properties().count().next().intValue());
-            assertEquals(4, v.properties().has(MetaProperty.KEY, "name").count().next().intValue());
-            assertEquals(4, v.properties("name").count().next().intValue());
-            assertEquals(1, v.properties("name").has(MetaProperty.VALUE, "marko a. rodriguez").count().next().intValue());
-            assertEquals(1, v.properties("name").has(MetaProperty.VALUE, "marko rodriguez").count().next().intValue());
-            assertEquals(2, v.properties("name").has(MetaProperty.VALUE, "marko").count().next().intValue());
-            assertEquals(1, g.V().count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
+            tryCommit(g, g -> {
+                assertEquals(5, v.properties().count().next().intValue());
+                assertEquals(4, v.properties().has(MetaProperty.KEY, "name").count().next().intValue());
+                assertEquals(4, v.properties("name").count().next().intValue());
+                assertEquals(1, v.properties("name").has(MetaProperty.VALUE, "marko a. rodriguez").count().next().intValue());
+                assertEquals(1, v.properties("name").has(MetaProperty.VALUE, "marko rodriguez").count().next().intValue());
+                assertEquals(2, v.properties("name").has(MetaProperty.VALUE, "marko").count().next().intValue());
+                assertEquals(1, g.V().count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
+            });
 
             v.properties().has(MetaProperty.VALUE, "marko").remove();
-            assertEquals(3, v.properties().count().next().intValue());
-            assertEquals(2, v.properties().has(MetaProperty.KEY, "name").count().next().intValue());
-            assertEquals(1, g.V().count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
+            tryCommit(g, g -> {
+                assertEquals(3, v.properties().count().next().intValue());
+                assertEquals(2, v.properties().has(MetaProperty.KEY, "name").count().next().intValue());
+                assertEquals(1, g.V().count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
+            });
 
             v.property("age").remove();
-            tryCommit(g);
-            assertEquals(2, v.properties().count().next().intValue());
-            assertEquals(2, v.properties().has(MetaProperty.KEY, "name").count().next().intValue());
-            assertEquals(1, g.V().count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
+            tryCommit(g, g -> {
+                assertEquals(2, v.properties().count().next().intValue());
+                assertEquals(2, v.properties().has(MetaProperty.KEY, "name").count().next().intValue());
+                assertEquals(1, g.V().count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
+            });
 
             v.properties("name").has(MetaProperty.KEY, "name").remove();
-            tryCommit(g);
-            assertEquals(0, v.properties().count().next().intValue());
-            assertEquals(0, v.properties().has(MetaProperty.KEY, "name").count().next().intValue());
-            assertEquals(1, g.V().count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
+            tryCommit(g, g -> {
+                assertEquals(0, v.properties().count().next().intValue());
+                assertEquals(0, v.properties().has(MetaProperty.KEY, "name").count().next().intValue());
+                assertEquals(1, g.V().count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
+            });
         }
 
         @Test
         public void shouldRemoveMultiPropertiesWhenVerticesAreRemoved() {
             Vertex marko = g.addVertex("name", "marko", "name", "okram");
             Vertex stephen = g.addVertex("name", "stephen", "name", "spmallette");
-            tryCommit(g);
-            assertEquals(2, g.V().count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
-            assertEquals(2, marko.properties("name").count().next().intValue());
-            assertEquals(2, stephen.properties("name").count().next().intValue());
-            assertEquals(2, marko.properties().count().next().intValue());
-            assertEquals(2, stephen.properties().count().next().intValue());
-            assertEquals(0, marko.properties("blah").count().next().intValue());
-            assertEquals(0, stephen.properties("blah").count().next().intValue());
-            assertEquals(2, g.V().count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
+            tryCommit(g, g -> {
+                assertEquals(2, g.V().count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
+                assertEquals(2, marko.properties("name").count().next().intValue());
+                assertEquals(2, stephen.properties("name").count().next().intValue());
+                assertEquals(2, marko.properties().count().next().intValue());
+                assertEquals(2, stephen.properties().count().next().intValue());
+                assertEquals(0, marko.properties("blah").count().next().intValue());
+                assertEquals(0, stephen.properties("blah").count().next().intValue());
+                assertEquals(2, g.V().count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
+            });
 
             stephen.remove();
-            assertEquals(1, g.V().count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
-            assertEquals(2, marko.properties("name").count().next().intValue());
-            assertEquals(2, marko.properties().count().next().intValue());
-            assertEquals(0, marko.properties("blah").count().next().intValue());
+            tryCommit(g, g -> {
+                assertEquals(1, g.V().count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
+                assertEquals(2, marko.properties("name").count().next().intValue());
+                assertEquals(2, marko.properties().count().next().intValue());
+                assertEquals(0, marko.properties("blah").count().next().intValue());
+            });
 
             for (int i = 0; i < 100; i++) {
                 marko.property("name", i);
             }
-            tryCommit(g);
-            assertEquals(1, g.V().count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
-            assertEquals(102, marko.properties("name").count().next().intValue());
-            assertEquals(102, marko.properties().count().next().intValue());
-            assertEquals(0, marko.properties("blah").count().next().intValue());
+            tryCommit(g, g -> {
+                assertEquals(1, g.V().count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
+                assertEquals(102, marko.properties("name").count().next().intValue());
+                assertEquals(102, marko.properties().count().next().intValue());
+                assertEquals(0, marko.properties("blah").count().next().intValue());
+            });
             g.V().properties("name").has(MetaProperty.VALUE, (a, b) -> ((Class) b).isAssignableFrom(a.getClass()), Integer.class).remove();
-            assertEquals(1, g.V().count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
-            assertEquals(2, marko.properties("name").count().next().intValue());
-            assertEquals(2, marko.properties().count().next().intValue());
-            assertEquals(0, marko.properties("blah").count().next().intValue());
+            tryCommit(g, g -> {
+                assertEquals(1, g.V().count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
+                assertEquals(2, marko.properties("name").count().next().intValue());
+                assertEquals(2, marko.properties().count().next().intValue());
+                assertEquals(0, marko.properties("blah").count().next().intValue());
+            });
 
             marko.remove();
-            tryCommit(g);
-            assertEquals(0, g.V().count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
+            tryCommit(g, g -> {
+                assertEquals(0, g.V().count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
+            });
         /*
         TODO: Stephen, Neo4j and TinkerGraph have different (though valid) behaviors here. Thoughts?
         assertEquals(0, marko.properties("name").count().next().intValue());
@@ -195,44 +229,46 @@ public class MetaPropertyTest extends AbstractGremlinTest {
         @Test
         public void shouldSupportPropertiesOnMultiProperties() {
             Vertex v = g.addVertex("name", "marko", "age", 34);
-            tryCommit(g);
-            assertEquals(2, g.V().properties().count().next().intValue());
-            assertEquals(1, g.V().count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
-
-            // TODO: Neo4j needs a better ID system for MetaProperties
-            assertEquals(v.property("name"), v.property("name").property("acl", "public").getElement());
-            assertEquals(v.property("age"), v.property("age").property("acl", "private").getElement());
+            tryCommit(g, g -> {
+                assertEquals(2, g.V().properties().count().next().intValue());
+                assertEquals(1, g.V().count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
+                // TODO: Neo4j needs a better ID system for MetaProperties
+                assertEquals(v.property("name"), v.property("name").property("acl", "public").getElement());
+                assertEquals(v.property("age"), v.property("age").property("acl", "private").getElement());
+            });
 
             v.property("name").property("acl", "public");
             v.property("age").property("acl", "private");
-            tryCommit(g);
+            tryCommit(g, g -> {
 
-            assertEquals(2, g.V().properties().count().next().intValue());
-            assertEquals(1, g.V().properties("age").count().next().intValue());
-            assertEquals(1, g.V().properties("name").count().next().intValue());
-            assertEquals(1, g.V().properties("age").properties().count().next().intValue());
-            assertEquals(1, g.V().properties("name").properties().count().next().intValue());
-            assertEquals(1, g.V().properties("age").properties("acl").count().next().intValue());
-            assertEquals(1, g.V().properties("name").properties("acl").count().next().intValue());
-            assertEquals("private", g.V().properties("age").properties("acl").value().next());
-            assertEquals("public", g.V().properties("name").properties("acl").value().next());
-            assertEquals("private", g.V().properties("age").value("acl").next());
-            assertEquals("public", g.V().properties("name").value("acl").next());
-            assertEquals(1, g.V().count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
+                assertEquals(2, g.V().properties().count().next().intValue());
+                assertEquals(1, g.V().properties("age").count().next().intValue());
+                assertEquals(1, g.V().properties("name").count().next().intValue());
+                assertEquals(1, g.V().properties("age").properties().count().next().intValue());
+                assertEquals(1, g.V().properties("name").properties().count().next().intValue());
+                assertEquals(1, g.V().properties("age").properties("acl").count().next().intValue());
+                assertEquals(1, g.V().properties("name").properties("acl").count().next().intValue());
+                assertEquals("private", g.V().properties("age").properties("acl").value().next());
+                assertEquals("public", g.V().properties("name").properties("acl").value().next());
+                assertEquals("private", g.V().properties("age").value("acl").next());
+                assertEquals("public", g.V().properties("name").value("acl").next());
+                assertEquals(1, g.V().count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
+            });
 
             v.property("age").property("acl", "public");
             v.property("age").property("changeDate", 2014);
-            tryCommit(g);
-            assertEquals("public", g.V().properties("age").value("acl").next());
-            assertEquals(2014, g.V().properties("age").value("changeDate").next());
-            assertEquals(1, v.properties("age").valueMap().count().next().intValue());
-            assertEquals(2, v.properties("age").valueMap().next().size());
-            assertTrue(v.properties("age").valueMap().next().containsKey("acl"));
-            assertTrue(v.properties("age").valueMap().next().containsKey("changeDate"));
-            assertEquals("public", v.properties("age").valueMap().next().get("acl"));
-            assertEquals(2014, v.properties("age").valueMap().next().get("changeDate"));
+            tryCommit(g, g -> {
+                assertEquals("public", g.V().properties("age").value("acl").next());
+                assertEquals(2014, g.V().properties("age").value("changeDate").next());
+                assertEquals(1, v.properties("age").valueMap().count().next().intValue());
+                assertEquals(2, v.properties("age").valueMap().next().size());
+                assertTrue(v.properties("age").valueMap().next().containsKey("acl"));
+                assertTrue(v.properties("age").valueMap().next().containsKey("changeDate"));
+                assertEquals("public", v.properties("age").valueMap().next().get("acl"));
+                assertEquals(2014, v.properties("age").valueMap().next().get("changeDate"));
+            });
         }
     }
 
@@ -241,14 +277,19 @@ public class MetaPropertyTest extends AbstractGremlinTest {
         @Test
         public void shouldHandleMetaPropertyTraversals() {
             Vertex v = g.addVertex("i", 1, "i", 2, "i", 3);
-            assertEquals(3, v.properties().count().next().intValue());
-            assertEquals(3, v.properties("i").count().next().intValue());
+            tryCommit(g, g -> {
+                assertEquals(3, v.properties().count().next().intValue());
+                assertEquals(3, v.properties("i").count().next().intValue());
+            });
+
             v.properties("i").sideEffect(m -> m.get().<Object>property("aKey", "aValue")).iterate();
             v.properties("i").properties("aKey").forEach(p -> assertEquals("aValue", p.value()));
-            assertEquals(3, v.properties("i").properties("aKey").count().next().intValue());
-            assertEquals(3, g.V().properties("i").properties("aKey").count().next().intValue());
-            assertEquals(1, g.V().properties("i").has(MetaProperty.VALUE, 1).properties("aKey").count().next().intValue());
-            assertEquals(3, g.V().properties("i").has(MetaProperty.KEY, "i").properties().count().next().intValue());
+            tryCommit(g, g -> {
+                assertEquals(3, v.properties("i").properties("aKey").count().next().intValue());
+                assertEquals(3, g.V().properties("i").properties("aKey").count().next().intValue());
+                assertEquals(1, g.V().properties("i").has(MetaProperty.VALUE, 1).properties("aKey").count().next().intValue());
+                assertEquals(3, g.V().properties("i").has(MetaProperty.KEY, "i").properties().count().next().intValue());
+            });
         }
     }
 
@@ -291,8 +332,9 @@ public class MetaPropertyTest extends AbstractGremlinTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldHandleHiddenMetaProperties() {
             Vertex v = g.addVertex(Graph.Key.hide("age"), 34, Graph.Key.hide("age"), 29, "age", 16, "name", "marko");
-            tryCommit(g);
-            assertTrue(streamGetter.apply(g, v));
+            tryCommit(g, g -> {
+                assertTrue(streamGetter.apply(g, v));
+            });
         }
     }
 }
