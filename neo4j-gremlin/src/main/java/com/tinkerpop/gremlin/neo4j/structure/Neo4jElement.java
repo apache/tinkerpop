@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -126,8 +127,13 @@ public abstract class Neo4jElement implements Element, WrappedElement<PropertyCo
         @Override
         public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys) {
             graph.tx().readWrite();
+
+            // make sure all keys request are hidden - the nature of Graph.Key.hide() is to not re-hide a hidden key
+            final String[] hiddenKeys = Stream.of(propertyKeys).map(Graph.Key::hide)
+                    .collect(Collectors.toList()).toArray(new String[propertyKeys.length]);
+
             return StreamFactory.stream(baseElement.getPropertyKeys())
-                    .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, key) >= 0)
+                    .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(hiddenKeys, key) >= 0)
                     .filter(Graph.Key::isHidden)
                     .map(key -> new Neo4jProperty<>(this.element, key, (V) baseElement.getProperty(key))).iterator();
         }
