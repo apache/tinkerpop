@@ -24,6 +24,7 @@ import java.util.Map;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
@@ -71,6 +72,17 @@ public class PropertyTest {
             } catch (Exception ex) {
                 fail("Removing a property that was already removed should not throw an exception");
             }
+        }
+
+        // todo: expand this class of testing around hiddens - needs to happen for edges and vertices
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        public void shouldReturnHiddenKeysWithHiddenPrefix() {
+            final Vertex v = g.addVertex("name", "marko", Graph.Key.hide("acl"), "rw", Graph.Key.hide("other"), "rw");
+            tryCommit(g);
+            final Vertex v1 = g.v(v.id());
+            assertEquals(2, v1.hiddenKeys().size());
+            assertTrue(v1.hiddenKeys().stream().allMatch(Graph.Key::isHidden));
         }
     }
 

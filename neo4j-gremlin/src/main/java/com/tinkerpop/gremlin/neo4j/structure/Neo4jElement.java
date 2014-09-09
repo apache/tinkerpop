@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -62,7 +63,7 @@ public abstract class Neo4jElement implements Element, WrappedElement<PropertyCo
         final Set<String> keys = new HashSet<>();
         for (final String key : this.baseElement.getPropertyKeys()) {
             if (Graph.Key.isHidden(key))
-                keys.add(Graph.Key.unHide(key));
+                keys.add(key);
         }
         return keys;
     }
