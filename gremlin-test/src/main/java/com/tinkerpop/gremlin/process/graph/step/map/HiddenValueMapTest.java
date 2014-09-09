@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.map;
 
+import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
@@ -24,6 +25,7 @@ public abstract class HiddenValueMapTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void g_V_hiddenValueMap() {
         final Traversal<Vertex, Map<String, List>> traversal = get_g_V_hiddenValueMap();
         printTraversalForm(traversal);
@@ -42,6 +44,7 @@ public abstract class HiddenValueMapTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void g_V_hiddenValuesXageX() {
         final Traversal<Vertex, Map<String, List>> traversal = get_g_V_hiddenValueMapXageX();
         printTraversalForm(traversal);

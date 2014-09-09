@@ -29,7 +29,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.FoldStep;
 import com.tinkerpop.gremlin.process.graph.step.map.HiddenMapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.HiddenValueMapStep;
-import com.tinkerpop.gremlin.process.graph.step.map.HiddenStep;
+import com.tinkerpop.gremlin.process.graph.step.map.HiddenValueStep;
 import com.tinkerpop.gremlin.process.graph.step.map.HiddensStep;
 import com.tinkerpop.gremlin.process.graph.step.map.IdStep;
 import com.tinkerpop.gremlin.process.graph.step.map.JumpStep;
@@ -295,15 +295,15 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, E2> hiddenValue(final String propertyKey) {
-        return this.addStep(new HiddenStep<>(this, propertyKey));
+        return this.addStep(new HiddenValueStep<>(this, propertyKey));
     }
 
     public default <E2> GraphTraversal<S, E2> hiddenValue(final String propertyKey, final E2 defaultValue) {
-        return this.addStep(new HiddenStep<>(this, propertyKey, defaultValue));
+        return this.addStep(new HiddenValueStep<>(this, propertyKey, defaultValue));
     }
 
     public default <E2> GraphTraversal<S, E2> hiddenValue(final String propertyKey, final Supplier<E2> defaultSupplier) {
-        return this.addStep(new HiddenStep<>(this, propertyKey, defaultSupplier));
+        return this.addStep(new HiddenValueStep<>(this, propertyKey, defaultSupplier));
     }
 
     public default <E2> GraphTraversal<S, E2> value(final String propertyKey) {

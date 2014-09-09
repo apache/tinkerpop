@@ -11,36 +11,38 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HiddenStep<E> extends MapStep<Element, E> {
+public class HiddenValueStep<E> extends MapStep<Element, E> {
 
     public String key;
+    public String hiddenKey;
     public SOptional<E> defaultValue;
     public SOptional<Supplier<E>> defaultSupplier;
 
-    public HiddenStep(final Traversal traversal, final String key) {
+    public HiddenValueStep(final Traversal traversal, final String key) {
         super(traversal);
-
-        // todo: why did this not pass IO tests for neo4j - hide doesn't re-hide!?!?!???
-        this.key = Graph.Key.isHidden(key) ? key : Graph.Key.hide(key);
+        this.key = key;
+        this.hiddenKey = Graph.Key.hide(this.key);
         this.defaultValue = SOptional.empty();
         this.defaultSupplier = SOptional.empty();
-        this.setFunction(traverser -> traverser.get().<E>property(this.key).orElse((E) NO_OBJECT));
+        this.setFunction(traverser -> traverser.get().<E>property(this.hiddenKey).orElse((E) NO_OBJECT));
     }
 
-    public HiddenStep(final Traversal traversal, final String key, final E defaultValue) {
+    public HiddenValueStep(final Traversal traversal, final String key, final E defaultValue) {
         super(traversal);
-        this.key = Graph.Key.isHidden(key) ? key : Graph.Key.hide(key);
+        this.key = key;
+        this.hiddenKey = Graph.Key.hide(this.key);
         this.defaultValue = SOptional.of(defaultValue);
         this.defaultSupplier = SOptional.empty();
-        this.setFunction(traverser -> traverser.get().<E>property(this.key).orElse(this.defaultValue.get()));
+        this.setFunction(traverser -> traverser.get().<E>property(this.hiddenKey).orElse(this.defaultValue.get()));
     }
 
-    public HiddenStep(final Traversal traversal, final String key, final Supplier<E> defaultSupplier) {
+    public HiddenValueStep(final Traversal traversal, final String key, final Supplier<E> defaultSupplier) {
         super(traversal);
-        this.key = Graph.Key.isHidden(key) ? key : Graph.Key.hide(key);
+        this.key = key;
+        this.hiddenKey = Graph.Key.hide(this.key);
         this.defaultValue = SOptional.empty();
         this.defaultSupplier = SOptional.of(defaultSupplier);
-        this.setFunction(traverser -> traverser.get().<E>property(this.key).orElse(this.defaultSupplier.get().get()));
+        this.setFunction(traverser -> traverser.get().<E>property(this.hiddenKey).orElse(this.defaultSupplier.get().get()));
     }
 
     public String toString() {
