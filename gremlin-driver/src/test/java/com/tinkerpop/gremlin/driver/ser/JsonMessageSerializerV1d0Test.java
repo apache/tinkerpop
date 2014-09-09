@@ -238,13 +238,13 @@ public class JsonMessageSerializerV1d0Test {
         assertNotNull(friendsProperty);
         assertEquals(3, friends.size());
 
-        final String object1 = friendsProperty.getString(0);
+        final String object1 = friendsProperty.getJSONObject(0).getJSONArray(GraphSONTokens.VALUE).getString(0);
         assertEquals("x", object1);
 
-        final int object2 = friendsProperty.getInt(1);
+        final int object2 = friendsProperty.getJSONObject(0).getJSONArray(GraphSONTokens.VALUE).getInt(1);
         assertEquals(5, object2);
 
-        final JSONObject object3 = friendsProperty.getJSONObject(2);
+        final JSONObject object3 = friendsProperty.getJSONObject(0).getJSONArray(GraphSONTokens.VALUE).getJSONObject(2);
         assertEquals(500, object3.getInt("x"));
         assertEquals("some", object3.getString("y"));
     }

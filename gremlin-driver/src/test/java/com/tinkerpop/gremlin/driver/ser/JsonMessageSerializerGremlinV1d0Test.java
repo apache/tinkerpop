@@ -153,7 +153,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
         final Map<String, Object> properties = (Map<String, Object>) deserializedVertex.get(GraphSONTokens.PROPERTIES);
         assertEquals(1, properties.size());
 
-        final List<Object> deserializedInnerList = (List<Object>) properties.get("friends");
+        final List<Object> deserializedInnerList = (List<Object>) ((Map<String,Object>) ((List<Object>) properties.get("friends")).get(0)).get(GraphSONTokens.VALUE);
         assertEquals(3, deserializedInnerList.size());
         assertEquals("x", deserializedInnerList.get(0));
         assertEquals(5, deserializedInnerList.get(1));
