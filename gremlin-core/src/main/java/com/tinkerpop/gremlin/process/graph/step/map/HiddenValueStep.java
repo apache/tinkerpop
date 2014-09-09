@@ -13,6 +13,7 @@ import java.util.function.Supplier;
  */
 public class HiddenValueStep<E> extends MapStep<Element, E> {
 
+    private boolean isHidden;
     public String key;
     public String hiddenKey;
     public SOptional<E> defaultValue;
@@ -21,28 +22,31 @@ public class HiddenValueStep<E> extends MapStep<Element, E> {
     public HiddenValueStep(final Traversal traversal, final String key) {
         super(traversal);
         this.key = key;
+        this.isHidden = Graph.Key.isHidden(this.key);
         this.hiddenKey = Graph.Key.hide(this.key);
         this.defaultValue = SOptional.empty();
         this.defaultSupplier = SOptional.empty();
-        this.setFunction(traverser -> traverser.get().<E>property(this.hiddenKey).orElse((E) NO_OBJECT));
+        this.setFunction(traverser -> this.isHidden ? (E) NO_OBJECT : traverser.get().<E>property(this.hiddenKey).orElse((E) NO_OBJECT));
     }
 
     public HiddenValueStep(final Traversal traversal, final String key, final E defaultValue) {
         super(traversal);
         this.key = key;
+        this.isHidden = Graph.Key.isHidden(this.key);
         this.hiddenKey = Graph.Key.hide(this.key);
         this.defaultValue = SOptional.of(defaultValue);
         this.defaultSupplier = SOptional.empty();
-        this.setFunction(traverser -> traverser.get().<E>property(this.hiddenKey).orElse(this.defaultValue.get()));
+        this.setFunction(traverser -> this.isHidden ? (E) NO_OBJECT : traverser.get().<E>property(this.hiddenKey).orElse(this.defaultValue.get()));
     }
 
     public HiddenValueStep(final Traversal traversal, final String key, final Supplier<E> defaultSupplier) {
         super(traversal);
         this.key = key;
+        this.isHidden = Graph.Key.isHidden(this.key);
         this.hiddenKey = Graph.Key.hide(this.key);
         this.defaultValue = SOptional.empty();
         this.defaultSupplier = SOptional.of(defaultSupplier);
-        this.setFunction(traverser -> traverser.get().<E>property(this.hiddenKey).orElse(this.defaultSupplier.get().get()));
+        this.setFunction(traverser -> this.isHidden ? (E) NO_OBJECT : traverser.get().<E>property(this.hiddenKey).orElse(this.defaultSupplier.get().get()));
     }
 
     public String toString() {

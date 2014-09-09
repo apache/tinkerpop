@@ -75,15 +75,16 @@ public class PropertyTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldReturnHiddenKeysWithOutHiddenPrefix() {
-            final Vertex v = g.addVertex("name", "marko", Graph.Key.hide("acl"), "rw", Graph.Key.hide("other"), "rw");
+            final Vertex v = g.addVertex("name", "marko", Graph.Key.hide("acl"), "rw", Graph.Key.hide("other"), "rw", "acl", "r");
             tryCommit(g);
             final Vertex v1 = g.v(v.id());
             assertEquals(2, v1.hiddenKeys().size());
             assertTrue(v1.hiddenKeys().stream().allMatch(key -> !Graph.Key.isHidden(key)));
             assertTrue(v1.hiddenKeys().stream().allMatch(k -> k.equals("acl") || k.equals("other")));
+            assertEquals("rw", v1.iterators().hiddens("acl").next().value());
+            assertEquals("r", v1.iterators().properties("acl").next().value());
         }
 
-        // todo: expand this class of testing around hiddens - needs to happen for edges and vertices
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldNotReHideAnAlreadyHiddenKeyWhenGettingHiddenValue() {
@@ -91,8 +92,18 @@ public class PropertyTest {
             tryCommit(g);
             final Vertex v1 = g.v(v.id());
             v1.hiddenKeys().stream().forEach(hiddenKey -> assertTrue(v1.hiddenValue(hiddenKey).hasNext()));
-            assertTrue(v1.hiddenValue(Graph.Key.hide("other")).hasNext());
+            assertFalse(v1.hiddenValue(Graph.Key.hide("other")).hasNext());
             assertTrue(v1.hiddenValue("other").hasNext());
+
+            final Vertex u = g.addVertex();
+            Edge e = v1.addEdge("knows", u, Graph.Key.hide("acl"), "private", "acl", "public");
+            tryCommit(g);
+            final Edge e1 = g.e(e.id());
+            e1.hiddenKeys().stream().forEach(hiddenKey -> assertTrue(e1.hiddenValue(hiddenKey).hasNext()));
+            assertFalse(e1.hiddenValue(Graph.Key.hide("acl")).hasNext());
+            assertTrue(e1.hiddenValue("acl").hasNext());
+            assertEquals("private", e1.iterators().hiddens("acl").next().value());
+            assertEquals("public", e1.iterators().properties("acl").next().value());
         }
     }
 
