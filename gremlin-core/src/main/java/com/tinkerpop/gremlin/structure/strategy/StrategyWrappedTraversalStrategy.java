@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
+import com.tinkerpop.gremlin.process.graph.step.map.PropertiesStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertyElementStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertyMapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
@@ -40,7 +41,7 @@ public class StrategyWrappedTraversalStrategy implements TraversalStrategy.NoDep
         // todo: need to ensure all steps are wrapping and that there is test coverage on every step that performs a wrapping.
         // MapStep after each GraphStep, VertexStep or EdgeVertexStep
         final List<Class> stepsToLookFor = Arrays.<Class>asList(GraphStep.class, VertexStep.class, EdgeVertexStep.class,
-                                                                PropertyElementStep.class, PropertyMapStep.class);
+                PropertyElementStep.class, PropertyMapStep.class, PropertiesStep.class);
         final List<Integer> positions = new ArrayList<>();
         final List<?> traversalSteps = traversal.getSteps();
         for (int ix = 0; ix < traversalSteps.size(); ix++) {
