@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.driver.ser;
 
-import com.tinkerpop.gremlin.IteratorUtil;
 import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
@@ -149,7 +148,7 @@ public class KryoMessageSerializerV1d0Test {
         assertEquals(0l, deserializedVertex.id());
         assertEquals(Vertex.DEFAULT_LABEL, deserializedVertex.label());
 
-        assertEquals(1, IteratorUtil.count(deserializedVertex.properties()));
+        assertEquals(1, deserializedVertex.properties().count().next().intValue());
 
         final List<Object> deserializedInnerList = deserializedVertex.value("friends");
         assertEquals(3, deserializedInnerList.size());
