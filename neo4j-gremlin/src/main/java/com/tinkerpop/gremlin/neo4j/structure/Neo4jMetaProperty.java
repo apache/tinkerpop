@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.DynamicLabel;
@@ -136,6 +137,11 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, Neo4jMetaPropertyT
     @Override
     public MetaProperty.Iterators iterators() {
         return this.iterators;
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.propertyString(this);
     }
 
     private final MetaProperty.Iterators iterators = new Iterators(this);
