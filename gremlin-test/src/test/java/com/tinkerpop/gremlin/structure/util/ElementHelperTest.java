@@ -80,13 +80,13 @@ public class ElementHelperTest {
 
     @Test
     public void shouldHaveValidProperty() {
-        ElementHelper.validateProperty("key", "value");
+        ElementHelper.validateProperty("aKey", "value");
     }
 
     @Test
     public void shouldAllowEvenNumberOfKeyValues() {
         try {
-            ElementHelper.legalPropertyKeyValueArray("key", "test", "no-value-for-this-one");
+            ElementHelper.legalPropertyKeyValueArray("aKey", "test", "no-value-for-this-one");
             fail("Should fail as there is an odd number of key-values");
         } catch (IllegalArgumentException iae) {
             assertEquals(Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo().getMessage(), iae.getMessage());
@@ -96,7 +96,7 @@ public class ElementHelperTest {
     @Test
     public void shouldNotAllowEvenNumberOfKeyValuesAndInvalidKeys() {
         try {
-            ElementHelper.legalPropertyKeyValueArray("key", "test", "value-for-this-one", 1, 1, "none");
+            ElementHelper.legalPropertyKeyValueArray("aKey", "test", "value-for-this-one", 1, 1, "none");
             fail("Should fail as there is an even number of key-values, but a bad key");
         } catch (IllegalArgumentException iae) {
             assertEquals(Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices().getMessage(), iae.getMessage());
@@ -105,7 +105,7 @@ public class ElementHelperTest {
 
     @Test
     public void shouldAllowEvenNumberOfKeyValuesAndValidKeys() {
-        ElementHelper.legalPropertyKeyValueArray("key", "test", "value-for-this-one", 1, Graph.Key.hide("1"), "none");
+        ElementHelper.legalPropertyKeyValueArray("aKey", "test", "value-for-this-one", 1, Graph.Key.hide("1"), "none");
     }
 
     @Test

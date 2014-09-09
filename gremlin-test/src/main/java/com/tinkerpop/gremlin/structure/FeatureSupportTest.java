@@ -268,7 +268,7 @@ public class FeatureSupportTest {
             assumeThat(g.features().supports(EdgePropertyFeatures.class, featureName), is(false));
             try {
                 final Edge edge = createEdgeForPropertyFeatureTests();
-                edge.property("key", value);
+                edge.property("aKey", value);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgePropertyFeatures.class.getSimpleName(), featureName));
             } catch (UnsupportedOperationException e) {
                 assertEquals(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getMessage(), e.getMessage());
@@ -280,7 +280,7 @@ public class FeatureSupportTest {
         public void shouldEnableFeatureOnVertexIfNotEnabled() throws Exception {
             assumeThat(g.features().supports(VertexPropertyFeatures.class, featureName), is(false));
             try {
-                g.addVertex("key", value);
+                g.addVertex("aKey", value);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), featureName));
             } catch (UnsupportedOperationException e) {
                 assertEquals(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getMessage(), e.getMessage());
@@ -326,7 +326,7 @@ public class FeatureSupportTest {
             assumeThat(g.features().supports(Graph.Features.VariableFeatures.class, featureName), is(false));
             try {
                 final Graph.Variables variables = g.variables();
-                variables.set("key", value);
+                variables.set("aKey", value);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, Graph.Features.VariableFeatures.class.getSimpleName(), featureName));
             } catch (UnsupportedOperationException e) {
                 assertEquals(Graph.Variables.Exceptions.dataTypeOfVariableValueNotSupported(value).getMessage(), e.getMessage());

@@ -298,9 +298,9 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
     @Test
     public void shouldGenerateToStringProperty() throws Exception {
         final ReadOnlyGraphStrategy readonly = new ReadOnlyGraphStrategy();
-        final IdGraphStrategy id = new IdGraphStrategy.Builder("key").build();
+        final IdGraphStrategy id = new IdGraphStrategy.Builder("aKey").build();
         final SequenceGraphStrategy strategy = new SequenceGraphStrategy(readonly, id);
-        assertEquals("readonlygraphstrategy->idgraphstrategy[key]", strategy.toString());
+        assertEquals("readonlygraphstrategy->idgraphstrategy[akey]", strategy.toString());
     }
 
     public class SpyGraphStrategy implements GraphStrategy {

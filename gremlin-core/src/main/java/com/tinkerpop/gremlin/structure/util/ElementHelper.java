@@ -55,10 +55,10 @@ public class ElementHelper {
             throw Property.Exceptions.propertyKeyIdIsReserved();
         if (key.equals(Element.LABEL))
             throw Property.Exceptions.propertyKeyLabelIsReserved();
-        /*if (key.equals(MetaProperty.KEY))
+        if (key.equals(MetaProperty.KEY))
             throw Property.Exceptions.propertyKeyKeyIsReserved();
         if (key.equals(MetaProperty.VALUE))
-            throw Property.Exceptions.propertyKeyValueIsReserved();*/
+            throw Property.Exceptions.propertyKeyValueIsReserved();
         if (key.isEmpty())
             throw Property.Exceptions.propertyKeyCanNotBeEmpty();
     }
