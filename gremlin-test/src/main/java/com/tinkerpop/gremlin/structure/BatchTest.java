@@ -110,9 +110,9 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
-    public void shouldLoadVerticesIncrementallyWithSuppliedIdentifierOverwriteExistingVertex() {
+    public void shouldLoadVerticesIncrementallyWithSuppliedIdentifierOverwriteSingleExistingVertex() {
         final BatchGraph graph = BatchGraph.build(g)
-                .incrementalLoading(true, Exists.OVERWRITE, Exists.IGNORE)
+                .incrementalLoading(true, Exists.OVERWRITE_SINGLE, Exists.IGNORE)
                 .bufferSize(1).create();
         final Object id1 = GraphManager.get().convertId("1");
         final Object id2 = GraphManager.get().convertId("2");
@@ -134,9 +134,9 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldLoadVerticesIncrementallyWithNamedIdentifierOverwriteExistingVertex() {
+    public void shouldLoadVerticesIncrementallyWithNamedIdentifierOverwriteSingleExistingVertex() {
         final BatchGraph graph = BatchGraph.build(g)
-                .incrementalLoading(true, Exists.OVERWRITE, Exists.IGNORE)
+                .incrementalLoading(true, Exists.OVERWRITE_SINGLE, Exists.IGNORE)
                 .vertexIdKey("name")
                 .bufferSize(1).create();
         graph.addVertex(Element.ID, "marko", "age", 29);
@@ -150,7 +150,6 @@ public class BatchTest extends AbstractGremlinTest {
         assertEquals(new Long(1), vStephen.outE("knows").has("weight", 1.0d).inV().has("name", "marko").count().next());
 
         final Vertex vMarko = g.V().<Vertex>has("name", "marko").next();
-        // TODO: We need an overwrite strategy. Do we have a Graph.configuration().allowMultiProperties() EEK! or is this Exists.OVERWRITE sufficient?
         assertEquals(34, vMarko.property("age").value());
     }
 
@@ -212,9 +211,9 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
-    public void shouldLoadEdgesIncrementallyWithSuppliedIdentifierOverwriteExistingEdge() {
+    public void shouldLoadEdgesIncrementallyWithSuppliedIdentifierOverwriteSingleExistingEdge() {
         final BatchGraph graph = BatchGraph.build(g)
-                .incrementalLoading(true, Exists.IGNORE, Exists.OVERWRITE)
+                .incrementalLoading(true, Exists.IGNORE, Exists.OVERWRITE_SINGLE)
                 .vertexIdKey("name")
                 .bufferSize(1).create();
         final Vertex v2 = graph.addVertex(Element.ID, "marko", "age", 29);
@@ -237,9 +236,9 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldLoadEdgesIncrementallyWithNamedIdentifierOverwriteExistingEdge() {
+    public void shouldLoadEdgesIncrementallyWithNamedIdentifierOverwriteSingleExistingEdge() {
         final BatchGraph graph = BatchGraph.build(g)
-                .incrementalLoading(true, Exists.IGNORE, Exists.OVERWRITE)
+                .incrementalLoading(true, Exists.IGNORE, Exists.OVERWRITE_SINGLE)
                 .vertexIdKey("name")
                 .edgeIdKey("uid")
                 .bufferSize(1).create();

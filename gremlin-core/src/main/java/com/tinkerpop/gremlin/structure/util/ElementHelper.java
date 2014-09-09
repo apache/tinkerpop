@@ -196,6 +196,25 @@ public class ElementHelper {
     }
 
     /**
+     * Assign key/value pairs as properties to an {@link com.tinkerpop.gremlin.structure.Vertex}.  If the value of {@link com.tinkerpop.gremlin.structure.Vertex#ID} or
+     * {@link com.tinkerpop.gremlin.structure.Vertex#LABEL} is in the set of pairs, then they are ignored.
+     *
+     * @param vertex           the vertex to assign the {@code propertyKeyValues}
+     * @param propertyKeyValues the key/value pairs to assign to the {@code vertex}
+     * @throws ClassCastException       if the value of the key is not a {@link String}
+     * @throws IllegalArgumentException if the value of {@code vertex} is null
+     */
+    public static void attachSingleProperties(final Vertex vertex, final Object... propertyKeyValues) {
+        if (null == vertex)
+            throw Graph.Exceptions.argumentCanNotBeNull("vertex");
+
+        for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
+            if (!propertyKeyValues[i].equals(Element.ID) && !propertyKeyValues[i].equals(Element.LABEL))
+                vertex.singleProperty((String) propertyKeyValues[i], propertyKeyValues[i + 1]);
+        }
+    }
+
+    /**
      * Retrieve the properties associated with a particular element.
      * The result is a Object[] where odd indices are String keys and even indices are the values.
      *
