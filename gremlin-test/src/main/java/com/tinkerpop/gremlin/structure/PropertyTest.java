@@ -74,6 +74,7 @@ public class PropertyTest {
             }
         }
 
+        // todo: thinking this through - might want to consider enforcing the other way where the ~ prefix is removed - that's how neo4j once had it, but tinkergraph was different.
         // todo: expand this class of testing around hiddens - needs to happen for edges and vertices
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
