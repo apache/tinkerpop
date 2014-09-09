@@ -338,94 +338,154 @@ public class ElementHelper {
 
     public static Map<String, Object> propertyValueMap(final Element element, final String... propertyKeys) {
         final Map<String, Object> values = new HashMap<>();
-        if (null == propertyKeys || propertyKeys.length == 0) {
+        if (propertyKeys.length == 0) {
             element.iterators().properties().forEachRemaining(property -> values.put(property.key(), property.value()));
         } else {
             for (final String key : propertyKeys) {
-                if (key.equals(Element.ID))
-                    values.put(Element.ID, element.id());
-                else if (key.equals(Element.LABEL))
-                    values.put(Element.LABEL, element.label());
-                else
-                    element.property(key).ifPresent(v -> values.put(key, v));
+                if (!Graph.Key.isHidden(key)) {
+                    if (key.equals(Element.ID))
+                        values.put(Element.ID, element.id());
+                    else if (key.equals(Element.LABEL))
+                        values.put(Element.LABEL, element.label());
+                    else
+                        element.property(key).ifPresent(v -> values.put(key, v));
+                }
+            }
+        }
+        return values;
+    }
+
+    public static Map<String, Object> hiddenValueMap(final Element element, final String... propertyKeys) {
+        final Map<String, Object> values = new HashMap<>();
+        if (propertyKeys.length == 0) {
+            element.iterators().hiddens().forEachRemaining(property -> values.put(property.key(), property.value()));
+        } else {
+            for (final String key : propertyKeys) {
+                if (!Graph.Key.isHidden(key))
+                    element.property(Graph.Key.hide(key)).ifPresent(v -> values.put(key, v));
             }
         }
         return values;
     }
 
     public static Map<String, Property> propertyMap(final Element element, final String... propertyKeys) {
-        final Map<String, Property> values = new HashMap<>();
-        if (null == propertyKeys || propertyKeys.length == 0) {
-            element.iterators().properties().forEachRemaining(property -> values.put(property.key(), property));
+        final Map<String, Property> propertyMap = new HashMap<>();
+        if (propertyKeys.length == 0) {
+            element.iterators().properties().forEachRemaining(property -> propertyMap.put(property.key(), property));
         } else {
             for (final String key : propertyKeys) {
-                final Property property = element.property(key);
-                if (property.isPresent()) values.put(key, property);
+                if (!Graph.Key.isHidden(key)) {
+                    final Property property = element.property(key);
+                    if (property.isPresent()) propertyMap.put(key, property);
+                }
             }
         }
-        return values;
+        return propertyMap;
+    }
+
+    public static Map<String, Property> hiddenPropertyMap(final Element element, final String... propertyKeys) {
+        final Map<String, Property> propertyMap = new HashMap<>();
+        if (propertyKeys.length == 0) {
+            element.iterators().hiddens().forEachRemaining(property -> propertyMap.put(property.key(), property));
+        } else {
+            for (final String key : propertyKeys) {
+                if (!Graph.Key.isHidden(key)) {
+                    final Property property = element.property(Graph.Key.hide(key));
+                    if (property.isPresent()) propertyMap.put(key, property);
+                }
+            }
+        }
+        return propertyMap;
     }
 
     public static Map<String, List> metaPropertyValueMap(final Vertex vertex, final String... propertyKeys) {
-        final Map<String, List> values = new HashMap<>();
-        if (null == propertyKeys || propertyKeys.length == 0) {
+        final Map<String, List> valueMap = new HashMap<>();
+        if (propertyKeys.length == 0) {
             vertex.iterators().properties().forEachRemaining(property -> {
-                if (values.containsKey(property.key()))
-                    values.get(property.key()).add(property.value());
+                if (valueMap.containsKey(property.key()))
+                    valueMap.get(property.key()).add(property.value());
                 else {
                     final List list = new ArrayList();
                     list.add(property.value());
-                    values.put(property.key(), list);
+                    valueMap.put(property.key(), list);
                 }
             });
         } else {
             for (final String key : propertyKeys) {
                 if (key.equals(Element.ID))
-                    values.put(Element.ID, Arrays.asList(vertex.id()));
+                    valueMap.put(Element.ID, Arrays.asList(vertex.id()));
                 else if (key.equals(Element.LABEL))
-                    values.put(Element.LABEL, Arrays.asList(vertex.label()));
+                    valueMap.put(Element.LABEL, Arrays.asList(vertex.label()));
                 else {
-                    if (values.containsKey(key)) {
-                        final List list = values.get(key);
+                    if (valueMap.containsKey(key)) {
+                        final List list = valueMap.get(key);
                         vertex.iterators().properties(key).forEachRemaining(property -> list.add(property.value()));
                     } else {
                         final List list = new ArrayList();
                         vertex.iterators().properties(key).forEachRemaining(property -> list.add(property.value()));
                         if (list.size() > 0)
-                            values.put(key, list);
+                            valueMap.put(key, list);
                     }
                 }
 
             }
         }
-        return values;
+        return valueMap;
     }
 
-    public static Map<String, List<MetaProperty>> metaPropertyMap(final Vertex vertex, final String... propertyKeys) {
-        final Map<String, List<MetaProperty>> values = new HashMap<>();
-        if (null == propertyKeys || propertyKeys.length == 0) {
-            vertex.iterators().properties().forEachRemaining(property -> {
-                if (values.containsKey(property.key()))
-                    values.get(property.key()).add(property);
+    public static Map<String, List> metaHiddenValueMap(final Vertex vertex, final String... propertyKeys) {
+        final Map<String, List> valueMap = new HashMap<>();
+        if (propertyKeys.length == 0) {
+            vertex.iterators().hiddens().forEachRemaining(property -> {
+                if (valueMap.containsKey(property.key()))
+                    valueMap.get(property.key()).add(property.value());
                 else {
                     final List list = new ArrayList();
-                    list.add(property);
-                    values.put(property.key(), list);
+                    list.add(property.value());
+                    valueMap.put(property.key(), list);
                 }
             });
         } else {
             for (final String key : propertyKeys) {
-                if (values.containsKey(key)) {
-                    final List list = values.get(key);
+                if (valueMap.containsKey(key)) {
+                    final List list = valueMap.get(key);
+                    vertex.iterators().hiddens(key).forEachRemaining(property -> list.add(property.value()));
+                } else {
+                    final List list = new ArrayList();
+                    vertex.iterators().hiddens(key).forEachRemaining(property -> list.add(property.value()));
+                    if (list.size() > 0)
+                        valueMap.put(key, list);
+                }
+            }
+        }
+        return valueMap;
+    }
+
+    public static Map<String, List<MetaProperty>> metaPropertyMap(final Vertex vertex, final String... propertyKeys) {
+        final Map<String, List<MetaProperty>> propertyMap = new HashMap<>();
+        if (null == propertyKeys || propertyKeys.length == 0) {
+            vertex.iterators().properties().forEachRemaining(property -> {
+                if (propertyMap.containsKey(property.key()))
+                    propertyMap.get(property.key()).add(property);
+                else {
+                    final List list = new ArrayList();
+                    list.add(property);
+                    propertyMap.put(property.key(), list);
+                }
+            });
+        } else {
+            for (final String key : propertyKeys) {
+                if (propertyMap.containsKey(key)) {
+                    final List list = propertyMap.get(key);
                     vertex.iterators().properties(key).forEachRemaining(property -> list.add(property));
                 } else {
                     final List list = new ArrayList();
                     vertex.iterators().properties(key).forEachRemaining(property -> list.add(property));
                     if (list.size() > 0)
-                        values.put(key, list);
+                        propertyMap.put(key, list);
                 }
             }
         }
-        return values;
+        return propertyMap;
     }
 }
