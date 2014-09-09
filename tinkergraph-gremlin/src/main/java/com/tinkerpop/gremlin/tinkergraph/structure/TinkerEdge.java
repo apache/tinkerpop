@@ -31,7 +31,7 @@ public class TinkerEdge extends TinkerElement implements Edge {
 
     @Override
     public <V> Property<V> property(final String key, final V value) {
-        if (this.graph.graphView != null && this.graph.graphView.getInUse()) {
+        if (TinkerHelper.inComputerMode(this.graph)) {
             return this.graph.graphView.setProperty(this, key, value);
         } else {
             ElementHelper.validateProperty(key, value);
@@ -81,17 +81,13 @@ public class TinkerEdge extends TinkerElement implements Edge {
         return this.iterators;
     }
 
-    private final Edge.Iterators iterators = new Iterators(this);
+    private final Edge.Iterators iterators = new Iterators();
 
     protected class Iterators extends TinkerElement.Iterators implements Edge.Iterators {
 
-        public Iterators(final TinkerEdge edge) {
-            super(edge);
-        }
-
         @Override
         public Iterator<Vertex> vertices(final Direction direction) {
-            return (Iterator) TinkerHelper.getVertices((TinkerEdge) this.element, direction);
+            return (Iterator) TinkerHelper.getVertices(TinkerEdge.this, direction);
         }
 
         @Override

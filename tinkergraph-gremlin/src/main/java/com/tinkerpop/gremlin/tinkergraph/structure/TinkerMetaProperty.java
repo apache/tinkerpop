@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -31,7 +32,7 @@ public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty
 
     @Override
     public String key() {
-        return this.key;
+        return Graph.Key.unHide(this.key);
     }
 
     @Override
@@ -42,6 +43,11 @@ public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty
     @Override
     public boolean isPresent() {
         return true;
+    }
+
+    @Override
+    public boolean isHidden() {
+        return Graph.Key.isHidden(this.key);
     }
 
     @Override
@@ -97,13 +103,9 @@ public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty
         return this.iterators;
     }
 
-    private final MetaProperty.Iterators iterators = new Iterators(this);
+    private final MetaProperty.Iterators iterators = new Iterators();
 
     protected class Iterators extends TinkerElement.Iterators implements MetaProperty.Iterators {
-
-        public Iterators(final TinkerMetaProperty metaProperty) {
-            super(metaProperty);
-        }
 
         @Override
         public <U> Iterator<Property<U>> properties(final String... propertyKeys) {

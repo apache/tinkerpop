@@ -48,13 +48,9 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
         return this.iterators;
     }
 
-    private final Edge.Iterators iterators = new Iterators(this);
+    private final Edge.Iterators iterators = new Iterators();
 
     protected class Iterators extends Neo4jElement.Iterators implements Edge.Iterators {
-
-        public Iterators(final Neo4jEdge edge) {
-            super(edge);
-        }
 
         @Override
         public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
@@ -69,7 +65,7 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
         @Override
         public Iterator<Vertex> vertices(final Direction direction) {
             graph.tx().readWrite();
-            return (Iterator) Neo4jHelper.getVertices((Neo4jEdge) this.element, direction);
+            return (Iterator) Neo4jHelper.getVertices(Neo4jEdge.this, direction);
         }
 
     }

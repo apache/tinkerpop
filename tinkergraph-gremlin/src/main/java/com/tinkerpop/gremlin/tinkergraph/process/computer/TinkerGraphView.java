@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -42,7 +44,7 @@ public class TinkerGraphView implements Serializable {
                 final TinkerMetaProperty<V> property = new TinkerMetaProperty<V>((TinkerVertex) element, key, value) {
                     @Override
                     public void remove() {
-                        removeProperty(element, key, this);
+                        removeProperty((TinkerVertex) element, key, this);
                     }
                 };
                 this.setValue(element, key, property);
@@ -71,6 +73,13 @@ public class TinkerGraphView implements Serializable {
         }
     }
 
+    public List<Property> getProperties(final TinkerElement element) {
+        final Stream<Property> a = TinkerHelper.getProperties(element).values().stream().flatMap(list -> list.stream());
+        final Stream<Property> b = this.computeProperties.containsKey(element) ?
+                this.computeProperties.get(element).values().stream().flatMap(list -> list.stream()) :
+                Stream.empty();
+        return Stream.concat(a, b).collect(Collectors.toList());
+    }
 
     public void removeProperty(final TinkerElement element, final String key, final Property property) {
         if (isComputeKey(key)) {

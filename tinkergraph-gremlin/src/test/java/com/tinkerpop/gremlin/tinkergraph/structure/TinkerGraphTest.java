@@ -55,6 +55,20 @@ public class TinkerGraphTest implements Serializable {
         g.of(TinkerFactory.SocialTraversal.class).people("marko").created().name().forEach(name -> assertEquals("lop", name));
     }
 
+    /*@Test
+    public void randomTest() throws Exception {
+        Graph g = TinkerGraph.open();
+        Vertex a = g.addVertex();
+        Vertex b = g.addVertex();
+        Edge e = a.addEdge("knows",b,Graph.Key.hide("acl"),"private","weight",1.0);
+        System.out.println("hiddenKeys: " + e.hiddenKeys());
+        System.out.println("keys: " + e.keys());
+        System.out.println("hiddens:");
+        e.iterators().hiddens("acl").forEachRemaining(System.out::println);
+        System.out.println("properties:");
+        e.iterators().properties("weight").forEachRemaining(System.out::println);
+    }*/
+
     /**
      * No assertions.  Just write out the graph for convenience.
      */

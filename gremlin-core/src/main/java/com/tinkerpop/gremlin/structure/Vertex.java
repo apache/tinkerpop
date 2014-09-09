@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.VertexTraversal;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
@@ -62,7 +61,10 @@ public interface Vertex extends Element, VertexTraversal {
     }
 
     public default <V> MetaProperty<V> singleProperty(final String key, final V value, final Object... keyValues) {
-        this.iterators().properties(key).forEachRemaining(MetaProperty::remove);
+        if (Graph.Key.isHidden(key))
+            this.iterators().hiddens(Graph.Key.unHide(key)).forEachRemaining(MetaProperty::remove);
+        else
+            this.iterators().properties(key).forEachRemaining(MetaProperty::remove);
         return this.property(key, value, keyValues);
     }
 

@@ -17,8 +17,10 @@ import org.neo4j.graphdb.Relationship;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -93,7 +95,7 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, Neo4jMetaPropertyT
 
     @Override
     public String key() {
-        return this.key;
+        return Graph.Key.unHide(this.key);
     }
 
     @Override
@@ -102,8 +104,35 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, Neo4jMetaPropertyT
     }
 
     @Override
+    public Set<String> keys() {
+        this.vertex.graph.tx().readWrite();
+        final Set<String> keys = new HashSet<>();
+        for (final String key : this.node.getPropertyKeys()) {
+            if (!Graph.Key.isHidden(key))
+                keys.add(key);
+        }
+        return keys;
+    }
+
+    @Override
+    public Set<String> hiddenKeys() {
+        this.vertex.graph.tx().readWrite();
+        final Set<String> keys = new HashSet<>();
+        for (final String key : this.node.getPropertyKeys()) {
+            if (Graph.Key.isHidden(key))
+                keys.add(Graph.Key.unHide(key));
+        }
+        return keys;
+    }
+
+    @Override
     public boolean isPresent() {
         return null != this.value;
+    }
+
+    @Override
+    public boolean isHidden() {
+        return Graph.Key.isHidden(this.key);
     }
 
     @Override
@@ -122,6 +151,7 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, Neo4jMetaPropertyT
             }
         }
         // TODO: if only one MetaProperty with no properties for the key, then go back to vertex key/value pair
+        //              might be an over-optimization
     }
 
     private boolean isNode() {

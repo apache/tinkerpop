@@ -35,7 +35,7 @@ public abstract interface ElementTraversal<A extends Element> {
 
     public default GraphTraversal<A, A> start() {
         final GraphTraversal<A, A> traversal = GraphTraversal.of();
-        return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
+        return traversal.addStep(new StartStep<>(traversal, this));
     }
 
     //////////////////////////////////////////////////////////////////////

@@ -4,24 +4,22 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
+import com.tinkerpop.gremlin.structure.util.PropertyFilterIterator;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class TinkerElement implements Element, Serializable {
 
-    protected Map<String, List<? extends Property>> properties = new HashMap<>();
+    protected Map<String, List<Property>> properties = new HashMap<>();
     protected final Object id;
     protected final String label;
     protected final TinkerGraph graph;
@@ -58,7 +56,7 @@ public abstract class TinkerElement implements Element, Serializable {
     public Set<String> hiddenKeys() {
         return TinkerHelper.inComputerMode(this.graph) ?
                 Element.super.hiddenKeys() :
-                this.properties.keySet().stream().filter(Graph.Key::isHidden).collect(Collectors.toSet());
+                this.properties.keySet().stream().filter(Graph.Key::isHidden).map(Graph.Key::unHide).collect(Collectors.toSet());
     }
 
     @Override
@@ -78,64 +76,18 @@ public abstract class TinkerElement implements Element, Serializable {
 
     protected class Iterators implements Element.Iterators, Serializable {
 
-        protected final TinkerElement element;
-
-        public Iterators(final TinkerElement element) {
-            this.element = element;
-        }
-
         @Override
         public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys) {
-            if (TinkerHelper.inComputerMode(graph)) {
-                if (propertyKeys.length == 0) {
-                    final Set<String> keys = new HashSet<>();
-                    keys.addAll(properties.keySet());
-                    keys.addAll(graph.graphView.getComputeKeys());
-                    return (Iterator) keys.stream()
-                            .filter(Graph.Key::isHidden)
-                            .flatMap(key -> graph.graphView.getProperty(this.element, key).stream())
-                            .collect(Collectors.toList())
-                            .iterator();
-                } else
-                    return (Iterator) Stream.of(propertyKeys)
-                            .map(Graph.Key::hide)
-                            .flatMap(key -> graph.graphView.getProperty(this.element, key).stream())
-                            .collect(Collectors.toList())
-                            .iterator();
-
-            } else {
-                return (Iterator) properties.entrySet().stream()
-                        .filter(entry -> Graph.Key.isHidden(entry.getKey()))
-                        .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, Graph.Key.unHide(entry.getKey())) >= 0)
-                        .flatMap(entry -> entry.getValue().stream())
-                        .collect(Collectors.toList())
-                        .iterator();
-            }
+            return TinkerHelper.inComputerMode(graph) ?
+                    new PropertyFilterIterator<>(graph.graphView.getProperties(TinkerElement.this).iterator(), true, propertyKeys) :
+                    new PropertyFilterIterator<>(properties.values().stream().flatMap(list -> list.stream()).collect(Collectors.toList()).iterator(), true, propertyKeys);
         }
 
         @Override
         public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
-            if (TinkerHelper.inComputerMode(graph)) {
-                if (propertyKeys.length == 0) {
-                    final Set<String> keys = new HashSet<>();
-                    keys.addAll(properties.keySet());
-                    keys.addAll(graph.graphView.getComputeKeys());
-                    return (Iterator) keys.stream()
-                            .filter(key -> !Graph.Key.isHidden(key))
-                            .flatMap(key -> graph.graphView.getProperty(this.element, key).stream())
-                            .collect(Collectors.toList()).iterator();
-                } else
-                    return (Iterator) Stream.of(propertyKeys)
-                            .flatMap(key -> graph.graphView.getProperty(this.element, key).stream())
-                            .collect(Collectors.toList()).iterator();
-
-            } else {
-                return (Iterator) properties.entrySet().stream()
-                        .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
-                        .filter(entry -> !Graph.Key.isHidden(entry.getKey()))
-                        .flatMap(entry -> entry.getValue().stream())
-                        .collect(Collectors.toList()).iterator();
-            }
+            return TinkerHelper.inComputerMode(graph) ?
+                    new PropertyFilterIterator<>(graph.graphView.getProperties(TinkerElement.this).iterator(), false, propertyKeys) :
+                    new PropertyFilterIterator<>(properties.values().stream().flatMap(list -> list.stream()).collect(Collectors.toList()).iterator(), false, propertyKeys);
         }
     }
 }

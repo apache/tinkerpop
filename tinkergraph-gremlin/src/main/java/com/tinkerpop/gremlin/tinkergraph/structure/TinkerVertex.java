@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -31,11 +32,11 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     @Override
     public <V> MetaProperty<V> property(final String key) {
         if (TinkerHelper.inComputerMode(this.graph)) {
-            final List list = this.graph.graphView.getProperty(this, key);
+            final List<MetaProperty> list = (List) this.graph.graphView.getProperty(this, key);
             if (list.size() == 0)
                 return MetaProperty.<V>empty();
             else if (list.size() == 1)
-                return (MetaProperty<V>) list.get(0);
+                return list.get(0);
             else
                 throw Vertex.Exceptions.multiplePropertiesExistForProvidedKey(key);
         } else {
@@ -57,7 +58,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         } else {
             ElementHelper.validateProperty(key, value);
             final MetaProperty<V> newProperty = new TinkerMetaProperty<>(this, key, value);
-            final List<MetaProperty> list = (List<MetaProperty>) this.properties.getOrDefault(key, new ArrayList<MetaProperty>());
+            final List<Property> list = this.properties.getOrDefault(key, new ArrayList<>());
             list.add(newProperty);
             this.properties.put(key, list);
             this.graph.vertexIndex.autoUpdate(key, value, null, this);
@@ -65,7 +66,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         }
     }
 
-
+    @Override
     public String toString() {
         return StringFactory.vertexString(this);
     }
@@ -88,13 +89,9 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         return this.iterators;
     }
 
-    private final Vertex.Iterators iterators = new Iterators(this);
+    private final Vertex.Iterators iterators = new Iterators();
 
     protected class Iterators extends TinkerElement.Iterators implements Vertex.Iterators {
-
-        public Iterators(final TinkerVertex vertex) {
-            super(vertex);
-        }
 
         @Override
         public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
@@ -108,18 +105,16 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
         @Override
         public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
-            return (Iterator) TinkerHelper.getEdges((TinkerVertex) this.element, direction, branchFactor, labels);
+            return (Iterator) TinkerHelper.getEdges(TinkerVertex.this, direction, branchFactor, labels);
         }
 
         @Override
         public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
-            return (Iterator) TinkerHelper.getVertices((TinkerVertex) this.element, direction, branchFactor, labels);
+            return (Iterator) TinkerHelper.getVertices(TinkerVertex.this, direction, branchFactor, labels);
         }
     }
 
     public GraphTraversal<Vertex, Vertex> start() {
         return new TinkerElementTraversal<>(this, this.graph);
     }
-
-
 }

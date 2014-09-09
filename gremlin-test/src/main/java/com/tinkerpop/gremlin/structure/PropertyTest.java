@@ -72,17 +72,15 @@ public class PropertyTest {
             }
         }
 
-        // todo: thinking this through - might want to consider enforcing the other way where the ~ prefix is removed - that's how neo4j once had it, but tinkergraph was different.
-        // todo: expand this class of testing around hiddens - needs to happen for edges and vertices
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-        public void shouldReturnHiddenKeysWithHiddenPrefix() {
+        public void shouldReturnHiddenKeysWithOutHiddenPrefix() {
             final Vertex v = g.addVertex("name", "marko", Graph.Key.hide("acl"), "rw", Graph.Key.hide("other"), "rw");
             tryCommit(g);
             final Vertex v1 = g.v(v.id());
             assertEquals(2, v1.hiddenKeys().size());
-            assertTrue(v1.hiddenKeys().stream().allMatch(Graph.Key::isHidden));
-            assertTrue(v1.hiddenKeys().stream().allMatch(k -> k.equals(Graph.Key.hide("acl")) || k.equals(Graph.Key.hide("other"))));
+            assertTrue(v1.hiddenKeys().stream().allMatch(key -> !Graph.Key.isHidden(key)));
+            assertTrue(v1.hiddenKeys().stream().allMatch(k -> k.equals("acl") || k.equals("other")));
         }
 
         // todo: expand this class of testing around hiddens - needs to happen for edges and vertices

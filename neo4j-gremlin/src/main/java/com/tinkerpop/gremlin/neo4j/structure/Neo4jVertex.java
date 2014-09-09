@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
+import com.tinkerpop.gremlin.structure.util.PropertyFilterIterator;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -21,8 +22,6 @@ import org.neo4j.graphdb.Relationship;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -145,24 +144,20 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         return this.iterators;
     }
 
-    private final Vertex.Iterators iterators = new Iterators(this);
+    private final Vertex.Iterators iterators = new Iterators();
 
     protected class Iterators extends Neo4jElement.Iterators implements Vertex.Iterators {
-
-        public Iterators(final Neo4jVertex vertex) {
-            super(vertex);
-        }
 
         @Override
         public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
             graph.tx().readWrite();
-            return (Iterator) StreamFactory.stream(Neo4jHelper.getVertices((Neo4jVertex) this.element, direction, labels)).limit(branchFactor).iterator();
+            return (Iterator) StreamFactory.stream(Neo4jHelper.getVertices(Neo4jVertex.this, direction, labels)).limit(branchFactor).iterator();
         }
 
         @Override
         public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
             graph.tx().readWrite();
-            return (Iterator) StreamFactory.stream(Neo4jHelper.getEdges((Neo4jVertex) this.element, direction, labels)).limit(branchFactor).iterator();
+            return (Iterator) StreamFactory.stream(Neo4jHelper.getEdges(Neo4jVertex.this, direction, labels)).limit(branchFactor).iterator();
         }
 
         @Override
@@ -174,24 +169,25 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
                     .flatMap(key -> {
                         if (getBaseVertex().getProperty(key).equals(Neo4jMetaProperty.META_PROPERTY_TOKEN))
                             return StreamFactory.stream(getBaseVertex().getRelationships(org.neo4j.graphdb.Direction.OUTGOING, DynamicRelationshipType.withName(Neo4jMetaProperty.META_PROPERTY_PREFIX.concat(key))))
-                                    .map(relationship -> new Neo4jMetaProperty((Neo4jVertex) this.element, relationship.getEndNode()));
+                                    .map(relationship -> new Neo4jMetaProperty(Neo4jVertex.this, relationship.getEndNode()));
                         else
-                            return Arrays.asList(new Neo4jMetaProperty<>((Neo4jVertex) this.element, key, (V) getBaseVertex().getProperty(key))).stream();
+                            return Arrays.asList(new Neo4jMetaProperty<>(Neo4jVertex.this, key, (V) getBaseVertex().getProperty(key))).stream();
                     }).iterator();
         }
 
         @Override
         public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
             graph.tx().readWrite();
-
-            // make sure all keys request are hidden - the nature of Graph.Key.hide() is to not re-hide a hidden key
-            final String[] hiddenKeys = Stream.of(propertyKeys).map(Graph.Key::hide)
-                    .collect(Collectors.toList()).toArray(new String[propertyKeys.length]);
-
-            return (Iterator) StreamFactory.stream(baseElement.getPropertyKeys())
-                    .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(hiddenKeys, key) >= 0)
-                    .filter(Graph.Key::isHidden)
-                    .map(key -> new Neo4jMetaProperty<>((Neo4jVertex) this.element, key, (V) baseElement.getProperty(key))).iterator();
+            return (Iterator) StreamFactory.stream(getBaseVertex().getPropertyKeys())
+                    .filter(key -> Graph.Key.isHidden(key))
+                    .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, Graph.Key.unHide(key)) >= 0)
+                    .flatMap(key -> {
+                        if (getBaseVertex().getProperty(key).equals(Neo4jMetaProperty.META_PROPERTY_TOKEN))
+                            return StreamFactory.stream(getBaseVertex().getRelationships(org.neo4j.graphdb.Direction.OUTGOING, DynamicRelationshipType.withName(Neo4jMetaProperty.META_PROPERTY_PREFIX.concat(key))))
+                                    .map(relationship -> new Neo4jMetaProperty(Neo4jVertex.this, relationship.getEndNode()));
+                        else
+                            return Arrays.asList(new Neo4jMetaProperty<>(Neo4jVertex.this, key, (V) getBaseVertex().getProperty(key))).stream();
+                    }).iterator();
         }
     }
 }

@@ -64,7 +64,7 @@ public abstract class Neo4jElement implements Element, WrappedElement<PropertyCo
         final Set<String> keys = new HashSet<>();
         for (final String key : this.baseElement.getPropertyKeys()) {
             if (Graph.Key.isHidden(key))
-                keys.add(key);
+                keys.add(Graph.Key.unHide(key));
         }
         return keys;
     }
@@ -109,19 +109,13 @@ public abstract class Neo4jElement implements Element, WrappedElement<PropertyCo
 
     protected class Iterators implements Element.Iterators {
 
-        protected final Neo4jElement element;
-
-        public Iterators(final Neo4jElement element) {
-            this.element = element;
-        }
-
         @Override
         public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
             graph.tx().readWrite();
             return StreamFactory.stream(baseElement.getPropertyKeys())
                     .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, key) >= 0)
                     .filter(key -> !Graph.Key.isHidden(key))
-                    .map(key -> new Neo4jProperty<>(this.element, key, (V) baseElement.getProperty(key))).iterator();
+                    .map(key -> new Neo4jProperty<>(Neo4jElement.this, key, (V) baseElement.getProperty(key))).iterator();
         }
 
         @Override
@@ -135,7 +129,7 @@ public abstract class Neo4jElement implements Element, WrappedElement<PropertyCo
             return StreamFactory.stream(baseElement.getPropertyKeys())
                     .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(hiddenKeys, key) >= 0)
                     .filter(Graph.Key::isHidden)
-                    .map(key -> new Neo4jProperty<>(this.element, key, (V) baseElement.getProperty(key))).iterator();
+                    .map(key -> new Neo4jProperty<>(Neo4jElement.this, key, (V) baseElement.getProperty(key))).iterator();
         }
     }
 }
