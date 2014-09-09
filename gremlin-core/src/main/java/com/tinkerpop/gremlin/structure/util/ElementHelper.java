@@ -336,10 +336,10 @@ public class ElementHelper {
         return haveEqualIds(a, (MetaProperty) b);
     }
 
-    public static Map<String, Object> propertyValueMap(final Element element, final String... propertyKeys) {
+    public static Map<String, Object> propertyValueMap(final Element element, final boolean getHiddens, final String... propertyKeys) {
         final Map<String, Object> values = new HashMap<>();
         if (propertyKeys.length == 0) {
-            element.iterators().properties().forEachRemaining(property -> values.put(property.key(), property.value()));
+            (getHiddens ? element.iterators().hiddens() : element.iterators().properties()).forEachRemaining(property -> values.put(property.key(), property.value()));
         } else {
             for (final String key : propertyKeys) {
                 if (!Graph.Key.isHidden(key)) {
@@ -348,34 +348,21 @@ public class ElementHelper {
                     else if (key.equals(Element.LABEL))
                         values.put(Element.LABEL, element.label());
                     else
-                        element.property(key).ifPresent(v -> values.put(key, v));
+                        element.property(getHiddens ? Graph.Key.hide(key) : key).ifPresent(v -> values.put(key, v));
                 }
             }
         }
         return values;
     }
 
-    public static Map<String, Object> hiddenValueMap(final Element element, final String... propertyKeys) {
-        final Map<String, Object> values = new HashMap<>();
-        if (propertyKeys.length == 0) {
-            element.iterators().hiddens().forEachRemaining(property -> values.put(property.key(), property.value()));
-        } else {
-            for (final String key : propertyKeys) {
-                if (!Graph.Key.isHidden(key))
-                    element.property(Graph.Key.hide(key)).ifPresent(v -> values.put(key, v));
-            }
-        }
-        return values;
-    }
-
-    public static Map<String, Property> propertyMap(final Element element, final String... propertyKeys) {
+    public static Map<String, Property> propertyMap(final Element element, final boolean getHiddens, final String... propertyKeys) {
         final Map<String, Property> propertyMap = new HashMap<>();
         if (propertyKeys.length == 0) {
-            element.iterators().properties().forEachRemaining(property -> propertyMap.put(property.key(), property));
+            (getHiddens ? element.iterators().hiddens() : element.iterators().properties()).forEachRemaining(property -> propertyMap.put(property.key(), property));
         } else {
             for (final String key : propertyKeys) {
                 if (!Graph.Key.isHidden(key)) {
-                    final Property property = element.property(key);
+                    final Property property = element.property(getHiddens ? Graph.Key.hide(key) : key);
                     if (property.isPresent()) propertyMap.put(key, property);
                 }
             }
@@ -383,25 +370,10 @@ public class ElementHelper {
         return propertyMap;
     }
 
-    public static Map<String, Property> hiddenPropertyMap(final Element element, final String... propertyKeys) {
-        final Map<String, Property> propertyMap = new HashMap<>();
-        if (propertyKeys.length == 0) {
-            element.iterators().hiddens().forEachRemaining(property -> propertyMap.put(property.key(), property));
-        } else {
-            for (final String key : propertyKeys) {
-                if (!Graph.Key.isHidden(key)) {
-                    final Property property = element.property(Graph.Key.hide(key));
-                    if (property.isPresent()) propertyMap.put(key, property);
-                }
-            }
-        }
-        return propertyMap;
-    }
-
-    public static Map<String, List> metaPropertyValueMap(final Vertex vertex, final String... propertyKeys) {
+    public static Map<String, List> metaPropertyValueMap(final Vertex vertex, final boolean getHiddens, final String... propertyKeys) {
         final Map<String, List> valueMap = new HashMap<>();
         if (propertyKeys.length == 0) {
-            vertex.iterators().properties().forEachRemaining(property -> {
+            (getHiddens ? vertex.iterators().hiddens() : vertex.iterators().properties()).forEachRemaining(property -> {
                 if (valueMap.containsKey(property.key()))
                     valueMap.get(property.key()).add(property.value());
                 else {
@@ -412,59 +384,32 @@ public class ElementHelper {
             });
         } else {
             for (final String key : propertyKeys) {
-                if (key.equals(Element.ID))
-                    valueMap.put(Element.ID, Arrays.asList(vertex.id()));
-                else if (key.equals(Element.LABEL))
-                    valueMap.put(Element.LABEL, Arrays.asList(vertex.label()));
-                else {
-                    if (valueMap.containsKey(key)) {
-                        final List list = valueMap.get(key);
-                        vertex.iterators().properties(key).forEachRemaining(property -> list.add(property.value()));
-                    } else {
-                        final List list = new ArrayList();
-                        vertex.iterators().properties(key).forEachRemaining(property -> list.add(property.value()));
-                        if (list.size() > 0)
-                            valueMap.put(key, list);
+                if (!Graph.Key.isHidden(key)) {
+                    if (key.equals(Element.ID))
+                        valueMap.put(Element.ID, Arrays.asList(vertex.id()));
+                    else if (key.equals(Element.LABEL))
+                        valueMap.put(Element.LABEL, Arrays.asList(vertex.label()));
+                    else {
+                        if (valueMap.containsKey(key)) {
+                            final List list = valueMap.get(key);
+                            (getHiddens ? vertex.iterators().hiddens(key) : vertex.iterators().properties(key)).forEachRemaining(property -> list.add(property.value()));
+                        } else {
+                            final List list = new ArrayList();
+                            (getHiddens ? vertex.iterators().hiddens(key) : vertex.iterators().properties(key)).forEachRemaining(property -> list.add(property.value()));
+                            if (list.size() > 0)
+                                valueMap.put(key, list);
+                        }
                     }
                 }
-
             }
         }
         return valueMap;
     }
 
-    public static Map<String, List> metaHiddenValueMap(final Vertex vertex, final String... propertyKeys) {
-        final Map<String, List> valueMap = new HashMap<>();
-        if (propertyKeys.length == 0) {
-            vertex.iterators().hiddens().forEachRemaining(property -> {
-                if (valueMap.containsKey(property.key()))
-                    valueMap.get(property.key()).add(property.value());
-                else {
-                    final List list = new ArrayList();
-                    list.add(property.value());
-                    valueMap.put(property.key(), list);
-                }
-            });
-        } else {
-            for (final String key : propertyKeys) {
-                if (valueMap.containsKey(key)) {
-                    final List list = valueMap.get(key);
-                    vertex.iterators().hiddens(key).forEachRemaining(property -> list.add(property.value()));
-                } else {
-                    final List list = new ArrayList();
-                    vertex.iterators().hiddens(key).forEachRemaining(property -> list.add(property.value()));
-                    if (list.size() > 0)
-                        valueMap.put(key, list);
-                }
-            }
-        }
-        return valueMap;
-    }
-
-    public static Map<String, List<MetaProperty>> metaPropertyMap(final Vertex vertex, final String... propertyKeys) {
+    public static Map<String, List<MetaProperty>> metaPropertyMap(final Vertex vertex, final boolean getHiddens, final String... propertyKeys) {
         final Map<String, List<MetaProperty>> propertyMap = new HashMap<>();
         if (null == propertyKeys || propertyKeys.length == 0) {
-            vertex.iterators().properties().forEachRemaining(property -> {
+            (getHiddens ? vertex.iterators().hiddens() : vertex.iterators().properties()).forEachRemaining(property -> {
                 if (propertyMap.containsKey(property.key()))
                     propertyMap.get(property.key()).add(property);
                 else {
@@ -477,10 +422,10 @@ public class ElementHelper {
             for (final String key : propertyKeys) {
                 if (propertyMap.containsKey(key)) {
                     final List list = propertyMap.get(key);
-                    vertex.iterators().properties(key).forEachRemaining(property -> list.add(property));
+                    (getHiddens ? vertex.iterators().hiddens(key) : vertex.iterators().properties(key)).forEachRemaining(list::add);
                 } else {
                     final List list = new ArrayList();
-                    vertex.iterators().properties(key).forEachRemaining(property -> list.add(property));
+                    (getHiddens ? vertex.iterators().hiddens(key) : vertex.iterators().properties(key)).forEachRemaining(list::add);
                     if (list.size() > 0)
                         propertyMap.put(key, list);
                 }

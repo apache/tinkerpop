@@ -22,8 +22,8 @@ public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> {
         this.propertyKeys = propertyKeys;
         this.setFunction(traverser ->
                 traverser.get() instanceof Vertex ?
-                        (Map) ElementHelper.metaPropertyMap((Vertex) traverser.get(), propertyKeys) :
-                        (Map) ElementHelper.propertyMap(traverser.get(), propertyKeys));
+                        (Map) ElementHelper.metaPropertyMap((Vertex) traverser.get(), false, propertyKeys) :
+                        (Map) ElementHelper.propertyMap(traverser.get(), false, propertyKeys));
     }
 
     public String toString() {

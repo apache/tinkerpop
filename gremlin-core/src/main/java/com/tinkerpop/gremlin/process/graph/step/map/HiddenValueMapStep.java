@@ -3,12 +3,10 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -24,8 +22,8 @@ public class HiddenValueMapStep<E> extends MapStep<Element, Map<String, E>> {
         this.setFunction(traverser -> {
             final Element element = traverser.get();
             return element instanceof Vertex ?
-                      (Map) ElementHelper.metaHiddenValueMap((Vertex) traverser.get(), this.propertyKeys) :
-                      (Map) ElementHelper.hiddenValueMap(traverser.get(), this.propertyKeys);
+                    (Map) ElementHelper.metaPropertyValueMap((Vertex) traverser.get(), true, this.propertyKeys) :
+                    (Map) ElementHelper.propertyValueMap(traverser.get(), true, this.propertyKeys);
         });
     }
 
