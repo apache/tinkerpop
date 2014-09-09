@@ -16,7 +16,7 @@ class GroovyDedupTestImpl extends DedupTest {
 
     @Override
     public Traversal<Vertex, String> get_g_V_both_dedupXlangX_name() {
-        g.V().both().dedup { it.get().properties("lang").orElse(null) }.value("name")
+        g.V().both().dedup { it.get().property("lang").orElse(null) }.value("name")
     }
 
     @Override
