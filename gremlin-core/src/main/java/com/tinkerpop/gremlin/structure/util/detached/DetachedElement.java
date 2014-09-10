@@ -3,14 +3,10 @@ package com.tinkerpop.gremlin.structure.util.detached;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.PropertyFilterIterator;
-import org.javatuples.Pair;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -60,7 +56,6 @@ public abstract class DetachedElement implements Element, Serializable {
 
     @Override
     public <V> Property<V> property(final String key) {
-        // todo: fix for lists of property
         return this.properties.containsKey(key) ? this.properties.get(key).get(0) : Property.empty();
     }
 
