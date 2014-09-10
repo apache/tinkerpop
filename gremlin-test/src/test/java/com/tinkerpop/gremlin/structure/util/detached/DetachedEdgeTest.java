@@ -97,9 +97,4 @@ public class DetachedEdgeTest {
     public void shouldNotAllowRemove() {
         this.me.remove();
     }
-
-    @Test(expected = UnsupportedOperationException.class)
-    public void shouldNotTraverse() {
-        this.me.start();
-    }
 }
