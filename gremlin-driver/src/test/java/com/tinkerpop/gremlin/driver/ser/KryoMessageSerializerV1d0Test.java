@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.structure.Compare;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -114,11 +115,11 @@ public class KryoMessageSerializerV1d0Test {
         assertEquals("test", deserialiedEdge.label());
 
         assertEquals(new Integer(123), (Integer) deserialiedEdge.value("abc"));
-        assertEquals(1, StreamFactory.stream(deserialiedEdge.properties()).count());
-        assertEquals(0l, deserialiedEdge.outV().id().next());
-        assertEquals(Vertex.DEFAULT_LABEL, deserialiedEdge.outV().label().next());
-        assertEquals(1l, deserialiedEdge.inV().id().next());
-        assertEquals(Vertex.DEFAULT_LABEL, deserialiedEdge.inV().label().next());
+        assertEquals(1, StreamFactory.stream(deserialiedEdge.iterators().properties()).count());
+        assertEquals(0l, deserialiedEdge.iterators().vertices(Direction.OUT).next().id());
+        assertEquals(Vertex.DEFAULT_LABEL, deserialiedEdge.iterators().vertices(Direction.OUT).next().label());
+        assertEquals(1l, deserialiedEdge.iterators().vertices(Direction.IN).next().id());
+        assertEquals(Vertex.DEFAULT_LABEL, deserialiedEdge.iterators().vertices(Direction.IN).next().label());
     }
 
     @Test
