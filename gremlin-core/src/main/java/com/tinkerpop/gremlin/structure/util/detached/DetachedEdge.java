@@ -40,17 +40,8 @@ public class DetachedEdge extends DetachedElement implements Edge {
         this.outVertex = new DetachedVertex(outV.getValue0(), outV.getValue1());
         this.inVertex = new DetachedVertex(inV.getValue0(), inV.getValue1());
 
-        if (properties != null) {
-            this.properties.putAll(properties.entrySet().stream()
-                    .map(entry -> Pair.with(entry.getKey(), (Property) new DetachedProperty(entry.getKey(), entry.getValue(), this)))
-                    .collect(Collectors.toMap(p -> p.getValue0(), p -> Arrays.asList(p.getValue1()))));
-        }
-
-        if (hiddenProperties != null) {
-            this.properties.putAll(hiddenProperties.entrySet().stream()
-                    .map(entry -> Pair.with(entry.getKey(), (Property) new DetachedProperty(entry.getKey(), entry.getValue(), this)))
-                    .collect(Collectors.toMap(p -> p.getValue0(), p -> Arrays.asList(p.getValue1()))));
-        }
+        if (properties != null) this.properties.putAll(convertToDetachedProperty(properties));
+        if (hiddenProperties != null) this.properties.putAll(convertToDetachedProperty(hiddenProperties));
     }
 
     private DetachedEdge(final Edge edge) {
@@ -87,6 +78,12 @@ public class DetachedEdge extends DetachedElement implements Edge {
     @Override
     public GraphTraversal<Edge, Edge> start() {
         throw new UnsupportedOperationException("Detached edges cannot be traversed: " + this);
+    }
+
+    private Map<String, List<Property>> convertToDetachedProperty(final Map<String, Object> properties) {
+        return properties.entrySet().stream()
+                .map(entry -> Pair.with(entry.getKey(), (Property) new DetachedProperty(entry.getKey(), entry.getValue(), this)))
+                .collect(Collectors.toMap(p -> p.getValue0(), p -> Arrays.asList(p.getValue1())));
     }
 
     private final Edge.Iterators iterators = new Iterators();
