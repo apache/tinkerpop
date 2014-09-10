@@ -1,8 +1,15 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.process.util.MapHelper;
 import org.junit.Before;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -30,5 +37,30 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
     @Before
     public void setupTest() {
         assumeTrue(graphMeetsTestRequirements());
+    }
+
+    public <T> void checkResults(final List<T> expectedResults, final Traversal<?, T> traversal) {
+        final List<T> results = traversal.toList();
+        assertEquals("Checking result size", expectedResults.size(), results.size());
+        for (T t : results) {
+            assertTrue("Checking result existence", expectedResults.contains(t));
+        }
+        final Map<T, Long> expectedResultsCount = new HashMap<>();
+        final Map<T, Long> resultsCount = new HashMap<>();
+        assertEquals("Checking indexing is equivalent", expectedResultsCount.size(), resultsCount.size());
+        expectedResults.forEach(t -> MapHelper.incr(expectedResultsCount, t, 1l));
+        results.forEach(t -> MapHelper.incr(resultsCount, t, 1l));
+        expectedResultsCount.forEach((k, v) -> assertEquals("Checking result group counts", v, resultsCount.get(k)));
+        assertFalse(traversal.hasNext());
+    }
+
+    public <T> void checkResults(final Map<T, Long> expectedResults, final Traversal<?, T> traversal) {
+        final List<T> list = new ArrayList<>();
+        expectedResults.forEach((k, v) -> {
+            for (int i = 0; i < v; i++) {
+                list.add(k);
+            }
+        });
+        checkResults(list, traversal);
     }
 }

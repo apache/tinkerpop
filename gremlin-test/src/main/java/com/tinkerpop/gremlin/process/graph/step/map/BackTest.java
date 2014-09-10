@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,6 +35,8 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Edge> get_g_v1_outEXknowsX_asXhereX_hasXweight_1X_inV_hasXname_joshX_backXhereX(final Object v1Id);
 
     public abstract Traversal<Vertex, Edge> get_g_v1_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_backXhereX(final Object v1Id);
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_asXhereXout_valueXnameX_backXhereX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -113,6 +116,17 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         });
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXhereXout_valueXnameX_backXhereX() {
+        Traversal<Vertex, Vertex> traversal = get_g_V_asXhereXout_valueXnameX_backXhereX();
+        super.checkResults(new HashMap<Vertex, Long>() {{
+            put(convertToVertex(g, "marko"), 3l);
+            put(convertToVertex(g, "josh"), 2l);
+            put(convertToVertex(g, "peter"), 1l);
+        }}, traversal);
+    }
+
     public static class JavaBackTest extends BackTest {
         public JavaBackTest() {
             requiresGraphComputer = false;
@@ -151,6 +165,11 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Edge> get_g_v1_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_backXhereX(final Object v1Id) {
             return g.v(v1Id).outE("knows").as("here").has("weight", 1.0d).as("fake").inV().has("name", "josh").<Edge>back("here");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_asXhereXout_valueXnameX_backXhereX() {
+            return g.V().as("here").out().value("name").back("here");
         }
     }
 
@@ -192,6 +211,11 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Edge> get_g_v1_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_backXhereX(final Object v1Id) {
             return g.v(v1Id).outE("knows").as("here").has("weight", 1.0d).as("fake").inV().has("name", "josh").<Edge>back("here").submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_asXhereXout_valueXnameX_backXhereX() {
+            return g.V().as("here").out().value("name").<Vertex>back("here").submit(g.compute());
         }
     }
 }
