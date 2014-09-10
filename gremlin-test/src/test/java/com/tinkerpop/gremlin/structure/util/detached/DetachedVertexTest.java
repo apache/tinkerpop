@@ -72,6 +72,6 @@ public class DetachedVertexTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void shouldNotTraverse() {
-        this.detachedVertex.out().out();
+        this.detachedVertex.start();
     }
 }

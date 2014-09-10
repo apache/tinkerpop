@@ -55,8 +55,8 @@ public class DetachedEdge extends DetachedElement implements Edge {
 
     private DetachedEdge(final Edge edge) {
         super(edge);
-        this.outVertex = DetachedVertex.detach(edge.outV().next());
-        this.inVertex = DetachedVertex.detach(edge.inV().next());
+        this.outVertex = DetachedVertex.detach(edge.iterators().vertices(Direction.OUT).next());
+        this.inVertex = DetachedVertex.detach(edge.iterators().vertices(Direction.IN).next());
     }
 
     @Override

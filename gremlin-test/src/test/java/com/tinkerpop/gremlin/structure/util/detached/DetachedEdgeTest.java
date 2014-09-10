@@ -30,7 +30,7 @@ public class DetachedEdgeTest {
         final Edge e = mock(Edge.class);
         when(e.id()).thenReturn("3");
         when(e.label()).thenReturn("knows");
-        when(e.outV()).thenReturn(new SingleGraphTraversal(v1));
+        when(e.iterators()).thenReturn(new SingleGraphTraversal(v1));
         when(e.inV()).thenReturn(new SingleGraphTraversal(v2));
 
         this.detachedEdge = DetachedEdge.detach(e);
@@ -89,6 +89,11 @@ public class DetachedEdgeTest {
         assertFalse(detachedEdge1.equals(this.detachedEdge));
     }
 
+    @Test
+    public void shouldConstructDetachedEdgeAtomically() {
+
+    }
+
     @Test(expected = UnsupportedOperationException.class)
     public void shouldNotAllowSetProperty() {
         this.detachedEdge.property("test", "test");
@@ -101,6 +106,6 @@ public class DetachedEdgeTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void shouldNotTraverse() {
-        this.detachedEdge.has("x", 1);
+        this.detachedEdge.start();
     }
 }
