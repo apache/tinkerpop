@@ -19,6 +19,7 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.util.IoEdge;
+import com.tinkerpop.gremlin.structure.io.util.IoMetaProperty;
 import com.tinkerpop.gremlin.structure.io.util.IoVertex;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import org.javatuples.Pair;
@@ -178,7 +179,7 @@ public final class GremlinKryo {
 
         /**
          * Note that the following are pre-registered boolean, Boolean, byte, Byte, char, Character, double, Double,
-         * int, Integer, float, Float, long, Long, short, Short, String, void. Current max is HashSet=64.
+         * int, Integer, float, Float, long, Long, short, Short, String, void. Current max is HashSet=65.
          */
         private final List<Triplet<Class, Serializer, Integer>> serializationList = new ArrayList<Triplet<Class, Serializer, Integer>>() {{
             add(Triplet.<Class, Serializer, Integer>with(byte[].class, null, 25));
@@ -212,6 +213,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(HashMap.class, null, 11));
             add(Triplet.<Class, Serializer, Integer>with(HashMap.Entry.class, null, 16));
             add(Triplet.<Class, Serializer, Integer>with(IoEdge.class, null, 21));
+            add(Triplet.<Class, Serializer, Integer>with(IoMetaProperty.class, null, 65));
             add(Triplet.<Class, Serializer, Integer>with(IoVertex.class, null, 20));
             add(Triplet.<Class, Serializer, Integer>with(KryoSerializable.class, null, 36));
             add(Triplet.<Class, Serializer, Integer>with(LinkedHashMap.class, null, 47));
@@ -227,7 +229,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(Vertex.class, new ElementSerializer.VertexSerializer(), 18));
             add(Triplet.<Class, Serializer, Integer>with(VertexTerminator.class, null, 13));
 
-            // recently added for GraphTraversal in OLAP
+            // GraphTraversal in OLAP
             add(Triplet.<Class, Serializer, Integer>with(SimpleTraverser.class, null, 55));
             add(Triplet.<Class, Serializer, Integer>with(PathTraverser.class, null, 56));
             add(Triplet.<Class, Serializer, Integer>with(TraverserCountTracker.class, null, 57));

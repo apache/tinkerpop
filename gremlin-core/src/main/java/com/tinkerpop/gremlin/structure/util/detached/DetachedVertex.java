@@ -7,12 +7,16 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.io.util.IoMetaProperty;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import org.javatuples.Pair;
 
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -24,6 +28,26 @@ public class DetachedVertex extends DetachedElement implements Vertex {
 
     }
 
+    protected DetachedVertex(final Object id, final String label) {
+        super(id, label);
+    }
+
+    public DetachedVertex(final Object id, final String label, final Map<String, Object> properties, final Map<String, Object> hiddenProperties) {
+        super(id, label);
+        if (null != properties) {
+            this.properties = properties.entrySet().stream()
+                    .map(entry ->
+                        Pair.with(entry.getKey(), ((List<IoMetaProperty>) entry.getValue()).stream()
+                                .map(iom -> (Property) new DetachedMetaProperty(iom.id, iom.label, entry.getKey(), iom.value, (DetachedVertex) this))
+                                .collect(Collectors.toList()))
+                    ).collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
+        }
+    }
+
+    private DetachedVertex(final Vertex vertex) {
+        super(vertex);
+    }
+
     @Override
     public <V> MetaProperty<V> property(final String key, final V value) {
         throw new UnsupportedOperationException("Detached elements are readonly: " + this);
@@ -32,18 +56,6 @@ public class DetachedVertex extends DetachedElement implements Vertex {
     @Override
     public <V> MetaProperty<V> property(final String key) {
         return this.properties.containsKey(key) ? (MetaProperty) this.properties.get(key) : null; // TODO:
-    }
-
-    protected DetachedVertex(final Object id, final String label) {
-        super(id, label);
-    }
-
-    public DetachedVertex(final Object id, final String label, final Map<String, Object> properties, final Map<String, Object> hiddenProperties) {
-        super(id, label, properties, hiddenProperties);
-    }
-
-    private DetachedVertex(final Vertex vertex) {
-        super(vertex);
     }
 
     @Override
@@ -90,16 +102,12 @@ public class DetachedVertex extends DetachedElement implements Vertex {
 
         @Override
         public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
-            return (Iterator) properties.entrySet().stream()
-                    .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
-                    .map(entry -> (Property<V>) entry.getValue()).iterator();
+            return (Iterator) super.properties(propertyKeys);
         }
 
         @Override
         public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
-            return (Iterator) hiddens.entrySet().stream()
-                    .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
-                    .map(entry -> (Property<V>) entry.getValue()).iterator();
+            return (Iterator) super.hiddens(propertyKeys);
         }
 
         @Override

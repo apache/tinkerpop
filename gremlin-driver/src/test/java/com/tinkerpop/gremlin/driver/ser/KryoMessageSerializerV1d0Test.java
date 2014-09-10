@@ -148,9 +148,9 @@ public class KryoMessageSerializerV1d0Test {
         assertEquals(0l, deserializedVertex.id());
         assertEquals(Vertex.DEFAULT_LABEL, deserializedVertex.label());
 
-        assertEquals(1, deserializedVertex.properties().count().next().intValue());
+        assertEquals(1, StreamFactory.stream(deserializedVertex.iterators().properties()).count());
 
-        final List<Object> deserializedInnerList = deserializedVertex.value("friends");
+        final List<Object> deserializedInnerList = (List<Object>) deserializedVertex.iterators().values("friends").next();
         assertEquals(3, deserializedInnerList.size());
         assertEquals("x", deserializedInnerList.get(0));
         assertEquals(5, deserializedInnerList.get(1));
@@ -174,11 +174,11 @@ public class KryoMessageSerializerV1d0Test {
         assertEquals(1, deserializedMap.size());
 
         final Vertex deserializedMarko = deserializedMap.keySet().iterator().next();
-        assertEquals("marko", deserializedMarko.value("name").toString());
+        assertEquals("marko", deserializedMarko.iterators().values("name").next().toString());
         assertEquals(1, deserializedMarko.id());
         assertEquals(Vertex.DEFAULT_LABEL, deserializedMarko.label());
-        assertEquals(new Integer(29), (Integer) deserializedMarko.value("age"));
-        assertEquals(2, StreamFactory.stream(deserializedMarko.properties()).count());
+        assertEquals(new Integer(29), (Integer) deserializedMarko.iterators().values("age").next());
+        assertEquals(2, StreamFactory.stream(deserializedMarko.iterators().properties()).count());
 
         assertEquals(new Integer(1000), deserializedMap.values().iterator().next());
     }

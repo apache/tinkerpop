@@ -1,8 +1,11 @@
 package com.tinkerpop.gremlin.structure.io.util;
 
+import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import org.javatuples.Pair;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,8 +24,10 @@ public abstract class IoElement {
     protected static <T extends IoElement, E extends Element> T from(final E element, final T ioe) {
         ioe.id = element.id();
         ioe.label = element.label();
-        ioe.properties = StreamFactory.stream(element.iterators().properties()).collect(Collectors.toMap(property -> ((Property) property).key(), property -> ((Property) property).value()));
-        ioe.hiddenProperties = StreamFactory.stream(element.iterators().hiddens()).collect(Collectors.toMap(property -> ((Property) property).key(), property -> ((Property) property).value()));
+        ioe.properties = element instanceof Vertex ?
+                ((Vertex) element).propertyMap().next().entrySet().stream().map(kv -> Pair.with(kv.getKey(), kv.getValue().stream().map(IoMetaProperty::from).collect(Collectors.toList()))).collect(Collectors.toMap(p -> p.getValue0(), p-> p.getValue1())) :
+                ((Edge) element).valueMap().next();
+        ioe.hiddenProperties = element instanceof Vertex ? ((Vertex) element).hiddenValueMap().next() : ((Edge) element).hiddenValueMap().next();
         return ioe;
     }
 }

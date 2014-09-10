@@ -27,7 +27,9 @@ public class DetachedMetaProperty<V> extends DetachedElement implements MetaProp
 
     }
 
-    public DetachedMetaProperty(final String key, final V value, final DetachedVertex vertex) {
+    // todo: throw in properties on properties
+    public DetachedMetaProperty(final Object id, final String label, final String key, final V value, final DetachedVertex vertex) {
+        super(id, label);
         if (null == key) throw Graph.Exceptions.argumentCanNotBeNull("key");
         if (null == value) throw Graph.Exceptions.argumentCanNotBeNull("value");
         if (null == vertex) throw Graph.Exceptions.argumentCanNotBeNull("vertex");
@@ -39,6 +41,7 @@ public class DetachedMetaProperty<V> extends DetachedElement implements MetaProp
     }
 
     private DetachedMetaProperty(final MetaProperty property) {
+        super(property);
         if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
 
         this.key = property.key();

@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.PropertyFilterIterator;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Pair;
@@ -17,6 +18,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -36,9 +38,16 @@ public class DetachedEdge extends DetachedElement implements Edge {
                         final Map<String, Object> hiddenProperties,
                         final Pair<Object, String> outV,
                         final Pair<Object, String> inV) {
-        super(id, label, properties, hiddenProperties);
+        super(id, label);
         this.outVertex = new DetachedVertex(outV.getValue0(), outV.getValue1());
         this.inVertex = new DetachedVertex(inV.getValue0(), inV.getValue1());
+
+        if (properties != null) {
+            this.properties = properties.entrySet().stream()
+                    .map(entry -> {
+                        return Pair.with(entry.getKey(), (Property) new DetachedProperty(entry.getKey(), entry.getValue(), this));
+                    }).collect(Collectors.toMap(p -> p.getValue0(), p -> Arrays.asList(p.getValue1())));
+        }
     }
 
     private DetachedEdge(final Edge edge) {
@@ -87,16 +96,12 @@ public class DetachedEdge extends DetachedElement implements Edge {
 
         @Override
         public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-            return properties.entrySet().stream()
-                    .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
-                    .map(entry -> (Property<V>) entry.getValue()).iterator();
+            return (Iterator) super.properties(propertyKeys);
         }
 
         @Override
         public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-            return hiddens.entrySet().stream()
-                    .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
-                    .map(entry -> (Property<V>) entry.getValue()).iterator();
+            return (Iterator) super.hiddens(propertyKeys);
         }
 
     }
