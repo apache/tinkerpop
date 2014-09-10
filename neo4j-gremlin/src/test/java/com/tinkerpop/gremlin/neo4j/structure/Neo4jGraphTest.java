@@ -471,5 +471,51 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             assertEquals("virginia", b.getBaseVertex().getProperty("location"));
         });
 
+        a.property("name","marko","acl","private");
+        a.property("name","okram","acl","public");
+        // TODO tx.commit() IS REQUIRED: ?! Why does Neo4j not delete vertices correctly?
+        g.tx().commit();
+        a.singleProperty("name", "the marko", "acl", "private");
+        tryCommit(g, g -> {
+            assertEquals(2, g.V().count().next().intValue());
+            assertEquals(1, a.properties("name").count().next().intValue());
+            assertEquals(1, b.properties("name").count().next().intValue());
+            assertEquals(1, b.properties("location").count().next().intValue());
+            assertEquals(0, g.E().count().next().intValue());
+
+            assertEquals(3l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
+            assertEquals(1l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
+            assertEquals(1l, cypher.execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
+            final AtomicInteger counter = new AtomicInteger(0);
+            a.getBaseVertex().getRelationships(Direction.OUTGOING).forEach(relationship -> {
+                assertEquals(Neo4jMetaProperty.META_PROPERTY_PREFIX.concat("name"), relationship.getType().name());
+                counter.incrementAndGet();
+            });
+            assertEquals(1, counter.getAndSet(0));
+            cypher.execute("MATCH (a)-[]->(m) WHERE id(a) = " + a.id() + " RETURN labels(m)").forEach(results -> {
+                assertEquals(MetaProperty.DEFAULT_LABEL, ((List<String>) results.get("labels(m)")).get(0));
+                counter.incrementAndGet();
+            });
+            assertEquals(1, counter.getAndSet(0));
+            StreamFactory.stream(a.getBaseVertex().getRelationships(Direction.OUTGOING)).map(Relationship::getEndNode).forEach(node -> {
+                assertEquals(3, StreamFactory.stream(node.getPropertyKeys()).count());
+                assertEquals("name", node.getProperty(MetaProperty.KEY));
+                assertEquals("the marko", node.getProperty(MetaProperty.VALUE));
+                assertEquals("private",node.getProperty("acl"));
+                assertEquals(0, node.getDegree(Direction.OUTGOING));
+                assertEquals(1, node.getDegree(Direction.INCOMING));
+                assertEquals(Neo4jMetaProperty.META_PROPERTY_PREFIX.concat("name"), node.getRelationships(Direction.INCOMING).iterator().next().getType().name());
+                counter.incrementAndGet();
+            });
+            assertEquals(1, counter.getAndSet(0));
+
+            assertEquals(1, StreamFactory.stream(a.getBaseVertex().getPropertyKeys()).count());
+            assertTrue(a.getBaseVertex().hasProperty("name"));
+            assertEquals(Neo4jMetaProperty.META_PROPERTY_TOKEN, a.getBaseVertex().getProperty("name"));
+            assertEquals(2, StreamFactory.stream(b.getBaseVertex().getPropertyKeys()).count());
+            assertEquals("stephen", b.getBaseVertex().getProperty("name"));
+            assertEquals("virginia", b.getBaseVertex().getProperty("location"));
+        });
+
     }
 }
