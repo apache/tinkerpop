@@ -7,6 +7,9 @@ import com.tinkerpop.gremlin.structure.util.SingleGraphTraversal;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.Iterator;
+
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -28,10 +31,12 @@ public class DetachedEdgeTest {
         when(v2.label()).thenReturn("l");
 
         final Edge e = mock(Edge.class);
+        final Edge.Iterators edgeIterators = mock(Edge.Iterators.class);
+        when(edgeIterators.vertices(Direction.OUT)).thenReturn(Arrays.asList(v1).iterator());
+        when(edgeIterators.vertices(Direction.IN)).thenReturn(Arrays.asList(v2).iterator());
         when(e.id()).thenReturn("3");
         when(e.label()).thenReturn("knows");
-        when(e.iterators()).thenReturn(new SingleGraphTraversal(v1));
-        when(e.inV()).thenReturn(new SingleGraphTraversal(v2));
+        when(e.iterators()).thenReturn(edgeIterators);
 
         this.detachedEdge = DetachedEdge.detach(e);
     }
