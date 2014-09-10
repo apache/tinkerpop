@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure.util.detached;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Pair;
@@ -10,7 +11,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -39,6 +42,20 @@ public class DetachedEdgeTest {
         final Edge.Iterators edgeIterators = mock(Edge.Iterators.class);
         when(edgeIterators.vertices(Direction.OUT)).thenReturn(Arrays.asList(v1).iterator());
         when(edgeIterators.vertices(Direction.IN)).thenReturn(Arrays.asList(v2).iterator());
+
+        final Property p1 = mock(Property.class);
+        when(p1.key()).thenReturn("x");
+        when(p1.isHidden()).thenReturn(false);
+        when(p1.value()).thenReturn("a");
+        when(p1.getElement()).thenReturn(e);
+        final Property h1 = mock(Property.class);
+        when(h1.key()).thenReturn(Graph.Key.hide("y"));
+        when(h1.isHidden()).thenReturn(true);
+        when(h1.value()).thenReturn("b");
+        when(h1.getElement()).thenReturn(e);
+
+        when(edgeIterators.hiddens()).thenReturn((Iterator) Arrays.asList(h1).iterator());
+        when(edgeIterators.properties()).thenReturn((Iterator) Arrays.asList(p1).iterator());
         when(e.id()).thenReturn("3");
         when(e.label()).thenReturn("knows");
         when(e.iterators()).thenReturn(edgeIterators);
@@ -59,6 +76,12 @@ public class DetachedEdgeTest {
         assertEquals("1", this.detachedEdge.iterators().vertices(Direction.OUT).next().id());
         assertEquals(DetachedVertex.class, this.detachedEdge.iterators().vertices(Direction.IN).next().getClass());
         assertEquals("2", this.detachedEdge.iterators().vertices(Direction.IN).next().id());
+
+        assertEquals(1, StreamFactory.stream(this.detachedEdge.iterators()).count());
+        assertEquals("a", this.detachedEdge.iterators().properties("x").next().value());
+        assertEquals(1, StreamFactory.stream(this.detachedEdge.iterators().properties("x")).count());
+        assertEquals("b", this.detachedEdge.iterators().hiddens("y").next().value());
+        assertEquals(1, StreamFactory.stream(this.detachedEdge.iterators().hiddens("y")).count());
     }
 
     @Test
@@ -76,6 +99,8 @@ public class DetachedEdgeTest {
         final Edge.Iterators edgeIterators = mock(Edge.Iterators.class);
         when(edgeIterators.vertices(Direction.OUT)).thenReturn(Arrays.asList(v1).iterator());
         when(edgeIterators.vertices(Direction.IN)).thenReturn(Arrays.asList(v2).iterator());
+        when(edgeIterators.properties()).thenReturn(Collections.emptyIterator());
+        when(edgeIterators.hiddens()).thenReturn(Collections.emptyIterator());
         when(e.iterators()).thenReturn(edgeIterators);
 
         final DetachedEdge detachedEdge1 = DetachedEdge.detach(e);
@@ -97,6 +122,8 @@ public class DetachedEdgeTest {
         final Edge.Iterators edgeIterators = mock(Edge.Iterators.class);
         when(edgeIterators.vertices(Direction.OUT)).thenReturn(Arrays.asList(v1).iterator());
         when(edgeIterators.vertices(Direction.IN)).thenReturn(Arrays.asList(v2).iterator());
+        when(edgeIterators.properties()).thenReturn(Collections.emptyIterator());
+        when(edgeIterators.hiddens()).thenReturn(Collections.emptyIterator());
         when(e.iterators()).thenReturn(edgeIterators);
 
         final DetachedEdge detachedEdge1 = DetachedEdge.detach(e);

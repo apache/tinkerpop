@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -59,6 +60,8 @@ public class DetachedPropertyTest {
         final Edge.Iterators edgeIterators = mock(Edge.Iterators.class);
         when(edgeIterators.vertices(Direction.OUT)).thenReturn(Arrays.asList(v1).iterator());
         when(edgeIterators.vertices(Direction.IN)).thenReturn(Arrays.asList(v2).iterator());
+        when(edgeIterators.properties()).thenReturn(Collections.emptyIterator());
+        when(edgeIterators.hiddens()).thenReturn(Collections.emptyIterator());
         when(e.iterators()).thenReturn(edgeIterators);
 
         when(v1.id()).thenReturn("1");
