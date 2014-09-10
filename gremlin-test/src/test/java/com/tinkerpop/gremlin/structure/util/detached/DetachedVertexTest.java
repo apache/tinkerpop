@@ -72,22 +72,22 @@ public class DetachedVertexTest {
         final IoMetaProperty propX1 = new IoMetaProperty();
         propX1.value = "a";
         propX1.id = 123;
-        propX1.label = MetaProperty.META_PROPERTY;
+        propX1.label = MetaProperty.DEFAULT_LABEL;
         final IoMetaProperty propX2 = new IoMetaProperty();
         propX2.value = "c";
         propX2.id = 124;
-        propX2.label = MetaProperty.META_PROPERTY;
+        propX2.label = MetaProperty.DEFAULT_LABEL;
         properties.put("x", Arrays.asList(propX1, propX2));
 
         final Map<String,Object> hiddens = new HashMap<>();
         final IoMetaProperty propY1 = new IoMetaProperty();
         propY1.value = "b";
         propY1.id = 125;
-        propY1.label = MetaProperty.META_PROPERTY;
+        propY1.label = MetaProperty.DEFAULT_LABEL;
         final IoMetaProperty propY2 = new IoMetaProperty();
         propY2.value = "d";
         propY2.id = 126;
-        propY2.label = MetaProperty.META_PROPERTY;
+        propY2.label = MetaProperty.DEFAULT_LABEL;
         hiddens.put(Graph.Key.hide("y"), Arrays.asList(propY1, propY2));
 
         final DetachedVertex dv = new DetachedVertex(1, "test", properties, hiddens);
@@ -98,7 +98,7 @@ public class DetachedVertexTest {
         final List<MetaProperty> propertyX = StreamFactory.stream(dv.iterators().properties("x")).collect(Collectors.toList());
         assertEquals(2, propertyX.size());
         assertTrue(propertyX.stream().allMatch(p ->
-            p.label().equals(MetaProperty.META_PROPERTY)
+            p.label().equals(MetaProperty.DEFAULT_LABEL)
                     && (p.id().equals(123) || p.id().equals(124))
                     && (p.value().equals("a") || p.value().equals("c"))
                     && !p.iterators().properties().hasNext()
@@ -107,7 +107,7 @@ public class DetachedVertexTest {
         final List<MetaProperty> propertyY = StreamFactory.stream(dv.iterators().hiddens("y")).collect(Collectors.toList());
         assertEquals(2, propertyY.size());
         assertTrue(propertyY.stream().allMatch(p ->
-                p.label().equals(MetaProperty.META_PROPERTY)
+                p.label().equals(MetaProperty.DEFAULT_LABEL)
                         && (p.id().equals(125) || p.id().equals(126))
                         && (p.value().equals("b") || p.value().equals("d"))
                         && !p.iterators().properties().hasNext()
