@@ -5,7 +5,9 @@ import com.tinkerpop.gremlin.neo4j.BaseNeo4jGraphTest;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.ConstraintViolationException;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.Node;
@@ -347,5 +349,22 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         assertEquals(0, this.g.V().has(Element.LABEL, "Person").has("name", "marko").has(Element.LABEL, "Product").count().next(), 0);
         assertEquals(0, this.g.V().has(Element.LABEL, "Product").has("name", "marko").has(Element.LABEL, "Person").count().next(), 0);
         assertEquals(0, this.g.V().has(Element.LABEL, "Corporate").has("name", "marko").has(Element.LABEL, "Person").count().next(), 0);
+    }
+
+    @Test
+    public void shouldGenerateNodesAndRelationshipsCorrectlyForMetaProperties() {
+        g.tx().readWrite();
+        ExecutionEngine cypher = g.getCypher();
+        Vertex a = g.addVertex("name","marko","name","okram");
+        Vertex b = g.addVertex("name","stephen","location","virginia");
+        assertEquals(2, g.V().count().next().intValue());
+        assertEquals(0, g.E().count().next().intValue());
+
+        //cypher.execute("MATCH ()-[r]-() RETURN COUNT(DISTINCT r)").forEach(System.out::println);
+
+        assertEquals(4l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
+        assertEquals(2l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
+
+
     }
 }
