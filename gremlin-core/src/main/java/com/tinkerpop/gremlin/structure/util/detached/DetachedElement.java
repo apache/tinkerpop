@@ -11,6 +11,7 @@ import org.javatuples.Pair;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +25,7 @@ public abstract class DetachedElement implements Element, Serializable {
 
     Object id;
     String label;
-    Map<String, List<Property>> properties = Collections.emptyMap();
-    Map<String, List<Property>> hiddens = Collections.emptyMap();
+    Map<String, List<? extends Property>> properties = new HashMap<>();
 
     protected DetachedElement() {
 
@@ -95,7 +95,7 @@ public abstract class DetachedElement implements Element, Serializable {
 
         @Override
         public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys) {
-            return new PropertyFilterIterator<>(hiddens.values().stream().flatMap(list -> list.stream()).collect(Collectors.toList()).iterator(), true, propertyKeys);
+            return new PropertyFilterIterator<>(properties.values().stream().flatMap(list -> list.stream()).collect(Collectors.toList()).iterator(), true, propertyKeys);
         }
     }
 }

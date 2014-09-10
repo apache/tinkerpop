@@ -41,15 +41,15 @@ public class DetachedEdge extends DetachedElement implements Edge {
         this.inVertex = new DetachedVertex(inV.getValue0(), inV.getValue1());
 
         if (properties != null) {
-            this.properties = properties.entrySet().stream()
+            this.properties.putAll(properties.entrySet().stream()
                     .map(entry -> Pair.with(entry.getKey(), (Property) new DetachedProperty(entry.getKey(), entry.getValue(), this)))
-                    .collect(Collectors.toMap(p -> p.getValue0(), p -> Arrays.asList(p.getValue1())));
+                    .collect(Collectors.toMap(p -> p.getValue0(), p -> Arrays.asList(p.getValue1()))));
         }
 
         if (hiddenProperties != null) {
-            this.hiddens = hiddenProperties.entrySet().stream()
+            this.properties.putAll(hiddenProperties.entrySet().stream()
                     .map(entry -> Pair.with(entry.getKey(), (Property) new DetachedProperty(entry.getKey(), entry.getValue(), this)))
-                    .collect(Collectors.toMap(p -> p.getValue0(), p -> Arrays.asList(p.getValue1())));
+                    .collect(Collectors.toMap(p -> p.getValue0(), p -> Arrays.asList(p.getValue1()))));
         }
     }
 

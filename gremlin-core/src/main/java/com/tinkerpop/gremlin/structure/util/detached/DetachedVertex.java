@@ -35,19 +35,19 @@ public class DetachedVertex extends DetachedElement implements Vertex {
     public DetachedVertex(final Object id, final String label, final Map<String, Object> properties, final Map<String, Object> hiddenProperties) {
         super(id, label);
         if (null != properties) {
-            this.properties = properties.entrySet().stream()
+            this.properties.putAll(properties.entrySet().stream()
                     .map(entry -> Pair.with(entry.getKey(), ((List<IoMetaProperty>) entry.getValue()).stream()
                                     .map(iom -> (Property) new DetachedMetaProperty(iom.id, iom.label, entry.getKey(), iom.value, (DetachedVertex) this))
                                     .collect(Collectors.toList()))
-                    ).collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
+                    ).collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1())));
         }
 
         if (null != hiddenProperties) {
-            this.hiddens = hiddenProperties.entrySet().stream()
+            this.properties.putAll(hiddenProperties.entrySet().stream()
                     .map(entry -> Pair.with(entry.getKey(), ((List<IoMetaProperty>) entry.getValue()).stream()
                                             .map(iom -> (Property) new DetachedMetaProperty(iom.id, iom.label, entry.getKey(), iom.value, (DetachedVertex) this))
                                             .collect(Collectors.toList()))
-                    ).collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
+                    ).collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1())));
         }
     }
 

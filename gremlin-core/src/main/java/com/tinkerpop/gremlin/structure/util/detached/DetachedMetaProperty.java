@@ -15,6 +15,7 @@ import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class DetachedMetaProperty<V> extends DetachedElement implements MetaProperty<V> {
 
@@ -138,7 +139,7 @@ public class DetachedMetaProperty<V> extends DetachedElement implements MetaProp
 
         @Override
         public <U> Iterator<Property<U>> hiddens(final String... propertyKeys) {
-            return hiddens.entrySet().stream()
+            return properties.entrySet().stream()
                     .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
                     .map(entry -> (Property<U>) entry.getValue()).iterator();
         }
