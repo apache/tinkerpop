@@ -95,7 +95,7 @@ public abstract class DetachedElement implements Element, Serializable {
 
         @Override
         public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys) {
-            return new PropertyFilterIterator<>(hiddens.values().stream().flatMap(list -> list.stream()).collect(Collectors.toList()).iterator(), false, propertyKeys);
+            return new PropertyFilterIterator<>(hiddens.values().stream().flatMap(list -> list.stream()).collect(Collectors.toList()).iterator(), true, propertyKeys);
         }
     }
 }
