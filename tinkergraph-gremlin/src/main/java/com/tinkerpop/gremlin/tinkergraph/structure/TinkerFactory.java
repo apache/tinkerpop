@@ -56,6 +56,63 @@ public class TinkerFactory {
         peter.addEdge("created", lop, Element.ID, 12, "weight", 0.2d);
     }
 
+    public static TinkerGraph createTheCrew() {
+        final TinkerGraph g = TinkerGraph.open();
+        generateTheCrew(g);
+        return g;
+    }
+
+    public static void generateTheCrew(final TinkerGraph g) {
+        final Vertex marko = g.addVertex(Element.ID, 1, Element.LABEL, "person", "name", "marko", Graph.Key.hide("visible"), true);
+        final Vertex stephen = g.addVertex(Element.ID, 7, Element.LABEL, "person", "name", "stephen", Graph.Key.hide("visible"), true);
+        final Vertex matthias = g.addVertex(Element.ID, 8, Element.LABEL, "person", "name", "matthias", Graph.Key.hide("visible"), true);
+        final Vertex daniel = g.addVertex(Element.ID, 9, Element.LABEL, "person", "name", "daniel", Graph.Key.hide("visible"), false);
+        final Vertex gremlin = g.addVertex(Element.ID, 10, Element.LABEL, "software", "name", "gremlin", Graph.Key.hide("visible"), true);
+        final Vertex titan = g.addVertex(Element.ID, 11, Element.LABEL, "software", "name", "titan", Graph.Key.hide("visible"), false);
+
+        marko.property("location", "san diego", "startTime", 1997, "endTime", 2001);
+        marko.property("location", "santa cruz", "startTime", 2001, "endTime", 2004);
+        marko.property("location", "brussels", "startTime", 2004, "endTime", 2005);
+        marko.property("location", "santa fe", "startTime", 2005);
+
+        stephen.property("location", "centreville", "startTime", 1990, "endTime", 2000);
+        stephen.property("location", "dulles", "startTime", 2000, "endTime", 2006);
+        stephen.property("location", "purcellville", "startTime", 2006);
+
+        matthias.property("location", "bremen", "startTime", 2004, "endTime", 2007);
+        matthias.property("location", "baltimore", "startTime", 2007, "endTime", 2011);
+        matthias.property("location", "oakland", "startTime", 2011, "endTime", 2014);
+        matthias.property("location", "seattle", "startTime", 2014);
+
+        daniel.property("location", "spremberg", "startTime", 1982, "endTime", 2005);
+        daniel.property("location", "kaiserslautern", "startTime", 2005, "endTime", 2009);
+        daniel.property("location", "aachen", "startTime", 2009);
+
+        marko.addEdge("created", gremlin, "date", 2009);
+        marko.addEdge("created", titan, "date", 2012);
+        marko.addEdge("uses", gremlin, "skill", 4);
+        marko.addEdge("uses", titan, "skill", 2);
+
+        stephen.addEdge("created", gremlin, "date", 2011);
+        stephen.addEdge("created", titan, "date", 2012);
+        stephen.addEdge("uses", gremlin, "skill", 4);
+        stephen.addEdge("uses", titan, "skill", 3);
+
+        matthias.addEdge("created", gremlin, "date", 2012);
+        matthias.addEdge("created", titan, "date", 2011);
+        matthias.addEdge("uses", gremlin, "skill", 3);
+        matthias.addEdge("uses", titan, "skill", 5);
+
+        daniel.addEdge("uses", gremlin, "skill", 5);
+        daniel.addEdge("uses", titan, "skill", 4);
+
+        titan.addEdge("dependsOn", gremlin, Graph.Key.hide("visible"), false);
+
+        g.variables().set("creator", "marko");
+        g.variables().set("lastModified", 2014);
+        g.variables().set("comment", "this graph was created to provide examples and test coverage for tinkerpop3 api advances");
+    }
+
     public interface SocialTraversal<S, E> extends Traversal<S, E> {
 
         public default SocialTraversal<S, Vertex> people() {
