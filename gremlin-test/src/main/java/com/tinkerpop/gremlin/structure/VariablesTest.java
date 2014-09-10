@@ -38,7 +38,7 @@ public class VariablesTest {
     public static class StringRepresentationTest extends AbstractGremlinTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_STRING_VALUES)
-        public void testMemory() {
+        public void testVariables() {
             final Graph.Variables variables = g.variables();
             variables.set("xo", "test1");
             variables.set("yo", "test2");
@@ -182,7 +182,7 @@ public class VariablesTest {
      * test class as they are "parameterized" tests.
      */
     @RunWith(Parameterized.class)
-    public static class SideEffectsFeatureSupportTest extends AbstractGremlinTest {
+    public static class GraphVariablesFeatureSupportTest extends AbstractGremlinTest {
         private static final Map<String,Object> testMap = new HashMap<String,Object>() {{
             put("testString", "try");
             put("testInteger", 123);

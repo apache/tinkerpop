@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.neo4j.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraphVariables;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jMetaProperty;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import com.tinkerpop.gremlin.process.Traversal;
@@ -90,6 +91,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         }
         return vertexStream
                 .filter(vertex -> !((Neo4jVertex) vertex).getBaseVertex().getLabels().iterator().next().equals(Neo4jMetaProperty.META_PROPERTY_LABEL))
+                .filter(vertex -> !((Neo4jVertex) vertex).getBaseVertex().getLabels().iterator().next().equals(Neo4jGraphVariables.GRAPH_VARIABLE_LABEL))
                 .filter(vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers)).iterator();
     }
 

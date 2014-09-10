@@ -19,6 +19,7 @@ import org.apache.commons.configuration.ConfigurationConverter;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.NotInTransactionException;
 import org.neo4j.graphdb.PropertyContainer;
@@ -32,6 +33,7 @@ import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -55,14 +57,20 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     private static final String CONFIG_CONF = "gremlin.neo4j.conf";
 
     private final Neo4jTransaction neo4jTransaction = new Neo4jTransaction();
+    private final Neo4jGraphVariables neo4jGraphVariables;
 
     protected final TransactionManager transactionManager;
     private final ExecutionEngine cypher;
 
     private Neo4jGraph(final GraphDatabaseService baseGraph) {
         this.baseGraph = baseGraph;
-        transactionManager = ((GraphDatabaseAPI) baseGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
-        cypher = new ExecutionEngine(baseGraph);
+        this.transactionManager = ((GraphDatabaseAPI) baseGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
+        this.cypher = new ExecutionEngine(baseGraph);
+        // TODO: indices as the graph gets larger? but then that sucks to have an index for this... thoughts?
+        this.tx().open();
+        final Iterator<Map<String, Object>> results = this.cypher.execute("MATCH n WHERE '" + Neo4jGraphVariables.GRAPH_VARIABLE_LABEL.name() + "' IN labels(n) RETURN n").iterator();
+        this.neo4jGraphVariables = new Neo4jGraphVariables(results.hasNext() ? (Node) results.next().get("n") : this.baseGraph.createNode(Neo4jGraphVariables.GRAPH_VARIABLE_LABEL), this);
+        this.tx().commit();
     }
 
     private Neo4jGraph(final Configuration configuration) {
@@ -76,9 +84,13 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
                     new HighlyAvailableGraphDatabaseFactory().newHighlyAvailableDatabaseBuilder(directory).setConfig(neo4jSpecificConfig).newGraphDatabase() :
                     new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(directory).
                             setConfig(neo4jSpecificConfig).newGraphDatabase();
-            transactionManager = ((GraphDatabaseAPI) baseGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
-            cypher = new ExecutionEngine(baseGraph);
-
+            this.transactionManager = ((GraphDatabaseAPI) baseGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
+            this.cypher = new ExecutionEngine(baseGraph);
+            // TODO: indices as the graph gets larger? but then that sucks to have an index for this... thoughts?
+            this.tx().open();
+            final Iterator<Map<String, Object>> results = this.cypher.execute("MATCH n WHERE '" + Neo4jGraphVariables.GRAPH_VARIABLE_LABEL.name() + "' IN labels(n) RETURN n").iterator();
+            this.neo4jGraphVariables = new Neo4jGraphVariables(results.hasNext() ? (Node) results.next().get("n") : this.baseGraph.createNode(Neo4jGraphVariables.GRAPH_VARIABLE_LABEL), this);
+            this.tx().commit();
         } catch (Exception e) {
             if (this.baseGraph != null)
                 this.baseGraph.shutdown();
@@ -199,7 +211,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
 
     @Override
     public Variables variables() {
-        throw Graph.Exceptions.variablesNotSupported();
+        return this.neo4jGraphVariables;
     }
 
     /**
@@ -363,7 +375,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
 
                 @Override
                 public VariableFeatures variables() {
-                    return new Neo4jVariableFeatures();
+                    return new Neo4jGraphVariables.Neo4jVariableFeatures();
                 }
 
                 @Override
@@ -464,98 +476,6 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
 
             @Override
             public boolean supportsSerializableValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsUniformListValues() {
-                return false;
-            }
-        }
-
-        public static class Neo4jVariableFeatures implements VariableFeatures {
-            @Override
-            public boolean supportsBooleanValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsDoubleValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsFloatValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsIntegerValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsLongValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsMapValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsMixedListValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsByteValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsBooleanArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsByteArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsDoubleArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsFloatArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsIntegerArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsLongArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsStringArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsSerializableValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsStringValues() {
                 return false;
             }
 

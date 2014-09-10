@@ -302,12 +302,12 @@ public class FeatureSupportTest {
     @ExceptionCoverage(exceptionClass = Graph.Variables.Exceptions.class, methods = {
             "dataTypeOfVariableValueNotSupported"
     })
-    public static class SideEffectsFunctionalityTest extends AbstractGremlinTest {
+    public static class GraphVariablesFunctionalityTest extends AbstractGremlinTest {
         private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
 
         @Parameterized.Parameters(name = "{index}: supports{0}({1})")
         public static Iterable<Object[]> data() {
-            return VariablesTest.SideEffectsFeatureSupportTest.data();
+            return VariablesTest.GraphVariablesFeatureSupportTest.data();
         }
 
         @Parameterized.Parameter(value = 0)
