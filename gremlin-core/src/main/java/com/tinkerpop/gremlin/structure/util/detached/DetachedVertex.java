@@ -77,9 +77,8 @@ public class DetachedVertex extends DetachedElement implements Vertex {
 
     @Override
     public GraphTraversal<Vertex, Vertex> start() {
-        throw new IllegalStateException();
+        throw new UnsupportedOperationException("Detached vertices cannot be traversed: " + this);
     }
-
 
     public Vertex attach(final Vertex hostVertex) {
         if (!hostVertex.id().toString().equals(this.id.toString())) // TODO: Why is this bad?

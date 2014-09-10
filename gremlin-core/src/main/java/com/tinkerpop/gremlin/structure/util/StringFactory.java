@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure.util;
 
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.Memory;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.MetaProperty;
@@ -55,7 +56,9 @@ public class StringFactory {
      * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Edge}.
      */
     public static String edgeString(final Edge edge) {
-        return E + L_BRACKET + edge.id() + R_BRACKET + L_BRACKET + edge.outV().next().id() + DASH + edge.label() + ARROW + edge.inV().next().id() + R_BRACKET;
+        final Vertex inV = edge.iterators().vertices(Direction.IN).next();
+        final Vertex outV = edge.iterators().vertices(Direction.OUT).next();
+        return E + L_BRACKET + edge.id() + R_BRACKET + L_BRACKET + outV.id() + DASH + edge.label() + ARROW + inV.id() + R_BRACKET;
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.util.detached;
 
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.SingleGraphTraversal;
@@ -15,7 +16,7 @@ import static org.mockito.Mockito.when;
  */
 public class DetachedEdgeTest {
 
-    private DetachedEdge me;
+    private DetachedEdge detachedEdge;
 
     @Before
     public void setup() {
@@ -32,7 +33,7 @@ public class DetachedEdgeTest {
         when(e.outV()).thenReturn(new SingleGraphTraversal(v1));
         when(e.inV()).thenReturn(new SingleGraphTraversal(v2));
 
-        this.me = DetachedEdge.detach(e);
+        this.detachedEdge = DetachedEdge.detach(e);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -42,12 +43,12 @@ public class DetachedEdgeTest {
 
     @Test
     public void shouldConstructDetachedEdge() {
-        assertEquals("3", this.me.id());
-        assertEquals("knows", this.me.label());
-        assertEquals(DetachedVertex.class, this.me.outV().next().getClass());
-        assertEquals("1", this.me.outV().id().next());
-        assertEquals(DetachedVertex.class, this.me.inV().next().getClass());
-        assertEquals("2", this.me.inV().id().next());
+        assertEquals("3", this.detachedEdge.id());
+        assertEquals("knows", this.detachedEdge.label());
+        assertEquals(DetachedVertex.class, this.detachedEdge.iterators().vertices(Direction.OUT).next().getClass());
+        assertEquals("1", this.detachedEdge.iterators().vertices(Direction.OUT).next().id());
+        assertEquals(DetachedVertex.class, this.detachedEdge.iterators().vertices(Direction.IN).next().getClass());
+        assertEquals("2", this.detachedEdge.iterators().vertices(Direction.IN).next().id());
     }
 
     @Test
@@ -65,8 +66,8 @@ public class DetachedEdgeTest {
         when(e.outV()).thenReturn(new SingleGraphTraversal(v1));
         when(e.inV()).thenReturn(new SingleGraphTraversal(v2));
 
-        final DetachedEdge me1 = DetachedEdge.detach(e);
-        assertTrue(me1.equals(this.me));
+        final DetachedEdge detachedEdge1 = DetachedEdge.detach(e);
+        assertTrue(detachedEdge1.equals(this.detachedEdge));
     }
 
     @Test
@@ -84,17 +85,22 @@ public class DetachedEdgeTest {
         when(e.outV()).thenReturn(new SingleGraphTraversal(v1));
         when(e.inV()).thenReturn(new SingleGraphTraversal(v2));
 
-        final DetachedEdge me1 = DetachedEdge.detach(e);
-        assertFalse(me1.equals(this.me));
+        final DetachedEdge detachedEdge1 = DetachedEdge.detach(e);
+        assertFalse(detachedEdge1.equals(this.detachedEdge));
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void shouldNotAllowSetProperty() {
-        this.me.property("test", "test");
+        this.detachedEdge.property("test", "test");
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void shouldNotAllowRemove() {
-        this.me.remove();
+        this.detachedEdge.remove();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void shouldNotTraverse() {
+        this.detachedEdge.has("x", 1);
     }
 }

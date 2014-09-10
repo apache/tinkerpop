@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.util.detached;
 
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -81,6 +82,11 @@ public class DetachedEdge extends DetachedElement implements Edge {
     @Override
     public Edge.Iterators iterators() {
         return this.iterators;
+    }
+
+    @Override
+    public GraphTraversal<Edge, Edge> start() {
+        throw new UnsupportedOperationException("Detached edges cannot be traversed: " + this);
     }
 
     private final Edge.Iterators iterators = new Iterators();

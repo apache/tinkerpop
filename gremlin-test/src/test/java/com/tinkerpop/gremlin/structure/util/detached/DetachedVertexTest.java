@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
  */
 public class DetachedVertexTest {
 
-    private DetachedVertex mv;
+    private DetachedVertex detachedVertex;
 
     @Before
     public void setup() {
@@ -21,7 +21,7 @@ public class DetachedVertexTest {
         when(v.id()).thenReturn("1");
         when(v.label()).thenReturn("l");
 
-        this.mv = DetachedVertex.detach(v);
+        this.detachedVertex = DetachedVertex.detach(v);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -31,8 +31,8 @@ public class DetachedVertexTest {
 
     @Test
     public void shouldConstructDetachedVertex() {
-        assertEquals("1", this.mv.id());
-        assertEquals("l", this.mv.label());
+        assertEquals("1", this.detachedVertex.id());
+        assertEquals("l", this.detachedVertex.label());
     }
 
     @Test
@@ -41,8 +41,8 @@ public class DetachedVertexTest {
         when(v.id()).thenReturn("1");
         when(v.label()).thenReturn("l");
 
-        final DetachedVertex mv1 = DetachedVertex.detach(v);
-        assertTrue(mv1.equals(this.mv));
+        final DetachedVertex detachedVertex1 = DetachedVertex.detach(v);
+        assertTrue(detachedVertex1.equals(this.detachedVertex));
     }
 
     @Test
@@ -51,22 +51,27 @@ public class DetachedVertexTest {
         when(v.id()).thenReturn("2");
         when(v.label()).thenReturn("l");
 
-        final DetachedVertex mv1 = DetachedVertex.detach(v);
-        assertFalse(mv1.equals(this.mv));
+        final DetachedVertex detachedVertex1 = DetachedVertex.detach(v);
+        assertFalse(detachedVertex1.equals(this.detachedVertex));
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void shouldNotAllowAddEdge() {
-        this.mv.addEdge("test", null);
+        this.detachedVertex.addEdge("test", null);
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void shouldNotAllowSetProperty() {
-        this.mv.property("test", "test");
+        this.detachedVertex.property("test", "test");
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void shouldNotAllowRemove() {
-        this.mv.remove();
+        this.detachedVertex.remove();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void shouldNotTraverse() {
+        this.detachedVertex.out().out();
     }
 }
