@@ -36,10 +36,17 @@ public class DetachedVertex extends DetachedElement implements Vertex {
         super(id, label);
         if (null != properties) {
             this.properties = properties.entrySet().stream()
-                    .map(entry ->
-                        Pair.with(entry.getKey(), ((List<IoMetaProperty>) entry.getValue()).stream()
-                                .map(iom -> (Property) new DetachedMetaProperty(iom.id, iom.label, entry.getKey(), iom.value, (DetachedVertex) this))
-                                .collect(Collectors.toList()))
+                    .map(entry -> Pair.with(entry.getKey(), ((List<IoMetaProperty>) entry.getValue()).stream()
+                                    .map(iom -> (Property) new DetachedMetaProperty(iom.id, iom.label, entry.getKey(), iom.value, (DetachedVertex) this))
+                                    .collect(Collectors.toList()))
+                    ).collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
+        }
+
+        if (null != hiddenProperties) {
+            this.hiddens = hiddenProperties.entrySet().stream()
+                    .map(entry -> Pair.with(entry.getKey(), ((List<IoMetaProperty>) entry.getValue()).stream()
+                                            .map(iom -> (Property) new DetachedMetaProperty(iom.id, iom.label, entry.getKey(), iom.value, (DetachedVertex) this))
+                                            .collect(Collectors.toList()))
                     ).collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
         }
     }

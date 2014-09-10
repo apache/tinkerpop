@@ -1,13 +1,10 @@
 package com.tinkerpop.gremlin.structure.util.detached;
 
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.PropertyFilterIterator;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Pair;
@@ -44,9 +41,14 @@ public class DetachedEdge extends DetachedElement implements Edge {
 
         if (properties != null) {
             this.properties = properties.entrySet().stream()
-                    .map(entry -> {
-                        return Pair.with(entry.getKey(), (Property) new DetachedProperty(entry.getKey(), entry.getValue(), this));
-                    }).collect(Collectors.toMap(p -> p.getValue0(), p -> Arrays.asList(p.getValue1())));
+                    .map(entry -> Pair.with(entry.getKey(), (Property) new DetachedProperty(entry.getKey(), entry.getValue(), this)))
+                    .collect(Collectors.toMap(p -> p.getValue0(), p -> Arrays.asList(p.getValue1())));
+        }
+
+        if (hiddenProperties != null) {
+            this.hiddens = hiddenProperties.entrySet().stream()
+                    .map(entry -> Pair.with(entry.getKey(), (Property) new DetachedProperty(entry.getKey(), entry.getValue(), this)))
+                    .collect(Collectors.toMap(p -> p.getValue0(), p -> Arrays.asList(p.getValue1())));
         }
     }
 
@@ -56,6 +58,7 @@ public class DetachedEdge extends DetachedElement implements Edge {
         this.inVertex = DetachedVertex.detach(edge.inV().next());
     }
 
+    @Override
     public String toString() {
         return StringFactory.edgeString(this);
     }
@@ -105,6 +108,4 @@ public class DetachedEdge extends DetachedElement implements Edge {
         }
 
     }
-
-    ;
 }

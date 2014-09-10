@@ -93,13 +93,13 @@ public class DetachedEdgeTest {
         this.me.property("test", "test");
     }
 
-    /*@Test(expected = UnsupportedOperationException.class)
-    public void shouldNotAllowGetProperty() {
-        this.me.property("test");
-    }*/
-
     @Test(expected = UnsupportedOperationException.class)
     public void shouldNotAllowRemove() {
         this.me.remove();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void shouldNotTraverse() {
+        this.me.start();
     }
 }
