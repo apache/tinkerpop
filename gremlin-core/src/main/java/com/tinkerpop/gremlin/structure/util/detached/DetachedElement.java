@@ -37,31 +37,6 @@ public abstract class DetachedElement implements Element, Serializable {
 
         this.id = id;
         this.label = label;
-
-        /*
-        if (null != properties)
-            this.properties = properties.entrySet().stream()
-                    .map(entry -> {
-                        if (entry.getValue() instanceof Property)
-                            return Pair.with(entry.getKey(), (Property)  DetachedProperty.detach((Property) entry.getValue()));
-                        else {
-                            // todo: maybe get rid of some of this complexity by having a separate constructor for vertex/edge
-                            if (this instanceof Vertex)
-                                return Pair.with(entry.getKey(), (Property) new DetachedMetaProperty(entry.getKey(), entry.getValue(), (DetachedVertex) this));
-                            else
-                                return Pair.with(entry.getKey(), (Property) new DetachedProperty(entry.getKey(), entry.getValue(), this));
-                        }
-                    }).collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
-
-        if (null != hiddens)
-            this.hiddens = hiddens.entrySet().stream()
-                    .map(entry -> {
-                        if (entry.getValue() instanceof Property)
-                            return Pair.with(entry.getKey(), DetachedProperty.detach((Property) entry.getValue()));
-                        else
-                            return Pair.with(entry.getKey(), new DetachedProperty(entry.getKey(), entry.getValue(), this));
-                    }).collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
-        */
     }
 
     protected DetachedElement(final Element element) {
