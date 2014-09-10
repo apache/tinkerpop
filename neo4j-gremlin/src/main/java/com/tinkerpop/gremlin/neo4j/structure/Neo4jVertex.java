@@ -57,19 +57,19 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
             if (this.getBaseVertex().hasProperty(key)) {
                 if (this.getBaseVertex().getProperty(key).equals(Neo4jMetaProperty.META_PROPERTY_TOKEN)) {
                     final Node node = this.graph.getBaseGraph().createNode(Neo4jMetaProperty.META_PROPERTY_LABEL);
-                    node.setProperty(Neo4jMetaProperty.META_PROPERTY_KEY, key);
-                    node.setProperty(Neo4jMetaProperty.META_PROPERTY_VALUE, value);
+                    node.setProperty(MetaProperty.KEY, key);
+                    node.setProperty(MetaProperty.VALUE, value);
                     this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
                     return new Neo4jMetaProperty<>(this, node);
                 } else {
                     Node node = this.graph.getBaseGraph().createNode(Neo4jMetaProperty.META_PROPERTY_LABEL);
-                    node.setProperty(Neo4jMetaProperty.META_PROPERTY_KEY, key);
-                    node.setProperty(Neo4jMetaProperty.META_PROPERTY_VALUE, this.getBaseVertex().removeProperty(key));
+                    node.setProperty(MetaProperty.KEY, key);
+                    node.setProperty(MetaProperty.VALUE, this.getBaseVertex().removeProperty(key));
                     this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
                     this.getBaseVertex().setProperty(key, Neo4jMetaProperty.META_PROPERTY_TOKEN);
                     node = this.graph.getBaseGraph().createNode(Neo4jMetaProperty.META_PROPERTY_LABEL);
-                    node.setProperty(Neo4jMetaProperty.META_PROPERTY_KEY, key);
-                    node.setProperty(Neo4jMetaProperty.META_PROPERTY_VALUE, value);
+                    node.setProperty(MetaProperty.KEY, key);
+                    node.setProperty(MetaProperty.VALUE, value);
                     this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
                     return new Neo4jMetaProperty<>(this, node);
                 }
@@ -99,8 +99,8 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         } else {
             this.getBaseVertex().setProperty(key, Neo4jMetaProperty.META_PROPERTY_TOKEN);
             final Node node = this.graph.getBaseGraph().createNode(Neo4jMetaProperty.META_PROPERTY_LABEL);
-            node.setProperty(Neo4jMetaProperty.META_PROPERTY_KEY, key);
-            node.setProperty(Neo4jMetaProperty.META_PROPERTY_VALUE, value);
+            node.setProperty(MetaProperty.KEY, key);
+            node.setProperty(MetaProperty.VALUE, value);
             for (int i = 0; i < keyValues.length; i = i + 2) {
                 node.setProperty((String) keyValues[i], keyValues[i + 1]);
             }

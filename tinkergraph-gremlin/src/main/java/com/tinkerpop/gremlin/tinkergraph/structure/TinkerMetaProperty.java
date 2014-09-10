@@ -22,7 +22,7 @@ public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty
     private final V value;
 
     public TinkerMetaProperty(final TinkerVertex vertex, final String key, final V value, final Object... propertyKeyValues) {
-        super(TinkerHelper.getNextId(vertex.graph), META_PROPERTY, vertex.graph);
+        super(TinkerHelper.getNextId(vertex.graph), MetaProperty.DEFAULT_LABEL, vertex.graph);
         this.vertex = vertex;
         this.key = key;
         this.value = value;

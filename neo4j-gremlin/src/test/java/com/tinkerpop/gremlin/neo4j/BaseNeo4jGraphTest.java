@@ -1,6 +1,8 @@
 package com.tinkerpop.gremlin.neo4j;
 
+import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.junit.After;
 import org.junit.Before;
@@ -9,6 +11,7 @@ import org.junit.rules.TestName;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * This should only be used for Neo4j-specific testing that is not related to the Gremlin test suite.
@@ -41,5 +44,13 @@ public class BaseNeo4jGraphTest {
     @After
     public void after() throws Exception {
         this.graphProvider.clear(this.g, this.conf);
+    }
+
+    protected void tryCommit(final Graph g, final Consumer<Graph> assertFunction) {
+        assertFunction.accept(g);
+        if (g.features().graph().supportsTransactions()) {
+            g.tx().commit();
+            assertFunction.accept(g);
+        }
     }
 }

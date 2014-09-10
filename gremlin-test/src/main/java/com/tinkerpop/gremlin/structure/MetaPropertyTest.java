@@ -73,7 +73,7 @@ public class MetaPropertyTest extends AbstractGremlinTest {
             }).iterate();
             tryCommit(g, g -> {
                 v.properties().forEach(meta -> {
-                    assertEquals(MetaProperty.META_PROPERTY, meta.label());
+                    assertEquals(MetaProperty.DEFAULT_LABEL, meta.label());
                     assertTrue(meta.isPresent());
                     assertFalse(meta.isHidden());
                     assertEquals(v, meta.getElement());
