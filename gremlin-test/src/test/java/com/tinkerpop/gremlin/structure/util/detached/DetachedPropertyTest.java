@@ -39,14 +39,14 @@ public class DetachedPropertyTest {
     }
 
     @Test
-    public void shouldConstructMicroPropertyWithPropertyFromVertex() {
+    public void shouldConstructDetachedPropertyWithPropertyFromVertex() {
         assertEquals("k", mp.key());
         assertEquals("val", mp.value());
         assertEquals(DetachedVertex.class, mp.getElement().getClass());
     }
 
     @Test
-    public void shouldConstructMicroPropertyWithPropertyFromEdge() {
+    public void shouldConstructDetachedPropertyWithPropertyFromEdge() {
         final Vertex v1 = mock(Vertex.class);
         final Vertex v2 = mock(Vertex.class);
         final Edge e = mock(Edge.class);

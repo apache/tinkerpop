@@ -8,7 +8,6 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -31,7 +30,7 @@ public class DetachedVertexTest {
     }
 
     @Test
-    public void shouldConstructMicroVertex() {
+    public void shouldConstructDetachedVertex() {
         assertEquals("1", this.mv.id());
         assertEquals("l", this.mv.label());
     }
@@ -65,11 +64,6 @@ public class DetachedVertexTest {
     public void shouldNotAllowSetProperty() {
         this.mv.property("test", "test");
     }
-
-    /*@Test(expected = UnsupportedOperationException.class)
-    public void shouldNotAllowGetProperty() {
-        this.mv.property("test");
-    }*/
 
     @Test(expected = UnsupportedOperationException.class)
     public void shouldNotAllowRemove() {

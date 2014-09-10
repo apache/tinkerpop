@@ -41,7 +41,7 @@ public class DetachedEdgeTest {
     }
 
     @Test
-    public void shouldConstructMicroEdge() {
+    public void shouldConstructDetachedEdge() {
         assertEquals("3", this.me.id());
         assertEquals("knows", this.me.label());
         assertEquals(DetachedVertex.class, this.me.outV().next().getClass());
