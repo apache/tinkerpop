@@ -14,30 +14,30 @@ import java.io.Serializable;
  */
 public abstract class GiraphElement implements Element, Serializable {
 
-    protected TinkerElement element;
+    protected TinkerElement tinkerElement;
     protected GiraphGraph graph;
 
     protected GiraphElement() {
     }
 
-    protected GiraphElement(final TinkerElement element, final GiraphGraph graph) {
-        this.element = element;
+    protected GiraphElement(final TinkerElement tinkerElement, final GiraphGraph graph) {
+        this.tinkerElement = tinkerElement;
         this.graph = graph;
     }
 
     @Override
     public Object id() {
-        return this.element.id();
+        return this.tinkerElement.id();
     }
 
     @Override
     public String label() {
-        return this.element.label();
+        return this.tinkerElement.label();
     }
 
     @Override
     public void remove() {
-        if (this.element instanceof Vertex)
+        if (this.tinkerElement instanceof Vertex)
             throw Vertex.Exceptions.vertexRemovalNotSupported();
         else
             throw Edge.Exceptions.edgeRemovalNotSupported();
@@ -46,7 +46,7 @@ public abstract class GiraphElement implements Element, Serializable {
 
     @Override
     public <V> Property<V> property(final String key) {
-        return this.element.property(key);
+        return this.tinkerElement.property(key);
     }
 
     @Override
@@ -61,11 +61,11 @@ public abstract class GiraphElement implements Element, Serializable {
 
     @Override
     public int hashCode() {
-        return this.element.hashCode();
+        return this.tinkerElement.hashCode();
     }
 
     @Override
     public String toString() {
-        return this.element.toString();
+        return this.tinkerElement.toString();
     }
 }

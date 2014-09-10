@@ -18,6 +18,7 @@ import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerMetaProperty;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
@@ -32,18 +33,21 @@ public class GiraphVertex extends GiraphElement implements Vertex, Serializable,
     protected GiraphVertex() {
     }
 
+    public GiraphVertex(final TinkerVertex vertex, final GiraphGraph graph) {
+        super(vertex, graph);
+    }
+
     @Override
     public <V> MetaProperty<V> property(final String key) {
-        return ((Vertex) this.element).property(key);
+        final MetaProperty<V> metaProperty = getBaseVertex().<V>property(key);
+        return metaProperty.isPresent() ?
+                new GiraphMetaProperty<>((TinkerMetaProperty<V>) ((Vertex) this.tinkerElement).property(key), this) :
+                MetaProperty.<V>empty();
     }
 
     @Override
     public <V> MetaProperty<V> property(final String key, final V value) {
         throw Element.Exceptions.propertyAdditionNotSupported();
-    }
-
-    public GiraphVertex(final TinkerVertex vertex, final GiraphGraph graph) {
-        super(vertex, graph);
     }
 
     @Override
@@ -65,7 +69,7 @@ public class GiraphVertex extends GiraphElement implements Vertex, Serializable,
                     identityStep.setLabel(label);
 
                 TraversalHelper.insertStep(identityStep, 0, this);
-                TraversalHelper.insertStep(new HasStep(this, new HasContainer(Element.ID, Compare.EQUAL, element.id())), 0, this);
+                TraversalHelper.insertStep(new HasStep(this, new HasContainer(Element.ID, Compare.EQUAL, tinkerElement.id())), 0, this);
                 TraversalHelper.insertStep(new GiraphGraphStep<>(this, Vertex.class, graph), 0, this);
 
                 return super.submit(computer);
@@ -76,7 +80,7 @@ public class GiraphVertex extends GiraphElement implements Vertex, Serializable,
 
     @Override
     public TinkerVertex getBaseVertex() {
-        return (TinkerVertex) this.element;
+        return (TinkerVertex) this.tinkerElement;
     }
 
     @Override
@@ -100,12 +104,14 @@ public class GiraphVertex extends GiraphElement implements Vertex, Serializable,
 
         @Override
         public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
-            return getBaseVertex().iterators().properties(propertyKeys);
+            return (Iterator) StreamFactory.stream(getBaseVertex().iterators().properties(propertyKeys))
+                    .map(property -> new GiraphMetaProperty<>((TinkerMetaProperty<V>) property, GiraphVertex.this)).iterator();
         }
 
         @Override
         public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
-            return getBaseVertex().iterators().hiddens(propertyKeys);
+            return (Iterator) StreamFactory.stream(getBaseVertex().iterators().hiddens(propertyKeys))
+                    .map(property -> new GiraphMetaProperty<>((TinkerMetaProperty<V>) property, GiraphVertex.this)).iterator();
         }
     }
 }

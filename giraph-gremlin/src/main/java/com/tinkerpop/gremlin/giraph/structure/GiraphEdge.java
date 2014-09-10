@@ -19,6 +19,8 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
+import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -50,7 +52,7 @@ public class GiraphEdge extends GiraphElement implements Edge, Serializable, Wra
                     identityStep.setLabel(label);
 
                 TraversalHelper.insertStep(identityStep, 0, this);
-                TraversalHelper.insertStep(new HasStep(this, new HasContainer(Element.ID, Compare.EQUAL, element.id())), 0, this);
+                TraversalHelper.insertStep(new HasStep(this, new HasContainer(Element.ID, Compare.EQUAL, tinkerElement.id())), 0, this);
                 TraversalHelper.insertStep(new GiraphGraphStep<>(this, Edge.class, graph), 0, this);
 
                 return super.submit(computer);
@@ -61,7 +63,7 @@ public class GiraphEdge extends GiraphElement implements Edge, Serializable, Wra
 
     @Override
     public TinkerEdge getBaseEdge() {
-        return (TinkerEdge) this.element;
+        return (TinkerEdge) this.tinkerElement;
     }
 
     @Override
@@ -85,12 +87,14 @@ public class GiraphEdge extends GiraphElement implements Edge, Serializable, Wra
 
         @Override
         public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-            return getBaseEdge().iterators().properties(propertyKeys);
+            return (Iterator) StreamFactory.stream(getBaseEdge().iterators().properties(propertyKeys))
+                    .map(property -> new GiraphProperty<>((TinkerProperty<V>) property, GiraphEdge.this)).iterator();
         }
 
         @Override
         public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-            return getBaseEdge().iterators().hiddens(propertyKeys);
+            return (Iterator) StreamFactory.stream(getBaseEdge().iterators().hiddens(propertyKeys))
+                    .map(property -> new GiraphProperty<>((TinkerProperty<V>) property, GiraphEdge.this)).iterator();
         }
     }
 }
