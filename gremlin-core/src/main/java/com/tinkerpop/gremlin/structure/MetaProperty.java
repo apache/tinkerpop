@@ -11,7 +11,7 @@ import java.util.Iterator;
  */
 public interface MetaProperty<V> extends Property<V>, Element, MetaPropertyTraversal {
 
-    public static final String META_PROPERTY = "metaProperty";
+    public static final String DEFAULT_LABEL = "metaProperty";
     public static final String VALUE = "value";
     public static final String KEY = "key";
 
@@ -20,7 +20,7 @@ public interface MetaProperty<V> extends Property<V>, Element, MetaPropertyTrave
 
     @Override
     public default String label() {
-        return META_PROPERTY;
+        return DEFAULT_LABEL;
     }
 
     public static <V> MetaProperty<V> empty() {

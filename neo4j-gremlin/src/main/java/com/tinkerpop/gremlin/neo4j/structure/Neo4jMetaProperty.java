@@ -28,10 +28,8 @@ import java.util.Set;
  */
 public class Neo4jMetaProperty<V> implements MetaProperty<V>, WrappedVertex<Node>, Neo4jMetaPropertyTraversal {
 
-    public static final Label META_PROPERTY_LABEL = DynamicLabel.label(MetaProperty.LABEL);
+    public static final Label META_PROPERTY_LABEL = DynamicLabel.label(MetaProperty.DEFAULT_LABEL);
     public static final String META_PROPERTY_PREFIX = "%$%";
-    public static final String META_PROPERTY_KEY = "%$%key";
-    public static final String META_PROPERTY_VALUE = "%$%value";
     public static final String META_PROPERTY_TOKEN = "%$%metaProperty";
 
     private Node node;
@@ -50,8 +48,8 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, WrappedVertex<Node
     public Neo4jMetaProperty(final Neo4jVertex vertex, final Node node) {
         this.vertex = vertex;
         this.node = node;
-        this.key = (String) node.getProperty(META_PROPERTY_KEY);
-        this.value = (V) node.getProperty(META_PROPERTY_VALUE);
+        this.key = (String) node.getProperty(KEY);
+        this.value = (V) node.getProperty(VALUE);
     }
 
     @Override
@@ -82,16 +80,15 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, WrappedVertex<Node
 
     @Override
     public <U> Property<U> property(String key, U value) {
-        if (key.equals(META_PROPERTY_KEY) || key.equals(META_PROPERTY_VALUE))
-            throw new IllegalArgumentException("The following key is a reserved key for Neo4jMetaProperty: " + key);
+        ElementHelper.validateProperty(key,value);
         this.vertex.graph.tx().readWrite();
         if (isNode()) {
             this.node.setProperty(key, value);
             return new Neo4jProperty<>(this, key, value);
         } else {
             this.node = this.vertex.graph.getBaseGraph().createNode(META_PROPERTY_LABEL);
-            this.node.setProperty(META_PROPERTY_KEY, this.key);
-            this.node.setProperty(META_PROPERTY_VALUE, this.value);
+            this.node.setProperty(KEY, this.key);
+            this.node.setProperty(VALUE, this.value);
             this.node.setProperty(key, value);
             this.vertex.getBaseVertex().createRelationshipTo(this.node, DynamicRelationshipType.withName(META_PROPERTY_PREFIX.concat(this.key)));
             this.vertex.getBaseVertex().setProperty(this.key, META_PROPERTY_TOKEN);
@@ -101,8 +98,6 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, WrappedVertex<Node
 
     @Override
     public <U> Property<U> property(final String key) {
-        if (key.equals(META_PROPERTY_KEY) || key.equals(META_PROPERTY_VALUE))
-            throw new IllegalArgumentException("The following key is a reserved key for Neo4jMetaProperty: " + key);
         this.vertex.graph.tx().readWrite();
         if (this.node.hasProperty(key))
             return new Neo4jProperty<>(this, key, (U) this.node.getProperty(key));
@@ -126,7 +121,7 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, WrappedVertex<Node
             this.vertex.graph.tx().readWrite();
             final Set<String> keys = new HashSet<>();
             for (final String key : this.node.getPropertyKeys()) {
-                if (!Graph.Key.isHidden(key) && !key.equals(META_PROPERTY_KEY) && !key.equals(META_PROPERTY_VALUE))
+                if (!Graph.Key.isHidden(key) && !key.equals(KEY) && !key.equals(VALUE))
                     keys.add(key);
             }
             return keys;
@@ -204,7 +199,7 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, WrappedVertex<Node
             else {
                 vertex.graph.tx().readWrite();
                 return (Iterator) StreamFactory.stream(node.getPropertyKeys())
-                        .filter(key -> !key.equals(META_PROPERTY_KEY) && !key.equals(META_PROPERTY_VALUE))
+                        .filter(key -> !key.equals(KEY) && !key.equals(VALUE))
                         .filter(key -> !Graph.Key.isHidden(key))
                         .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, key) >= 0)
                         .map(key -> new Neo4jProperty<>(Neo4jMetaProperty.this, key, (V) node.getProperty(key))).iterator();

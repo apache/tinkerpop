@@ -15,7 +15,7 @@ TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 * Significant changes to the format of the `ResponseMessage` for Gremlin Server - these changes break existing clients.
 * Close any open transactions on any configured `Graph` when a session in Gremlin Server is killed.
 * Grateful Dead Graph now uses vertex labels instead of "type" properties.
-* There is now `BackStep` and `BackComputerStep` where `BackStep` is no longer a `PathConsumer` for OLTP traversals.
+* There is now a `GraphComputerStrategy` and `EngineDependent` marker interface to allow steps to decide their algorithm depending if they are OLAP or OLTP.
 * A labeled step now stores its current traverser value in `Traversal.SideEffects` (no longer can sideEffectKeys and step labels be the same).
 * `map()`, `filter()`, `flatMap()`, and `sideEffect()` can all take `BiXXX`-lambda versions which contains `<Traverser,Traversal.SideEffects>`.
 * `GraphFactory` support for opening a `Graph` with multiple `GraphStrategy` instances - if there are multiple strategies they are wrapped in order via `SequenceGraphStrategy`.
