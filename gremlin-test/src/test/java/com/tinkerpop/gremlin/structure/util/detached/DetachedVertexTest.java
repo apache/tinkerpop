@@ -134,4 +134,36 @@ public class DetachedVertexTest {
     public void shouldNotTraverse() {
         this.detachedVertex.start();
     }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldNotBeAbleToCallPropertyIfThereAreMultipleProperties() {
+        final Map<String,Object> properties = new HashMap<>();
+        final IoMetaProperty propX1 = new IoMetaProperty();
+        propX1.value = "a";
+        propX1.id = 123;
+        propX1.label = MetaProperty.DEFAULT_LABEL;
+        final IoMetaProperty propX2 = new IoMetaProperty();
+        propX2.value = "c";
+        propX2.id = 124;
+        propX2.label = MetaProperty.DEFAULT_LABEL;
+        properties.put("x", Arrays.asList(propX1, propX2));
+
+        final Map<String,Object> hiddens = new HashMap<>();
+        final DetachedVertex dv = new DetachedVertex(1, "test", properties, hiddens);
+        dv.property("x");
+    }
+
+    @Test
+    public void shouldBeAbleToCallPropertyIfThereIsASingleProperty() {
+        final Map<String,Object> properties = new HashMap<>();
+        final IoMetaProperty propX1 = new IoMetaProperty();
+        propX1.value = "a";
+        propX1.id = 123;
+        propX1.label = MetaProperty.DEFAULT_LABEL;
+        properties.put("x", Arrays.asList(propX1));
+
+        final Map<String,Object> hiddens = new HashMap<>();
+        final DetachedVertex dv = new DetachedVertex(1, "test", properties, hiddens);
+        assertEquals("a", dv.property("x").value());
+    }
 }

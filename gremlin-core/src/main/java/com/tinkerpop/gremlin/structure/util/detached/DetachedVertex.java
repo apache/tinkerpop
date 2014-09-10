@@ -49,7 +49,14 @@ public class DetachedVertex extends DetachedElement implements Vertex {
 
     @Override
     public <V> MetaProperty<V> property(final String key) {
-        return this.properties.containsKey(key) ? (MetaProperty) this.properties.get(key) : null; // TODO:
+        if (this.properties.containsKey(key)) {
+            final List<MetaProperty> list = (List) this.properties.get(key);
+            if (list.size() > 1)
+                throw Vertex.Exceptions.multiplePropertiesExistForProvidedKey(key);
+            else
+                return list.get(0);
+        } else
+            return MetaProperty.<V>empty();
     }
 
     @Override
