@@ -68,8 +68,10 @@ public class DetachedEdgeTest {
         final Edge e = mock(Edge.class);
         when(e.id()).thenReturn("3");
         when(e.label()).thenReturn("knows");
-        when(e.outV()).thenReturn(new SingleGraphTraversal(v1));
-        when(e.inV()).thenReturn(new SingleGraphTraversal(v2));
+        final Edge.Iterators edgeIterators = mock(Edge.Iterators.class);
+        when(edgeIterators.vertices(Direction.OUT)).thenReturn(Arrays.asList(v1).iterator());
+        when(edgeIterators.vertices(Direction.IN)).thenReturn(Arrays.asList(v2).iterator());
+        when(e.iterators()).thenReturn(edgeIterators);
 
         final DetachedEdge detachedEdge1 = DetachedEdge.detach(e);
         assertTrue(detachedEdge1.equals(this.detachedEdge));
@@ -87,8 +89,10 @@ public class DetachedEdgeTest {
         final Edge e = mock(Edge.class);
         when(e.id()).thenReturn("4");
         when(e.label()).thenReturn("knows");
-        when(e.outV()).thenReturn(new SingleGraphTraversal(v1));
-        when(e.inV()).thenReturn(new SingleGraphTraversal(v2));
+        final Edge.Iterators edgeIterators = mock(Edge.Iterators.class);
+        when(edgeIterators.vertices(Direction.OUT)).thenReturn(Arrays.asList(v1).iterator());
+        when(edgeIterators.vertices(Direction.IN)).thenReturn(Arrays.asList(v2).iterator());
+        when(e.iterators()).thenReturn(edgeIterators);
 
         final DetachedEdge detachedEdge1 = DetachedEdge.detach(e);
         assertFalse(detachedEdge1.equals(this.detachedEdge));

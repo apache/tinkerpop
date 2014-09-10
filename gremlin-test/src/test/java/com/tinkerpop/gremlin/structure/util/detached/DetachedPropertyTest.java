@@ -1,11 +1,14 @@
 package com.tinkerpop.gremlin.structure.util.detached;
 
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.SingleGraphTraversal;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Arrays;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
@@ -52,8 +55,10 @@ public class DetachedPropertyTest {
         final Edge e = mock(Edge.class);
         when(e.id()).thenReturn("14");
         when(e.label()).thenReturn("knows");
-        when(e.outV()).thenReturn(new SingleGraphTraversal(v1));
-        when(e.inV()).thenReturn(new SingleGraphTraversal(v2));
+        final Edge.Iterators edgeIterators = mock(Edge.Iterators.class);
+        when(edgeIterators.vertices(Direction.OUT)).thenReturn(Arrays.asList(v1).iterator());
+        when(edgeIterators.vertices(Direction.IN)).thenReturn(Arrays.asList(v2).iterator());
+        when(e.iterators()).thenReturn(edgeIterators);
 
         when(v1.id()).thenReturn("1");
         when(v1.label()).thenReturn("person");
