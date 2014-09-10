@@ -53,7 +53,7 @@ final class StandardOps {
         future.thenAccept(o -> ctx.write(Pair.with(msg, convertToIterator(o))));
         future.exceptionally(se -> {
             logger.warn(String.format("Exception processing a script on request [%s].", msg), se);
-            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION).result(se.getMessage()).create());
+            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION).statusMessage(se.getMessage()).create());
             return null;
         });
     }
@@ -74,17 +74,18 @@ final class StandardOps {
             bindings.put("____trvrslScrpt", traversal);
         } catch (Exception ex) {
             logger.warn(String.format("Exception processing a traversal on request [%s].", msg), ex);
-            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TRAVERSAL_EVALUATION).result(ex.getMessage()).create());
+            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TRAVERSAL_EVALUATION).statusMessage(ex.getMessage()).create());
             return;
         }
 
+        // todo: different errors for traversal evaluation versus deserialization??
         final String script = String.format("____trvrslScrpt.apply(%s)", args.get(Tokens.ARGS_GRAPH_NAME));
         final CompletableFuture<Object> future = context.getGremlinExecutor().eval(script, bindings);
         future.handle((v, t) -> timerContext.stop());
         future.thenAccept(o -> ctx.write(Pair.with(msg, convertToIterator(o))));
         future.exceptionally(se -> {
             logger.warn(String.format("Exception processing a traversal on request [%s].", msg), se);
-            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TRAVERSAL_EVALUATION).result(se.getMessage()).create());
+            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TRAVERSAL_EVALUATION).statusMessage(se.getMessage()).create());
             return null;
         });
     }

@@ -44,7 +44,7 @@ class Handler {
                 } else if (response.getStatus().getCode() == ResponseStatusCode.SUCCESS_TERMINATOR)
                     pending.remove(response.getRequestId()).markComplete();
                 else
-                    pending.get(response.getRequestId()).markError(new ResponseException(response.getStatus().getCode(), response.getResult().toString()));
+                    pending.get(response.getRequestId()).markError(new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage()));
             } finally {
                 ReferenceCountUtil.release(response);
             }
