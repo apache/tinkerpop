@@ -123,6 +123,8 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
     }
 
     public static DetachedMetaProperty detach(final MetaProperty property) {
+        if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
+        if (property instanceof DetachedMetaProperty) throw new IllegalArgumentException("MetaProperty has already been detached");
         return new DetachedMetaProperty(property);
     }
 

@@ -35,7 +35,12 @@ public class DetachedMetaPropertyTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldNotConstructWithNullProperty() {
-        DetachedProperty.detach(null);
+        DetachedMetaProperty.detach(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotConstructWithSomethingAlreadyDetached() {
+        DetachedMetaProperty.detach(this.mp);
     }
 
     @Test
