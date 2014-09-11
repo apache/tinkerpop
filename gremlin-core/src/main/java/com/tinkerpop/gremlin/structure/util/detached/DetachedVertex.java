@@ -95,6 +95,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
     public static DetachedVertex detach(final Vertex vertex) {
         if (null == vertex) throw Graph.Exceptions.argumentCanNotBeNull("vertex");
+        if (vertex instanceof DetachedVertex) throw new IllegalArgumentException("Vertex is already detached");
         return new DetachedVertex(vertex);
     }
 

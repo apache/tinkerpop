@@ -41,6 +41,11 @@ public class DetachedVertexTest {
         DetachedVertex.detach(null);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotConstructWithSomethingAlreadyDetached() {
+        DetachedVertex.detach(this.detachedVertex);
+    }
+
     @Test
     public void shouldConstructDetachedVertex() {
         assertEquals("1", this.detachedVertex.id());
