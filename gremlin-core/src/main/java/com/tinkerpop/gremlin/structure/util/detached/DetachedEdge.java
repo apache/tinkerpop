@@ -80,6 +80,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
 
     public static DetachedEdge detach(final Edge edge) {
         if (null == edge) throw Graph.Exceptions.argumentCanNotBeNull("edge");
+        if (edge instanceof DetachedEdge) throw new IllegalArgumentException("Edge is already detached");
         return new DetachedEdge(edge);
     }
 

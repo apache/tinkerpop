@@ -68,6 +68,11 @@ public class DetachedEdgeTest {
         DetachedEdge.detach(null);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotConstructWithSomethingAlreadyDetached() {
+        DetachedEdge.detach(this.detachedEdge);
+    }
+
     @Test
     public void shouldConstructDetachedEdge() {
         assertEquals("3", this.detachedEdge.id());
