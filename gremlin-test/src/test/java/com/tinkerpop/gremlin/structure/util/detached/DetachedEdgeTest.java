@@ -152,6 +152,14 @@ public class DetachedEdgeTest {
         assertEquals(1, StreamFactory.stream(de.iterators().properties("x")).count());
         assertEquals("b", de.iterators().hiddens("y").next().value());
         assertEquals(1, StreamFactory.stream(de.iterators().hiddens("y")).count());
+
+        assertEquals("a", de.property("x").value());
+        assertEquals("x", de.property("x").key());
+        assertFalse(de.property("x").isHidden());
+
+        assertEquals("b", de.property(Graph.Key.hide("y")).value());
+        assertEquals("y", de.property(Graph.Key.hide("y")).key());
+        assertTrue(de.property(Graph.Key.hide("y")).isHidden());
     }
 
     @Test(expected = UnsupportedOperationException.class)
