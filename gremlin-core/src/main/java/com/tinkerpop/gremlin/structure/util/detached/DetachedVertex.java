@@ -19,23 +19,29 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
+ * Represents a {@link Vertex} that is disconnected from a {@link Graph}.  "Disconnection" can mean detachment from
+ * a {@link Graph} in the sense that a {@link Vertex} was constructed from a {@link Graph} instance and this reference
+ * was removed or it can mean that the {@code DetachedVertex} could have been constructed independently of a
+ * {@link Graph} instance in the first place.
+ * <br/>
+ * A {@code DetachedVertex} only has reference to the properties that are associated with it at the time of detachment
+ * (or construction) and is not traversable or mutable.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class DetachedVertex extends DetachedElement implements Vertex {
 
-    private DetachedVertex() {
-
-    }
-
-    protected DetachedVertex(final Object id, final String label) {
-        super(id, label);
-    }
+    private DetachedVertex() { }
 
     public DetachedVertex(final Object id, final String label, final Map<String, Object> properties, final Map<String, Object> hiddenProperties) {
         super(id, label);
         if (null != properties) this.properties.putAll(convertToDetachedMetaProperties(properties));
         if (null != hiddenProperties) this.properties.putAll(convertToDetachedMetaProperties(hiddenProperties));
+    }
+
+    protected DetachedVertex(final Object id, final String label) {
+        super(id, label);
     }
 
     private DetachedVertex(final Vertex vertex) {

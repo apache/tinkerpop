@@ -19,6 +19,16 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
+ * Represents an {@link Edge} that is disconnected from a {@link Graph}.  "Disconnection" can mean detachment from
+ * a {@link Graph} in the sense that the {@link Edge} was constructed from a {@link Graph} instance and this reference
+ * was removed or it can mean that the {@code DetachedEdge} could have been constructed independently of a
+ * {@link Graph} instance in the first place.
+ * <br/>
+ * A {@code DetachedEdge} only has reference to the properties and in/out vertices that are associated with it at the
+ * time of detachment (or construction) and is not traversable or mutable.  Note that the references to the in/out
+ * vertices are {@link DetachedVertex} instances that only have reference to the
+ * {@link com.tinkerpop.gremlin.structure.Vertex#id()} and {@link com.tinkerpop.gremlin.structure.Vertex#label()}.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -26,10 +36,6 @@ public class DetachedEdge extends DetachedElement implements Edge {
 
     DetachedVertex outVertex;
     DetachedVertex inVertex;
-
-    private DetachedEdge() {
-
-    }
 
     public DetachedEdge(final Object id, final String label,
                         final Map<String, Object> properties,
@@ -43,6 +49,8 @@ public class DetachedEdge extends DetachedElement implements Edge {
         if (properties != null) this.properties.putAll(convertToDetachedProperty(properties));
         if (hiddenProperties != null) this.properties.putAll(convertToDetachedProperty(hiddenProperties));
     }
+
+    private DetachedEdge() { }
 
     private DetachedEdge(final Edge edge) {
         super(edge);
