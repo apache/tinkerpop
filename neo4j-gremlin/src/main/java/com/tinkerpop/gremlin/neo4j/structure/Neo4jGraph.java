@@ -57,7 +57,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     private static final String CONFIG_CONF = "gremlin.neo4j.conf";
 
     private final Neo4jTransaction neo4jTransaction = new Neo4jTransaction();
-    private final Neo4jGraphVariables neo4jGraphVariables;
+    private Neo4jGraphVariables neo4jGraphVariables = null;
 
     protected final TransactionManager transactionManager;
     private final ExecutionEngine cypher;
@@ -66,11 +66,6 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         this.baseGraph = baseGraph;
         this.transactionManager = ((GraphDatabaseAPI) baseGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
         this.cypher = new ExecutionEngine(baseGraph);
-        // TODO: indices as the graph gets larger? but then that sucks to have an index for this... thoughts?
-        this.tx().open();
-        final Iterator<Map<String, Object>> results = this.cypher.execute("MATCH n WHERE '" + Neo4jGraphVariables.GRAPH_VARIABLE_LABEL.name() + "' IN labels(n) RETURN n").iterator();
-        this.neo4jGraphVariables = new Neo4jGraphVariables(results.hasNext() ? (Node) results.next().get("n") : this.baseGraph.createNode(Neo4jGraphVariables.GRAPH_VARIABLE_LABEL), this);
-        this.tx().commit();
     }
 
     private Neo4jGraph(final Configuration configuration) {
@@ -86,11 +81,6 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
                             setConfig(neo4jSpecificConfig).newGraphDatabase();
             this.transactionManager = ((GraphDatabaseAPI) baseGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
             this.cypher = new ExecutionEngine(baseGraph);
-            // TODO: indices as the graph gets larger? but then that sucks to have an index for this... thoughts?
-            this.tx().open();
-            final Iterator<Map<String, Object>> results = this.cypher.execute("MATCH n WHERE '" + Neo4jGraphVariables.GRAPH_VARIABLE_LABEL.name() + "' IN labels(n) RETURN n").iterator();
-            this.neo4jGraphVariables = new Neo4jGraphVariables(results.hasNext() ? (Node) results.next().get("n") : this.baseGraph.createNode(Neo4jGraphVariables.GRAPH_VARIABLE_LABEL), this);
-            this.tx().commit();
         } catch (Exception e) {
             if (this.baseGraph != null)
                 this.baseGraph.shutdown();
@@ -211,6 +201,12 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
 
     @Override
     public Variables variables() {
+        if (null == this.neo4jGraphVariables) {
+            // TODO: indices as the graph gets larger? but then that sucks to have an index for this... thoughts?
+            this.tx().readWrite();
+            final Iterator<Map<String, Object>> results = this.cypher.execute("MATCH (n:" + Neo4jGraphVariables.GRAPH_VARIABLE_LABEL.name() + ") RETURN n").iterator();
+            this.neo4jGraphVariables = new Neo4jGraphVariables(results.hasNext() ? (Node) results.next().get("n") : this.baseGraph.createNode(Neo4jGraphVariables.GRAPH_VARIABLE_LABEL), this);
+        }
         return this.neo4jGraphVariables;
     }
 

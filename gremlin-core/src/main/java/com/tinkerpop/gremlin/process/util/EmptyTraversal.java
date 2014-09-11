@@ -18,8 +18,12 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
     private static final SideEffects SIDE_EFFECTS = new DefaultSideEffects(EmptyTraversal.instance());
     private static final Strategies TRAVERSAL_STRATEGIES = new DefaultStrategies(EmptyTraversal.instance());
 
-    public static EmptyTraversal instance() {
+    public static <A,B> EmptyTraversal<A,B> instance() {
         return INSTANCE;
+    }
+
+    protected EmptyTraversal() {
+
     }
 
     @Override
@@ -49,7 +53,7 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
 
     @Override
     public <E2> Traversal<S, E2> addStep(final Step<?, E2> step) {
-        return (Traversal) this;
+        return instance();
     }
 
     @Override
@@ -59,6 +63,6 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
 
     @Override
     public Traversal<S, E> submit(final GraphComputer computer) {
-        return INSTANCE;
+        return instance();
     }
 }
