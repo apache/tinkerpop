@@ -154,11 +154,6 @@ public class DetachedEdgeTest {
         assertEquals(1, StreamFactory.stream(de.iterators().hiddens("y")).count());
     }
 
-    @Test
-    public void shouldConstructDetachedEdgeAtomically() {
-
-    }
-
     @Test(expected = UnsupportedOperationException.class)
     public void shouldNotAllowSetProperty() {
         this.detachedEdge.property("test", "test");
