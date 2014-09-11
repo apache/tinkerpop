@@ -369,7 +369,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             assertEquals(1, b.properties("location").count().next().intValue());
             assertEquals(0, g.E().count().next().intValue());
 
-            assertEquals(4l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
+            assertEquals(5l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
             assertEquals(2l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
             assertEquals(2l, cypher.execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
             final AtomicInteger counter = new AtomicInteger(0);
@@ -407,7 +407,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             assertEquals(1, b.properties("location").count().next().intValue());
             assertEquals(0, g.E().count().next().intValue());
 
-            assertEquals(2l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
+            assertEquals(3l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
             assertEquals(0l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
 
             assertEquals(1, StreamFactory.stream(a.getBaseVertex().getPropertyKeys()).count());
@@ -423,7 +423,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             assertEquals(0, a.properties().count().next().intValue());
             assertEquals(2, b.properties().count().next().intValue());
             assertEquals(0, g.E().count().next().intValue());
-            assertEquals(2l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
+            assertEquals(3l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
             assertEquals(0l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
             assertEquals(0, StreamFactory.stream(a.getBaseVertex().getPropertyKeys()).count());
             assertEquals(2, StreamFactory.stream(b.getBaseVertex().getPropertyKeys()).count());
@@ -437,7 +437,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             assertEquals(1, b.properties("location").count().next().intValue());
             assertEquals(0, g.E().count().next().intValue());
 
-            assertEquals(3l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
+            assertEquals(4l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
             assertEquals(1l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
             assertEquals(1l, cypher.execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
             final AtomicInteger counter = new AtomicInteger(0);
@@ -483,7 +483,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             assertEquals(1, b.properties("location").count().next().intValue());
             assertEquals(0, g.E().count().next().intValue());
 
-            assertEquals(3l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
+            assertEquals(4l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
             assertEquals(1l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
             assertEquals(1l, cypher.execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
             final AtomicInteger counter = new AtomicInteger(0);
