@@ -64,11 +64,11 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
 
     @Override
     public PathTraverser<T> deflate() {
-        if (this.t instanceof Vertex) {
+        if (this.t instanceof Vertex && !(this.t instanceof DetachedVertex)) {
             this.t = (T) DetachedVertex.detach((Vertex) this.t);
-        } else if (this.t instanceof Edge) {
+        } else if (this.t instanceof Edge && !(this.t instanceof DetachedEdge)) {
             this.t = (T) DetachedEdge.detach((Edge) this.t);
-        } else if (this.t instanceof Property) {
+        } else if (this.t instanceof Property && !(this.t instanceof DetachedProperty)) {
             this.t = (T) DetachedProperty.detach((Property) this.t);
         }
         this.path = DetachedPath.detach(this.path);
