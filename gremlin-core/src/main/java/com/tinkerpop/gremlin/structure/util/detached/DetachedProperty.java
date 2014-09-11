@@ -122,6 +122,8 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
     }
 
     public static DetachedProperty detach(final Property property) {
+        if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
+        if (property instanceof DetachedProperty) throw new IllegalArgumentException("Property is already detached");
         return new DetachedProperty(property);
     }
 }

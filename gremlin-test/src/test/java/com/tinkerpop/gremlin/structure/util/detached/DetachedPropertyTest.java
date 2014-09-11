@@ -55,6 +55,11 @@ public class DetachedPropertyTest {
         DetachedProperty.detach(null);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotConstructWithSomethingAlreadyDetached() {
+        DetachedProperty.detach(this.mp);
+    }
+
     @Test
     public void shouldConstructDetachedPropertyWithPropertyFromEdge() {
         final Vertex v1 = mock(Vertex.class);
