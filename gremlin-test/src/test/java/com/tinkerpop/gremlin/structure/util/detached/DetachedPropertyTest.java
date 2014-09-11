@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -25,15 +26,27 @@ public class DetachedPropertyTest {
 
     @Before
     public void setup() {
-        final Vertex v = mock(Vertex.class);
-        when(v.id()).thenReturn("1");
-        when(v.label()).thenReturn("person");
+        final Vertex v1 = mock(Vertex.class);
+        when(v1.id()).thenReturn("1");
+        when(v1.label()).thenReturn("l");
+        final Vertex v2 = mock(Vertex.class);
+        when(v2.id()).thenReturn("2");
+        when(v2.label()).thenReturn("l");
+
+        final Edge e = mock(Edge.class);
+        final Edge.Iterators edgeIterators = mock(Edge.Iterators.class);
+        when(edgeIterators.vertices(Direction.OUT)).thenReturn(Arrays.asList(v1).iterator());
+        when(edgeIterators.vertices(Direction.IN)).thenReturn(Arrays.asList(v2).iterator());
+        when(e.id()).thenReturn("1");
+        when(e.label()).thenReturn("knows");
+        when(e.iterators()).thenReturn(edgeIterators);
+        when(edgeIterators.hiddens()).thenReturn(Collections.emptyIterator());
+        when(edgeIterators.properties()).thenReturn(Collections.emptyIterator());
 
         final Property p = mock(Property.class);
         when(p.key()).thenReturn("k");
-        when(p.getElement()).thenReturn(v);
+        when(p.getElement()).thenReturn(e);
         when(p.value()).thenReturn("val");
-
 
         this.mp = DetachedProperty.detach(p);
     }
@@ -41,13 +54,6 @@ public class DetachedPropertyTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldNotConstructWithNullProperty() {
         DetachedProperty.detach(null);
-    }
-
-    @Test
-    public void shouldConstructDetachedPropertyWithPropertyFromVertex() {
-        assertEquals("k", mp.key());
-        assertEquals("val", mp.value());
-        assertEquals(DetachedVertex.class, mp.getElement().getClass());
     }
 
     @Test
@@ -87,12 +93,26 @@ public class DetachedPropertyTest {
 
     @Test
     public void shouldBeEqualsProperties() {
-        final Vertex v = mock(Vertex.class);
-        when(v.id()).thenReturn("1");
-        when(v.label()).thenReturn("person");
+        final Vertex v1 = mock(Vertex.class);
+        final Vertex v2 = mock(Vertex.class);
+        final Edge e = mock(Edge.class);
+        when(e.id()).thenReturn("1");
+        when(e.label()).thenReturn("person");
+        final Edge.Iterators edgeIterators = mock(Edge.Iterators.class);
+        when(edgeIterators.vertices(Direction.OUT)).thenReturn(Arrays.asList(v1).iterator());
+        when(edgeIterators.vertices(Direction.IN)).thenReturn(Arrays.asList(v2).iterator());
+        when(edgeIterators.properties()).thenReturn(Collections.emptyIterator());
+        when(edgeIterators.hiddens()).thenReturn(Collections.emptyIterator());
+        when(e.iterators()).thenReturn(edgeIterators);
+
+        when(v1.id()).thenReturn("1");
+        when(v1.label()).thenReturn("person");
+        when(v2.id()).thenReturn("2");
+        when(v2.label()).thenReturn("person");
+
         final Property p = mock(Property.class);
         when(p.key()).thenReturn("k");
-        when(p.getElement()).thenReturn(v);
+        when(p.getElement()).thenReturn(e);
         when(p.value()).thenReturn("val");
 
         final DetachedProperty mp2 = DetachedProperty.detach(p);
@@ -102,12 +122,26 @@ public class DetachedPropertyTest {
 
     @Test
     public void shouldNotBeEqualsPropertiesAsThereIsDifferentElement() {
-        final Vertex v = mock(Vertex.class);
-        when(v.id()).thenReturn("2");
-        when(v.label()).thenReturn("person");
+        final Vertex v1 = mock(Vertex.class);
+        final Vertex v2 = mock(Vertex.class);
+        final Edge e = mock(Edge.class);
+        when(e.id()).thenReturn("2");
+        when(e.label()).thenReturn("person");
+        final Edge.Iterators edgeIterators = mock(Edge.Iterators.class);
+        when(edgeIterators.vertices(Direction.OUT)).thenReturn(Arrays.asList(v1).iterator());
+        when(edgeIterators.vertices(Direction.IN)).thenReturn(Arrays.asList(v2).iterator());
+        when(edgeIterators.properties()).thenReturn(Collections.emptyIterator());
+        when(edgeIterators.hiddens()).thenReturn(Collections.emptyIterator());
+        when(e.iterators()).thenReturn(edgeIterators);
+
+        when(v1.id()).thenReturn("1");
+        when(v1.label()).thenReturn("person");
+        when(v2.id()).thenReturn("2");
+        when(v2.label()).thenReturn("person");
+
         final Property p = mock(Property.class);
         when(p.key()).thenReturn("k");
-        when(p.getElement()).thenReturn(v);
+        when(p.getElement()).thenReturn(e);
         when(p.value()).thenReturn("val");
 
         final DetachedProperty mp2 = DetachedProperty.detach(p);
@@ -117,12 +151,26 @@ public class DetachedPropertyTest {
 
     @Test
     public void shouldNotBeEqualsPropertiesAsThereIsDifferentKey() {
-        final Vertex v = mock(Vertex.class);
-        when(v.id()).thenReturn("1");
-        when(v.label()).thenReturn("person");
+        final Vertex v1 = mock(Vertex.class);
+        final Vertex v2 = mock(Vertex.class);
+        final Edge e = mock(Edge.class);
+        when(e.id()).thenReturn("1");
+        when(e.label()).thenReturn("person");
+        final Edge.Iterators edgeIterators = mock(Edge.Iterators.class);
+        when(edgeIterators.vertices(Direction.OUT)).thenReturn(Arrays.asList(v1).iterator());
+        when(edgeIterators.vertices(Direction.IN)).thenReturn(Arrays.asList(v2).iterator());
+        when(edgeIterators.properties()).thenReturn(Collections.emptyIterator());
+        when(edgeIterators.hiddens()).thenReturn(Collections.emptyIterator());
+        when(e.iterators()).thenReturn(edgeIterators);
+
+        when(v1.id()).thenReturn("1");
+        when(v1.label()).thenReturn("person");
+        when(v2.id()).thenReturn("2");
+        when(v2.label()).thenReturn("person");
+
         final Property p = mock(Property.class);
         when(p.key()).thenReturn("k1");
-        when(p.getElement()).thenReturn(v);
+        when(p.getElement()).thenReturn(e);
         when(p.value()).thenReturn("val");
 
         final DetachedProperty mp2 = DetachedProperty.detach(p);
@@ -132,12 +180,26 @@ public class DetachedPropertyTest {
 
     @Test
     public void shouldNotBeEqualsPropertiesAsThereIsDifferentValue() {
-        final Vertex v = mock(Vertex.class);
-        when(v.id()).thenReturn("1");
-        when(v.label()).thenReturn("person");
+        final Vertex v1 = mock(Vertex.class);
+        final Vertex v2 = mock(Vertex.class);
+        final Edge e = mock(Edge.class);
+        when(e.id()).thenReturn("1");
+        when(e.label()).thenReturn("person");
+        final Edge.Iterators edgeIterators = mock(Edge.Iterators.class);
+        when(edgeIterators.vertices(Direction.OUT)).thenReturn(Arrays.asList(v1).iterator());
+        when(edgeIterators.vertices(Direction.IN)).thenReturn(Arrays.asList(v2).iterator());
+        when(edgeIterators.properties()).thenReturn(Collections.emptyIterator());
+        when(edgeIterators.hiddens()).thenReturn(Collections.emptyIterator());
+        when(e.iterators()).thenReturn(edgeIterators);
+
+        when(v1.id()).thenReturn("1");
+        when(v1.label()).thenReturn("person");
+        when(v2.id()).thenReturn("2");
+        when(v2.label()).thenReturn("person");
+
         final Property p = mock(Property.class);
         when(p.key()).thenReturn("k");
-        when(p.getElement()).thenReturn(v);
+        when(p.getElement()).thenReturn(e);
         when(p.value()).thenReturn("val1");
 
         final DetachedProperty mp2 = DetachedProperty.detach(p);

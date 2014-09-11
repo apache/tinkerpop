@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
@@ -89,8 +90,7 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
     @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     @Override
     public boolean equals(final Object object) {
-        return false; // TODO
-        //return ElementHelper.areEqual(this, object);
+        return ElementHelper.areEqual((MetaProperty) this, object);
     }
 
     @Override
@@ -122,7 +122,7 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
         return Optional.<Property<V>>of(element.property(this.key)).orElseThrow(() -> new IllegalStateException("The detached property could not be found in the provided graph: " + this));
     }
 
-    public static DetachedMetaProperty detach(final DetachedMetaProperty property) {
+    public static DetachedMetaProperty detach(final MetaProperty property) {
         return new DetachedMetaProperty(property);
     }
 

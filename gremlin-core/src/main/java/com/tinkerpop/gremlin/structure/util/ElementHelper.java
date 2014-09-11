@@ -316,8 +316,7 @@ public class ElementHelper {
 
     /**
      * A standard method for determining if two {@link com.tinkerpop.gremlin.structure.MetaProperty} objects are equal. This method should be used by any
-     * {@link Object#equals(Object)} implementation to ensure consistent behavior. Because MetaProperty implements both Element and Property, it is best to
-     * ElementHelper.areEquals((MetaProperty)a,b).
+     * {@link Object#equals(Object)} implementation to ensure consistent behavior.
      *
      * @param a the first {@link com.tinkerpop.gremlin.structure.MetaProperty}
      * @param b the second {@link com.tinkerpop.gremlin.structure.MetaProperty}
