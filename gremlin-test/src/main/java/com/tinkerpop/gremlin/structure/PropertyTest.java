@@ -83,6 +83,8 @@ public class PropertyTest {
             assertTrue(v1.hiddenKeys().stream().allMatch(k -> k.equals("acl") || k.equals("other")));
             assertEquals("rw", v1.iterators().hiddens("acl").next().value());
             assertEquals("r", v1.iterators().properties("acl").next().value());
+            assertEquals("acl", v1.property(Graph.Key.hide("acl")).key());
+            assertEquals("other", v1.property(Graph.Key.hide("other")).key());
         }
 
         @Test

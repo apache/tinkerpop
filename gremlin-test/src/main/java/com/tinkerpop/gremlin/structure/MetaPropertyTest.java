@@ -342,11 +342,12 @@ public class MetaPropertyTest extends AbstractGremlinTest {
             tests.add(Pair.with("v.properties(Graph.Key.hide(\"age\")).count().next().intValue() == 0", (Graph g, Vertex v) -> v.properties(Graph.Key.hide("age")).count().next().intValue() == 0));
             tests.add(Pair.with("v.hiddens(\"age\").value().toList().contains(34)", (Graph g, Vertex v) -> v.hiddens("age").value().toList().contains(34)));
             tests.add(Pair.with("v.hiddens(\"age\").value().toList().contains(29)", (Graph g, Vertex v) -> v.hiddens("age").value().toList().contains(29)));
-            tests.add(Pair.with("v.hiddenKeys().size() == 1", (Graph g, Vertex v) -> v.hiddenKeys().size() == 1));
-            tests.add(Pair.with("v.keys().size() == 2", (Graph g, Vertex v) -> v.keys().size() == 2));
+            tests.add(Pair.with("v.hiddenKeys().size() == 2", (Graph g, Vertex v) -> v.hiddenKeys().size() == 2));
+            tests.add(Pair.with("v.keys().size() == 3", (Graph g, Vertex v) -> v.keys().size() == 3));
             tests.add(Pair.with("v.keys().contains(\"age\")", (Graph g, Vertex v) -> v.keys().contains("age")));
             tests.add(Pair.with("v.keys().contains(\"name\")", (Graph g, Vertex v) -> v.keys().contains("name")));
             tests.add(Pair.with("v.hiddenKeys().contains(\"age\")", (Graph g, Vertex v) -> v.hiddenKeys().contains("age")));
+            tests.add(Pair.with("v.property(Graph.Key.hide(\"color\")).key().equals(\"color\")", (Graph g, Vertex v) -> v.property(Graph.Key.hide("color")).key().equals("color")));
 
             return tests.stream().map(d -> {
                 final Object[] o = new Object[2];
@@ -365,7 +366,7 @@ public class MetaPropertyTest extends AbstractGremlinTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldHandleHiddenMetaProperties() {
-            Vertex v = g.addVertex(Graph.Key.hide("age"), 34, Graph.Key.hide("age"), 29, "age", 16, "name", "marko");
+            Vertex v = g.addVertex(Graph.Key.hide("age"), 34, Graph.Key.hide("age"), 29, "age", 16, "name", "marko", "food", "taco", Graph.Key.hide("color"), "purple");
             tryCommit(g, g -> {
                 assertTrue(streamGetter.apply(g, v));
             });
