@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DetachedEdge extends DetachedElement implements Edge {
+public class DetachedEdge extends DetachedElement<Edge> implements Edge {
 
     DetachedVertex outVertex;
     DetachedVertex inVertex;
@@ -66,12 +66,14 @@ public class DetachedEdge extends DetachedElement implements Edge {
         return StringFactory.edgeString(this);
     }
 
+    @Override
     public Edge attach(final Vertex hostVertex) {
         return StreamFactory.stream(hostVertex.iterators().edges(Direction.OUT, Integer.MAX_VALUE, this.label))
                 .filter(e -> e.id().equals(this.id))
                 .findFirst().orElseThrow(() -> new IllegalStateException("The detached edge could not be be found incident to the provided vertex: " + this));
     }
 
+    @Override
     public Edge attach(final Graph graph) {
         return graph.e(this.id);
     }
@@ -99,7 +101,7 @@ public class DetachedEdge extends DetachedElement implements Edge {
 
     private final Edge.Iterators iterators = new Iterators();
 
-    protected class Iterators extends DetachedElement.Iterators implements Edge.Iterators, Serializable {
+    protected class Iterators extends DetachedElement<Edge>.Iterators implements Edge.Iterators, Serializable {
 
         @Override
         public Iterator<Vertex> vertices(final Direction direction) {

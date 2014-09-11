@@ -17,7 +17,7 @@ import java.util.Optional;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class DetachedMetaProperty<V> extends DetachedElement implements MetaProperty<V> {
+public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implements MetaProperty<V> {
 
     String key;
     V value;
@@ -98,6 +98,7 @@ public class DetachedMetaProperty<V> extends DetachedElement implements MetaProp
         return this.hashCode;
     }
 
+    @Override
     public Property<V> attach(final Vertex hostVertex) {
         if (this.getElement() instanceof Vertex) {
             return Optional.<Property<V>>of(hostVertex.property(this.key)).orElseThrow(() -> new IllegalStateException("The detached property could not be be found at the provided vertex: " + this));
@@ -113,6 +114,7 @@ public class DetachedMetaProperty<V> extends DetachedElement implements MetaProp
         }
     }
 
+    @Override
     public Property<V> attach(final Graph graph) {
         final Element element = (this.getElement() instanceof Vertex) ?
                 graph.v(this.getElement().id()) :

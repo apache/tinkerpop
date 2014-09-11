@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure.util.detached;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.PropertyFilterIterator;
 
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class DetachedElement implements Element, Serializable {
+public abstract class DetachedElement<E> implements Element, Serializable, Attachable<E> {
 
     Object id;
     String label;

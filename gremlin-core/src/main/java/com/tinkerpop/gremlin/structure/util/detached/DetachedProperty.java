@@ -17,7 +17,7 @@ import java.util.Optional;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DetachedProperty<V> implements Property, Serializable {
+public class DetachedProperty<V> implements Property, Serializable, Attachable<Property<V>> {
 
     String key;
     V value;
@@ -97,6 +97,7 @@ public class DetachedProperty<V> implements Property, Serializable {
         return this.hashCode;
     }
 
+    @Override
     public Property<V> attach(final Vertex hostVertex) {
         if (this.getElement() instanceof Vertex) {
             return Optional.<Property<V>>of(hostVertex.property(this.key)).orElseThrow(() -> new IllegalStateException("The detached property could not be be found at the provided vertex: " + this));
@@ -112,6 +113,7 @@ public class DetachedProperty<V> implements Property, Serializable {
         }
     }
 
+    @Override
     public Property<V> attach(final Graph graph) {
         final Element element = (this.getElement() instanceof Vertex) ?
                 graph.v(this.getElement().id()) :

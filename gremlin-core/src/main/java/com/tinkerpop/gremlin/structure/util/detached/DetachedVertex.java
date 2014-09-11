@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DetachedVertex extends DetachedElement implements Vertex {
+public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
     private DetachedVertex() { }
 
@@ -80,6 +80,7 @@ public class DetachedVertex extends DetachedElement implements Vertex {
         throw new UnsupportedOperationException("Detached vertices cannot be traversed: " + this);
     }
 
+    @Override
     public Vertex attach(final Vertex hostVertex) {
         if (!hostVertex.id().toString().equals(this.id.toString())) // TODO: Why is this bad?
             throw new IllegalStateException("The host vertex must be the vertex trying to be attached: " +
@@ -88,6 +89,7 @@ public class DetachedVertex extends DetachedElement implements Vertex {
         return hostVertex;
     }
 
+    @Override
     public Vertex attach(final Graph graph) {
         return graph.v(this.id);
     }
@@ -112,7 +114,7 @@ public class DetachedVertex extends DetachedElement implements Vertex {
 
     private final Vertex.Iterators iterators = new Iterators();
 
-    protected class Iterators extends DetachedElement.Iterators implements Vertex.Iterators, Serializable {
+    protected class Iterators extends DetachedElement<Vertex>.Iterators implements Vertex.Iterators, Serializable {
 
         @Override
         public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
