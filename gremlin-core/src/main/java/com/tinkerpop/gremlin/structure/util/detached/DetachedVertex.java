@@ -107,7 +107,9 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     private Map<String, List<Property>> convertToDetachedMetaProperties(final Map<String, Object> hiddenProperties) {
         return hiddenProperties.entrySet().stream()
                 .map(entry -> Pair.with(entry.getKey(), ((List<IoMetaProperty>) entry.getValue()).stream()
-                                .map(iom -> (Property) new DetachedMetaProperty(iom.id, iom.label, entry.getKey(), iom.value, (DetachedVertex) this))
+                                .map(iom -> (Property) new DetachedMetaProperty(iom.id, iom.label, entry.getKey(), iom.value,
+                                                                                iom.properties, iom.hiddenProperties,
+                                                                                (DetachedVertex) this))
                                 .collect(Collectors.toList()))
                 ).collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
     }

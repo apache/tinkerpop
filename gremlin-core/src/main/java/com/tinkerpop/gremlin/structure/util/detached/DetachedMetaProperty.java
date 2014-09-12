@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -29,8 +30,9 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
 
     }
 
-    // todo: throw in properties on properties
-    public DetachedMetaProperty(final Object id, final String label, final String key, final V value, final DetachedVertex vertex) {
+    public DetachedMetaProperty(final Object id, final String label, final String key, final V value,
+                                final Map<String, Object> properties, final Map<String, Object> hiddenProperties,
+                                final DetachedVertex vertex) {
         super(id, label);
         if (null == key) throw Graph.Exceptions.argumentCanNotBeNull("key");
         if (null == value) throw Graph.Exceptions.argumentCanNotBeNull("value");
@@ -40,6 +42,9 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
         this.value = value;
         this.vertex = vertex;
         this.hashCode = super.hashCode();
+
+        if (properties != null) properties.entrySet().iterator().forEachRemaining(kv -> this.properties.put(kv.getKey(), Arrays.asList(new DetachedProperty(kv.getKey(), kv.getValue(), this))));
+        if (hiddenProperties != null) hiddenProperties.entrySet().iterator().forEachRemaining(kv -> this.properties.put(Graph.Key.hide(kv.getKey()), Arrays.asList(new DetachedProperty(kv.getKey(), kv.getValue(), this))));
     }
 
     private DetachedMetaProperty(final MetaProperty property) {
@@ -133,19 +138,18 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
         return this.iterators;
     }
 
-    private final MetaProperty.Iterators iterators = new MetaProperty.Iterators() {
+    private final MetaProperty.Iterators iterators = new Iterators();
+
+    protected class Iterators extends DetachedElement<V>.Iterators implements MetaProperty.Iterators {
+
         @Override
         public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
-            return properties.entrySet().stream()
-                    .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
-                    .map(entry -> (Property<U>) entry.getValue()).iterator();
+            return (Iterator) super.properties(propertyKeys);
         }
 
         @Override
         public <U> Iterator<Property<U>> hiddens(final String... propertyKeys) {
-            return properties.entrySet().stream()
-                    .filter(entry -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, entry.getKey()) >= 0)
-                    .map(entry -> (Property<U>) entry.getValue()).iterator();
+            return (Iterator) super.hiddens(propertyKeys);
         }
-    };
+    }
 }

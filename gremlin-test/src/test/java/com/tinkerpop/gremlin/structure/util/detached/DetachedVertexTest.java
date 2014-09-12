@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.util.IoMetaProperty;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -119,6 +120,67 @@ public class DetachedVertexTest {
                         && !p.iterators().properties().hasNext()
                         && !p.iterators().hiddens().hasNext()));
     }
+
+    @Test
+    public void shouldConstructDetachedVertexFromPartsWithPropertiesOnProperties() {
+        final Map<String,Object> properties = new HashMap<>();
+        final IoMetaProperty propX1 = new IoMetaProperty();
+        propX1.value = "a";
+        propX1.id = 123;
+        propX1.label = MetaProperty.DEFAULT_LABEL;
+        propX1.properties = ElementHelper.asMap("propX1a", "a", "propX11", 1, "same", 123.01d, "extra", "something");
+        propX1.hiddenProperties = ElementHelper.asMap(Graph.Key.hide("propX1ha"), "ha", Graph.Key.hide("propX1h1"), 11, Graph.Key.hide("same"), 321.01d);
+        final IoMetaProperty propX2 = new IoMetaProperty();
+        propX2.value = "c";
+        propX2.id = 124;
+        propX2.label = MetaProperty.DEFAULT_LABEL;
+        properties.put("x", Arrays.asList(propX1, propX2));
+
+        final Map<String,Object> hiddens = new HashMap<>();
+        final IoMetaProperty propY1 = new IoMetaProperty();
+        propY1.value = "b";
+        propY1.id = 125;
+        propY1.label = MetaProperty.DEFAULT_LABEL;
+        final IoMetaProperty propY2 = new IoMetaProperty();
+        propY2.value = "d";
+        propY2.id = 126;
+        propY2.label = MetaProperty.DEFAULT_LABEL;
+        hiddens.put(Graph.Key.hide("y"), Arrays.asList(propY1, propY2));
+
+        final DetachedVertex dv = new DetachedVertex(1, "test", properties, hiddens);
+
+        assertEquals(1, dv.id());
+        assertEquals("test", dv.label());
+
+        final List<MetaProperty> propertyX = StreamFactory.stream(dv.iterators().properties("x")).collect(Collectors.toList());
+        assertEquals(2, propertyX.size());
+        assertTrue(propertyX.stream().allMatch(p ->
+                p.label().equals(MetaProperty.DEFAULT_LABEL)
+                        && (p.id().equals(123) || p.id().equals(124))
+                        && (p.value().equals("a") || p.value().equals("c"))));
+
+        // there should be only one with properties on properties
+        final MetaProperty propertyOnProperty = propertyX.stream().filter(p -> p.iterators().properties().hasNext()).findFirst().get();
+        assertEquals("a", propertyOnProperty.iterators().properties("propX1a").next().value());
+        assertEquals(1, propertyOnProperty.iterators().properties("propX11").next().value());
+        assertEquals(123.01d, propertyOnProperty.iterators().properties("same").next().value());
+        assertEquals("something", propertyOnProperty.iterators().properties("extra").next().value());
+        assertEquals(4, StreamFactory.stream(propertyOnProperty.iterators().properties()).count());
+        assertEquals("ha", propertyOnProperty.iterators().hiddens("propX1ha").next().value());
+        assertEquals(11, propertyOnProperty.iterators().hiddens("propX1h1").next().value());
+        assertEquals(321.01d, propertyOnProperty.iterators().hiddens("same").next().value());
+        assertEquals(3, StreamFactory.stream(propertyOnProperty.iterators().hiddens()).count());
+
+        final List<MetaProperty> propertyY = StreamFactory.stream(dv.iterators().hiddens("y")).collect(Collectors.toList());
+        assertEquals(2, propertyY.size());
+        assertTrue(propertyY.stream().allMatch(p ->
+                p.label().equals(MetaProperty.DEFAULT_LABEL)
+                        && (p.id().equals(125) || p.id().equals(126))
+                        && (p.value().equals("b") || p.value().equals("d"))
+                        && !p.iterators().properties().hasNext()
+                        && !p.iterators().hiddens().hasNext()));
+    }
+
 
     @Test(expected = UnsupportedOperationException.class)
     public void shouldNotAllowAddEdge() {
