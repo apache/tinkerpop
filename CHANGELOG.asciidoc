@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Compartmentalized `Traverser` interface so there is now a `Traverser.System` sub-interface with methods that users shouldn't call.
+* Added `OrderByStep` which orders `Elements` according to the value of a provided key.
 * 2x speed increase on steps that rely heavily on `ExpandableStepIterator` with massive memory footprint reduction as well.
 * The property keys "key" and "value" are now reserved as they are the accessors for `MetaProperty.key()` and `MetaProperty.value()`.
 * Added `MetaProperty<V>` as the property type for vertices -- provides multi-properties and properties on properties.

@@ -81,19 +81,19 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
             this.jumpToStep = TraversalHelper.getStep(this.jumpLabel, this.traversal).getNextStep();
         while (true) {
             final Traverser<S> traverser = this.starts.next();
-            if (this.jumpBack.get()) traverser.incrLoops();
+            if (this.jumpBack.get()) ((Traverser.System<S>) traverser).incrLoops();
             if (doJump(traverser)) {
-                traverser.setFuture(this.jumpLabel);
+                ((Traverser.System<S>) traverser).setFuture(this.jumpLabel);
                 this.jumpToStep.addStarts(new SingleIterator(traverser));
                 if (this.emitPredicate != null && this.emitPredicate.test(traverser)) {
-                    final Traverser<S> emitTraverser = traverser.makeSibling();
-                    if (this.jumpBack.get()) emitTraverser.resetLoops();
-                    emitTraverser.setFuture(this.getNextStep().getLabel());
+                    final Traverser<S> emitTraverser = ((Traverser.System<S>) traverser).makeSibling();
+                    if (this.jumpBack.get()) ((Traverser.System<S>) emitTraverser).resetLoops();
+                    ((Traverser.System<S>) emitTraverser).setFuture(this.getNextStep().getLabel());
                     return emitTraverser;
                 }
             } else {
-                if (this.jumpBack.get()) traverser.resetLoops();
-                traverser.setFuture(this.getNextStep().getLabel());
+                if (this.jumpBack.get()) ((Traverser.System<S>) traverser).resetLoops();
+                ((Traverser.System<S>) traverser).setFuture(this.getNextStep().getLabel());
                 return traverser;
             }
         }
@@ -107,13 +107,13 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
             if (!this.queue.isEmpty()) {
                 return this.queue.remove();
             } else {
-                final Traverser<S> traverser = this.starts.next();
+                final Traverser.System<S> traverser = this.starts.next();
                 if (this.jumpBack.get()) traverser.incrLoops();
                 if (doJump(traverser)) {
                     traverser.setFuture(loopFuture);
                     this.queue.add(traverser);
                     if (null != this.emitPredicate && this.emitPredicate.test(traverser)) {
-                        final Traverser<S> emitTraverser = traverser.makeSibling();
+                        final Traverser.System<S> emitTraverser = traverser.makeSibling();
                         if (this.jumpBack.get()) emitTraverser.resetLoops();
                         emitTraverser.setFuture(this.nextStep.getLabel());
                         this.queue.add(emitTraverser);

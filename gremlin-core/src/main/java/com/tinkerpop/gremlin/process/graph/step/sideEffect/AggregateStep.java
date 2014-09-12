@@ -29,7 +29,7 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCa
 
     public final SFunction<Traverser<S>, ?> preAggregateFunction;
     Collection aggregate;
-    final Queue<Traverser<S>> aggregateTraversers = new LinkedList<>();
+    final Queue<Traverser.System<S>> aggregateTraversers = new LinkedList<>();
     private long bulkCount = 1l;
     private final String sideEffectKey;
     private final String hiddenSideEffectKey;

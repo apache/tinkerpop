@@ -26,12 +26,12 @@ public class TraversalPathMessage extends TraversalMessage {
     private TraversalPathMessage() {
     }
 
-    private TraversalPathMessage(final Traverser traverser) {
+    private TraversalPathMessage(final Traverser.System traverser) {
         super(traverser);
         this.traverser.setPath(DetachedPath.detach(this.traverser.getPath()));
     }
 
-    public static TraversalPathMessage of(final Traverser traverser) {
+    public static TraversalPathMessage of(final Traverser.System traverser) {
         return new TraversalPathMessage(traverser);
     }
 
@@ -91,12 +91,12 @@ public class TraversalPathMessage extends TraversalMessage {
             if (end instanceof Element || end instanceof Property) {
                 messenger.sendMessage(
                         MessageType.Global.of(getHostingVertices(end)),
-                        TraversalPathMessage.of(traverser));
+                        TraversalPathMessage.of((Traverser.System)traverser));
             } else {
                 if (end instanceof Path) {
-                    MapHelper.incr(tracker.getObjectTracks(), DetachedPath.detach(((Path) end)), traverser);
+                    MapHelper.incr(tracker.getObjectTracks(), DetachedPath.detach(((Path) end)), (Traverser.System) traverser);
                 } else {
-                    MapHelper.incr(tracker.getObjectTracks(), end, traverser);
+                    MapHelper.incr(tracker.getObjectTracks(), end, (Traverser.System) traverser);
                 }
             }
         });

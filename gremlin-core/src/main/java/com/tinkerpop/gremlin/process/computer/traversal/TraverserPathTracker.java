@@ -12,33 +12,33 @@ import java.util.Map;
  */
 public class TraverserPathTracker implements Serializable {
 
-    protected final Map<Object, List<Traverser>> previousObjectTracks = new HashMap<>();
-    protected final Map<Object, List<Traverser>> graphTracks = new HashMap<>();
-    protected final Map<Object, List<Traverser>> objectTracks = new HashMap<>();
+    protected final Map<Object, List<Traverser.System>> previousObjectTracks = new HashMap<>();
+    protected final Map<Object, List<Traverser.System>> graphTracks = new HashMap<>();
+    protected final Map<Object, List<Traverser.System>> objectTracks = new HashMap<>();
 
-    protected final Map<Object, List<Traverser>> doneGraphTracks = new HashMap<>();
-    protected final Map<Object, List<Traverser>> doneObjectTracks = new HashMap<>();
+    protected final Map<Object, List<Traverser.System>> doneGraphTracks = new HashMap<>();
+    protected final Map<Object, List<Traverser.System>> doneObjectTracks = new HashMap<>();
 
     public TraverserPathTracker() {
     }
 
-    public Map<Object, List<Traverser>> getDoneGraphTracks() {
+    public Map<Object, List<Traverser.System>> getDoneGraphTracks() {
         return this.doneGraphTracks;
     }
 
-    public Map<Object, List<Traverser>> getDoneObjectTracks() {
+    public Map<Object, List<Traverser.System>> getDoneObjectTracks() {
         return this.doneObjectTracks;
     }
 
-    public Map<Object, List<Traverser>> getObjectTracks() {
+    public Map<Object, List<Traverser.System>> getObjectTracks() {
         return this.objectTracks;
     }
 
-    public Map<Object, List<Traverser>> getGraphTracks() {
+    public Map<Object, List<Traverser.System>> getGraphTracks() {
         return this.graphTracks;
     }
 
-    public Map<Object, List<Traverser>> getPreviousObjectTracks() {
+    public Map<Object, List<Traverser.System>> getPreviousObjectTracks() {
         return this.previousObjectTracks;
     }
 

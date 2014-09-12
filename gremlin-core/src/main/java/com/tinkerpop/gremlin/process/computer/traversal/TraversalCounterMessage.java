@@ -29,12 +29,12 @@ public class TraversalCounterMessage extends TraversalMessage {
     private TraversalCounterMessage() {
     }
 
-    private TraversalCounterMessage(final Traverser traverser) {
+    private TraversalCounterMessage(final Traverser.System traverser) {
         super(traverser);
         this.counter = 1l;
     }
 
-    public static TraversalCounterMessage of(final Traverser traverser) {
+    public static TraversalCounterMessage of(final Traverser.System traverser) {
         return new TraversalCounterMessage(traverser);
     }
 
@@ -77,13 +77,13 @@ public class TraversalCounterMessage extends TraversalMessage {
         localCounts.forEach((traverser, count) -> {
             if (traverser.get() instanceof Element || traverser.get() instanceof Property) {
                 final Object end = traverser.get();
-                final TraversalCounterMessage message = TraversalCounterMessage.of(traverser);
+                final TraversalCounterMessage message = TraversalCounterMessage.of((Traverser.System) traverser);
                 message.setCounter(count);
                 messenger.sendMessage(
                         MessageType.Global.of(TraversalMessage.getHostingVertices(end)),
                         message);
             } else {
-                MapHelper.incr(tracker.getObjectTracks(), traverser, count);
+                MapHelper.incr(tracker.getObjectTracks(), (Traverser.System) traverser, count);
             }
         });
         return voteToHalt.get();

@@ -29,7 +29,7 @@ public class UnionStep<S, E> extends AbstractStep<S, E> {
                 final Traversal<S, E> branch = this.traversalRing.next();
                 if (branch.hasNext()) return TraversalHelper.getEnd(branch).next();
             }
-            final Traverser<S> start = this.starts.next();
+            final Traverser.System<S> start = this.starts.next();
             this.traversalRing.forEach(branch -> branch.addStarts(new SingleIterator<>(start.makeSibling())));
         }
     }

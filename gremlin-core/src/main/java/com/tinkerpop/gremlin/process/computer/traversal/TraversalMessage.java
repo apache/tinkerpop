@@ -17,12 +17,12 @@ import java.util.List;
  */
 public abstract class TraversalMessage implements Serializable {
 
-    protected Traverser traverser;
+    protected Traverser.System traverser;
 
     protected TraversalMessage() {
     }
 
-    protected TraversalMessage(final Traverser traverser) {
+    protected TraversalMessage(final Traverser.System traverser) {
         this.traverser = traverser;
         this.traverser.deflate();
     }
@@ -31,7 +31,7 @@ public abstract class TraversalMessage implements Serializable {
         return this.traverser;
     }
 
-    public static <T extends TraversalMessage> T of(final Traverser traverser) {
+    public static <T extends TraversalMessage> T of(final Traverser.System traverser) {
         if (traverser instanceof PathTraverser)
             return (T) TraversalPathMessage.of(traverser);
         else

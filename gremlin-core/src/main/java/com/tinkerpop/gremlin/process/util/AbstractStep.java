@@ -125,7 +125,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     private void prepareTraversalForNextStep(final Traverser<E> traverser) {
         if (!this.futureSetByChild)
-            traverser.setFuture(this.nextStep.getLabel());
+            ((Traverser.System<E>) traverser).setFuture(this.nextStep.getLabel());
         if (traverser instanceof PathTraverser) traverser.getPath().addLabel(this.getLabel());
         if (TraversalHelper.isLabeled(this.label))
             this.traversal.sideEffects().set(this.label, traverser.get());

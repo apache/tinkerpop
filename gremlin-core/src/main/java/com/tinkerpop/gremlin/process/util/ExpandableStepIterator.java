@@ -11,9 +11,9 @@ import java.util.Queue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ExpandableStepIterator<E> implements Iterator<Traverser<E>>, Serializable {
+public class ExpandableStepIterator<E> implements Iterator<Traverser.System<E>>, Serializable {
 
-    private ExpandableIterator<Traverser<E>> expander = null;
+    private ExpandableIterator<Traverser.System<E>> expander = null;
     private Step<?, E> hostStep = EmptyStep.instance();
 
     public ExpandableStepIterator(final Step<?, E> hostStep) {
@@ -26,12 +26,12 @@ public class ExpandableStepIterator<E> implements Iterator<Traverser<E>>, Serial
     }
 
     @Override
-    public Traverser<E> next() {
+    public Traverser.System<E> next() {
         if (this.expanderHasNext())
             return this.expander.next();
 
         if (this.hostStep.getPreviousStep().hasNext())
-            return (Traverser<E>) this.hostStep.getPreviousStep().next();
+            return (Traverser.System<E>) this.hostStep.getPreviousStep().next();
         else
             return this.expanderNext();
     }
@@ -51,7 +51,7 @@ public class ExpandableStepIterator<E> implements Iterator<Traverser<E>>, Serial
         return null != this.expander && this.expander.hasNext();
     }
 
-    public Traverser<E> expanderNext() {
+    public Traverser.System<E> expanderNext() {
         if (null == this.expander) throw FastNoSuchElementException.instance();
         else return this.expander.next();
     }

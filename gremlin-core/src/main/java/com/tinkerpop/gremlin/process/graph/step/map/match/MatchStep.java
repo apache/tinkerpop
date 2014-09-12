@@ -47,7 +47,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
     private int currentIndex;
 
     // initial value allows MatchStep to be used as a stand-alone query engine
-    private Traverser<S> currentStart;
+    private Traverser.System<S> currentStart;
 
     public MatchStep(final Traversal traversal, final String startLabel, final Traversal... traversals) {
         super(traversal);
@@ -432,7 +432,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
                 outputs = 0;
             });
             Iterator<Traverser<A>> starts = new MapIterator<>(seIter,
-                    o -> start.makeChild(as, o));
+                    o -> ((Traverser.System<A>) start).makeChild(as, o));
 
             w.reset();
 

@@ -21,7 +21,7 @@ public class MapStep<S, E> extends AbstractStep<S, E> {
     @Override
     protected Traverser<E> processNextStart() {
         while (true) {
-            final Traverser<S> traverser = this.starts.next();
+            final Traverser.System<S> traverser = this.starts.next();
             final E end = (null == this.biFunction) ?
                     this.function.apply(traverser) :
                     this.biFunction.apply(traverser, this.traversal.sideEffects());

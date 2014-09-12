@@ -58,7 +58,7 @@ public class EmptyStep<S, E> implements Step<S, E> {
 
     @Override
     public String getLabel() {
-        return Traverser.NO_FUTURE;
+        return Traverser.System.NO_FUTURE;
     }
 
     @Override
