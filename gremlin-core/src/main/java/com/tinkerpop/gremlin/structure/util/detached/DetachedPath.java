@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure.util.detached;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 
@@ -23,6 +24,8 @@ public class DetachedPath extends Path {
                 this.add(as, DetachedVertex.detach((Vertex) object));
             } else if (object instanceof Edge) {
                 this.add(as, DetachedEdge.detach((Edge) object));
+            } else if (object instanceof MetaProperty) {
+                this.add(as, DetachedMetaProperty.detach((MetaProperty) object));
             } else if (object instanceof Property) {
                 this.add(as, DetachedProperty.detach((Property) object));
             } else {
@@ -38,6 +41,8 @@ public class DetachedPath extends Path {
                 path.add(as, ((DetachedVertex) object).attach(graph));
             } else if (object instanceof DetachedEdge) {
                 path.add(as, ((DetachedEdge) object).attach(graph));
+            } else if (object instanceof DetachedMetaProperty) {
+                path.add(as, ((DetachedMetaProperty) object).attach(graph));
             } else if (object instanceof DetachedProperty) {
                 path.add(as, ((DetachedProperty) object).attach(graph));
             } else {
