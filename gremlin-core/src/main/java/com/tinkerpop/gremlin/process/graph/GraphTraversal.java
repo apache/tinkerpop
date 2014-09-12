@@ -35,6 +35,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.IdStep;
 import com.tinkerpop.gremlin.process.graph.step.map.JumpStep;
 import com.tinkerpop.gremlin.process.graph.step.map.LabelStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
+import com.tinkerpop.gremlin.process.graph.step.map.OrderByStep;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PathStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertiesStep;
@@ -263,11 +264,27 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> order() {
-        return this.addStep(new OrderStep<E>(this, (a, b) -> ((Comparable<E>) a.get()).compareTo(b.get())));
+        return this.order((a, b) -> ((Comparable) a.get()).compareTo(((Comparable) b.get())));
     }
 
     public default GraphTraversal<S, E> order(final Comparator<Traverser<E>> comparator) {
         return this.addStep(new OrderStep<>(this, comparator));
+    }
+
+    public default GraphTraversal<S, E> order(final T comparator) {
+        return this.addStep(new OrderStep(this, T.convertComparator(comparator)));
+    }
+
+    public default <E2 extends Element> GraphTraversal<S, E2> orderBy(final String key) {
+        return this.orderBy(key, T.incr);
+    }
+
+    public default <E2 extends Element> GraphTraversal<S, E2> orderBy(final String key, final Comparator comparator) {
+        return this.addStep(new OrderByStep<>(this, key, comparator));
+    }
+
+    public default <E2 extends Element> GraphTraversal<S, E2> orderBy(final String key, final T comparator) {
+        return this.addStep(new OrderByStep<>(this, key, T.convertComparator(comparator)));
     }
 
     public default GraphTraversal<S, E> shuffle() {
@@ -434,8 +451,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.where(firstKey, secondKey, predicate);
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> where(final String firstKey, final T t, final String secondKey) {
-        return this.where(firstKey, secondKey, T.convert(t));
+    public default <E2> GraphTraversal<S, Map<String, E2>> where(final String firstKey, final T predicate, final String secondKey) {
+        return this.where(firstKey, secondKey, T.convertPredicate(predicate));
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> where(final Traversal constraint) {
@@ -450,8 +467,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.has(key, Compare.EQUAL, value);
     }
 
-    public default <E2 extends Element> GraphTraversal<S, E2> has(final String key, final T t, final Object value) {
-        return this.has(key, T.convert(t), value);
+    public default <E2 extends Element> GraphTraversal<S, E2> has(final String key, final T predicate, final Object value) {
+        return this.has(key, T.convertPredicate(predicate), value);
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final String key, final SBiPredicate predicate, final Object value) {
@@ -463,7 +480,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final String label, final String key, final T t, final Object value) {
-        return this.has(label, key, T.convert(t), value);
+        return this.has(label, key, T.convertPredicate(t), value);
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final String label, final String key, final SBiPredicate predicate, final Object value) {

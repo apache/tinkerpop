@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
+import com.tinkerpop.gremlin.process.graph.step.map.OrderByStep;
 import com.tinkerpop.gremlin.process.graph.step.util.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -25,7 +26,8 @@ public class DedupOptimizerStrategy implements TraversalStrategy.NoDependencies{
     private static final List<Class> BIJECTIVE_PIPES = new ArrayList<Class>(
             Arrays.asList(
                     IdentityStep.class,
-                    OrderStep.class
+                    OrderStep.class,
+                    OrderByStep.class
             ));
 
     @Override

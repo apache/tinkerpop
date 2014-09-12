@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.util.function.SBiPredicate;
 
+import java.util.Comparator;
+
 /**
  * A collection of (T)okens which allows for more concise Traversal definitions.
  *
@@ -52,7 +54,7 @@ public enum T {
     nin;
 
 
-    public static SBiPredicate convert(final T t) {
+    public static SBiPredicate convertPredicate(final T t) {
         if (t.equals(T.eq))
             return Compare.EQUAL;
         else if (t.equals(T.neq))
@@ -70,7 +72,17 @@ public enum T {
         else if (t.equals(T.nin))
             return Contains.NOT_IN;
         else
-            throw new IllegalArgumentException(t.toString() + " is an unknown filter type");
+            throw new IllegalArgumentException(t.toString() + " is an unknown predicate type");
     }
+
+    public static Comparator convertComparator(final T t) {
+        if (t.equals(T.decr))
+            return Comparator.reverseOrder();
+        else if (t.equals(T.incr))
+            return Comparator.naturalOrder();
+        else
+            throw new IllegalArgumentException(t.toString() + " is an unknown comparator type");
+    }
+
 
 }

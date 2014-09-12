@@ -1,6 +1,9 @@
-package com.tinkerpop.gremlin.structure;
+package com.tinkerpop.gremlin.process.graph;
 
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.lang.reflect.Method;

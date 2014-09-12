@@ -167,6 +167,22 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().order(comparator);
     }
 
+    public default Neo4jTraversal<A, A> order(final T comparator) {
+        return this.start().order(comparator);
+    }
+
+    public default Neo4jTraversal<A, A> orderBy(final String key) {
+        return this.start().orderBy(key);
+    }
+
+    public default Neo4jTraversal<A, A> orderBy(final String key, final Comparator comparator) {
+        return this.start().orderBy(key, comparator);
+    }
+
+    public default Neo4jTraversal<A, A> orderBy(final String key, final T comparator) {
+        return this.start().orderBy(key, comparator);
+    }
+
     public default Neo4jTraversal<A, A> shuffle() {
         return this.start().shuffle();
     }
@@ -313,8 +329,8 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().has(key, value);
     }
 
-    public default Neo4jTraversal<A, A> has(final String key, final T t, final Object value) {
-        return this.start().has(key, t, value);
+    public default Neo4jTraversal<A, A> has(final String key, final T predicate, final Object value) {
+        return this.start().has(key, predicate, value);
     }
 
     public default Neo4jTraversal<A, A> has(final String key, final SBiPredicate predicate, final Object value) {
@@ -325,8 +341,8 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().has(label, key, value);
     }
 
-    public default Neo4jTraversal<A, A> has(final String label, final String key, final T t, final Object value) {
-        return this.start().has(label, key, t, value);
+    public default Neo4jTraversal<A, A> has(final String label, final String key, final T predicate, final Object value) {
+        return this.start().has(label, key, predicate, value);
     }
 
     public default Neo4jTraversal<A, A> has(final String label, final String key, final SBiPredicate predicate, final Object value) {
@@ -345,8 +361,8 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().where(firstKey, predicate, secondKey);
     }
 
-    public default <E2> Neo4jTraversal<A, Map<String, E2>> where(final String firstKey, final T t, final String secondKey) {
-        return this.start().where(firstKey, t, secondKey);
+    public default <E2> Neo4jTraversal<A, Map<String, E2>> where(final String firstKey, final T predicate, final String secondKey) {
+        return this.start().where(firstKey, predicate, secondKey);
     }
 
     public default <E2> Neo4jTraversal<A, Map<String, E2>> where(final Traversal constraint) {

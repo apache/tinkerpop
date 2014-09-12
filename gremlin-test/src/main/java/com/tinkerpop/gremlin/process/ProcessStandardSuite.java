@@ -20,6 +20,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.HiddenValueMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.JumpTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MatchTest;
+import com.tinkerpop.gremlin.process.graph.step.map.OrderByTest;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
@@ -99,6 +100,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             MapTest.JavaMapTest.class,
             MatchTest.JavaMatchTest.class,
             OrderTest.JavaOrderTest.class,
+            OrderByTest.JavaOrderByTest.class,
             PathTest.JavaPathTest.class,
             SelectTest.JavaSelectTest.class,
             VertexTest.JavaVertexTest.class,
@@ -157,6 +159,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             MapTest.class,
             MatchTest.class,
             OrderTest.class,
+            OrderByTest.class,
             PathTest.class,
             SelectTest.class,
             VertexTest.class,
