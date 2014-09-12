@@ -92,10 +92,6 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
         return this;
     }
 
-    public static void mergeComputedView(final Graph original, final Graph computed, Map<String, String> keyMapping) {
-        throw new UnsupportedOperationException("GiraphGraphComputer does not support merge computed view as this does not make sense in a Hadoop environment where the graph is fully copied");
-    }
-
     public String toString() {
         return StringFactory.computerString(this);
     }
@@ -170,7 +166,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
         if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_JARS_IN_DISTRIBUTED_CACHE, true)) {
             final String giraphGremlinLibsLocal = System.getenv(Constants.GIRAPH_GREMLIN_LIBS);
             if (null == giraphGremlinLibsLocal)
-                LOGGER.warn(Constants.GIRAPH_GREMLIN_LIBS + " is not set -- proceeding regardless.");
+                LOGGER.warn(Constants.GIRAPH_GREMLIN_LIBS + " is not set -- proceeding regardless");
             else {
                 final File file = new File(giraphGremlinLibsLocal);
                 if (file.exists()) {
@@ -188,7 +184,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
                         }
                     });
                 } else {
-                    LOGGER.warn(Constants.GIRAPH_GREMLIN_LIBS + " does not point to a valid director -- proceeding regardless.");
+                    LOGGER.warn(Constants.GIRAPH_GREMLIN_LIBS + " does not reference a valid directory -- proceeding regardless: " + giraphGremlinLibsLocal);
                 }
             }
         }

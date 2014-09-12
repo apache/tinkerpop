@@ -118,27 +118,6 @@ public class TinkerGraphComputer implements GraphComputer {
         });
     }
 
-    public static void mergeComputedView(final Graph originalGraph, final Graph viewGraph, final Map<String, String> keyMapping) {
-        if (originalGraph.getClass() != TinkerGraph.class)
-            throw new IllegalArgumentException("The original graph provided is not a TinkerGraph: " + originalGraph.getClass());
-        if (viewGraph.getClass() != TinkerGraph.class)
-            throw new IllegalArgumentException("The computed graph provided is not a TinkerGraph: " + viewGraph.getClass());
-
-        final TinkerGraphView graphView = TinkerHelper.getGraphView(((TinkerGraph) originalGraph));
-        StreamFactory.parallelStream(viewGraph.V()).forEach(v1 -> {
-            final Vertex v2 = originalGraph.v(v1.id());
-            keyMapping.forEach((key1, key2) -> {
-                if (v1.property(key1).isPresent()) {
-                    final Object value = v1.property(key1).value();
-                    graphView.setInUse(false);
-                    v2.property(key2, value);
-                    graphView.setInUse(true);
-                }
-            });
-        });
-        TinkerHelper.dropView((TinkerGraph) originalGraph);
-    }
-
     public String toString() {
         return StringFactory.computerString(this);
     }

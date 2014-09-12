@@ -1,9 +1,5 @@
 package com.tinkerpop.gremlin.process.computer;
 
-import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
-
-import java.util.Map;
 import java.util.concurrent.Future;
 
 /**
@@ -12,8 +8,8 @@ import java.util.concurrent.Future;
  * appropriate memory structures given the computing substrate. {@link GraphComputer} implementations also
  * maintains levels of memory isolation: Bulk Synchronous and Dirty Bulk Synchronous.
  *
- * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface GraphComputer {
 
@@ -39,10 +35,6 @@ public interface GraphComputer {
     public GraphComputer mapReduce(final MapReduce mapReduce);
 
     public Future<ComputerResult> submit();
-
-    public static void mergeComputedView(final Graph original, final Graph computed, Map<String, String> keyMapping) {
-        throw new IllegalStateException("The mergeComputedView method must be defined by the implementing GraphComputer class");
-    }
 
     public default Features features() {
         return new Features() {
