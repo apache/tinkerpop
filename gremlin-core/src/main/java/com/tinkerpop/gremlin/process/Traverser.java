@@ -21,13 +21,6 @@ public interface Traverser<T> extends Serializable {
     public T get();
 
     /**
-     * Whether the traverser is recording its path history.
-     *
-     * @return True if the traverser has an internal path, else false
-     */
-    public boolean hasPath();
-
-    /**
      * Get the current path of the traverser.
      *
      * @return The path of the traverser
@@ -40,6 +33,12 @@ public interface Traverser<T> extends Serializable {
      * @return The number of times the traverser has gone through a loop
      */
     public int getLoops();
+
+    public Traversal.SideEffects getSideEffects();
+
+    public default <A> A get(final String sideEffectKey) {
+        return this.getSideEffects().get(sideEffectKey);
+    }
 
     /**
      * The methods in System.Traverser are useful to underlying Step and Traversal implementations.
@@ -132,6 +131,8 @@ public interface Traverser<T> extends Serializable {
          * @param hostVertex The vertex that is hosting the traverser
          * @return The inflated traverser
          */
-        public Traverser.System<T> inflate(final Vertex hostVertex);
+        public Traverser.System<T> inflate(final Vertex hostVertex, final Traversal traversal);
+
+        public void setSideEffects(final Traversal.SideEffects sideEffects);
     }
 }

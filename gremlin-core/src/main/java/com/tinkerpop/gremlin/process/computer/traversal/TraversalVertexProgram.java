@@ -116,19 +116,19 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         traversal.strategies().apply();
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
         final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.System.NO_FUTURE : startStep.getNextStep().getLabel();
-        final AtomicBoolean voteToHalt = new AtomicBoolean(true);
+        final AtomicBoolean voteToHalt = new AtomicBoolean(true);               // TODO: SIDE-EFFECTS IN TRAVERSAL IN OLAP!
         if (Vertex.class.isAssignableFrom(startStep.returnClass)) {
             final Traverser.System<Vertex> traverser = this.trackPaths ?
-                    new PathTraverser<>(startStep.getLabel(), vertex) :
-                    new SimpleTraverser<>(vertex);
+                    new PathTraverser<>(startStep.getLabel(), vertex, null) :
+                    new SimpleTraverser<>(vertex, null);
             traverser.setFuture(future);
             messenger.sendMessage(MessageType.Global.of(vertex), TraversalMessage.of(traverser));
             voteToHalt.set(false);
         } else if (Edge.class.isAssignableFrom(startStep.returnClass)) {
             vertex.outE().forEach(e -> {
                 final Traverser.System<Edge> traverser = this.trackPaths ?
-                        new PathTraverser<>(startStep.getLabel(), e) :
-                        new SimpleTraverser<>(e);
+                        new PathTraverser<>(startStep.getLabel(), e, null) :
+                        new SimpleTraverser<>(e, null);
                 traverser.setFuture(future);
                 messenger.sendMessage(MessageType.Global.of(vertex), TraversalMessage.of(traverser));
                 voteToHalt.set(false);

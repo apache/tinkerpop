@@ -18,18 +18,25 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.System<T> {
     protected T t;
     protected String future = NO_FUTURE;
     protected int loops = 0;
+    protected Traversal.SideEffects sideEffects;
 
     protected SimpleTraverser() {
 
     }
 
-    public SimpleTraverser(final T t) {
+    public SimpleTraverser(final T t, final Traversal.SideEffects sideEffects) {
         this.t = t;
+        this.sideEffects = sideEffects;
     }
 
     @Override
     public T get() {
         return this.t;
+    }
+
+    @Override
+    public Traversal.SideEffects getSideEffects() {
+        return this.sideEffects;
     }
 
     @Override
@@ -45,11 +52,6 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.System<T> {
     @Override
     public void setFuture(final String label) {
         this.future = label;
-    }
-
-    @Override
-    public boolean hasPath() {
-        return false;
     }
 
     @Override
@@ -79,7 +81,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.System<T> {
 
     @Override
     public <R> SimpleTraverser<R> makeChild(final String label, final R r) {
-        final SimpleTraverser<R> traverser = new SimpleTraverser<>(r);
+        final SimpleTraverser<R> traverser = new SimpleTraverser<>(r, this.sideEffects);
         traverser.future = this.future;
         traverser.loops = this.loops;
         return traverser;
@@ -87,10 +89,15 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.System<T> {
 
     @Override
     public SimpleTraverser<T> makeSibling() {
-        final SimpleTraverser<T> traverser = new SimpleTraverser<>(this.t);
+        final SimpleTraverser<T> traverser = new SimpleTraverser<>(this.t, this.sideEffects);
         traverser.future = this.future;
         traverser.loops = this.loops;
         return traverser;
+    }
+
+    @Override
+    public void setSideEffects(final Traversal.SideEffects sideEffects) {
+        this.sideEffects = sideEffects;
     }
 
     public String toString() {
@@ -119,11 +126,12 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.System<T> {
         } else if (this.t instanceof Property) {
             this.t = (T) DetachedProperty.detach((Property) this.t);
         }
+        this.sideEffects = null;
         return this;
     }
 
     @Override
-    public SimpleTraverser<T> inflate(final Vertex vertex) {
+    public SimpleTraverser<T> inflate(final Vertex vertex, final Traversal traversal) {
         if (this.t instanceof DetachedVertex) {
             this.t = (T) ((DetachedVertex) this.t).attach(vertex);
         } else if (this.t instanceof DetachedEdge) {
@@ -131,6 +139,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.System<T> {
         } else if (this.t instanceof DetachedProperty) {
             this.t = (T) ((DetachedProperty) this.t).attach(vertex);
         }
+        this.sideEffects = traversal.sideEffects();
         return this;
     }
 }

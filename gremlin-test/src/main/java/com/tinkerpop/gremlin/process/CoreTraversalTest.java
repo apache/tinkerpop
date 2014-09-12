@@ -22,7 +22,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     public void shouldAddStartsProperly() {
         final Traversal<Object, Vertex> traversal = g.of().out().out();
         assertFalse(traversal.hasNext());
-        traversal.addStarts(new TraverserIterator(null, false, g.V()));
+        traversal.addStarts(new TraverserIterator(traversal.getSteps().get(0), false, g.V()));
         assertTrue(traversal.hasNext());
         int counter = 0;
         while (traversal.hasNext()) {
@@ -31,8 +31,8 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         }
         assertEquals(2, counter);
 
-        traversal.addStarts(new TraverserIterator(null, false, g.V()));
-        traversal.addStarts(new TraverserIterator(null, false, g.V()));
+        traversal.addStarts(new TraverserIterator(traversal.getSteps().get(0), false, g.V()));
+        traversal.addStarts(new TraverserIterator(traversal.getSteps().get(0), false, g.V()));
         counter = 0;
         while (traversal.hasNext()) {
             counter++;
@@ -48,7 +48,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         final Traversal<Object, Vertex> traversal = g.of().as("a").out().out().<Vertex>has("name", Contains.IN, Arrays.asList("ripple","lop")).as("b");
         if (new Random().nextBoolean()) traversal.reset();
         assertFalse(traversal.hasNext());
-        traversal.addStarts(new TraverserIterator(null, false, g.V()));
+        traversal.addStarts(new TraverserIterator(traversal.getSteps().get(0), false, g.V()));
         assertTrue(traversal.hasNext());
         int counter = 0;
         while (traversal.hasNext()) {
@@ -58,14 +58,14 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         assertEquals(2, counter);
 
         if (new Random().nextBoolean()) traversal.reset();
-        traversal.addStarts(new TraverserIterator(null, false, g.V()));
+        traversal.addStarts(new TraverserIterator(traversal.getSteps().get(0), false, g.V()));
         assertTrue(traversal.hasNext());
         traversal.next();
         assertTrue(traversal.hasNext());
         traversal.reset();
         assertFalse(traversal.hasNext());
 
-        traversal.addStarts(new TraverserIterator(null, false, g.V()));
+        traversal.addStarts(new TraverserIterator(traversal.getSteps().get(0), false, g.V()));
         counter = 0;
         while (traversal.hasNext()) {
             counter++;

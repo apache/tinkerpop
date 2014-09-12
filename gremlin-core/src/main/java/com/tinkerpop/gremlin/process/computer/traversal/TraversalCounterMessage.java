@@ -56,7 +56,7 @@ public class TraversalCounterMessage extends TraversalMessage {
         final Map<Traverser, Long> localCounts = new HashMap<>();
 
         messenger.receiveMessages(MessageType.Global.of()).forEach(message -> {
-            ((TraversalCounterMessage) message).traverser.inflate(vertex);
+            ((TraversalCounterMessage) message).traverser.inflate(vertex,traversal);
             if (((TraversalCounterMessage) message).executeCounts(tracker, traversal, localCounts, vertex))
                 voteToHalt.set(false);
         });
