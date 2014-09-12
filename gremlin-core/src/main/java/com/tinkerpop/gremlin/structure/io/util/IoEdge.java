@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.structure.io.util;
 
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 
 /**
  * Serializable form of {@link Edge} for IO purposes.
@@ -17,8 +17,8 @@ public class IoEdge extends IoElement {
 
     public static IoEdge from(final Edge edge) {
         final IoEdge ioe = new IoEdge();
-        final Vertex in = edge.inV().next();
-        final Vertex out = edge.outV().next();
+        final Vertex in = edge.iterators().vertices(Direction.IN).next();
+        final Vertex out = edge.iterators().vertices(Direction.OUT).next();
         ioe.inV = in.id();
         ioe.outV = out.id();
         ioe.inVLabel = in.label();
