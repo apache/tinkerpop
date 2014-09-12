@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* 2x speed increase on steps that rely heavily on `ExpandableStepIterator` with massive memory footprint reduction as well.
 * The property keys "key" and "value" are now reserved as they are the accessors for `MetaProperty.key()` and `MetaProperty.value()`.
 * Added `MetaProperty<V>` as the property type for vertices -- provides multi-properties and properties on properties.
 * Changed `VertexProgram` such that `getElementComputeKeys()` is simply a `Set<String>`.
@@ -56,7 +57,7 @@ TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 * Renamed `Graph.getFeatures()` to `Graph.features()` to be consistent with other API methods.
 * `Vertex` and `Edge` now implement all `GraphTraversal` methods to ensure consistency throughout stack.
 * `Neo4jTraversal` is auto-generated from `Neo4jTraversalStub` with technique generalizable to other vendors.
-* Added test suite to ensure that all traversals are of the same type: g.V, g.E, g.of(), v.identity(), e.identity(), v-, e-methods.
+* Added test suite to ensure that all traversals are of the same type: `g.V`, `g.E`, `g.of()`, `v.identity()`, `e.identity()`, v-, e-methods.
 * Giraph HDFS helpers now support `hdfs.mkdir(string)` and `local.mkdir(string)`
 * Added `@OptIn` and `@OptOut` for implementers to specify on their `Graph` implementations for test compliance information.
 * `GraphComputer` `Memory` now immutable after computation is complete.

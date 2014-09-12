@@ -13,40 +13,52 @@ import java.util.Queue;
  */
 public class ExpandableStepIterator<E> implements Iterator<Traverser<E>>, Serializable {
 
-    private final ExpandableIterator<Traverser<E>> expander = new ExpandableIterator<>();
+    private ExpandableIterator<Traverser<E>> expander = null;
     private Step<?, E> hostStep = EmptyStep.instance();
 
     public ExpandableStepIterator(final Step<?, E> hostStep) {
         this.hostStep = hostStep;
     }
 
-    public void clear() {
-        this.expander.clear();
-    }
-
     @Override
     public boolean hasNext() {
-        return this.hostStep.getPreviousStep().hasNext() || this.expander.hasNext();
+        return this.expanderHasNext() || this.hostStep.getPreviousStep().hasNext();
     }
 
     @Override
     public Traverser<E> next() {
+        if (this.expanderHasNext())
+            return this.expander.next();
+
         if (this.hostStep.getPreviousStep().hasNext())
             return (Traverser<E>) this.hostStep.getPreviousStep().next();
         else
-            return this.expander.next();
+            return this.expanderNext();
     }
 
     public void add(final Iterator<E> iterator) {
+        if (null == this.expander)
+            this.expander = new ExpandableIterator<>();
         this.expander.add((Iterator) iterator);
     }
 
+    @Override
     public String toString() {
         return this.expander.toString();
     }
 
-    public boolean isEmpty() {
-        return this.expander.queue.isEmpty();
+    public boolean expanderHasNext() {
+        return null != this.expander && this.expander.hasNext();
+    }
+
+    public Traverser<E> expanderNext() {
+        if (null == this.expander) throw FastNoSuchElementException.instance();
+        else return this.expander.next();
+    }
+
+    public void clear() {
+        if (null != this.expander)
+            this.expander.clear();
     }
 
     public class ExpandableIterator<T> implements Iterator<T>, Serializable {
