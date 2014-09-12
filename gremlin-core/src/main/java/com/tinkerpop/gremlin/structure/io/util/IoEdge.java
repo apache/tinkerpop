@@ -16,9 +16,6 @@ public class IoEdge extends IoElement {
     public String outVLabel;
 
     public static IoEdge from(final Edge edge) {
-        if (edge instanceof DetachedEdge)
-            throw new IllegalArgumentException(String.format("Cannot convert %s", DetachedEdge.class.getSimpleName()));
-
         final IoEdge ioe = new IoEdge();
         final Vertex in = edge.inV().next();
         final Vertex out = edge.outV().next();
