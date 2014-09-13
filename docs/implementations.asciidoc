@@ -41,6 +41,8 @@ Validating with Gremlin-Test
 
 The operational semantics of any OLTP or OLAP implementation are validated by `gremlin-test`. Please provide the following test cases with your implementation, where `XXX` below denotes the name of your graph implementation (e.g. TinkerGraph, Neo4jGraph, GiraphGraph, etc.).
 
+NOTE: It is as important to look at "ignored" tests as it is to look at ones that fail.  The `gremlin-test` suite utilizes the `Feature` implementation exposed by the `Graph` to determine which tests to execute.  If a test utilizes features that are not supported by the graph, it will ignore them.  While that may be fine, implementers should validate that the ignored tests are appropriately bypassed and that there are no mistakes in their feature definitions.
+
 [source,java]
 ----
 // Structure API tests
