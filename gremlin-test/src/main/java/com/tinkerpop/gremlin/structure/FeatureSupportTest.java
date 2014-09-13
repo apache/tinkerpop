@@ -137,16 +137,24 @@ public class FeatureSupportTest {
      * Feature checks that test {@link com.tinkerpop.gremlin.structure.Vertex} functionality to determine if a feature
      * should be on when it is marked as not supported.
      */
+    @ExceptionCoverage(exceptionClass = Vertex.Exceptions.class, methods = {
+            "userSuppliedIdsNotSupported"
+    })
+    @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
+            "vertexAdditionsNotSupported"
+    })
     public static class VertexFunctionalityTest extends AbstractGremlinTest {
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES, supported = false)
-        public void shouldSupportAddingVerticesIfAVertexCanBeAdded() throws Exception {
+        public void shouldSupportAddVerticesIfAVertexCanBeAdded() throws Exception {
             try {
                 g.addVertex();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_ADD_VERTICES));
             } catch (Exception ex) {
-                assertEquals(Graph.Exceptions.vertexAdditionsNotSupported().getMessage(), ex.getMessage());
+                final Exception expectedException = Graph.Exceptions.vertexAdditionsNotSupported();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
             }
         }
 
@@ -158,7 +166,9 @@ public class FeatureSupportTest {
                 g.addVertex(Element.ID, GraphManager.get().convertId(99999943835l));
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_USER_SUPPLIED_IDS));
             } catch (Exception ex) {
-                assertEquals(Vertex.Exceptions.userSuppliedIdsNotSupported().getMessage(), ex.getMessage());
+                final Exception expectedException = Vertex.Exceptions.userSuppliedIdsNotSupported();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
             }
         }
 
@@ -198,6 +208,19 @@ public class FeatureSupportTest {
      * should be on when it is marked as not supported.
      */
     public static class EdgeFunctionalityTest extends AbstractGremlinTest {
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES, supported = false)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        public void shouldSupportAddEdgesIfEdgeCanBeAdded() throws Exception {
+            try {
+                final Vertex v = g.addVertex();
+                v.addEdge("friend", v);
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_ADD_EDGES));
+            } catch (Exception ex) {
+                assertEquals(Vertex.Exceptions.edgeAdditionsNotSupported().getMessage(), ex.getMessage());
+            }
+        }
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
