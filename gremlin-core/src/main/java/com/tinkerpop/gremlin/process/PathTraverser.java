@@ -19,18 +19,13 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
         super();
     }
 
-    public PathTraverser(final T t) {
-        super(t);
+    public PathTraverser(final T t, final Traversal.SideEffects sideEffects) {
+        super(t, sideEffects);
     }
 
-    public PathTraverser(final String as, final T t) {
-        super(t);
+    public PathTraverser(final String as, final T t, final Traversal.SideEffects sideEffects) {
+        super(t, sideEffects);
         this.path.add(as, t);
-    }
-
-    @Override
-    public boolean hasPath() {
-        return true;
     }
 
     @Override
@@ -45,7 +40,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
 
     @Override
     public <R> PathTraverser<R> makeChild(final String label, final R r) {
-        final PathTraverser<R> traverser = new PathTraverser<>(r);
+        final PathTraverser<R> traverser = new PathTraverser<>(r, this.sideEffects);
         traverser.loops = this.loops;
         traverser.path.add(this.path);
         traverser.path.add(label, r);
@@ -55,7 +50,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
 
     @Override
     public PathTraverser<T> makeSibling() {
-        final PathTraverser<T> traverser = new PathTraverser<>(this.t);
+        final PathTraverser<T> traverser = new PathTraverser<>(this.t, this.sideEffects);
         traverser.loops = this.loops;
         traverser.path.add(this.path);
         traverser.future = this.future;
@@ -72,11 +67,12 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
             this.t = (T) DetachedProperty.detach((Property) this.t);
         }
         this.path = DetachedPath.detach(this.path);
+        this.sideEffects = null;
         return this;
     }
 
     @Override
-    public PathTraverser<T> inflate(final Vertex vertex) {
+    public PathTraverser<T> inflate(final Vertex vertex, final Traversal traversal) {
         if (this.t instanceof DetachedVertex) {
             this.t = (T) ((DetachedVertex) this.t).attach(vertex);
         } else if (this.t instanceof DetachedEdge) {
@@ -84,6 +80,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
         } else if (this.t instanceof DetachedProperty) {
             this.t = (T) ((DetachedProperty) this.t).attach(vertex);
         }
+        this.sideEffects = traversal.sideEffects();
         return this;
     }
 

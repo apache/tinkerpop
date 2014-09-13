@@ -35,7 +35,7 @@ public class CountStep<S> extends MapStep<S, Long> implements Bulkable {
             if (this.starts.hasNext()) {
                 return super.processNextStart();
             } else {
-                return new SimpleTraverser<>(0l);
+                return new SimpleTraverser<>(0l,this.traversal.sideEffects());
             }
         } else {
             throw FastNoSuchElementException.instance();

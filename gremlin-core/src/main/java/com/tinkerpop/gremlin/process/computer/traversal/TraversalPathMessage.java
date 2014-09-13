@@ -43,7 +43,7 @@ public class TraversalPathMessage extends TraversalMessage {
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         messenger.receiveMessages(MessageType.Global.of()).forEach(message -> {
-            ((TraversalPathMessage) message).traverser.inflate(vertex);
+            ((TraversalPathMessage) message).traverser.inflate(vertex,traversal);
             if (((TraversalPathMessage) message).executePaths(vertex, messenger, tracker, traversal))
                 voteToHalt.set(false);
         });

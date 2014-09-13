@@ -1004,7 +1004,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     private void assertBranchFactor(final double branchFactor,
                                     final Traversal t,
                                     final Iterator inputs) {
-        Traverser start = new SimpleTraverser(null);
+        Traverser start = new SimpleTraverser(null,null);
         MatchStep.TraversalWrapper w = new MatchStep.TraversalWrapper(t, "a", "b");
         MatchStep.TraversalUpdater updater = new MatchStep.TraversalUpdater<>(w, inputs, start, "x");
         while (updater.hasNext()) {
