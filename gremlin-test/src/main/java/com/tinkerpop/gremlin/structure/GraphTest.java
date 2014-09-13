@@ -28,9 +28,6 @@ import static org.junit.Assert.*;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@ExceptionCoverage(exceptionClass = Vertex.Exceptions.class, methods = {
-        "userSuppliedIdsNotSupported"
-})
 @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
         "vertexWithIdAlreadyExists",
         "elementNotFound"
@@ -201,20 +198,6 @@ public class GraphTest extends AbstractGremlinTest {
             final Vertex v = g.v(customId);
             assertEquals(customId, v.id());
         });
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
-    public void shouldHaveExceptionConsistencyWhenIdsNotSupportedForAddVertex() throws Exception {
-        try {
-            this.g.addVertex(Element.ID, "");
-            fail("Call to addVertex should have thrown an exception when ID was specified as it is not supported");
-        } catch (Exception ex) {
-            final Exception expectedException = Vertex.Exceptions.userSuppliedIdsNotSupported();
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
-        }
     }
 
     /**
