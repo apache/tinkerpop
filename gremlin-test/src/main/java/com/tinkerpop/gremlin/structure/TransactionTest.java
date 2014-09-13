@@ -16,11 +16,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.*;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -783,5 +785,83 @@ public class TransactionTest extends AbstractGremlinTest {
 
         g.tx().rollback();
         assertEquals(0.5d, e.value("weight"), 0.00001d);
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldAllowReferenceOfVertexIdOutsideOfOrginialThreadManual() throws Exception {
+        g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
+        g.tx().open();
+        final Vertex v1 = g.addVertex("name", "stephen");
+
+        final AtomicReference<Object> id = new AtomicReference<>();
+        final Thread t = new Thread(() -> {
+            g.tx().open();
+            id.set(v1.id());
+        });
+
+        t.start();
+        t.join();
+
+        assertEquals(v1.id(), id.get());
+
+        g.tx().rollback();
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldAllowReferenceOfEdgeIdOutsideOfOrginialThreadManual() throws Exception {
+        g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
+        g.tx().open();
+        final Vertex v1 = g.addVertex();
+        final Edge e = v1.addEdge("self", v1, "weight", 0.5d);
+
+        final AtomicReference<Object> id = new AtomicReference<>();
+        final Thread t = new Thread(() -> {
+            g.tx().open();
+            id.set(e.id());
+        });
+
+        t.start();
+        t.join();
+
+        assertEquals(e.id(), id.get());
+
+        g.tx().rollback();
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldAllowReferenceOfVertexIdOutsideOfOrginialThreadAuto() throws Exception  {
+        final Vertex v1 = g.addVertex("name", "stephen");
+
+        final AtomicReference<Object> id = new AtomicReference<>();
+        final Thread t = new Thread(() -> id.set(v1.id()));
+        t.start();
+        t.join();
+
+        assertEquals(v1.id(), id.get());
+
+        g.tx().rollback();
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldAllowReferenceOfEdgeIdOutsideOfOrginialThreadAuto() throws Exception  {
+        final Vertex v1 = g.addVertex();
+        final Edge e = v1.addEdge("self", v1, "weight", 0.5d);
+
+        final AtomicReference<Object> id = new AtomicReference<>();
+        final Thread t = new Thread(() -> id.set(e.id()));
+        t.start();
+        t.join();
+
+        assertEquals(e.id(), id.get());
+
+        g.tx().rollback();
     }
 }
