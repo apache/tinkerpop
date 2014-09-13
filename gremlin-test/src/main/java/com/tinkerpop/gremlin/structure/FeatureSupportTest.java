@@ -140,6 +140,17 @@ public class FeatureSupportTest {
     public static class VertexFunctionalityTest extends AbstractGremlinTest {
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES, supported = false)
+        public void shouldSupportAddingVerticesIfAVertexCanBeAdded() throws Exception {
+            try {
+                g.addVertex();
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_ADD_VERTICES));
+            } catch (Exception ex) {
+                assertEquals(Graph.Exceptions.vertexAdditionsNotSupported().getMessage(), ex.getMessage());
+            }
+        }
+
+        @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsIfAnIdCanBeAssignedToVertex() throws Exception {
