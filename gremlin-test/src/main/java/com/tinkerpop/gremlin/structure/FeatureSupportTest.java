@@ -207,6 +207,9 @@ public class FeatureSupportTest {
      * Feature checks that test {@link com.tinkerpop.gremlin.structure.Edge} functionality to determine if a feature
      * should be on when it is marked as not supported.
      */
+    @ExceptionCoverage(exceptionClass = Vertex.Exceptions.class, methods = {
+            "edgeAdditionsNotSupported"
+    })
     public static class EdgeFunctionalityTest extends AbstractGremlinTest {
 
         @Test
@@ -218,7 +221,9 @@ public class FeatureSupportTest {
                 v.addEdge("friend", v);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_ADD_EDGES));
             } catch (Exception ex) {
-                assertEquals(Vertex.Exceptions.edgeAdditionsNotSupported().getMessage(), ex.getMessage());
+                final Exception expectedException = Vertex.Exceptions.edgeAdditionsNotSupported();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
             }
         }
 
