@@ -21,7 +21,11 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.util.IoEdge;
 import com.tinkerpop.gremlin.structure.io.util.IoMetaProperty;
 import com.tinkerpop.gremlin.structure.io.util.IoVertex;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedMetaProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
@@ -179,7 +183,7 @@ public final class GremlinKryo {
 
         /**
          * Note that the following are pre-registered boolean, Boolean, byte, Byte, char, Character, double, Double,
-         * int, Integer, float, Float, long, Long, short, Short, String, void. Current max is HashSet=65.
+         * int, Integer, float, Float, long, Long, short, Short, String, void.
          */
         private final List<Triplet<Class, Serializer, Integer>> serializationList = new ArrayList<Triplet<Class, Serializer, Integer>>() {{
             add(Triplet.<Class, Serializer, Integer>with(byte[].class, null, 25));
@@ -207,14 +211,14 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(Currency.class, null, 40));
             add(Triplet.<Class, Serializer, Integer>with(Date.class, null, 38));
             add(Triplet.<Class, Serializer, Integer>with(Direction.class, null, 12));
-            add(Triplet.<Class, Serializer, Integer>with(Edge.class, new ElementSerializer.EdgeSerializer(), 19));
+            add(Triplet.<Class, Serializer, Integer>with(DetachedEdge.class, null, 21));
+            add(Triplet.<Class, Serializer, Integer>with(DetachedMetaProperty.class, null, 20));
+            add(Triplet.<Class, Serializer, Integer>with(DetachedProperty.class, null, 18));
+            add(Triplet.<Class, Serializer, Integer>with(DetachedVertex.class, null, 19));
             add(Triplet.<Class, Serializer, Integer>with(EdgeTerminator.class, null, 14));
             add(Triplet.<Class, Serializer, Integer>with(EnumSet.class, null, 46));
             add(Triplet.<Class, Serializer, Integer>with(HashMap.class, null, 11));
             add(Triplet.<Class, Serializer, Integer>with(HashMap.Entry.class, null, 16));
-            add(Triplet.<Class, Serializer, Integer>with(IoEdge.class, null, 21));
-            add(Triplet.<Class, Serializer, Integer>with(IoMetaProperty.class, null, 65));
-            add(Triplet.<Class, Serializer, Integer>with(IoVertex.class, null, 20));
             add(Triplet.<Class, Serializer, Integer>with(KryoSerializable.class, null, 36));
             add(Triplet.<Class, Serializer, Integer>with(LinkedHashMap.class, null, 47));
             add(Triplet.<Class, Serializer, Integer>with(linkedHashMapEntryClass, null, 15));
@@ -226,7 +230,6 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(TreeMap.class, null, 45));
             add(Triplet.<Class, Serializer, Integer>with(TreeSet.class, null, 50));
             add(Triplet.<Class, Serializer, Integer>with(UUID.class, new UUIDSerializer(), 17));
-            add(Triplet.<Class, Serializer, Integer>with(Vertex.class, new ElementSerializer.VertexSerializer(), 18));
             add(Triplet.<Class, Serializer, Integer>with(VertexTerminator.class, null, 13));
 
             // GraphTraversal in OLAP
@@ -239,7 +242,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(Optional.class, null, 61));
             add(Triplet.<Class, Serializer, Integer>with(AtomicLong.class, null, 62)); // this is all needed for serializing properties in TinkerGraph
             add(Triplet.<Class, Serializer, Integer>with(Tree.class, null, 63));
-            add(Triplet.with(HashSet.class, null, 64));
+            add(Triplet.with(HashSet.class, null, 64));  // ***LAST ID***
         }};
 
         private static final byte major = 1;

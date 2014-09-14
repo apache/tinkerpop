@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.PropertyFilterIterator;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -22,6 +23,8 @@ public abstract class DetachedElement<E> implements Element, Serializable, Attac
     Object id;
     String label;
     Map<String, List<? extends Property>> properties = new HashMap<>();
+
+    private final transient Element.Iterators iterators = new Iterators();
 
     protected DetachedElement() {
 
@@ -79,8 +82,6 @@ public abstract class DetachedElement<E> implements Element, Serializable, Attac
     public Element.Iterators iterators() {
         return this.iterators;
     }
-
-    private final Element.Iterators iterators = new Iterators();
 
     protected class Iterators implements Element.Iterators, Serializable {
         @Override

@@ -27,14 +27,18 @@ class ElementSerializer {
     static class EdgeSerializer extends Serializer<Edge> {
         @Override
         public void write(final Kryo kryo, final Output output, final Edge edge) {
-            kryo.writeClassAndObject(output, IoEdge.from(edge));
+            kryo.writeClassAndObject(output, edge instanceof DetachedEdge ? (DetachedEdge) edge : DetachedEdge.detach(edge));
         }
 
         @Override
         public Edge read(final Kryo kryo, final Input input, final Class<Edge> edgeClass) {
+            /*
             final IoEdge ioe = (IoEdge) kryo.readClassAndObject(input);
             return new DetachedEdge(ioe.id, ioe.label, ioe.properties, ioe.hiddenProperties,
                     Pair.with(ioe.outV, ioe.outVLabel), Pair.with(ioe.inV, ioe.inVLabel));
+                    */
+            final Object o = kryo.readClassAndObject(input);
+            return (Edge) o;
         }
     }
 
@@ -50,13 +54,16 @@ class ElementSerializer {
 
         @Override
         public void write(final Kryo kryo, final Output output, final Vertex vertex) {
-            kryo.writeClassAndObject(output, IoVertex.from(vertex));
+            kryo.writeClassAndObject(output, vertex instanceof DetachedVertex ? (DetachedVertex) vertex : DetachedVertex.detach(vertex));
         }
 
         @Override
         public Vertex read(final Kryo kryo, final Input input, final Class<Vertex> vertexClass) {
+            return (Vertex) kryo.readClassAndObject(input);
+            /*
             final IoVertex iov = (IoVertex) kryo.readClassAndObject(input);
             return new DetachedVertex(iov.id, iov.label, iov.properties, iov.hiddenProperties);
+            */
         }
     }
 }

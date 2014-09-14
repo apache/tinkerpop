@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
@@ -43,8 +44,8 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
         this.vertex = vertex;
         this.hashCode = super.hashCode();
 
-        if (properties != null) properties.entrySet().iterator().forEachRemaining(kv -> this.properties.put(kv.getKey(), Arrays.asList(new DetachedProperty(kv.getKey(), kv.getValue(), this))));
-        if (hiddenProperties != null) hiddenProperties.entrySet().iterator().forEachRemaining(kv -> this.properties.put(Graph.Key.hide(kv.getKey()), Arrays.asList(new DetachedProperty(kv.getKey(), kv.getValue(), this))));
+        if (properties != null) properties.entrySet().iterator().forEachRemaining(kv -> this.properties.put(kv.getKey(), new ArrayList(Arrays.asList(new DetachedProperty(kv.getKey(), kv.getValue(), this)))));
+        if (hiddenProperties != null) hiddenProperties.entrySet().iterator().forEachRemaining(kv -> this.properties.put(Graph.Key.hide(kv.getKey()), new ArrayList(Arrays.asList(new DetachedProperty(kv.getKey(), kv.getValue(), this)))));
     }
 
     private DetachedMetaProperty(final MetaProperty property) {

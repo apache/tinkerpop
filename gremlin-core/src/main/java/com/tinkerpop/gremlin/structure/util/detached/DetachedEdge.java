@@ -37,6 +37,8 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
     DetachedVertex outVertex;
     DetachedVertex inVertex;
 
+    private final transient Edge.Iterators iterators = new Iterators();
+
     public DetachedEdge(final Object id, final String label,
                         final Map<String, Object> properties,
                         final Map<String, Object> hiddenProperties,
@@ -57,8 +59,8 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
         this.outVertex = DetachedVertex.detach(edge.iterators().vertices(Direction.OUT).next());
         this.inVertex = DetachedVertex.detach(edge.iterators().vertices(Direction.IN).next());
 
-        edge.iterators().properties().forEachRemaining(p -> this.properties.put(p.key(), Arrays.asList(new DetachedProperty(p.key(), p.value(), this))));
-        edge.iterators().hiddens().forEachRemaining(p -> this.properties.put(Graph.Key.hide(p.key()), Arrays.asList(new DetachedProperty(p.key(), p.value(), this))));
+        edge.iterators().properties().forEachRemaining(p -> this.properties.put(p.key(), new ArrayList(Arrays.asList(new DetachedProperty(p.key(), p.value(), this)))));
+        edge.iterators().hiddens().forEachRemaining(p -> this.properties.put(Graph.Key.hide(p.key()), new ArrayList(Arrays.asList(new DetachedProperty(p.key(), p.value(), this)))));
     }
 
     @Override
@@ -76,6 +78,14 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
     @Override
     public Edge attach(final Graph graph) {
         return graph.e(this.id);
+    }
+
+    public void clearVertex(final Direction direction) {
+        if (direction == Direction.BOTH || direction == Direction.OUT)
+            this.outVertex = null;
+
+        if (direction == Direction.BOTH || direction == Direction.IN)
+            this.inVertex = null;
     }
 
     public static DetachedEdge detach(final Edge edge) {
@@ -99,8 +109,6 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
                 .map(entry -> Pair.with(entry.getKey(), (Property) new DetachedProperty(entry.getKey(), entry.getValue(), this)))
                 .collect(Collectors.toMap(p -> p.getValue0(), p -> Arrays.asList(p.getValue1())));
     }
-
-    private final Edge.Iterators iterators = new Iterators();
 
     protected class Iterators extends DetachedElement<Edge>.Iterators implements Edge.Iterators, Serializable {
 

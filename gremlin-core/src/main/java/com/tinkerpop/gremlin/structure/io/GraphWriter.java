@@ -68,4 +68,5 @@ public interface GraphWriter {
      * Write an edge to a stream.
      */
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException;
+    public void writeEdgeNew(final OutputStream outputStream, final Edge e) throws IOException;
 }

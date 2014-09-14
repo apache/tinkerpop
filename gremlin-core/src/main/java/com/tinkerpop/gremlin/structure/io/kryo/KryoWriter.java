@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.io.IOException;
@@ -87,6 +88,14 @@ public class KryoWriter implements GraphWriter {
         kryo.writeClassAndObject(output, e.outV().id().next());
         kryo.writeClassAndObject(output, e.inV().id().next());
         writeEdgeToOutput(output, e);
+        output.flush();
+    }
+
+    @Override
+    public void writeEdgeNew(final OutputStream outputStream, final Edge e) throws IOException {
+        final Output output = new Output(outputStream);
+        this.headerWriter.write(kryo, output);
+        kryo.writeClassAndObject(output, DetachedEdge.detach(e));
         output.flush();
     }
 

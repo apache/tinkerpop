@@ -31,6 +31,8 @@ import java.util.stream.Collectors;
  */
 public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
+    private final transient Vertex.Iterators iterators = new Iterators();
+
     private DetachedVertex() { }
 
     public DetachedVertex(final Object id, final String label, final Map<String, Object> properties, final Map<String, Object> hiddenProperties) {
@@ -113,8 +115,6 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
                                 .collect(Collectors.toList()))
                 ).collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
     }
-
-    private final Vertex.Iterators iterators = new Iterators();
 
     protected class Iterators extends DetachedElement<Vertex>.Iterators implements Vertex.Iterators, Serializable {
 
