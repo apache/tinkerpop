@@ -31,54 +31,6 @@ class StepLoader {
 
         // THE CODE BELOW IS REQUIRED UNTIL GROOVY 2.3+ FIXES VAR ARG CONVERSION OF CLOSURES TO LAMBDAS
 
-        GraphTraversal.metaClass.map = { final Closure closure ->
-            return 1 == closure.getMaximumNumberOfParameters() ?
-                    ((GraphTraversal) delegate).map(new GFunction<>(closure)) :
-                    ((GraphTraversal) delegate).map(new GBiFunction<>(closure))
-        }
-
-        GraphTraversal.metaClass.flatMap = { final Closure closure ->
-            return 1 == closure.getMaximumNumberOfParameters() ?
-                    ((GraphTraversal) delegate).flatMap(new GFunction<>(closure)) :
-                    ((GraphTraversal) delegate).flatMap(new GBiFunction<>(closure))
-        }
-
-        GraphTraversal.metaClass.filter = { final Closure closure ->
-            return 1 == closure.getMaximumNumberOfParameters() ?
-                    ((GraphTraversal) delegate).filter(new GPredicate<>(closure)) :
-                    ((GraphTraversal) delegate).filter(new GBiPredicate<>(closure))
-        }
-
-        GraphTraversal.metaClass.sideEffect = { final Closure closure ->
-            return 1 == closure.getMaximumNumberOfParameters() ?
-                    ((GraphTraversal) delegate).sideEffect(new GConsumer<>(closure)) :
-                    ((GraphTraversal) delegate).sideEffect(new GBiConsumer<>(closure))
-        }
-
-        Element.metaClass.map = { final Closure closure ->
-            return 1 == closure.getMaximumNumberOfParameters() ?
-                    delegate.map(new GFunction<>(closure)) :
-                    delegate.map(new GBiFunction<>(closure))
-        }
-
-        Element.metaClass.flatMap = { final Closure closure ->
-            return 1 == closure.getMaximumNumberOfParameters() ?
-                    delegate.flatMap(new GFunction<>(closure)) :
-                    delegate.flatMap(new GBiFunction<>(closure))
-        }
-
-        Element.metaClass.filter = { final Closure closure ->
-            return 1 == closure.getMaximumNumberOfParameters() ?
-                    delegate.filter(new GPredicate<>(closure)) :
-                    delegate.filter(new GBiPredicate<>(closure))
-        }
-
-        Element.metaClass.sideEffect = { final Closure closure ->
-            return 1 == closure.getMaximumNumberOfParameters() ?
-                    delegate.sideEffect(new GConsumer<>(closure)) :
-                    delegate.sideEffect(new GBiConsumer<>(closure))
-        }
-
         GraphTraversal.metaClass.path = { final Closure... pathClosures ->
             return ((GraphTraversal) delegate).path(GFunction.make(pathClosures));
         }
