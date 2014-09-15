@@ -47,7 +47,7 @@ class GroovyMatchTestImpl extends MatchTest {
     public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_out_jump2_bX_selectXab_nameX() {
         g.V().match('a',
                 g.of().as('a').out('created').as('b'),
-                g.of().as('a').out().jump('a', 2).as('b')).select(['a', 'b']) { it.value('name') }
+                g.of().as('a').out().jump('a', 2).as('b')).select(['a', 'b']) { it.name }
     }
 
     @Override
@@ -55,7 +55,7 @@ class GroovyMatchTestImpl extends MatchTest {
         g.V().match('a',
                 g.of().as('a').out('created').has('name', 'lop').as('b'),
                 g.of().as('b').in('created').has('age', 29).as('c'),
-                g.of().as('c').out().jump('c') { it.loops < 2 }).select { it.value('name') }
+                g.of().as('c').out().jump('c') { it.loops < 2 }).select { it.name }
     }
 
     @Override
@@ -85,7 +85,7 @@ class GroovyMatchTestImpl extends MatchTest {
                 g.of().as('b').out('created').has('name', 'lop'),
                 g.of().as('b').match('a1',
                         g.of().as('a1').out('created').as('b1'),
-                        g.of().as('b1').in('created').as('c1')).select('c1').as('c')).select { it.value('name') }
+                        g.of().as('b1').in('created').as('c1')).select('c1').as('c')).select { it.name }
     }
 
     @Override
@@ -133,7 +133,7 @@ class GroovyMatchTestImpl extends MatchTest {
                 g.of().as("a").out("created").has("name", "lop").as("b"),
                 g.of().as("b").in("created").has("age", 29).as("c"))
                 .where(g.of().as("c").out().jump("c") { it.loops < 2 })
-                .select { it.value("name") };
+                .select { it.name };
     }
 
     @Override
@@ -142,7 +142,7 @@ class GroovyMatchTestImpl extends MatchTest {
                 g.of().as('a').out('created').as('b'),
                 g.of().as('b').in('created').as('c'))
                 .where('a', T.neq, 'c')
-                .select(['a', 'c']) { it.value('name') }
+                .select(['a', 'c']) { it.name }
     }
 
     /*@Override

@@ -21,14 +21,6 @@ class StepLoader {
             }
         }
 
-        GraphTraversal.metaClass.getAt = { final Integer index ->
-            return ((GraphTraversal) delegate).range(index, index);
-        }
-
-        GraphTraversal.metaClass.getAt = { final Range range ->
-            return ((GraphTraversal) delegate).range(range.getFrom() as Integer, range.getTo() as Integer);
-        }
-
         // THE CODE BELOW IS REQUIRED UNTIL GROOVY 2.3+ FIXES VAR ARG CONVERSION OF CLOSURES TO LAMBDAS
 
         GraphTraversal.metaClass.path = { final Closure... pathClosures ->

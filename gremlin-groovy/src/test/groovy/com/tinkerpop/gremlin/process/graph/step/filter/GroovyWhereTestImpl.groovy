@@ -11,21 +11,21 @@ class GroovyWhereTestImpl extends WhereTest {
 
     @Override
     public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX() {
-        return g.V().has('age').as('a').out().in().has('age').as('b').select().where('a', T.eq, 'b');
+        return g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', T.eq, 'b');
     }
 
     @Override
     public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_b_neqX() {
-        return g.V().has('age').as('a').out().in().has('age').as('b').select().where('a', 'b') { a, b -> !a.equals(b) };
+        return g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', 'b') { a, b -> !a.equals(b) };
     }
 
     @Override
     public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXb_hasXname_markoXX() {
-        return g.V().has('age').as('a').out().in().has('age').as('b').select().where(g.of().as('b').has('name', 'marko'));
+        return g.V.has('age').as('a').out.in.has('age').as('b').select().where(g.of().as('b').has('name', 'marko'));
     }
 
     @Override
     public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_outXknowsX_bX() {
-        return g.V().has('age').as('a').out().in().has('age').as('b').select().where(g.of().as('a').out('knows').as('b'));
+        return g.V().has('age').as('a').out.in.has('age').as('b').select().where(g.of().as('a').out('knows').as('b'));
     }
 }

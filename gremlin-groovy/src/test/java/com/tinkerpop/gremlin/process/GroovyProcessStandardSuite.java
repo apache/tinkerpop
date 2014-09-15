@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
+import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyCyclicPathTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyDedupTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyExceptTestImpl;
@@ -43,6 +44,7 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
 
     static {
         GremlinLoader.load();
+        SugarLoader.load();
     }
 
     /**

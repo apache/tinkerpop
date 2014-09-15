@@ -20,6 +20,14 @@ class SugarLoader {
             it.metaClass.getProperty = { final String key ->
                 TraverserCategory.get((Traverser) delegate, key);
             }
+            // g.V.map{it.label()}
+            it.metaClass.methodMissing = { final String name, final def args ->
+                ((Traverser) delegate).get()."$name"(*args);
+            }
+        }
+
+        GraphTraversal.metaClass.methodMissing = { final String name, final def args ->
+            ((GraphTraversal) delegate).value(name);
         }
 
         Traverser.metaClass.mixin(TraverserCategory.class);
@@ -28,24 +36,16 @@ class SugarLoader {
         Vertex.metaClass.mixin(VertexCategory.class);
         Edge.metaClass.mixin(ElementCategory.class);
         MetaProperty.metaClass.mixin(ElementCategory.class);
-
-        // g.V.out.name
-        GraphTraversal.metaClass.methodMissing = { final String name, final def args ->
-            return ((GraphTraversal) delegate).value(name);
-        }
-
-        /* TODO: figure out this one smarty pants
-        // g.V.map{it.label()}
-        Traverser.metaClass.methodMissing = { final String name, final def args ->
-            return ((Traverser) delegate).get()."$name"(*args);
-        }*/
     }
 
     public static class TraverserCategory {
+        private static final String LOOPS = "loops";
+        private static final String PATH = "path";
+
         public static final get(final Traverser traverser, final String key) {
-            if (key.equals("loops"))
+            if (key.equals(LOOPS))
                 return traverser.getLoops();
-            else if (key.equals("path"))
+            else if (key.equals(PATH))
                 return traverser.getPath();
             else
                 return traverser.getSideEffects().exists(key) ? traverser.getSideEffects().get(key) : traverser.get()."$key";
@@ -82,18 +82,35 @@ class SugarLoader {
         public static final putAt(final Vertex vertex, final String key, final Object value) {
             vertex.property(key, value);
         }
-
     }
 
     public static class GraphCategory {
+        private static final String V = "V";
+        private static final String E = "E";
+
         public static final get(final Graph graph, final String key) {
-            graph."$key"()
+            if (key.equals(V))
+                return graph.V();
+            else if (key.equals(E))
+                return graph.E();
+            else
+                return graph."$key";
         }
     }
 
     public static class GraphTraversalCategory {
+
         public static final get(final GraphTraversal graphTraversal, final String key) {
-            graphTraversal."$key"();
+            // GraphTraversal.metaClass.getMetaMethod(key) ? graphTraversal."$key"() : graphTraversal.value(key);
+            graphTraversal."$key"()
+        }
+
+        public static final getAt(final GraphTraversal graphTraversal, final Integer index) {
+            graphTraversal.range(index, index);
+        }
+
+        public static final getAt(final GraphTraversal graphTraversal, final Range range) {
+            graphTraversal.range(range.getFrom() as Integer, range.getTo() as Integer);
         }
     }
 }

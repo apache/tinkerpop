@@ -11,12 +11,12 @@ class GroovyUnfoldTestImpl extends UnfoldTest {
 
     @Override
     public Traversal<Vertex, Edge> get_g_V_mapXoutEX_unfold() {
-        g.V().map { it.get().outE() }.unfold()
+        g.V.map { it.outE }.unfold
     }
 
     @Override
     public Traversal<Vertex, String> get_V_valueMap_unfold_mapXkeyX() {
-        g.V().valueMap().unfold().map { it.get().key }
+        g.V.valueMap.unfold.map { it.key }
     }
 
 

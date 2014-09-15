@@ -11,16 +11,16 @@ class GroovyAggregateTestImpl extends AggregateTest {
 
     @Override
     public Traversal<Vertex, List<String>> get_g_V_valueXnameX_aggregate() {
-        g.V().value('name').aggregate()
+        g.V.name.aggregate
     }
 
     @Override
     public Traversal<Vertex, List<String>> get_g_V_aggregateXnameX() {
-        g.V().aggregate { it.get().value('name') }
+        g.V.aggregate { it.name }
     }
 
     @Override
     public Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path() {
-        g.V().out().aggregate('a').path();
+        g.V.out.aggregate('a').path;
     }
 }
