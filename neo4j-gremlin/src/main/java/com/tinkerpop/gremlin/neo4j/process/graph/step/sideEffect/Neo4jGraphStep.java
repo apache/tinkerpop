@@ -14,6 +14,7 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.ResourceIterator;
@@ -52,11 +53,9 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         this.graph.tx().readWrite();
         final HasContainer indexedContainer = getEdgeIndexKey();
         final Stream<? extends Edge> edgeStream = (null == indexedContainer) ?
-                getEdges() :
+                getAllEdges() :
                 getEdgesUsingIndex(indexedContainer);
-        return edgeStream
-                .filter(edge -> !((Neo4jEdge) edge).getBaseEdge().getType().name().startsWith(Neo4jMetaProperty.META_PROPERTY_PREFIX))
-                .filter(edge -> HasContainer.testAll((Edge) edge, this.hasContainers)).iterator();
+        return edgeStream.filter(edge -> HasContainer.testAll((Edge) edge, this.hasContainers)).iterator();
     }
 
     private Iterator<? extends Vertex> vertices() {
@@ -86,49 +85,62 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
                 vertexStream = getVerticesUsingLegacyIndex(hasContainer1.key, hasContainer1.value);
                 this.hasContainers.remove(hasContainer1);
             } else {
-                vertexStream = getVertices();
+                vertexStream = getAllVertices();
             }
         }
-        return vertexStream
-                .filter(vertex -> !((Neo4jVertex) vertex).getBaseVertex().getLabels().iterator().next().equals(Neo4jMetaProperty.META_PROPERTY_LABEL))
-                .filter(vertex -> !((Neo4jVertex) vertex).getBaseVertex().getLabels().iterator().next().equals(Neo4jGraphVariables.GRAPH_VARIABLE_LABEL))
-                .filter(vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers)).iterator();
+        return vertexStream.filter(vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers)).iterator();
     }
 
-    private Stream<Neo4jVertex> getVertices() {
+    private Stream<Neo4jVertex> getAllVertices() {
         return StreamFactory.stream(GlobalGraphOperations.at(this.graph.getBaseGraph()).getAllNodes())
-                .map(n -> new Neo4jVertex(n, this.graph));
+                .filter(node -> !node.getLabels().iterator().next().equals(Neo4jMetaProperty.META_PROPERTY_LABEL))
+                .filter(node -> !node.getLabels().iterator().next().equals(Neo4jGraphVariables.GRAPH_VARIABLE_LABEL))
+                .map(node -> new Neo4jVertex(node, this.graph));
     }
 
-    private Stream<Neo4jEdge> getEdges() {
+    private Stream<Neo4jEdge> getAllEdges() {
         return StreamFactory.stream(GlobalGraphOperations.at(this.graph.getBaseGraph()).getAllRelationships())
-                .map(e -> new Neo4jEdge(e, this.graph));
+                .filter(relationship -> !relationship.getType().name().startsWith(Neo4jMetaProperty.META_PROPERTY_PREFIX))
+                .map(relationship -> new Neo4jEdge(relationship, this.graph));
     }
 
     private Stream<Vertex> getVerticesUsingLabeledIndex(final String label, String key, Object value) {
-        final ResourceIterator<Node> iterator = graph.getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(label), key, value).iterator();
-        return StreamFactory.stream(iterator).map(n -> new Neo4jVertex(n, this.graph));
+        final ResourceIterator<Node> iterator1 = graph.getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(label), key, value).iterator();
+        final ResourceIterator<Node> iterator2 = graph.getBaseGraph().findNodesByLabelAndProperty(Neo4jMetaProperty.META_PROPERTY_LABEL, key, value).iterator();
+        final Stream<Vertex> stream1 = StreamFactory.stream(iterator1)
+                .filter(node -> !node.getLabels().iterator().next().equals(Neo4jGraphVariables.GRAPH_VARIABLE_LABEL))
+                .map(node -> new Neo4jVertex(node, this.graph));
+        final Stream<Vertex> stream2 = StreamFactory.stream(iterator2)
+                .map(node -> node.getRelationships(Direction.INCOMING).iterator().next().getStartNode())
+                .map(node -> new Neo4jVertex(node, this.graph));
+        return Stream.concat(stream1, stream2);
     }
 
     private Stream<Vertex> getVerticesUsingLabel(final String... labels) {
         return Arrays.stream(labels)
-                .flatMap(label -> StreamFactory.stream(GlobalGraphOperations.at(graph.getBaseGraph()).getAllNodesWithLabel(DynamicLabel.label(label)).iterator()))
-                .map(n -> new Neo4jVertex(n, this.graph));
+                .filter(label -> !label.equals(Neo4jMetaProperty.META_PROPERTY_LABEL.name()))
+                .filter(label -> !label.equals(Neo4jGraphVariables.GRAPH_VARIABLE_LABEL.name()))
+                .flatMap(label -> StreamFactory.stream(GlobalGraphOperations.at(this.graph.getBaseGraph()).getAllNodesWithLabel(DynamicLabel.label(label)).iterator()))
+                .map(node -> new Neo4jVertex(node, this.graph));
     }
 
     private Stream<Vertex> getVerticesUsingLegacyIndex(final String key, final Object value) {
         final AutoIndexer indexer = this.graph.getBaseGraph().index().getNodeAutoIndexer();
         return indexer.isEnabled() && indexer.getAutoIndexedProperties().contains(key) ?
                 StreamFactory.stream(this.graph.getBaseGraph().index().getNodeAutoIndexer().getAutoIndex().get(key, value).iterator())
-                        .map(n -> new Neo4jVertex(n, this.graph)) :
+                        .filter(node -> !node.getLabels().iterator().next().equals(Neo4jGraphVariables.GRAPH_VARIABLE_LABEL))
+                        .map(node -> node.getLabels().iterator().next().equals(Neo4jMetaProperty.META_PROPERTY_LABEL) ?
+                                node.getRelationships(Direction.INCOMING).iterator().next().getStartNode() :
+                                node)
+                        .map(node -> new Neo4jVertex(node, this.graph)) :
                 Stream.empty();
     }
 
     private Stream<Neo4jEdge> getEdgesUsingIndex(final HasContainer indexedContainer) {
-        this.graph.tx().readWrite();
         final RelationshipAutoIndexer indexer = this.graph.getBaseGraph().index().getRelationshipAutoIndexer();
         return StreamFactory.stream(indexer.getAutoIndex().get(indexedContainer.key, indexedContainer.value).iterator())
-                .map(e -> new Neo4jEdge(e, this.graph));
+                .filter(relationship -> !relationship.getType().name().startsWith(Neo4jMetaProperty.META_PROPERTY_PREFIX))
+                .map(relationship -> new Neo4jEdge(relationship, this.graph));
     }
 
     private HasContainer getVertexIndexKey() {
