@@ -94,7 +94,6 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     private Stream<Neo4jVertex> getAllVertices() {
         return StreamFactory.stream(GlobalGraphOperations.at(this.graph.getBaseGraph()).getAllNodes())
                 .filter(node -> !node.getLabels().iterator().next().equals(Neo4jMetaProperty.META_PROPERTY_LABEL))
-                .filter(node -> !node.getLabels().iterator().next().equals(Neo4jGraphVariables.GRAPH_VARIABLE_LABEL))
                 .map(node -> new Neo4jVertex(node, this.graph));
     }
 
@@ -108,7 +107,6 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         final ResourceIterator<Node> iterator1 = graph.getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(label), key, value).iterator();
         final ResourceIterator<Node> iterator2 = graph.getBaseGraph().findNodesByLabelAndProperty(Neo4jMetaProperty.META_PROPERTY_LABEL, key, value).iterator();
         final Stream<Vertex> stream1 = StreamFactory.stream(iterator1)
-                .filter(node -> !node.getLabels().iterator().next().equals(Neo4jGraphVariables.GRAPH_VARIABLE_LABEL))
                 .map(node -> new Neo4jVertex(node, this.graph));
         final Stream<Vertex> stream2 = StreamFactory.stream(iterator2)
                 .map(node -> node.getRelationships(Direction.INCOMING).iterator().next().getStartNode())
@@ -119,7 +117,6 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     private Stream<Vertex> getVerticesUsingLabel(final String... labels) {
         return Arrays.stream(labels)
                 .filter(label -> !label.equals(Neo4jMetaProperty.META_PROPERTY_LABEL.name()))
-                .filter(label -> !label.equals(Neo4jGraphVariables.GRAPH_VARIABLE_LABEL.name()))
                 .flatMap(label -> StreamFactory.stream(GlobalGraphOperations.at(this.graph.getBaseGraph()).getAllNodesWithLabel(DynamicLabel.label(label)).iterator()))
                 .map(node -> new Neo4jVertex(node, this.graph));
     }
@@ -128,7 +125,6 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         final AutoIndexer indexer = this.graph.getBaseGraph().index().getNodeAutoIndexer();
         return indexer.isEnabled() && indexer.getAutoIndexedProperties().contains(key) ?
                 StreamFactory.stream(this.graph.getBaseGraph().index().getNodeAutoIndexer().getAutoIndex().get(key, value).iterator())
-                        .filter(node -> !node.getLabels().iterator().next().equals(Neo4jGraphVariables.GRAPH_VARIABLE_LABEL))
                         .map(node -> node.getLabels().iterator().next().equals(Neo4jMetaProperty.META_PROPERTY_LABEL) ?
                                 node.getRelationships(Direction.INCOMING).iterator().next().getStartNode() :
                                 node)

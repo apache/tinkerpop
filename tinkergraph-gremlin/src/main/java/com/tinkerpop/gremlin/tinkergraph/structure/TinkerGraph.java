@@ -74,11 +74,10 @@ public class TinkerGraph implements Graph, Serializable {
      * to opening graphs it will be consistent at that level.
      *
      * @param configuration the configuration for the instance
-     * @param <G>           the {@link com.tinkerpop.gremlin.structure.Graph} instance
      * @return a newly opened {@link com.tinkerpop.gremlin.structure.Graph}
      */
-    public static <G extends Graph> G open(final Configuration configuration) {
-        return (G) new TinkerGraph();
+    public static TinkerGraph open(final Configuration configuration) {
+        return new TinkerGraph();
     }
 
     ////////////// STRUCTURE API METHODS //////////////////

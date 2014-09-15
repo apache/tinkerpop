@@ -38,7 +38,6 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
     private VertexProgram vertexProgram;
     private TinkerGraph tinkerGraph;
     private TinkerVertex tinkerVertex;
-
     private GiraphMemory memory;
 
     public GiraphInternalVertex() {

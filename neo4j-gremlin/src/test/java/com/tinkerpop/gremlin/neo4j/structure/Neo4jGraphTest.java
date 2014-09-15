@@ -18,6 +18,7 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.index.AutoIndexer;
 import org.neo4j.graphdb.schema.ConstraintDefinition;
 import org.neo4j.graphdb.schema.Schema;
+import org.neo4j.tooling.GlobalGraphOperations;
 
 import javax.script.Bindings;
 import javax.script.ScriptException;
@@ -409,6 +410,19 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         assertEquals(0, this.g.V().has(Element.LABEL, "Person").has("name", "marko").has(Element.LABEL, "Product").count().next(), 0);
         assertEquals(0, this.g.V().has(Element.LABEL, "Product").has("name", "marko").has(Element.LABEL, "Person").count().next(), 0);
         assertEquals(0, this.g.V().has(Element.LABEL, "Corporate").has("name", "marko").has(Element.LABEL, "Person").count().next(), 0);
+    }
+
+    @Test
+    public void shouldNotGenerateVerticesOrEdgesForGraphVariables() {
+        g.tx().readWrite();
+        g.variables().set("namespace", "rdf-xml");
+        tryCommit(g, g -> {
+            assertEquals("rdf-xml", g.variables().get("namespace").get());
+            assertEquals(0, g.V().count().next().intValue());
+            assertEquals(0, g.E().count().next().intValue());
+            assertEquals(0, StreamFactory.stream(GlobalGraphOperations.at(((Neo4jGraph) g).getBaseGraph()).getAllNodes()).count());
+            assertEquals(0, StreamFactory.stream(GlobalGraphOperations.at(((Neo4jGraph) g).getBaseGraph()).getAllRelationships()).count());
+        });
     }
 
     @Test
