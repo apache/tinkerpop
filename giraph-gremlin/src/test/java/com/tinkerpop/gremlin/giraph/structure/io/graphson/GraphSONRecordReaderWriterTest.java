@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure.io.graphson;
 
+import com.tinkerpop.gremlin.giraph.GiraphGraphProvider;
 import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -33,7 +34,7 @@ public class GraphSONRecordReaderWriterTest {
         conf.set("fs.file.impl", LocalFileSystem.class.getName());
         conf.set("fs.default.name", "file:///");
 
-        File testFile = new File(this.getClass().getResource("grateful-dead-vertices.ldjson").getPath());
+        File testFile = new File(GiraphGraphProvider.PATHS.get("grateful-dead-vertices.ldjson"));
         FileSplit split = new FileSplit(
                 new Path(testFile.getAbsoluteFile().toURI().toString()), 0,
                 testFile.length(), null);
