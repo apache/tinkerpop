@@ -3,11 +3,10 @@ package com.tinkerpop.gremlin.giraph;
 import com.tinkerpop.gremlin.AbstractGraphProvider;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
-import com.tinkerpop.gremlin.giraph.structure.io.GiraphGremlinInputFormat;
-import com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoInputFormat;
 import com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexInputFormat;
 import com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexOutputFormat;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.util.io.kryo.KryoResourceAccess;
 import org.apache.commons.configuration.Configuration;
 import org.apache.giraph.conf.GiraphConstants;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
@@ -32,7 +31,7 @@ public class GiraphGraphProvider extends AbstractGraphProvider {
             put(GiraphConstants.MAX_WORKERS, 1);
             put(GiraphConstants.SPLIT_MASTER_WORKER.getKey(), false);
             //put("giraph.localTestMode", true);
-            put(GiraphConstants.ZOOKEEPER_JAR, GiraphGremlinInputFormat.class.getResource("zookeeper-3.3.3.jar").getPath());
+            put(GiraphConstants.ZOOKEEPER_JAR, GiraphGraph.class.getResource("zookeeper-3.3.3.jar").getPath());
             //put(Constants.GREMLIN_INPUT_LOCATION, KryoInputFormat.class.getResource("tinkerpop-classic-vertices.gio").getPath());
             put(Constants.GREMLIN_OUTPUT_LOCATION, "giraph-gremlin/target/test-output");
             put(Constants.GREMLIN_DERIVE_MEMORY, true);
@@ -53,11 +52,11 @@ public class GiraphGraphProvider extends AbstractGraphProvider {
 
     public void loadGraphData(final Graph g, final LoadGraphWith.GraphData graphData) {
         if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL)) {
-            ((GiraphGraph) g).variables().getConfiguration().setInputLocation(KryoInputFormat.class.getResource("grateful-dead-vertices.gio").getPath());
+            ((GiraphGraph) g).variables().getConfiguration().setInputLocation(KryoResourceAccess.class.getResource("grateful-dead-vertices.gio").getPath());
         } else if (graphData.equals(LoadGraphWith.GraphData.MODERN)) {
-            ((GiraphGraph) g).variables().getConfiguration().setInputLocation(KryoInputFormat.class.getResource("tinkerpop-modern-vertices.gio").getPath());
+            ((GiraphGraph) g).variables().getConfiguration().setInputLocation(KryoResourceAccess.class.getResource("tinkerpop-modern-vertices.gio").getPath());
         } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC)) {
-            ((GiraphGraph) g).variables().getConfiguration().setInputLocation(KryoInputFormat.class.getResource("tinkerpop-classic-vertices.gio").getPath());
+            ((GiraphGraph) g).variables().getConfiguration().setInputLocation(KryoResourceAccess.class.getResource("tinkerpop-classic-vertices.gio").getPath());
         } else {
             throw new RuntimeException("Could not load graph with " + graphData);
         }
