@@ -39,7 +39,7 @@ import java.util.stream.Stream;
  * implementation.  This specialized test suite and runner is for use by Gremlin implementers to test their
  * Graph implementations.  The StructureStandardSuite ensures consistency and validity of the implementations that they
  * test.
- * <p>
+ * <p/>
  * To use the ProcessComputerStandardSuite define a class in a test module.  Simple naming would expect the name of the
  * implementation followed by "ProcessComputerStandardSuite".  This class should be annotated as follows (note that the "Suite"
  * implements ProcessComputerStandardSuite.GraphProvider as a convenience only...it could be implemented in a separate class file):

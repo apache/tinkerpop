@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.graph.marker.Barrier;
 import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
@@ -15,7 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CountCapStep<S> extends SideEffectStep<S> implements SideEffectCapable, Bulkable, VertexCentric, MapReducer<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
+public class CountCapStep<S> extends SideEffectStep<S> implements SideEffectCapable, Bulkable, VertexCentric, Barrier, MapReducer<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
 
     private static final String COUNT_KEY = Graph.Key.hide("count");
     private long bulkCount = 1l;

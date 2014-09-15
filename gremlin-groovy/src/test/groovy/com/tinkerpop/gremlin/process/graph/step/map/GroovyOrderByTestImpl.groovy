@@ -11,16 +11,16 @@ class GroovyOrderByTestImpl extends OrderByTest {
 
     @Override
     public Traversal<Vertex, String> get_g_V_orderByXname_incrX_name() {
-        g.V().orderBy('name', T.incr).value('name');
+        g.V.orderBy('name', T.incr).name
     }
 
     @Override
     public Traversal<Vertex, String> get_g_V_orderByXnameX_name() {
-        g.V().orderBy('name').value("name");
+        g.V.orderBy('name').name
     }
 
     @Override
     public Traversal<Vertex, Double> get_g_V_outE_orderByXweight_decrX_weight() {
-        g.V().outE().orderBy('weight', T.decr).value("weight");
+        g.V.outE.orderBy('weight', T.decr).weight
     }
 }

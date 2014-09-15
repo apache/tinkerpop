@@ -59,16 +59,8 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().map(function);
     }
 
-    public default <E2> Neo4jTraversal<A, E2> map(final SBiFunction<Traverser<A>, Traversal.SideEffects, E2> biFunction) {
-        return this.start().map(biFunction);
-    }
-
     public default <E2> Neo4jTraversal<A, E2> flatMap(final SFunction<Traverser<A>, Iterator<E2>> function) {
         return this.start().flatMap(function);
-    }
-
-    public default <E2> Neo4jTraversal<A, E2> flatMap(final SBiFunction<Traverser<A>, Traversal.SideEffects, Iterator<E2>> biFunction) {
-        return this.start().flatMap(biFunction);
     }
 
     public default Neo4jTraversal<A, A> identity() {
@@ -293,10 +285,6 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().filter(predicate);
     }
 
-    public default Neo4jTraversal<A, A> filter(final SBiPredicate<Traverser<A>, Traversal.SideEffects> biPredicate) {
-        return this.start().filter(biPredicate);
-    }
-
     public default Neo4jTraversal<A, A> inject(final Object... injections) {
         return this.start().inject((A[]) injections);
     }
@@ -405,10 +393,6 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
 
     public default Neo4jTraversal<A, A> sideEffect(final SConsumer<Traverser<A>> consumer) {
         return this.start().sideEffect(consumer);
-    }
-
-    public default Neo4jTraversal<A, A> sideEffect(final SBiConsumer<Traverser<A>, Traversal.SideEffects> biConsumer) {
-        return this.start().sideEffect(biConsumer);
     }
 
     public default <E2> Neo4jTraversal<A, E2> cap(final String sideEffectKey) {

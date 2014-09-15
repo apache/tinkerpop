@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.graph.marker.Barrier;
 import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
@@ -25,7 +26,7 @@ import java.util.Queue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCapable, Reversible, Bulkable, VertexCentric, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
+public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCapable, Reversible, Bulkable, VertexCentric, Barrier, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
 
     public final SFunction<Traverser<S>, ?> preAggregateFunction;
     Collection aggregate;

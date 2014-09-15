@@ -149,21 +149,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.addStep(mapStep);
     }
 
-    public default <E2> GraphTraversal<S, E2> map(final SBiFunction<Traverser<E>, SideEffects, E2> biFunction) {
-        final MapStep<E, E2> mapStep = new MapStep<>(this);
-        mapStep.setBiFunction(biFunction);
-        return this.addStep(mapStep);
-    }
-
     public default <E2> GraphTraversal<S, E2> flatMap(final SFunction<Traverser<E>, Iterator<E2>> function) {
         final FlatMapStep<E, E2> flatMapStep = new FlatMapStep<>(this);
         flatMapStep.setFunction(function);
-        return this.addStep(flatMapStep);
-    }
-
-    public default <E2> GraphTraversal<S, E2> flatMap(final SBiFunction<Traverser<E>, SideEffects, Iterator<E2>> biFunction) {
-        final FlatMapStep<E, E2> flatMapStep = new FlatMapStep<>(this);
-        flatMapStep.setBiFunction(biFunction);
         return this.addStep(flatMapStep);
     }
 
@@ -413,12 +401,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.addStep(filterStep);
     }
 
-    public default GraphTraversal<S, E> filter(final SBiPredicate<Traverser<E>, SideEffects> biPredicate) {
-        final FilterStep<E> filterStep = new FilterStep<>(this);
-        filterStep.setBiPredicate(biPredicate);
-        return this.addStep(filterStep);
-    }
-
     public default GraphTraversal<S, E> inject(final E... injections) {
         return this.addStep(new InjectStep<>(this, injections));
     }
@@ -530,12 +512,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, E> sideEffect(final SConsumer<Traverser<E>> consumer) {
         final SideEffectStep<E> sideEffectStep = new SideEffectStep<>(this);
         sideEffectStep.setConsumer(consumer);
-        return this.addStep(sideEffectStep);
-    }
-
-    public default GraphTraversal<S, E> sideEffect(final SBiConsumer<Traverser<E>, SideEffects> biConsumer) {
-        final SideEffectStep<E> sideEffectStep = new SideEffectStep<>(this);
-        sideEffectStep.setBiConsumer(biConsumer);
         return this.addStep(sideEffectStep);
     }
 

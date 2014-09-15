@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.neo4j.structure;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.neo4j.BaseNeo4jGraphTest;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -20,6 +21,7 @@ import org.neo4j.graphdb.schema.Schema;
 
 import javax.script.Bindings;
 import javax.script.ScriptException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -328,6 +330,60 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     }
 
     @Test
+    public void shouldSupportMetaPropertyToVertexMappingOnIndexCalls() {
+        g.tx().readWrite();
+        final Schema schema = g.getBaseGraph().schema();
+        schema.indexFor(DynamicLabel.label("person")).on("name").create();
+        this.g.tx().commit();
+
+        final Vertex a = g.addVertex(Element.LABEL, "person", "name", "marko", "age", 34);
+        a.property("name", "okram");
+        a.property("name", "marko a. rodriguez");
+        final Vertex b = g.addVertex(Element.LABEL, "person", "name", "stephen");
+        final Vertex c = g.addVertex("name", "matthias", "name", "mbroecheler");
+
+        tryCommit(g, g -> {
+            assertEquals(a.id(), g.V().has("person", "name", "okram").id().next());
+            assertEquals(1, g.V().has("person", "name", "okram").count().next().intValue());
+            assertEquals(34, ((Neo4jVertex) g.V().has("person", "name", "okram").next()).getBaseVertex().getProperty("age"));
+            assertEquals(Neo4jMetaProperty.META_PROPERTY_TOKEN, ((Neo4jVertex) g.V().has("person", "name", "okram").next()).getBaseVertex().getProperty("name"));
+            ///
+            assertEquals(b.id(), g.V().has("person", "name", "stephen").id().next());
+            assertEquals(1, g.V().has("person", "name", "stephen").count().next().intValue());
+            assertEquals("stephen", ((Neo4jVertex) g.V().has("person", "name", "stephen").next()).getBaseVertex().getProperty("name"));
+            ///
+            assertEquals(c.id(), g.V().has("name", "matthias").id().next());
+            assertEquals(c.id(), g.V().has("name", "mbroecheler").id().next());
+            assertEquals(1, g.V().has("name", "matthias").count().next().intValue());
+            assertEquals(1, g.V().has("name", "mbroecheler").count().next().intValue());
+            assertEquals(0, g.V().has("person", "name", "matthias").count().next().intValue());
+            assertEquals(0, g.V().has("person", "name", "mbroecheler").count().next().intValue());
+        });
+
+        final Vertex d = g.addVertex(Element.LABEL, "person", "name", "kuppitz");
+        tryCommit(g, g -> {
+            assertEquals(d.id(), g.V().has("person", "name", "kuppitz").id().next());
+            assertEquals("kuppitz", ((Neo4jVertex) g.V().has("person", "name", "kuppitz").next()).getBaseVertex().getProperty("name"));
+        });
+        d.property("name", "daniel", "acl", "private");
+        tryCommit(g, g -> {
+            assertEquals(d.id(), g.V().has("person", "name", Contains.IN, Arrays.asList("daniel", "kuppitz")).id().next());
+            assertEquals(d.id(), g.V().has("person", "name", "kuppitz").id().next());
+            assertEquals(d.id(), g.V().has("person", "name", "daniel").id().next());
+            assertEquals(Neo4jMetaProperty.META_PROPERTY_TOKEN, ((Neo4jVertex) g.V().has("person", "name", "kuppitz").next()).getBaseVertex().getProperty("name"));
+        });
+        d.property("name", "marko", "acl", "private");
+        tryCommit(g, g -> {
+            assertEquals(2, g.V().has("person", "name", "marko").count().next().intValue());
+            assertEquals(1, g.V().has("person", "name", "marko").properties("name").has(MetaProperty.VALUE, "marko").has("acl", "private").count().next().intValue());
+            g.V().has("person", "name", "marko").forEach(v -> {
+                assertEquals(Neo4jMetaProperty.META_PROPERTY_TOKEN, ((Neo4jVertex) v).getBaseVertex().getProperty("name"));
+            });
+
+        });
+    }
+
+    @Test
     public void shouldDoLabelsNameSpaceBehavior() {
         g.tx().readWrite();
 
@@ -455,7 +511,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
                 assertEquals(3, StreamFactory.stream(node.getPropertyKeys()).count());
                 assertEquals("name", node.getProperty(MetaProperty.KEY));
                 assertEquals("the marko", node.getProperty(MetaProperty.VALUE));
-                assertEquals("private",node.getProperty("acl"));
+                assertEquals("private", node.getProperty("acl"));
                 assertEquals(0, node.getDegree(Direction.OUTGOING));
                 assertEquals(1, node.getDegree(Direction.INCOMING));
                 assertEquals(Neo4jMetaProperty.META_PROPERTY_PREFIX.concat("name"), node.getRelationships(Direction.INCOMING).iterator().next().getType().name());
@@ -471,8 +527,8 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             assertEquals("virginia", b.getBaseVertex().getProperty("location"));
         });
 
-        a.property("name","marko","acl","private");
-        a.property("name","okram","acl","public");
+        a.property("name", "marko", "acl", "private");
+        a.property("name", "okram", "acl", "public");
         // TODO tx.commit() THIS IS REQUIRED: ?! Why does Neo4j not delete vertices correctly?
         g.tx().commit();
         a.singleProperty("name", "the marko", "acl", "private");
@@ -501,7 +557,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
                 assertEquals(3, StreamFactory.stream(node.getPropertyKeys()).count());
                 assertEquals("name", node.getProperty(MetaProperty.KEY));
                 assertEquals("the marko", node.getProperty(MetaProperty.VALUE));
-                assertEquals("private",node.getProperty("acl"));
+                assertEquals("private", node.getProperty("acl"));
                 assertEquals(0, node.getDegree(Direction.OUTGOING));
                 assertEquals(1, node.getDegree(Direction.INCOMING));
                 assertEquals(Neo4jMetaProperty.META_PROPERTY_PREFIX.concat("name"), node.getRelationships(Direction.INCOMING).iterator().next().getType().name());

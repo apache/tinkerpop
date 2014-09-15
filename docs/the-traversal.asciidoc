@@ -25,22 +25,26 @@ A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, or an Edge. A gra
 Lambda Steps
 ~~~~~~~~~~~~
 
-There are eight generic steps by which all other specific steps described later are instances of.
+There are four generic steps by which all other specific steps described later extend.
 
-[width="100%",cols="12,10",options="header"]
+[width="100%",cols="10,12",options="header"]
 |=========================================================
 | Step| Description
-| `map(Function<Traverser<S>,E>)` | map the traverser to some object of type `E` for the next step to process.
-| `map(BiFunction<Traverser<S>, Traversal.SideEffects,E>)` | like previous, but access to traversal side effects is allowed.
+| `map(Function<Traverser<S>, E>)` | map the traverser to some object of type `E` for the next step to process.
 | `flatMap(Function<Traverser<S>, Iterator<E>>)` | map the traverser to an iterator of `E` objects that are streamed to the next step.
-| `flatMap(BiFunction<Traverser<S>, Traversal.SideEffects, Iterator<E>>)` | like previous, but access to traversal side effects is allowed.
 | `filter(Predicate<Traverser<S>>)` | map the traverser to either true or false, where false will not pass the traverser to the next step.
-| `filter(BiPredicate<Traverser<S>, Traversal.SideEffects>)` | like previous, but access to traversal side effects is allowed.
 | `sideEffect(Consumer<Traverser<S>>)` | perform some operation on the traverser and pass it to the next step.
-| `sideEffect(BiConsumer<Traverser<S>, Traversal.SideEffects>)` | like previous, but access to traversal side effects is allowed.
 |=========================================================
 
-If a `BiXXX`-lambda is provided, then the user has access to `Traversal.SideEffects` which contains side effect data structures as well as objects at particular labeled steps. A series of examples are provided below.
+The `Traverser<S>` object provides access to:
+
+. The current traversed `S` object -- `Traverser.get()`.
+. The current path traversed by the traverser -- `Traverser.getPath()`.
+. The number of times the traverser has gone through a loop -- `Traverser.getLoops()`.
+. The side-effects associated with the traversal -- `Traverser.getSideEffects()`.
+. A helper shorthand to get a particular side-effect -- `Traverser.get(String) == Traverser.getSideEffects().get(String)`.
+
+IMPORTANT: If a specific traversal step can do the necessary step-computation, use it. Lambda steps can not be optimized by the Gremlin <<traversalstrategy,traversal strategies>> and should only be used when the requisite computation does not have a corresponding standard Gremlin step. For example, instead of `filter{it.property('name').isPresent()}` use `has('name')`.
 
 image:map-lambda.png[width=150,float=right]
 [source,groovy]
@@ -48,7 +52,7 @@ gremlin> g.v(1).as('a').out() <1>
 ==>v[3]
 ==>v[2]
 ==>v[4]
-gremlin> g.v(1).as('a').out().map{v,s -> s.get('a')} <2>
+gremlin> g.v(1).as('a').out().map{it.get('a')} <2>
 ==>v[1]
 ==>v[1]
 ==>v[1]

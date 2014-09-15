@@ -104,6 +104,11 @@ class SugarLoaderTest {
         println "  Groovy-style: " + clock(5000) { g.V.outE.inV }
         assertEquals(g.V().outE().inV(), g.V.outE.inV)
 
+        println("\ng.V.outE.inV.outE.inV")
+        println "  Java8-style:  " + clock(5000) { g.V().outE().inV().outE().inV() }
+        println "  Groovy-style: " + clock(5000) { g.V.outE.inV.outE.inV }
+        assertEquals(g.V().outE().inV().outE().inV(), g.V.outE.inV.outE.inV)
+
         println("\ng.V.name")
         println "  Java8-style:  " + clock(5000) { g.V().value('name') }
         println "  Groovy-style: " + clock(5000) { g.V.name }
@@ -128,9 +133,9 @@ class SugarLoaderTest {
         println "  Groovy-style: " + clock(5000) { g.v(1).name = 'okram' }
         g = TinkerFactory.createClassic();
 
-        println("\ng.v(1).outE.inV")
-        println "  Java8-style:  " + clock(5000) { g.v(1).outE().inV() }
-        println "  Groovy-style: " + clock(5000) { g.v(1).outE.inV }
+        println("\ng.v(1).outE")
+        println "  Java8-style:  " + clock(5000) { g.v(1).outE() }
+        println "  Groovy-style: " + clock(5000) { g.v(1).outE }
         assertEquals(g.v(1).outE().inV(), g.v(1).outE.inV)
 
         println("\ng.V.as('a').map{[it.a.name, it.name]}")
@@ -157,7 +162,7 @@ class SugarLoaderTest {
     }
 
     def clock = { int loops = 100, Closure closure ->
-        closure.call() // warmup
+        (0..1000).forEach { closure.call() } // warmup
         (1..loops).collect {
             def t = System.nanoTime()
             closure.call()

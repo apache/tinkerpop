@@ -43,13 +43,14 @@ public class TraversalPathMessage extends TraversalMessage {
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         messenger.receiveMessages(MessageType.Global.of()).forEach(message -> {
-            ((TraversalPathMessage) message).traverser.inflate(vertex,traversal);
+            ((TraversalPathMessage) message).traverser.inflate(vertex, traversal);
             if (((TraversalPathMessage) message).executePaths(vertex, messenger, tracker, traversal))
                 voteToHalt.set(false);
         });
         tracker.getPreviousObjectTracks().forEach((object, traversers) -> {
             traversers.forEach(traverser -> {
                 if (traverser.isDone()) {
+                    traverser.dropSideEffects();
                     if (object instanceof Path) {
                         MapHelper.incr(tracker.getDoneObjectTracks(), DetachedPath.detach(((Path) object)), traverser);
                     } else {
@@ -91,8 +92,9 @@ public class TraversalPathMessage extends TraversalMessage {
             if (end instanceof Element || end instanceof Property) {
                 messenger.sendMessage(
                         MessageType.Global.of(getHostingVertices(end)),
-                        TraversalPathMessage.of((Traverser.System)traverser));
+                        TraversalPathMessage.of((Traverser.System) traverser));
             } else {
+                ((Traverser.System) traverser).dropSideEffects();
                 if (end instanceof Path) {
                     MapHelper.incr(tracker.getObjectTracks(), DetachedPath.detach(((Path) end)), (Traverser.System) traverser);
                 } else {
