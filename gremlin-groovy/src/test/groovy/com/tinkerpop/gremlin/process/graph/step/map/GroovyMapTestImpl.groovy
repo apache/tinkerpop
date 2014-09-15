@@ -11,25 +11,26 @@ class GroovyMapTestImpl extends MapTest {
 
     @Override
     public Traversal<Vertex, String> get_g_v1_mapXnameX(final Object v1Id) {
-        return g.v(v1Id).map { v -> v.get().value("name") };
+        g.v(v1Id).map { v -> v.get().value("name") };
     }
 
     @Override
     public Traversal<Vertex, Integer> get_g_v1_outE_label_mapXlengthX(final Object v1Id) {
-        return g.v(v1Id).outE().label().map { l -> l.get().length() };
+        g.v(v1Id).outE().label().map { l -> l.get().length() };
     }
 
     @Override
     public Traversal<Vertex, Integer> get_g_v1_out_mapXnameX_mapXlengthX(final Object v1Id) {
-        return g.v(v1Id).out().map { v -> v.get().value("name") }.map { n -> n.get().toString().length() };
+        g.v(v1Id).out().map { v -> v.get().value("name") }.map { n -> n.get().toString().length() };
     }
 
     @Override
     public Traversal<Vertex, String> get_g_V_asXaX_out_mapXa_nameX() {
-        return g.V().as("a").out().map { v, s -> s.get("a").value("name") };
+        g.V().as("a").out().map { v -> v.get("a").value("name") };
     }
 
+    @Override
     public Traversal<Vertex, String> get_g_V_asXaX_out_out_mapXa_name_it_nameX() {
-        return g.V().as('a').out().out().map { v, s -> s.get('a').value('name') + v.get().value('name') };
+        g.V().as('a').out().out().map { v -> v.get('a').value('name') + v.get().value('name') };
     }
 }

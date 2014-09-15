@@ -118,13 +118,13 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_mapXa_nameX() {
-            return g.V().as("a").out().<String>map((v, s) -> s.<Vertex>get("a").value("name"));
+            return g.V().as("a").out().<String>map(v -> v.<Vertex>get("a").value("name"));
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_out_mapXa_name_it_nameX() {
             // TODO: Doesn't work for graph computer because sideEffects are not accessible
-            return g.V().as("a").out().out().map((v, s) -> s.<Vertex>get("a").<String>value("name") + v.get().<String>value("name"));
+            return g.V().as("a").out().out().map(v -> v.<Vertex>get("a").<String>value("name") + v.get().<String>value("name"));
         }
     }
 
@@ -151,13 +151,13 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_mapXa_nameX() {
             // TODO: Doesn't work for graph computer because sideEffects are not accessible
-            return g.V().as("a").out().<String>map((v, s) -> s.<Vertex>get("a").value("name"));
+            return g.V().as("a").out().<String>map(v -> v.<Vertex>get("a").value("name"));
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_out_mapXa_name_it_nameX() {
             // TODO: Doesn't work for graph computer because sideEffects are not accessible
-            return g.V().as("a").out().out().map((v, s) -> s.<Vertex>get("a").<String>value("name") + v.get().<String>value("name"));
+            return g.V().as("a").out().out().map(v -> v.<Vertex>get("a").<String>value("name") + v.get().<String>value("name"));
         }
     }
 }

@@ -27,7 +27,7 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
         this.functionRing = new FunctionRing(stepFunctions);
         this.wasEmpty = selectLabels.size() == 0;
         this.selectLabels = this.wasEmpty ? TraversalHelper.getLabelsUpTo(this, this.traversal) : selectLabels;
-        this.setBiFunction((traverser, sideEffects) -> {
+        this.setFunction(traverser -> {
             final S start = traverser.get();
             final Map<String, E> bindings = new LinkedHashMap<>();
 
@@ -39,8 +39,8 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
                 });
             } else {
                 this.selectLabels.forEach(label -> {
-                    if (sideEffects.exists(label))
-                        bindings.put(label, (E) this.functionRing.next().apply(sideEffects.get(label)));
+                    if (traverser.getSideEffects().exists(label))
+                        bindings.put(label, (E) this.functionRing.next().apply(traverser.get(label)));
                 });
             }
 

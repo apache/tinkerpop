@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
-import com.tinkerpop.gremlin.util.function.SBiFunction;
 import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.Iterator;
@@ -15,7 +14,6 @@ import java.util.Iterator;
 public class FlatMapStep<S, E> extends AbstractStep<S, E> {
 
     public SFunction<Traverser<S>, Iterator<E>> function = null;
-    public SBiFunction<Traverser<S>, Traversal.SideEffects, Iterator<E>> biFunction = null;
     protected Iterator<Traverser<E>> iterator = null;
 
     public FlatMapStep(final Traversal traversal) {
@@ -24,10 +22,6 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
 
     public void setFunction(final SFunction<Traverser<S>, Iterator<E>> function) {
         this.function = function;
-    }
-
-    public void setBiFunction(final SBiFunction<Traverser<S>, Traversal.SideEffects, Iterator<E>> biFunction) {
-        this.biFunction = biFunction;
     }
 
     @Override
@@ -41,9 +35,7 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
     protected Traverser<E> getNext() {
         if (null == this.iterator) {
             final Traverser.System<S> traverser = this.starts.next();
-            this.iterator = new FlatMapHolderIterator<>(traverser, this, null == this.biFunction ?
-                    this.function.apply(traverser) :
-                    this.biFunction.apply(traverser, this.traversal.sideEffects()));
+            this.iterator = new FlatMapHolderIterator<>(traverser, this, this.function.apply(traverser));
             return null;
         } else {
             if (this.iterator.hasNext()) {

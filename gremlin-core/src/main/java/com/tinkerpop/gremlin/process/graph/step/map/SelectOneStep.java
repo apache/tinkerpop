@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.util.function.SBiFunction;
 import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.Arrays;
@@ -13,11 +12,13 @@ import java.util.Map;
  */
 public class SelectOneStep<S, E> extends SelectStep {
 
-    private final SBiFunction<Traverser<S>, Traversal.SideEffects, Map<String, E>> selectBiFunction;
+    private final SFunction<Traverser<S>, Map<String, E>> selectFunction;
 
-    public SelectOneStep(final Traversal traversal, final String selectLabel, SFunction stepFunction) {
+    public SelectOneStep(final Traversal traversal, final String selectLabel, final SFunction stepFunction) {
         super(traversal, Arrays.asList(selectLabel), stepFunction);
-        this.selectBiFunction = this.biFunction;
-        this.setBiFunction((traverser, sideEffects) -> this.selectBiFunction.apply((Traverser<S>)traverser, (Traversal.SideEffects)sideEffects).get(selectLabel));
+        this.selectFunction = this.function;
+        this.setFunction(traverser -> this.selectFunction.apply(((Traverser<S>) traverser)).get(selectLabel));
     }
 }
+
+
