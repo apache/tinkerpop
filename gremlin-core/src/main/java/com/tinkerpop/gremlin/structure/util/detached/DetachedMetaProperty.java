@@ -50,6 +50,8 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
         if (hiddenProperties != null) hiddenProperties.entrySet().iterator().forEachRemaining(kv -> this.properties.put(Graph.Key.hide(kv.getKey()), new ArrayList(Arrays.asList(new DetachedProperty(kv.getKey(), kv.getValue(), this)))));
     }
 
+    // todo: straighten out all these constructors and their scopes - what do we really need here?
+
     private DetachedMetaProperty(final MetaProperty property) {
         super(property);
         if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");

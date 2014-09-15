@@ -39,6 +39,8 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
         this.hashCode = super.hashCode();
     }
 
+    // todo: straighten out all these constructors and their scopes - what do we really need here?
+
     private DetachedProperty(final Property property) {
         if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
 
