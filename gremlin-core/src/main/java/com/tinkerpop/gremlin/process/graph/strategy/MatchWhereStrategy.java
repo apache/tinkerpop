@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.step.filter.WhereStep;
-import com.tinkerpop.gremlin.process.graph.step.map.SelectOneStep;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectStep;
 import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStep;
 import com.tinkerpop.gremlin.process.graph.step.util.IdentityStep;
@@ -28,7 +27,7 @@ public class MatchWhereStrategy implements TraversalStrategy {
         for (final MatchStep matchStep : matchSteps) {
             boolean foundWhereWithNoTraversal = false;
             Step currentStep = matchStep.getNextStep();
-            while (currentStep instanceof WhereStep || currentStep instanceof SelectStep || currentStep instanceof SelectOneStep || currentStep instanceof IdentityStep) {
+            while (currentStep instanceof WhereStep || currentStep instanceof SelectStep || currentStep instanceof IdentityStep) {
                 if (currentStep instanceof WhereStep) {
                     if (!((WhereStep) currentStep).hasBiPredicate()) {
                         matchStep.addTraversal(((WhereStep) currentStep).constraint);
@@ -39,11 +38,7 @@ public class MatchWhereStrategy implements TraversalStrategy {
                 } else if (currentStep instanceof SelectStep) {
                     if (((SelectStep) currentStep).hasStepFunctions() || foundWhereWithNoTraversal)
                         break;
-                } else if (currentStep instanceof SelectOneStep) {
-                    if (((SelectOneStep) currentStep).hasStepFunctions() || foundWhereWithNoTraversal)
-                        break;
-                } // else is the identity step
-
+                }  // else is the identity step
                 currentStep = currentStep.getNextStep();
             }
         }
