@@ -3,9 +3,9 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.marker.Barrier;
 import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCap;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
@@ -17,7 +17,7 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements SideEffectCap, EngineDependent, Reversible, Bulkable {
+public class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements SideEffectCap, EngineDependent, Barrier, Bulkable {
 
     private boolean done = false;
     private boolean onGraphComputer = false;
@@ -61,8 +61,8 @@ public class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements SideE
 
     public String toString() {
         return Graph.Key.isHidden(this.sideEffectKey) ?
-                    super.toString() :
-                    TraversalHelper.makeStepString(this, this.sideEffectKey);
+                super.toString() :
+                TraversalHelper.makeStepString(this, this.sideEffectKey);
     }
 
     @Override
