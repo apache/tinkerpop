@@ -17,6 +17,8 @@ import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.util.IoEdge;
 import com.tinkerpop.gremlin.structure.io.util.IoMetaProperty;
@@ -232,6 +234,11 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(UUID.class, new UUIDSerializer(), 17));
             add(Triplet.<Class, Serializer, Integer>with(VertexTerminator.class, null, 13));
 
+            add(Triplet.<Class, Serializer, Integer>with(Edge.class, new ElementSerializer.EdgeSerializer(), 65));
+            add(Triplet.<Class, Serializer, Integer>with(Vertex.class, new ElementSerializer.VertexSerializer(), 66));
+            add(Triplet.<Class, Serializer, Integer>with(Property.class, new ElementSerializer.PropertySerializer(), 67));
+            add(Triplet.<Class, Serializer, Integer>with(MetaProperty.class, new ElementSerializer.MetaPropertySerializer(), 68));   // ***LAST ID***
+
             // GraphTraversal in OLAP
             add(Triplet.<Class, Serializer, Integer>with(SimpleTraverser.class, null, 55));
             add(Triplet.<Class, Serializer, Integer>with(PathTraverser.class, null, 56));
@@ -242,7 +249,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(Optional.class, null, 61));
             add(Triplet.<Class, Serializer, Integer>with(AtomicLong.class, null, 62)); // this is all needed for serializing properties in TinkerGraph
             add(Triplet.<Class, Serializer, Integer>with(Tree.class, null, 63));
-            add(Triplet.with(HashSet.class, null, 64));  // ***LAST ID***
+            add(Triplet.with(HashSet.class, null, 64));
         }};
 
         private static final byte major = 1;

@@ -59,8 +59,8 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
         this.outVertex = DetachedVertex.detach(edge.iterators().vertices(Direction.OUT).next());
         this.inVertex = DetachedVertex.detach(edge.iterators().vertices(Direction.IN).next());
 
-        edge.iterators().properties().forEachRemaining(p -> this.properties.put(p.key(), new ArrayList(Arrays.asList(new DetachedProperty(p.key(), p.value(), this)))));
-        edge.iterators().hiddens().forEachRemaining(p -> this.properties.put(Graph.Key.hide(p.key()), new ArrayList(Arrays.asList(new DetachedProperty(p.key(), p.value(), this)))));
+        edge.iterators().properties().forEachRemaining(p -> this.properties.put(p.key(), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : new DetachedProperty(p, this)))));
+        edge.iterators().hiddens().forEachRemaining(p -> this.properties.put(Graph.Key.hide(p.key()), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : new DetachedProperty(p, this)))));
     }
 
     @Override

@@ -46,9 +46,20 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
         this.value = (V) property.value();
         this.hashCode = property.hashCode();
         final Element element = property.getElement();
-        this.element = element instanceof Vertex ?
-                DetachedVertex.detach((Vertex) element) :
-                DetachedEdge.detach((Edge) element);
+
+        if (element instanceof Vertex)
+            this.element = element instanceof DetachedVertex ? (DetachedElement) element : DetachedVertex.detach((Vertex) element);
+        else
+            this.element = element instanceof DetachedEdge ? (DetachedElement) element : DetachedEdge.detach((Edge) element);
+    }
+
+    DetachedProperty(final Property property, final DetachedEdge element) {
+        if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
+
+        this.key = property.key();
+        this.value = (V) property.value();
+        this.hashCode = property.hashCode();
+        this.element = element;
     }
 
     @Override

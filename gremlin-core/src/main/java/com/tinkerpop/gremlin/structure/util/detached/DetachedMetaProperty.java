@@ -27,6 +27,8 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
     DetachedVertex vertex;
     int hashCode;
 
+    private final transient MetaProperty.Iterators iterators = new Iterators();
+
     private DetachedMetaProperty() {
 
     }
@@ -55,7 +57,23 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
         this.key = property.key();
         this.value = (V) property.value();
         this.hashCode = property.hashCode();
-        this.vertex = DetachedVertex.detach(property.getElement());
+        this.vertex = property.getElement() instanceof DetachedVertex ? (DetachedVertex) property.getElement() : DetachedVertex.detach(property.getElement());
+
+        property.iterators().properties().forEachRemaining(p -> this.properties.put(p.key(), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : DetachedProperty.detach(p)))));
+        property.iterators().hiddens().forEachRemaining(p -> this.properties.put(Graph.Key.hide(p.key()), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : DetachedProperty.detach(p)))));
+    }
+
+    DetachedMetaProperty(final MetaProperty property, final DetachedVertex detachedVertex) {
+        super(property);
+        if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
+
+        this.key = property.key();
+        this.value = (V) property.value();
+        this.hashCode = property.hashCode();
+        this.vertex = detachedVertex;
+
+        property.iterators().properties().forEachRemaining(p -> this.properties.put(p.key(), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : DetachedProperty.detach(p)))));
+        property.iterators().hiddens().forEachRemaining(p -> this.properties.put(Graph.Key.hide(p.key()), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : DetachedProperty.detach(p)))));
     }
 
     @Override
@@ -138,8 +156,6 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
     public MetaProperty.Iterators iterators() {
         return this.iterators;
     }
-
-    private final MetaProperty.Iterators iterators = new Iterators();
 
     protected class Iterators extends DetachedElement<V>.Iterators implements MetaProperty.Iterators {
 

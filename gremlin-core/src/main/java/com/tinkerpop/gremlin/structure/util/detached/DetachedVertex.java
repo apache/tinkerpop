@@ -12,6 +12,8 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.javatuples.Pair;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +49,10 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
     private DetachedVertex(final Vertex vertex) {
         super(vertex);
+
+        // todo: multiple keys
+        vertex.iterators().properties().forEachRemaining(p -> this.properties.put(p.key(), new ArrayList(Arrays.asList(p instanceof DetachedMetaProperty ? p : new DetachedMetaProperty(p, this)))));
+        vertex.iterators().hiddens().forEachRemaining(p -> this.properties.put(Graph.Key.hide(p.key()), new ArrayList(Arrays.asList(p instanceof DetachedMetaProperty ? p : new DetachedMetaProperty(p, this)))));
     }
 
     @Override
@@ -106,8 +112,8 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
         return this.iterators;
     }
 
-    private Map<String, List<Property>> convertToDetachedMetaProperties(final Map<String, Object> hiddenProperties) {
-        return hiddenProperties.entrySet().stream()
+    private Map<String, List<Property>> convertToDetachedMetaProperties(final Map<String, Object> properties) {
+        return properties.entrySet().stream()
                 .map(entry -> Pair.with(entry.getKey(), ((List<IoMetaProperty>) entry.getValue()).stream()
                                 .map(iom -> (Property) new DetachedMetaProperty(iom.id, iom.label, entry.getKey(), iom.value,
                                                                                 iom.properties, iom.hiddenProperties,
