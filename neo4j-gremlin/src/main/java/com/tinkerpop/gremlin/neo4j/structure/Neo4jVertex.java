@@ -118,8 +118,8 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
             final Node node = this.getBaseVertex();
             for (final Relationship relationship : node.getRelationships(org.neo4j.graphdb.Direction.BOTH)) {
                 final Node otherNode = relationship.getOtherNode(node);
-                if (otherNode.getLabels().iterator().next().equals(Neo4jMetaProperty.META_PROPERTY_LABEL)) {
-                    relationship.getOtherNode(node).getRelationships().forEach(Relationship::delete);
+                if (otherNode.hasLabel(Neo4jMetaProperty.META_PROPERTY_LABEL)) {
+                    otherNode.getRelationships().forEach(Relationship::delete);
                     otherNode.delete(); // meta property node
                 } else
                     relationship.delete();

@@ -43,7 +43,7 @@ public class EmptyProperty<V> implements Property<V> {
 
     @Override
     public void remove() {
-        throw Exceptions.propertyDoesNotExist();
+
     }
 
     @Override

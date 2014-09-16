@@ -25,6 +25,24 @@ public class Neo4jHelper {
             return org.neo4j.graphdb.Direction.BOTH;
     }
 
+    public static boolean isDeleted(final Node node) {
+        try {
+            node.getLabels().iterator().next();
+            return false;
+        } catch (final IllegalStateException e) {
+            return true;
+        }
+    }
+
+    public static boolean isDeleted(final Relationship relationship) {
+        try {
+            relationship.getType();
+            return false;
+        } catch (final IllegalStateException e) {
+            return true;
+        }
+    }
+
     public static Iterable<Neo4jVertex> getVertices(final Neo4jVertex vertex, final Direction direction, final String... labels) {
         return new Neo4jVertexVertexIterable<>(vertex, direction, labels);
     }
@@ -36,9 +54,9 @@ public class Neo4jHelper {
     public static Iterator<Neo4jVertex> getVertices(final Neo4jEdge edge, final Direction direction) {
         final List<Neo4jVertex> vertices = new ArrayList<>(2);
         if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
-            vertices.add(new Neo4jVertex(((Relationship) edge.getBaseEdge()).getStartNode(), edge.graph));
+            vertices.add(new Neo4jVertex(edge.getBaseEdge().getStartNode(), edge.graph));
         if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH))
-            vertices.add(new Neo4jVertex(((Relationship) edge.getBaseEdge()).getEndNode(), edge.graph));
+            vertices.add(new Neo4jVertex(edge.getBaseEdge().getEndNode(), edge.graph));
         return vertices.iterator();
     }
 

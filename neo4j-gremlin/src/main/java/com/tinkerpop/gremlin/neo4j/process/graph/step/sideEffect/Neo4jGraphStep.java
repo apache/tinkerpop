@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.neo4j.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import com.tinkerpop.gremlin.neo4j.structure.Neo4jHelper;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jMetaProperty;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import com.tinkerpop.gremlin.process.Traversal;
@@ -17,7 +18,6 @@ import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.DynamicLabel;
-import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.index.AutoIndexer;
@@ -95,12 +95,14 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
     private Stream<Neo4jVertex> getAllVertices() {
         return StreamFactory.stream(GlobalGraphOperations.at(this.graph.getBaseGraph()).getAllNodes())
-                .filter(node -> !this.isMetaPropertyNode(node))
+                .filter(node -> !Neo4jHelper.isDeleted(node))
+                .filter(node -> !node.hasLabel(Neo4jMetaProperty.META_PROPERTY_LABEL))
                 .map(node -> new Neo4jVertex(node, this.graph));
     }
 
     private Stream<Neo4jEdge> getAllEdges() {
         return StreamFactory.stream(GlobalGraphOperations.at(this.graph.getBaseGraph()).getAllRelationships())
+                .filter(relationship -> !Neo4jHelper.isDeleted(relationship))
                 .filter(relationship -> !relationship.getType().name().startsWith(Neo4jMetaProperty.META_PROPERTY_PREFIX))
                 .map(relationship -> new Neo4jEdge(relationship, this.graph));
     }
@@ -121,7 +123,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         return Arrays.stream(labels)
                 .filter(label -> !label.equals(Neo4jMetaProperty.META_PROPERTY_LABEL.name()))
                 .flatMap(label -> StreamFactory.stream(GlobalGraphOperations.at(this.graph.getBaseGraph()).getAllNodesWithLabel(DynamicLabel.label(label)).iterator()))
-                .filter(node -> !this.isMetaPropertyNode(node))
+                .filter(node -> !node.hasLabel(Neo4jMetaProperty.META_PROPERTY_LABEL))
                 .map(node -> new Neo4jVertex(node, this.graph));
     }
 
@@ -129,7 +131,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         final AutoIndexer indexer = this.graph.getBaseGraph().index().getNodeAutoIndexer();
         return indexer.isEnabled() && indexer.getAutoIndexedProperties().contains(key) ?
                 StreamFactory.stream(this.graph.getBaseGraph().index().getNodeAutoIndexer().getAutoIndex().get(key, value).iterator())
-                        .map(node -> this.isMetaPropertyNode(node) ?
+                        .map(node -> node.hasLabel(Neo4jMetaProperty.META_PROPERTY_LABEL) ?
                                 node.getRelationships(Direction.INCOMING).iterator().next().getStartNode() :
                                 node)
                         .map(node -> new Neo4jVertex(node, this.graph)) :
@@ -157,14 +159,6 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
                 .filter(c -> (indexedKeys.contains(c.key) && c.predicate.equals(Compare.EQUAL)))
                 .findFirst()
                 .orElseGet(() -> null);
-    }
-
-    private boolean isMetaPropertyNode(final Node node) {
-        for (final Label label : node.getLabels()) {
-            if (label.equals(Neo4jMetaProperty.META_PROPERTY_LABEL))
-                return true;
-        }
-        return false;
     }
 
     private String makeCypherQuery() {
