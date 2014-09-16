@@ -61,7 +61,7 @@ public class EmptyMetaProperty<V> implements MetaProperty<V> {
 
     @Override
     public void remove() {
-        throw Property.Exceptions.propertyDoesNotExist();
+
     }
 
     @Override

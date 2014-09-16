@@ -67,8 +67,21 @@ public class PropertyTest {
                 final Property p = v1.property("name");
                 p.remove();
                 p.remove();
+                v1.property("name").remove();
+                v1.property("name").remove();
             } catch (Exception ex) {
-                fail("Removing a property that was already removed should not throw an exception");
+                fail("Removing a vertex property that was already removed should not throw an exception");
+            }
+
+            try {
+                final Edge edge = v1.addEdge("knows", g.addVertex());
+                final Property p = edge.property("stars", 5);
+                p.remove();
+                p.remove();
+                edge.property("stars").remove();
+                edge.property("stars").remove();
+            } catch (Exception ex) {
+                fail("Removing an edge property that was already removed should not throw an exception");
             }
         }
 

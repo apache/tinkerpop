@@ -19,6 +19,7 @@ import org.apache.commons.configuration.ConfigurationConverter;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.NotInTransactionException;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
@@ -152,7 +153,9 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         if (null == id) throw Graph.Exceptions.elementNotFound(Vertex.class, id);
 
         try {
-            return new Neo4jVertex(this.baseGraph.getNodeById(evaluateToLong(id)), this);
+            final Node node = this.baseGraph.getNodeById(evaluateToLong(id));
+            if (!node.hasLabel(Neo4jMetaProperty.META_PROPERTY_LABEL))
+                return new Neo4jVertex(node, this);
         } catch (final NotFoundException e) {
             throw Graph.Exceptions.elementNotFound(Vertex.class, id);
         } catch (final NumberFormatException e) {
@@ -160,6 +163,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         } catch (final NotInTransactionException e) {
             throw Graph.Exceptions.elementNotFound(Vertex.class, id);
         }
+        throw Graph.Exceptions.elementNotFound(Vertex.class, id);
     }
 
     @Override

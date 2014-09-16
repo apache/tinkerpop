@@ -156,6 +156,22 @@ public class MetaPropertyTest extends AbstractGremlinTest {
     public static class MetaPropertyRemoval extends AbstractGremlinTest {
 
         @Test
+        public void shouldSupportIdempotentMetaPropertyRemoval() {
+            Vertex a = g.addVertex("name","marko");
+            Vertex b = g.addVertex("name","daniel","name","kuppitz");
+            a.property("name").remove();
+            a.property("name").remove();
+            a.property("name").remove();
+            b.properties("name").remove();
+            b.property("name").remove();
+            b.properties("name").remove();
+            b.property("name").remove();
+            b.properties("name").remove();
+            b.property("name").remove();
+        }
+
+
+        @Test
         public void shouldRemoveMultiProperties() {
             Vertex v = g.addVertex("name", "marko", "age", 34);
             v.property("name", "marko a. rodriguez");
@@ -234,7 +250,8 @@ public class MetaPropertyTest extends AbstractGremlinTest {
                 assertEquals(102, marko.properties().count().next().intValue());
                 assertEquals(0, marko.properties("blah").count().next().intValue());
             });
-/*            g.V().properties("name").has(MetaProperty.VALUE, (a, b) -> ((Class) b).isAssignableFrom(a.getClass()), Integer.class).remove();
+
+            g.V().properties("name").has(MetaProperty.VALUE, (a, b) -> ((Class) b).isAssignableFrom(a.getClass()), Integer.class).remove();
             tryCommit(g, g -> {
                 assertEquals(1, g.V().count().next().intValue());
                 assertEquals(0, g.E().count().next().intValue());
@@ -242,7 +259,6 @@ public class MetaPropertyTest extends AbstractGremlinTest {
                 assertEquals(2, marko.properties().count().next().intValue());
                 assertEquals(0, marko.properties("blah").count().next().intValue());
             });
-*/
             marko.remove();
             tryCommit(g, g -> {
                 assertEquals(0, g.V().count().next().intValue());

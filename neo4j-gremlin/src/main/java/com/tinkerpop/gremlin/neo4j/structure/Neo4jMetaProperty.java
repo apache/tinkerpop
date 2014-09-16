@@ -87,7 +87,7 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, WrappedVertex<Node
             this.node.setProperty(key, value);
             return new Neo4jProperty<>(this, key, value);
         } else {
-            this.node = this.vertex.graph.getBaseGraph().createNode(META_PROPERTY_LABEL, DynamicLabel.label(this.key));
+            this.node = this.vertex.graph.getBaseGraph().createNode(META_PROPERTY_LABEL, DynamicLabel.label(this.label()));
             this.node.setProperty(KEY, this.key);
             this.node.setProperty(VALUE, this.value);
             this.node.setProperty(key, value);
