@@ -19,7 +19,6 @@ public interface GraphWriter {
      * Write the entire graph to a stream.
      */
     public void writeGraph(final OutputStream outputStream, final Graph g) throws IOException;
-    public void writeGraphNew(final OutputStream outputStream, final Graph g) throws IOException;
 
     /**
      * Write a vertex to a stream with its associated edges.  Only write edges as defined by the requested direction.

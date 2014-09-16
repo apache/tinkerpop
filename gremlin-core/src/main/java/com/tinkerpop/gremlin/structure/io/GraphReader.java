@@ -27,7 +27,6 @@ public interface GraphReader {
      * @param inputStream a stream containing a single vertex as defined by the accompanying {@link GraphWriter}
      */
     public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException;
-    public void readGraphNew(final InputStream inputStream, final Graph graphToWriteTo) throws IOException;
 
     /**
      * Reads a single vertex from an {@link InputStream}.  This method will read vertex properties but not edges.

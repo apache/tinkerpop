@@ -102,11 +102,6 @@ public class GraphMLReader implements GraphReader {
     }
 
     @Override
-    public void readGraphNew(final InputStream inputStream, final Graph graphToWriteTo) throws IOException {
-        readGraph(inputStream, graphToWriteTo);
-    }
-
-    @Override
     public void readGraph(final InputStream graphInputStream, final Graph graphToWriteTo) throws IOException {
         final BatchGraph graph;
         try {
