@@ -50,7 +50,7 @@ public interface GraphWriter {
      */
     public default void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal, final Direction direction) throws IOException {
         while (traversal.hasNext()) {
-            writeVertex(outputStream, traversal.next(), direction);
+            writeVertexNew(outputStream, traversal.next(), direction);
         }
     }
 
@@ -62,7 +62,7 @@ public interface GraphWriter {
      */
     public default void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal) throws IOException {
         while (traversal.hasNext()) {
-            writeVertex(outputStream, traversal.next());
+            writeVertexNew(outputStream, traversal.next());
         }
     }
 

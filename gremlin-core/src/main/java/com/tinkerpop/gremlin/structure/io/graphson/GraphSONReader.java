@@ -152,6 +152,13 @@ public class GraphSONReader implements GraphReader {
     }
 
     @Override
+    public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
+                                         final SFunction<DetachedVertex, Vertex> vertexMaker,
+                                         final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
+        return null;
+    }
+
+    @Override
     public Edge readEdge(final InputStream inputStream, final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
         final Map<String, Object> edgeData = mapper.readValue(inputStream, mapTypeReference);
         return readEdgeData(edgeData, edgeMaker);

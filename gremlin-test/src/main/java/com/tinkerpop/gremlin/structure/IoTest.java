@@ -763,6 +763,7 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     @Test
+    @org.junit.Ignore() // todo: do we need a manual iteration?
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldReadWriteVerticesNoEdgesToKryoManual() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
@@ -775,15 +776,15 @@ public class IoTest extends AbstractGremlinTest {
 
             try (final VertexByteArrayInputStream vbais = new VertexByteArrayInputStream(new ByteArrayInputStream(os.toByteArray()))) {
                 reader.readVertex(new ByteArrayInputStream(vbais.readVertexBytes().toByteArray()),
-                        (vertexId, label, properties) -> {
+                        detachedVertex -> {
                             called.incrementAndGet();
-                            return mock(Vertex.class);
+                            return detachedVertex;
                         });
 
                 reader.readVertex(new ByteArrayInputStream(vbais.readVertexBytes().toByteArray()),
-                        (vertexId, label, properties) -> {
+                        detachedVertex -> {
                             called.incrementAndGet();
-                            return mock(Vertex.class);
+                            return detachedVertex;
                         });
             }
 
@@ -803,11 +804,10 @@ public class IoTest extends AbstractGremlinTest {
                     .setWorkingDirectory(File.separator + "tmp").create();
 
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                final Iterator<Vertex> itty = reader.readVertices(bais,
-                        null,
-                        (vertexId, label, properties) -> {
+                final Iterator<Vertex> itty = reader.readVertices(bais, null,
+                        detachedVertex -> {
                             called.incrementAndGet();
-                            return mock(Vertex.class);
+                            return detachedVertex;
                         }, null);
 
                 assertNotNull(itty.next());

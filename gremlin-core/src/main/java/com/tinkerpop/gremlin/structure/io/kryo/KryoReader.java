@@ -101,6 +101,33 @@ public class KryoReader implements GraphReader {
     }
 
     @Override
+    public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
+                                         final SFunction<DetachedVertex, Vertex> vertexMaker,
+                                         final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
+        final Input input = new Input(inputStream);
+        return new Iterator<Vertex>() {
+            @Override
+            public boolean hasNext() {
+                return !input.eof();
+            }
+
+            @Override
+            public Vertex next() {
+                try {
+                    final Vertex v = readVertex(direction, vertexMaker, edgeMaker, input);
+
+                    // read the vertex terminator
+                    kryo.readClassAndObject(input);
+
+                    return v;
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        };
+    }
+
+    @Override
     public Vertex readVertex(final InputStream inputStream, final STriFunction<Object, String, Object[], Vertex> vertexMaker) throws IOException {
         return readVertex(inputStream, null, vertexMaker, null);
     }

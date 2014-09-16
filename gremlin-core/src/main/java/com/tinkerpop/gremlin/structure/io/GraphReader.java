@@ -73,6 +73,9 @@ public interface GraphReader {
     public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
                                          final STriFunction<Object, String, Object[], Vertex> vertexMaker,
                                          final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException;
+    public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
+                                         final SFunction<DetachedVertex, Vertex> vertexMaker,
+                                         final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException;
 
     /**
      * Reads a single edge from an {@link InputStream}.
