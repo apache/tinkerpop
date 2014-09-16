@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.neo4j.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraphVariables;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jMetaProperty;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import com.tinkerpop.gremlin.process.Traversal;
@@ -24,6 +23,7 @@ import org.neo4j.tooling.GlobalGraphOperations;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -46,6 +46,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     @Override
     public void generateTraverserIterator(final boolean trackPaths) {
         this.start = Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges();
+        //makeCypherQuery();
         super.generateTraverserIterator(trackPaths);
     }
 
@@ -153,6 +154,43 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
                 .filter(c -> (indexedKeys.contains(c.key) && c.predicate.equals(Compare.EQUAL)))
                 .findFirst()
                 .orElseGet(() -> null);
+    }
+
+    private String makeCypherQuery() {
+        final StringBuilder builder = new StringBuilder("MATCH node WHERE ");
+        int counter = 0;
+        for (final HasContainer hasContainer : this.hasContainers) {
+            if (hasContainer.hasLabel()) {
+                if (counter++ > 0) builder.append(" AND ");
+                builder.append("node:").append(hasContainer.label);
+            }
+
+            if (hasContainer.key.equals(Element.LABEL) && hasContainer.predicate.equals(Compare.EQUAL)) {
+                if (counter++ > 0) builder.append(" AND ");
+                builder.append("node:").append(hasContainer.value);
+            } else {
+                if (counter++ > 0) builder.append(" AND ");
+                builder.append("node.").append(hasContainer.key).append(" ");
+                if (hasContainer.predicate instanceof Compare) {
+                    builder.append(((Compare) hasContainer.predicate).asString()).append(" ").append(toStringOfValue(hasContainer.value));
+                } else if (hasContainer.predicate.equals(Contains.IN)) {
+                    builder.append("IN [");
+                    for (Object object : (Collection) hasContainer.value) {
+                        builder.append(toStringOfValue(object)).append(",");
+                    }
+                    builder.replace(builder.length() - 1, builder.length(), "").append("]");
+                }
+            }
+
+        }
+        System.out.println(builder);
+        return builder.toString();
+    }
+
+    private String toStringOfValue(final Object value) {
+        if (value instanceof String)
+            return "'" + value + "'";
+        else return value.toString();
     }
 
 

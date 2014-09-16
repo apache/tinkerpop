@@ -125,7 +125,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         this.g.addVertex(Element.LABEL, "Person", "name", "marko");
         this.g.addVertex(Element.LABEL, "Person", "name", "marko");
         this.g.tx().commit();
-        assertEquals(0, this.g.V().has("Person:name", "marko").count().next(), 0);
+        assertEquals(2, this.g.V().has("Person", "name", "marko").count().next(), 0);
         assertEquals(2, this.g.V().has("name", "marko").count().next(), 0);
     }
 
@@ -304,7 +304,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         this.g.addVertex(Element.LABEL, "Person", "name", "john");
         this.g.addVertex(Element.LABEL, "Person", "name", "pete");
         this.g.tx().commit();
-        assertEquals(0, this.g.V().has("Person:name", "marko").count().next(), 0);
+        assertEquals(1, this.g.V().has("Person", "name", "marko").count().next(), 0);
         assertEquals(3, this.g.V().has(Element.LABEL, "Person").count().next(), 0);
         assertEquals(1, this.g.V().has(Element.LABEL, "Person").has("name", "marko").count().next(), 0);
     }
