@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.tinkerpop.gremlin.structure.Element.LABEL;
 import static org.junit.Assert.*;
 
 /**
@@ -33,6 +34,7 @@ import static org.junit.Assert.*;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Pieter Martin
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class Neo4jGraphTest extends BaseNeo4jGraphTest {
 
@@ -335,12 +337,13 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         g.tx().readWrite();
         final Schema schema = g.getBaseGraph().schema();
         schema.indexFor(DynamicLabel.label("person")).on("name").create();
+        schema.indexFor(DynamicLabel.label("name")).on(MetaProperty.VALUE).create();
         this.g.tx().commit();
 
-        final Vertex a = g.addVertex(Element.LABEL, "person", "name", "marko", "age", 34);
+        final Vertex a = g.addVertex(LABEL, "person", "name", "marko", "age", 34);
         a.property("name", "okram");
         a.property("name", "marko a. rodriguez");
-        final Vertex b = g.addVertex(Element.LABEL, "person", "name", "stephen");
+        final Vertex b = g.addVertex(LABEL, "person", "name", "stephen");
         final Vertex c = g.addVertex("name", "matthias", "name", "mbroecheler");
 
         tryCommit(g, g -> {

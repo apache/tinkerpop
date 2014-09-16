@@ -14,6 +14,7 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
@@ -21,6 +22,7 @@ import org.neo4j.graphdb.Relationship;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.stream.Stream;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -56,18 +58,18 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
             final String prefixedKey = Neo4jMetaProperty.META_PROPERTY_PREFIX.concat(key);
             if (this.getBaseVertex().hasProperty(key)) {
                 if (this.getBaseVertex().getProperty(key).equals(Neo4jMetaProperty.META_PROPERTY_TOKEN)) {
-                    final Node node = this.graph.getBaseGraph().createNode(Neo4jMetaProperty.META_PROPERTY_LABEL);
+                    final Node node = this.graph.getBaseGraph().createNode(Neo4jMetaProperty.META_PROPERTY_LABEL, DynamicLabel.label(Graph.Key.unHide(key)));
                     node.setProperty(MetaProperty.KEY, key);
                     node.setProperty(MetaProperty.VALUE, value);
                     this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
                     return new Neo4jMetaProperty<>(this, node);
                 } else {
-                    Node node = this.graph.getBaseGraph().createNode(Neo4jMetaProperty.META_PROPERTY_LABEL);
+                    Node node = this.graph.getBaseGraph().createNode(Neo4jMetaProperty.META_PROPERTY_LABEL, DynamicLabel.label(Graph.Key.unHide(key)));
                     node.setProperty(MetaProperty.KEY, key);
                     node.setProperty(MetaProperty.VALUE, this.getBaseVertex().removeProperty(key));
                     this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
                     this.getBaseVertex().setProperty(key, Neo4jMetaProperty.META_PROPERTY_TOKEN);
-                    node = this.graph.getBaseGraph().createNode(Neo4jMetaProperty.META_PROPERTY_LABEL);
+                    node = this.graph.getBaseGraph().createNode(Neo4jMetaProperty.META_PROPERTY_LABEL, DynamicLabel.label(Graph.Key.unHide(key)));
                     node.setProperty(MetaProperty.KEY, key);
                     node.setProperty(MetaProperty.VALUE, value);
                     this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
@@ -98,7 +100,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
             return new Neo4jMetaProperty<>(this, key, value);
         } else {
             this.getBaseVertex().setProperty(key, Neo4jMetaProperty.META_PROPERTY_TOKEN);
-            final Node node = this.graph.getBaseGraph().createNode(Neo4jMetaProperty.META_PROPERTY_LABEL);
+            final Node node = this.graph.getBaseGraph().createNode(Neo4jMetaProperty.META_PROPERTY_LABEL, DynamicLabel.label(Graph.Key.unHide(key)));
             node.setProperty(MetaProperty.KEY, key);
             node.setProperty(MetaProperty.VALUE, value);
             for (int i = 0; i < keyValues.length; i = i + 2) {
@@ -197,7 +199,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
                             return StreamFactory.stream(getBaseVertex().getRelationships(org.neo4j.graphdb.Direction.OUTGOING, DynamicRelationshipType.withName(Neo4jMetaProperty.META_PROPERTY_PREFIX.concat(key))))
                                     .map(relationship -> new Neo4jMetaProperty(Neo4jVertex.this, relationship.getEndNode()));
                         else
-                            return Arrays.asList(new Neo4jMetaProperty<>(Neo4jVertex.this, key, (V) getBaseVertex().getProperty(key))).stream();
+                            return Stream.of(new Neo4jMetaProperty<>(Neo4jVertex.this, key, (V) getBaseVertex().getProperty(key)));
                     }).iterator();
         }
 
@@ -212,7 +214,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
                             return StreamFactory.stream(getBaseVertex().getRelationships(org.neo4j.graphdb.Direction.OUTGOING, DynamicRelationshipType.withName(Neo4jMetaProperty.META_PROPERTY_PREFIX.concat(key))))
                                     .map(relationship -> new Neo4jMetaProperty(Neo4jVertex.this, relationship.getEndNode()));
                         else
-                            return Arrays.asList(new Neo4jMetaProperty<>(Neo4jVertex.this, key, (V) getBaseVertex().getProperty(key))).stream();
+                            return Stream.of(new Neo4jMetaProperty<>(Neo4jVertex.this, key, (V) getBaseVertex().getProperty(key)));
                     }).iterator();
         }
     }
