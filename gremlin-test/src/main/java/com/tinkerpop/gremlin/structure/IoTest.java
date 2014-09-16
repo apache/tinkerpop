@@ -439,10 +439,10 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(v1.id(), detachedEdge.iterators().vertices(Direction.OUT).next().id());
                     assertEquals(v2.id(), detachedEdge.iterators().vertices(Direction.IN).next().id());
                     assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(e.hiddenKeys().size(), StreamFactory.stream(e.iterators().hiddens()).count());
-                    assertEquals(e.keys().size(), StreamFactory.stream(e.iterators().properties()).count());
-                    assertEquals(0.5f, e.iterators().properties("weight").next().value());
-                    assertEquals("rw", e.iterators().hiddens("acl").next().value());
+                    assertEquals(e.hiddenKeys().size(), StreamFactory.stream(detachedEdge.iterators().hiddens()).count());
+                    assertEquals(e.keys().size(), StreamFactory.stream(detachedEdge.iterators().properties()).count());
+                    assertEquals(0.5f, detachedEdge.iterators().properties("weight").next().value());
+                    assertEquals("rw", detachedEdge.iterators().hiddens("acl").next().value());
 
                     called.set(true);
 
@@ -476,8 +476,8 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(v1.id(), detachedEdge.iterators().vertices(Direction.OUT).next().id());
                     assertEquals(v2.id(), detachedEdge.iterators().vertices(Direction.IN).next().id());
                     assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(e.hiddenKeys().size(), StreamFactory.stream(e.iterators().hiddens()).count());
-                    assertEquals(e.keys().size(), StreamFactory.stream(e.iterators().properties()).count());
+                    assertEquals(e.hiddenKeys().size(), StreamFactory.stream(detachedEdge.iterators().hiddens()).count());
+                    assertEquals(e.keys().size(), StreamFactory.stream(detachedEdge.iterators().properties()).count());
                     assertEquals(0.5d, e.iterators().properties("weight").next().value());
                     assertEquals("rw", e.iterators().hiddens("acl").next().value());
 
@@ -503,27 +503,25 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().create();
-            writer.writeEdge(os, e);
+            writer.writeEdgeNew(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final GraphSONReader reader = GraphSONReader.build().create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais,
-                        (edgeId, outId, inId, label, properties) -> {
-                            assertEquals(e.id().toString(), edgeId.toString()); // lossy
-                            assertEquals(v1.id().toString(), outId.toString()); // lossy
-                            assertEquals(v2.id().toString(), inId.toString());  // lossy
-                            assertEquals(e.label(), label);
-                            assertEquals(e.keys().size() + e.hiddenKeys().size(), properties.length / 2);
-                            assertEquals("weight", properties[0]);
-                            assertEquals(0.5d, properties[1]); //lossy
-                            assertEquals(Graph.Key.hide("acl"), properties[2]);
-                            assertEquals("rw", properties[3]);
+                reader.readEdge(bais, detachedEdge -> {
+                    assertEquals(e.id().toString(), detachedEdge.id().toString()); // lossy
+                    assertEquals(v1.id().toString(), detachedEdge.iterators().vertices(Direction.OUT).next().id().toString()); // lossy
+                    assertEquals(v2.id().toString(), detachedEdge.iterators().vertices(Direction.IN).next().id().toString());  // lossy
+                    assertEquals(e.label(), detachedEdge.label());
+                    assertEquals(e.hiddenKeys().size(), StreamFactory.stream(detachedEdge.iterators().hiddens()).count());
+                    assertEquals(e.keys().size(), StreamFactory.stream(detachedEdge.iterators().properties()).count());
+                    assertEquals(0.5d, detachedEdge.iterators().properties("weight").next().value());
+                    assertEquals("rw", detachedEdge.iterators().hiddens("acl").next().value());
 
-                            called.set(true);
+                    called.set(true);
 
-                            return null;
-                        });
+                    return null;
+                });
             }
 
             assertTrue(called.get());

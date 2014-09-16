@@ -44,7 +44,7 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
     private DetachedProperty(final Property property) {
         if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
 
-        this.key = property.key();
+        this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
         this.value = (V) property.value();
         this.hashCode = property.hashCode();
         final Element element = property.getElement();
@@ -58,7 +58,7 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
     DetachedProperty(final Property property, final DetachedEdge element) {
         if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
 
-        this.key = property.key();
+        this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
         this.value = (V) property.value();
         this.hashCode = property.hashCode();
         this.element = element;

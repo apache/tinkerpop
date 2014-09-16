@@ -63,14 +63,12 @@ public class GraphSONWriter implements GraphWriter {
     }
 
     @Override
-    public void writeVertexNew(OutputStream outputStream, Vertex v, Direction direction) throws IOException {
-        // todo:
+    public void writeVertexNew(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
         this.mapper.writeValue(outputStream, v);
     }
 
     @Override
-    public void writeVertexNew(OutputStream outputStream, Vertex v) throws IOException {
-        // todo:
+    public void writeVertexNew(final OutputStream outputStream, final Vertex v) throws IOException {
         this.mapper.writeValue(outputStream, v);
     }
 

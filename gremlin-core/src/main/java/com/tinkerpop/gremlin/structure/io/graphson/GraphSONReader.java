@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -172,8 +173,7 @@ public class GraphSONReader implements GraphReader {
     @Override
     public Edge readEdge(final InputStream inputStream, final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
         final Map<String, Object> edgeData = mapper.readValue(inputStream, mapTypeReference);
-        // todo: fix
-        return null;
+        return readEdgeDataNew(edgeData, edgeMaker);
     }
 
     @Override
@@ -208,6 +208,20 @@ public class GraphSONReader implements GraphReader {
                 edgeData.get(GraphSONTokens.IN),
                 edgeData.get(GraphSONTokens.LABEL).toString(),
                 propsAsArray);
+    }
+
+    private static Edge readEdgeDataNew(final Map<String, Object> edgeData, final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
+        final Map<String, Object> properties = (Map<String, Object>) edgeData.get(GraphSONTokens.PROPERTIES);
+        final Map<String, Object> hiddens = ((Map<String, Object>) edgeData.get(GraphSONTokens.HIDDENS)).entrySet().stream().collect(Collectors.toMap((Map.Entry kv) -> Graph.Key.hide(kv.getKey().toString()), (Map.Entry kv) -> kv.getValue()));
+
+        // todo: clean up vertex label
+        final DetachedEdge edge = new DetachedEdge(edgeData.get(GraphSONTokens.ID),
+                edgeData.get(GraphSONTokens.LABEL).toString(),
+                properties, hiddens,
+                Pair.with(edgeData.get(GraphSONTokens.OUT), "default"),
+                Pair.with(edgeData.get(GraphSONTokens.IN), "default"));
+
+        return edgeMaker.apply(edge);
     }
 
     private static Vertex readVertexData(final Map<String, Object> vertexData, final STriFunction<Object, String, Object[], Vertex> vertexMaker) throws IOException {
