@@ -58,6 +58,18 @@ public class GraphSONWriter implements GraphWriter {
     }
 
     @Override
+    public void writeVertexNew(OutputStream outputStream, Vertex v, Direction direction) throws IOException {
+        // todo:
+        this.mapper.writeValue(outputStream, v);
+    }
+
+    @Override
+    public void writeVertexNew(OutputStream outputStream, Vertex v) throws IOException {
+        // todo:
+        this.mapper.writeValue(outputStream, v);
+    }
+
+    @Override
     public void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal, final Direction direction) throws IOException {
         final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
         while (traversal.hasNext()) {

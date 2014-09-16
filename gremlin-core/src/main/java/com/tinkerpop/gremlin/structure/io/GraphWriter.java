@@ -28,6 +28,7 @@ public interface GraphWriter {
      * @param direction    If direction is null then no edges are written.
      */
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException;
+    public void writeVertexNew(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException;
 
     /**
      * Write a vertex to a stream without writing its edges.
@@ -36,6 +37,7 @@ public interface GraphWriter {
      * @param v            The vertex to write.
      */
     public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException;
+    public void writeVertexNew(final OutputStream outputStream, final Vertex v) throws IOException;
 
 
     /**

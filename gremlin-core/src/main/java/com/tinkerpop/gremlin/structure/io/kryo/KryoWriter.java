@@ -10,6 +10,8 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedElement;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.io.IOException;
@@ -99,16 +101,44 @@ public class KryoWriter implements GraphWriter {
         output.flush();
     }
 
+    @Override
+    public void writeVertexNew(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
+        final Output output = new Output(outputStream);
+        this.headerWriter.write(kryo, output);
+        writeVertexToOutputNew(output, v, direction);
+        output.flush();
+    }
+
+    @Override
+    public void writeVertexNew(final OutputStream outputStream, final Vertex v) throws IOException {
+        final Output output = new Output(outputStream);
+        this.headerWriter.write(kryo, output);
+        writeVertexWithNoEdgesToOutputNew(output, v);
+        output.flush();
+    }
+
     private void writeEdgeToOutput(final Output output, final Edge e) {
         this.writeElement(output, e, null);
+    }
+
+    private void writeEdgeToOutputNew(final Output output, final Edge e) {
+        this.writeElementNew(output, e, null);
     }
 
     private void writeVertexWithNoEdgesToOutput(final Output output, final Vertex v) {
         writeElement(output, v, null);
     }
 
+    private void writeVertexWithNoEdgesToOutputNew(final Output output, final Vertex v) {
+        writeElementNew(output, v, null);
+    }
+
     private void writeVertexToOutput(final Output output, final Vertex v, final Direction direction) {
         this.writeElement(output, v, direction);
+    }
+
+    private void writeVertexToOutputNew(final Output output, final Vertex v, final Direction direction) {
+        this.writeElementNew(output, v, direction);
     }
 
     private void writeElement(final Output output, final Element e, final Direction direction) {
@@ -134,6 +164,34 @@ public class KryoWriter implements GraphWriter {
         }
     }
 
+    private void writeElementNew(final Output output, final Element e, final Direction direction) {
+        final DetachedElement detached;
+        if (e instanceof Vertex)
+            detached = e instanceof DetachedVertex ? (DetachedVertex) e : DetachedVertex.detach((Vertex) e);
+        else
+            detached = e instanceof DetachedEdge ? (DetachedEdge) e : DetachedEdge.detach((Edge) e);
+
+        // todo: possible to just write object?
+        kryo.writeClassAndObject(output, detached);
+
+        if (e instanceof Vertex) {
+            output.writeBoolean(direction != null);
+            if (direction != null) {
+                final Vertex v = (Vertex) e;
+                kryo.writeObject(output, direction);
+
+                // todo: use iterators
+                if (direction == Direction.BOTH || direction == Direction.OUT)
+                    writeDirectionalEdgesNew(output, Direction.OUT, v.outE());
+
+                if (direction == Direction.BOTH || direction == Direction.IN)
+                    writeDirectionalEdgesNew(output, Direction.IN, v.inE());
+            }
+
+            kryo.writeClassAndObject(output, VertexTerminator.INSTANCE);
+        }
+    }
+
     private void writeDirectionalEdges(final Output output, final Direction d, final Iterator<Edge> vertexEdges) {
         final boolean hasEdges = vertexEdges.hasNext();
         kryo.writeObject(output, d);
@@ -146,6 +204,20 @@ public class KryoWriter implements GraphWriter {
             else if (d.equals(Direction.IN))
                 kryo.writeClassAndObject(output, edgeToWrite.outV().id().next());
             writeEdgeToOutput(output, edgeToWrite);
+        }
+
+        if (hasEdges)
+            kryo.writeClassAndObject(output, EdgeTerminator.INSTANCE);
+    }
+
+    private void writeDirectionalEdgesNew(final Output output, final Direction d, final Iterator<Edge> vertexEdges) {
+        final boolean hasEdges = vertexEdges.hasNext();
+        kryo.writeObject(output, d);
+        output.writeBoolean(hasEdges);
+
+        while (vertexEdges.hasNext()) {
+            final Edge edgeToWrite = vertexEdges.next();
+            writeEdgeToOutputNew(output, edgeToWrite);
         }
 
         if (hasEdges)

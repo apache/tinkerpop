@@ -14,6 +14,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SQuintFunction;
@@ -159,6 +160,18 @@ public class GraphSONReader implements GraphReader {
     @Override
     public Edge readEdge(final InputStream inputStream, final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
         final Map<String, Object> edgeData = mapper.readValue(inputStream, mapTypeReference);
+        // todo: fix
+        return null;
+    }
+
+    @Override
+    public Vertex readVertex(InputStream inputStream, SFunction<DetachedVertex, Vertex> vertexMaker) throws IOException {
+        // todo: fix
+        return null;
+    }
+
+    @Override
+    public Vertex readVertex(InputStream inputStream, Direction direction, SFunction<DetachedVertex, Vertex> vertexMaker, SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
         // todo: fix
         return null;
     }

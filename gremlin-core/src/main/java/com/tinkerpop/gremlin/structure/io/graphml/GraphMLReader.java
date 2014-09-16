@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SQuintFunction;
 import com.tinkerpop.gremlin.util.function.STriFunction;
@@ -79,6 +80,17 @@ public class GraphMLReader implements GraphReader {
 
     @Override
     public Edge readEdge(final InputStream inputStream, final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
+        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+    }
+
+    @Override
+    public Vertex readVertex(final InputStream inputStream, final SFunction<DetachedVertex, Vertex> vertexMaker) throws IOException {
+        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+    }
+
+    @Override
+    public Vertex readVertex(final InputStream inputStream, final Direction direction, final SFunction<DetachedVertex, Vertex> vertexMaker,
+                             final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 

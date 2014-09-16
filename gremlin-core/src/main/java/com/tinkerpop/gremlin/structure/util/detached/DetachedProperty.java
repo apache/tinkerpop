@@ -21,7 +21,7 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
 
     String key;
     V value;
-    DetachedElement element;
+    transient DetachedElement element;
     int hashCode;
 
     private DetachedProperty() {

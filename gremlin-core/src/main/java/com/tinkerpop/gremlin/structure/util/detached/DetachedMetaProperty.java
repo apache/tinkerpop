@@ -24,7 +24,7 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
 
     String key;
     V value;
-    DetachedVertex vertex;
+    transient DetachedVertex vertex;
     int hashCode;
 
     private final transient MetaProperty.Iterators iterators = new Iterators();
@@ -56,7 +56,7 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
         super(property);
         if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
 
-        this.key = property.key();
+        this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
         this.value = (V) property.value();
         this.hashCode = property.hashCode();
         this.vertex = property.getElement() instanceof DetachedVertex ? (DetachedVertex) property.getElement() : DetachedVertex.detach(property.getElement());
@@ -69,7 +69,7 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
         super(property);
         if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
 
-        this.key = property.key();
+        this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
         this.value = (V) property.value();
         this.hashCode = property.hashCode();
         this.vertex = detachedVertex;

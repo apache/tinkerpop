@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SQuintFunction;
 import com.tinkerpop.gremlin.util.function.STriFunction;
@@ -35,6 +36,7 @@ public interface GraphReader {
      *                    second argument is vertex label and the last is the list of properties for it
      */
     public Vertex readVertex(final InputStream inputStream, final STriFunction<Object, String, Object[], Vertex> vertexMaker) throws IOException;
+    public Vertex readVertex(final InputStream inputStream, final SFunction<DetachedVertex, Vertex> vertexMaker) throws IOException;
 
     /**
      * Reads a single vertex from an {@link InputStream}.  This method will read vertex properties as well as edges
@@ -51,6 +53,9 @@ public interface GraphReader {
     public Vertex readVertex(final InputStream inputStream, final Direction direction,
                              final STriFunction<Object, String, Object[], Vertex> vertexMaker,
                              final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException;
+    public Vertex readVertex(final InputStream inputStream, final Direction direction,
+                             final SFunction<DetachedVertex, Vertex> vertexMaker,
+                             final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException;
 
     /**
      * Reads a set of vertices from an {@link InputStream} which were written by

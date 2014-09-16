@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SQuadConsumer;
 import com.tinkerpop.gremlin.util.function.SQuintFunction;
@@ -123,8 +124,18 @@ public class KryoReader implements GraphReader {
         final Input input = new Input(inputStream);
         this.headerReader.read(kryo, input);
         final Object o = kryo.readClassAndObject(input);
-
         return edgeMaker.apply((DetachedEdge) o);
+    }
+
+    @Override
+    public Vertex readVertex(final InputStream inputStream, final SFunction<DetachedVertex, Vertex> vertexMaker) throws IOException {
+        return readVertex(inputStream, null, vertexMaker, null);
+    }
+
+    @Override
+    public Vertex readVertex(final InputStream inputStream, final Direction direction, SFunction<DetachedVertex, Vertex> vertexMaker, final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
+        final Input input = new Input(inputStream);
+        return readVertex(direction, vertexMaker, edgeMaker, input);
     }
 
     @Override
@@ -262,6 +273,51 @@ public class KryoReader implements GraphReader {
         return v;
     }
 
+    private Vertex readVertex(final Direction directionRequested, final SFunction<DetachedVertex, Vertex> vertexMaker,
+                              final SFunction<DetachedEdge, Edge> edgeMaker, final Input input) throws IOException {
+        if (null != directionRequested && null == edgeMaker)
+            throw new IllegalArgumentException("If a directionRequested is specified then an edgeAdder function should also be specified");
+
+        this.headerReader.read(kryo, input);
+
+        final DetachedVertex detachedVertex = (DetachedVertex) kryo.readClassAndObject(input);
+        final Vertex v = vertexMaker.apply(detachedVertex);
+
+        final boolean streamContainsEdgesInSomeDirection = input.readBoolean();
+        if (!streamContainsEdgesInSomeDirection && directionRequested != null)
+            throw new IllegalStateException(String.format("The direction %s was requested but no attempt was made to serialize edges into this stream", directionRequested));
+
+        // if there are edges in the stream and the direction is not present then the rest of the stream is
+        // simply ignored
+        if (directionRequested != null) {
+            final Direction directionsInStream = kryo.readObject(input, Direction.class);
+            if (directionsInStream != Direction.BOTH && directionsInStream != directionRequested)
+                throw new IllegalStateException(String.format("Stream contains %s edges, but requesting %s", directionsInStream, directionRequested));
+
+            final Direction firstDirection = kryo.readObject(input, Direction.class);
+            if (firstDirection == Direction.OUT && (directionRequested == Direction.BOTH || directionRequested == Direction.OUT))
+                readEdges(input, edgeMaker);
+            else {
+                // requested direction in, but BOTH must be serialized so skip this.  the illegalstateexception
+                // prior to this IF should  have caught a problem where IN is not supported at all
+                if (firstDirection == Direction.OUT && directionRequested == Direction.IN)
+                    skipEdgesNew(input);
+            }
+
+            if (directionRequested == Direction.BOTH || directionRequested == Direction.IN) {
+                // if the first direction was OUT then it was either read or skipped.  in that case, the marker
+                // of the stream is currently ready to read the IN direction. otherwise it's in the perfect place
+                // to start reading edges
+                if (firstDirection == Direction.OUT)
+                    kryo.readObject(input, Direction.class);
+
+                readEdges(input, edgeMaker);
+            }
+        }
+
+        return v;
+    }
+
     private void readEdges(final Input input, final SQuadConsumer<Object, Object, String, Object[]> edgeMaker) {
         if (input.readBoolean()) {
             Object inOrOutVId = kryo.readClassAndObject(input);
@@ -274,6 +330,17 @@ public class KryoReader implements GraphReader {
                 edgeMaker.accept(edgeId, inOrOutVId, edgeLabel, edgeArgs.toArray());
 
                 inOrOutVId = kryo.readClassAndObject(input);
+            }
+        }
+    }
+
+    private void readEdges(final Input input, final SFunction<DetachedEdge, Edge> edgeMaker) {
+        if (input.readBoolean()) {
+            Object next = kryo.readClassAndObject(input);
+            while (!next.equals(EdgeTerminator.INSTANCE)) {
+                final DetachedEdge detachedEdge = (DetachedEdge) next;
+                edgeMaker.apply(detachedEdge);
+                next = kryo.readClassAndObject(input);
             }
         }
     }
@@ -304,6 +371,16 @@ public class KryoReader implements GraphReader {
 
                 // next in/out id to skip
                 inOrOutId = kryo.readClassAndObject(input);
+            }
+        }
+    }
+
+    private void skipEdgesNew(final Input input) {
+        if (input.readBoolean()) {
+            Object next = kryo.readClassAndObject(input);
+            while (!next.equals(EdgeTerminator.INSTANCE)) {
+                // next edge to skip or the terminator
+                next = kryo.readClassAndObject(input);
             }
         }
     }
