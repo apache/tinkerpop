@@ -276,12 +276,16 @@ public class VertexTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_INTEGER_VALUES)
     public void shouldNotGetConcurrentModificationException() {
         for (int i = 0; i < 25; i++) {
-            g.addVertex();
+            g.addVertex("myId", i);
         }
+        g.V().forEach(v -> g.V().forEach(u -> v.addEdge("knows", u, "myEdgeId", 12)));
 
-        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(25, 0));
+        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(25, 625));
 
         for (Vertex v : g.V().toList()) {
             v.remove();

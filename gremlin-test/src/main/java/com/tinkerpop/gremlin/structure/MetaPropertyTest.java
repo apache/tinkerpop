@@ -157,8 +157,8 @@ public class MetaPropertyTest extends AbstractGremlinTest {
 
         @Test
         public void shouldSupportIdempotentMetaPropertyRemoval() {
-            Vertex a = g.addVertex("name","marko");
-            Vertex b = g.addVertex("name","daniel","name","kuppitz");
+            Vertex a = g.addVertex("name", "marko");
+            Vertex b = g.addVertex("name", "daniel", "name", "kuppitz");
             a.property("name").remove();
             a.property("name").remove();
             a.property("name").remove();
@@ -264,13 +264,6 @@ public class MetaPropertyTest extends AbstractGremlinTest {
                 assertEquals(0, g.V().count().next().intValue());
                 assertEquals(0, g.E().count().next().intValue());
             });
-        /*
-        TODO: Stephen, Neo4j and TinkerGraph have different (though valid) behaviors here. Thoughts?
-        assertEquals(0, marko.properties("name").count().next().intValue());
-        assertEquals(0, marko.properties().count().next().intValue());
-        assertEquals(0, marko.properties("blah").count().next().intValue());*/
-
-
         }
     }
 
