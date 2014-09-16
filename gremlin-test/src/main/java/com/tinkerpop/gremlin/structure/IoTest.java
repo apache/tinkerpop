@@ -152,7 +152,7 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldWriteNormalizedGraphSON() throws Exception {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
             final GraphSONWriter w = GraphSONWriter.build().normalize(true).create();
-            w.writeGraph(bos, g);
+            w.writeGraphNew(bos, g);
 
             final String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHSON_RESOURCE_PATH_PREFIX + "tinkerpop-classic-normalized.json"));
             assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
@@ -376,14 +376,14 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadWriteClassicToGraphSON() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().create();
-            writer.writeGraph(os, g);
+            writer.writeGraphNew(os, g);
 
             final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final GraphSONReader reader = GraphSONReader.build().create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readGraph(bais, g1);
+                reader.readGraphNew(bais, g1);
             }
 
             assertToyGraph(g1, true, false, false);
@@ -400,14 +400,14 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadWriteModernToGraphSON() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().create();
-            writer.writeGraph(os, g);
+            writer.writeGraphNew(os, g);
 
             final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final GraphSONReader reader = GraphSONReader.build().create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readGraph(bais, g1);
+                reader.readGraphNew(bais, g1);
             }
 
             assertToyGraph(g1, true, false, true);
@@ -1565,7 +1565,7 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadLegacyGraphSON() throws IOException {
         final GraphReader reader = LegacyGraphSONReader.build().build();
         try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHSON_RESOURCE_PATH_PREFIX + "tinkerpop-classic-legacy.json")) {
-            reader.readGraph(stream, g);
+            reader.readGraphNew(stream, g);
         }
 
         // the id is lossy in migration because TP2 treated ID as String

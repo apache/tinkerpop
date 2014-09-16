@@ -63,7 +63,67 @@ public class GraphSONReader implements GraphReader {
 
     @Override
     public void readGraphNew(final InputStream inputStream, final Graph graphToWriteTo) throws IOException {
-        readGraph(inputStream, graphToWriteTo);
+        final BatchGraph graph;
+        try {
+            // will throw an exception if not constructed properly
+            graph = BatchGraph.build(graphToWriteTo)
+                    .vertexIdKey(vertexIdKey)
+                    .edgeIdKey(edgeIdKey)
+                    .bufferSize(batchSize).create();
+        } catch (Exception ex) {
+            throw new IOException("Could not instantiate BatchGraph wrapper", ex);
+        }
+
+        final JsonFactory factory = mapper.getFactory();
+
+        try (JsonParser parser = factory.createParser(inputStream)) {
+            if (parser.nextToken() != JsonToken.START_OBJECT)
+                throw new IOException("Expected data to start with an Object");
+
+            while (parser.nextToken() != JsonToken.END_OBJECT) {
+                final String fieldName = parser.getCurrentName();
+                parser.nextToken();
+
+                if (fieldName.equals(GraphSONTokens.PROPERTIES)) {
+                    final Map<String, Object> graphProperties = parser.readValueAs(mapTypeReference);
+                    if (graphToWriteTo.features().graph().variables().supportsVariables())
+                        graphProperties.entrySet().forEach(entry -> graphToWriteTo.variables().set(entry.getKey(), entry.getValue()));
+                } else if (fieldName.equals(GraphSONTokens.VERTICES)) {
+                    while (parser.nextToken() != JsonToken.END_ARRAY) {
+                        final Map<String, Object> vertexData = parser.readValueAs(mapTypeReference);
+                        readVertexDataNew(vertexData, detachedVertex -> {
+                            final Vertex v = Optional.ofNullable(graph.v(detachedVertex.id())).orElse(
+                                    graph.addVertex(Element.LABEL, detachedVertex.label(), Element.ID, detachedVertex.id()));
+                            // todo: properties on properties
+                            detachedVertex.iterators().properties().forEachRemaining(p -> v.<Object>property(p.key(), p.value()));
+                            detachedVertex.iterators().hiddens().forEachRemaining(p -> v.<Object>property(Graph.Key.hide(p.key()), p.value()));
+                            return v;
+                        });
+                    }
+                } else if (fieldName.equals(GraphSONTokens.EDGES)) {
+                    while (parser.nextToken() != JsonToken.END_ARRAY) {
+                        final Map<String, Object> edgeData = parser.readValueAs(mapTypeReference);
+                        readEdgeDataNew(edgeData, detachedEdge -> {
+                            final Vertex vOut = graph.v(detachedEdge.iterators().vertices(Direction.OUT).next().id());
+                            final Vertex vIn = graph.v(detachedEdge.iterators().vertices(Direction.IN).next().id());
+                            // batchgraph checks for edge id support and uses it if possible.
+                            final Edge e = vOut.addEdge(edgeData.get(GraphSONTokens.LABEL).toString(), vIn, Element.ID, detachedEdge.id());
+                            detachedEdge.iterators().properties().forEachRemaining(p -> e.<Object>property(p.key(), p.value()));
+                            detachedEdge.iterators().hiddens().forEachRemaining(p -> e.<Object>property(Graph.Key.hide(p.key()), p.value()));
+                            return e;
+                        });
+                    }
+                } else
+                    throw new IllegalStateException(String.format("Unexpected token in GraphSON - %s", fieldName));
+            }
+
+            graph.tx().commit();
+        } catch (Exception ex) {
+            // todo: can't call rollback on BatchGraph...................
+            // rollback whatever portion failed
+            graph.tx().rollback();
+            throw new IOException(ex);
+        }
     }
 
     @Override
