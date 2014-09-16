@@ -351,7 +351,7 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadWriteClassicToKryo() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final KryoWriter writer = KryoWriter.build().create();
-            writer.writeGraph(os, g);
+            writer.writeGraphNew(os, g);
 
             final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
             graphProvider.clear(configuration);
@@ -359,7 +359,7 @@ public class IoTest extends AbstractGremlinTest {
             final KryoReader reader = KryoReader.build()
                     .setWorkingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readGraph(bais, g1);
+                reader.readGraphNew(bais, g1);
             }
 
             assertToyGraph(g1, false, false, false);
