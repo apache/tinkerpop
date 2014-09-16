@@ -16,12 +16,14 @@ import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import org.javatuples.Pair;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.index.AutoIndexer;
 import org.neo4j.graphdb.index.RelationshipAutoIndexer;
+import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 import java.util.ArrayList;
@@ -55,45 +57,36 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
     private Iterator<? extends Edge> edges() {
         this.graph.tx().readWrite();
-        final HasContainer indexedContainer = getEdgeIndexKey();
-        final Stream<? extends Edge> edgeStream = (null == indexedContainer) ?
+        final HasContainer hasContainer = this.getHasContainerForAutomaticIndex(Edge.class);
+        final Stream<? extends Edge> edgeStream = (null == hasContainer) ?
                 getAllEdges() :
-                getEdgesUsingIndex(indexedContainer);
+                getEdgesUsingAutomaticIndex(hasContainer);
         return edgeStream.filter(edge -> HasContainer.testAll((Edge) edge, this.hasContainers)).iterator();
     }
 
     private Iterator<? extends Vertex> vertices() {
         this.graph.tx().readWrite();
-        final Stream<? extends Vertex> vertexStream;
-        if (this.hasContainers.size() > 1 && this.hasContainers.get(0).key.equals(Element.LABEL) && this.hasContainers.get(1).predicate.equals(Compare.EQUAL)) {
-            //Scenario 1, using labeled index via 2 HasContainer
-            final HasContainer hasContainer1 = this.hasContainers.get(0);
-            final HasContainer hasContainer2 = this.hasContainers.get(1);
-            //In this case neo4j will work out if there is an index or not
-            vertexStream = getVerticesUsingLabeledIndex((String) hasContainer1.value, hasContainer2.key, hasContainer2.value);
-        } else if (this.hasContainers.size() > 0 && this.hasContainers.get(0).key.equals(Element.LABEL)) {
-            //Scenario 2, using label only for search
-            final HasContainer hasContainer1 = this.hasContainers.get(0);
-            if (hasContainer1.predicate == Contains.IN || hasContainer1.predicate == Contains.NOT_IN) {
-                final List<String> labels = (List<String>) hasContainer1.value;
-                vertexStream = getVerticesUsingLabel(labels.toArray(new String[labels.size()]));
-            } else
-                vertexStream = getVerticesUsingLabel(hasContainer1.value.toString());
-
-            this.hasContainers.remove(hasContainer1);
-        } else {
-            final HasContainer hasContainer1 = getVertexIndexKey();
-            if (hasContainer1 != null) {
-                vertexStream = getVerticesUsingLegacyIndex(hasContainer1.key, hasContainer1.value);
-                this.hasContainers.remove(hasContainer1);
-            } else {
-                vertexStream = getAllVertices();
-            }
-        }
-        return vertexStream.filter(vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers)).iterator();
+        // a label and a property
+        final Pair<String, HasContainer> labelHasPair = this.getHasContainerForCypherIndex();
+        if (null != labelHasPair)
+            return this.getVerticesUsingLabelAndProperty(labelHasPair.getValue0(), labelHasPair.getValue1())
+                    .filter(vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers)).iterator();
+        // use automatic indices
+        final HasContainer hasContainer = this.getHasContainerForAutomaticIndex(Vertex.class);
+        if (null != hasContainer)
+            return this.getVerticesUsingAutomaticIndex(hasContainer)
+                    .filter(vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers)).iterator();
+        // only labels
+        final List<String> labels = this.getLabelsForCypherIndex();
+        if (null != labels)
+            return this.getVerticesUsingOnlyLabels(labels).filter(vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers)).iterator();
+        // linear scan
+        return getAllVertices()
+                .filter(vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers)).iterator();
     }
 
     private Stream<Neo4jVertex> getAllVertices() {
+        // System.out.println("allVertices");
         return StreamFactory.stream(GlobalGraphOperations.at(this.graph.getBaseGraph()).getAllNodes())
                 .filter(node -> !Neo4jHelper.isDeleted(node))
                 .filter(node -> !node.hasLabel(Neo4jMetaProperty.META_PROPERTY_LABEL))
@@ -107,30 +100,34 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
                 .map(relationship -> new Neo4jEdge(relationship, this.graph));
     }
 
-    private Stream<Vertex> getVerticesUsingLabeledIndex(final String label, String key, Object value) {
-        final ResourceIterator<Node> iterator1 = graph.getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(label), key, value).iterator();
-        final ResourceIterator<Node> iterator2 = graph.getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(Graph.Key.unHide(key)), MetaProperty.VALUE, value).iterator();
+    private Stream<Vertex> getVerticesUsingLabelAndProperty(final String label, final HasContainer hasContainer) {
+        // System.out.println("labelProperty: " + label + ":" + hasContainer);
+        final ResourceIterator<Node> iterator1 = graph.getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(label), hasContainer.key, hasContainer.value).iterator();
+        final ResourceIterator<Node> iterator2 = graph.getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(Graph.Key.unHide(hasContainer.key)), MetaProperty.VALUE, hasContainer.value).iterator();
         final Stream<Vertex> stream1 = StreamFactory.stream(iterator1)
                 .map(node -> new Neo4jVertex(node, this.graph));
         final Stream<Vertex> stream2 = StreamFactory.stream(iterator2)
-                .filter(node -> node.getProperty(MetaProperty.KEY).equals(key))
+                .filter(node -> node.getProperty(MetaProperty.KEY).equals(hasContainer.key))
                 .map(node -> node.getRelationships(Direction.INCOMING).iterator().next().getStartNode())
                 .map(node -> new Neo4jVertex(node, this.graph));
         return Stream.concat(stream1, stream2);
     }
 
-    private Stream<Vertex> getVerticesUsingLabel(final String... labels) {
-        return Arrays.stream(labels)
+    private Stream<Vertex> getVerticesUsingOnlyLabels(final List<String> labels) {
+        // System.out.println("labels: " + labels);
+        return labels.stream()
                 .filter(label -> !label.equals(Neo4jMetaProperty.META_PROPERTY_LABEL.name()))
                 .flatMap(label -> StreamFactory.stream(GlobalGraphOperations.at(this.graph.getBaseGraph()).getAllNodesWithLabel(DynamicLabel.label(label)).iterator()))
                 .filter(node -> !node.hasLabel(Neo4jMetaProperty.META_PROPERTY_LABEL))
                 .map(node -> new Neo4jVertex(node, this.graph));
     }
 
-    private Stream<Vertex> getVerticesUsingLegacyIndex(final String key, final Object value) {
+    private Stream<Vertex> getVerticesUsingAutomaticIndex(final HasContainer hasContainer) {
+        // TODO: add query() support
+        // System.out.println("automatic: " + hasContainer);
         final AutoIndexer indexer = this.graph.getBaseGraph().index().getNodeAutoIndexer();
-        return indexer.isEnabled() && indexer.getAutoIndexedProperties().contains(key) ?
-                StreamFactory.stream(this.graph.getBaseGraph().index().getNodeAutoIndexer().getAutoIndex().get(key, value).iterator())
+        return indexer.isEnabled() && indexer.getAutoIndexedProperties().contains(hasContainer.key) ?
+                StreamFactory.stream(this.graph.getBaseGraph().index().getNodeAutoIndexer().getAutoIndex().get(hasContainer.key, hasContainer.value).iterator())
                         .map(node -> node.hasLabel(Neo4jMetaProperty.META_PROPERTY_LABEL) ?
                                 node.getRelationships(Direction.INCOMING).iterator().next().getStartNode() :
                                 node)
@@ -138,27 +135,54 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
                 Stream.empty();
     }
 
-    private Stream<Neo4jEdge> getEdgesUsingIndex(final HasContainer indexedContainer) {
+    private Stream<Neo4jEdge> getEdgesUsingAutomaticIndex(final HasContainer indexedContainer) {
         final RelationshipAutoIndexer indexer = this.graph.getBaseGraph().index().getRelationshipAutoIndexer();
         return StreamFactory.stream(indexer.getAutoIndex().get(indexedContainer.key, indexedContainer.value).iterator())
                 .filter(relationship -> !relationship.getType().name().startsWith(Neo4jMetaProperty.META_PROPERTY_PREFIX))
                 .map(relationship -> new Neo4jEdge(relationship, this.graph));
     }
 
-    private HasContainer getVertexIndexKey() {
-        final Set<String> indexedKeys = this.graph.getBaseGraph().index().getNodeAutoIndexer().getAutoIndexedProperties();
-        return this.hasContainers.stream()
-                .filter(c -> (indexedKeys.contains(c.key) && c.predicate.equals(Compare.EQUAL)))
-                .findFirst()
-                .orElseGet(() -> null);
+    private Pair<String, HasContainer> getHasContainerForCypherIndex() {
+        for (final HasContainer hasContainer : this.hasContainers) {
+            if (hasContainer.key.equals(Element.LABEL) && hasContainer.predicate.equals(Compare.EQUAL)) {
+                for (final IndexDefinition index : this.graph.getBaseGraph().schema().getIndexes(DynamicLabel.label((String) hasContainer.value))) {
+                    for (final HasContainer hasContainer1 : this.hasContainers) {
+                        if (!hasContainer1.key.equals(Element.LABEL) && hasContainer1.predicate.equals(Compare.EQUAL)) {
+                            for (final String key : index.getPropertyKeys()) {
+                                if (key.equals(hasContainer1.key))
+                                    return Pair.with((String) hasContainer.value, hasContainer1);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
-    private HasContainer getEdgeIndexKey() {
-        final Set<String> indexedKeys = this.graph.getBaseGraph().index().getRelationshipAutoIndexer().getAutoIndexedProperties();
-        return this.hasContainers.stream()
-                .filter(c -> (indexedKeys.contains(c.key) && c.predicate.equals(Compare.EQUAL)))
-                .findFirst()
-                .orElseGet(() -> null);
+    private List<String> getLabelsForCypherIndex() {
+        for (final HasContainer hasContainer : this.hasContainers) {
+            if (hasContainer.key.equals(Element.LABEL) && hasContainer.predicate.equals(Compare.EQUAL))
+                return Arrays.asList(((String) hasContainer.value));
+            else if (hasContainer.key.equals(Element.LABEL) && hasContainer.predicate.equals(Contains.IN))
+                return new ArrayList<>((Collection<String>) hasContainer.value);
+        }
+        return null;
+    }
+
+    private HasContainer getHasContainerForAutomaticIndex(final Class<? extends Element> elementClass) {
+        final AutoIndexer<?> indexer = elementClass.equals(Vertex.class) ?
+                this.graph.getBaseGraph().index().getNodeAutoIndexer() :
+                this.graph.getBaseGraph().index().getRelationshipAutoIndexer();
+
+        if (!indexer.isEnabled())
+            return null;
+        final Set<String> indexKeys = indexer.getAutoIndexedProperties();
+        for (final HasContainer hasContainer : this.hasContainers) {
+            if (hasContainer.predicate.equals(Compare.EQUAL) && indexKeys.contains(hasContainer.key))
+                return hasContainer;
+        }
+        return null;
     }
 
     private String makeCypherQuery() {
