@@ -543,29 +543,27 @@ public class IoTest extends AbstractGremlinTest {
             final GraphSONWriter writer = GraphSONWriter.build()
                     .embedTypes(true)
                     .create();
-            writer.writeEdge(os, e);
+            writer.writeEdgeNew(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final GraphSONReader reader = GraphSONReader.build()
                     .embedTypes(true)
                     .create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais,
-                        (edgeId, outId, inId, label, properties) -> {
-                            assertEquals(e.id(), edgeId);
-                            assertEquals(v1.id(), outId);
-                            assertEquals(v2.id(), inId);
-                            assertEquals(e.label(), label);
-                            assertEquals(e.keys().size() + e.hiddenKeys().size(), properties.length / 2);
-                            assertEquals("weight", properties[0]);
-                            assertEquals(0.5f, properties[1]);
-                            assertEquals(Graph.Key.hide("acl"), properties[2]);
-                            assertEquals("rw", properties[3]);
+                reader.readEdge(bais, detachedEdge -> {
+                    assertEquals(e.id(), detachedEdge.id());
+                    assertEquals(v1.id(), detachedEdge.iterators().vertices(Direction.OUT).next().id());
+                    assertEquals(v2.id(), detachedEdge.iterators().vertices(Direction.IN).next().id());
+                    assertEquals(e.label(), detachedEdge.label());
+                    assertEquals(e.hiddenKeys().size(), StreamFactory.stream(detachedEdge.iterators().hiddens()).count());
+                    assertEquals(e.keys().size(), StreamFactory.stream(detachedEdge.iterators().properties()).count());
+                    assertEquals(0.5f, detachedEdge.iterators().properties("weight").next().value());
+                    assertEquals("rw", detachedEdge.iterators().hiddens("acl").next().value());
 
-                            called.set(true);
+                    called.set(true);
 
-                            return null;
-                        });
+                    return null;
+                });
             }
 
             assertTrue(called.get());
@@ -586,27 +584,25 @@ public class IoTest extends AbstractGremlinTest {
             final GraphSONWriter writer = GraphSONWriter.build()
                     .embedTypes(true)
                     .create();
-            writer.writeEdge(os, e);
+            writer.writeEdgeNew(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final GraphSONReader reader = GraphSONReader.build()
                     .embedTypes(true)
                     .create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais,
-                        (edgeId, outId, inId, label, properties) -> {
-                            assertEquals(e.id(), edgeId);
-                            assertEquals(v1.id(), outId);
-                            assertEquals(v2.id(), inId);
-                            assertEquals(e.label(), label);
-                            assertEquals(e.keys().size(), properties.length / 2);
-                            assertEquals("uuid", properties[0]);
-                            assertEquals(id, properties[1]);
+                reader.readEdge(bais, detachedEdge -> {
+                    assertEquals(e.id(), detachedEdge.id());
+                    assertEquals(v1.id(), detachedEdge.iterators().vertices(Direction.OUT).next().id());
+                    assertEquals(v2.id(), detachedEdge.iterators().vertices(Direction.IN).next().id());
+                    assertEquals(e.label(), detachedEdge.label());
+                    assertEquals(e.keys().size(), StreamFactory.stream(detachedEdge.iterators().properties()).count());
+                    assertEquals(id, detachedEdge.value("uuid"));
 
-                            called.set(true);
+                    called.set(true);
 
-                            return null;
-                        });
+                    return null;
+                });
             }
 
             assertTrue(called.get());
@@ -625,26 +621,25 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final KryoWriter writer = KryoWriter.build().create();
-            writer.writeEdge(os, e);
+            writer.writeEdgeNew(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
                     .setWorkingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais,
-                        (edgeId, outId, inId, label, properties) -> {
-                            assertEquals(e.id(), edgeId);
-                            assertEquals(v1.id(), outId);
-                            assertEquals(v2.id(), inId);
-                            assertEquals(e.label(), label);
-                            assertEquals(e.keys().size(), properties.length / 2);
-                            assertEquals("uuid", properties[0]);
-                            assertEquals(id, properties[1]);
+                reader.readEdge(bais, detachedEdge -> {
+                    assertEquals(e.id(), detachedEdge.id());
+                    assertEquals(v1.id(), detachedEdge.iterators().vertices(Direction.OUT).next().id());
+                    assertEquals(v2.id(), detachedEdge.iterators().vertices(Direction.IN).next().id());
+                    assertEquals(e.label(), detachedEdge.label());
+                    assertEquals(e.hiddenKeys().size(), StreamFactory.stream(detachedEdge.iterators().hiddens()).count());
+                    assertEquals(e.keys().size(), StreamFactory.stream(detachedEdge.iterators().properties()).count());
+                    assertEquals(id, detachedEdge.value("uuid"));
 
-                            called.set(true);
+                    called.set(true);
 
-                            return null;
-                        });
+                    return null;
+                });
             }
 
             assertTrue(called.get());
@@ -732,28 +727,21 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().create();
-            writer.writeVertex(os, v1);
+            writer.writeVertexNew(os, v1);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final GraphSONReader reader = GraphSONReader.build().create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais,
-                        (vertexId, label, properties) -> {
-                            assertEquals(v1.id().toString(), vertexId.toString()); // lossy
-                            assertEquals(v1.label(), label);
+                reader.readVertex(bais, detachedVertex -> {
+                    assertEquals(v1.id().toString(), detachedVertex.id().toString()); // lossy
+                    assertEquals(v1.label(), detachedVertex.label());
+                    assertEquals(0, StreamFactory.stream(detachedVertex.iterators().hiddens()).count());
+                    assertEquals(1, StreamFactory.stream(detachedVertex.iterators().properties()).count());
+                    assertEquals("marko", detachedVertex.value("name"));
 
-                            final Map<String, Object> m = new HashMap<>();
-                            for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
-                                    m.put((String) properties[i], properties[i + 1]);
-                            }
-
-                            assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), m.get("name"));
-
-                            called.set(true);
-                            return mock(Vertex.class);
-                        });
+                    called.set(true);
+                    return detachedVertex;
+                });
             }
 
             assertTrue(called.get());
@@ -933,41 +921,33 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().create();
-            writer.writeVertex(os, v1, Direction.OUT);
+            writer.writeVertexNew(os, v1, Direction.OUT);
 
             final AtomicBoolean calledVertex = new AtomicBoolean(false);
             final AtomicBoolean calledEdge = new AtomicBoolean(false);
             final GraphSONReader reader = GraphSONReader.build().create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais,
-                        Direction.OUT,
-                        (vertexId, label, properties) -> {
-                            assertEquals(v1.id().toString(), vertexId.toString());  // lossy
-                            assertEquals(v1.label(), label);
+                reader.readVertex(bais, Direction.OUT, detachedVertex -> {
+                    assertEquals(v1.id().toString(), detachedVertex.id().toString());  // lossy
+                    assertEquals(v1.label(), detachedVertex.label());
+                    assertEquals(0, StreamFactory.stream(detachedVertex.iterators().hiddens()).count());
+                    assertEquals(1, StreamFactory.stream(detachedVertex.iterators().properties()).count());
+                    assertEquals("marko", detachedVertex.value("name"));
+                    calledVertex.set(true);
+                    return null;
+                },
+                detachedEdge -> {
+                    assertEquals(e.id().toString(), detachedEdge.id().toString());  // lossy
+                    assertEquals(v1.id().toString(), detachedEdge.iterators().vertices(Direction.OUT).next().id().toString());  // lossy
+                    assertEquals(v2.id().toString(), detachedEdge.iterators().vertices(Direction.IN).next().id().toString());   // lossy
+                    assertEquals(e.label(), detachedEdge.label());
+                    assertEquals(0, StreamFactory.stream(detachedEdge.iterators().hiddens()).count());
+                    assertEquals(1, StreamFactory.stream(detachedEdge.iterators().properties()).count());
+                    assertEquals(0.5d, detachedEdge.value("weight"), 0.000001d);                      // lossy
 
-                            final Map<String, Object> m = new HashMap<>();
-                            for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
-                                    m.put((String) properties[i], properties[i + 1]);
-                            }
-
-                            assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), m.get("name"));
-                            calledVertex.set(true);
-                            return null;
-                        },
-                        (edgeId, outId, inId, label, properties) -> {
-                            assertEquals(e.id().toString(), edgeId.toString());  // lossy
-                            assertEquals(v1.id().toString(), outId.toString());  // lossy
-                            assertEquals(v2.id().toString(), inId.toString());   // lossy
-                            assertEquals(e.label(), label);
-                            assertEquals(e.keys().size(), properties.length / 2);
-                            assertEquals("weight", properties[0]);
-                            assertEquals(0.5d, properties[1]);                      // lossy
-
-                            calledEdge.set(true);
-                            return null;
-                        });
+                    calledEdge.set(true);
+                    return null;
+                });
             }
 
             assertTrue(calledVertex.get());
@@ -1038,42 +1018,34 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().create();
-            writer.writeVertex(os, v1, Direction.IN);
+            writer.writeVertexNew(os, v1, Direction.IN);
             os.close();
 
             final AtomicBoolean calledVertex = new AtomicBoolean(false);
             final AtomicBoolean calledEdge = new AtomicBoolean(false);
             final GraphSONReader reader = GraphSONReader.build().create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais,
-                        Direction.IN,
-                        (vertexId, label, properties) -> {
-                            assertEquals(v1.id().toString(), vertexId.toString()); // lossy
-                            assertEquals(v1.label(), label);
+                reader.readVertex(bais, Direction.IN, detachedVertex -> {
+                    assertEquals(v1.id().toString(), detachedVertex.id().toString());  // lossy
+                    assertEquals(v1.label(), detachedVertex.label());
+                    assertEquals(0, StreamFactory.stream(detachedVertex.iterators().hiddens()).count());
+                    assertEquals(1, StreamFactory.stream(detachedVertex.iterators().properties()).count());
+                    assertEquals("marko", detachedVertex.value("name"));
+                    calledVertex.set(true);
+                    return null;
+                },
+                detachedEdge -> {
+                    assertEquals(e.id().toString(), detachedEdge.id().toString());  // lossy
+                    assertEquals(v1.id().toString(), detachedEdge.iterators().vertices(Direction.IN).next().id().toString());  // lossy
+                    assertEquals(v2.id().toString(), detachedEdge.iterators().vertices(Direction.OUT).next().id().toString());   // lossy
+                    assertEquals(e.label(), detachedEdge.label());
+                    assertEquals(0, StreamFactory.stream(detachedEdge.iterators().hiddens()).count());
+                    assertEquals(1, StreamFactory.stream(detachedEdge.iterators().properties()).count());
+                    assertEquals(0.5d, detachedEdge.value("weight"), 0.000001d);                      // lossy
 
-                            final Map<String, Object> m = new HashMap<>();
-                            for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
-                                    m.put((String) properties[i], properties[i + 1]);
-                            }
-
-                            assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), m.get("name"));
-                            calledVertex.set(true);
-                            return null;
-                        },
-                        (edgeId, outId, inId, label, properties) -> {
-                            assertEquals(e.id().toString(), edgeId.toString()); // lossy
-                            assertEquals(v1.id().toString(), inId.toString());  // lossy
-                            assertEquals(v2.id().toString(), outId.toString()); // lossy
-                            assertEquals(e.label(), label);
-                            assertEquals(e.keys().size(), properties.length / 2);
-                            assertEquals("weight", properties[0]);
-                            assertEquals(0.5d, properties[1]);                     // lossy
-
-                            calledEdge.set(true);
-                            return null;
-                        });
+                    calledEdge.set(true);
+                    return null;
+                });
             }
 
             assertTrue(calledVertex.get());
@@ -1159,7 +1131,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().create();
-            writer.writeVertex(os, v1, Direction.BOTH);
+            writer.writeVertexNew(os, v1, Direction.BOTH);
 
             final AtomicBoolean vertexCalled = new AtomicBoolean(false);
             final AtomicBoolean edge1Called = new AtomicBoolean(false);
@@ -1167,50 +1139,40 @@ public class IoTest extends AbstractGremlinTest {
 
             final GraphSONReader reader = GraphSONReader.build().create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais,
-                        Direction.BOTH,
-                        (vertexId, label, properties) -> {
-                            assertEquals(v1.id().toString(), vertexId.toString());  // lossy
-                            assertEquals(v1.label(), label);
+                reader.readVertex(bais, Direction.BOTH,detachedVertex -> {
+                    assertEquals(v1.id().toString(), detachedVertex.id().toString());  // lossy
+                    assertEquals(v1.label(), detachedVertex.label());
+                    assertEquals(0, StreamFactory.stream(detachedVertex.iterators().hiddens()).count());
+                    assertEquals(1, StreamFactory.stream(detachedVertex.iterators().properties()).count());
+                    assertEquals("marko", detachedVertex.value("name"));
+                    vertexCalled.set(true);
+                    return null;
+                },
+                detachedEdge -> {
+                    if (detachedEdge.id().toString().equals(e1.id().toString())) {      // lossy
+                        assertEquals(e1.id().toString(), detachedEdge.id().toString());  // lossy
+                        assertEquals(v1.id().toString(), detachedEdge.iterators().vertices(Direction.IN).next().id().toString());  // lossy
+                        assertEquals(v2.id().toString(), detachedEdge.iterators().vertices(Direction.OUT).next().id().toString());   // lossy
+                        assertEquals(e1.label(), detachedEdge.label());
+                        assertEquals(0, StreamFactory.stream(detachedEdge.iterators().hiddens()).count());
+                        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().properties()).count());
+                        assertEquals(0.5d, detachedEdge.value("weight"), 0.000001d);                      // lossy
+                        edge1Called.set(true);
+                    } else if (detachedEdge.id().toString().equals(e2.id().toString())) { // lossy
+                        assertEquals(e2.id().toString(), detachedEdge.id().toString());  // lossy
+                        assertEquals(v2.id().toString(), detachedEdge.iterators().vertices(Direction.IN).next().id().toString());  // lossy
+                        assertEquals(v1.id().toString(), detachedEdge.iterators().vertices(Direction.OUT).next().id().toString());   // lossy
+                        assertEquals(e2.label(), detachedEdge.label());
+                        assertEquals(0, StreamFactory.stream(detachedEdge.iterators().hiddens()).count());
+                        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().properties()).count());
+                        assertEquals(1.0d, detachedEdge.value("weight"), 0.000001d);                      // lossy
+                        edge2Called.set(true);
+                    } else {
+                        fail("An edge id generated that does not exist");
+                    }
 
-                            final Map<String, Object> m = new HashMap<>();
-                            for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
-                                    m.put((String) properties[i], properties[i + 1]);
-                            }
-
-                            assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), m.get("name"));
-
-                            vertexCalled.set(true);
-
-                            return null;
-                        },
-                        (edgeId, outId, inId, label, properties) -> {
-                            if (edgeId.toString().equals(e1.id().toString())) {      // lossy
-                                assertEquals(v2.id().toString(), outId.toString());  // lossy
-                                assertEquals(v1.id().toString(), inId.toString());   // lossy
-                                assertEquals(e1.label(), label);
-                                assertEquals(e1.keys().size(), properties.length / 2);
-                                assertEquals("weight", properties[0]);
-                                assertEquals(0.5d, properties[1]);                      // lossy
-
-                                edge1Called.set(true);
-                            } else if (edgeId.toString().equals(e2.id().toString())) { // lossy
-                                assertEquals(v1.id().toString(), outId.toString());    // lossy
-                                assertEquals(v2.id().toString(), inId.toString());     // lossy
-                                assertEquals(e2.label(), label);
-                                assertEquals(e2.keys().size(), properties.length / 2);
-                                assertEquals("weight", properties[0]);
-                                assertEquals(1.0d, properties[1]);                        // lossy
-
-                                edge2Called.set(true);
-                            } else {
-                                fail("An edge id generated that does not exist");
-                            }
-
-                            return null;
-                        });
+                    return null;
+                });
             }
 
             assertTrue(vertexCalled.get());
@@ -1233,7 +1195,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().embedTypes(true).create();
-            writer.writeVertex(os, v1, Direction.BOTH);
+            writer.writeVertexNew(os, v1, Direction.BOTH);
 
             final AtomicBoolean vertexCalled = new AtomicBoolean(false);
             final AtomicBoolean edge1Called = new AtomicBoolean(false);
@@ -1241,52 +1203,37 @@ public class IoTest extends AbstractGremlinTest {
 
             final GraphSONReader reader = GraphSONReader.build().embedTypes(true).create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais,
-                        Direction.BOTH,
-                        (vertexId, label, properties) -> {
-                            assertEquals(v1.id(), vertexId);
-                            assertEquals(v1.label(), label);
+                reader.readVertex(bais, Direction.BOTH, detachedVertex -> {
+                    assertEquals(v1.id(), detachedVertex.id());
+                    assertEquals(v1.label(), detachedVertex.label());
+                    assertEquals(0, StreamFactory.stream(detachedVertex.iterators().hiddens()).count());
+                    assertEquals(1, StreamFactory.stream(detachedVertex.iterators().properties()).count());
+                    assertEquals(v1.value("name"), detachedVertex.value("name").toString());
+                    vertexCalled.set(true);
+                    return null;
+                }, detachedEdge -> {
+                    if (detachedEdge.id().equals(e1.id())) {
+                        assertEquals(v2.id(), detachedEdge.iterators().vertices(Direction.OUT).next().id());
+                        assertEquals(v1.id(), detachedEdge.iterators().vertices(Direction.IN).next().id());
+                        assertEquals(e1.label(), detachedEdge.label());
+                        assertEquals(0, StreamFactory.stream(detachedEdge.iterators().hiddens()).count());
+                        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().properties()).count());
+                        assertEquals(0.5f, detachedEdge.value("weight"), 0.00001f);
+                        edge1Called.set(true);
+                    } else if (detachedEdge.id().equals(e2.id())) {
+                        assertEquals(v1.id(), detachedEdge.iterators().vertices(Direction.OUT).next().id());
+                        assertEquals(v2.id(), detachedEdge.iterators().vertices(Direction.IN).next().id());
+                        assertEquals(e1.label(), detachedEdge.label());
+                        assertEquals(0, StreamFactory.stream(detachedEdge.iterators().hiddens()).count());
+                        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().properties()).count());
+                        assertEquals(1.0f, detachedEdge.value("weight"), 0.00001f);
+                        edge2Called.set(true);
+                    } else {
+                        fail("An edge id generated that does not exist");
+                    }
 
-                            // todo: multiple properties with the same key can appear in the properties list
-
-                            final Map<String, Object> m = new HashMap<>();
-                            for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
-                                    m.put((String) properties[i], properties[i + 1]);
-                            }
-
-                            assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), m.get("name"));
-
-                            vertexCalled.set(true);
-
-                            return null;
-                        },
-                        (edgeId, outId, inId, label, properties) -> {
-                            if (edgeId.equals(e1.id())) {
-                                assertEquals(v2.id(), outId);
-                                assertEquals(v1.id(), inId);
-                                assertEquals(e1.label(), label);
-                                assertEquals(e1.keys().size(), properties.length / 2);
-                                assertEquals("weight", properties[0]);
-                                assertEquals(0.5f, properties[1]);
-
-                                edge1Called.set(true);
-                            } else if (edgeId.equals(e2.id())) {
-                                assertEquals(v1.id(), outId);
-                                assertEquals(v2.id(), inId);
-                                assertEquals(e2.label(), label);
-                                assertEquals(e2.keys().size(), properties.length / 2);
-                                assertEquals("weight", properties[0]);
-                                assertEquals(1.0f, properties[1]);
-
-                                edge2Called.set(true);
-                            } else {
-                                fail("An edge id generated that does not exist");
-                            }
-
-                            return null;
-                        });
+                    return null;
+                });
             }
 
             assertTrue(vertexCalled.get());
@@ -1363,48 +1310,38 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().create();
-            writer.writeVertex(os, v1, Direction.BOTH);
+            writer.writeVertexNew(os, v1, Direction.BOTH);
 
             final AtomicBoolean vertexCalled = new AtomicBoolean(false);
             final AtomicBoolean edgeCalled = new AtomicBoolean(false);
 
             final GraphSONReader reader = GraphSONReader.build().create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais,
-                        Direction.IN,
-                        (vertexId, label, properties) -> {
-                            assertEquals(v1.id().toString(), vertexId.toString()); // lossy
-                            assertEquals(v1.label(), label);
+                reader.readVertex(bais, Direction.IN, detachedVertex -> {
+                    assertEquals(v1.id().toString(), detachedVertex.id().toString());  // lossy
+                    assertEquals(v1.label(), detachedVertex.label());
+                    assertEquals(0, StreamFactory.stream(detachedVertex.iterators().hiddens()).count());
+                    assertEquals(1, StreamFactory.stream(detachedVertex.iterators().properties()).count());
+                    assertEquals("marko", detachedVertex.value("name"));
+                    vertexCalled.set(true);
 
-                            final Map<String, Object> m = new HashMap<>();
-                            for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
-                                    m.put((String) properties[i], properties[i + 1]);
-                            }
+                    return null;
+                }, detachedEdge -> {
+                    if (detachedEdge.id().toString().equals(e1.id().toString())) { // lossy
+                        assertEquals(e1.id().toString(), detachedEdge.id().toString());  // lossy
+                        assertEquals(v1.id().toString(), detachedEdge.iterators().vertices(Direction.IN).next().id().toString());  // lossy
+                        assertEquals(v2.id().toString(), detachedEdge.iterators().vertices(Direction.OUT).next().id().toString());   // lossy
+                        assertEquals(e1.label(), detachedEdge.label());
+                        assertEquals(0, StreamFactory.stream(detachedEdge.iterators().hiddens()).count());
+                        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().properties()).count());
+                        assertEquals(0.5d, detachedEdge.value("weight"), 0.000001d);                      // lossy
+                        edgeCalled.set(true);
+                    } else {
+                        fail("An edge id generated that does not exist");
+                    }
 
-                            assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), m.get("name"));
-
-                            vertexCalled.set(true);
-
-                            return null;
-                        },
-                        (edgeId, outId, inId, label, properties) -> {
-                            if (edgeId.toString().equals(e1.id().toString())) { // lossy
-                                assertEquals(v2.id().toString(), outId.toString()); // lossy
-                                assertEquals(v1.id().toString(), inId.toString()); // lossy
-                                assertEquals(e1.label(), label);
-                                assertEquals(e1.keys().size(), properties.length / 2);
-                                assertEquals("weight", properties[0]);
-                                assertEquals(0.5d, properties[1]);                    // lossy
-
-                                edgeCalled.set(true);
-                            } else {
-                                fail("An edge id generated that does not exist");
-                            }
-
-                            return null;
-                        });
+                    return null;
+                });
             }
 
             assertTrue(edgeCalled.get());
@@ -1481,48 +1418,37 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().create();
-            writer.writeVertex(os, v1, Direction.BOTH);
+            writer.writeVertexNew(os, v1, Direction.BOTH);
 
             final AtomicBoolean vertexCalled = new AtomicBoolean(false);
             final AtomicBoolean edgeCalled = new AtomicBoolean(false);
 
             final GraphSONReader reader = GraphSONReader.build().create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais,
-                        Direction.OUT,
-                        (vertexId, label, properties) -> {
-                            assertEquals(v1.id().toString(), vertexId.toString());  // lossy
-                            assertEquals(v1.label(), label);
+                reader.readVertex(bais, Direction.OUT, detachedVertex -> {
+                    assertEquals(v1.id().toString(), detachedVertex.id().toString());  // lossy
+                    assertEquals(v1.label(), detachedVertex.label());
+                    assertEquals(0, StreamFactory.stream(detachedVertex.iterators().hiddens()).count());
+                    assertEquals(1, StreamFactory.stream(detachedVertex.iterators().properties()).count());
+                    assertEquals("marko", detachedVertex.value("name"));
+                    vertexCalled.set(true);
+                    return null;
+                }, detachedEdge -> {
+                    if (detachedEdge.id().toString().equals(e2.id().toString())) {     // lossy
+                        assertEquals(e2.id().toString(), detachedEdge.id().toString());  // lossy
+                        assertEquals(v2.id().toString(), detachedEdge.iterators().vertices(Direction.IN).next().id().toString());  // lossy
+                        assertEquals(v1.id().toString(), detachedEdge.iterators().vertices(Direction.OUT).next().id().toString());   // lossy
+                        assertEquals(e2.label(), detachedEdge.label());
+                        assertEquals(0, StreamFactory.stream(detachedEdge.iterators().hiddens()).count());
+                        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().properties()).count());
+                        assertEquals(1.0d, detachedEdge.value("weight"), 0.000001d);                      // lossy
+                        edgeCalled.set(true);
+                    } else {
+                        fail("An edge id generated that does not exist");
+                    }
 
-                            final Map<String, Object> m = new HashMap<>();
-                            for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
-                                    m.put((String) properties[i], properties[i + 1]);
-                            }
-
-                            assertEquals(1, m.size());
-                            assertEquals(v1.value("name"), m.get("name"));
-
-                            vertexCalled.set(true);
-
-                            return null;
-                        },
-                        (edgeId, outId, inId, label, properties) -> {
-                            if (edgeId.toString().equals(e2.id().toString())) {     // lossy
-                                assertEquals(v1.id().toString(), outId.toString()); // lossy
-                                assertEquals(v2.id().toString(), inId.toString()); // lossy
-                                assertEquals(e2.label(), label);
-                                assertEquals(e2.keys().size(), properties.length / 2);
-                                assertEquals("weight", properties[0]);
-                                assertEquals(1.0d, properties[1]);                 // lossy
-
-                                edgeCalled.set(true);
-                            } else {
-                                fail("An edge id generated that does not exist");
-                            }
-
-                            return null;
-                        });
+                    return null;
+                });
             }
 
             assertTrue(edgeCalled.get());

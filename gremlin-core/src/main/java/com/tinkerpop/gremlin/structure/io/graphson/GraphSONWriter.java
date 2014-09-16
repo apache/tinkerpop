@@ -64,7 +64,7 @@ public class GraphSONWriter implements GraphWriter {
 
     @Override
     public void writeVertexNew(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
-        this.mapper.writeValue(outputStream, v);
+        this.mapper.writeValue(outputStream, new GraphSONVertex(v, direction));
     }
 
     @Override
