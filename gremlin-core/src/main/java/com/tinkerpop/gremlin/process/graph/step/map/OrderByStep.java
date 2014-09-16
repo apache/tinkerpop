@@ -30,13 +30,13 @@ public class OrderByStep<S extends Element, C extends Comparable> extends FlatMa
             final SortedMap<C, List<Traverser<S>>> sortedMap = new TreeMap<>((Comparator<C>) this.comparator);
             final List<Traverser<S>> list = new ArrayList<>();
             list.add(traverser);
-            sortedMap.put(traverser.get().value(this.key), list);
+            sortedMap.put(traverser.get().<C>value(this.key), list);
 
             this.starts.forEachRemaining(t -> {
                 List<Traverser<S>> newList = sortedMap.get(t.get().<C>value(this.key));
                 if (null == newList) {
                     newList = new ArrayList<>();
-                    sortedMap.put(t.get().value(this.key), newList);
+                    sortedMap.put(t.get().<C>value(this.key), newList);
                 }
                 newList.add(t);
             });
