@@ -33,6 +33,11 @@ public class GraphSONWriter implements GraphWriter {
     }
 
     @Override
+    public void writeGraphNew(final OutputStream outputStream, final Graph g) throws IOException {
+        writeGraph(outputStream, g);
+    }
+
+    @Override
     public void writeGraph(final OutputStream outputStream, final Graph g) throws IOException {
         this.mapper.writeValue(outputStream, new GraphSONGraph(g));
     }

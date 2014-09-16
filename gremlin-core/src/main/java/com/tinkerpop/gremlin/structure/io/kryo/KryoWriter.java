@@ -68,6 +68,27 @@ public class KryoWriter implements GraphWriter {
     }
 
     @Override
+    public void writeGraphNew(final OutputStream outputStream, final Graph g) throws IOException {
+        final Output output = new Output(outputStream);
+        this.headerWriter.write(kryo, output);
+
+        final boolean supportsGraphMemory = g.features().graph().variables().supportsVariables();
+        output.writeBoolean(supportsGraphMemory);
+        if (supportsGraphMemory)
+            kryo.writeObject(output, new HashMap(g.variables().asMap()));
+
+        final Iterator<Vertex> vertices = g.V();
+        final boolean hasSomeVertices = vertices.hasNext();
+        output.writeBoolean(hasSomeVertices);
+        while (vertices.hasNext()) {
+            final Vertex v = vertices.next();
+            writeVertexToOutputNew(output, v, Direction.OUT);
+        }
+
+        output.flush();
+    }
+
+    @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
         final Output output = new Output(outputStream);
         this.headerWriter.write(kryo, output);

@@ -93,6 +93,11 @@ public class GraphMLWriter implements GraphWriter {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 
+    @Override
+    public void writeGraphNew(final OutputStream outputStream, final Graph g) throws IOException {
+        writeGraph(outputStream, g);
+    }
+
     /**
      * Write the data in a Graph to a GraphML OutputStream.
      *
