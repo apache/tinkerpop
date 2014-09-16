@@ -19,21 +19,17 @@ import org.apache.commons.configuration.ConfigurationConverter;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.NotInTransactionException;
-import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.HighlyAvailableGraphDatabaseFactory;
 import org.neo4j.graphdb.schema.Schema;
 import org.neo4j.kernel.GraphDatabaseAPI;
-import org.neo4j.kernel.impl.core.NodeManager;
 
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -57,7 +53,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     private static final String CONFIG_CONF = "gremlin.neo4j.conf";
 
     private final Neo4jTransaction neo4jTransaction = new Neo4jTransaction();
-    private Neo4jGraphVariables neo4jGraphVariables = null;
+    private final Neo4jGraphVariables neo4jGraphVariables;
 
     protected final TransactionManager transactionManager;
     private final ExecutionEngine cypher;
@@ -65,7 +61,8 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     private Neo4jGraph(final GraphDatabaseService baseGraph) {
         this.baseGraph = baseGraph;
         this.transactionManager = ((GraphDatabaseAPI) baseGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
-        this.cypher = new ExecutionEngine(baseGraph);
+        this.cypher = new ExecutionEngine(this.baseGraph);
+        this.neo4jGraphVariables = new Neo4jGraphVariables(this);
     }
 
     private Neo4jGraph(final Configuration configuration) {
@@ -73,14 +70,14 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
             final String directory = configuration.getString(CONFIG_DIRECTORY);
             final Map neo4jSpecificConfig = ConfigurationConverter.getMap(configuration.subset(CONFIG_CONF));
             final boolean ha = configuration.getBoolean(CONFIG_HA, false);
-
             // if HA is enabled then use the correct factory to instantiate the GraphDatabaseService
             this.baseGraph = ha ?
                     new HighlyAvailableGraphDatabaseFactory().newHighlyAvailableDatabaseBuilder(directory).setConfig(neo4jSpecificConfig).newGraphDatabase() :
                     new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(directory).
                             setConfig(neo4jSpecificConfig).newGraphDatabase();
-            this.transactionManager = ((GraphDatabaseAPI) baseGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
-            this.cypher = new ExecutionEngine(baseGraph);
+            this.transactionManager = ((GraphDatabaseAPI) this.baseGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
+            this.cypher = new ExecutionEngine(this.baseGraph);
+            this.neo4jGraphVariables = new Neo4jGraphVariables(this);
         } catch (Exception e) {
             if (this.baseGraph != null)
                 this.baseGraph.shutdown();
@@ -92,22 +89,21 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
      * Open a new {@link Neo4jGraph} instance.
      *
      * @param configuration the configuration for the instance
-     * @param <G>           the {@link com.tinkerpop.gremlin.structure.Graph} instance
      * @return a newly opened {@link com.tinkerpop.gremlin.structure.Graph}
      */
-    public static <G extends Graph> G open(final Configuration configuration) {
+    public static Neo4jGraph open(final Configuration configuration) {
         if (null == configuration) throw Graph.Exceptions.argumentCanNotBeNull("configuration");
 
         if (!configuration.containsKey(CONFIG_DIRECTORY))
             throw new IllegalArgumentException(String.format("Neo4j configuration requires that the %s be set", CONFIG_DIRECTORY));
 
-        return (G) new Neo4jGraph(configuration);
+        return new Neo4jGraph(configuration);
     }
 
     /**
      * Construct a Neo4jGraph instance by specifying the directory to create the database in..
      */
-    public static <G extends Graph> G open(final String directory) {
+    public static Neo4jGraph open(final String directory) {
         final Configuration config = new BaseConfiguration();
         config.setProperty(CONFIG_DIRECTORY, directory);
         return open(config);
@@ -116,8 +112,8 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     /**
      * Construct a Neo4jGraph instance using an existing Neo4j raw instance.
      */
-    public static <G extends Graph> G open(final GraphDatabaseService rawGraph) {
-        return (G) new Neo4jGraph(Optional.ofNullable(rawGraph).orElseThrow(() -> Graph.Exceptions.argumentCanNotBeNull("baseGraph")));
+    public static Neo4jGraph open(final GraphDatabaseService rawGraph) {
+        return new Neo4jGraph(Optional.ofNullable(rawGraph).orElseThrow(() -> Graph.Exceptions.argumentCanNotBeNull("baseGraph")));
     }
 
     @Override
@@ -201,12 +197,6 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
 
     @Override
     public Variables variables() {
-        if (null == this.neo4jGraphVariables) {
-            // TODO: indices as the graph gets larger? but then that sucks to have an index for this... thoughts?
-            this.tx().readWrite();
-            final Iterator<Map<String, Object>> results = this.cypher.execute("MATCH (n:" + Neo4jGraphVariables.GRAPH_VARIABLE_LABEL.name() + ") RETURN n").iterator();
-            this.neo4jGraphVariables = new Neo4jGraphVariables(results.hasNext() ? (Node) results.next().get("n") : this.baseGraph.createNode(Neo4jGraphVariables.GRAPH_VARIABLE_LABEL), this);
-        }
         return this.neo4jGraphVariables;
     }
 
@@ -251,10 +241,6 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         final Neo4jTraversal traversal = Neo4jTraversal.of(this);
         traversal.addStep(new StartStep(traversal, new Neo4jCypherIterator(this.cypher.execute(query, parameters).iterator(), this)));
         return traversal;
-    }
-
-    private PropertyContainer getGraphProperties() {
-        return ((GraphDatabaseAPI) this.baseGraph).getDependencyResolver().resolveDependency(NodeManager.class).getGraphProperties();
     }
 
     private static Long evaluateToLong(final Object id) throws NumberFormatException {

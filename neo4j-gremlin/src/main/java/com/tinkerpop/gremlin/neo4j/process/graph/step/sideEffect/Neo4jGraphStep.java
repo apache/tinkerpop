@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.neo4j.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraphVariables;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jMetaProperty;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import com.tinkerpop.gremlin.process.Traversal;
@@ -24,6 +23,7 @@ import org.neo4j.tooling.GlobalGraphOperations;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -46,6 +46,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     @Override
     public void generateTraverserIterator(final boolean trackPaths) {
         this.start = Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges();
+        //makeCypherQuery();
         super.generateTraverserIterator(trackPaths);
     }
 
@@ -94,7 +95,6 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     private Stream<Neo4jVertex> getAllVertices() {
         return StreamFactory.stream(GlobalGraphOperations.at(this.graph.getBaseGraph()).getAllNodes())
                 .filter(node -> !node.getLabels().iterator().next().equals(Neo4jMetaProperty.META_PROPERTY_LABEL))
-                .filter(node -> !node.getLabels().iterator().next().equals(Neo4jGraphVariables.GRAPH_VARIABLE_LABEL))
                 .map(node -> new Neo4jVertex(node, this.graph));
     }
 
@@ -108,7 +108,6 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         final ResourceIterator<Node> iterator1 = graph.getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(label), key, value).iterator();
         final ResourceIterator<Node> iterator2 = graph.getBaseGraph().findNodesByLabelAndProperty(Neo4jMetaProperty.META_PROPERTY_LABEL, key, value).iterator();
         final Stream<Vertex> stream1 = StreamFactory.stream(iterator1)
-                .filter(node -> !node.getLabels().iterator().next().equals(Neo4jGraphVariables.GRAPH_VARIABLE_LABEL))
                 .map(node -> new Neo4jVertex(node, this.graph));
         final Stream<Vertex> stream2 = StreamFactory.stream(iterator2)
                 .map(node -> node.getRelationships(Direction.INCOMING).iterator().next().getStartNode())
@@ -119,7 +118,6 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     private Stream<Vertex> getVerticesUsingLabel(final String... labels) {
         return Arrays.stream(labels)
                 .filter(label -> !label.equals(Neo4jMetaProperty.META_PROPERTY_LABEL.name()))
-                .filter(label -> !label.equals(Neo4jGraphVariables.GRAPH_VARIABLE_LABEL.name()))
                 .flatMap(label -> StreamFactory.stream(GlobalGraphOperations.at(this.graph.getBaseGraph()).getAllNodesWithLabel(DynamicLabel.label(label)).iterator()))
                 .map(node -> new Neo4jVertex(node, this.graph));
     }
@@ -128,7 +126,6 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         final AutoIndexer indexer = this.graph.getBaseGraph().index().getNodeAutoIndexer();
         return indexer.isEnabled() && indexer.getAutoIndexedProperties().contains(key) ?
                 StreamFactory.stream(this.graph.getBaseGraph().index().getNodeAutoIndexer().getAutoIndex().get(key, value).iterator())
-                        .filter(node -> !node.getLabels().iterator().next().equals(Neo4jGraphVariables.GRAPH_VARIABLE_LABEL))
                         .map(node -> node.getLabels().iterator().next().equals(Neo4jMetaProperty.META_PROPERTY_LABEL) ?
                                 node.getRelationships(Direction.INCOMING).iterator().next().getStartNode() :
                                 node)
@@ -157,6 +154,43 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
                 .filter(c -> (indexedKeys.contains(c.key) && c.predicate.equals(Compare.EQUAL)))
                 .findFirst()
                 .orElseGet(() -> null);
+    }
+
+    private String makeCypherQuery() {
+        final StringBuilder builder = new StringBuilder("MATCH node WHERE ");
+        int counter = 0;
+        for (final HasContainer hasContainer : this.hasContainers) {
+            if (hasContainer.hasLabel()) {
+                if (counter++ > 0) builder.append(" AND ");
+                builder.append("node:").append(hasContainer.label);
+            }
+
+            if (hasContainer.key.equals(Element.LABEL) && hasContainer.predicate.equals(Compare.EQUAL)) {
+                if (counter++ > 0) builder.append(" AND ");
+                builder.append("node:").append(hasContainer.value);
+            } else {
+                if (counter++ > 0) builder.append(" AND ");
+                builder.append("node.").append(hasContainer.key).append(" ");
+                if (hasContainer.predicate instanceof Compare) {
+                    builder.append(((Compare) hasContainer.predicate).asString()).append(" ").append(toStringOfValue(hasContainer.value));
+                } else if (hasContainer.predicate.equals(Contains.IN)) {
+                    builder.append("IN [");
+                    for (Object object : (Collection) hasContainer.value) {
+                        builder.append(toStringOfValue(object)).append(",");
+                    }
+                    builder.replace(builder.length() - 1, builder.length(), "").append("]");
+                }
+            }
+
+        }
+        System.out.println(builder);
+        return builder.toString();
+    }
+
+    private String toStringOfValue(final Object value) {
+        if (value instanceof String)
+            return "'" + value + "'";
+        else return value.toString();
     }
 
 

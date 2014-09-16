@@ -61,9 +61,8 @@ public class GiraphGraph implements Graph, Serializable {
         return GiraphGraph.open(null);
     }
 
-    public static <G extends Graph> G open(final Configuration configuration) {
-        final GiraphGraph graph = new GiraphGraph(Optional.ofNullable(configuration).orElse(new BaseConfiguration()));
-        return (G) graph;
+    public static GiraphGraph open(final Configuration configuration) {
+        return new GiraphGraph(Optional.ofNullable(configuration).orElse(new BaseConfiguration()));
     }
 
     @Override
