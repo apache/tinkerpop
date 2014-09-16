@@ -161,7 +161,8 @@ public class GraphSONReader implements GraphReader {
     public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
                                          final SFunction<DetachedVertex, Vertex> vertexMaker,
                                          final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
-        return null;
+        final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+        return br.lines().<Vertex>map(FunctionUtils.wrapFunction(line -> readVertex(new ByteArrayInputStream(line.getBytes()), direction, vertexMaker, edgeMaker))).iterator();
     }
 
     @Override

@@ -77,7 +77,7 @@ public class GraphSONWriter implements GraphWriter {
         final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
         while (traversal.hasNext()) {
             try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                writeVertex(baos, traversal.next(), direction);
+                writeVertexNew(baos, traversal.next(), direction);
                 writer.write(new String(baos.toByteArray()));
                 writer.newLine();
             }
@@ -91,7 +91,7 @@ public class GraphSONWriter implements GraphWriter {
         final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
         while (traversal.hasNext()) {
             try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                writeVertex(baos, traversal.next());
+                writeVertexNew(baos, traversal.next());
                 writer.write(new String(baos.toByteArray()));
                 writer.newLine();
             }
