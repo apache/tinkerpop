@@ -55,33 +55,9 @@ public class GraphMLReader implements GraphReader {
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Direction direction,
-                             final STriFunction<Object, String, Object[], Vertex> vertexMaker,
-                             final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
-        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
-    }
-
-    @Override
-    public Vertex readVertex(final InputStream inputStream, final STriFunction<Object, String, Object[], Vertex> vertexMaker) throws IOException {
-        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
-    }
-
-    @Override
-    public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
-                                         final STriFunction<Object, String, Object[], Vertex> vertexMaker,
-                                         final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
-        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
-    }
-
-    @Override
     public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
                                          final SFunction<DetachedVertex, Vertex> vertexMaker,
                                          final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
-        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
-    }
-
-    @Override
-    public Edge readEdge(final InputStream inputStream, final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 

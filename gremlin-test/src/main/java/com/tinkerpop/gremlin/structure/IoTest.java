@@ -428,7 +428,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final KryoWriter writer = KryoWriter.build().create();
-            writer.writeEdgeNew(os, e);
+            writer.writeEdge(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
@@ -465,7 +465,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final KryoWriter writer = KryoWriter.build().create();
-            writer.writeEdgeNew(os, e);
+            writer.writeEdge(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
@@ -503,7 +503,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().create();
-            writer.writeEdgeNew(os, e);
+            writer.writeEdge(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final GraphSONReader reader = GraphSONReader.build().create();
@@ -543,7 +543,7 @@ public class IoTest extends AbstractGremlinTest {
             final GraphSONWriter writer = GraphSONWriter.build()
                     .embedTypes(true)
                     .create();
-            writer.writeEdgeNew(os, e);
+            writer.writeEdge(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final GraphSONReader reader = GraphSONReader.build()
@@ -584,7 +584,7 @@ public class IoTest extends AbstractGremlinTest {
             final GraphSONWriter writer = GraphSONWriter.build()
                     .embedTypes(true)
                     .create();
-            writer.writeEdgeNew(os, e);
+            writer.writeEdge(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final GraphSONReader reader = GraphSONReader.build()
@@ -621,7 +621,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final KryoWriter writer = KryoWriter.build().create();
-            writer.writeEdgeNew(os, e);
+            writer.writeEdge(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
@@ -659,7 +659,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final KryoWriter writer = KryoWriter.build().create();
-            writer.writeVertexNew(os, v1);
+            writer.writeVertex(os, v1);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
@@ -693,7 +693,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final KryoWriter writer = KryoWriter.build().create();
-            writer.writeVertexNew(os, v1);
+            writer.writeVertex(os, v1);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
@@ -727,7 +727,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().create();
-            writer.writeVertexNew(os, v1);
+            writer.writeVertex(os, v1);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final GraphSONReader reader = GraphSONReader.build().create();
@@ -805,6 +805,8 @@ public class IoTest extends AbstractGremlinTest {
         }
     }
 
+    // todo: bring it back
+    /**
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldReadWriteVerticesNoEdgesToGraphSONManual() throws Exception {
@@ -832,28 +834,7 @@ public class IoTest extends AbstractGremlinTest {
             assertEquals(2, called.get());
         }
     }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
-    public void shouldReadWriteVerticesNoEdgesToGraphSON() throws Exception {
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = GraphSONWriter.build().create();
-            writer.writeVertices(os, g.V().has("age", T.gt, 30));
-
-            final AtomicInteger called = new AtomicInteger(0);
-            final GraphSONReader reader = GraphSONReader.build().create();
-            final Iterator<Vertex> itty = reader.readVertices(new ByteArrayInputStream(os.toByteArray()), null,
-                    (vertexId, label, properties) -> {
-                        called.incrementAndGet();
-                        return mock(Vertex.class);
-                    }, null);
-
-            assertNotNull(itty.next());
-            assertNotNull(itty.next());
-            assertFalse(itty.hasNext());
-            assertEquals(2, called.get());
-        }
-    }
+    */
 
 
     @Test
@@ -869,7 +850,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final KryoWriter writer = KryoWriter.build().create();
-            writer.writeVertexNew(os, v1, Direction.OUT);
+            writer.writeVertex(os, v1, Direction.OUT);
 
             final AtomicBoolean calledVertex = new AtomicBoolean(false);
             final AtomicBoolean calledEdge = new AtomicBoolean(false);
@@ -921,7 +902,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().create();
-            writer.writeVertexNew(os, v1, Direction.OUT);
+            writer.writeVertex(os, v1, Direction.OUT);
 
             final AtomicBoolean calledVertex = new AtomicBoolean(false);
             final AtomicBoolean calledEdge = new AtomicBoolean(false);
@@ -968,7 +949,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final KryoWriter writer = KryoWriter.build().create();
-            writer.writeVertexNew(os, v1, Direction.IN);
+            writer.writeVertex(os, v1, Direction.IN);
 
             final AtomicBoolean calledVertex = new AtomicBoolean(false);
             final AtomicBoolean calledEdge = new AtomicBoolean(false);
@@ -1018,7 +999,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().create();
-            writer.writeVertexNew(os, v1, Direction.IN);
+            writer.writeVertex(os, v1, Direction.IN);
             os.close();
 
             final AtomicBoolean calledVertex = new AtomicBoolean(false);
@@ -1067,7 +1048,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final KryoWriter writer = KryoWriter.build().create();
-            writer.writeVertexNew(os, v1, Direction.BOTH);
+            writer.writeVertex(os, v1, Direction.BOTH);
 
             final AtomicBoolean calledVertex = new AtomicBoolean(false);
             final AtomicBoolean calledEdge1 = new AtomicBoolean(false);
@@ -1131,7 +1112,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().create();
-            writer.writeVertexNew(os, v1, Direction.BOTH);
+            writer.writeVertex(os, v1, Direction.BOTH);
 
             final AtomicBoolean vertexCalled = new AtomicBoolean(false);
             final AtomicBoolean edge1Called = new AtomicBoolean(false);
@@ -1195,7 +1176,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().embedTypes(true).create();
-            writer.writeVertexNew(os, v1, Direction.BOTH);
+            writer.writeVertex(os, v1, Direction.BOTH);
 
             final AtomicBoolean vertexCalled = new AtomicBoolean(false);
             final AtomicBoolean edge1Called = new AtomicBoolean(false);
@@ -1256,7 +1237,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final KryoWriter writer = KryoWriter.build().create();
-            writer.writeVertexNew(os, v1, Direction.BOTH);
+            writer.writeVertex(os, v1, Direction.BOTH);
 
             final AtomicBoolean vertexCalled = new AtomicBoolean(false);
             final AtomicBoolean edge1Called = new AtomicBoolean(false);
@@ -1310,7 +1291,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().create();
-            writer.writeVertexNew(os, v1, Direction.BOTH);
+            writer.writeVertex(os, v1, Direction.BOTH);
 
             final AtomicBoolean vertexCalled = new AtomicBoolean(false);
             final AtomicBoolean edgeCalled = new AtomicBoolean(false);
@@ -1363,7 +1344,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final KryoWriter writer = KryoWriter.build().create();
-            writer.writeVertexNew(os, v1, Direction.BOTH);
+            writer.writeVertex(os, v1, Direction.BOTH);
 
             final AtomicBoolean vertexCalled = new AtomicBoolean(false);
             final AtomicBoolean edgeCalled = new AtomicBoolean(false);
@@ -1418,7 +1399,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().create();
-            writer.writeVertexNew(os, v1, Direction.BOTH);
+            writer.writeVertex(os, v1, Direction.BOTH);
 
             final AtomicBoolean vertexCalled = new AtomicBoolean(false);
             final AtomicBoolean edgeCalled = new AtomicBoolean(false);
@@ -1475,8 +1456,8 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
                         Direction.BOTH,
-                        (vertexId, label, properties) -> null,
-                        (edgeId, outId, inId, label, properties) -> null);
+                        detachedVertex -> null,
+                        detachedEdge -> null);
             }
         }
     }
@@ -1500,8 +1481,8 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
                         Direction.BOTH,
-                        (vertexId, label, properties) -> null,
-                        (edgeId, outId, inId, label, properties) -> null);
+                        detachedVertex -> null,
+                        detachedEdge -> null);
             }
         }
     }
@@ -1525,8 +1506,8 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
                         Direction.OUT,
-                        (vertexId, label, properties) -> null,
-                        (edgeId, outId, inId, label, properties) -> null);
+                        detachedVertex -> null,
+                        detachedEdge -> null);
             }
         }
     }
@@ -1550,8 +1531,8 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
                         Direction.OUT,
-                        (vertexId, label, properties) -> null,
-                        (edgeId, outId, inId, label, properties) -> null);
+                        detachedVertex -> null,
+                        detachedEdge -> null);
             }
         }
     }

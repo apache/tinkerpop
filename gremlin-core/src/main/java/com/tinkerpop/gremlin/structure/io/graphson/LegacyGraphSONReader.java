@@ -102,34 +102,9 @@ public class LegacyGraphSONReader implements GraphReader {
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream,
-                             final STriFunction<Object, String, Object[], Vertex> vertexMaker) throws IOException {
-        throw new UnsupportedOperationException("This reader only reads an entire Graph");
-    }
-
-    @Override
-    public Vertex readVertex(final InputStream inputStream, final Direction direction,
-                             final STriFunction<Object, String, Object[], Vertex> vertexMaker,
-                             final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
-        throw new UnsupportedOperationException("This reader only reads an entire Graph");
-    }
-
-    @Override
-    public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
-                                         final STriFunction<Object, String, Object[], Vertex> vertexMaker,
-                                         final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
-        throw new UnsupportedOperationException("This reader only reads an entire Graph");
-    }
-
-    @Override
     public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
                                          final SFunction<DetachedVertex, Vertex> vertexMaker,
                                          final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
-        throw new UnsupportedOperationException("This reader only reads an entire Graph");
-    }
-
-    @Override
-    public Edge readEdge(final InputStream inputStream, final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
         throw new UnsupportedOperationException("This reader only reads an entire Graph");
     }
 

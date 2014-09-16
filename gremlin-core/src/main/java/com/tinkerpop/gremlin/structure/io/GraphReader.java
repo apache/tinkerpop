@@ -35,7 +35,6 @@ public interface GraphReader {
      * @param vertexMaker a function to create a vertex where the first argument is the vertex identifier, the
      *                    second argument is vertex label and the last is the list of properties for it
      */
-    public Vertex readVertex(final InputStream inputStream, final STriFunction<Object, String, Object[], Vertex> vertexMaker) throws IOException;
     public Vertex readVertex(final InputStream inputStream, final SFunction<DetachedVertex, Vertex> vertexMaker) throws IOException;
 
     /**
@@ -50,9 +49,6 @@ public interface GraphReader {
      *                    identifier, the second argument is the out vertex id, the third is the in vertex id,
      *                    the fourth is the label, and the fifth is the list of properties as key/value pairs.
      */
-    public Vertex readVertex(final InputStream inputStream, final Direction direction,
-                             final STriFunction<Object, String, Object[], Vertex> vertexMaker,
-                             final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException;
     public Vertex readVertex(final InputStream inputStream, final Direction direction,
                              final SFunction<DetachedVertex, Vertex> vertexMaker,
                              final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException;
@@ -71,9 +67,6 @@ public interface GraphReader {
      *                    the fourth is the label, and the fifth is the list of properties as key/value pairs.
      */
     public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
-                                         final STriFunction<Object, String, Object[], Vertex> vertexMaker,
-                                         final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException;
-    public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
                                          final SFunction<DetachedVertex, Vertex> vertexMaker,
                                          final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException;
 
@@ -85,7 +78,6 @@ public interface GraphReader {
      *                    identifier, the second argument is the out vertex id, the third is the in vertex id,
      *                    the fourth is the label, and the fifth is the list of properties as key/value pairs.
      */
-    public Edge readEdge(final InputStream inputStream, final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException;
     public Edge readEdge(final InputStream inputStream, final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException;
 
 }

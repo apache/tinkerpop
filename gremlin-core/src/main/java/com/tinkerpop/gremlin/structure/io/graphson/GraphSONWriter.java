@@ -53,26 +53,11 @@ public class GraphSONWriter implements GraphWriter {
     }
 
     @Override
-    public void writeEdgeNew(final OutputStream outputStream, final Edge e) throws IOException {
-        this.mapper.writeValue(outputStream, e);
-    }
-
-    @Override
-    public void writeVertexNew(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
-        this.mapper.writeValue(outputStream, new GraphSONVertex(v, direction));
-    }
-
-    @Override
-    public void writeVertexNew(final OutputStream outputStream, final Vertex v) throws IOException {
-        this.mapper.writeValue(outputStream, v);
-    }
-
-    @Override
     public void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal, final Direction direction) throws IOException {
         final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
         while (traversal.hasNext()) {
             try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                writeVertexNew(baos, traversal.next(), direction);
+                writeVertex(baos, traversal.next(), direction);
                 writer.write(new String(baos.toByteArray()));
                 writer.newLine();
             }
@@ -86,7 +71,7 @@ public class GraphSONWriter implements GraphWriter {
         final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
         while (traversal.hasNext()) {
             try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                writeVertexNew(baos, traversal.next());
+                writeVertex(baos, traversal.next());
                 writer.write(new String(baos.toByteArray()));
                 writer.newLine();
             }

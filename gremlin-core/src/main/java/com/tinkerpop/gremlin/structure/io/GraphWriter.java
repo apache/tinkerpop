@@ -28,7 +28,6 @@ public interface GraphWriter {
      * @param direction    If direction is null then no edges are written.
      */
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException;
-    public void writeVertexNew(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException;
 
     /**
      * Write a vertex to a stream without writing its edges.
@@ -37,7 +36,6 @@ public interface GraphWriter {
      * @param v            The vertex to write.
      */
     public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException;
-    public void writeVertexNew(final OutputStream outputStream, final Vertex v) throws IOException;
 
 
     /**
@@ -50,7 +48,7 @@ public interface GraphWriter {
      */
     public default void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal, final Direction direction) throws IOException {
         while (traversal.hasNext()) {
-            writeVertexNew(outputStream, traversal.next(), direction);
+            writeVertex(outputStream, traversal.next(), direction);
         }
     }
 
@@ -62,7 +60,7 @@ public interface GraphWriter {
      */
     public default void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal) throws IOException {
         while (traversal.hasNext()) {
-            writeVertexNew(outputStream, traversal.next());
+            writeVertex(outputStream, traversal.next());
         }
     }
 
@@ -70,5 +68,4 @@ public interface GraphWriter {
      * Write an edge to a stream.
      */
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException;
-    public void writeEdgeNew(final OutputStream outputStream, final Edge e) throws IOException;
 }

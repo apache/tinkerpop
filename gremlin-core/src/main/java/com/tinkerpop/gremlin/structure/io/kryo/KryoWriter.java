@@ -61,7 +61,7 @@ public class KryoWriter implements GraphWriter {
         output.writeBoolean(hasSomeVertices);
         while (vertices.hasNext()) {
             final Vertex v = vertices.next();
-            writeVertexToOutputNew(output, v, Direction.OUT);
+            writeVertexToOutput(output, v, Direction.OUT);
         }
 
         output.flush();
@@ -87,33 +87,7 @@ public class KryoWriter implements GraphWriter {
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
         final Output output = new Output(outputStream);
         this.headerWriter.write(kryo, output);
-        kryo.writeClassAndObject(output, e.outV().id().next());
-        kryo.writeClassAndObject(output, e.inV().id().next());
-        writeEdgeToOutput(output, e);
-        output.flush();
-    }
-
-    @Override
-    public void writeEdgeNew(final OutputStream outputStream, final Edge e) throws IOException {
-        final Output output = new Output(outputStream);
-        this.headerWriter.write(kryo, output);
         kryo.writeClassAndObject(output, DetachedEdge.detach(e));
-        output.flush();
-    }
-
-    @Override
-    public void writeVertexNew(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
-        final Output output = new Output(outputStream);
-        this.headerWriter.write(kryo, output);
-        writeVertexToOutputNew(output, v, direction);
-        output.flush();
-    }
-
-    @Override
-    public void writeVertexNew(final OutputStream outputStream, final Vertex v) throws IOException {
-        final Output output = new Output(outputStream);
-        this.headerWriter.write(kryo, output);
-        writeVertexWithNoEdgesToOutputNew(output, v);
         output.flush();
     }
 
@@ -121,50 +95,15 @@ public class KryoWriter implements GraphWriter {
         this.writeElement(output, e, null);
     }
 
-    private void writeEdgeToOutputNew(final Output output, final Edge e) {
-        this.writeElementNew(output, e, null);
-    }
-
     private void writeVertexWithNoEdgesToOutput(final Output output, final Vertex v) {
         writeElement(output, v, null);
-    }
-
-    private void writeVertexWithNoEdgesToOutputNew(final Output output, final Vertex v) {
-        writeElementNew(output, v, null);
     }
 
     private void writeVertexToOutput(final Output output, final Vertex v, final Direction direction) {
         this.writeElement(output, v, direction);
     }
 
-    private void writeVertexToOutputNew(final Output output, final Vertex v, final Direction direction) {
-        this.writeElementNew(output, v, direction);
-    }
-
     private void writeElement(final Output output, final Element e, final Direction direction) {
-        kryo.writeClassAndObject(output, e.id());
-        output.writeString(e.label());
-
-        writeProperties(output, e);
-
-        if (e instanceof Vertex) {
-            output.writeBoolean(direction != null);
-            if (direction != null) {
-                final Vertex v = (Vertex) e;
-                kryo.writeObject(output, direction);
-
-                if (direction == Direction.BOTH || direction == Direction.OUT)
-                    writeDirectionalEdges(output, Direction.OUT, v.outE());
-
-                if (direction == Direction.BOTH || direction == Direction.IN)
-                    writeDirectionalEdges(output, Direction.IN, v.inE());
-            }
-
-            kryo.writeClassAndObject(output, VertexTerminator.INSTANCE);
-        }
-    }
-
-    private void writeElementNew(final Output output, final Element e, final Direction direction) {
         final DetachedElement detached;
         if (e instanceof Vertex)
             detached = e instanceof DetachedVertex ? (DetachedVertex) e : DetachedVertex.detach((Vertex) e);
@@ -182,10 +121,10 @@ public class KryoWriter implements GraphWriter {
 
                 // todo: use iterators
                 if (direction == Direction.BOTH || direction == Direction.OUT)
-                    writeDirectionalEdgesNew(output, Direction.OUT, v.outE());
+                    writeDirectionalEdges(output, Direction.OUT, v.outE());
 
                 if (direction == Direction.BOTH || direction == Direction.IN)
-                    writeDirectionalEdgesNew(output, Direction.IN, v.inE());
+                    writeDirectionalEdges(output, Direction.IN, v.inE());
             }
 
             kryo.writeClassAndObject(output, VertexTerminator.INSTANCE);
@@ -199,48 +138,11 @@ public class KryoWriter implements GraphWriter {
 
         while (vertexEdges.hasNext()) {
             final Edge edgeToWrite = vertexEdges.next();
-            if (d.equals(Direction.OUT))
-                kryo.writeClassAndObject(output, edgeToWrite.inV().id().next());
-            else if (d.equals(Direction.IN))
-                kryo.writeClassAndObject(output, edgeToWrite.outV().id().next());
             writeEdgeToOutput(output, edgeToWrite);
         }
 
         if (hasEdges)
             kryo.writeClassAndObject(output, EdgeTerminator.INSTANCE);
-    }
-
-    private void writeDirectionalEdgesNew(final Output output, final Direction d, final Iterator<Edge> vertexEdges) {
-        final boolean hasEdges = vertexEdges.hasNext();
-        kryo.writeObject(output, d);
-        output.writeBoolean(hasEdges);
-
-        while (vertexEdges.hasNext()) {
-            final Edge edgeToWrite = vertexEdges.next();
-            writeEdgeToOutputNew(output, edgeToWrite);
-        }
-
-        if (hasEdges)
-            kryo.writeClassAndObject(output, EdgeTerminator.INSTANCE);
-    }
-
-    private void writeProperties(final Output output, final Element e) {
-        final int propertyCount = (int) StreamFactory.stream(e.iterators().properties()).count();
-        output.writeInt(propertyCount);
-        e.iterators().properties().forEachRemaining(property -> {
-            output.writeString(property.key());
-            writePropertyValue(output, property);
-        });
-        final int hiddenCount = (int) StreamFactory.stream(e.iterators().hiddens()).count();
-        output.writeInt(hiddenCount);
-        e.iterators().hiddens().forEachRemaining(hidden -> {
-            output.writeString(hidden.key());
-            writePropertyValue(output, hidden);
-        });
-    }
-
-    private void writePropertyValue(final Output output, final Property val) {
-        kryo.writeClassAndObject(output, val.value());
     }
 
     public static Builder build() {
