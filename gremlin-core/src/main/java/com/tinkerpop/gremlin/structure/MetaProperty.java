@@ -29,7 +29,7 @@ public interface MetaProperty<V> extends Property<V>, Element, MetaPropertyTrave
 
     @Override
     public default String label() {
-        return DEFAULT_LABEL;
+        return this.key();
     }
 
     public static <V> MetaProperty<V> empty() {

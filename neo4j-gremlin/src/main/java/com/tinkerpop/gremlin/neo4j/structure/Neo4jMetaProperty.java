@@ -28,9 +28,10 @@ import java.util.Set;
  */
 public class Neo4jMetaProperty<V> implements MetaProperty<V>, WrappedVertex<Node>, Neo4jMetaPropertyTraversal {
 
-    public static final Label META_PROPERTY_LABEL = DynamicLabel.label(MetaProperty.DEFAULT_LABEL);
+    public static final Label META_PROPERTY_LABEL = DynamicLabel.label("metaProperty");
     public static final String META_PROPERTY_PREFIX = "%$%";
     public static final String META_PROPERTY_TOKEN = "%$%metaProperty";
+
 
     private Node node;
     private final Neo4jVertex vertex;
@@ -80,13 +81,13 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, WrappedVertex<Node
 
     @Override
     public <U> Property<U> property(String key, U value) {
-        ElementHelper.validateProperty(key,value);
+        ElementHelper.validateProperty(key, value);
         this.vertex.graph.tx().readWrite();
         if (isNode()) {
             this.node.setProperty(key, value);
             return new Neo4jProperty<>(this, key, value);
         } else {
-            this.node = this.vertex.graph.getBaseGraph().createNode(META_PROPERTY_LABEL);
+            this.node = this.vertex.graph.getBaseGraph().createNode(META_PROPERTY_LABEL, DynamicLabel.label(this.key));
             this.node.setProperty(KEY, this.key);
             this.node.setProperty(VALUE, this.value);
             this.node.setProperty(key, value);
@@ -171,8 +172,6 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, WrappedVertex<Node
                     this.vertex.getBaseVertex().removeProperty(this.key);
             }
         }
-        // TODO: if only one MetaProperty with no properties for the key, then go back to vertex key/value pair
-        // TODO: might be an over-optimization
     }
 
     private boolean isNode() {

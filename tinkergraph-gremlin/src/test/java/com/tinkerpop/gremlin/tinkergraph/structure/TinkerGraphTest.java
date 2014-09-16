@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.IoTest;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -13,7 +12,6 @@ import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
-import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -26,7 +24,6 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.util.Set;
 import java.util.UUID;
 
@@ -36,7 +33,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphTest implements Serializable {
+public class TinkerGraphTest {
 
     private static String tempPath;
 
