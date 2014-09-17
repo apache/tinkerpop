@@ -41,11 +41,11 @@ gremlin> v.properties()
 gremlin> v.properties('name')
 ==>mp[name->marko]
 ==>mp[name->marko a. rodriguez]
-gremlin> mp = v.properties('name').has(VALUE,'marko').next()
+gremlin> mp = v.properties('name').has(value,'marko').next()
 ==>mp[name->marko]
 gremlin> mp.property('acl','private') <3>
 ==>p[acl->private]
-gremlin> mp = v.properties('name').has(VALUE,'marko a. rodriguez').next()
+gremlin> mp = v.properties('name').has(value,'marko a. rodriguez').next()
 ==>mp[name->marko a. rodriguez]
 gremlin> mp.property('acl','public')
 ==>p[acl->public]
