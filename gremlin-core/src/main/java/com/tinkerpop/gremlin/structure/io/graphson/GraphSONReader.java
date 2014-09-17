@@ -169,12 +169,11 @@ public class GraphSONReader implements GraphReader {
         final Map<String, Object> properties = (Map<String, Object>) edgeData.get(GraphSONTokens.PROPERTIES);
         final Map<String, Object> hiddens = ((Map<String, Object>) edgeData.get(GraphSONTokens.HIDDENS)).entrySet().stream().collect(Collectors.toMap((Map.Entry kv) -> Graph.Key.hide(kv.getKey().toString()), (Map.Entry kv) -> kv.getValue()));
 
-        // todo: clean up vertex label
         final DetachedEdge edge = new DetachedEdge(edgeData.get(GraphSONTokens.ID),
                 edgeData.get(GraphSONTokens.LABEL).toString(),
                 properties, hiddens,
-                Pair.with(edgeData.get(GraphSONTokens.OUT), "default"),
-                Pair.with(edgeData.get(GraphSONTokens.IN), "default"));
+                Pair.with(edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString()),
+                Pair.with(edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString()));
 
         return edgeMaker.apply(edge);
     }
