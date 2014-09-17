@@ -78,7 +78,9 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
     @Override
     public void remove() {
-        this.bothE().forEach(Edge::remove);
+        final List<Edge> edges = new ArrayList<>();
+        this.iterators().edges(Direction.BOTH, Integer.MAX_VALUE).forEachRemaining(edges::add);
+        edges.forEach(Edge::remove);
         this.properties.clear();
         this.graph.vertexIndex.removeElement(this);
         this.graph.vertices.remove(this.id);
