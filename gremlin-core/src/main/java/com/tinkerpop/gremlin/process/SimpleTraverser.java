@@ -126,7 +126,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.System<T> {
         } else if (this.t instanceof Property) {
             this.t = (T) DetachedProperty.detach((Property) this.t);
         }
-        this.sideEffects = null;
+        this.dropSideEffects();
         return this;
     }
 
