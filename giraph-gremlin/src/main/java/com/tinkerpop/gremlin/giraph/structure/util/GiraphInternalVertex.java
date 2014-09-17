@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.computer.util.KryoWritable;
 import com.tinkerpop.gremlin.giraph.process.computer.util.RuleWritable;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -47,18 +48,18 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
         this.tinkerGraph = TinkerGraph.open();
         this.tinkerVertex = tinkerVertex;
         this.tinkerGraph.variables().set(VERTEX_ID, this.tinkerVertex.id());
-        final TinkerVertex vertex = (TinkerVertex) this.tinkerGraph.addVertex(Element.ID, this.tinkerVertex.id(), Element.LABEL, this.tinkerVertex.label());
+        final TinkerVertex vertex = (TinkerVertex) this.tinkerGraph.addVertex(T.id, this.tinkerVertex.id(), T.label, this.tinkerVertex.label());
         this.tinkerVertex.iterators().properties().forEachRemaining(property -> vertex.<Object>property(property.key(), property.value()));
         this.tinkerVertex.iterators().hiddens().forEachRemaining(property -> vertex.<Object>property(Graph.Key.hide(property.key()), property.value()));
         this.tinkerVertex.outE().forEach(edge -> {
             final TinkerVertex otherVertex = (TinkerVertex) ElementHelper.getOrAddVertex(this.tinkerGraph, edge.inV().id().next(), edge.inV().label().next());
-            final TinkerEdge tinkerEdge = (TinkerEdge) vertex.addEdge(edge.label(), otherVertex, Element.ID, edge.id());
+            final TinkerEdge tinkerEdge = (TinkerEdge) vertex.addEdge(edge.label(), otherVertex, T.id, edge.id());
             edge.iterators().properties().forEachRemaining(property -> tinkerEdge.<Object>property(property.key(), property.value()));
             edge.iterators().hiddens().forEachRemaining(property -> tinkerEdge.<Object>property(Graph.Key.hide(property.key()), property.value()));
         });
         this.tinkerVertex.inE().forEach(edge -> {
             final TinkerVertex otherVertex = (TinkerVertex) ElementHelper.getOrAddVertex(this.tinkerGraph, edge.outV().id().next(), edge.outV().label().next());
-            final TinkerEdge tinkerEdge = (TinkerEdge) otherVertex.addEdge(edge.label(), vertex, Element.ID, edge.id());
+            final TinkerEdge tinkerEdge = (TinkerEdge) otherVertex.addEdge(edge.label(), vertex, T.id, edge.id());
             edge.iterators().properties().forEachRemaining(property -> tinkerEdge.<Object>property(property.key(), property.value()));
             edge.iterators().hiddens().forEachRemaining(property -> tinkerEdge.<Object>property(Graph.Key.hide(property.key()), property.value()));
         });

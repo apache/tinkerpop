@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.GraphProvider;
+import com.tinkerpop.gremlin.process.T;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
@@ -123,9 +124,9 @@ public class GraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void shouldHaveExceptionConsistencyWhenAssigningSameIdOnVertex() {
         final Object o = GraphManager.get().convertId("1");
-        g.addVertex(Element.ID, o);
+        g.addVertex(T.id, o);
         try {
-            g.addVertex(Element.ID, o);
+            g.addVertex(T.id, o);
             fail("Assigning the same ID to an Element should throw an exception");
         } catch (Exception ex) {
             final Exception expectedException = Graph.Exceptions.vertexWithIdAlreadyExists(o);
@@ -140,7 +141,7 @@ public class GraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
     public void shouldAddVertexWithUserSuppliedNumericId() {
-        g.addVertex(Element.ID, 1000l);
+        g.addVertex(T.id, 1000l);
         tryCommit(g, graph -> {
             final Vertex v = g.v(1000l);
             assertEquals(1000l, v.id());
@@ -152,7 +153,7 @@ public class GraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_STRING_IDS)
     public void shouldAddVertexWithUserSuppliedStringId() {
-        g.addVertex(Element.ID, "1000");
+        g.addVertex(T.id, "1000");
         tryCommit(g, graph -> {
             final Vertex v = g.v("1000");
             assertEquals("1000", v.id());
@@ -165,7 +166,7 @@ public class GraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_UUID_IDS)
     public void shouldAddVertexWithUserSuppliedUuidId() {
         final UUID uuid = UUID.randomUUID();
-        g.addVertex(Element.ID, uuid);
+        g.addVertex(T.id, uuid);
         tryCommit(g, graph -> {
             final Vertex v = g.v(uuid);
             assertEquals(uuid, v.id());
@@ -178,13 +179,13 @@ public class GraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ANY_IDS)
     public void shouldAddVertexWithUserSuppliedAnyId() {
         final UUID uuid = UUID.randomUUID();
-        g.addVertex(Element.ID, uuid);
+        g.addVertex(T.id, uuid);
         tryCommit(g, graph -> {
             final Vertex v = g.v(uuid);
             assertEquals(uuid, v.id());
         });
 
-        g.addVertex(Element.ID, uuid.toString());
+        g.addVertex(T.id, uuid.toString());
         tryCommit(g, graph -> {
             final Vertex v = g.v(uuid.toString());
             assertEquals(uuid.toString(), v.id());
@@ -193,7 +194,7 @@ public class GraphTest extends AbstractGremlinTest {
         // this is different from "FEATURE_CUSTOM_IDS" as TinkerGraph does not define a specific id class
         // (i.e. TinkerId) for the identifier.
         IoTest.CustomId customId = new IoTest.CustomId("test", uuid);
-        g.addVertex(Element.ID, customId);
+        g.addVertex(T.id, customId);
         tryCommit(g, graph -> {
             final Vertex v = g.v(customId);
             assertEquals(customId, v.id());
@@ -300,10 +301,10 @@ public class GraphTest extends AbstractGremlinTest {
         final Vertex c;
         final Vertex d;
         if (graph.features().vertex().supportsUserSuppliedIds()) {
-            a = graph.addVertex(Element.ID, graphProvider.convertId("1"));
-            b = graph.addVertex(Element.ID, graphProvider.convertId("2"));
-            c = graph.addVertex(Element.ID, graphProvider.convertId("3"));
-            d = graph.addVertex(Element.ID, graphProvider.convertId("4"));
+            a = graph.addVertex(T.id, graphProvider.convertId("1"));
+            b = graph.addVertex(T.id, graphProvider.convertId("2"));
+            c = graph.addVertex(T.id, graphProvider.convertId("3"));
+            d = graph.addVertex(T.id, graphProvider.convertId("4"));
         } else {
             a = graph.addVertex();
             b = graph.addVertex();

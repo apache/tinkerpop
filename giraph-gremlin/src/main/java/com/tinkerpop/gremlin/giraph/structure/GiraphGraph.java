@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
 import com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect.GiraphGraphStep;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
@@ -103,12 +104,12 @@ public class GiraphGraph implements Graph, Serializable {
 
     @Override
     public Vertex v(final Object id) {
-        return this.V().<Vertex>has(Element.ID, id).next();
+        return this.V().<Vertex>has(T.id, id).next();
     }
 
     @Override
     public Edge e(final Object id) {
-        return this.E().<Edge>has(Element.ID, id).next();
+        return this.E().<Edge>has(T.id, id).next();
     }
 
     @Override

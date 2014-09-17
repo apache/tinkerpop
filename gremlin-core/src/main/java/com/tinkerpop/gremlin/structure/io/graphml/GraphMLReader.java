@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.io.graphml;
 
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -134,9 +135,9 @@ public class GraphMLReader implements GraphReader {
                             // in the xml therefore it is possible that an edge is created prior to its definition
                             // as a vertex.
                             edgeOutVertex = Optional.ofNullable(graph.v(vertexIdOut))
-                                    .orElseGet(() -> graph.addVertex(Element.ID, vertexIdOut));
+                                    .orElseGet(() -> graph.addVertex(T.id, vertexIdOut));
                             edgeInVertex = Optional.ofNullable(graph.v(vertexIdIn))
-                                    .orElseGet(() -> graph.addVertex(Element.ID, vertexIdIn));
+                                    .orElseGet(() -> graph.addVertex(T.id, vertexIdIn));
 
                             isInEdge = true;
                             edgeProps = new HashMap<>();
@@ -176,7 +177,7 @@ public class GraphMLReader implements GraphReader {
 
                         // if incremental loading is on in batchgraph it handles graphml spec where it states that
                         // order of edges/vertices may be mixed such that an edge may be created before an vertex.
-                        graph.addVertex(Stream.concat(Stream.of(Element.ID, currentVertexId, Element.LABEL, currentVertexLabel),
+                        graph.addVertex(Stream.concat(Stream.of(T.id, currentVertexId, T.label, currentVertexLabel),
                                 Stream.of(propsAsArray)).toArray());
 
                         vertexId = null;
@@ -185,7 +186,7 @@ public class GraphMLReader implements GraphReader {
                         isInVertex = false;
                     } else if (elementName.equals(GraphMLTokens.EDGE)) {
                         final Object[] propsAsArray = edgeProps.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue())).toArray();
-                        edgeOutVertex.addEdge(edgeLabel, edgeInVertex, Stream.concat(Stream.of(Element.ID, edgeId),
+                        edgeOutVertex.addEdge(edgeLabel, edgeInVertex, Stream.concat(Stream.of(T.id, edgeId),
                                 Stream.of(propsAsArray)).toArray());
 
                         edgeId = null;
@@ -233,8 +234,8 @@ public class GraphMLReader implements GraphReader {
      * Allows configuration and construction of the GraphMLReader instance.
      */
     public static final class Builder {
-        private String vertexIdKey = Element.ID;
-        private String edgeIdKey = Element.ID;
+        private String vertexIdKey = T.id.getAccessor();
+        private String edgeIdKey = T.id.getAccessor();
         private String edgeLabelKey = GraphMLTokens.LABEL_E;
         private String vertexLabelKey = GraphMLTokens.LABEL_V;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;

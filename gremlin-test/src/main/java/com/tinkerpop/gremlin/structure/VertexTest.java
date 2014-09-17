@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.GraphManager;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -38,10 +39,10 @@ public class VertexTest extends AbstractGremlinTest {
     public void shouldHaveExceptionConsistencyWhenAssigningSameIdOnEdge() {
         final Vertex v = g.addVertex();
         final Object o = GraphManager.get().convertId("1");
-        v.addEdge("label", v, Element.ID, o);
+        v.addEdge("label", v, T.id, o);
 
         try {
-            v.addEdge("label", v, Element.ID, o);
+            v.addEdge("label", v, T.id, o);
             fail("Assigning the same ID to an Element should throw an exception");
         } catch (Exception ex) {
             final Exception expectedException = Graph.Exceptions.edgeWithIdAlreadyExists(o);
@@ -58,7 +59,7 @@ public class VertexTest extends AbstractGremlinTest {
     public void shouldHaveExceptionConsistencyWhenIdNotSupportedForAddEdge() throws Exception {
         try {
             final Vertex v = this.g.addVertex();
-            v.addEdge("label", v, Element.ID, "");
+            v.addEdge("label", v, T.id, "");
             fail("Call to addEdge should have thrown an exception when ID was specified as it is not supported");
         } catch (Exception ex) {
             final Exception expectedException = Edge.Exceptions.userSuppliedIdsNotSupported();
@@ -133,7 +134,7 @@ public class VertexTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldEvaluateVerticesEquivalentWithSuppliedIds() {
-        final Vertex v = g.addVertex(Element.ID, GraphManager.get().convertId("1"));
+        final Vertex v = g.addVertex(T.id, GraphManager.get().convertId("1"));
         final Vertex u = g.v(GraphManager.get().convertId("1"));
         assertEquals(v, u);
     }
@@ -157,7 +158,7 @@ public class VertexTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldEvaluateEquivalentVertexHashCodeWithSuppliedIds() {
-        final Vertex v = g.addVertex(Element.ID, GraphManager.get().convertId("1"));
+        final Vertex v = g.addVertex(T.id, GraphManager.get().convertId("1"));
         final Vertex u = g.v(GraphManager.get().convertId("1"));
         assertEquals(v, u);
 

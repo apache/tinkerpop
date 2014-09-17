@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.util;
 
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.MetaProperty;
@@ -33,16 +34,24 @@ public class HasContainer implements Serializable {
         this(key, contains, null);
     }
 
+    public HasContainer(final T accessor, final SBiPredicate predicate, final Object value) {
+        this(accessor.getAccessor(), predicate, value);
+    }
+
+    public HasContainer(final T accessor, final Contains contains) {
+        this(accessor.getAccessor(), contains, null);
+    }
+
     public boolean test(final Element element) {
         if (null != this.value) {
 
-            if (this.key.equals(Element.ID))
+            if (this.key.equals(T.ID))
                 return this.predicate.test(element.id(), this.value);
-            else if (this.key.equals(Element.LABEL))
+            else if (this.key.equals(T.LABEL))
                 return this.predicate.test(element.label(), this.value);
-            else if (element instanceof MetaProperty && this.key.equals(MetaProperty.VALUE))
+            else if (element instanceof MetaProperty && this.key.equals(T.VALUE))
                 return this.predicate.test(((MetaProperty) element).value(), this.value);
-            else if (element instanceof MetaProperty && this.key.equals(MetaProperty.KEY))
+            else if (element instanceof MetaProperty && this.key.equals(T.KEY))
                 return this.predicate.test(((MetaProperty) element).key(), this.value);
             else {
                 if (element instanceof Vertex) {
@@ -83,5 +92,4 @@ public class HasContainer implements Serializable {
                         "[!" + this.key + "]") :
                 "[" + this.key + "," + this.predicate + "," + this.value + "]";
     }
-
 }

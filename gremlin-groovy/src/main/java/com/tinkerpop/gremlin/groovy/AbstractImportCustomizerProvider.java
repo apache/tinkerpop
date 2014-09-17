@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.groovy;
 import com.tinkerpop.gremlin.algorithm.generator.AbstractGenerator;
 import com.tinkerpop.gremlin.groovy.engine.function.GLambda;
 import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
@@ -94,6 +95,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         // external
         imports.add(Configuration.class.getPackage().getName() + DOT_STAR);
 
+        staticImports.add(T.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Direction.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Compare.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Element.class.getCanonicalName() + DOT_STAR);

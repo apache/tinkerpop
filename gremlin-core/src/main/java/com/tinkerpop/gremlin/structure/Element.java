@@ -18,9 +18,6 @@ import java.util.Set;
  */
 public abstract interface Element {
 
-    public static final String ID = "id";
-    public static final String LABEL = "label";
-
     /**
      * Gets the unique identifier for the graph {@code Element}.
      *
@@ -134,7 +131,7 @@ public abstract interface Element {
         }
 
         public static IllegalArgumentException providedKeyValuesMustHaveALegalKeyOnEvenIndices() {
-            return new IllegalArgumentException("The provided key/value array must have a String key on even array indices");
+            return new IllegalArgumentException("The provided key/value array must have a String or T on even array indices");
         }
 
         public static IllegalStateException propertyAdditionNotSupported() {

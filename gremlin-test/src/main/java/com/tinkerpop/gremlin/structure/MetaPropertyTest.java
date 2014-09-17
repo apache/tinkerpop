@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
+import com.tinkerpop.gremlin.process.T;
 import org.javatuples.Pair;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -180,19 +181,19 @@ public class MetaPropertyTest extends AbstractGremlinTest {
             v.property("name", "marko");
             tryCommit(g, g -> {
                 assertEquals(5, v.properties().count().next().intValue());
-                assertEquals(4, v.properties().has(MetaProperty.KEY, "name").count().next().intValue());
+                assertEquals(4, v.properties().has(T.key, "name").count().next().intValue());
                 assertEquals(4, v.properties("name").count().next().intValue());
-                assertEquals(1, v.properties("name").has(MetaProperty.VALUE, "marko a. rodriguez").count().next().intValue());
-                assertEquals(1, v.properties("name").has(MetaProperty.VALUE, "marko rodriguez").count().next().intValue());
-                assertEquals(2, v.properties("name").has(MetaProperty.VALUE, "marko").count().next().intValue());
+                assertEquals(1, v.properties("name").has(T.value, "marko a. rodriguez").count().next().intValue());
+                assertEquals(1, v.properties("name").has(T.value, "marko rodriguez").count().next().intValue());
+                assertEquals(2, v.properties("name").has(T.value, "marko").count().next().intValue());
                 assertEquals(1, g.V().count().next().intValue());
                 assertEquals(0, g.E().count().next().intValue());
             });
 
-            v.properties().has(MetaProperty.VALUE, "marko").remove();
+            v.properties().has(T.value, "marko").remove();
             tryCommit(g, g -> {
                 assertEquals(3, v.properties().count().next().intValue());
-                assertEquals(2, v.properties().has(MetaProperty.KEY, "name").count().next().intValue());
+                assertEquals(2, v.properties().has(T.key, "name").count().next().intValue());
                 assertEquals(1, g.V().count().next().intValue());
                 assertEquals(0, g.E().count().next().intValue());
             });
@@ -200,15 +201,15 @@ public class MetaPropertyTest extends AbstractGremlinTest {
             v.property("age").remove();
             tryCommit(g, g -> {
                 assertEquals(2, v.properties().count().next().intValue());
-                assertEquals(2, v.properties().has(MetaProperty.KEY, "name").count().next().intValue());
+                assertEquals(2, v.properties().has(T.key, "name").count().next().intValue());
                 assertEquals(1, g.V().count().next().intValue());
                 assertEquals(0, g.E().count().next().intValue());
             });
 
-            v.properties("name").has(MetaProperty.KEY, "name").remove();
+            v.properties("name").has(T.key, "name").remove();
             tryCommit(g, g -> {
                 assertEquals(0, v.properties().count().next().intValue());
-                assertEquals(0, v.properties().has(MetaProperty.KEY, "name").count().next().intValue());
+                assertEquals(0, v.properties().has(T.key, "name").count().next().intValue());
                 assertEquals(1, g.V().count().next().intValue());
                 assertEquals(0, g.E().count().next().intValue());
             });
@@ -251,7 +252,7 @@ public class MetaPropertyTest extends AbstractGremlinTest {
                 assertEquals(0, marko.properties("blah").count().next().intValue());
             });
 
-            g.V().properties("name").has(MetaProperty.VALUE, (a, b) -> ((Class) b).isAssignableFrom(a.getClass()), Integer.class).remove();
+            g.V().properties("name").has(T.value, (a, b) -> ((Class) b).isAssignableFrom(a.getClass()), Integer.class).remove();
             tryCommit(g, g -> {
                 assertEquals(1, g.V().count().next().intValue());
                 assertEquals(0, g.E().count().next().intValue());
@@ -330,8 +331,8 @@ public class MetaPropertyTest extends AbstractGremlinTest {
             tryCommit(g, g -> {
                 assertEquals(3, v.properties("i").properties("aKey").count().next().intValue());
                 assertEquals(3, g.V().properties("i").properties("aKey").count().next().intValue());
-                assertEquals(1, g.V().properties("i").has(MetaProperty.VALUE, 1).properties("aKey").count().next().intValue());
-                assertEquals(3, g.V().properties("i").has(MetaProperty.KEY, "i").properties().count().next().intValue());
+                assertEquals(1, g.V().properties("i").has(T.value, 1).properties("aKey").count().next().intValue());
+                assertEquals(3, g.V().properties("i").has(T.key, "i").properties().count().next().intValue());
             });
         }
     }

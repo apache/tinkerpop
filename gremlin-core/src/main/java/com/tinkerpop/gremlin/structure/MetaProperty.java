@@ -21,8 +21,6 @@ import java.util.Iterator;
 public interface MetaProperty<V> extends Property<V>, Element, MetaPropertyTraversal {
 
     public static final String DEFAULT_LABEL = "metaProperty";
-    public static final String VALUE = "value";
-    public static final String KEY = "key";
 
     @Override
     public Vertex getElement();

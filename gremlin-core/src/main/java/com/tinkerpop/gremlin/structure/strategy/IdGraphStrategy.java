@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -137,7 +138,7 @@ public class IdGraphStrategy implements GraphStrategy {
         final List<Object> o = new ArrayList<>(Arrays.asList(keyValues));
         if (supports) {
             final Object val = ElementHelper.getIdValue(keyValues).orElse(idMaker.get());
-            final int pos = o.indexOf(Element.ID);
+            final int pos = o.indexOf(T.id);
             if (pos > -1) {
                 o.remove(pos);
                 o.remove(pos);

@@ -28,6 +28,7 @@ public class ElementTraversalMethodsTest {
                 .filter(m -> !m.getName().equals("value"))
                 .filter(m -> !m.getName().equals("id"))
                 .filter(m -> !m.getName().equals("label"))
+                .filter(m -> !m.getName().equals("key"))
                 .filter(m -> GraphTraversal.class.isAssignableFrom(m.getReturnType())).collect(Collectors.toList());
 
         final List<Method> vertexMethods = new ArrayList<>(Arrays.asList(Vertex.class.getMethods()));
@@ -51,6 +52,7 @@ public class ElementTraversalMethodsTest {
                 .filter(m -> !m.getName().equals("value"))
                 .filter(m -> !m.getName().equals("id"))
                 .filter(m -> !m.getName().equals("label"))
+                .filter(m -> !m.getName().equals("key"))
                 .filter(m -> GraphTraversal.class.isAssignableFrom(m.getReturnType())).collect(Collectors.toList());
 
         final List<Method> edgeMethods = new ArrayList<>(Arrays.asList(Edge.class.getMethods()));
@@ -75,6 +77,7 @@ public class ElementTraversalMethodsTest {
                 .filter(m -> !m.getName().equals("value"))
                 .filter(m -> !m.getName().equals("id"))
                 .filter(m -> !m.getName().equals("label"))
+                .filter(m -> !m.getName().equals("key"))
                 .filter(m -> GraphTraversal.class.isAssignableFrom(m.getReturnType())).collect(Collectors.toList());
 
         final List<Method> metaPropertyMethods = new ArrayList<>(Arrays.asList(MetaProperty.class.getMethods()));

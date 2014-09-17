@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.neo4j.structure;
 
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.neo4j.BaseNeo4jGraphTest;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Element;
@@ -26,7 +27,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.tinkerpop.gremlin.structure.Element.LABEL;
 import static org.junit.Assert.*;
 
 /**
@@ -60,10 +60,10 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         final Schema schema = this.g.getBaseGraph().schema();
         schema.indexFor(DynamicLabel.label("Person")).on("name").create();
         this.g.tx().commit();
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
+        this.g.addVertex(T.label, "Person", "name", "marko");
+        this.g.addVertex(T.label, "Person", "name", "marko");
         this.g.tx().commit();
-        assertEquals(2, this.g.V().has(Element.LABEL, "Person").has("name", "marko").count().next(), 0);
+        assertEquals(2, this.g.V().has(T.label, "Person").has("name", "marko").count().next(), 0);
         assertEquals(2, this.g.V().has("name", "marko").count().next(), 0);
     }
 
@@ -73,10 +73,10 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         final Schema schema = this.g.getBaseGraph().schema();
         schema.indexFor(DynamicLabel.label("Person")).on("name").create();
         this.g.tx().commit();
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
+        this.g.addVertex(T.label, "Person", "name", "marko");
+        this.g.addVertex(T.label, "Person", "name", "marko");
         this.g.tx().commit();
-        assertEquals(2, this.g.V().has(Element.LABEL, "Person").has("name", "marko").count().next(), 0);
+        assertEquals(2, this.g.V().has(T.label, "Person").has("name", "marko").count().next(), 0);
         assertEquals(0, this.g.V().has("Person:name", "marko").count().next(), 0);
 
     }
@@ -87,20 +87,20 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         final Schema schema = this.g.getBaseGraph().schema();
         schema.indexFor(DynamicLabel.label("Person")).on("name").create();
         this.g.tx().commit();
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko", "color", "blue");
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko", "color", "green");
+        this.g.addVertex(T.label, "Person", "name", "marko", "color", "blue");
+        this.g.addVertex(T.label, "Person", "name", "marko", "color", "green");
         this.g.tx().commit();
-        assertEquals(1, this.g.V().has(Element.LABEL, "Person").has("name", "marko").has("color", "blue").count().next(), 0);
+        assertEquals(1, this.g.V().has(T.label, "Person").has("name", "marko").has("color", "blue").count().next(), 0);
         assertEquals(2, this.g.V().has("name", "marko").count().next(), 0);
     }
 
     @Test
     public void shouldReturnResultsOnVertexWithHasHasHasNoIndex() {
         this.g.tx().commit();
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko", "color", "blue");
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko", "color", "green");
+        this.g.addVertex(T.label, "Person", "name", "marko", "color", "blue");
+        this.g.addVertex(T.label, "Person", "name", "marko", "color", "green");
         this.g.tx().commit();
-        assertEquals(1, this.g.V().has(Element.LABEL, "Person").has("name", "marko").has("color", "blue").count().next(), 0);
+        assertEquals(1, this.g.V().has(T.label, "Person").has("name", "marko").has("color", "blue").count().next(), 0);
         assertEquals(2, this.g.V().has("name", "marko").count().next(), 0);
     }
 
@@ -110,8 +110,8 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         final Schema schema = this.g.getBaseGraph().schema();
         schema.indexFor(DynamicLabel.label("Person")).on("name").create();
         this.g.tx().commit();
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
+        this.g.addVertex(T.label, "Person", "name", "marko");
+        this.g.addVertex(T.label, "Person", "name", "marko");
         this.g.tx().commit();
         assertNotEquals(2l, this.g.V().has("Person:name", "marko").count().next().longValue());
         assertEquals(2, this.g.V().has("name", "marko").count().next(), 0);
@@ -124,8 +124,8 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         nodeAutoIndexer.startAutoIndexingProperty("name");
         this.g.tx().commit();
 
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
+        this.g.addVertex(T.label, "Person", "name", "marko");
+        this.g.addVertex(T.label, "Person", "name", "marko");
         this.g.tx().commit();
         assertEquals(2, this.g.V().has("Person", "name", "marko").count().next(), 0);
         assertEquals(2, this.g.V().has("name", "marko").count().next(), 0);
@@ -138,9 +138,9 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         relAutoIndexer.startAutoIndexingProperty("weight");
         this.g.tx().commit();
 
-        Vertex marko = this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-        Vertex john = this.g.addVertex(Element.LABEL, "Person", "name", "john");
-        Vertex pete = this.g.addVertex(Element.LABEL, "Person", "name", "pete");
+        Vertex marko = this.g.addVertex(T.label, "Person", "name", "marko");
+        Vertex john = this.g.addVertex(T.label, "Person", "name", "john");
+        Vertex pete = this.g.addVertex(T.label, "Person", "name", "pete");
         marko.addEdge("friend", john, "weight", "a");
         marko.addEdge("friend", pete, "weight", "a");
         this.g.tx().commit();
@@ -153,9 +153,9 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         final Schema schema = this.g.getBaseGraph().schema();
         schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("name").create();
         this.g.tx().commit();
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
+        this.g.addVertex(T.label, "Person", "name", "marko");
         this.g.tx().commit();
-        assertEquals("marko", g.V().<Vertex>has(Element.LABEL, "Person").<Vertex>has("name", "marko").next().value("name"));
+        assertEquals("marko", g.V().<Vertex>has(T.label, "Person").<Vertex>has("name", "marko").next().value("name"));
     }
 
     @Test
@@ -165,19 +165,19 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("name").create();
         schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("surname").create();
         this.g.tx().commit();
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-        this.g.addVertex(Element.LABEL, "Person", "surname", "aaaa");
+        this.g.addVertex(T.label, "Person", "name", "marko");
+        this.g.addVertex(T.label, "Person", "surname", "aaaa");
         this.g.tx().commit();
         boolean failSurname = false;
         try {
-            this.g.addVertex(Element.LABEL, "Person", "surname", "aaaa");
+            this.g.addVertex(T.label, "Person", "surname", "aaaa");
         } catch (ConstraintViolationException e) {
             failSurname = true;
         }
         assertTrue(failSurname);
         boolean failName = false;
         try {
-            this.g.addVertex(Element.LABEL, "Person", "name", "marko");
+            this.g.addVertex(T.label, "Person", "name", "marko");
         } catch (ConstraintViolationException e) {
             failName = true;
         }
@@ -193,19 +193,19 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("surname").create();
         this.g.tx().commit();
 
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-        this.g.addVertex(Element.LABEL, "Person", "surname", "aaaa");
+        this.g.addVertex(T.label, "Person", "name", "marko");
+        this.g.addVertex(T.label, "Person", "surname", "aaaa");
         this.g.tx().commit();
         boolean failSurname = false;
         try {
-            this.g.addVertex(Element.LABEL, "Person", "surname", "aaaa");
+            this.g.addVertex(T.label, "Person", "surname", "aaaa");
         } catch (ConstraintViolationException e) {
             failSurname = true;
         }
         assertTrue(failSurname);
         boolean failName = false;
         try {
-            this.g.addVertex(Element.LABEL, "Person", "name", "marko");
+            this.g.addVertex(T.label, "Person", "name", "marko");
         } catch (ConstraintViolationException e) {
             failName = true;
         }
@@ -218,13 +218,13 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         }
 
         this.g.tx().commit();
-        assertEquals(1, this.g.V().has(Element.LABEL, "Person").<Vertex>has("name", "marko").count().next(), 0);
-        assertEquals(1, this.g.V().has(Element.LABEL, "Person").<Vertex>has("surname", "aaaa").count().next(), 0);
-        this.g.addVertex(Element.LABEL, "Person", "surname", "aaaa");
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
+        assertEquals(1, this.g.V().has(T.label, "Person").<Vertex>has("name", "marko").count().next(), 0);
+        assertEquals(1, this.g.V().has(T.label, "Person").<Vertex>has("surname", "aaaa").count().next(), 0);
+        this.g.addVertex(T.label, "Person", "surname", "aaaa");
+        this.g.addVertex(T.label, "Person", "name", "marko");
         this.g.tx().commit();
-        assertEquals(2, this.g.V().has(Element.LABEL, "Person").<Vertex>has("name", "marko").count().next(), 0);
-        assertEquals(2, this.g.V().has(Element.LABEL, "Person").<Vertex>has("surname", "aaaa").count().next(), 0);
+        assertEquals(2, this.g.V().has(T.label, "Person").<Vertex>has("name", "marko").count().next(), 0);
+        assertEquals(2, this.g.V().has(T.label, "Person").<Vertex>has("surname", "aaaa").count().next(), 0);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -233,10 +233,10 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         final Schema schema = this.g.getBaseGraph().schema();
         schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("name").create();
         this.g.tx().commit();
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
+        this.g.addVertex(T.label, "Person", "name", "marko");
         this.g.tx().commit();
-        assertEquals("marko", g.V().<Vertex>has(Element.LABEL, "Person").<Vertex>has("name", "marko").next().value("name"));
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
+        assertEquals("marko", g.V().<Vertex>has(T.label, "Person").<Vertex>has("name", "marko").next().value("name"));
+        this.g.addVertex(T.label, "Person", "name", "marko");
     }
 
     @Test
@@ -246,9 +246,9 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         bindings.put("g", g);
         bindings.put("#jsr223.groovy.engine.keep.globals", "phantom");
 
-        Vertex marko = this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-        Vertex john = this.g.addVertex(Element.LABEL, "Person", "name", "john");
-        Vertex pete = this.g.addVertex(Element.LABEL, "Person", "name", "pete");
+        Vertex marko = this.g.addVertex(T.label, "Person", "name", "marko");
+        Vertex john = this.g.addVertex(T.label, "Person", "name", "john");
+        Vertex pete = this.g.addVertex(T.label, "Person", "name", "pete");
         marko.addEdge("friend", john);
         marko.addEdge("friend", pete);
         this.g.tx().commit();
@@ -267,9 +267,9 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         bindings.put("g", g);
         bindings.put("#jsr223.groovy.engine.keep.globals", "phantom");
 
-        Vertex marko = this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-        Vertex john = this.g.addVertex(Element.LABEL, "Person", "name", "john");
-        Vertex pete = this.g.addVertex(Element.LABEL, "Person", "name", "pete");
+        Vertex marko = this.g.addVertex(T.label, "Person", "name", "marko");
+        Vertex john = this.g.addVertex(T.label, "Person", "name", "john");
+        Vertex pete = this.g.addVertex(T.label, "Person", "name", "pete");
         marko.addEdge("friend", john);
         marko.addEdge("friend", pete);
         this.g.tx().commit();
@@ -283,15 +283,15 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
 
     @Test
     public void shouldDoLabelSearch() {
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-        this.g.addVertex(Element.LABEL, "Person", "name", "john");
-        Vertex pete = this.g.addVertex(Element.LABEL, "Person", "name", "pete");
-        this.g.addVertex(Element.LABEL, "Monkey", "name", "pete");
+        this.g.addVertex(T.label, "Person", "name", "marko");
+        this.g.addVertex(T.label, "Person", "name", "john");
+        Vertex pete = this.g.addVertex(T.label, "Person", "name", "pete");
+        this.g.addVertex(T.label, "Monkey", "name", "pete");
         this.g.tx().commit();
-        assertEquals(3, this.g.V().has(Element.LABEL, "Person").count().next(), 0);
+        assertEquals(3, this.g.V().has(T.label, "Person").count().next(), 0);
         pete.remove();
         this.g.tx().commit();
-        assertEquals(2, this.g.V().has(Element.LABEL, "Person").count().next(), 0);
+        assertEquals(2, this.g.V().has(T.label, "Person").count().next(), 0);
     }
 
     @Test
@@ -302,13 +302,13 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         schema.indexFor(DynamicLabel.label("Person")).on("name").create();
         this.g.tx().commit();
 
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-        this.g.addVertex(Element.LABEL, "Person", "name", "john");
-        this.g.addVertex(Element.LABEL, "Person", "name", "pete");
+        this.g.addVertex(T.label, "Person", "name", "marko");
+        this.g.addVertex(T.label, "Person", "name", "john");
+        this.g.addVertex(T.label, "Person", "name", "pete");
         this.g.tx().commit();
         assertEquals(1, this.g.V().has("Person", "name", "marko").count().next(), 0);
-        assertEquals(3, this.g.V().has(Element.LABEL, "Person").count().next(), 0);
-        assertEquals(1, this.g.V().has(Element.LABEL, "Person").has("name", "marko").count().next(), 0);
+        assertEquals(3, this.g.V().has(T.label, "Person").count().next(), 0);
+        assertEquals(1, this.g.V().has(T.label, "Person").has("name", "marko").count().next(), 0);
     }
 
     @Test
@@ -322,12 +322,12 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         nodeAutoIndexer.startAutoIndexingProperty("name");
 
         this.g.tx().commit();
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-        this.g.addVertex(Element.LABEL, "Person", "name", "john");
-        this.g.addVertex(Element.LABEL, "Person", "name", "pete");
+        this.g.addVertex(T.label, "Person", "name", "marko");
+        this.g.addVertex(T.label, "Person", "name", "john");
+        this.g.addVertex(T.label, "Person", "name", "pete");
         this.g.tx().commit();
-        assertEquals(1, this.g.V().has(Element.LABEL, "Person").has("name", "marko").count().next(), 0);
-        assertEquals(3, this.g.V().has(Element.LABEL, "Person").count().next(), 0);
+        assertEquals(1, this.g.V().has(T.label, "Person").has("name", "marko").count().next(), 0);
+        assertEquals(3, this.g.V().has(T.label, "Person").count().next(), 0);
         assertEquals(1, this.g.V().has("name", "john").count().next(), 0);
 
     }
@@ -337,13 +337,13 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         g.tx().readWrite();
         final Schema schema = g.getBaseGraph().schema();
         schema.indexFor(DynamicLabel.label("person")).on("name").create();
-        schema.indexFor(DynamicLabel.label("name")).on(MetaProperty.VALUE).create();
+        schema.indexFor(DynamicLabel.label("name")).on(T.value.getAccessor()).create();
         this.g.tx().commit();
 
-        final Vertex a = g.addVertex(LABEL, "person", "name", "marko", "age", 34);
+        final Vertex a = g.addVertex(T.label, "person", "name", "marko", "age", 34);
         a.property("name", "okram");
         a.property("name", "marko a. rodriguez");
-        final Vertex b = g.addVertex(LABEL, "person", "name", "stephen");
+        final Vertex b = g.addVertex(T.label, "person", "name", "stephen");
         final Vertex c = g.addVertex("name", "matthias", "name", "mbroecheler");
 
         tryCommit(g, g -> {
@@ -364,7 +364,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             assertEquals(0, g.V().has("person", "name", "mbroecheler").count().next().intValue());
         });
 
-        final Vertex d = g.addVertex(Element.LABEL, "person", "name", "kuppitz");
+        final Vertex d = g.addVertex(T.label, "person", "name", "kuppitz");
         tryCommit(g, g -> {
             assertEquals(d.id(), g.V().has("person", "name", "kuppitz").id().next());
             assertEquals("kuppitz", ((Neo4jVertex) g.V().has("person", "name", "kuppitz").next()).getBaseVertex().getProperty("name"));
@@ -379,7 +379,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         d.property("name", "marko", "acl", "private");
         tryCommit(g, g -> {
             assertEquals(2, g.V().has("person", "name", "marko").count().next().intValue());
-            assertEquals(1, g.V().has("person", "name", "marko").properties("name").has(MetaProperty.VALUE, "marko").has("acl", "private").count().next().intValue());
+            assertEquals(1, g.V().has("person", "name", "marko").properties("name").has(T.value, "marko").has("acl", "private").count().next().intValue());
             g.V().has("person", "name", "marko").forEach(v -> {
                 assertEquals(Neo4jMetaProperty.META_PROPERTY_TOKEN, ((Neo4jVertex) v).getBaseVertex().getProperty("name"));
             });
@@ -397,22 +397,22 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         schema.indexFor(DynamicLabel.label("Corporate")).on("name").create();
 
         this.g.tx().commit();
-        this.g.addVertex(Element.LABEL, "Person", "name", "marko");
-        this.g.addVertex(Element.LABEL, "Person", "name", "john");
-        this.g.addVertex(Element.LABEL, "Person", "name", "pete");
-        this.g.addVertex(Element.LABEL, "Product", "name", "marko");
-        this.g.addVertex(Element.LABEL, "Product", "name", "john");
-        this.g.addVertex(Element.LABEL, "Product", "name", "pete");
-        this.g.addVertex(Element.LABEL, "Corporate", "name", "marko");
-        this.g.addVertex(Element.LABEL, "Corporate", "name", "john");
-        this.g.addVertex(Element.LABEL, "Corporate", "name", "pete");
+        this.g.addVertex(T.label, "Person", "name", "marko");
+        this.g.addVertex(T.label, "Person", "name", "john");
+        this.g.addVertex(T.label, "Person", "name", "pete");
+        this.g.addVertex(T.label, "Product", "name", "marko");
+        this.g.addVertex(T.label, "Product", "name", "john");
+        this.g.addVertex(T.label, "Product", "name", "pete");
+        this.g.addVertex(T.label, "Corporate", "name", "marko");
+        this.g.addVertex(T.label, "Corporate", "name", "john");
+        this.g.addVertex(T.label, "Corporate", "name", "pete");
         this.g.tx().commit();
-        assertEquals(1, this.g.V().has(Element.LABEL, "Person").has("name", "marko").has(Element.LABEL, "Person").count().next(), 0);
-        assertEquals(1, this.g.V().has(Element.LABEL, "Product").has("name", "marko").has(Element.LABEL, "Product").count().next(), 0);
-        assertEquals(1, this.g.V().has(Element.LABEL, "Corporate").has("name", "marko").has(Element.LABEL, "Corporate").count().next(), 0);
-        assertEquals(0, this.g.V().has(Element.LABEL, "Person").has("name", "marko").has(Element.LABEL, "Product").count().next(), 0);
-        assertEquals(0, this.g.V().has(Element.LABEL, "Product").has("name", "marko").has(Element.LABEL, "Person").count().next(), 0);
-        assertEquals(0, this.g.V().has(Element.LABEL, "Corporate").has("name", "marko").has(Element.LABEL, "Person").count().next(), 0);
+        assertEquals(1, this.g.V().has(T.label, "Person").has("name", "marko").has(T.label, "Person").count().next(), 0);
+        assertEquals(1, this.g.V().has(T.label, "Product").has("name", "marko").has(T.label, "Product").count().next(), 0);
+        assertEquals(1, this.g.V().has(T.label, "Corporate").has("name", "marko").has(T.label, "Corporate").count().next(), 0);
+        assertEquals(0, this.g.V().has(T.label, "Person").has("name", "marko").has(T.label, "Product").count().next(), 0);
+        assertEquals(0, this.g.V().has(T.label, "Product").has("name", "marko").has(T.label, "Person").count().next(), 0);
+        assertEquals(0, this.g.V().has(T.label, "Corporate").has("name", "marko").has(T.label, "Person").count().next(), 0);
     }
 
     @Test
@@ -458,8 +458,8 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             assertEquals(2, counter.getAndSet(0));
             StreamFactory.stream(a.getBaseVertex().getRelationships(Direction.OUTGOING)).map(Relationship::getEndNode).forEach(node -> {
                 assertEquals(2, StreamFactory.stream(node.getPropertyKeys()).count());
-                assertEquals("name", node.getProperty(MetaProperty.KEY));
-                assertTrue("marko".equals(node.getProperty(MetaProperty.VALUE)) || "okram".equals(node.getProperty(MetaProperty.VALUE)));
+                assertEquals("name", node.getProperty(T.key.getAccessor()));
+                assertTrue("marko".equals(node.getProperty(T.value.getAccessor())) || "okram".equals(node.getProperty(T.value.getAccessor())));
                 assertEquals(0, node.getDegree(Direction.OUTGOING));
                 assertEquals(1, node.getDegree(Direction.INCOMING));
                 assertEquals(Neo4jMetaProperty.META_PROPERTY_PREFIX.concat("name"), node.getRelationships(Direction.INCOMING).iterator().next().getType().name());
@@ -526,8 +526,8 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             assertEquals(1, counter.getAndSet(0));
             StreamFactory.stream(a.getBaseVertex().getRelationships(Direction.OUTGOING)).map(Relationship::getEndNode).forEach(node -> {
                 assertEquals(3, StreamFactory.stream(node.getPropertyKeys()).count());
-                assertEquals("name", node.getProperty(MetaProperty.KEY));
-                assertEquals("the marko", node.getProperty(MetaProperty.VALUE));
+                assertEquals("name", node.getProperty(T.key.getAccessor()));
+                assertEquals("the marko", node.getProperty(T.value.getAccessor()));
                 assertEquals("private", node.getProperty("acl"));
                 assertEquals(0, node.getDegree(Direction.OUTGOING));
                 assertEquals(1, node.getDegree(Direction.INCOMING));
@@ -572,8 +572,8 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             assertEquals(1, counter.getAndSet(0));
             StreamFactory.stream(a.getBaseVertex().getRelationships(Direction.OUTGOING)).map(Relationship::getEndNode).forEach(node -> {
                 assertEquals(3, StreamFactory.stream(node.getPropertyKeys()).count());
-                assertEquals("name", node.getProperty(MetaProperty.KEY));
-                assertEquals("the marko", node.getProperty(MetaProperty.VALUE));
+                assertEquals("name", node.getProperty(T.key.getAccessor()));
+                assertEquals("the marko", node.getProperty(T.value.getAccessor()));
                 assertEquals("private", node.getProperty("acl"));
                 assertEquals(0, node.getDegree(Direction.OUTGOING));
                 assertEquals(1, node.getDegree(Direction.INCOMING));

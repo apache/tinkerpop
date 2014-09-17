@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.groovy.jsr223;
 import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -537,8 +538,8 @@ public class GremlinGroovyScriptEngineTest {
     public void shouldProcessUTF8Query() throws Exception {
         final TinkerGraph graph = TinkerGraph.open();
 
-        Vertex nonUtf8 = graph.addVertex(Element.ID, "1", "name", "marko", "age", 29);
-        Vertex utf8Name = graph.addVertex(Element.ID, "2", "name", "轉注", "age", 32);
+        Vertex nonUtf8 = graph.addVertex(T.id, "1", "name", "marko", "age", 29);
+        Vertex utf8Name = graph.addVertex(T.id, "2", "name", "轉注", "age", 32);
 
         ScriptEngine engine = new GremlinGroovyScriptEngine();
 

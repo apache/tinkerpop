@@ -3,9 +3,9 @@ package com.tinkerpop.gremlin.structure.io.kryo;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
@@ -151,9 +151,9 @@ public class KryoReader implements GraphReader {
                 while (!input.eof()) {
                     final List<Object> vertexArgs = new ArrayList<>();
                     final Object current = kryo.readClassAndObject(input);
-                    vertexArgs.addAll(Arrays.asList(Element.ID, current));
+                    vertexArgs.addAll(Arrays.asList(T.id, current));
 
-                    vertexArgs.addAll(Arrays.asList(Element.LABEL, input.readString()));
+                    vertexArgs.addAll(Arrays.asList(T.label, input.readString()));
                     readElementProperties(input, vertexArgs);
 
                     final Vertex v = graph.addVertex(vertexArgs.toArray());
@@ -183,6 +183,7 @@ public class KryoReader implements GraphReader {
             }
         } catch (Exception ex) {
             // rollback whatever portion failed
+            //ex.printStackTrace();
             graph.tx().rollback();
             throw new IOException(ex);
         }
@@ -194,6 +195,7 @@ public class KryoReader implements GraphReader {
             graph.tx().commit();
         } catch (Exception ex) {
             // rollback whatever portion failed
+            //ex.printStackTrace();
             graph.tx().rollback();
             throw new IOException(ex);
         } finally {
@@ -357,7 +359,7 @@ public class KryoReader implements GraphReader {
                 final Vertex vOut = graphToWriteTo.v(outId);
 
                 final Object edgeId = kryo.readClassAndObject(input);
-                edgeArgs.addAll(Arrays.asList(Element.ID, edgeId));
+                edgeArgs.addAll(Arrays.asList(T.id, edgeId));
 
                 final String edgeLabel = input.readString();
                 final Vertex inV = graphToWriteTo.v(inId);
@@ -405,8 +407,8 @@ public class KryoReader implements GraphReader {
     public static class Builder {
         private File tempFile;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
-        private String vertexIdKey = Element.ID;
-        private String edgeIdKey = Element.ID;
+        private String vertexIdKey = T.id.getAccessor();
+        private String edgeIdKey = T.id.getAccessor();
 
         /**
          * Always use the most recent kryo version by default

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -89,7 +90,7 @@ public class GraphSONReader implements GraphReader {
                         final Map<String, Object> vertexData = parser.readValueAs(mapTypeReference);
                         readVertexData(vertexData, (id, label, properties) ->
                                         Optional.ofNullable(graph.v(id)).orElse(
-                                                graph.addVertex(Stream.concat(Stream.of(Element.LABEL, label, Element.ID, id),
+                                                graph.addVertex(Stream.concat(Stream.of(T.label, label, T.id, id),
                                                         Stream.of(properties)).toArray()))
                         );
                     }
@@ -101,7 +102,7 @@ public class GraphSONReader implements GraphReader {
                             final Vertex vIn = graph.v(in);
                             // batchgraph checks for edge id support and uses it if possible.
                             return vOut.addEdge(edgeData.get(GraphSONTokens.LABEL).toString(), vIn,
-                                    Stream.concat(Stream.of(Element.ID, id), Stream.of(props)).toArray());
+                                    Stream.concat(Stream.of(T.id, id), Stream.of(props)).toArray());
                         });
                     }
                 } else
@@ -200,8 +201,8 @@ public class GraphSONReader implements GraphReader {
         private SimpleModule custom = null;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
         private boolean embedTypes = false;
-        private String vertexIdKey = Element.ID;
-        private String edgeIdKey = Element.ID;
+        private String vertexIdKey = T.id.getAccessor();
+        private String edgeIdKey = T.id.getAccessor();
 
         private Builder() {
         }

@@ -51,38 +51,71 @@ public enum T {
     /**
      * Not in collection
      */
-    nin;
+    nin,
+    /**
+     * Label (representing Element.label())
+     */
+    label,
+    /**
+     * Id (representing Element.id())
+     */
+    id,
+    /**
+     * Key (representing Property.key())
+     */
+    key,
+    /**
+     * Value (representing Property.value())
+     */
+    value;
 
 
-    public static SBiPredicate convertPredicate(final T t) {
-        if (t.equals(T.eq))
+    public SBiPredicate getPredicate() {
+        if (this.equals(T.eq))
             return Compare.EQUAL;
-        else if (t.equals(T.neq))
+        else if (this.equals(T.neq))
             return Compare.NOT_EQUAL;
-        else if (t.equals(T.lt))
+        else if (this.equals(T.lt))
             return Compare.LESS_THAN;
-        else if (t.equals(T.lte))
+        else if (this.equals(T.lte))
             return Compare.LESS_THAN_EQUAL;
-        else if (t.equals(T.gt))
+        else if (this.equals(T.gt))
             return Compare.GREATER_THAN;
-        else if (t.equals(T.gte))
+        else if (this.equals(T.gte))
             return Compare.GREATER_THAN_EQUAL;
-        else if (t.equals(T.in))
+        else if (this.equals(T.in))
             return Contains.IN;
-        else if (t.equals(T.nin))
+        else if (this.equals(T.nin))
             return Contains.NOT_IN;
         else
-            throw new IllegalArgumentException(t.toString() + " is an unknown predicate type");
+            throw new IllegalArgumentException(this.toString() + " is an unknown predicate type");
     }
 
-    public static Comparator convertComparator(final T t) {
-        if (t.equals(T.decr))
+    public Comparator getComparator() {
+        if (this.equals(T.decr))
             return Comparator.reverseOrder();
-        else if (t.equals(T.incr))
+        else if (this.equals(T.incr))
             return Comparator.naturalOrder();
         else
-            throw new IllegalArgumentException(t.toString() + " is an unknown comparator type");
+            throw new IllegalArgumentException(this.toString() + " is an unknown comparator type");
     }
 
+    public static final String LABEL = "%&%label";
+    public static final String ID = "%&%id";
+    public static final String KEY = "%&%key";
+    public static final String VALUE = "%&%value";
+
+    public String getAccessor() {
+        if (this.equals(T.label))
+            return LABEL;
+        else if (this.equals(T.id))
+            return ID;
+        else if (this.equals(T.key))
+            return KEY;
+        else if (this.equals(T.value))
+            return VALUE;
+        else
+            throw new IllegalArgumentException(this.toString() + " is an unknown accessor type");
+    }
 
 }

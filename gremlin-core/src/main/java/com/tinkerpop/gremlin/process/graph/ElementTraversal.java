@@ -5,13 +5,13 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.graph.step.map.KeyStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.function.SBiConsumer;
 import com.tinkerpop.gremlin.util.function.SBiFunction;
 import com.tinkerpop.gremlin.util.function.SBiPredicate;
 import com.tinkerpop.gremlin.util.function.SConsumer;
@@ -300,12 +300,24 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().has(key, value);
     }
 
+    public default GraphTraversal<A, A> has(final T accessor, final Object value) {
+        return this.start().has(accessor, value);
+    }
+
     public default GraphTraversal<A, A> has(final String key, final T predicate, final Object value) {
         return this.start().has(key, predicate, value);
     }
 
+    public default GraphTraversal<A, A> has(final T accessor, final T predicate, final Object value) {
+        return this.start().has(accessor, predicate, value);
+    }
+
     public default GraphTraversal<A, A> has(final String key, final SBiPredicate predicate, final Object value) {
         return this.start().has(key, predicate, value);
+    }
+
+    public default GraphTraversal<A, A> has(final T accessor, final SBiPredicate predicate, final Object value) {
+        return this.start().has(accessor, predicate, value);
     }
 
     public default GraphTraversal<A, A> has(final String label, final String key, final Object value) {

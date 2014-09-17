@@ -170,7 +170,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_STRING_IDS)
     public void shouldProperlyEncodeWithGraphML() throws Exception {
-        final Vertex v = g.addVertex(Element.ID, "1");
+        final Vertex v = g.addVertex(T.id, "1");
         v.property("text", "\u00E9");
 
         final GraphMLWriter w = GraphMLWriter.build().create();
@@ -209,7 +209,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ANY_IDS)
     public void shouldProperlySerializeDeserializeCustomIdWithGraphSON() throws Exception {
         final UUID id = UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305");
-        g.addVertex(Element.ID, new CustomId("vertex", id));
+        g.addVertex(T.id, new CustomId("vertex", id));
         final SimpleModule module = new SimpleModule();
         module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializer());
         module.addDeserializer(CustomId.class, new CustomId.CustomIdJacksonDeserializer());
@@ -256,7 +256,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ANY_IDS)
     public void shouldProperlySerializeCustomIdWithKryo() throws Exception {
-        g.addVertex(Element.ID, new CustomId("vertex", UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305")));
+        g.addVertex(T.id, new CustomId("vertex", UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305")));
         final GremlinKryo kryo = GremlinKryo.build().addCustom(CustomId.class).create();
 
         final KryoWriter writer = KryoWriter.build().custom(kryo).create();
@@ -539,8 +539,8 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldReadWriteEdgeToGraphSONNonLossy() throws Exception {
-        final Vertex v1 = g.addVertex(Element.ID, 1l);
-        final Vertex v2 = g.addVertex(Element.ID, 2l);
+        final Vertex v1 = g.addVertex(T.id, 1l);
+        final Vertex v2 = g.addVertex(T.id, 2l);
         final Edge e = v1.addEdge("friend", v2, "weight", 0.5f, Graph.Key.hide("acl"), "rw");
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
@@ -681,7 +681,7 @@ public class IoTest extends AbstractGremlinTest {
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
+                                if (!properties[i].equals(T.id.getAccessor()))
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
@@ -722,7 +722,7 @@ public class IoTest extends AbstractGremlinTest {
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
+                                if (!properties[i].equals(T.id.getAccessor()))
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
@@ -763,7 +763,7 @@ public class IoTest extends AbstractGremlinTest {
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
+                                if (!properties[i].equals(T.id.getAccessor()))
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
@@ -915,7 +915,7 @@ public class IoTest extends AbstractGremlinTest {
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
+                                if (!properties[i].equals(T.id.getAccessor()))
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
@@ -974,7 +974,7 @@ public class IoTest extends AbstractGremlinTest {
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
+                                if (!properties[i].equals(T.id.getAccessor()))
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
@@ -1031,7 +1031,7 @@ public class IoTest extends AbstractGremlinTest {
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
+                                if (!properties[i].equals(T.id.getAccessor()))
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
@@ -1092,7 +1092,7 @@ public class IoTest extends AbstractGremlinTest {
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
+                                if (!properties[i].equals(T.id.getAccessor()))
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
@@ -1153,7 +1153,7 @@ public class IoTest extends AbstractGremlinTest {
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
+                                if (!properties[i].equals(T.id.getAccessor()))
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
@@ -1268,7 +1268,7 @@ public class IoTest extends AbstractGremlinTest {
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
+                                if (!properties[i].equals(T.id.getAccessor()))
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
@@ -1344,7 +1344,7 @@ public class IoTest extends AbstractGremlinTest {
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
+                                if (!properties[i].equals(T.id.getAccessor()))
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
@@ -1418,7 +1418,7 @@ public class IoTest extends AbstractGremlinTest {
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
+                                if (!properties[i].equals(T.id.getAccessor()))
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
@@ -1483,7 +1483,7 @@ public class IoTest extends AbstractGremlinTest {
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
+                                if (!properties[i].equals(T.id.getAccessor()))
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
@@ -1547,7 +1547,7 @@ public class IoTest extends AbstractGremlinTest {
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
+                                if (!properties[i].equals(T.id.getAccessor()))
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
@@ -1612,7 +1612,7 @@ public class IoTest extends AbstractGremlinTest {
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
+                                if (!properties[i].equals(T.id.getAccessor()))
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
