@@ -45,13 +45,13 @@ public class HasContainer implements Serializable {
     public boolean test(final Element element) {
         if (null != this.value) {
 
-            if (this.key.equals(T.ID))
+            if (this.key.equals(T.id.getAccessor()))
                 return this.predicate.test(element.id(), this.value);
-            else if (this.key.equals(T.LABEL))
+            else if (this.key.equals(T.label.getAccessor()))
                 return this.predicate.test(element.label(), this.value);
-            else if (element instanceof MetaProperty && this.key.equals(T.VALUE))
+            else if (element instanceof MetaProperty && this.key.equals(T.value.getAccessor()))
                 return this.predicate.test(((MetaProperty) element).value(), this.value);
-            else if (element instanceof MetaProperty && this.key.equals(T.KEY))
+            else if (element instanceof MetaProperty && this.key.equals(T.key.getAccessor()))
                 return this.predicate.test(((MetaProperty) element).key(), this.value);
             else {
                 if (element instanceof Vertex) {

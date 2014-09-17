@@ -15,107 +15,132 @@ public enum T {
     /**
      * Greater than
      */
-    gt,
+    gt {
+        public SBiPredicate getPredicate() {
+            return Compare.GREATER_THAN;
+        }
+    },
     /**
      * Less than
      */
-    lt,
+    lt {
+        public SBiPredicate getPredicate() {
+            return Compare.LESS_THAN;
+        }
+    },
     /**
      * Equal to
      */
-    eq,
+    eq {
+        public SBiPredicate getPredicate() {
+            return Compare.EQUAL;
+        }
+    },
     /**
      * Greater than or equal to
      */
-    gte,
+    gte {
+        public SBiPredicate getPredicate() {
+            return Compare.GREATER_THAN_EQUAL;
+        }
+    },
     /**
      * Less than or equal to
      */
-    lte,
+    lte {
+        public SBiPredicate getPredicate() {
+            return Compare.LESS_THAN_EQUAL;
+        }
+    },
     /**
      * Not equal to
      */
-    neq,
+    neq {
+        public SBiPredicate getPredicate() {
+            return Compare.NOT_EQUAL;
+        }
+    },
     /**
      * Decrement
      */
-    decr,
+    decr {
+        public Comparator getComparator() {
+            return Comparator.reverseOrder();
+        }
+    },
     /**
      * Increment
      */
-    incr,
+    incr {
+        public Comparator getComparator() {
+            return Comparator.naturalOrder();
+        }
+    },
     /**
      * In collection
      */
-    in,
+    in {
+        public SBiPredicate getPredicate() {
+            return Contains.IN;
+        }
+    },
     /**
      * Not in collection
      */
-    nin,
+    nin {
+        public SBiPredicate getPredicate() {
+            return Contains.NOT_IN;
+        }
+    },
     /**
      * Label (representing Element.label())
      */
-    label,
+    label {
+        public String getAccessor() {
+            return LABEL;
+        }
+    },
     /**
      * Id (representing Element.id())
      */
-    id,
+    id {
+        public String getAccessor() {
+            return ID;
+        }
+    },
     /**
      * Key (representing Property.key())
      */
-    key,
+    key {
+        public String getAccessor() {
+            return KEY;
+        }
+    },
     /**
      * Value (representing Property.value())
      */
-    value;
+    value {
+        public String getAccessor() {
+            return VALUE;
+        }
+    };
+
+    private static final String LABEL = "%&%label";
+    private static final String ID = "%&%id";
+    private static final String KEY = "%&%key";
+    private static final String VALUE = "%&%value";
 
 
     public SBiPredicate getPredicate() {
-        if (this.equals(T.eq))
-            return Compare.EQUAL;
-        else if (this.equals(T.neq))
-            return Compare.NOT_EQUAL;
-        else if (this.equals(T.lt))
-            return Compare.LESS_THAN;
-        else if (this.equals(T.lte))
-            return Compare.LESS_THAN_EQUAL;
-        else if (this.equals(T.gt))
-            return Compare.GREATER_THAN;
-        else if (this.equals(T.gte))
-            return Compare.GREATER_THAN_EQUAL;
-        else if (this.equals(T.in))
-            return Contains.IN;
-        else if (this.equals(T.nin))
-            return Contains.NOT_IN;
-        else
-            throw new IllegalArgumentException(this.toString() + " is an unknown predicate type");
+        throw new IllegalArgumentException(this.toString() + " is an unknown predicate type");
     }
 
     public Comparator getComparator() {
-        if (this.equals(T.decr))
-            return Comparator.reverseOrder();
-        else if (this.equals(T.incr))
-            return Comparator.naturalOrder();
-        else
-            throw new IllegalArgumentException(this.toString() + " is an unknown comparator type");
+        throw new IllegalArgumentException(this.toString() + " is an unknown comparator type");
     }
 
-    public static final String LABEL = "%&%label";
-    public static final String ID = "%&%id";
-    public static final String KEY = "%&%key";
-    public static final String VALUE = "%&%value";
-
     public String getAccessor() {
-        if (this.equals(T.label))
-            return LABEL;
-        else if (this.equals(T.id))
-            return ID;
-        else if (this.equals(T.key))
-            return KEY;
-        else if (this.equals(T.value))
-            return VALUE;
-        else
-            throw new IllegalArgumentException(this.toString() + " is an unknown accessor type");
+        throw new IllegalArgumentException(this.toString() + " is an unknown accessor type");
     }
 
 }
