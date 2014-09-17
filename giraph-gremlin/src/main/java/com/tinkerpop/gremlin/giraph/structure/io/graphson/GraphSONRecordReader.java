@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.giraph.structure.io.graphson;
 
 import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -67,9 +68,9 @@ public class GraphSONRecordReader extends RecordReader<NullWritable, GiraphInter
 
         Object[] newProps = new Object[props.length + 4];
         System.arraycopy(props, 0, newProps, 0, props.length);
-        newProps[props.length] = Element.ID;
+        newProps[props.length] = T.id;
         newProps[props.length + 1] = id;
-        newProps[props.length + 2] = Element.LABEL;
+        newProps[props.length + 2] = T.label;
         newProps[props.length + 3] = label;
 
         return g.addVertex(newProps);
@@ -88,7 +89,7 @@ public class GraphSONRecordReader extends RecordReader<NullWritable, GiraphInter
             outV = null;
         }
         if (null == outV) {
-            outV = g.addVertex(Element.ID, outId);
+            outV = g.addVertex(T.id, outId);
         }
 
         Vertex inV;
@@ -98,12 +99,12 @@ public class GraphSONRecordReader extends RecordReader<NullWritable, GiraphInter
             inV = null;
         }
         if (null == inV) {
-            inV = g.addVertex(Element.ID, inId);
+            inV = g.addVertex(T.id, inId);
         }
 
         Object[] newProps = new Object[props.length + 2];
         System.arraycopy(props, 0, newProps, 0, props.length);
-        newProps[props.length] = Element.ID;
+        newProps[props.length] = T.id;
         newProps[props.length + 1] = id;
 
         return outV.addEdge(label, inV, newProps);

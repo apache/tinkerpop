@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaMapReduce;
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -402,13 +403,13 @@ public class GraphComputerTest extends AbstractGremlinTest {
                         assertEquals(1, vertex.property("b").value());
                     } else if (memory.getIteration() == 2) {
                         assertEquals(2, vertex.properties("a").count().next().intValue());
-                        assertEquals(1, vertex.properties("a").has(MetaProperty.VALUE, 1).count().next().intValue());
-                        assertEquals(1, vertex.properties("a").has(MetaProperty.VALUE, 2).count().next().intValue());
+                        assertEquals(1, vertex.properties("a").has(T.value, 1).count().next().intValue());
+                        assertEquals(1, vertex.properties("a").has(T.value, 2).count().next().intValue());
                         assertEquals(2, vertex.property("b").value());
                     } else if (memory.getIteration() == 3) {
                         assertEquals(3, vertex.properties("a").count().next().intValue());
-                        assertEquals(1, vertex.properties("a").has(MetaProperty.VALUE, 1).count().next().intValue());
-                        assertEquals(2, vertex.properties("a").has(MetaProperty.VALUE, 2).count().next().intValue());
+                        assertEquals(1, vertex.properties("a").has(T.value, 1).count().next().intValue());
+                        assertEquals(2, vertex.properties("a").has(T.value, 2).count().next().intValue());
                         assertEquals(2, vertex.property("b").value());
                     } else {
                         fail("There should not be more than 3 iterations in this vertex program");
@@ -443,18 +444,18 @@ public class GraphComputerTest extends AbstractGremlinTest {
                         assertEquals(1, vertex.property("b").value());
                     } else if (memory.getIteration() == 1) {
                         assertEquals(2, vertex.properties("a").count().next().intValue());
-                        assertEquals(1, vertex.properties("a").has(MetaProperty.VALUE, 1).count().next().intValue());
-                        assertEquals(1, vertex.properties("a").has(MetaProperty.VALUE, 2).count().next().intValue());
+                        assertEquals(1, vertex.properties("a").has(T.value, 1).count().next().intValue());
+                        assertEquals(1, vertex.properties("a").has(T.value, 2).count().next().intValue());
                         assertEquals(2, vertex.property("b").value());
                     } else if (memory.getIteration() == 2) {
                         assertEquals(3, vertex.properties("a").count().next().intValue());
-                        assertEquals(1, vertex.properties("a").has(MetaProperty.VALUE, 1).count().next().intValue());
-                        assertEquals(2, vertex.properties("a").has(MetaProperty.VALUE, 2).count().next().intValue());
+                        assertEquals(1, vertex.properties("a").has(T.value, 1).count().next().intValue());
+                        assertEquals(2, vertex.properties("a").has(T.value, 2).count().next().intValue());
                         assertEquals(2, vertex.property("b").value());
                     } else if (memory.getIteration() == 3) {
                         assertEquals(4, vertex.properties("a").count().next().intValue());
-                        assertEquals(1, vertex.properties("a").has(MetaProperty.VALUE, 1).count().next().intValue());
-                        assertEquals(3, vertex.properties("a").has(MetaProperty.VALUE, 2).count().next().intValue());
+                        assertEquals(1, vertex.properties("a").has(T.value, 1).count().next().intValue());
+                        assertEquals(3, vertex.properties("a").has(T.value, 2).count().next().intValue());
                         assertEquals(2, vertex.property("b").value());
                     } else {
                         fail("There should not be more than 3 iterators in this vertex program");
@@ -468,8 +469,8 @@ public class GraphComputerTest extends AbstractGremlinTest {
         final Vertex vertex = results.getGraph().V().next();
         assertEquals(2, vertex.property("b").value());
         assertEquals(4, vertex.properties("a").count().next().intValue());
-        assertEquals(1, vertex.properties("a").has(MetaProperty.VALUE, 1).count().next().intValue());
-        assertEquals(3, vertex.properties("a").has(MetaProperty.VALUE, 2).count().next().intValue());
+        assertEquals(1, vertex.properties("a").has(T.value, 1).count().next().intValue());
+        assertEquals(3, vertex.properties("a").has(T.value, 2).count().next().intValue());
         assertEquals(1, vertex.properties("b").count().next().intValue());
     }
 

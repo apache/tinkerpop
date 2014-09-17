@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -89,7 +90,7 @@ public class GraphSONReader implements GraphReader {
                         final Map<String, Object> vertexData = parser.readValueAs(mapTypeReference);
                         readVertexData(vertexData, detachedVertex -> {
                             final Vertex v = Optional.ofNullable(graph.v(detachedVertex.id())).orElse(
-                                    graph.addVertex(Element.LABEL, detachedVertex.label(), Element.ID, detachedVertex.id()));
+                                    graph.addVertex(T.label, detachedVertex.label(), T.id, detachedVertex.id()));
                             // todo: properties on properties
                             detachedVertex.iterators().properties().forEachRemaining(p -> v.<Object>property(p.key(), p.value()));
                             detachedVertex.iterators().hiddens().forEachRemaining(p -> v.<Object>property(Graph.Key.hide(p.key()), p.value()));
@@ -103,7 +104,7 @@ public class GraphSONReader implements GraphReader {
                             final Vertex vOut = graph.v(detachedEdge.iterators().vertices(Direction.OUT).next().id());
                             final Vertex vIn = graph.v(detachedEdge.iterators().vertices(Direction.IN).next().id());
                             // batchgraph checks for edge id support and uses it if possible.
-                            final Edge e = vOut.addEdge(edgeData.get(GraphSONTokens.LABEL).toString(), vIn, Element.ID, detachedEdge.id());
+                            final Edge e = vOut.addEdge(edgeData.get(GraphSONTokens.LABEL).toString(), vIn, T.id, detachedEdge.id());
                             detachedEdge.iterators().properties().forEachRemaining(p -> e.<Object>property(p.key(), p.value()));
                             detachedEdge.iterators().hiddens().forEachRemaining(p -> e.<Object>property(Graph.Key.hide(p.key()), p.value()));
                             return e;
@@ -199,8 +200,10 @@ public class GraphSONReader implements GraphReader {
         private SimpleModule custom = null;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
         private boolean embedTypes = false;
-        private String vertexIdKey = Element.ID;
-        private String edgeIdKey = Element.ID;
+
+        // todo: uh - does this work?
+        private String vertexIdKey = T.id.getAccessor();
+        private String edgeIdKey = T.id.getAccessor();
 
         private Builder() {
         }

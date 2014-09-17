@@ -15,74 +15,132 @@ public enum T {
     /**
      * Greater than
      */
-    gt,
+    gt {
+        public SBiPredicate getPredicate() {
+            return Compare.GREATER_THAN;
+        }
+    },
     /**
      * Less than
      */
-    lt,
+    lt {
+        public SBiPredicate getPredicate() {
+            return Compare.LESS_THAN;
+        }
+    },
     /**
      * Equal to
      */
-    eq,
+    eq {
+        public SBiPredicate getPredicate() {
+            return Compare.EQUAL;
+        }
+    },
     /**
      * Greater than or equal to
      */
-    gte,
+    gte {
+        public SBiPredicate getPredicate() {
+            return Compare.GREATER_THAN_EQUAL;
+        }
+    },
     /**
      * Less than or equal to
      */
-    lte,
+    lte {
+        public SBiPredicate getPredicate() {
+            return Compare.LESS_THAN_EQUAL;
+        }
+    },
     /**
      * Not equal to
      */
-    neq,
+    neq {
+        public SBiPredicate getPredicate() {
+            return Compare.NOT_EQUAL;
+        }
+    },
     /**
      * Decrement
      */
-    decr,
+    decr {
+        public Comparator getComparator() {
+            return Comparator.reverseOrder();
+        }
+    },
     /**
      * Increment
      */
-    incr,
+    incr {
+        public Comparator getComparator() {
+            return Comparator.naturalOrder();
+        }
+    },
     /**
      * In collection
      */
-    in,
+    in {
+        public SBiPredicate getPredicate() {
+            return Contains.IN;
+        }
+    },
     /**
      * Not in collection
      */
-    nin;
-
-
-    public static SBiPredicate convertPredicate(final T t) {
-        if (t.equals(T.eq))
-            return Compare.EQUAL;
-        else if (t.equals(T.neq))
-            return Compare.NOT_EQUAL;
-        else if (t.equals(T.lt))
-            return Compare.LESS_THAN;
-        else if (t.equals(T.lte))
-            return Compare.LESS_THAN_EQUAL;
-        else if (t.equals(T.gt))
-            return Compare.GREATER_THAN;
-        else if (t.equals(T.gte))
-            return Compare.GREATER_THAN_EQUAL;
-        else if (t.equals(T.in))
-            return Contains.IN;
-        else if (t.equals(T.nin))
+    nin {
+        public SBiPredicate getPredicate() {
             return Contains.NOT_IN;
-        else
-            throw new IllegalArgumentException(t.toString() + " is an unknown predicate type");
+        }
+    },
+    /**
+     * Label (representing Element.label())
+     */
+    label {
+        public String getAccessor() {
+            return LABEL;
+        }
+    },
+    /**
+     * Id (representing Element.id())
+     */
+    id {
+        public String getAccessor() {
+            return ID;
+        }
+    },
+    /**
+     * Key (representing Property.key())
+     */
+    key {
+        public String getAccessor() {
+            return KEY;
+        }
+    },
+    /**
+     * Value (representing Property.value())
+     */
+    value {
+        public String getAccessor() {
+            return VALUE;
+        }
+    };
+
+    private static final String LABEL = "%&%label";
+    private static final String ID = "%&%id";
+    private static final String KEY = "%&%key";
+    private static final String VALUE = "%&%value";
+
+
+    public SBiPredicate getPredicate() {
+        throw new IllegalArgumentException(this.toString() + " is an unknown predicate type");
     }
 
-    public static Comparator convertComparator(final T t) {
-        if (t.equals(T.decr))
-            return Comparator.reverseOrder();
-        else if (t.equals(T.incr))
-            return Comparator.naturalOrder();
-        else
-            throw new IllegalArgumentException(t.toString() + " is an unknown comparator type");
+    public Comparator getComparator() {
+        throw new IllegalArgumentException(this.toString() + " is an unknown comparator type");
     }
 
+    public String getAccessor() {
+        throw new IllegalArgumentException(this.toString() + " is an unknown accessor type");
+    }
 
 }

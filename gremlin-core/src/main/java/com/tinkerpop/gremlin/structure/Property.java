@@ -117,25 +117,6 @@ public interface Property<V> {
      * Common exceptions to use with a property.
      */
     public static class Exceptions {
-        public static IllegalArgumentException propertyKeyIsReserved(final String key) {
-            return new IllegalArgumentException("Property key is reserved for all elements: " + key);
-        }
-
-        public static IllegalArgumentException propertyKeyIdIsReserved() {
-            return propertyKeyIsReserved(Element.ID);
-        }
-
-        public static IllegalArgumentException propertyKeyLabelIsReserved() {
-            return propertyKeyIsReserved(Element.LABEL);
-        }
-
-        public static IllegalArgumentException propertyKeyKeyIsReserved() {
-            return propertyKeyIsReserved(MetaProperty.KEY);
-        }
-
-        public static IllegalArgumentException propertyKeyValueIsReserved() {
-            return propertyKeyIsReserved(MetaProperty.VALUE);
-        }
 
         public static IllegalArgumentException propertyKeyCanNotBeEmpty() {
             return new IllegalArgumentException("Property key can not be the empty string");

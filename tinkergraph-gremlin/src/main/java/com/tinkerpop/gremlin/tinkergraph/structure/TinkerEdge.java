@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -26,7 +27,7 @@ public class TinkerEdge extends TinkerElement implements Edge {
         super(id, label, graph);
         this.outVertex = outVertex;
         this.inVertex = inVertex;
-        this.graph.edgeIndex.autoUpdate(Element.LABEL, this.label, null, this);
+        this.graph.edgeIndex.autoUpdate(T.label.getAccessor(), this.label, null, this);
     }
 
     @Override

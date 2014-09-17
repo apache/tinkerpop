@@ -3,18 +3,17 @@ package com.tinkerpop.gremlin.groovy;
 import com.tinkerpop.gremlin.algorithm.generator.AbstractGenerator;
 import com.tinkerpop.gremlin.groovy.engine.function.GLambda;
 import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
 import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.structure.Compare;
+import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
@@ -94,10 +93,10 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         // external
         imports.add(Configuration.class.getPackage().getName() + DOT_STAR);
 
+        staticImports.add(T.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Direction.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Compare.class.getCanonicalName() + DOT_STAR);
-        staticImports.add(Element.class.getCanonicalName() + DOT_STAR);
-        staticImports.add(MetaProperty.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(Contains.class.getCanonicalName() + DOT_STAR);
     }
 
     @Override

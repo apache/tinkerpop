@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure.strategy;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -145,8 +146,8 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     public void shouldReturnWrappedElementToString() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-        Vertex v1 = swg.addVertex(Element.LABEL, "Person", "age", 1);
-        Vertex v2 = swg.addVertex(Element.LABEL, "Person", "age", 1);
+        Vertex v1 = swg.addVertex(T.label, "Person", "age", 1);
+        Vertex v2 = swg.addVertex(T.label, "Person", "age", 1);
         Property age = v2.property("age");
         Edge e1 = v1.addEdge("friend", v2, "weight", "fifty");
         Vertex originalVertex = ((StrategyWrappedVertex) v1).getBaseVertex();

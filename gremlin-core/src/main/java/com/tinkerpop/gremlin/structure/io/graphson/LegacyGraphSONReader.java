@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -181,7 +182,7 @@ public class LegacyGraphSONReader implements GraphReader {
             final Map<String, Object> props = readProperties(json);
 
             final Object vertexId = getTypedValueFromJsonNode(json.get(GraphSONTokens._ID));
-            final Vertex v = g.addVertex(Element.ID, vertexId);
+            final Vertex v = g.addVertex(T.id, vertexId);
 
             for (Map.Entry<String, Object> entry : props.entrySet()) {
                 v.property(entry.getKey(), entry.getValue());
@@ -197,7 +198,7 @@ public class LegacyGraphSONReader implements GraphReader {
             final JsonNode nodeLabel = json.get(GraphSONTokens._LABEL);
             final String label = nodeLabel == null ? EMPTY_STRING : nodeLabel.textValue();
 
-            final Edge e = out.addEdge(label, in, Element.ID, edgeId);
+            final Edge e = out.addEdge(label, in, T.id, edgeId);
             for (Map.Entry<String, Object> entry : props.entrySet()) {
                 e.property(entry.getKey(), entry.getValue());
             }

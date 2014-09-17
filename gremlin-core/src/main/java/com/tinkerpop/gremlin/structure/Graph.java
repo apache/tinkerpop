@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
@@ -89,7 +90,7 @@ public interface Graph extends AutoCloseable {
      */
     public default Vertex v(final Object id) throws NoSuchElementException {
         if (null == id) throw Graph.Exceptions.elementNotFound(Vertex.class, null);
-        return (Vertex) this.V().has(Element.ID, id).next();
+        return (Vertex) this.V().has(T.id, id).next();
     }
 
     /**
@@ -100,7 +101,7 @@ public interface Graph extends AutoCloseable {
      */
     public default Edge e(final Object id) throws NoSuchElementException {
         if (null == id) throw Graph.Exceptions.elementNotFound(Edge.class, null);
-        return (Edge) this.E().has(Element.ID, id).next();
+        return (Edge) this.E().has(T.id, id).next();
     }
 
     /**

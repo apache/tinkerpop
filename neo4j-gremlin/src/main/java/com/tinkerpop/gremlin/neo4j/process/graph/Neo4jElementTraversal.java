@@ -6,13 +6,13 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.ElementTraversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.function.SBiConsumer;
 import com.tinkerpop.gremlin.util.function.SBiFunction;
 import com.tinkerpop.gremlin.util.function.SBiPredicate;
 import com.tinkerpop.gremlin.util.function.SConsumer;
@@ -187,22 +187,6 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().hiddens(propertyKeys);
     }
 
-    /*public default <E2> Neo4jTraversal<A, Map<String, E2>> hiddenValueMap(final String... propertyKeys) {
-        return this.start().hiddenValueMap(propertyKeys);
-    }*/
-
-    /*public default <E2> Neo4jTraversal<A, Map<String, E2>> hiddenMap(final String... propertyKeys) {
-        return this.start().hiddenMap(propertyKeys);
-    }*/
-
-    /*public default <E2> Neo4jTraversal<A, Map<String, E2>> valueMap(final String... propertyKeys) {
-        return this.start().valueMap(propertyKeys);
-    }*/
-
-    /*public default <E2> Neo4jTraversal<A, Map<String, E2>> propertyMap(final String... propertyKeys) {
-        return this.start().propertyMap(propertyKeys);
-    }*/
-
     public default <E2> Neo4jTraversal<A, E2> hiddenValue(final String propertyKey) {
         return this.start().hiddenValue(propertyKey);
     }
@@ -317,12 +301,24 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().has(key, value);
     }
 
+    public default Neo4jTraversal<A, A> has(final T accessor, final Object value) {
+        return this.start().has(accessor, value);
+    }
+
     public default Neo4jTraversal<A, A> has(final String key, final T predicate, final Object value) {
         return this.start().has(key, predicate, value);
     }
 
+    public default Neo4jTraversal<A, A> has(final T accessor, final T predicate, final Object value) {
+        return this.start().has(accessor, predicate, value);
+    }
+
     public default Neo4jTraversal<A, A> has(final String key, final SBiPredicate predicate, final Object value) {
         return this.start().has(key, predicate, value);
+    }
+
+    public default Neo4jTraversal<A, A> has(final T accessor, final SBiPredicate predicate, final Object value) {
+        return this.start().has(accessor, predicate, value);
     }
 
     public default Neo4jTraversal<A, A> has(final String label, final String key, final Object value) {

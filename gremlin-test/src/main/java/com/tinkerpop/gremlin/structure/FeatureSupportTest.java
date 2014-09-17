@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.GraphManager;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures;
@@ -163,7 +164,7 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsIfAnIdCanBeAssignedToVertex() throws Exception {
             try {
-                g.addVertex(Element.ID, GraphManager.get().convertId(99999943835l));
+                g.addVertex(T.id, GraphManager.get().convertId(99999943835l));
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_USER_SUPPLIED_IDS));
             } catch (Exception ex) {
                 final Exception expectedException = Vertex.Exceptions.userSuppliedIdsNotSupported();
@@ -234,7 +235,7 @@ public class FeatureSupportTest {
         public void shouldSupportUserSuppliedIdsIfAnIdCanBeAssignedToEdge() throws Exception {
             try {
                 final Vertex v = g.addVertex();
-                v.addEdge("friend", v, Element.ID, GraphManager.get().convertId(99999943835l));
+                v.addEdge("friend", v, T.id, GraphManager.get().convertId(99999943835l));
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_USER_SUPPLIED_IDS));
             } catch (Exception ex) {
                 assertEquals(Edge.Exceptions.userSuppliedIdsNotSupported().getMessage(), ex.getMessage());

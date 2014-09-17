@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jHelper;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jMetaProperty;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.structure.Compare;
@@ -12,7 +13,6 @@ import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 /**
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Pieter Martin
  */
@@ -103,11 +104,11 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     private Stream<Vertex> getVerticesUsingLabelAndProperty(final String label, final HasContainer hasContainer) {
         // System.out.println("labelProperty: " + label + ":" + hasContainer);
         final ResourceIterator<Node> iterator1 = graph.getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(label), hasContainer.key, hasContainer.value).iterator();
-        final ResourceIterator<Node> iterator2 = graph.getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(Graph.Key.unHide(hasContainer.key)), MetaProperty.VALUE, hasContainer.value).iterator();
+        final ResourceIterator<Node> iterator2 = graph.getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(Graph.Key.unHide(hasContainer.key)), T.value.getAccessor(), hasContainer.value).iterator();
         final Stream<Vertex> stream1 = StreamFactory.stream(iterator1)
                 .map(node -> new Neo4jVertex(node, this.graph));
         final Stream<Vertex> stream2 = StreamFactory.stream(iterator2)
-                .filter(node -> node.getProperty(MetaProperty.KEY).equals(hasContainer.key))
+                .filter(node -> node.getProperty(T.key.getAccessor()).equals(hasContainer.key))
                 .map(node -> node.getRelationships(Direction.INCOMING).iterator().next().getStartNode())
                 .map(node -> new Neo4jVertex(node, this.graph));
         return Stream.concat(stream1, stream2);
@@ -144,10 +145,10 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
     private Pair<String, HasContainer> getHasContainerForCypherIndex() {
         for (final HasContainer hasContainer : this.hasContainers) {
-            if (hasContainer.key.equals(Element.LABEL) && hasContainer.predicate.equals(Compare.EQUAL)) {
+            if (hasContainer.key.equals(T.label.getAccessor()) && hasContainer.predicate.equals(Compare.EQUAL)) {
                 for (final IndexDefinition index : this.graph.getBaseGraph().schema().getIndexes(DynamicLabel.label((String) hasContainer.value))) {
                     for (final HasContainer hasContainer1 : this.hasContainers) {
-                        if (!hasContainer1.key.equals(Element.LABEL) && hasContainer1.predicate.equals(Compare.EQUAL)) {
+                        if (!hasContainer1.key.equals(T.label.getAccessor()) && hasContainer1.predicate.equals(Compare.EQUAL)) {
                             for (final String key : index.getPropertyKeys()) {
                                 if (key.equals(hasContainer1.key))
                                     return Pair.with((String) hasContainer.value, hasContainer1);
@@ -162,9 +163,9 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
     private List<String> getLabelsForCypherIndex() {
         for (final HasContainer hasContainer : this.hasContainers) {
-            if (hasContainer.key.equals(Element.LABEL) && hasContainer.predicate.equals(Compare.EQUAL))
+            if (hasContainer.key.equals(T.label.getAccessor()) && hasContainer.predicate.equals(Compare.EQUAL))
                 return Arrays.asList(((String) hasContainer.value));
-            else if (hasContainer.key.equals(Element.LABEL) && hasContainer.predicate.equals(Contains.IN))
+            else if (hasContainer.key.equals(T.label.getAccessor()) && hasContainer.predicate.equals(Contains.IN))
                 return new ArrayList<>((Collection<String>) hasContainer.value);
         }
         return null;
@@ -189,7 +190,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         final StringBuilder builder = new StringBuilder("MATCH node WHERE ");
         int counter = 0;
         for (final HasContainer hasContainer : this.hasContainers) {
-            if (hasContainer.key.equals(Element.LABEL) && hasContainer.predicate.equals(Compare.EQUAL)) {
+            if (hasContainer.key.equals(T.label.getAccessor()) && hasContainer.predicate.equals(Compare.EQUAL)) {
                 if (counter++ > 0) builder.append(" AND ");
                 builder.append("node:").append(hasContainer.value);
             } else {

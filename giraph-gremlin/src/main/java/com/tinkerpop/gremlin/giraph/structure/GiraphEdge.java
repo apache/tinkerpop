@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.giraph.structure;
 import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
 import com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect.GiraphGraphStep;
 import com.tinkerpop.gremlin.process.Step;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
@@ -52,7 +53,7 @@ public class GiraphEdge extends GiraphElement implements Edge, Serializable, Wra
                     identityStep.setLabel(label);
 
                 TraversalHelper.insertStep(identityStep, 0, this);
-                TraversalHelper.insertStep(new HasStep(this, new HasContainer(Element.ID, Compare.EQUAL, tinkerElement.id())), 0, this);
+                TraversalHelper.insertStep(new HasStep(this, new HasContainer(T.id, Compare.EQUAL, tinkerElement.id())), 0, this);
                 TraversalHelper.insertStep(new GiraphGraphStep<>(this, Edge.class, graph), 0, this);
 
                 return super.submit(computer);

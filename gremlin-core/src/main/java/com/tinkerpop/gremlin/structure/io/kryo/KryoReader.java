@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure.io.kryo;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -141,8 +142,8 @@ public class KryoReader implements GraphReader {
                 while (!input.eof()) {
                     final List<Object> vertexArgs = new ArrayList<>();
                     final DetachedVertex current = (DetachedVertex) kryo.readClassAndObject(input);
-                    vertexArgs.addAll(Arrays.asList(Element.ID, current.id()));
-                    vertexArgs.addAll(Arrays.asList(Element.LABEL, current.label()));
+                    vertexArgs.addAll(Arrays.asList(T.id, current.id()));
+                    vertexArgs.addAll(Arrays.asList(T.label, current.label()));
 
                     final Vertex v = graph.addVertex(vertexArgs.toArray());
 
@@ -302,7 +303,7 @@ public class KryoReader implements GraphReader {
                 detachedEdge.iterators().properties().forEachRemaining(p -> edgeArgs.addAll(Arrays.asList(p.key(), p.value())));
                 detachedEdge.iterators().hiddens().forEachRemaining(p -> edgeArgs.addAll(Arrays.asList(Graph.Key.hide(p.key()), p.value())));
 
-                edgeArgs.addAll(Arrays.asList(Element.ID, detachedEdge.id()));
+                edgeArgs.addAll(Arrays.asList(T.id, detachedEdge.id()));
 
                 vOut.addEdge(detachedEdge.label(), inV, edgeArgs.toArray());
 
@@ -329,8 +330,10 @@ public class KryoReader implements GraphReader {
     public static class Builder {
         private File tempFile;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
-        private String vertexIdKey = Element.ID;
-        private String edgeIdKey = Element.ID;
+
+        // todo: uh - does this work??
+        private String vertexIdKey = T.id.getAccessor();
+        private String edgeIdKey = T.id.getAccessor();
 
         /**
          * Always use the most recent kryo version by default

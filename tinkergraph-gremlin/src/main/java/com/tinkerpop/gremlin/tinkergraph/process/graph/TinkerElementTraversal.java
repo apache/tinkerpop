@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.tinkergraph.process.graph;
 
 import com.tinkerpop.gremlin.process.Step;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
@@ -40,7 +41,7 @@ public class TinkerElementTraversal<S, E> extends DefaultGraphTraversal<S, E> {
             identityStep.setLabel(label);
             TraversalHelper.insertStep(identityStep, 0, this);
         }
-        TraversalHelper.insertStep(new HasStep(this, new HasContainer(Element.ID, Compare.EQUAL, this.id)), 0, this);
+        TraversalHelper.insertStep(new HasStep(this, new HasContainer(T.id, Compare.EQUAL, this.id)), 0, this);
         TraversalHelper.insertStep(new TinkerGraphStep<>(this, this.elementClass), 0, this);
         return super.submit(computer);
     }

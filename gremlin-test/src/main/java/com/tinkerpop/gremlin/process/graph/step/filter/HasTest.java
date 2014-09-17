@@ -190,10 +190,10 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void g_V_hasXlabelXperson_animalX() {
-        this.g.addVertex(Element.LABEL, "person", "name", "a");
-        this.g.addVertex(Element.LABEL, "animal", "name", "b");
-        this.g.addVertex(Element.LABEL, "alien", "name", "c");
-        this.g.addVertex(Element.LABEL, "spirit", "name", "d");
+        this.g.addVertex(T.label, "person", "name", "a");
+        this.g.addVertex(T.label, "animal", "name", "b");
+        this.g.addVertex(T.label, "alien", "name", "c");
+        this.g.addVertex(T.label, "spirit", "name", "d");
         tryCommit(g);
 
         final Traversal<Vertex, Vertex> traversal = get_g_V_hasXlabelXperson_animalX();
@@ -262,7 +262,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(final Object v1Id, final Object v2Id) {
-            return g.v(v1Id).out().has(Element.ID, v2Id);
+            return g.v(v1Id).out().has(T.id, v2Id);
         }
 
         @Override
@@ -272,22 +272,22 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Edge, Edge> get_g_e7_hasXlabelXknowsX(final Object e7Id) {
-            return g.e(e7Id).has(Element.LABEL, "knows");
+            return g.e(e7Id).has(T.label, "knows");
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_hasXlabelXknowsX() {
-            return g.E().has(Element.LABEL, "knows");
+            return g.E().has(T.label, "knows");
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_hasXlabelXknows_createdX() {
-            return g.E().has(Element.LABEL, T.in, Arrays.asList("knows", "created"));
+            return g.E().has(T.label, T.in, Arrays.asList("knows", "created"));
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_animalX() {
-            return g.V().has(Element.LABEL, T.in, Arrays.asList("person", "animal"));
+            return g.V().has(T.label, T.in, Arrays.asList("person", "animal"));
         }
 
         @Override
@@ -338,7 +338,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(final Object v1Id, final Object v2Id) {
-            return g.v(v1Id).out().<Vertex>has(Element.ID, v2Id).submit(g.compute());
+            return g.v(v1Id).out().<Vertex>has(T.id, v2Id).submit(g.compute());
         }
 
         @Override
@@ -348,22 +348,22 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Edge, Edge> get_g_e7_hasXlabelXknowsX(final Object e7Id) {
-            return g.e(e7Id).<Edge>has(Element.LABEL, "knows").submit(g.compute());
+            return g.e(e7Id).<Edge>has(T.label, "knows").submit(g.compute());
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_hasXlabelXknowsX() {
-            return g.E().<Edge>has(Element.LABEL, "knows").submit(g.compute());
+            return g.E().<Edge>has(T.label, "knows").submit(g.compute());
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_hasXlabelXknows_createdX() {
-            return g.E().<Edge>has(Element.LABEL, T.in, Arrays.asList("knows", "created")).submit(g.compute());
+            return g.E().<Edge>has(T.label, T.in, Arrays.asList("knows", "created")).submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_animalX() {
-            return g.V().has(Element.LABEL, T.in, Arrays.asList("person", "animal"));
+            return g.V().has(T.label, T.in, Arrays.asList("person", "animal"));
         }
 
         @Override

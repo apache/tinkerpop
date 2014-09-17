@@ -172,7 +172,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_STRING_IDS)
     public void shouldProperlyEncodeWithGraphML() throws Exception {
-        final Vertex v = g.addVertex(Element.ID, "1");
+        final Vertex v = g.addVertex(T.id, "1");
         v.property("text", "\u00E9");
 
         final GraphMLWriter w = GraphMLWriter.build().create();
@@ -211,7 +211,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ANY_IDS)
     public void shouldProperlySerializeDeserializeCustomIdWithGraphSON() throws Exception {
         final UUID id = UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305");
-        g.addVertex(Element.ID, new CustomId("vertex", id));
+        g.addVertex(T.id, new CustomId("vertex", id));
         final SimpleModule module = new SimpleModule();
         module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializer());
         module.addDeserializer(CustomId.class, new CustomId.CustomIdJacksonDeserializer());
@@ -258,7 +258,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ANY_IDS)
     public void shouldProperlySerializeCustomIdWithKryo() throws Exception {
-        g.addVertex(Element.ID, new CustomId("vertex", UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305")));
+        g.addVertex(T.id, new CustomId("vertex", UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305")));
         final GremlinKryo kryo = GremlinKryo.build().addCustom(CustomId.class).create();
 
         final KryoWriter writer = KryoWriter.build().custom(kryo).create();
@@ -422,8 +422,8 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteEdgeToKryoUsingFloatProperty() throws Exception {
-        final Vertex v1 = g.addVertex(Element.LABEL, "person");
-        final Vertex v2 = g.addVertex(Element.LABEL, "person");
+        final Vertex v1 = g.addVertex(T.label, "person");
+        final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e = v1.addEdge("friend", v2, "weight", 0.5f, Graph.Key.hide("acl"), "rw");
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
@@ -461,8 +461,8 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldReadWriteEdgeToKryo() throws Exception {
-        final Vertex v1 = g.addVertex(Element.LABEL, "person");
-        final Vertex v2 = g.addVertex(Element.LABEL, "person");
+        final Vertex v1 = g.addVertex(T.label, "person");
+        final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e = v1.addEdge("friend", v2, "weight", 0.5d, Graph.Key.hide("acl"), "rw");
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
@@ -501,8 +501,8 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldReadWriteEdgeToGraphSON() throws Exception {
-        final Vertex v1 = g.addVertex(Element.LABEL, "person");
-        final Vertex v2 = g.addVertex(Element.LABEL, "person");
+        final Vertex v1 = g.addVertex(T.label, "person");
+        final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e = v1.addEdge("friend", v2, "weight", 0.5f, Graph.Key.hide("acl"), "rw");
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
@@ -541,8 +541,8 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldReadWriteEdgeToGraphSONNonLossy() throws Exception {
-        final Vertex v1 = g.addVertex(Element.ID, 1l, Element.LABEL, "person");
-        final Vertex v2 = g.addVertex(Element.ID, 2l, Element.LABEL, "person");
+        final Vertex v1 = g.addVertex(T.id, 1l, T.label, "person");
+        final Vertex v2 = g.addVertex(T.id, 2l, T.label, "person");
         final Edge e = v1.addEdge("friend", v2, "weight", 0.5f, Graph.Key.hide("acl"), "rw");
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
@@ -584,8 +584,8 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_SERIALIZABLE_VALUES)
     public void shouldSupportUUIDInGraphSON() throws Exception {
         final UUID id = UUID.randomUUID();
-        final Vertex v1 = g.addVertex(Element.LABEL, "person");
-        final Vertex v2 = g.addVertex(Element.LABEL, "person");
+        final Vertex v1 = g.addVertex(T.label, "person");
+        final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e = v1.addEdge("friend", v2, "uuid", id);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
@@ -625,8 +625,8 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_SERIALIZABLE_VALUES)
     public void shouldSupportUUIDInKryo() throws Exception {
         final UUID id = UUID.randomUUID();
-        final Vertex v1 = g.addVertex(Element.LABEL, "person");
-        final Vertex v2 = g.addVertex(Element.LABEL, "person");
+        final Vertex v1 = g.addVertex(T.label, "person");
+        final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e = v1.addEdge("friend", v2, "uuid", id);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
@@ -892,9 +892,9 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldReadWriteVertexWithOUTOUTEdgesToKryo() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko", Element.LABEL, "person");
+        final Vertex v1 = g.addVertex("name", "marko", T.label, "person");
 
-        final Vertex v2 = g.addVertex(Element.LABEL, "person");
+        final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e = v1.addEdge("friends", v2, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
@@ -947,8 +947,8 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldReadWriteVertexWithOUTOUTEdgesToGraphSON() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko", Element.LABEL, "person");
-        final Vertex v2 = g.addVertex(Element.LABEL, "person");
+        final Vertex v1 = g.addVertex("name", "marko", T.label, "person");
+        final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e = v1.addEdge("friends", v2, "weight", 0.5f);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
@@ -995,9 +995,9 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldReadWriteVertexWithININEdgesToKryo() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko", Element.LABEL, "person");
+        final Vertex v1 = g.addVertex("name", "marko", T.label, "person");
 
-        final Vertex v2 = g.addVertex(Element.LABEL, "person");
+        final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e = v2.addEdge("friends", v1, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
@@ -1048,8 +1048,8 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldReadWriteVertexWithININEdgesToGraphSON() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko", Element.LABEL, "person");
-        final Vertex v2 = g.addVertex(Element.LABEL, "person");
+        final Vertex v1 = g.addVertex("name", "marko", T.label, "person");
+        final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e = v2.addEdge("friends", v1, "weight", 0.5f);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
@@ -1097,9 +1097,9 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldReadWriteVertexWithBOTHBOTHEdgesToKryo() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko", Element.LABEL, "person");
+        final Vertex v1 = g.addVertex("name", "marko", T.label, "person");
 
-        final Vertex v2 = g.addVertex(Element.LABEL, "person");
+        final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e1 = v2.addEdge("friends", v1, "weight", 0.5d);
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0d);
 
@@ -1166,8 +1166,8 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldReadWriteVertexWithBOTHBOTHEdgesToGraphSON() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko", Element.LABEL, "person");
-        final Vertex v2 = g.addVertex(Element.LABEL, "person");
+        final Vertex v1 = g.addVertex("name", "marko", T.label, "person");
+        final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e1 = v2.addEdge("friends", v1, "weight", 0.5f);
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0f);
 
@@ -1234,8 +1234,8 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldReadWriteVertexWithBOTHBOTHEdgesToGraphSONWithTypes() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko", Element.LABEL, "person");
-        final Vertex v2 = g.addVertex(Element.LABEL, "person");
+        final Vertex v1 = g.addVertex("name", "marko", T.label, "person");
+        final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e1 = v2.addEdge("friends", v1, "weight", 0.5f);
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0f);
 
@@ -1298,9 +1298,9 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldReadWriteVertexWithBOTHINEdgesToKryo() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko", Element.LABEL, "person");
+        final Vertex v1 = g.addVertex("name", "marko", T.label, "person");
 
-        final Vertex v2 = g.addVertex(Element.LABEL, "person");
+        final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e1 = v2.addEdge("friends", v1, "weight", 0.5d);
         v1.addEdge("friends", v2, "weight", 1.0d);
 
@@ -1355,8 +1355,8 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldReadWriteVertexWithBOTHINEdgesToGraphSON() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko", Element.LABEL, "person");
-        final Vertex v2 = g.addVertex(Element.LABEL, "person");
+        final Vertex v1 = g.addVertex("name", "marko", T.label, "person");
+        final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e1 = v2.addEdge("friends", v1, "weight", 0.5f);
         v1.addEdge("friends", v2, "weight", 1.0f);
 
@@ -1409,9 +1409,9 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldReadWriteVertexWithBOTHOUTEdgesToKryo() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko", Element.LABEL, "person");
+        final Vertex v1 = g.addVertex("name", "marko", T.label, "person");
 
-        final Vertex v2 = g.addVertex(Element.LABEL, "person");
+        final Vertex v2 = g.addVertex(T.label, "person");
         v2.addEdge("friends", v1, "weight", 0.5d);
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0d);
 
@@ -1467,8 +1467,8 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldReadWriteVertexWithBOTHOUTEdgesToGraphSON() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko", Element.LABEL, "person");
-        final Vertex v2 = g.addVertex(Element.LABEL, "person");
+        final Vertex v1 = g.addVertex("name", "marko", T.label, "person");
+        final Vertex v2 = g.addVertex(T.label, "person");
         v2.addEdge("friends", v1, "weight", 0.5f);
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0f);
 

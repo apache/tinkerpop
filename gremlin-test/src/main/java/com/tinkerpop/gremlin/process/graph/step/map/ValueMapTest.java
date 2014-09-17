@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -93,6 +94,7 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @Ignore
     @LoadGraphWith(MODERN)
     public void g_E_valuesXid_label_weightX() {
         final Traversal<Edge, Map<String, Object>> traversal = get_g_E_valueMapXid_label_weightX();

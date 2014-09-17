@@ -247,11 +247,7 @@ public class PropertyTest {
             return Arrays.asList(new Object[][]{
                     {"k", null, Property.Exceptions.propertyValueCanNotBeNull()},
                     {null, "v", Property.Exceptions.propertyKeyCanNotBeNull()},
-                    {Element.ID, "v", Property.Exceptions.propertyKeyIdIsReserved()},
-                    {Element.LABEL, "v", Property.Exceptions.propertyKeyLabelIsReserved()},
-                    {"", "v", Property.Exceptions.propertyKeyCanNotBeEmpty()},
-                    {MetaProperty.KEY, "v", Property.Exceptions.propertyKeyKeyIsReserved()},
-                    {MetaProperty.VALUE, "v", Property.Exceptions.propertyKeyValueIsReserved()}});
+                    {"", "v", Property.Exceptions.propertyKeyCanNotBeEmpty()}});
         }
 
         @Parameterized.Parameter(value = 0)

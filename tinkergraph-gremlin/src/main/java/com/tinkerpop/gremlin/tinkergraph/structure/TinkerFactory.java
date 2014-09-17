@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
@@ -21,18 +22,18 @@ public class TinkerFactory {
     }
 
     public static void generateClassic(final TinkerGraph g) {
-        final Vertex marko = g.addVertex(Element.ID, 1, "name", "marko", "age", 29);
-        final Vertex vadas = g.addVertex(Element.ID, 2, "name", "vadas", "age", 27);
-        final Vertex lop = g.addVertex(Element.ID, 3, "name", "lop", "lang", "java");
-        final Vertex josh = g.addVertex(Element.ID, 4, "name", "josh", "age", 32);
-        final Vertex ripple = g.addVertex(Element.ID, 5, "name", "ripple", "lang", "java");
-        final Vertex peter = g.addVertex(Element.ID, 6, "name", "peter", "age", 35);
-        marko.addEdge("knows", vadas, Element.ID, 7, "weight", 0.5f);
-        marko.addEdge("knows", josh, Element.ID, 8, "weight", 1.0f);
-        marko.addEdge("created", lop, Element.ID, 9, "weight", 0.4f);
-        josh.addEdge("created", ripple, Element.ID, 10, "weight", 1.0f);
-        josh.addEdge("created", lop, Element.ID, 11, "weight", 0.4f);
-        peter.addEdge("created", lop, Element.ID, 12, "weight", 0.2f);
+        final Vertex marko = g.addVertex(T.id, 1, "name", "marko", "age", 29);
+        final Vertex vadas = g.addVertex(T.id, 2, "name", "vadas", "age", 27);
+        final Vertex lop = g.addVertex(T.id, 3, "name", "lop", "lang", "java");
+        final Vertex josh = g.addVertex(T.id, 4, "name", "josh", "age", 32);
+        final Vertex ripple = g.addVertex(T.id, 5, "name", "ripple", "lang", "java");
+        final Vertex peter = g.addVertex(T.id, 6, "name", "peter", "age", 35);
+        marko.addEdge("knows", vadas, T.id, 7, "weight", 0.5f);
+        marko.addEdge("knows", josh, T.id, 8, "weight", 1.0f);
+        marko.addEdge("created", lop, T.id, 9, "weight", 0.4f);
+        josh.addEdge("created", ripple, T.id, 10, "weight", 1.0f);
+        josh.addEdge("created", lop, T.id, 11, "weight", 0.4f);
+        peter.addEdge("created", lop, T.id, 12, "weight", 0.2f);
     }
 
     public static TinkerGraph createModern() {
@@ -42,18 +43,18 @@ public class TinkerFactory {
     }
 
     public static void generateModern(final TinkerGraph g) {
-        final Vertex marko = g.addVertex(Element.ID, 1, Element.LABEL, "person", "name", "marko", "age", 29);
-        final Vertex vadas = g.addVertex(Element.ID, 2, Element.LABEL, "person", "name", "vadas", "age", 27);
-        final Vertex lop = g.addVertex(Element.ID, 3, Element.LABEL, "software", "name", "lop", "lang", "java");
-        final Vertex josh = g.addVertex(Element.ID, 4, Element.LABEL, "person", "name", "josh", "age", 32);
-        final Vertex ripple = g.addVertex(Element.ID, 5, Element.LABEL, "software", "name", "ripple", "lang", "java");
-        final Vertex peter = g.addVertex(Element.ID, 6, Element.LABEL, "person", "name", "peter", "age", 35);
-        marko.addEdge("knows", vadas, Element.ID, 7, "weight", 0.5d);
-        marko.addEdge("knows", josh, Element.ID, 8, "weight", 1.0d);
-        marko.addEdge("created", lop, Element.ID, 9, "weight", 0.4d);
-        josh.addEdge("created", ripple, Element.ID, 10, "weight", 1.0d);
-        josh.addEdge("created", lop, Element.ID, 11, "weight", 0.4d);
-        peter.addEdge("created", lop, Element.ID, 12, "weight", 0.2d);
+        final Vertex marko = g.addVertex(T.id, 1, T.label, "person", "name", "marko", "age", 29);
+        final Vertex vadas = g.addVertex(T.id, 2, T.label, "person", "name", "vadas", "age", 27);
+        final Vertex lop = g.addVertex(T.id, 3, T.label, "software", "name", "lop", "lang", "java");
+        final Vertex josh = g.addVertex(T.id, 4, T.label, "person", "name", "josh", "age", 32);
+        final Vertex ripple = g.addVertex(T.id, 5, T.label, "software", "name", "ripple", "lang", "java");
+        final Vertex peter = g.addVertex(T.id, 6, T.label, "person", "name", "peter", "age", 35);
+        marko.addEdge("knows", vadas, T.id, 7, "weight", 0.5d);
+        marko.addEdge("knows", josh, T.id, 8, "weight", 1.0d);
+        marko.addEdge("created", lop, T.id, 9, "weight", 0.4d);
+        josh.addEdge("created", ripple, T.id, 10, "weight", 1.0d);
+        josh.addEdge("created", lop, T.id, 11, "weight", 0.4d);
+        peter.addEdge("created", lop, T.id, 12, "weight", 0.2d);
     }
 
     public static TinkerGraph createTheCrew() {
@@ -63,12 +64,12 @@ public class TinkerFactory {
     }
 
     public static void generateTheCrew(final TinkerGraph g) {
-        final Vertex marko = g.addVertex(Element.ID, 1, Element.LABEL, "person", "name", "marko", Graph.Key.hide("visible"), true);
-        final Vertex stephen = g.addVertex(Element.ID, 7, Element.LABEL, "person", "name", "stephen", Graph.Key.hide("visible"), true);
-        final Vertex matthias = g.addVertex(Element.ID, 8, Element.LABEL, "person", "name", "matthias", Graph.Key.hide("visible"), true);
-        final Vertex daniel = g.addVertex(Element.ID, 9, Element.LABEL, "person", "name", "daniel", Graph.Key.hide("visible"), false);
-        final Vertex gremlin = g.addVertex(Element.ID, 10, Element.LABEL, "software", "name", "gremlin", Graph.Key.hide("visible"), true);
-        final Vertex titan = g.addVertex(Element.ID, 11, Element.LABEL, "software", "name", "titan", Graph.Key.hide("visible"), false);
+        final Vertex marko = g.addVertex(T.id, 1, T.label, "person", "name", "marko", Graph.Key.hide("visible"), true);
+        final Vertex stephen = g.addVertex(T.id, 7, T.label, "person", "name", "stephen", Graph.Key.hide("visible"), true);
+        final Vertex matthias = g.addVertex(T.id, 8, T.label, "person", "name", "matthias", Graph.Key.hide("visible"), true);
+        final Vertex daniel = g.addVertex(T.id, 9, T.label, "person", "name", "daniel", Graph.Key.hide("visible"), false);
+        final Vertex gremlin = g.addVertex(T.id, 10, T.label, "software", "name", "gremlin", Graph.Key.hide("visible"), true);
+        final Vertex titan = g.addVertex(T.id, 11, T.label, "software", "name", "titan", Graph.Key.hide("visible"), false);
 
         marko.property("location", "san diego", "startTime", 1997, "endTime", 2001);
         marko.property("location", "santa cruz", "startTime", 2001, "endTime", 2004);

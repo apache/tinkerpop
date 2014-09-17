@@ -42,24 +42,24 @@ image:gremlin-standing.png[width=125,float=left] A graph's structure is the topo
 
 [source,java]
 Graph g = TinkerGraph.open(); <1>
-Vertex marko = g.addVertex(Element.ID, 1, "name", "marko", "age", 29); <2>
-Vertex vadas = g.addVertex(Element.ID, 2, "name", "vadas", "age", 27);
-Vertex lop = g.addVertex(Element.ID, 3, "name", "lop", "lang", "java");
-Vertex josh = g.addVertex(Element.ID, 4, "name", "josh", "age", 32);
-Vertex ripple = g.addVertex(Element.ID, 5, "name", "ripple", "lang", "java");
-Vertex peter = g.addVertex(Element.ID, 6, "name", "peter", "age", 35);
-marko.addEdge("knows", vadas, Element.ID, 7, "weight", 0.5f); <3>
-marko.addEdge("knows", josh, Element.ID, 8, "weight", 1.0f);
-marko.addEdge("created", lop, Element.ID, 9, "weight", 0.4f);
-josh.addEdge("created", ripple, Element.ID, 10, "weight", 1.0f);
-josh.addEdge("created", lop, Element.ID, 11, "weight", 0.4f);
-peter.addEdge("created", lop, Element.ID, 12, "weight", 0.2f);
+Vertex marko = g.addVertex(T.id, 1, "name", "marko", "age", 29); <2>
+Vertex vadas = g.addVertex(T.id, 2, "name", "vadas", "age", 27);
+Vertex lop = g.addVertex(T.id, 3, "name", "lop", "lang", "java");
+Vertex josh = g.addVertex(T.id, 4, "name", "josh", "age", 32);
+Vertex ripple = g.addVertex(T.id, 5, "name", "ripple", "lang", "java");
+Vertex peter = g.addVertex(T.id, 6, "name", "peter", "age", 35);
+marko.addEdge("knows", vadas, T.id, 7, "weight", 0.5f); <3>
+marko.addEdge("knows", josh, T.id, 8, "weight", 1.0f);
+marko.addEdge("created", lop, T.id, 9, "weight", 0.4f);
+josh.addEdge("created", ripple, T.id, 10, "weight", 1.0f);
+josh.addEdge("created", lop, T.id, 11, "weight", 0.4f);
+peter.addEdge("created", lop, T.id, 12, "weight", 0.2f);
 
 <1> Create a new in-memory `TinkerGraph` and assign it to the variable `g`.
-<2> Create a vertex along with a set of key/value pairs with `Element.ID` referring to the desired id for the vertex.
+<2> Create a vertex along with a set of key/value pairs with `T.id` referring to the desired id for the vertex.
 <3> Create an edge along with a  set of key/value pairs with the edge label being specified as the first argument.
 
-In the above code all the vertices are created first and then their respective edges. There are two reserved keys: id (`Element.ID`) and label (`Element.LABEL`). When any of these, along with a set of other key value pairs is provided to `Graph.addVertex(Object...)` or `Vertex.addEdge(String,Vertex,Object...)`, the respective element is created along with the provided key/value pair properties appended to it. 
+In the above code all the vertices are created first and then their respective edges. There are two "accessor tokens": `T.id` and `T.label`. When any of these, along with a set of other key value pairs is provided to `Graph.addVertex(Object...)` or `Vertex.addEdge(String,Vertex,Object...)`, the respective element is created along with the provided key/value pair properties appended to it.
 
 CAUTION: Many graph vendors do not allow the user to specify an element ID and in such cases, an `IllegalArgumentException` is thrown.
 
@@ -81,7 +81,7 @@ image:basic-mutation.png[width=240,float=right]
 // create a new graph
 Graph g = TinkerGraph.open();
 // add a software vertex with a name property
-Vertex gremlin = g.addVertex(Element.LABEL, "software", 
+Vertex gremlin = g.addVertex(T.label, "software", 
                              "name", "gremlin"); <1>
 // only one vertex should exist
 assert(g.V().count() == 1)
@@ -90,7 +90,7 @@ assert(g.E().count() == 0)
 // add a new property
 gremlin.property("created",2009) <2>
 // add a new software vertex to the graph
-Vertex blueprints = g.addVertex(Element.LABEL, "software", 
+Vertex blueprints = g.addVertex(T.label, "software", 
                                 "name", "blueprints"); <3>
 // connect gremlin to blueprints via a dependsOn-edge
 gremlin.addEdge("dependsOn",blueprints); <4>
@@ -124,11 +124,11 @@ $ bin/gremlin.sh
 -----oOOo-(3)-oOOo-----
 gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> gremlin = g.addVertex(LABEL,'software','name','gremlin')
+gremlin> gremlin = g.addVertex(label,'software','name','gremlin')
 ==>v[0]
 gremlin> gremlin.property('created',2009)
 ==>mp[created->2009]
-gremlin> blueprints = g.addVertex(LABEL,'software','name','blueprints')
+gremlin> blueprints = g.addVertex(label,'software','name','blueprints')
 ==>v[1]
 gremlin> gremlin.addEdge('dependsOn',blueprints)
 ==>e[2][0-dependsOn->1]

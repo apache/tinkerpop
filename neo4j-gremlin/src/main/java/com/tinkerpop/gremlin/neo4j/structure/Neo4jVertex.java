@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.neo4j.structure;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jVertexTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.util.DefaultNeo4jTraversal;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -59,19 +60,19 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
             if (this.getBaseVertex().hasProperty(key)) {
                 if (this.getBaseVertex().getProperty(key).equals(Neo4jMetaProperty.META_PROPERTY_TOKEN)) {
                     final Node node = this.graph.getBaseGraph().createNode(Neo4jMetaProperty.META_PROPERTY_LABEL, DynamicLabel.label(Graph.Key.unHide(key)));
-                    node.setProperty(MetaProperty.KEY, key);
-                    node.setProperty(MetaProperty.VALUE, value);
+                    node.setProperty(T.key.getAccessor(), key);
+                    node.setProperty(T.value.getAccessor(), value);
                     this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
                     return new Neo4jMetaProperty<>(this, node);
                 } else {
                     Node node = this.graph.getBaseGraph().createNode(Neo4jMetaProperty.META_PROPERTY_LABEL, DynamicLabel.label(Graph.Key.unHide(key)));
-                    node.setProperty(MetaProperty.KEY, key);
-                    node.setProperty(MetaProperty.VALUE, this.getBaseVertex().removeProperty(key));
+                    node.setProperty(T.key.getAccessor(), key);
+                    node.setProperty(T.value.getAccessor(), this.getBaseVertex().removeProperty(key));
                     this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
                     this.getBaseVertex().setProperty(key, Neo4jMetaProperty.META_PROPERTY_TOKEN);
                     node = this.graph.getBaseGraph().createNode(Neo4jMetaProperty.META_PROPERTY_LABEL, DynamicLabel.label(Graph.Key.unHide(key)));
-                    node.setProperty(MetaProperty.KEY, key);
-                    node.setProperty(MetaProperty.VALUE, value);
+                    node.setProperty(T.key.getAccessor(), key);
+                    node.setProperty(T.value.getAccessor(), value);
                     this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
                     return new Neo4jMetaProperty<>(this, node);
                 }
@@ -101,8 +102,8 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
         } else {
             this.getBaseVertex().setProperty(key, Neo4jMetaProperty.META_PROPERTY_TOKEN);
             final Node node = this.graph.getBaseGraph().createNode(Neo4jMetaProperty.META_PROPERTY_LABEL, DynamicLabel.label(Graph.Key.unHide(key)));
-            node.setProperty(MetaProperty.KEY, key);
-            node.setProperty(MetaProperty.VALUE, value);
+            node.setProperty(T.key.getAccessor(), key);
+            node.setProperty(T.value.getAccessor(), value);
             for (int i = 0; i < keyValues.length; i = i + 2) {
                 node.setProperty((String) keyValues[i], keyValues[i + 1]);
             }
