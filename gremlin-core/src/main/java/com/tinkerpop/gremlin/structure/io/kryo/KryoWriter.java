@@ -118,13 +118,11 @@ public class KryoWriter implements GraphWriter {
             if (direction != null) {
                 final Vertex v = (Vertex) e;
                 kryo.writeObject(output, direction);
-
-                // todo: use iterators
                 if (direction == Direction.BOTH || direction == Direction.OUT)
-                    writeDirectionalEdges(output, Direction.OUT, v.outE());
+                    writeDirectionalEdges(output, Direction.OUT, v.iterators().edges(Direction.OUT, Integer.MAX_VALUE));
 
                 if (direction == Direction.BOTH || direction == Direction.IN)
-                    writeDirectionalEdges(output, Direction.IN, v.inE());
+                    writeDirectionalEdges(output, Direction.IN, v.iterators().edges(Direction.IN, Integer.MAX_VALUE));
             }
 
             kryo.writeClassAndObject(output, VertexTerminator.INSTANCE);

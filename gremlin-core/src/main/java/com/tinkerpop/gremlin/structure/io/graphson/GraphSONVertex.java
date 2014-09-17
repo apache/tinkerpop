@@ -6,10 +6,12 @@ import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -59,11 +61,11 @@ class GraphSONVertex {
             m.put(GraphSONTokens.HIDDENS, vertex.hiddenMap().next());
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.OUT) {
-                m.put(GraphSONTokens.OUT_E, vertex.outE().toList());
+                m.put(GraphSONTokens.OUT_E, StreamFactory.stream(vertex.iterators().edges(Direction.OUT, Integer.MAX_VALUE)).collect(Collectors.toList()));
             }
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.IN) {
-                m.put(GraphSONTokens.IN_E, vertex.inE().toList());
+                m.put(GraphSONTokens.IN_E, StreamFactory.stream(vertex.iterators().edges(Direction.IN, Integer.MAX_VALUE)).collect(Collectors.toList()));
             }
 
             jsonGenerator.writeObject(m);
