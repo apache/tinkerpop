@@ -39,6 +39,8 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
     public DetachedVertex(final Object id, final String label, final Map<String, Object> properties, final Map<String, Object> hiddenProperties) {
         super(id, label);
+
+        // todo: wrong?
         if (null != properties) this.properties.putAll(convertToDetachedMetaProperties(properties));
         if (null != hiddenProperties) this.properties.putAll(convertToDetachedMetaProperties(hiddenProperties));
     }
@@ -50,9 +52,8 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     private DetachedVertex(final Vertex vertex) {
         super(vertex);
 
-        // todo: multiple keys
-        vertex.iterators().properties().forEachRemaining(p -> this.properties.put(p.key(), new ArrayList(Arrays.asList(p instanceof DetachedMetaProperty ? p : new DetachedMetaProperty(p, this)))));
-        vertex.iterators().hiddens().forEachRemaining(p -> this.properties.put(Graph.Key.hide(p.key()), new ArrayList(Arrays.asList(p instanceof DetachedMetaProperty ? p : new DetachedMetaProperty(p, this)))));
+        vertex.iterators().properties().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedMetaProperty ? p : new DetachedMetaProperty(p, this)));
+        vertex.iterators().hiddens().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedMetaProperty ? p : new DetachedMetaProperty(p, this)));
     }
 
     @Override
@@ -142,5 +143,12 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
         public GraphTraversal<Vertex, Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
             throw new IllegalStateException();
         }
+    }
+
+    private void putToList(final String key, final Property p) {
+        if (!this.properties.containsKey(key))
+            this.properties.put(key, new ArrayList<>());
+
+        ((List) this.properties.get(key)).add(p);
     }
 }

@@ -144,11 +144,21 @@ public class KryoReader implements GraphReader {
                     vertexArgs.addAll(Arrays.asList(Element.ID, current.id()));
                     vertexArgs.addAll(Arrays.asList(Element.LABEL, current.label()));
 
-                    // todo: properties on properties
-                    current.iterators().properties().forEachRemaining(p -> vertexArgs.addAll(Arrays.asList(p.key(), p.value())));
-                    current.iterators().hiddens().forEachRemaining(p -> vertexArgs.addAll(Arrays.asList(Graph.Key.hide(p.key()), p.value())));
-
                     final Vertex v = graph.addVertex(vertexArgs.toArray());
+
+                    current.iterators().properties().forEachRemaining(p -> {
+                        final List<Object> propertyArgs = new ArrayList<>();
+                        p.iterators().properties().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
+                        p.iterators().hiddens().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
+                        v.property(p.key(), p.value(), propertyArgs.toArray());
+                    });
+
+                    current.iterators().hiddens().forEachRemaining(p -> {
+                        final List<Object> propertyArgs = new ArrayList<>();
+                        p.iterators().properties().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
+                        p.iterators().hiddens().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
+                        v.property(Graph.Key.hide(p.key()), p.value(), propertyArgs.toArray());
+                    });
 
                     // the gio file should have been written with a direction specified
                     final boolean hasDirectionSpecified = input.readBoolean();

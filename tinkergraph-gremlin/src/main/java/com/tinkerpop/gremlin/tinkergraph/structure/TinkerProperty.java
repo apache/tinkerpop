@@ -60,7 +60,8 @@ public class TinkerProperty<V> implements Property<V>, Serializable {
     }
 
     public int hashCode() {
-        return this.key.hashCode() + this.value.hashCode() + this.element.hashCode();
+        // todo: can't use the MetaProperty to get the hashcode or it goes StackOverflow
+        return this.key.hashCode() + this.value.hashCode() + (this.element instanceof TinkerMetaProperty ? 0 : this.element.hashCode());
     }
 
     @Override

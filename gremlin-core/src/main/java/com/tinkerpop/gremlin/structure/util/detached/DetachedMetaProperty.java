@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.util.StreamFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -46,8 +47,8 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
         this.vertex = vertex;
         this.hashCode = super.hashCode();
 
-        if (properties != null) properties.entrySet().iterator().forEachRemaining(kv -> this.properties.put(kv.getKey(), new ArrayList(Arrays.asList(new DetachedProperty(kv.getKey(), kv.getValue(), this)))));
-        if (hiddenProperties != null) hiddenProperties.entrySet().iterator().forEachRemaining(kv -> this.properties.put(Graph.Key.hide(kv.getKey()), new ArrayList(Arrays.asList(new DetachedProperty(kv.getKey(), kv.getValue(), this)))));
+        if (properties != null) properties.entrySet().iterator().forEachRemaining(kv -> putToList(kv.getKey(), new DetachedProperty(kv.getKey(), kv.getValue(), this)));
+        if (hiddenProperties != null) hiddenProperties.entrySet().iterator().forEachRemaining(kv -> putToList(Graph.Key.hide(kv.getKey()), new DetachedProperty(kv.getKey(), kv.getValue(), this)));
     }
 
     // todo: straighten out all these constructors and their scopes - what do we really need here?
@@ -61,8 +62,8 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
         this.hashCode = property.hashCode();
         this.vertex = property.getElement() instanceof DetachedVertex ? (DetachedVertex) property.getElement() : DetachedVertex.detach(property.getElement());
 
-        property.iterators().properties().forEachRemaining(p -> this.properties.put(p.key(), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : DetachedProperty.detach(p)))));
-        property.iterators().hiddens().forEachRemaining(p -> this.properties.put(Graph.Key.hide(p.key()), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : DetachedProperty.detach(p)))));
+        property.iterators().properties().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
+        property.iterators().hiddens().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
     }
 
     DetachedMetaProperty(final MetaProperty property, final DetachedVertex detachedVertex) {
@@ -74,8 +75,8 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
         this.hashCode = property.hashCode();
         this.vertex = detachedVertex;
 
-        property.iterators().properties().forEachRemaining(p -> this.properties.put(p.key(), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : DetachedProperty.detach(p)))));
-        property.iterators().hiddens().forEachRemaining(p -> this.properties.put(Graph.Key.hide(p.key()), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : DetachedProperty.detach(p)))));
+        property.iterators().properties().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
+        property.iterators().hiddens().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
     }
 
     @Override
@@ -170,5 +171,12 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
         public <U> Iterator<Property<U>> hiddens(final String... propertyKeys) {
             return (Iterator) super.hiddens(propertyKeys);
         }
+    }
+
+    private void putToList(final String key, final Property p) {
+        if (!this.properties.containsKey(key))
+            this.properties.put(key, new ArrayList<>());
+
+        ((List) this.properties.get(key)).add(p);
     }
 }

@@ -730,6 +730,43 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    public void shouldReadWriteVertexMultiPropsNoEdgesToKryo() throws Exception {
+        final Vertex v1 = g.addVertex("name", "marko", "name", "mark", Graph.Key.hide("acl"), "rw");
+        v1.property("propsSquared", 123, "x", "a", "y", "b");
+        final Vertex v2 = g.addVertex();
+        v1.addEdge("friends", v2, "weight", 0.5d);
+
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = KryoWriter.build().create();
+            writer.writeVertex(os, v1);
+
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final KryoReader reader = KryoReader.build()
+                    .setWorkingDirectory(File.separator + "tmp").create();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais, detachedVertex -> {
+                    assertEquals(v1.id(), detachedVertex.id());
+                    assertEquals(v1.label(), detachedVertex.label());
+                    assertEquals(1, StreamFactory.stream(detachedVertex.iterators().hiddens()).count());
+                    assertEquals(3, StreamFactory.stream(detachedVertex.iterators().properties()).count());
+                    assertEquals("a", detachedVertex.property("propsSquared").value("x"));
+                    assertEquals("b", detachedVertex.property("propsSquared").value("y"));
+                    assertEquals(2, StreamFactory.stream(detachedVertex.iterators().properties("name")).count());
+                    assertTrue(StreamFactory.stream(detachedVertex.iterators().properties("name")).allMatch(p -> p.key().equals("name") && (p.value().equals("marko") || p.value().equals("mark"))));
+                    assertEquals(v1.hiddens("acl").value().next().toString(), detachedVertex.value(Graph.Key.hide("acl")).toString());
+                    called.set(true);
+                    return mock(Vertex.class);
+                });
+            }
+            assertTrue(called.get());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldReadWriteVertexNoEdgesToGraphSON() throws Exception {
