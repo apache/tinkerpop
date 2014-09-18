@@ -67,7 +67,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
             this.t = (T) DetachedProperty.detach((Property) this.t);
         }
         this.path = DetachedPath.detach(this.path);
-        this.sideEffects = null;
+        this.dropSideEffects();
         return this;
     }
 
