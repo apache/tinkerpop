@@ -27,6 +27,8 @@ import static org.mockito.Mockito.when;
  */
 public class DetachedVertexTest extends AbstractGremlinTest {
 
+    // todo: clean up all detached tests
+
     @Test(expected = IllegalArgumentException.class)
     public void shouldNotConstructWithNullElement() {
         DetachedVertex.detach(null);
