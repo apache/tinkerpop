@@ -33,7 +33,6 @@ import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.VertexByteArrayInputStream;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.configuration.Configuration;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.xml.XMLConstants;
@@ -55,10 +54,8 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -834,7 +831,6 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     @Test
-    @org.junit.Ignore() // todo: do we need a manual iteration?
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldReadWriteVerticesNoEdgesToKryoManual() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
@@ -890,8 +886,6 @@ public class IoTest extends AbstractGremlinTest {
         }
     }
 
-    // todo: bring it back
-    /**
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldReadWriteVerticesNoEdgesToGraphSONManual() throws Exception {
@@ -904,14 +898,14 @@ public class IoTest extends AbstractGremlinTest {
             final BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(os.toByteArray())));
             String line = br.readLine();
             reader.readVertex(new ByteArrayInputStream(line.getBytes()),
-                    (vertexId, label, properties) -> {
+                    detachedVertex -> {
                         called.incrementAndGet();
                         return mock(Vertex.class);
                     });
 
             line = br.readLine();
             reader.readVertex(new ByteArrayInputStream(line.getBytes()),
-                    (vertexId, label, properties) -> {
+                    detachedVertex -> {
                         called.incrementAndGet();
                         return mock(Vertex.class);
                     });
@@ -919,7 +913,6 @@ public class IoTest extends AbstractGremlinTest {
             assertEquals(2, called.get());
         }
     }
-    */
 
 
     @Test
@@ -1872,13 +1865,6 @@ public class IoTest extends AbstractGremlinTest {
     private static void readGraphMLIntoGraph(final Graph g) throws IOException {
         final GraphReader reader = GraphMLReader.build().create();
         try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "tinkerpop-classic.xml")) {
-            reader.readGraph(stream, g);
-        }
-    }
-
-    private static void readGraphSONIntoGraph(final Graph g) throws IOException {
-        final GraphReader reader = GraphSONReader.build().embedTypes(true).create();
-        try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHSON_RESOURCE_PATH_PREFIX + "tinkerpop-classic-typed.json")) {
             reader.readGraph(stream, g);
         }
     }
