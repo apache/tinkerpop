@@ -29,7 +29,8 @@ import java.util.stream.Stream;
 /**
  * GraphMLReader writes the data from a GraphML stream to a graph.  Note that this format is lossy, in the sense that data
  * types and features of Gremlin Structure not supported by GraphML are not serialized.  This format is meant for
- * external export of a graph to tools outside of Gremlin Structure graphs.
+ * external export of a graph to tools outside of Gremlin Structure graphs.  Note that GraphML does not support
+ * the notion of multi-properties or properties on properties.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Alex Averbuch (alex.averbuch@gmail.com)

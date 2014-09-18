@@ -52,20 +52,6 @@ public class TinkerGraphTest {
         g.of(TinkerFactory.SocialTraversal.class).people("marko").created().name().forEach(name -> assertEquals("lop", name));
     }
 
-    /*@Test
-    public void randomTest() throws Exception {
-        Graph g = TinkerGraph.open();
-        Vertex a = g.addVertex();
-        Vertex b = g.addVertex();
-        Edge e = a.addEdge("knows",b,Graph.Key.hide("acl"),"private","weight",1.0);
-        System.out.println("hiddenKeys: " + e.hiddenKeys());
-        System.out.println("keys: " + e.keys());
-        System.out.println("hiddens:");
-        e.iterators().hiddens("acl").forEachRemaining(System.out::println);
-        System.out.println("properties:");
-        e.iterators().properties("weight").forEachRemaining(System.out::println);
-    }*/
-
     /**
      * No assertions.  Just write out the graph for convenience.
      */
@@ -90,6 +76,16 @@ public class TinkerGraphTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
+    public void shouldWriteCrewGraphAsKryo() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew.gio");
+        KryoWriter.build().create().writeGraph(os, TinkerFactory.createTheCrew());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
     public void shouldWriteClassicVerticesAsKryo() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-vertices.gio");
         KryoWriter.build().create().writeVertices(os, TinkerFactory.createClassic().V(), Direction.BOTH);
@@ -100,9 +96,20 @@ public class TinkerGraphTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteModernVerticesAsKryoAsKryo() throws IOException {
+    public void shouldWriteModernVerticesAsKryo() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-vertices.gio");
         final TinkerGraph g = TinkerFactory.createModern();
+        KryoWriter.build().create().writeVertices(os, g.V(), Direction.BOTH);
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteCrewVerticesAsKryo() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew-vertices.gio");
+        final TinkerGraph g = TinkerFactory.createTheCrew();
         KryoWriter.build().create().writeVertices(os, g.V(), Direction.BOTH);
         os.close();
     }
@@ -151,6 +158,16 @@ public class TinkerGraphTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
+    public void shouldWriteCrewGraphAsGraphSONNoTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew.json");
+        GraphSONWriter.build().create().writeGraph(os, TinkerFactory.createTheCrew());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
     public void shouldWriteClassicGraphNormalizedAsGraphSON() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-normalized.json");
         GraphSONWriter.build().normalize(true).create().writeGraph(os, TinkerFactory.createClassic());
@@ -185,7 +202,18 @@ public class TinkerGraphTest {
     public void shouldWriteModernGraphAsGraphSONWithTypes() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-typed.json");
         GraphSONWriter.build().embedTypes(true)
-                .create().writeGraph(os, TinkerFactory.createClassic());
+                .create().writeGraph(os, TinkerFactory.createModern());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteCrewGraphAsGraphSONWithTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew-typed.json");
+        GraphSONWriter.build().embedTypes(true)
+                .create().writeGraph(os, TinkerFactory.createTheCrew());
         os.close();
     }
 
@@ -498,7 +526,7 @@ public class TinkerGraphTest {
 
         try {
             final TinkerGraph g1 = (TinkerGraph) input.readObject();
-            IoTest.assertToyGraph(g1, true, false, true);
+            IoTest.assertClassicGraph(g1, true, false, true);
         } catch (ClassNotFoundException cnfe) {
             throw new RuntimeException(cnfe);
         } finally {

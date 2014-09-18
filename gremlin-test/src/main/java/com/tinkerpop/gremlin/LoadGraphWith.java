@@ -13,6 +13,7 @@ import java.util.List;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_DOUBLE_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_FLOAT_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_BOOLEAN_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_INTEGER_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_STRING_VALUES;
 
@@ -51,6 +52,11 @@ public @interface LoadGraphWith {
         MODERN,
 
         /**
+         * Load "The Crew" TinkerPop3 toy graph which includes {@link com.tinkerpop.gremlin.structure.MetaProperty} data.
+         */
+        CREW,
+
+        /**
          * Loads the "grateful dead" graph which is a "large" graph which provides for the construction of more
          * complex traversals.
          */
@@ -59,6 +65,14 @@ public @interface LoadGraphWith {
         private static final List<FeatureRequirement> featuresRequiredByClassic = new ArrayList<FeatureRequirement>(){{
             add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
             add(FeatureRequirement.Factory.create(FEATURE_INTEGER_VALUES, VertexPropertyFeatures.class));
+            add(FeatureRequirement.Factory.create(FEATURE_FLOAT_VALUES, EdgePropertyFeatures.class));
+        }};
+
+        // TODO: need to add metaproperty/multiproperty
+        private static final List<FeatureRequirement> featuresRequiredByCrew = new ArrayList<FeatureRequirement>(){{
+            add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
+            add(FeatureRequirement.Factory.create(FEATURE_INTEGER_VALUES, VertexPropertyFeatures.class));
+            add(FeatureRequirement.Factory.create(FEATURE_BOOLEAN_VALUES, VertexPropertyFeatures.class));
             add(FeatureRequirement.Factory.create(FEATURE_FLOAT_VALUES, EdgePropertyFeatures.class));
         }};
 
@@ -77,6 +91,8 @@ public @interface LoadGraphWith {
             switch (this) {
                 case CLASSIC:
                     return RESOURCE_PATH_PREFIX + "tinkerpop-classic.gio";
+                case CREW:
+                    return RESOURCE_PATH_PREFIX + "tinkerpop-crew.gio";
                 case MODERN:
                     return RESOURCE_PATH_PREFIX + "tinkerpop-modern.gio";
                 case GRATEFUL:
@@ -90,6 +106,8 @@ public @interface LoadGraphWith {
             switch (this) {
                 case CLASSIC:
                     return featuresRequiredByClassic;
+                case CREW:
+                    return featuresRequiredByCrew;
                 case MODERN:
                     return featuresRequiredByClassicDouble;
                 case GRATEFUL:
