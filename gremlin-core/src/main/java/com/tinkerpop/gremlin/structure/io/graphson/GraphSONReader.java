@@ -115,9 +115,6 @@ public class GraphSONReader implements GraphReader {
 
             graph.tx().commit();
         } catch (Exception ex) {
-            // todo: can't call rollback on BatchGraph...................
-            // rollback whatever portion failed
-            graph.tx().rollback();
             throw new IOException(ex);
         }
     }
