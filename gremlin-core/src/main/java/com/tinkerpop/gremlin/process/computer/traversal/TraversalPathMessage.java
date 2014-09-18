@@ -50,10 +50,11 @@ public class TraversalPathMessage extends TraversalMessage {
         tracker.getPreviousObjectTracks().forEach((object, traversers) -> {
             traversers.forEach(traverser -> {
                 if (traverser.isDone()) {
+                    traverser.dropSideEffects();
                     if (object instanceof Path) {
-                        incrMap(tracker.getDoneObjectTracks(), DetachedPath.detach(((Path) object)), traverser);
+                        MapHelper.incr(tracker.getDoneObjectTracks(), DetachedPath.detach(((Path) object)), traverser);
                     } else {
-                        incrMap(tracker.getDoneObjectTracks(), object, traverser);
+                        MapHelper.incr(tracker.getDoneObjectTracks(), object, traverser);
                     }
                 } else {
                     final Step step = TraversalHelper.getStep(traverser.getFuture(), traversal);
@@ -72,16 +73,16 @@ public class TraversalPathMessage extends TraversalMessage {
                                  final TraverserPathTracker tracker,
                                  final Traversal traversal) {
         if (this.traverser.isDone()) {
-            incrMap(tracker.getDoneGraphTracks(), this.traverser.get(), this.traverser);
+            this.traverser.deflate();
+            MapHelper.incr(tracker.getDoneGraphTracks(), this.traverser.get(), this.traverser);
             return false;
         }
 
         final Step step = TraversalHelper.getStep(this.traverser.getFuture(), traversal);
         if (step instanceof VertexCentric) ((VertexCentric) step).setCurrentVertex(vertex);
+        MapHelper.incr(tracker.getGraphTracks(), this.traverser.get(), this.traverser);
         step.addStarts(new SingleIterator(this.traverser));
-        final boolean messagesToBeSent = processStep(step, messenger, tracker);
-        incrMap(tracker.getGraphTracks(), this.traverser.get(), this.traverser);
-        return messagesToBeSent;
+        return processStep(step, messenger, tracker);
     }
 
     private static boolean processStep(final Step<?, ?> step, final Messenger messenger, final TraverserPathTracker tracker) {
@@ -93,10 +94,11 @@ public class TraversalPathMessage extends TraversalMessage {
                         MessageType.Global.of(getHostingVertices(end)),
                         TraversalPathMessage.of((Traverser.System) traverser));
             } else {
+                ((Traverser.System) traverser).dropSideEffects();
                 if (end instanceof Path) {
-                    incrMap(tracker.getObjectTracks(), DetachedPath.detach(((Path) end)), (Traverser.System) traverser);
+                    MapHelper.incr(tracker.getObjectTracks(), DetachedPath.detach(((Path) end)), (Traverser.System) traverser);
                 } else {
-                    incrMap(tracker.getObjectTracks(), end, (Traverser.System) traverser);
+                    MapHelper.incr(tracker.getObjectTracks(), end, (Traverser.System) traverser);
                 }
             }
         });

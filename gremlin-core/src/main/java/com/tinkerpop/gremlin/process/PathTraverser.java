@@ -1,9 +1,11 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedMetaProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -63,6 +65,8 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
             this.t = (T) DetachedVertex.detach((Vertex) this.t);
         } else if (this.t instanceof Edge && !(this.t instanceof DetachedEdge)) {
             this.t = (T) DetachedEdge.detach((Edge) this.t);
+        } else if (this.t instanceof MetaProperty && !(this.t instanceof DetachedMetaProperty)) {
+            this.t = (T) DetachedMetaProperty.detach((MetaProperty) this.t);
         } else if (this.t instanceof Property && !(this.t instanceof DetachedProperty)) {
             this.t = (T) DetachedProperty.detach((Property) this.t);
         }
@@ -77,6 +81,8 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
             this.t = (T) ((DetachedVertex) this.t).attach(vertex);
         } else if (this.t instanceof DetachedEdge) {
             this.t = (T) ((DetachedEdge) this.t).attach(vertex);
+        } else if (this.t instanceof DetachedMetaProperty) {
+            this.t = (T) ((DetachedMetaProperty) this.t).attach(vertex);
         } else if (this.t instanceof DetachedProperty) {
             this.t = (T) ((DetachedProperty) this.t).attach(vertex);
         }

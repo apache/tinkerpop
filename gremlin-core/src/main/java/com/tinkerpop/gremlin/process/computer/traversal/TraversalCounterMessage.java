@@ -53,17 +53,17 @@ public class TraversalCounterMessage extends TraversalMessage {
         traversal.strategies().apply();
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
-        final Map<Traverser.System, Long> localCounts = new HashMap<>();
+        final Map<Traverser, Long> localCounts = new HashMap<>();
 
         messenger.receiveMessages(MessageType.Global.of()).forEach(message -> {
-            ((TraversalCounterMessage) message).traverser.inflate(vertex, traversal);
+            ((TraversalCounterMessage) message).traverser.inflate(vertex,traversal);
             if (((TraversalCounterMessage) message).executeCounts(tracker, traversal, localCounts, vertex))
                 voteToHalt.set(false);
         });
 
         tracker.getPreviousObjectTracks().forEach((traverser, counts) -> {
             if (traverser.isDone()) {
-                incrMap(tracker.getDoneObjectTracks(), traverser, counts);
+                MapHelper.incr(tracker.getDoneObjectTracks(), traverser, counts);
             } else {
                 final Step step = TraversalHelper.getStep(traverser.getFuture(), traversal);
                 if (step instanceof VertexCentric) ((VertexCentric) step).setCurrentVertex(vertex);
@@ -77,43 +77,44 @@ public class TraversalCounterMessage extends TraversalMessage {
         localCounts.forEach((traverser, count) -> {
             if (traverser.get() instanceof Element || traverser.get() instanceof Property) {
                 final Object end = traverser.get();
-                final TraversalCounterMessage message = TraversalCounterMessage.of(traverser);
+                final TraversalCounterMessage message = TraversalCounterMessage.of((Traverser.System) traverser);
                 message.setCounter(count);
                 messenger.sendMessage(
                         MessageType.Global.of(TraversalMessage.getHostingVertices(end)),
                         message);
             } else {
-                incrMap(tracker.getObjectTracks(), traverser, count);
+                MapHelper.incr(tracker.getObjectTracks(), (Traverser.System) traverser, count);
             }
         });
         return voteToHalt.get();
     }
 
     private boolean executeCounts(final TraverserCountTracker tracker,
-                                  final Traversal traversal, Map<Traverser.System, Long> localCounts,
+                                  final Traversal traversal, Map<Traverser, Long> localCounts,
                                   final Vertex vertex) {
 
         if (this.traverser.isDone()) {
-            incrMap(tracker.getDoneGraphTracks(), this.traverser, this.counter);
+            this.traverser.deflate();
+            MapHelper.incr(tracker.getDoneGraphTracks(), this.traverser, this.counter);
             return false;
         }
 
         final Step step = TraversalHelper.getStep(this.traverser.getFuture(), traversal);
+        MapHelper.incr(tracker.getGraphTracks(), this.traverser, this.counter);
+
         if (step instanceof VertexCentric) ((VertexCentric) step).setCurrentVertex(vertex);
         if (step instanceof Bulkable) ((Bulkable) step).setCurrentBulkCount(this.counter);
+
         step.addStarts(new SingleIterator(this.traverser));
-        final boolean messagesToBeSent = processStep(step, localCounts, this.counter);
-        MapHelper.incr(tracker.getGraphTracks(), this.traverser, this.counter);
-        return messagesToBeSent;
+        return processStep(step, localCounts, this.counter);
     }
 
-    private static boolean processStep(final Step<?, ?> step, final Map<Traverser.System, Long> localCounts, final long counter) {
+    private static boolean processStep(final Step<?, ?> step, final Map<Traverser, Long> localCounts, final long counter) {
         final boolean messageSent = step.hasNext();
         step.forEachRemaining(traverser -> {
-            incrMap(localCounts, (Traverser.System) traverser, counter);
+            MapHelper.incr(localCounts, traverser, counter);
         });
         return messageSent;
     }
 }
-
 
