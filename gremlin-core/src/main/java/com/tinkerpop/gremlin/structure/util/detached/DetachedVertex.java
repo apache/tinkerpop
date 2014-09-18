@@ -41,8 +41,8 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
         super(id, label);
 
         // todo: wrong?
-        if (null != properties) this.properties.putAll(convertToDetachedMetaProperties(properties));
-        if (null != hiddenProperties) this.properties.putAll(convertToDetachedMetaProperties(hiddenProperties));
+        if (null != properties) this.properties.putAll(convertToDetachedMetaProperties(properties, false));
+        if (null != hiddenProperties) this.properties.putAll(convertToDetachedMetaProperties(hiddenProperties, true));
     }
 
     protected DetachedVertex(final Object id, final String label) {
@@ -113,10 +113,10 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
         return this.iterators;
     }
 
-    private Map<String, List<Property>> convertToDetachedMetaProperties(final Map<String, Object> properties) {
+    private Map<String, List<Property>> convertToDetachedMetaProperties(final Map<String, Object> properties, final boolean hide) {
         return properties.entrySet().stream()
-                .map(entry -> Pair.with(entry.getKey(), ((List<Map<String,Object>>) entry.getValue()).stream()
-                                .map(m -> (Property) new DetachedMetaProperty(m.get("id"), (String) m.get("label"), entry.getKey(),
+                .map(entry -> Pair.with(hide ? Graph.Key.hide(entry.getKey()) : entry.getKey(), ((List<Map<String,Object>>) entry.getValue()).stream()
+                                .map(m -> (Property) new DetachedMetaProperty(m.get("id"), (String) m.get("label"), hide ? Graph.Key.hide(entry.getKey()) : entry.getKey(),
                                         m.get("value"), (Map<String,Object>) m.get("properties"), (Map<String,Object>) m.get("hidden"), this))
                                 .collect(Collectors.toList()))
                 ).collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
