@@ -91,7 +91,6 @@ public class GraphSONReader implements GraphReader {
                         readVertexData(vertexData, detachedVertex -> {
                             final Vertex v = Optional.ofNullable(graph.v(detachedVertex.id())).orElse(
                                     graph.addVertex(T.label, detachedVertex.label(), T.id, detachedVertex.id()));
-                            // todo: properties on properties
                             detachedVertex.iterators().properties().forEachRemaining(p -> v.<Object>property(p.key(), p.value()));
                             detachedVertex.iterators().hiddens().forEachRemaining(p -> v.<Object>property(Graph.Key.hide(p.key()), p.value()));
                             return v;
@@ -181,9 +180,7 @@ public class GraphSONReader implements GraphReader {
 
     private static Vertex readVertexData(final Map<String, Object> vertexData, final SFunction<DetachedVertex, Vertex> vertexMaker) throws IOException {
         final Map<String, Object> metaProperties = (Map<String, Object>) vertexData.get(GraphSONTokens.PROPERTIES);
-        final Map<String, Object> hiddensMetaProperties = ((Map<String, Object>) vertexData.get(GraphSONTokens.HIDDENS)).entrySet().stream().collect(Collectors.toMap((Map.Entry kv) -> Graph.Key.hide(kv.getKey().toString()), (Map.Entry kv) -> kv.getValue()));;
-
-        // todo: properties on properties
+        final Map<String, Object> hiddensMetaProperties = ((Map<String, Object>) vertexData.get(GraphSONTokens.HIDDENS)).entrySet().stream().collect(Collectors.toMap((Map.Entry kv) -> Graph.Key.hide(kv.getKey().toString()), (Map.Entry kv) -> kv.getValue()));
         final DetachedVertex vertex = new DetachedVertex(vertexData.get(GraphSONTokens.ID),
                 vertexData.get(GraphSONTokens.LABEL).toString(),
                 metaProperties, hiddensMetaProperties);
