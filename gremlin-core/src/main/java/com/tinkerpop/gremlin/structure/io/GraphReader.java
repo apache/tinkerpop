@@ -4,6 +4,9 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SQuintFunction;
 import com.tinkerpop.gremlin.util.function.STriFunction;
 
@@ -32,7 +35,7 @@ public interface GraphReader {
      * @param vertexMaker a function to create a vertex where the first argument is the vertex identifier, the
      *                    second argument is vertex label and the last is the list of properties for it
      */
-    public Vertex readVertex(final InputStream inputStream, final STriFunction<Object, String, Object[], Vertex> vertexMaker) throws IOException;
+    public Vertex readVertex(final InputStream inputStream, final SFunction<DetachedVertex, Vertex> vertexMaker) throws IOException;
 
     /**
      * Reads a single vertex from an {@link InputStream}.  This method will read vertex properties as well as edges
@@ -47,8 +50,8 @@ public interface GraphReader {
      *                    the fourth is the label, and the fifth is the list of properties as key/value pairs.
      */
     public Vertex readVertex(final InputStream inputStream, final Direction direction,
-                             final STriFunction<Object, String, Object[], Vertex> vertexMaker,
-                             final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException;
+                             final SFunction<DetachedVertex, Vertex> vertexMaker,
+                             final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException;
 
     /**
      * Reads a set of vertices from an {@link InputStream} which were written by
@@ -64,8 +67,8 @@ public interface GraphReader {
      *                    the fourth is the label, and the fifth is the list of properties as key/value pairs.
      */
     public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
-                                         final STriFunction<Object, String, Object[], Vertex> vertexMaker,
-                                         final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException;
+                                         final SFunction<DetachedVertex, Vertex> vertexMaker,
+                                         final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException;
 
     /**
      * Reads a single edge from an {@link InputStream}.
@@ -75,6 +78,6 @@ public interface GraphReader {
      *                    identifier, the second argument is the out vertex id, the third is the in vertex id,
      *                    the fourth is the label, and the fifth is the list of properties as key/value pairs.
      */
-    public Edge readEdge(final InputStream inputStream, final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException;
+    public Edge readEdge(final InputStream inputStream, final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException;
 
 }

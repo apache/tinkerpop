@@ -9,6 +9,9 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedElement;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.io.IOException;
@@ -84,9 +87,7 @@ public class KryoWriter implements GraphWriter {
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
         final Output output = new Output(outputStream);
         this.headerWriter.write(kryo, output);
-        kryo.writeClassAndObject(output, e.outV().id().next());
-        kryo.writeClassAndObject(output, e.inV().id().next());
-        writeEdgeToOutput(output, e);
+        kryo.writeClassAndObject(output, DetachedEdge.detach(e));
         output.flush();
     }
 
@@ -103,22 +104,25 @@ public class KryoWriter implements GraphWriter {
     }
 
     private void writeElement(final Output output, final Element e, final Direction direction) {
-        kryo.writeClassAndObject(output, e.id());
-        output.writeString(e.label());
+        final DetachedElement detached;
+        if (e instanceof Vertex)
+            detached = e instanceof DetachedVertex ? (DetachedVertex) e : DetachedVertex.detach((Vertex) e);
+        else
+            detached = e instanceof DetachedEdge ? (DetachedEdge) e : DetachedEdge.detach((Edge) e);
 
-        writeProperties(output, e);
+        // todo: possible to just write object?
+        kryo.writeClassAndObject(output, detached);
 
         if (e instanceof Vertex) {
             output.writeBoolean(direction != null);
             if (direction != null) {
                 final Vertex v = (Vertex) e;
                 kryo.writeObject(output, direction);
-
                 if (direction == Direction.BOTH || direction == Direction.OUT)
-                    writeDirectionalEdges(output, Direction.OUT, v.outE());
+                    writeDirectionalEdges(output, Direction.OUT, v.iterators().edges(Direction.OUT, Integer.MAX_VALUE));
 
                 if (direction == Direction.BOTH || direction == Direction.IN)
-                    writeDirectionalEdges(output, Direction.IN, v.inE());
+                    writeDirectionalEdges(output, Direction.IN, v.iterators().edges(Direction.IN, Integer.MAX_VALUE));
             }
 
             kryo.writeClassAndObject(output, VertexTerminator.INSTANCE);
@@ -132,34 +136,11 @@ public class KryoWriter implements GraphWriter {
 
         while (vertexEdges.hasNext()) {
             final Edge edgeToWrite = vertexEdges.next();
-            if (d.equals(Direction.OUT))
-                kryo.writeClassAndObject(output, edgeToWrite.inV().id().next());
-            else if (d.equals(Direction.IN))
-                kryo.writeClassAndObject(output, edgeToWrite.outV().id().next());
             writeEdgeToOutput(output, edgeToWrite);
         }
 
         if (hasEdges)
             kryo.writeClassAndObject(output, EdgeTerminator.INSTANCE);
-    }
-
-    private void writeProperties(final Output output, final Element e) {
-        final int propertyCount = (int) StreamFactory.stream(e.iterators().properties()).count();
-        output.writeInt(propertyCount);
-        e.iterators().properties().forEachRemaining(property -> {
-            output.writeString(property.key());
-            writePropertyValue(output, property);
-        });
-        final int hiddenCount = (int) StreamFactory.stream(e.iterators().hiddens()).count();
-        output.writeInt(hiddenCount);
-        e.iterators().hiddens().forEachRemaining(hidden -> {
-            output.writeString(hidden.key());
-            writePropertyValue(output, hidden);
-        });
-    }
-
-    private void writePropertyValue(final Output output, final Property val) {
-        kryo.writeClassAndObject(output, val.value());
     }
 
     public static Builder build() {

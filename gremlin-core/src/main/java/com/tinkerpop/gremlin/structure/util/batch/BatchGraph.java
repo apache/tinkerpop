@@ -145,11 +145,11 @@ public class BatchGraph<G extends Graph> implements Graph {
             throw new IllegalArgumentException("Vertex id already exists");
         nextElement();
 
-        // if the vertexIdKey is not the Element.ID then append it as a name/value pair.  this will overwrite what
+        // if the vertexIdKey is not the T.id then append it as a name/value pair.  this will overwrite what
         // is present in that field already
         final Object[] keysVals = T.id.getAccessor().equals(vertexIdKey) ? keyValues : ElementHelper.upsert(keyValues, vertexIdKey, id);
 
-        // if the graph doesn't support vertex ids or the vertex id is not the Element.ID then remove that key
+        // if the graph doesn't support vertex ids or the vertex id is not the T.id then remove that key
         // value pair as it will foul up insertion (i.e. an exception for graphs that don't support it and the
         // id will become the value of the vertex id which might not be expected.
         final Optional<Object[]> kvs = this.baseSupportsSuppliedVertexId && T.id.getAccessor().equals(vertexIdKey) ?

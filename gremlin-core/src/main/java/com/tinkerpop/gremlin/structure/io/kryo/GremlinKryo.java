@@ -17,11 +17,17 @@ import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.util.IoEdge;
 import com.tinkerpop.gremlin.structure.io.util.IoMetaProperty;
 import com.tinkerpop.gremlin.structure.io.util.IoVertex;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedMetaProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
@@ -179,7 +185,7 @@ public final class GremlinKryo {
 
         /**
          * Note that the following are pre-registered boolean, Boolean, byte, Byte, char, Character, double, Double,
-         * int, Integer, float, Float, long, Long, short, Short, String, void. Current max is HashSet=65.
+         * int, Integer, float, Float, long, Long, short, Short, String, void.
          */
         private final List<Triplet<Class, Serializer, Integer>> serializationList = new ArrayList<Triplet<Class, Serializer, Integer>>() {{
             add(Triplet.<Class, Serializer, Integer>with(byte[].class, null, 25));
@@ -207,14 +213,14 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(Currency.class, null, 40));
             add(Triplet.<Class, Serializer, Integer>with(Date.class, null, 38));
             add(Triplet.<Class, Serializer, Integer>with(Direction.class, null, 12));
-            add(Triplet.<Class, Serializer, Integer>with(Edge.class, new ElementSerializer.EdgeSerializer(), 19));
+            add(Triplet.<Class, Serializer, Integer>with(DetachedEdge.class, null, 21));
+            add(Triplet.<Class, Serializer, Integer>with(DetachedMetaProperty.class, null, 20));
+            add(Triplet.<Class, Serializer, Integer>with(DetachedProperty.class, null, 18));
+            add(Triplet.<Class, Serializer, Integer>with(DetachedVertex.class, null, 19));
             add(Triplet.<Class, Serializer, Integer>with(EdgeTerminator.class, null, 14));
             add(Triplet.<Class, Serializer, Integer>with(EnumSet.class, null, 46));
             add(Triplet.<Class, Serializer, Integer>with(HashMap.class, null, 11));
             add(Triplet.<Class, Serializer, Integer>with(HashMap.Entry.class, null, 16));
-            add(Triplet.<Class, Serializer, Integer>with(IoEdge.class, null, 21));
-            add(Triplet.<Class, Serializer, Integer>with(IoMetaProperty.class, null, 65));
-            add(Triplet.<Class, Serializer, Integer>with(IoVertex.class, null, 20));
             add(Triplet.<Class, Serializer, Integer>with(KryoSerializable.class, null, 36));
             add(Triplet.<Class, Serializer, Integer>with(LinkedHashMap.class, null, 47));
             add(Triplet.<Class, Serializer, Integer>with(linkedHashMapEntryClass, null, 15));
@@ -226,8 +232,12 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(TreeMap.class, null, 45));
             add(Triplet.<Class, Serializer, Integer>with(TreeSet.class, null, 50));
             add(Triplet.<Class, Serializer, Integer>with(UUID.class, new UUIDSerializer(), 17));
-            add(Triplet.<Class, Serializer, Integer>with(Vertex.class, new ElementSerializer.VertexSerializer(), 18));
             add(Triplet.<Class, Serializer, Integer>with(VertexTerminator.class, null, 13));
+
+            add(Triplet.<Class, Serializer, Integer>with(Edge.class, new ElementSerializer.EdgeSerializer(), 65));
+            add(Triplet.<Class, Serializer, Integer>with(Vertex.class, new ElementSerializer.VertexSerializer(), 66));
+            add(Triplet.<Class, Serializer, Integer>with(Property.class, new ElementSerializer.PropertySerializer(), 67));
+            add(Triplet.<Class, Serializer, Integer>with(MetaProperty.class, new ElementSerializer.MetaPropertySerializer(), 68));   // ***LAST ID***
 
             // GraphTraversal in OLAP
             add(Triplet.<Class, Serializer, Integer>with(SimpleTraverser.class, null, 55));

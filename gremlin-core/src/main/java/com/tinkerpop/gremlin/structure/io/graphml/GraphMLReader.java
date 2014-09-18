@@ -8,6 +8,9 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SQuintFunction;
 import com.tinkerpop.gremlin.util.function.STriFunction;
 
@@ -26,7 +29,8 @@ import java.util.stream.Stream;
 /**
  * GraphMLReader writes the data from a GraphML stream to a graph.  Note that this format is lossy, in the sense that data
  * types and features of Gremlin Structure not supported by GraphML are not serialized.  This format is meant for
- * external export of a graph to tools outside of Gremlin Structure graphs.
+ * external export of a graph to tools outside of Gremlin Structure graphs.  Note that GraphML does not support
+ * the notion of multi-properties or properties on properties.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Alex Averbuch (alex.averbuch@gmail.com)
@@ -53,26 +57,25 @@ public class GraphMLReader implements GraphReader {
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Direction direction,
-                             final STriFunction<Object, String, Object[], Vertex> vertexMaker,
-                             final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
-        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
-    }
-
-    @Override
-    public Vertex readVertex(final InputStream inputStream, final STriFunction<Object, String, Object[], Vertex> vertexMaker) throws IOException {
-        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
-    }
-
-    @Override
     public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
-                                         final STriFunction<Object, String, Object[], Vertex> vertexMaker,
-                                         final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
+                                         final SFunction<DetachedVertex, Vertex> vertexMaker,
+                                         final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 
     @Override
-    public Edge readEdge(final InputStream inputStream, final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
+    public Edge readEdge(final InputStream inputStream, final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
+        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+    }
+
+    @Override
+    public Vertex readVertex(final InputStream inputStream, final SFunction<DetachedVertex, Vertex> vertexMaker) throws IOException {
+        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+    }
+
+    @Override
+    public Vertex readVertex(final InputStream inputStream, final Direction direction, final SFunction<DetachedVertex, Vertex> vertexMaker,
+                             final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 

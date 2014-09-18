@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.util.detached;
 
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -16,6 +17,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 /**
@@ -37,6 +39,8 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
     DetachedVertex outVertex;
     DetachedVertex inVertex;
 
+    private final transient Edge.Iterators iterators = new Iterators();
+
     public DetachedEdge(final Object id, final String label,
                         final Map<String, Object> properties,
                         final Map<String, Object> hiddenProperties,
@@ -57,8 +61,8 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
         this.outVertex = DetachedVertex.detach(edge.iterators().vertices(Direction.OUT).next());
         this.inVertex = DetachedVertex.detach(edge.iterators().vertices(Direction.IN).next());
 
-        edge.iterators().properties().forEachRemaining(p -> this.properties.put(p.key(), Arrays.asList(new DetachedProperty(p.key(), p.value(), this))));
-        edge.iterators().hiddens().forEachRemaining(p -> this.properties.put(Graph.Key.hide(p.key()), Arrays.asList(new DetachedProperty(p.key(), p.value(), this))));
+        edge.iterators().properties().forEachRemaining(p -> this.properties.put(p.key(), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : new DetachedProperty(p, this)))));
+        edge.iterators().hiddens().forEachRemaining(p -> this.properties.put(Graph.Key.hide(p.key()), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : new DetachedProperty(p, this)))));
     }
 
     @Override
@@ -84,6 +88,35 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
         return new DetachedEdge(edge);
     }
 
+    public static Edge addTo(final Graph graph, final DetachedEdge detachedEdge) {
+        Vertex outV;
+        try {
+            outV = graph.v(detachedEdge.outVertex.id());
+        } catch (final NoSuchElementException e) {
+            outV = null;
+        }
+        if (null == outV) {
+            outV = graph.addVertex(T.id, detachedEdge.outVertex.id());
+        }
+
+        Vertex inV;
+        try {
+            inV = graph.v(detachedEdge.inVertex.id());
+        } catch (final NoSuchElementException e) {
+            inV = null;
+        }
+        if (null == inV) {
+            inV = graph.addVertex(T.id, detachedEdge.inVertex.id());
+        }
+
+        final Edge e = outV.addEdge(detachedEdge.label(), inV, T.id, detachedEdge.id());
+        detachedEdge.properties.entrySet().forEach(kv ->
+            kv.getValue().forEach(p -> e.<Object>property(kv.getKey(), p.value()))
+        );
+
+        return e;
+    }
+
     @Override
     public Edge.Iterators iterators() {
         return this.iterators;
@@ -99,8 +132,6 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
                 .map(entry -> Pair.with(entry.getKey(), (Property) new DetachedProperty(entry.getKey(), entry.getValue(), this)))
                 .collect(Collectors.toMap(p -> p.getValue0(), p -> Arrays.asList(p.getValue1())));
     }
-
-    private final Edge.Iterators iterators = new Iterators();
 
     protected class Iterators extends DetachedElement<Edge>.Iterators implements Edge.Iterators, Serializable {
 

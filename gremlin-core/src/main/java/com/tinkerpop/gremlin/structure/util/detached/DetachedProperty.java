@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure.util.detached;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -21,7 +22,7 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
 
     String key;
     V value;
-    DetachedElement element;
+    transient DetachedElement element;
     int hashCode;
 
     private DetachedProperty() {
@@ -39,16 +40,40 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
         this.hashCode = super.hashCode();
     }
 
+    // todo: straighten out all these constructors and their scopes - what do we really need here?
+
     private DetachedProperty(final Property property) {
         if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
 
-        this.key = property.key();
+        this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
         this.value = (V) property.value();
         this.hashCode = property.hashCode();
         final Element element = property.getElement();
-        this.element = element instanceof Vertex ?
-                DetachedVertex.detach((Vertex) element) :
-                DetachedEdge.detach((Edge) element);
+
+        if (element instanceof Vertex)
+            this.element = element instanceof DetachedVertex ? (DetachedElement) element : DetachedVertex.detach((Vertex) element);
+        else if (element instanceof MetaProperty)
+            this.element = element instanceof DetachedMetaProperty ? (DetachedElement) element : DetachedMetaProperty.detach((MetaProperty) element);
+        else
+            this.element = element instanceof DetachedEdge ? (DetachedElement) element : DetachedEdge.detach((Edge) element);
+    }
+
+    DetachedProperty(final Property property, final DetachedEdge element) {
+        if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
+
+        this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
+        this.value = (V) property.value();
+        this.hashCode = property.hashCode();
+        this.element = element;
+    }
+
+    DetachedProperty(final Property property, final DetachedMetaProperty element) {
+        if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
+
+        this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
+        this.value = (V) property.value();
+        this.hashCode = property.hashCode();
+        this.element = element;
     }
 
     @Override

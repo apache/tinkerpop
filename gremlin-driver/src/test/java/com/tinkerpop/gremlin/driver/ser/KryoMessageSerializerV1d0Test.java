@@ -110,16 +110,16 @@ public class KryoMessageSerializerV1d0Test {
         final List<DetachedEdge> edgeList = (List<DetachedEdge>) response.getResult().getData();
         assertEquals(1, edgeList.size());
 
-        final DetachedEdge deserialiedEdge = edgeList.get(0);
-        assertEquals(2l, deserialiedEdge.id());
-        assertEquals("test", deserialiedEdge.label());
+        final DetachedEdge deserializedEdge = edgeList.get(0);
+        assertEquals(2l, deserializedEdge.id());
+        assertEquals("test", deserializedEdge.label());
 
-        assertEquals(new Integer(123), (Integer) deserialiedEdge.value("abc"));
-        assertEquals(1, StreamFactory.stream(deserialiedEdge.iterators().properties()).count());
-        assertEquals(0l, deserialiedEdge.iterators().vertices(Direction.OUT).next().id());
-        assertEquals(Vertex.DEFAULT_LABEL, deserialiedEdge.iterators().vertices(Direction.OUT).next().label());
-        assertEquals(1l, deserialiedEdge.iterators().vertices(Direction.IN).next().id());
-        assertEquals(Vertex.DEFAULT_LABEL, deserialiedEdge.iterators().vertices(Direction.IN).next().label());
+        assertEquals(new Integer(123), (Integer) deserializedEdge.value("abc"));
+        assertEquals(1, StreamFactory.stream(deserializedEdge.iterators().properties()).count());
+        assertEquals(0l, deserializedEdge.iterators().vertices(Direction.OUT).next().id());
+        assertEquals(Vertex.DEFAULT_LABEL, deserializedEdge.iterators().vertices(Direction.OUT).next().label());
+        assertEquals(1l, deserializedEdge.iterators().vertices(Direction.IN).next().id());
+        assertEquals(Vertex.DEFAULT_LABEL, deserializedEdge.iterators().vertices(Direction.IN).next().label());
     }
 
     @Test

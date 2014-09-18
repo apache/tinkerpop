@@ -13,8 +13,9 @@ import java.util.List;
  */
 public class VertexByteArrayInputStream extends FilterInputStream {
 
-    private static final byte[] vertexTerminatorClass = new byte[]{0, 0, 0, 0, 0, 15, 1, 1, 9};
+    private static final byte[] vertexTerminatorClass = new byte[]{15, 1, 1, 9};
     private static final byte[] pattern = ByteBuffer.allocate(vertexTerminatorClass.length + 8).put(vertexTerminatorClass).putLong(4185403236219066774L).array();
+
 
     public VertexByteArrayInputStream(final InputStream inputStream) {
         super(inputStream);
@@ -25,11 +26,11 @@ public class VertexByteArrayInputStream extends FilterInputStream {
         final LinkedList<Byte> buffer = new LinkedList<>();
 
         int current = read();
-        while (current > -1 && (buffer.size() < 17 || !isMatch(buffer))) {
+        while (current > -1 && (buffer.size() < 12 || !isMatch(buffer))) {
             stream.write(current);
 
             current = read();
-            if (buffer.size() > 16)
+            if (buffer.size() > 11)
                 buffer.removeFirst();
 
             buffer.addLast((byte) current);

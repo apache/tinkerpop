@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.util.detached;
 
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -12,6 +13,8 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.javatuples.Pair;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -31,12 +34,16 @@ import java.util.stream.Collectors;
  */
 public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
+    private final transient Vertex.Iterators iterators = new Iterators();
+
     private DetachedVertex() { }
 
     public DetachedVertex(final Object id, final String label, final Map<String, Object> properties, final Map<String, Object> hiddenProperties) {
         super(id, label);
-        if (null != properties) this.properties.putAll(convertToDetachedMetaProperties(properties));
-        if (null != hiddenProperties) this.properties.putAll(convertToDetachedMetaProperties(hiddenProperties));
+
+        // todo: wrong?
+        if (null != properties) this.properties.putAll(convertToDetachedMetaProperties(properties, false));
+        if (null != hiddenProperties) this.properties.putAll(convertToDetachedMetaProperties(hiddenProperties, true));
     }
 
     protected DetachedVertex(final Object id, final String label) {
@@ -45,6 +52,9 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
     private DetachedVertex(final Vertex vertex) {
         super(vertex);
+
+        vertex.iterators().properties().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedMetaProperty ? p : new DetachedMetaProperty(p, this)));
+        vertex.iterators().hiddens().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedMetaProperty ? p : new DetachedMetaProperty(p, this)));
     }
 
     @Override
@@ -99,22 +109,42 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
         return new DetachedVertex(vertex);
     }
 
+    public static Vertex addTo(final Graph graph, final DetachedVertex detachedVertex) {
+        final Vertex v = graph.addVertex(T.id, detachedVertex.id(), T.label, detachedVertex.label());
+        detachedVertex.properties.entrySet().forEach(kv ->
+            kv.getValue().forEach(p -> {
+                final MetaProperty mp = (MetaProperty) p;
+                final List<Object> propsOnProps = new ArrayList<>();
+                mp.iterators().hiddens().forEachRemaining(h -> {
+                    propsOnProps.add(Graph.Key.hide(h.key()));
+                    propsOnProps.add(h.value());
+                });
+
+                mp.iterators().properties().forEachRemaining(h -> {
+                    propsOnProps.add(h.key());
+                    propsOnProps.add(h.value());
+                });
+
+                v.property(kv.getKey(), p.value(), propsOnProps.toArray());
+            })
+        );
+
+        return v;
+    }
+
     @Override
     public Vertex.Iterators iterators() {
         return this.iterators;
     }
 
-    private Map<String, List<Property>> convertToDetachedMetaProperties(final Map<String, Object> hiddenProperties) {
-        return hiddenProperties.entrySet().stream()
-                .map(entry -> Pair.with(entry.getKey(), ((List<IoMetaProperty>) entry.getValue()).stream()
-                                .map(iom -> (Property) new DetachedMetaProperty(iom.id, iom.label, entry.getKey(), iom.value,
-                                                                                iom.properties, iom.hiddenProperties,
-                                                                                (DetachedVertex) this))
+    private Map<String, List<Property>> convertToDetachedMetaProperties(final Map<String, Object> properties, final boolean hide) {
+        return properties.entrySet().stream()
+                .map(entry -> Pair.with(hide ? Graph.Key.hide(entry.getKey()) : entry.getKey(), ((List<Map<String, Object>>) entry.getValue()).stream()
+                                .map(m -> (Property) new DetachedMetaProperty(m.get("id"), (String) m.get("label"), hide ? Graph.Key.hide(entry.getKey()) : entry.getKey(),
+                                        m.get("value"), (Map<String, Object>) m.get("properties"), (Map<String, Object>) m.get("hidden"), this))
                                 .collect(Collectors.toList()))
                 ).collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
     }
-
-    private final Vertex.Iterators iterators = new Iterators();
 
     protected class Iterators extends DetachedElement<Vertex>.Iterators implements Vertex.Iterators, Serializable {
 
@@ -137,5 +167,12 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
         public GraphTraversal<Vertex, Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
             throw new IllegalStateException();
         }
+    }
+
+    private void putToList(final String key, final Property p) {
+        if (!this.properties.containsKey(key))
+            this.properties.put(key, new ArrayList<>());
+
+        ((List) this.properties.get(key)).add(p);
     }
 }

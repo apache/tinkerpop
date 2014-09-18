@@ -14,6 +14,9 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SQuintFunction;
 import com.tinkerpop.gremlin.util.function.STriFunction;
 
@@ -100,27 +103,24 @@ public class LegacyGraphSONReader implements GraphReader {
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream,
-                             final STriFunction<Object, String, Object[], Vertex> vertexMaker) throws IOException {
-        throw new UnsupportedOperationException("This reader only reads an entire Graph");
-    }
-
-    @Override
-    public Vertex readVertex(final InputStream inputStream, final Direction direction,
-                             final STriFunction<Object, String, Object[], Vertex> vertexMaker,
-                             final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
-        throw new UnsupportedOperationException("This reader only reads an entire Graph");
-    }
-
-    @Override
     public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
-                                         final STriFunction<Object, String, Object[], Vertex> vertexMaker,
-                                         final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
+                                         final SFunction<DetachedVertex, Vertex> vertexMaker,
+                                         final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
         throw new UnsupportedOperationException("This reader only reads an entire Graph");
     }
 
     @Override
-    public Edge readEdge(final InputStream inputStream, final SQuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
+    public Edge readEdge(final InputStream inputStream, final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
+        throw new UnsupportedOperationException("This reader only reads an entire Graph");
+    }
+
+    @Override
+    public Vertex readVertex(final InputStream inputStream, final SFunction<DetachedVertex, Vertex> vertexMaker) throws IOException {
+        throw new UnsupportedOperationException("This reader only reads an entire Graph");
+    }
+
+    @Override
+    public Vertex readVertex(final InputStream inputStream, final Direction direction, final SFunction<DetachedVertex, Vertex> vertexMaker, final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
         throw new UnsupportedOperationException("This reader only reads an entire Graph");
     }
 

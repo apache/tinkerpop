@@ -11,6 +11,10 @@ import com.esotericsoftware.kryo.util.IntMap;
 import com.esotericsoftware.kryo.util.ObjectMap;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedMetaProperty;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 
 import static com.esotericsoftware.kryo.util.Util.getWrapperClass;
 
@@ -64,10 +68,14 @@ class GremlinClassResolver implements ClassResolver {
     public Registration getRegistration(final Class clazz) {
         // force all instances of Vertex and Edge to that respective interface
         final Class type;
-        if (Vertex.class.isAssignableFrom(clazz))
+        if (!DetachedVertex.class.isAssignableFrom(clazz) && Vertex.class.isAssignableFrom(clazz))
             type = Vertex.class;
-        else if (Edge.class.isAssignableFrom(clazz))
+        else if (!DetachedEdge.class.isAssignableFrom(clazz) && Edge.class.isAssignableFrom(clazz))
             type = Edge.class;
+        else if (!DetachedMetaProperty.class.isAssignableFrom(clazz) && DetachedMetaProperty.class.isAssignableFrom(clazz))
+            type = DetachedMetaProperty.class;
+        else if (!DetachedProperty.class.isAssignableFrom(clazz) && DetachedProperty.class.isAssignableFrom(clazz))
+            type = DetachedProperty.class;
         else
             type = clazz;
 

@@ -10,8 +10,10 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -23,8 +25,10 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
 
     String key;
     V value;
-    DetachedVertex vertex;
+    transient DetachedVertex vertex;
     int hashCode;
+
+    private final transient MetaProperty.Iterators iterators = new Iterators();
 
     private DetachedMetaProperty() {
 
@@ -43,18 +47,36 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
         this.vertex = vertex;
         this.hashCode = super.hashCode();
 
-        if (properties != null) properties.entrySet().iterator().forEachRemaining(kv -> this.properties.put(kv.getKey(), Arrays.asList(new DetachedProperty(kv.getKey(), kv.getValue(), this))));
-        if (hiddenProperties != null) hiddenProperties.entrySet().iterator().forEachRemaining(kv -> this.properties.put(Graph.Key.hide(kv.getKey()), Arrays.asList(new DetachedProperty(kv.getKey(), kv.getValue(), this))));
+        if (properties != null) properties.entrySet().iterator().forEachRemaining(kv -> putToList(kv.getKey(), new DetachedProperty(kv.getKey(), kv.getValue(), this)));
+        if (hiddenProperties != null) hiddenProperties.entrySet().iterator().forEachRemaining(kv -> putToList(Graph.Key.hide(kv.getKey()), new DetachedProperty(kv.getKey(), kv.getValue(), this)));
     }
+
+    // todo: straighten out all these constructors and their scopes - what do we really need here?
 
     private DetachedMetaProperty(final MetaProperty property) {
         super(property);
         if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
 
-        this.key = property.key();
+        this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
         this.value = (V) property.value();
         this.hashCode = property.hashCode();
-        this.vertex = DetachedVertex.detach(property.getElement());
+        this.vertex = property.getElement() instanceof DetachedVertex ? (DetachedVertex) property.getElement() : DetachedVertex.detach(property.getElement());
+
+        property.iterators().properties().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
+        property.iterators().hiddens().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
+    }
+
+    DetachedMetaProperty(final MetaProperty property, final DetachedVertex detachedVertex) {
+        super(property);
+        if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
+
+        this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
+        this.value = (V) property.value();
+        this.hashCode = property.hashCode();
+        this.vertex = detachedVertex;
+
+        property.iterators().properties().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
+        property.iterators().hiddens().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
     }
 
     @Override
@@ -138,8 +160,6 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
         return this.iterators;
     }
 
-    private final MetaProperty.Iterators iterators = new Iterators();
-
     protected class Iterators extends DetachedElement<V>.Iterators implements MetaProperty.Iterators {
 
         @Override
@@ -151,5 +171,12 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
         public <U> Iterator<Property<U>> hiddens(final String... propertyKeys) {
             return (Iterator) super.hiddens(propertyKeys);
         }
+    }
+
+    private void putToList(final String key, final Property p) {
+        if (!this.properties.containsKey(key))
+            this.properties.put(key, new ArrayList<>());
+
+        ((List) this.properties.get(key)).add(p);
     }
 }

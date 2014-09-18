@@ -26,7 +26,9 @@ import java.util.Optional;
 /**
  * GraphMLWriter writes a Graph to a GraphML OutputStream. Note that this format is lossy, in the sense that data
  * types and features of Gremlin Structure not supported by GraphML are not serialized.  This format is meant for
- * external export of a graph to tools outside of Gremlin Structure graphs.
+ * external export of a graph to tools outside of Gremlin Structure graphs.  Note that GraphML does not support
+ * the notion of multi-properties or properties on properties and will throw an exception when writing a
+ * graph elements that have such things.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Joshua Shinavier (http://fortytwo.net)
@@ -69,12 +71,12 @@ public class GraphMLWriter implements GraphWriter {
     }
 
     @Override
-    public void writeVertices(OutputStream outputStream, Traversal<?, Vertex> traversal, Direction direction) throws IOException {
+    public void writeVertices(final OutputStream outputStream, Traversal<?, Vertex> traversal, final Direction direction) throws IOException {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 
     @Override
-    public void writeVertices(OutputStream outputStream, Traversal<?, Vertex> traversal) throws IOException {
+    public void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal) throws IOException {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 
