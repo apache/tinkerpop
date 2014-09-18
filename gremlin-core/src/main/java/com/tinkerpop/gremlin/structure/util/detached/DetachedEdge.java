@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.util.detached;
 
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -16,6 +17,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 /**
@@ -80,18 +82,39 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
         return graph.e(this.id);
     }
 
-    public void clearVertex(final Direction direction) {
-        if (direction == Direction.BOTH || direction == Direction.OUT)
-            this.outVertex = null;
-
-        if (direction == Direction.BOTH || direction == Direction.IN)
-            this.inVertex = null;
-    }
-
     public static DetachedEdge detach(final Edge edge) {
         if (null == edge) throw Graph.Exceptions.argumentCanNotBeNull("edge");
         if (edge instanceof DetachedEdge) throw new IllegalArgumentException("Edge is already detached");
         return new DetachedEdge(edge);
+    }
+
+    public static Edge addTo(final Graph graph, final DetachedEdge detachedEdge) {
+        Vertex outV;
+        try {
+            outV = graph.v(detachedEdge.outVertex.id());
+        } catch (final NoSuchElementException e) {
+            outV = null;
+        }
+        if (null == outV) {
+            outV = graph.addVertex(T.id, detachedEdge.outVertex.id());
+        }
+
+        Vertex inV;
+        try {
+            inV = graph.v(detachedEdge.inVertex.id());
+        } catch (final NoSuchElementException e) {
+            inV = null;
+        }
+        if (null == inV) {
+            inV = graph.addVertex(T.id, detachedEdge.inVertex.id());
+        }
+
+        final Edge e = outV.addEdge(detachedEdge.label(), inV, T.id, detachedEdge.id());
+        detachedEdge.properties.entrySet().forEach(kv ->
+            kv.getValue().forEach(p -> e.<Object>property(kv.getKey(), p.value()))
+        );
+
+        return e;
     }
 
     @Override

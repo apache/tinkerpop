@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.util.detached;
 
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -108,6 +109,29 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
         return new DetachedVertex(vertex);
     }
 
+    public static Vertex addTo(final Graph graph, final DetachedVertex detachedVertex) {
+        final Vertex v = graph.addVertex(T.id, detachedVertex.id(), T.label, detachedVertex.label());
+        detachedVertex.properties.entrySet().forEach(kv ->
+            kv.getValue().forEach(p -> {
+                final MetaProperty mp = (MetaProperty) p;
+                final List<Object> propsOnProps = new ArrayList<>();
+                mp.iterators().hiddens().forEachRemaining(h -> {
+                    propsOnProps.add(Graph.Key.hide(h.key()));
+                    propsOnProps.add(h.value());
+                });
+
+                mp.iterators().properties().forEachRemaining(h -> {
+                    propsOnProps.add(h.key());
+                    propsOnProps.add(h.value());
+                });
+
+                v.property(kv.getKey(), p.value(), propsOnProps.toArray());
+            })
+        );
+
+        return v;
+    }
+
     @Override
     public Vertex.Iterators iterators() {
         return this.iterators;
@@ -115,9 +139,9 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
     private Map<String, List<Property>> convertToDetachedMetaProperties(final Map<String, Object> properties, final boolean hide) {
         return properties.entrySet().stream()
-                .map(entry -> Pair.with(hide ? Graph.Key.hide(entry.getKey()) : entry.getKey(), ((List<Map<String,Object>>) entry.getValue()).stream()
+                .map(entry -> Pair.with(hide ? Graph.Key.hide(entry.getKey()) : entry.getKey(), ((List<Map<String, Object>>) entry.getValue()).stream()
                                 .map(m -> (Property) new DetachedMetaProperty(m.get("id"), (String) m.get("label"), hide ? Graph.Key.hide(entry.getKey()) : entry.getKey(),
-                                        m.get("value"), (Map<String,Object>) m.get("properties"), (Map<String,Object>) m.get("hidden"), this))
+                                        m.get("value"), (Map<String, Object>) m.get("properties"), (Map<String, Object>) m.get("hidden"), this))
                                 .collect(Collectors.toList()))
                 ).collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
     }
