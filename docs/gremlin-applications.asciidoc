@@ -655,19 +655,19 @@ Consider the following traversal:
 
 [source,groovy]
 g.v(2).in().out('knows').
-      has('age',T.gt,30).outE('created').
-      has('weight',T.gt,0.5f).inV()
+      has('age',gt,30).outE('created').
+      has('weight',gt,0.5f).inV()
 
 To visualize it insert the appropriately named `store('n')` steps where `n` is an integer, and the vertices will be highlighted in ascending store step order.
 
 [source,groovy]
-gremlin> g.v(2).in('knows').out('knows').has('age',T.gt,30).
-               outE('created').has('weight',T.gt,0.5f).inV().value('name')
+gremlin> g.v(2).in('knows').out('knows').has('age',gt,30).
+               outE('created').has('weight',gt,0.5f).inV().value('name')
 ==>ripple
 gremlin> traversal = g.v(2).store('1').
                            in('knows').store('2').
-                           out('knows').has('age',T.gt,30).store('3').
-                           outE('created').has('weight',T.gt,0.5f).inV().store('4')
+                           out('knows').has('age',gt,30).store('3').
+                           outE('created').has('weight',gt,0.5f).inV().store('4')
 ==>[v[5]]
 gremlin> traversal.sideEffects().get('1')
 ==>v[2]
