@@ -46,6 +46,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.SelectOneStep;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ShuffleStep;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldStep;
+import com.tinkerpop.gremlin.process.graph.step.map.UntilStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ValueMapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ValueStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ValuesStep;
@@ -63,7 +64,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
-import com.tinkerpop.gremlin.process.graph.step.util.IdentityStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.strategy.GraphComputerStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
@@ -677,6 +678,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> jump(final String jumpLabel) {
         return this.addStep(new JumpStep<>(this, jumpLabel));
+    }
+
+    public default GraphTraversal<S, E> until(final String breakLabel, final SPredicate<Traverser<E>> breakPredicate, final SPredicate<Traverser<E>> emitPredicate) {
+        return this.addStep(new UntilStep<>(this, breakLabel, breakPredicate, emitPredicate));
+    }
+
+    public default GraphTraversal<S, E> until(final String breakLabel, final SPredicate<Traverser<E>> breakPredicate) {
+        return this.addStep(new UntilStep<>(this, breakLabel, breakPredicate, null));
     }
 
     ///////////////////// UTILITY STEPS /////////////////////

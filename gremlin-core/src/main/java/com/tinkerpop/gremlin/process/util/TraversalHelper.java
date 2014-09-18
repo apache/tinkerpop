@@ -117,6 +117,14 @@ public class TraversalHelper {
         reLinkSteps(traversal);
     }
 
+    public static void insertBeforeStep(final Step step, final Step afterStep, final Traversal traversal) {
+        TraversalHelper.insertStep(step, traversal.getSteps().indexOf(afterStep), traversal);
+    }
+
+    public static void insertAfterStep(final Step step, final Step beforeStep, final Traversal traversal) {
+        TraversalHelper.insertStep(step, traversal.getSteps().indexOf(beforeStep) + 1, traversal);
+    }
+
     public static void replaceStep(final Step removeStep, final Step insertStep, final Traversal traversal) {
         int index = TraversalHelper.removeStep(removeStep, traversal);
         TraversalHelper.insertStep(insertStep, index, traversal);
@@ -182,6 +190,25 @@ public class TraversalHelper {
                 steps.add((S) step);
         }
         return steps;
+    }
+
+    public static void printTraversalChain(final Traversal traversal) {
+        Step step = TraversalHelper.getStart(traversal);
+        while (!step.equals(EmptyStep.instance())) {
+            System.out.println(step);
+            step = step.getNextStep();
+        }
+    }
+
+    public static int relativeLabelDirection(Step step, final String label) {
+        if (label.equals(step.getLabel()))
+            return 0;
+        while (!(step instanceof EmptyStep)) {
+            if (label.equals(step.getLabel()))
+                return 1;
+            step = step.getNextStep();
+        }
+        return -1;
     }
 
     public static void verifySideEffectKeyIsNotAStepLabel(final String key, final Traversal traversal) {

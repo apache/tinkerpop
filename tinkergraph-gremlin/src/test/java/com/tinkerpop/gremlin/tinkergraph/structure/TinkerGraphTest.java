@@ -54,16 +54,16 @@ public class TinkerGraphTest {
 
     /*@Test
     public void randomTest() throws Exception {
-        Graph g = TinkerGraph.open();
-        Vertex a = g.addVertex();
-        Vertex b = g.addVertex();
-        Edge e = a.addEdge("knows",b,Graph.Key.hide("acl"),"private","weight",1.0);
-        System.out.println("hiddenKeys: " + e.hiddenKeys());
-        System.out.println("keys: " + e.keys());
-        System.out.println("hiddens:");
-        e.iterators().hiddens("acl").forEachRemaining(System.out::println);
-        System.out.println("properties:");
-        e.iterators().properties("weight").forEachRemaining(System.out::println);
+        Graph g = TinkerFactory.createClassic();
+        //g.v(1).as('a').jump('b'){it.loops>1}.out().jump('a').as('b').value('name')
+
+        //Traversal t = g.v(1).identity().as("a").jump("b",v -> v.getLoops()>1).out().jump("a").as("b").value("name");
+        Traversal t = g.v(1).identity().until("a",v->v.getLoops() >1,v->false).out().as("a").value("name");
+        System.out.println(t);
+        t.strategies().apply();
+        System.out.println(t);
+        System.out.println(t.toList());
+        //TraversalHelper.printTraversalChain(t);
     }*/
 
     /**

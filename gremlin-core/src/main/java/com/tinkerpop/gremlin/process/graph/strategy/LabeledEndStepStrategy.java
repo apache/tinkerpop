@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.graph.step.util.LabelIdentityStep;
+import com.tinkerpop.gremlin.process.graph.step.util.MarkerIdentityStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 /**
@@ -20,7 +20,7 @@ public class LabeledEndStepStrategy implements TraversalStrategy {
     public void apply(final Traversal traversal) {
         final Step step = TraversalHelper.getEnd(traversal);
         if (TraversalHelper.isLabeled(step))
-            TraversalHelper.insertStep(new LabelIdentityStep<>(traversal), traversal.getSteps().size(), traversal);
+            TraversalHelper.insertStep(new MarkerIdentityStep<>(traversal), traversal.getSteps().size(), traversal);
     }
 
     public static LabeledEndStepStrategy instance() {

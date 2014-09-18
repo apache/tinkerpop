@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.ElementTraversal;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -536,6 +535,14 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
 
     public default Neo4jTraversal<A, A> jump(final String jumpLabel) {
         return this.start().jump(jumpLabel);
+    }
+
+    public default Neo4jTraversal<A, A> until(final String breakLabel, final SPredicate<Traverser<A>> breakPredicate, final SPredicate<Traverser<A>> emitPredicate) {
+        return this.start().until(breakLabel, breakPredicate, emitPredicate);
+    }
+
+    public default Neo4jTraversal<A, A> until(final String breakLabel, final SPredicate<Traverser<A>> breakPredicate) {
+        return this.start().until(breakLabel, breakPredicate);
     }
 
     ///////////////////// UTILITY STEPS /////////////////////

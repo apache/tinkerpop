@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.graph.step.util;
+package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;

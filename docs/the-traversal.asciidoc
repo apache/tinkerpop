@@ -326,7 +326,7 @@ gremlin> g.v(1).jump('a').out().out().out().as('a').value('name') <3>
 ==>marko
 
 <1> do-while semantics as found in the classic `loop()`-step in TinkerPop2.
-<2> while-do semantics as introduced in TinkerPop3. Jump to step `b` if loops greater than 1 else, `out` and jump back to `a`.   
+<2> while-do semantics as introduced in TinkerPop3. Jump to step `b` if loops greater than 1 else, `out` and jump back to `a` (see  <<until-step,`until()`>>).
 <3> a non-predicate based jump where `out.out.out` is seen as inert code.
 
 If a predetermined number of loops is known, it is possible to avoid the use of the jump-predicate.
@@ -764,6 +764,31 @@ gremlin> tree['marko']['josh']
 gremlin> tree.getObjectsAtDepth(3)
 ==>ripple
 ==>lop
+
+[[until-step]]
+Until Step
+~~~~~~~~~~
+
+Gremlin provides *while-do* looping. This was demonstrated in the <<jump-step,Jump Step>> section of the documentation. However, when only using `jump()` for *while-do*, the representation can be confusing as there are numerous `jump` constructions. For the sake of simplicity, `until()`-step exists (*branch*).
+
+[source,groovy]
+gremlin> g.v(1).as('a').jump('b'){it.loops > 1}.out().jump('a').as('b').value('name') <1>
+==>ripple
+==>lop
+gremlin> g.v(1).until('b'){it.loops > 1}.out().as('b').value('name') <2>
+==>ripple
+==>lop
+
+<1> *while-do* looping using `jump()-step`.
+<2> *while-do* looping using `until()-step`.
+
+The `until()` expression in the example above states:
+. Get the vertex with id 1 from the graph.
+. Until the current traverser has loop'd two times, get the outgoing adjacent vertices of the current vertex of the traverser.
+. When the traverser has loop'd two times, break out of the until-clause and then get the `name` of the current vertex of the traverser.
+
+
+NOTE: The `until()`-step is not a "real" step. It is simply a marker that exist in the traversal. When the `UntilStrategy` is executed (see <<traversalstrategy,TraversalStrategy>>), the traversal is re-written by inserting `jump()`-steps accordingly. Thus, in the example above, the second traversal example using `until()` compiles to the first which uses `jump()`.
 
 
 [[traversalstrategy]]

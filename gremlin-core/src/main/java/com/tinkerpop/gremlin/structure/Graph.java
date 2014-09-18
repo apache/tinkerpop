@@ -35,6 +35,8 @@ public interface Graph extends AutoCloseable {
      */
     public class Key {
 
+        public static final String SYSTEM_PREFIX = "%&%";
+
         /**
          * The prefix to denote that a key is hidden.
          */

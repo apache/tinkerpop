@@ -33,8 +33,6 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
         this.jumpLabel = jumpLabel;
         this.ifPredicate = ifPredicate;
         this.emitPredicate = emitPredicate;
-        this.jumpToStep = TraversalHelper.hasLabel(this.jumpLabel, this.traversal) ? TraversalHelper.getStep(this.jumpLabel, this.traversal).getNextStep() : null;
-        this.jumpBack = new AtomicBoolean(null != this.jumpToStep);
         this.futureSetByChild = true;
     }
 
@@ -48,8 +46,6 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
         this.loops = loops;
         this.ifPredicate = null;
         this.emitPredicate = emitPredicate;
-        this.jumpToStep = TraversalHelper.hasLabel(this.jumpLabel, this.traversal) ? TraversalHelper.getStep(this.jumpLabel, this.traversal).getNextStep() : null;
-        this.jumpBack = new AtomicBoolean(null != this.jumpToStep);
         this.futureSetByChild = true;
     }
 
@@ -77,8 +73,11 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
     }
 
     private Traverser<S> standardAlgorithm() {
-        if (null == this.jumpToStep)
+        if (null == this.jumpToStep) {
             this.jumpToStep = TraversalHelper.getStep(this.jumpLabel, this.traversal).getNextStep();
+            this.jumpBack = new AtomicBoolean(TraversalHelper.relativeLabelDirection(this, this.jumpLabel) == -1);
+            // TODO: getNextStep() may be dependent on whether its a jump back or a jump forward
+        }
         while (true) {
             final Traverser<S> traverser = this.starts.next();
             if (this.jumpBack.get()) ((Traverser.System<S>) traverser).incrLoops();
