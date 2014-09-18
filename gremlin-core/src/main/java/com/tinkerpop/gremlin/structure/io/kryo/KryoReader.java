@@ -330,8 +330,6 @@ public class KryoReader implements GraphReader {
     public static class Builder {
         private File tempFile;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
-
-        // todo: uh - does this work??
         private String vertexIdKey = T.id.getAccessor();
         private String edgeIdKey = T.id.getAccessor();
 
