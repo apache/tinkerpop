@@ -18,8 +18,8 @@ Vertex Properties
 
 In TinkerPop3, `VertexProperty<V>` is introduced. All the properties of a `Vertex` are a `VertexProperty`. A `VertexProperty` is like a `Property` in that it has a key/value, but it extends `Property` whereby it can also have a collection of key/value pairs. Moreover, while an `Edge` can only have one property of key "name" (for example), a `Vertex` can have multiple "name" vertex properties. With vertex properties, two features of vertex properties are introduced:
 
- . Multiple properties: a `Vertex` property key can have multiple values (i.e. a vertex can have multiple "name" properties).
- . Properties on properties: a `Vertex` property can have properties (i.e. a vertex property can have key/value data associated with it).
+ . Multiple properties: a vertex property key can have multiple values (i.e. a vertex can have multiple "name" properties).
+ . Properties on properties: a vertex property can have properties (i.e. a vertex property can have key/value data associated with it).
 
 A running example using vertex properties is provided below to demonstrate and explain the API.
 
