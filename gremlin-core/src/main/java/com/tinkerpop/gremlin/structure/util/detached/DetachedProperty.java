@@ -23,7 +23,6 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
     String key;
     V value;
     transient DetachedElement element;
-    int hashCode;
 
     private DetachedProperty() {
 
@@ -37,7 +36,6 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
         this.key = key;
         this.value = value;
         this.element = element;
-        this.hashCode = super.hashCode();
     }
 
     // todo: straighten out all these constructors and their scopes - what do we really need here?
@@ -47,7 +45,6 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
 
         this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
         this.value = (V) property.value();
-        this.hashCode = property.hashCode();
         final Element element = property.getElement();
 
         if (element instanceof Vertex)
@@ -63,7 +60,6 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
 
         this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
         this.value = (V) property.value();
-        this.hashCode = property.hashCode();
         this.element = element;
     }
 
@@ -72,7 +68,6 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
 
         this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
         this.value = (V) property.value();
-        this.hashCode = property.hashCode();
         this.element = element;
     }
 
@@ -119,7 +114,7 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
 
     @Override
     public int hashCode() {
-        return this.hashCode;
+        return this.element.id.hashCode() + this.key.hashCode() + this.value.hashCode();
     }
 
     @Override

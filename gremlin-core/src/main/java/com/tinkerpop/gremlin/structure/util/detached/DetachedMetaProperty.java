@@ -26,7 +26,6 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
     String key;
     V value;
     transient DetachedVertex vertex;
-    int hashCode;
 
     private final transient MetaProperty.Iterators iterators = new Iterators();
 
@@ -45,7 +44,6 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
         this.key = key;
         this.value = value;
         this.vertex = vertex;
-        this.hashCode = super.hashCode();
 
         if (properties != null) properties.entrySet().iterator().forEachRemaining(kv -> putToList(kv.getKey(), new DetachedProperty(kv.getKey(), kv.getValue(), this)));
         if (hiddenProperties != null) hiddenProperties.entrySet().iterator().forEachRemaining(kv -> putToList(Graph.Key.hide(kv.getKey()), new DetachedProperty(kv.getKey(), kv.getValue(), this)));
@@ -59,7 +57,6 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
 
         this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
         this.value = (V) property.value();
-        this.hashCode = property.hashCode();
         this.vertex = property.getElement() instanceof DetachedVertex ? (DetachedVertex) property.getElement() : DetachedVertex.detach(property.getElement());
 
         property.iterators().properties().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
@@ -72,7 +69,6 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
 
         this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
         this.value = (V) property.value();
-        this.hashCode = property.hashCode();
         this.vertex = detachedVertex;
 
         property.iterators().properties().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
@@ -122,7 +118,7 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
 
     @Override
     public int hashCode() {
-        return this.hashCode;
+        return super.hashCode();
     }
 
     @Override

@@ -182,7 +182,7 @@ public class KryoReader implements GraphReader {
         } catch (Exception ex) {
             // rollback whatever portion failed
             ex.printStackTrace();
-            graph.tx().rollback();
+            graph.tx().rollback();  // todo: remove
             throw new IOException(ex);
         }
         // done writing to temp
