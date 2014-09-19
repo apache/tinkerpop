@@ -97,8 +97,8 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     }
 
     @Override
-    public Vertex attach(final Graph graph) {
-        return graph.v(this.id);
+    public Vertex attach(final Graph hostGraph) {
+        return hostGraph.v(this.id);
     }
 
     public static DetachedVertex detach(final Vertex vertex) {

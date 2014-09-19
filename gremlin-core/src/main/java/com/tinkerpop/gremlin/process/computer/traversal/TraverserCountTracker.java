@@ -12,7 +12,6 @@ import java.util.Map;
 public class TraverserCountTracker implements Serializable {
 
     protected Map<Traverser.System, Long> previousObjectTracks = new HashMap<>();
-    protected final Map<Traverser.System, Long> graphTracks = new HashMap<>();
     protected final Map<Traverser.System, Long> objectTracks = new HashMap<>();
 
     protected final Map<Traverser.System, Long> doneGraphTracks = new HashMap<>();
@@ -33,10 +32,6 @@ public class TraverserCountTracker implements Serializable {
         return this.objectTracks;
     }
 
-    public Map<Traverser.System, Long> getGraphTracks() {
-        return this.graphTracks;
-    }
-
     public Map<Traverser.System, Long> getPreviousObjectTracks() {
         return this.previousObjectTracks;
     }
@@ -45,7 +40,6 @@ public class TraverserCountTracker implements Serializable {
         this.previousObjectTracks.clear();
         this.previousObjectTracks.putAll(this.objectTracks);
         this.objectTracks.clear();
-        this.graphTracks.clear();
     }
 }
 

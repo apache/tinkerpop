@@ -138,10 +138,10 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
     }
 
     @Override
-    public Property<V> attach(final Graph graph) {
+    public Property<V> attach(final Graph hostGraph) {
         final Element element = (this.getElement() instanceof Vertex) ?
-                graph.v(this.getElement().id()) :
-                graph.e(this.getElement().id());
+                hostGraph.v(this.getElement().id()) :
+                hostGraph.e(this.getElement().id());
         return Optional.<Property<V>>of(element.property(this.key)).orElseThrow(() -> new IllegalStateException("The detached property could not be found in the provided graph: " + this));
     }
 

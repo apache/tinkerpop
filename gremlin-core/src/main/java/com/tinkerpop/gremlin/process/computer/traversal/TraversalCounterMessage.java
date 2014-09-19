@@ -56,7 +56,7 @@ public class TraversalCounterMessage extends TraversalMessage {
         final Map<Traverser, Long> localCounts = new HashMap<>();
 
         messenger.receiveMessages(MessageType.Global.of()).forEach(message -> {
-            ((TraversalCounterMessage) message).traverser.inflate(vertex,traversal);
+            ((TraversalCounterMessage) message).traverser.inflate(vertex, traversal);
             if (((TraversalCounterMessage) message).executeCounts(tracker, traversal, localCounts, vertex))
                 voteToHalt.set(false);
         });
@@ -83,6 +83,7 @@ public class TraversalCounterMessage extends TraversalMessage {
                         MessageType.Global.of(TraversalMessage.getHostingVertices(end)),
                         message);
             } else {
+                ((Traverser.System) traverser).deflate();
                 MapHelper.incr(tracker.getObjectTracks(), (Traverser.System) traverser, count);
             }
         });
@@ -100,11 +101,8 @@ public class TraversalCounterMessage extends TraversalMessage {
         }
 
         final Step step = TraversalHelper.getStep(this.traverser.getFuture(), traversal);
-        MapHelper.incr(tracker.getGraphTracks(), this.traverser, this.counter);
-
         if (step instanceof VertexCentric) ((VertexCentric) step).setCurrentVertex(vertex);
         if (step instanceof Bulkable) ((Bulkable) step).setCurrentBulkCount(this.counter);
-
         step.addStarts(new SingleIterator(this.traverser));
         return processStep(step, localCounts, this.counter);
     }

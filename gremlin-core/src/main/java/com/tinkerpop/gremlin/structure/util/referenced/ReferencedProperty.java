@@ -1,7 +1,12 @@
 package com.tinkerpop.gremlin.structure.util.referenced;
 
+import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.detached.Attachable;
 
 import java.io.Serializable;
 import java.util.NoSuchElementException;
@@ -9,7 +14,7 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReferencedProperty<V> implements Property<V>, Serializable {
+public class ReferencedProperty<V> implements Property<V>, Attachable<Property>, Serializable {
 
     protected String key;
     protected V value;
@@ -24,7 +29,7 @@ public class ReferencedProperty<V> implements Property<V>, Serializable {
         this.key = property.key();
         this.value = property.value();
         this.hidden = property.isHidden();
-        this.element = property.getElement();
+        this.element = ReferencedFactory.detach((Element)property.getElement());
     }
 
     @Override
@@ -49,11 +54,33 @@ public class ReferencedProperty<V> implements Property<V>, Serializable {
 
     @Override
     public void remove() {
-        throw new IllegalStateException("ReferencedProperties can not be removed:" + this);
+        throw new IllegalStateException("Referenced properties can not be removed:" + this);
     }
 
     @Override
     public <E extends Element> E getElement() {
         return (E) this.element;
+    }
+
+    @Override
+    public Property attach(final Graph hostGraph) {
+        if (this.element instanceof MetaProperty) {
+            return ((ReferencedMetaProperty) this.element).attach(hostGraph).property(this.key());
+        } else if (this.element instanceof Edge) {
+            return ((ReferencedEdge) this.element).attach(hostGraph).property(this.key());
+        } else {
+            throw new IllegalStateException("The property is not attached to a legal element: " + this);
+        }
+    }
+
+    @Override
+    public Property attach(final Vertex hostVertex) {
+        if (this.element instanceof MetaProperty) {
+            return ((ReferencedMetaProperty) this.element).attach(hostVertex).property(this.key());
+        } else if (this.element instanceof Edge) {
+            return ((ReferencedEdge) this.element).attach(hostVertex).property(this.key());
+        } else {
+            throw new IllegalStateException("The property is not attached to a legal element: " + this);
+        }
     }
 }

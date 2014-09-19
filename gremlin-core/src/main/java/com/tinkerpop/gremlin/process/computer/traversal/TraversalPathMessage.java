@@ -14,6 +14,7 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
+import com.tinkerpop.gremlin.structure.util.referenced.ReferencedFactory;
 import com.tinkerpop.gremlin.util.function.SSupplier;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -50,12 +51,7 @@ public class TraversalPathMessage extends TraversalMessage {
         tracker.getPreviousObjectTracks().forEach((object, traversers) -> {
             traversers.forEach(traverser -> {
                 if (traverser.isDone()) {
-                    traverser.dropSideEffects();
-                    if (object instanceof Path) {
-                        MapHelper.incr(tracker.getDoneObjectTracks(), DetachedPath.detach(((Path) object)), traverser);
-                    } else {
-                        MapHelper.incr(tracker.getDoneObjectTracks(), object, traverser);
-                    }
+                    MapHelper.incr(tracker.getDoneObjectTracks(), object, traverser);
                 } else {
                     final Step step = TraversalHelper.getStep(traverser.getFuture(), traversal);
                     if (step instanceof VertexCentric) ((VertexCentric) step).setCurrentVertex(vertex);
@@ -80,7 +76,6 @@ public class TraversalPathMessage extends TraversalMessage {
 
         final Step step = TraversalHelper.getStep(this.traverser.getFuture(), traversal);
         if (step instanceof VertexCentric) ((VertexCentric) step).setCurrentVertex(vertex);
-        MapHelper.incr(tracker.getGraphTracks(), this.traverser.get(), this.traverser);
         step.addStarts(new SingleIterator(this.traverser));
         return processStep(step, messenger, tracker);
     }
@@ -94,9 +89,9 @@ public class TraversalPathMessage extends TraversalMessage {
                         MessageType.Global.of(getHostingVertices(end)),
                         TraversalPathMessage.of((Traverser.System) traverser));
             } else {
-                ((Traverser.System) traverser).dropSideEffects();
+                ((Traverser.System) traverser).deflate();
                 if (end instanceof Path) {
-                    MapHelper.incr(tracker.getObjectTracks(), DetachedPath.detach(((Path) end)), (Traverser.System) traverser);
+                    MapHelper.incr(tracker.getObjectTracks(), ReferencedFactory.detach(((Path) end)), (Traverser.System) traverser);
                 } else {
                     MapHelper.incr(tracker.getObjectTracks(), end, (Traverser.System) traverser);
                 }

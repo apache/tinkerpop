@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface Attachable<T> {
-    public abstract T attach(final Vertex hostVertex);
+    public abstract T attach(final Vertex hostVertex) throws IllegalStateException;
 
-    public abstract T attach(final Graph graph);
+    public abstract T attach(final Graph hostGraph) throws IllegalStateException;
 }

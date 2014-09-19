@@ -1,13 +1,19 @@
 package com.tinkerpop.gremlin.structure.util.referenced;
 
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.detached.Attachable;
+
+import java.util.Collections;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReferencedVertex extends ReferencedElement implements Vertex {
+public class ReferencedVertex extends ReferencedElement implements Vertex, Attachable<Vertex> {
 
     protected ReferencedVertex() {
 
@@ -19,21 +25,59 @@ public class ReferencedVertex extends ReferencedElement implements Vertex {
 
     @Override
     public Edge addEdge(String label, Vertex inVertex, Object... keyValues) {
-        throw new IllegalStateException("ReferencedVertices can not have edges:" + this);
+        throw new IllegalStateException("Referenced vertices can not have edges:" + this);
     }
 
     @Override
     public <V> MetaProperty<V> property(String key) {
-        throw new IllegalStateException("ReferencedVertices do not have properties:" + this);
+        throw new IllegalStateException("Referenced vertices do not have properties:" + this);
     }
 
     @Override
     public <V> MetaProperty<V> property(String key, V value) {
-        throw new IllegalStateException("ReferencedVertices can not have properties:" + this);
+        throw new IllegalStateException("Referenced vertices can not have properties:" + this);
     }
 
     @Override
     public Vertex.Iterators iterators() {
-        throw new IllegalStateException("ReferencedVertices do not have iterators:" + this);
+        return Iterators.ITERATORS;
+    }
+
+    @Override
+    public Vertex attach(final Graph hostGraph) {
+        return hostGraph.v(this.id());
+    }
+
+    @Override
+    public Vertex attach(final Vertex hostVertex) {
+        if (hostVertex.id().toString().equals(this.id().toString()))
+            return hostVertex;
+        else
+            throw new IllegalStateException("The host vertex must be the referenced vertex to attach: " + this);
+    }
+
+    private static final class Iterators implements Vertex.Iterators {
+
+        protected static final Iterators ITERATORS = new Iterators();
+
+        @Override
+        public Iterator<Edge> edges(Direction direction, int branchFactor, String... labels) {
+            return Collections.emptyIterator();
+        }
+
+        @Override
+        public Iterator<Vertex> vertices(Direction direction, int branchFactor, String... labels) {
+            return Collections.emptyIterator();
+        }
+
+        @Override
+        public <V> Iterator<MetaProperty<V>> properties(String... propertyKeys) {
+            return Collections.emptyIterator();
+        }
+
+        @Override
+        public <V> Iterator<MetaProperty<V>> hiddens(String... propertyKeys) {
+            return Collections.emptyIterator();
+        }
     }
 }

@@ -25,6 +25,7 @@ import com.tinkerpop.gremlin.structure.util.detached.DetachedMetaProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import com.tinkerpop.gremlin.structure.util.referenced.ReferencedPath;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
@@ -234,7 +235,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(Edge.class, new ElementSerializer.EdgeSerializer(), 65));
             add(Triplet.<Class, Serializer, Integer>with(Vertex.class, new ElementSerializer.VertexSerializer(), 66));
             add(Triplet.<Class, Serializer, Integer>with(Property.class, new ElementSerializer.PropertySerializer(), 67));
-            add(Triplet.<Class, Serializer, Integer>with(MetaProperty.class, new ElementSerializer.MetaPropertySerializer(), 68));   // ***LAST ID***
+            add(Triplet.<Class, Serializer, Integer>with(MetaProperty.class, new ElementSerializer.MetaPropertySerializer(), 68));
 
             // GraphTraversal in OLAP
             add(Triplet.<Class, Serializer, Integer>with(SimpleTraverser.class, null, 55));
@@ -242,11 +243,12 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(TraverserCountTracker.class, null, 57));
             add(Triplet.<Class, Serializer, Integer>with(TraverserPathTracker.class, null, 58));
             add(Triplet.<Class, Serializer, Integer>with(Path.class, null, 59));
-            add(Triplet.<Class, Serializer, Integer>with(DetachedPath.class, null, 60)); // is this needed?
+            add(Triplet.<Class, Serializer, Integer>with(DetachedPath.class, null, 60));
             add(Triplet.<Class, Serializer, Integer>with(Optional.class, null, 61));
             add(Triplet.<Class, Serializer, Integer>with(AtomicLong.class, null, 62)); // this is all needed for serializing properties in TinkerGraph
             add(Triplet.<Class, Serializer, Integer>with(Tree.class, null, 63));
             add(Triplet.with(HashSet.class, null, 64));
+            add(Triplet.<Class, Serializer, Integer>with(ReferencedPath.class, null, 69));  // ***LAST ID***
         }};
 
         private static final byte major = 1;

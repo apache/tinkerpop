@@ -78,8 +78,8 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
     }
 
     @Override
-    public Edge attach(final Graph graph) {
-        return graph.e(this.id);
+    public Edge attach(final Graph hostGraph) {
+        return hostGraph.e(this.id);
     }
 
     public static DetachedEdge detach(final Edge edge) {

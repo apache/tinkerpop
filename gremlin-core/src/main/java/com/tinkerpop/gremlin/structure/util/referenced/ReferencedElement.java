@@ -1,14 +1,17 @@
 package com.tinkerpop.gremlin.structure.util.referenced;
 
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.detached.Attachable;
 
 import java.io.Serializable;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReferencedElement implements Element, Serializable {
+public abstract class ReferencedElement implements Element, Serializable {
 
     protected Object id;
     protected String label;
@@ -34,16 +37,11 @@ public class ReferencedElement implements Element, Serializable {
 
     @Override
     public <V> Property<V> property(String key, V value) {
-        throw new IllegalStateException("ReferencedElements do not have properties:" + this);
+        throw new IllegalStateException("Referenced elements do not have properties:" + this);
     }
 
     @Override
     public void remove() {
-        throw new IllegalStateException("ReferencedElements can not be removed:" + this);
-    }
-
-    @Override
-    public Iterators iterators() {
-        throw new IllegalStateException("ReferencedElements do not have iterators:" + this);
+        throw new IllegalStateException("Referenced elements can not be removed:" + this);
     }
 }
