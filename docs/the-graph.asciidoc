@@ -14,7 +14,7 @@ Features are the means by which vendors can expose nuanced difference between th
  . *Edge Features*
 
 Vertex Properties
----------------------
+-----------------
 
 In TinkerPop3, `VertexProperty<V>` is introduced. All the properties of a `Vertex` are a `VertexProperty`. A `VertexProperty` is like a `Property` in that it has a key/value, but it extends `Property` whereby it can also have a collection of key/value pairs. Moreover, while an `Edge` can only have one property of key "name" (for example), a `Vertex` can have multiple "name" vertex properties. With vertex properties, two features of vertex properties are introduced:
 
