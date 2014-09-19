@@ -118,7 +118,7 @@ public @interface LoadGraphWith {
         }
     }
 
-    public static final String RESOURCE_PATH_PREFIX = "/com/tinkerpop/gremlin/structure/util/io/kryo/";
+    public static final String RESOURCE_PATH_PREFIX = "/com/tinkerpop/gremlin/structure/io/kryo/";
 
     /**
      * The name of the resource to load with full path.

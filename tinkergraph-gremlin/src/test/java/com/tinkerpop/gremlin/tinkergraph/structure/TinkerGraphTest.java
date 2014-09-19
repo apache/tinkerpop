@@ -8,9 +8,11 @@ import com.tinkerpop.gremlin.structure.IoTest;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
+import com.tinkerpop.gremlin.structure.io.graphml.GraphMLResourceAccess;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoResourceAccess;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Ignore;
@@ -224,7 +226,7 @@ public class TinkerGraphTest {
     public void shouldWriteGratefulGraphAsKryo() throws IOException {
         final Graph g = TinkerGraph.open();
         final GraphReader reader = GraphMLReader.build().create();
-        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/util/io/graphml/grateful-dead.xml")) {
+        try (final InputStream stream = GraphMLResourceAccess.class.getResourceAsStream("grateful-dead.xml")) {
             reader.readGraph(stream, g);
         }
 
@@ -237,7 +239,7 @@ public class TinkerGraphTest {
     public void shouldWriteGratefulGraphAsGraphSON() throws IOException {
         final Graph g = TinkerGraph.open();
         final GraphReader reader = GraphMLReader.build().create();
-        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/util/io/graphml/grateful-dead.xml")) {
+        try (final InputStream stream = GraphMLResourceAccess.class.getResourceAsStream("grateful-dead.xml")) {
             reader.readGraph(stream, g);
         }
 
@@ -253,7 +255,7 @@ public class TinkerGraphTest {
     public void shouldWriteGratefulVerticesAsKryo() throws IOException {
         final Graph g = TinkerGraph.open();
         final GraphReader reader = KryoReader.build().create();
-        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/util/io/kryo/grateful-dead.gio")) {
+        try (final InputStream stream = KryoResourceAccess.class.getResourceAsStream("grateful-dead.gio")) {
             reader.readGraph(stream, g);
         }
 
@@ -269,7 +271,7 @@ public class TinkerGraphTest {
     public void shouldWriteGratefulVerticesAsGraphSON() throws IOException {
         final Graph g = TinkerGraph.open();
         final GraphReader reader = KryoReader.build().create();
-        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/util/io/kryo/grateful-dead.gio")) {
+        try (final InputStream stream = KryoResourceAccess.class.getResourceAsStream("grateful-dead.gio")) {
             reader.readGraph(stream, g);
         }
 
