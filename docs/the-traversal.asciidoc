@@ -333,7 +333,7 @@ gremlin> g.v(1).as('a').out().jump('a',2).value('name')
 ==>ripple
 ==>lop
 
-The `jump()`-step also supports an "emit predicate." Whereby the traverser is split in two -- the traverser exists the code block as well as continues back within the code block.
+The `jump()`-step also supports an "emit predicate." Whereby the traverser is split in two -- the traverser exits the code block as well as continues back within the code block.
 
 [source,groovy]
 gremlin> g.v(1).as('a').out().jump('a'){it.loops<2}{true}.value('name')
@@ -345,7 +345,7 @@ gremlin> g.v(1).as('a').out().jump('a'){it.loops<2}{true}.value('name')
 
 image::jump-step.png[width=500]
 
-The first time through the jump-sequence, the vertices lop, vadas, and josh are seen. Given that the loops==0, then traverser jumps back to step `a`. However, because the emit-predicate is declared true, those vertices are emitted from jump-sequence. At step 2 (loops==1), the vertices touched are ripple and lop (Josh's created projects). Thus, they are emitted. Therefore, the solution the traversal is all vertices touched: lop, vadas, josh, ripple, and lop.
+The first time through the jump-sequence, the vertices lop, vadas, and josh are seen. Given that the loops==0, then traverser jumps back to step `a`. However, because the emit-predicate is declared true, those vertices are emitted from jump-sequence. At step 2 (loops==1), the vertices traversed are ripple and lop (Josh's created projects, as lop and vadas have no out edges) and are also emitted. loops==1 now so the traverser jumps back to step `a`. As ripple and lop have no out edges there are no vertices to traverse. Given that the loops==2 now it wil fail the predicate. Therefore, the traverser has seen the vertices: lop, vadas, josh, ripple, and lop.
 
 The `jump()`-step highlights one of the major benefits of `Traverser<T>` in TinkerPop3: the ability to take a traverser and place it anywhere in the Traversal step-sequence. Because a traverser maintains all the metadata associated with its particular walk, and no step maintains state information about a traverser, traversers can be arbitrarily relocated without ill-effects.
 
