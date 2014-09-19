@@ -5,11 +5,11 @@ import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedMetaProperty;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 
@@ -72,18 +72,18 @@ class ElementSerializer {
         }
     }
 
-    static class MetaPropertySerializer extends Serializer<MetaProperty> {
-        public MetaPropertySerializer() {
+    static class VertexPropertySerializer extends Serializer<VertexProperty> {
+        public VertexPropertySerializer() {
         }
 
         @Override
-        public void write(final Kryo kryo, final Output output, final MetaProperty property) {
-            kryo.writeClassAndObject(output, property instanceof DetachedMetaProperty ? (DetachedMetaProperty) property : DetachedMetaProperty.detach(property));
+        public void write(final Kryo kryo, final Output output, final VertexProperty property) {
+            kryo.writeClassAndObject(output, property instanceof DetachedVertexProperty ? (DetachedVertexProperty) property : DetachedVertexProperty.detach(property));
         }
 
         @Override
-        public MetaProperty read(final Kryo kryo, final Input input, final Class<MetaProperty> propertyClass) {
-            return (MetaProperty) kryo.readClassAndObject(input);
+        public VertexProperty read(final Kryo kryo, final Input input, final Class<VertexProperty> propertyClass) {
+            return (VertexProperty) kryo.readClassAndObject(input);
         }
     }
 }

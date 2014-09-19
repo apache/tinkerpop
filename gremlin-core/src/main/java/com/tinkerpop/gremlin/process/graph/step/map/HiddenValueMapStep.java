@@ -22,7 +22,7 @@ public class HiddenValueMapStep<E> extends MapStep<Element, Map<String, E>> {
         this.setFunction(traverser -> {
             final Element element = traverser.get();
             return element instanceof Vertex ?
-                    (Map) ElementHelper.metaPropertyValueMap((Vertex) traverser.get(), true, this.propertyKeys) :
+                    (Map) ElementHelper.vertexPropertyValueMap((Vertex) traverser.get(), true, this.propertyKeys) :
                     (Map) ElementHelper.propertyValueMap(traverser.get(), true, this.propertyKeys);
         });
     }

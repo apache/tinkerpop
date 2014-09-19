@@ -1,30 +1,26 @@
 package com.tinkerpop.gremlin.structure.util.detached;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.structure.MetaProperty;
-import com.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class DetachedMetaPropertyTest extends AbstractGremlinTest {
+public class DetachedVertexPropertyTest extends AbstractGremlinTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldNotConstructWithNullProperty() {
-        DetachedMetaProperty.detach(null);
+        DetachedVertexProperty.detach(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     @org.junit.Ignore
     public void shouldNotConstructWithSomethingAlreadyDetached() {
-        //DetachedMetaProperty.detach(this.mp);
+        //DetachedVertexProperty.detach(this.mp);
     }
 
     @Test

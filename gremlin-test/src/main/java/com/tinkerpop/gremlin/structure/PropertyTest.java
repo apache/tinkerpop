@@ -52,8 +52,8 @@ public class PropertyTest {
             final Vertex v = g.addVertex("name", "marko");
             tryCommit(g, (graph) -> {
                 final Vertex v1 = g.v(v.id());
-                final MetaProperty p = v1.property("nonexistent-key");
-                assertEquals(MetaProperty.empty(), p);
+                final VertexProperty p = v1.property("nonexistent-key");
+                assertEquals(VertexProperty.empty(), p);
             });
         }
 

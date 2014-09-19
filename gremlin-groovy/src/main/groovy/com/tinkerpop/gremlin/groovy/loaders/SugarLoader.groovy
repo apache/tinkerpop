@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.SimpleTraverser
 import com.tinkerpop.gremlin.process.Traverser
 import com.tinkerpop.gremlin.process.graph.GraphTraversal
 import com.tinkerpop.gremlin.structure.*
-import groovy.lang.MetaProperty
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -35,7 +34,7 @@ class SugarLoader {
         Graph.metaClass.mixin(GraphCategory.class);
         Vertex.metaClass.mixin(VertexCategory.class);
         Edge.metaClass.mixin(ElementCategory.class);
-        MetaProperty.metaClass.mixin(ElementCategory.class);
+        VertexProperty.metaClass.mixin(ElementCategory.class);
     }
 
     public static class TraverserCategory {

@@ -176,11 +176,11 @@ public class GraphSONReader implements GraphReader {
     }
 
     private static Vertex readVertexData(final Map<String, Object> vertexData, final SFunction<DetachedVertex, Vertex> vertexMaker) throws IOException {
-        final Map<String, Object> metaProperties = (Map<String, Object>) vertexData.get(GraphSONTokens.PROPERTIES);
-        final Map<String, Object> hiddensMetaProperties = ((Map<String, Object>) vertexData.get(GraphSONTokens.HIDDENS)).entrySet().stream().collect(Collectors.toMap((Map.Entry kv) -> Graph.Key.hide(kv.getKey().toString()), (Map.Entry kv) -> kv.getValue()));
+        final Map<String, Object> vertexProperties = (Map<String, Object>) vertexData.get(GraphSONTokens.PROPERTIES);
+        final Map<String, Object> hiddenVertexProperties = ((Map<String, Object>) vertexData.get(GraphSONTokens.HIDDENS)).entrySet().stream().collect(Collectors.toMap((Map.Entry kv) -> Graph.Key.hide(kv.getKey().toString()), (Map.Entry kv) -> kv.getValue()));
         final DetachedVertex vertex = new DetachedVertex(vertexData.get(GraphSONTokens.ID),
                 vertexData.get(GraphSONTokens.LABEL).toString(),
-                metaProperties, hiddensMetaProperties);
+                vertexProperties, hiddenVertexProperties);
 
         return vertexMaker.apply(vertex);
     }

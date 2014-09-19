@@ -13,7 +13,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 
@@ -63,8 +63,8 @@ public class StrategyWrappedTraversalStrategy implements TraversalStrategy.NoDep
                     return new StrategyWrappedVertex((Vertex) o, graph);
                 else if (o instanceof Edge)
                     return new StrategyWrappedEdge((Edge) o, graph);
-                else if (o instanceof MetaProperty)
-                    return new StrategyWrappedMetaProperty((MetaProperty) o, graph);
+                else if (o instanceof VertexProperty)
+                    return new StrategyWrappedVertexProperty((VertexProperty) o, graph);
                 else if (o instanceof Property)
                     return new StrategyWrappedProperty((Property) o, graph);
                 else if (o instanceof Graph)

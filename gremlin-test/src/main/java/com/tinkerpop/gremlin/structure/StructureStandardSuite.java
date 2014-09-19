@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.strategy.SequenceGraphStrategyTest;
 import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraphTest;
 import com.tinkerpop.gremlin.structure.strategy.SubgraphStrategyTest;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdgeTest;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedMetaPropertyTest;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexPropertyTest;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedPropertyTest;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexTest;
 import org.junit.runners.model.InitializationError;
@@ -51,7 +51,7 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             BatchTest.class,
             CommunityGeneratorTest.class,
             DetachedEdgeTest.class,
-            DetachedMetaPropertyTest.class,
+            DetachedVertexPropertyTest.class,
             DetachedPropertyTest.class,
             DetachedVertexTest.class,
             DistributionGeneratorTest.class,
@@ -61,7 +61,7 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             GraphConstructionTest.class,
             IdGraphStrategyTest.class,
             IoTest.class,
-            MetaPropertyTest.class,
+            VertexPropertyTest.class,
             VariablesTest.class,
             PartitionGraphStrategyTest.class,
             PropertyTest.class,

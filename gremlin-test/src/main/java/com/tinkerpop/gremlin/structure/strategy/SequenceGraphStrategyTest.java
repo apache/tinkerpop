@@ -443,7 +443,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         }
 
         @Override
-        public <V> UnaryOperator<Supplier<Void>> getRemoveMetaPropertyStrategy(final Strategy.Context<StrategyWrappedMetaProperty<V>> ctx) {
+        public <V> UnaryOperator<Supplier<Void>> getRemoveVertexPropertyStrategy(final Strategy.Context<StrategyWrappedVertexProperty<V>> ctx) {
             return spy();
         }
     }

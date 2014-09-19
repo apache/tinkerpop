@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.structure.util.referenced;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.detached.Attachable;
 
@@ -29,12 +29,12 @@ public class ReferencedVertex extends ReferencedElement implements Vertex, Attac
     }
 
     @Override
-    public <V> MetaProperty<V> property(String key) {
+    public <V> VertexProperty<V> property(String key) {
         throw new IllegalStateException("Referenced vertices do not have properties:" + this);
     }
 
     @Override
-    public <V> MetaProperty<V> property(String key, V value) {
+    public <V> VertexProperty<V> property(String key, V value) {
         throw new IllegalStateException("Referenced vertices can not have properties:" + this);
     }
 
@@ -71,12 +71,12 @@ public class ReferencedVertex extends ReferencedElement implements Vertex, Attac
         }
 
         @Override
-        public <V> Iterator<MetaProperty<V>> properties(String... propertyKeys) {
+        public <V> Iterator<VertexProperty<V>> properties(String... propertyKeys) {
             return Collections.emptyIterator();
         }
 
         @Override
-        public <V> Iterator<MetaProperty<V>> hiddens(String... propertyKeys) {
+        public <V> Iterator<VertexProperty<V>> hiddens(String... propertyKeys) {
             return Collections.emptyIterator();
         }
     }

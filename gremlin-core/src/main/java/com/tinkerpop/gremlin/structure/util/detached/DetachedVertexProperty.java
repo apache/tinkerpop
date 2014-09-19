@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.structure.util.detached;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -21,21 +20,21 @@ import java.util.Optional;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implements MetaProperty<V> {
+public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> implements VertexProperty<V> {
 
     String key;
     V value;
     transient DetachedVertex vertex;
 
-    private final transient MetaProperty.Iterators iterators = new Iterators();
+    private final transient VertexProperty.Iterators iterators = new Iterators();
 
-    private DetachedMetaProperty() {
+    private DetachedVertexProperty() {
 
     }
 
-    public DetachedMetaProperty(final Object id, final String label, final String key, final V value,
-                                final Map<String, Object> properties, final Map<String, Object> hiddenProperties,
-                                final DetachedVertex vertex) {
+    public DetachedVertexProperty(final Object id, final String label, final String key, final V value,
+                                  final Map<String, Object> properties, final Map<String, Object> hiddenProperties,
+                                  final DetachedVertex vertex) {
         super(id, label);
         if (null == key) throw Graph.Exceptions.argumentCanNotBeNull("key");
         if (null == value) throw Graph.Exceptions.argumentCanNotBeNull("value");
@@ -51,7 +50,7 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
 
     // todo: straighten out all these constructors and their scopes - what do we really need here?
 
-    private DetachedMetaProperty(final MetaProperty property) {
+    private DetachedVertexProperty(final VertexProperty property) {
         super(property);
         if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
 
@@ -63,7 +62,7 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
         property.iterators().hiddens().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
     }
 
-    DetachedMetaProperty(final MetaProperty property, final DetachedVertex detachedVertex) {
+    DetachedVertexProperty(final VertexProperty property, final DetachedVertex detachedVertex) {
         super(property);
         if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
 
@@ -113,7 +112,7 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
     @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     @Override
     public boolean equals(final Object object) {
-        return ElementHelper.areEqual((MetaProperty) this, object);
+        return ElementHelper.areEqual((VertexProperty) this, object);
     }
 
     @Override
@@ -145,18 +144,18 @@ public class DetachedMetaProperty<V> extends DetachedElement<Property<V>> implem
         return Optional.<Property<V>>of(element.property(this.key)).orElseThrow(() -> new IllegalStateException("The detached property could not be found in the provided graph: " + this));
     }
 
-    public static DetachedMetaProperty detach(final MetaProperty property) {
+    public static DetachedVertexProperty detach(final VertexProperty property) {
         if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
-        if (property instanceof DetachedMetaProperty) throw new IllegalArgumentException("MetaProperty is already detached");
-        return new DetachedMetaProperty(property);
+        if (property instanceof DetachedVertexProperty) throw new IllegalArgumentException("Vertex property is already detached");
+        return new DetachedVertexProperty(property);
     }
 
     @Override
-    public MetaProperty.Iterators iterators() {
+    public VertexProperty.Iterators iterators() {
         return this.iterators;
     }
 
-    protected class Iterators extends DetachedElement<V>.Iterators implements MetaProperty.Iterators {
+    protected class Iterators extends DetachedElement<V>.Iterators implements VertexProperty.Iterators {
 
         @Override
         public <U> Iterator<Property<U>> properties(final String... propertyKeys) {

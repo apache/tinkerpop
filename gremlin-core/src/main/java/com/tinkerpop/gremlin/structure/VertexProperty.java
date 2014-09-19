@@ -1,12 +1,12 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.process.graph.MetaPropertyTraversal;
-import com.tinkerpop.gremlin.structure.util.EmptyMetaProperty;
+import com.tinkerpop.gremlin.process.graph.VertexPropertyTraversal;
+import com.tinkerpop.gremlin.structure.util.EmptyVertexProperty;
 
 import java.util.Iterator;
 
 /**
- * A {@code MetaProperty} is similar to a {@link Property} in that it denotes a key/value pair associated with an
+ * A {@code VertexProperty} is similar to a {@link Property} in that it denotes a key/value pair associated with an
  * {@link Vertex}, however it is different in the sense that it also represents an entity that it is an {@link Element}
  * that can have properties of its own.
  * <br/>
@@ -18,9 +18,9 @@ import java.util.Iterator;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface MetaProperty<V> extends Property<V>, Element, MetaPropertyTraversal {
+public interface VertexProperty<V> extends Property<V>, Element, VertexPropertyTraversal {
 
-    public static final String DEFAULT_LABEL = "metaProperty";
+    public static final String DEFAULT_LABEL = "vertexProperty";
 
     @Override
     public Vertex getElement();
@@ -30,12 +30,12 @@ public interface MetaProperty<V> extends Property<V>, Element, MetaPropertyTrave
         return this.key();
     }
 
-    public static <V> MetaProperty<V> empty() {
-        return EmptyMetaProperty.instance();
+    public static <V> VertexProperty<V> empty() {
+        return EmptyVertexProperty.instance();
     }
 
     @Override
-    public MetaProperty.Iterators iterators();
+    public VertexProperty.Iterators iterators();
 
     public interface Iterators extends Element.Iterators {
 

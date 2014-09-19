@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaMapReduce;
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -388,14 +388,14 @@ public class GraphComputerTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
-    public void shouldSupportMetaProperties() throws Exception {
+    public void shouldSupportVertexProperties() throws Exception {
         GraphComputer computer = g.compute();
         ComputerResult results = computer.program(LambdaVertexProgram.build().
                 execute((vertex, messenger, memory) -> {
 
                     if (memory.getIteration() == 0) {
-                        assertEquals(MetaProperty.empty(), vertex.property("a"));
-                        assertEquals(MetaProperty.empty(), vertex.property("b"));
+                        assertEquals(VertexProperty.empty(), vertex.property("a"));
+                        assertEquals(VertexProperty.empty(), vertex.property("b"));
                         assertFalse(vertex.property("a").isPresent());
                         assertFalse(vertex.property("b").isPresent());
                     } else if (memory.getIteration() == 1) {

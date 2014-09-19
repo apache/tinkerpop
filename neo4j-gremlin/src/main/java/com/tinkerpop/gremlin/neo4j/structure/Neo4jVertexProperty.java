@@ -1,9 +1,9 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
-import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jMetaPropertyTraversal;
+import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jVertexPropertyTraversal;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -27,11 +27,11 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Neo4jMetaProperty<V> implements MetaProperty<V>, WrappedVertex<Node>, Neo4jMetaPropertyTraversal {
+public class Neo4jVertexProperty<V> implements VertexProperty<V>, WrappedVertex<Node>, Neo4jVertexPropertyTraversal {
 
-    public static final Label META_PROPERTY_LABEL = DynamicLabel.label("metaProperty");
-    public static final String META_PROPERTY_PREFIX = "%$%";
-    public static final String META_PROPERTY_TOKEN = "%$%metaProperty";
+    public static final Label VERTEX_PROPERTY_LABEL = DynamicLabel.label("vertexProperty");
+    public static final String VERTEX_PROPERTY_PREFIX = "%$%";
+    public static final String VERTEX_PROPERTY_TOKEN = "%$%vertexProperty";
 
 
     private Node node;
@@ -40,14 +40,14 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, WrappedVertex<Node
     private final V value;
 
 
-    public Neo4jMetaProperty(final Neo4jVertex vertex, final String key, final V value) {
+    public Neo4jVertexProperty(final Neo4jVertex vertex, final String key, final V value) {
         this.vertex = vertex;
         this.key = key;
         this.value = value;
         this.node = null;
     }
 
-    public Neo4jMetaProperty(final Neo4jVertex vertex, final Node node) {
+    public Neo4jVertexProperty(final Neo4jVertex vertex, final Node node) {
         this.vertex = vertex;
         this.node = node;
         this.key = (String) node.getProperty(T.key.getAccessor());
@@ -61,13 +61,13 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, WrappedVertex<Node
 
     @Override
     public Object id() {
-        // TODO: Neo4j needs a better ID system for MetaProperties
+        // TODO: Neo4j needs a better ID system for VertexProperties
         return (long) (this.key.hashCode() + this.value.hashCode() + this.vertex.id().hashCode());
     }
 
     @Override
     public boolean equals(final Object object) {
-        return ElementHelper.areEqual((MetaProperty) this, object);
+        return ElementHelper.areEqual((VertexProperty) this, object);
     }
 
     @Override
@@ -88,12 +88,12 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, WrappedVertex<Node
             this.node.setProperty(key, value);
             return new Neo4jProperty<>(this, key, value);
         } else {
-            this.node = this.vertex.graph.getBaseGraph().createNode(META_PROPERTY_LABEL, DynamicLabel.label(this.label()));
+            this.node = this.vertex.graph.getBaseGraph().createNode(VERTEX_PROPERTY_LABEL, DynamicLabel.label(this.label()));
             this.node.setProperty(T.key.getAccessor(), this.key);
             this.node.setProperty(T.value.getAccessor(), this.value);
             this.node.setProperty(key, value);
-            this.vertex.getBaseVertex().createRelationshipTo(this.node, DynamicRelationshipType.withName(META_PROPERTY_PREFIX.concat(this.key)));
-            this.vertex.getBaseVertex().setProperty(this.key, META_PROPERTY_TOKEN);
+            this.vertex.getBaseVertex().createRelationshipTo(this.node, DynamicRelationshipType.withName(VERTEX_PROPERTY_PREFIX.concat(this.key)));
+            this.vertex.getBaseVertex().setProperty(this.key, VERTEX_PROPERTY_TOKEN);
             return new Neo4jProperty<>(this, key, value);
         }
     }
@@ -163,12 +163,12 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, WrappedVertex<Node
         if (isNode()) {
             this.node.getRelationships().forEach(Relationship::delete);
             this.node.delete();
-            if (this.vertex.getBaseVertex().getDegree(DynamicRelationshipType.withName(META_PROPERTY_PREFIX.concat(this.key)), Direction.OUTGOING) == 0) {
+            if (this.vertex.getBaseVertex().getDegree(DynamicRelationshipType.withName(VERTEX_PROPERTY_PREFIX.concat(this.key)), Direction.OUTGOING) == 0) {
                 if (this.vertex.getBaseVertex().hasProperty(this.key))
                     this.vertex.getBaseVertex().removeProperty(this.key);
             }
         } else {
-            if (this.vertex.getBaseVertex().getDegree(DynamicRelationshipType.withName(META_PROPERTY_PREFIX.concat(this.key)), Direction.OUTGOING) == 0) {
+            if (this.vertex.getBaseVertex().getDegree(DynamicRelationshipType.withName(VERTEX_PROPERTY_PREFIX.concat(this.key)), Direction.OUTGOING) == 0) {
                 if (this.vertex.getBaseVertex().hasProperty(this.key))
                     this.vertex.getBaseVertex().removeProperty(this.key);
             }
@@ -180,7 +180,7 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, WrappedVertex<Node
     }
 
     @Override
-    public MetaProperty.Iterators iterators() {
+    public VertexProperty.Iterators iterators() {
         return this.iterators;
     }
 
@@ -189,9 +189,9 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, WrappedVertex<Node
         return StringFactory.propertyString(this);
     }
 
-    private final MetaProperty.Iterators iterators = new Iterators();
+    private final VertexProperty.Iterators iterators = new Iterators();
 
-    protected class Iterators implements MetaProperty.Iterators {
+    protected class Iterators implements VertexProperty.Iterators {
 
         @Override
         public <U> Iterator<Property<U>> properties(String... propertyKeys) {
@@ -202,7 +202,7 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, WrappedVertex<Node
                         .filter(key -> !key.equals(T.key.getAccessor()) && !key.equals(T.value.getAccessor()))
                         .filter(key -> !Graph.Key.isHidden(key))
                         .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, key) >= 0)
-                        .map(key -> new Neo4jProperty<>(Neo4jMetaProperty.this, key, (V) node.getProperty(key))).iterator();
+                        .map(key -> new Neo4jProperty<>(Neo4jVertexProperty.this, key, (V) node.getProperty(key))).iterator();
             }
         }
 
@@ -214,7 +214,7 @@ public class Neo4jMetaProperty<V> implements MetaProperty<V>, WrappedVertex<Node
                 return (Iterator) StreamFactory.stream(node.getPropertyKeys())
                         .filter(key -> Graph.Key.isHidden(key))
                         .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, Graph.Key.unHide(key)) >= 0)
-                        .map(key -> new Neo4jProperty<>(Neo4jMetaProperty.this, key, (V) node.getProperty(key))).iterator();
+                        .map(key -> new Neo4jProperty<>(Neo4jVertexProperty.this, key, (V) node.getProperty(key))).iterator();
             }
         }
     }

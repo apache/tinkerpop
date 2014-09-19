@@ -24,9 +24,9 @@ import static org.junit.Assert.*;
         "multiplePropertiesExistForProvidedKey",
 })
 @RunWith(Enclosed.class)
-public class MetaPropertyTest extends AbstractGremlinTest {
+public class VertexPropertyTest extends AbstractGremlinTest {
 
-    public static class MetaPropertyAddition extends AbstractGremlinTest {
+    public static class VertexPropertyAddition extends AbstractGremlinTest {
 
         @Test
         public void shouldAddMultiProperties() {
@@ -42,7 +42,7 @@ public class MetaPropertyTest extends AbstractGremlinTest {
                 assertEquals(0, g.E().count().next().intValue());
             });
 
-            final MetaProperty<String> property = v.property("name", "marko a. rodriguez");
+            final VertexProperty<String> property = v.property("name", "marko a. rodriguez");
             tryCommit(g, g -> assertEquals(v, property.getElement()));
 
             try {
@@ -99,7 +99,7 @@ public class MetaPropertyTest extends AbstractGremlinTest {
         }
 
         @Test
-        public void shouldHandleSingleMetaProperties() {
+        public void shouldHandleSingleVertexProperties() {
             final Vertex v = g.addVertex("name", "marko", "name", "marko a. rodriguez", "name", "marko rodriguez");
             tryCommit(g, g -> {
                 assertEquals(3, v.properties().count().next().intValue());
@@ -154,10 +154,10 @@ public class MetaPropertyTest extends AbstractGremlinTest {
         }
     }
 
-    public static class MetaPropertyRemoval extends AbstractGremlinTest {
+    public static class VertexPropertyRemoval extends AbstractGremlinTest {
 
         @Test
-        public void shouldSupportIdempotentMetaPropertyRemoval() {
+        public void shouldSupportIdempotentVertexPropertyRemoval() {
             Vertex a = g.addVertex("name", "marko");
             Vertex b = g.addVertex("name", "daniel", "name", "kuppitz");
             a.property("name").remove();
@@ -268,7 +268,7 @@ public class MetaPropertyTest extends AbstractGremlinTest {
         }
     }
 
-    public static class MetaPropertyProperties extends AbstractGremlinTest {
+    public static class VertexPropertyProperties extends AbstractGremlinTest {
 
         @Test
         public void shouldSupportPropertiesOnMultiProperties() {
@@ -277,7 +277,7 @@ public class MetaPropertyTest extends AbstractGremlinTest {
                 assertEquals(2, g.V().properties().count().next().intValue());
                 assertEquals(1, g.V().count().next().intValue());
                 assertEquals(0, g.E().count().next().intValue());
-                // TODO: Neo4j needs a better ID system for MetaProperties
+                // TODO: Neo4j needs a better ID system for VertexProperties
                 assertEquals(v.property("name"), v.property("name").property("acl", "public").getElement());
                 assertEquals(v.property("age"), v.property("age").property("acl", "private").getElement());
             });
@@ -317,9 +317,9 @@ public class MetaPropertyTest extends AbstractGremlinTest {
     }
 
 
-    public static class MetaPropertyTraversals extends AbstractGremlinTest {
+    public static class VertexPropertyTraversals extends AbstractGremlinTest {
         @Test
-        public void shouldHandleMetaPropertyTraversals() {
+        public void shouldHandleVertexPropertyTraversals() {
             Vertex v = g.addVertex("i", 1, "i", 2, "i", 3);
             tryCommit(g, g -> {
                 assertEquals(3, v.properties().count().next().intValue());
@@ -338,7 +338,7 @@ public class MetaPropertyTest extends AbstractGremlinTest {
     }
 
     @RunWith(Parameterized.class)
-    public static class MetaPropertiesShouldHideCorrectly extends AbstractGremlinTest {
+    public static class VertexPropertiesShouldHideCorrectly extends AbstractGremlinTest {
 
         @Parameterized.Parameters(name = "{index}: {0}")
         public static Iterable<Object[]> data() {
@@ -375,7 +375,7 @@ public class MetaPropertyTest extends AbstractGremlinTest {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-        public void shouldHandleHiddenMetaProperties() {
+        public void shouldHandleHiddenVertexProperties() {
             Vertex v = g.addVertex(Graph.Key.hide("age"), 34, Graph.Key.hide("age"), 29, "age", 16, "name", "marko", "food", "taco", Graph.Key.hide("color"), "purple");
             tryCommit(g, g -> {
                 assertTrue(streamGetter.apply(g, v));

@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ser.std.StdKeySerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -29,27 +29,27 @@ public class GraphSONModule extends SimpleModule {
         addSerializer(Vertex.class, new VertexJacksonSerializer());
         addSerializer(GraphSONVertex.class, new GraphSONVertex.VertexJacksonSerializer());
         addSerializer(GraphSONGraph.class, new GraphSONGraph.GraphJacksonSerializer(normalize));
-        addSerializer(MetaProperty.class, new MetaPropertyJacksonSerializer());
+        addSerializer(VertexProperty.class, new VertexPropertyJacksonSerializer());
     }
 
-    static class MetaPropertyJacksonSerializer extends StdSerializer<MetaProperty> {
-        public MetaPropertyJacksonSerializer() {
-            super(MetaProperty.class);
+    static class VertexPropertyJacksonSerializer extends StdSerializer<VertexProperty> {
+        public VertexPropertyJacksonSerializer() {
+            super(VertexProperty.class);
         }
 
         @Override
-        public void serialize(final MetaProperty property, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+        public void serialize(final VertexProperty property, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
             ser(property, jsonGenerator);
         }
 
         @Override
-        public void serializeWithType(final MetaProperty property, final JsonGenerator jsonGenerator,
+        public void serializeWithType(final VertexProperty property, final JsonGenerator jsonGenerator,
                                       final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
             ser(property, jsonGenerator);
         }
 
-        private void ser(final MetaProperty property, final JsonGenerator jsonGenerator) throws IOException {
+        private void ser(final VertexProperty property, final JsonGenerator jsonGenerator) throws IOException {
             final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, property.id());
             m.put(GraphSONTokens.LABEL, property.label());

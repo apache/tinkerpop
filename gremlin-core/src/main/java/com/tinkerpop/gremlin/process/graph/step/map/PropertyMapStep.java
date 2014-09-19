@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
@@ -22,7 +21,7 @@ public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> {
         this.propertyKeys = propertyKeys;
         this.setFunction(traverser ->
                 traverser.get() instanceof Vertex ?
-                        (Map) ElementHelper.metaPropertyMap((Vertex) traverser.get(), false, propertyKeys) :
+                        (Map) ElementHelper.vertexPropertyMap((Vertex) traverser.get(), false, propertyKeys) :
                         (Map) ElementHelper.propertyMap(traverser.get(), false, propertyKeys));
     }
 

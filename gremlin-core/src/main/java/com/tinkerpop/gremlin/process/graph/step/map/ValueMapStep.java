@@ -21,7 +21,7 @@ public class ValueMapStep<E> extends MapStep<Element, Map<String, E>> {
         this.propertyKeys = propertyKeys;
         this.setFunction(traverser ->
                 traverser.get() instanceof Vertex ?
-                        (Map) ElementHelper.metaPropertyValueMap((Vertex) traverser.get(),false, propertyKeys) :
+                        (Map) ElementHelper.vertexPropertyValueMap((Vertex) traverser.get(), false, propertyKeys) :
                         (Map) ElementHelper.propertyValueMap(traverser.get(), false, propertyKeys));
     }
 

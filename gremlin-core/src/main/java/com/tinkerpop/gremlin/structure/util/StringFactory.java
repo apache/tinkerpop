@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
@@ -62,10 +62,10 @@ public class StringFactory {
     }
 
     /**
-     * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Property} or {@link com.tinkerpop.gremlin.structure.MetaProperty}.
+     * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Property} or {@link com.tinkerpop.gremlin.structure.VertexProperty}.
      */
     public static String propertyString(final Property property) {
-        if (property instanceof MetaProperty) {
+        if (property instanceof VertexProperty) {
             return property.isPresent() ? MP + L_BRACKET + property.key() + ARROW + property.value() + R_BRACKET : EMPTY_META_PROPERTY;
         } else {
             return property.isPresent() ? P + L_BRACKET + property.key() + ARROW + property.value() + R_BRACKET : EMPTY_PROPERTY;

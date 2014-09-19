@@ -86,7 +86,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
             }
             builder.append(this.graphVariable + " = " + GiraphGraph.class.getCanonicalName() + ".open()\n");
             builder.append("traversal = ");
-            args.forEach(builder::append);
+            builder.append(String.join(" ", args));
             builder.append("\n");
             builder.append(GiraphComputerHelper.class.getCanonicalName() + ".prepareTraversalForComputer(traversal)\n");
             builder.append("traversal\n");

@@ -17,11 +17,11 @@ import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedMetaProperty;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -212,7 +212,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(Date.class, null, 38));
             add(Triplet.<Class, Serializer, Integer>with(Direction.class, null, 12));
             add(Triplet.<Class, Serializer, Integer>with(DetachedEdge.class, null, 21));
-            add(Triplet.<Class, Serializer, Integer>with(DetachedMetaProperty.class, null, 20));
+            add(Triplet.<Class, Serializer, Integer>with(DetachedVertexProperty.class, null, 20));
             add(Triplet.<Class, Serializer, Integer>with(DetachedProperty.class, null, 18));
             add(Triplet.<Class, Serializer, Integer>with(DetachedVertex.class, null, 19));
             add(Triplet.<Class, Serializer, Integer>with(EdgeTerminator.class, null, 14));
@@ -235,7 +235,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(Edge.class, new ElementSerializer.EdgeSerializer(), 65));
             add(Triplet.<Class, Serializer, Integer>with(Vertex.class, new ElementSerializer.VertexSerializer(), 66));
             add(Triplet.<Class, Serializer, Integer>with(Property.class, new ElementSerializer.PropertySerializer(), 67));
-            add(Triplet.<Class, Serializer, Integer>with(MetaProperty.class, new ElementSerializer.MetaPropertySerializer(), 68));
+            add(Triplet.<Class, Serializer, Integer>with(VertexProperty.class, new ElementSerializer.VertexPropertySerializer(), 68));
 
             // GraphTraversal in OLAP
             add(Triplet.<Class, Serializer, Integer>with(SimpleTraverser.class, null, 55));

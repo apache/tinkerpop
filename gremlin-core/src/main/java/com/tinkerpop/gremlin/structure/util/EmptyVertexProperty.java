@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure.util;
 
-import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 
@@ -11,11 +11,11 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EmptyMetaProperty<V> implements MetaProperty<V> {
+public class EmptyVertexProperty<V> implements VertexProperty<V> {
 
-    private static final EmptyMetaProperty INSTANCE = new EmptyMetaProperty();
+    private static final EmptyVertexProperty INSTANCE = new EmptyVertexProperty();
 
-    public static <U> MetaProperty<U> instance() {
+    public static <U> VertexProperty<U> instance() {
         return INSTANCE;
     }
 
@@ -70,7 +70,7 @@ public class EmptyMetaProperty<V> implements MetaProperty<V> {
     }
 
     @Override
-    public MetaProperty.Iterators iterators() {
+    public VertexProperty.Iterators iterators() {
         return new Iterators() {
             @Override
             public <U> Iterator<Property<U>> properties(String... propertyKeys) {

@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.neo4j.process.graph.step.sideEffect;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jHelper;
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jMetaProperty;
+import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
@@ -90,14 +90,14 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         // System.out.println("allVertices");
         return StreamFactory.stream(GlobalGraphOperations.at(this.graph.getBaseGraph()).getAllNodes())
                 .filter(node -> !Neo4jHelper.isDeleted(node))
-                .filter(node -> !node.hasLabel(Neo4jMetaProperty.META_PROPERTY_LABEL))
+                .filter(node -> !node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL))
                 .map(node -> new Neo4jVertex(node, this.graph));
     }
 
     private Stream<Neo4jEdge> getAllEdges() {
         return StreamFactory.stream(GlobalGraphOperations.at(this.graph.getBaseGraph()).getAllRelationships())
                 .filter(relationship -> !Neo4jHelper.isDeleted(relationship))
-                .filter(relationship -> !relationship.getType().name().startsWith(Neo4jMetaProperty.META_PROPERTY_PREFIX))
+                .filter(relationship -> !relationship.getType().name().startsWith(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX))
                 .map(relationship -> new Neo4jEdge(relationship, this.graph));
     }
 
@@ -117,9 +117,9 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     private Stream<Vertex> getVerticesUsingOnlyLabels(final List<String> labels) {
         // System.out.println("labels: " + labels);
         return labels.stream()
-                .filter(label -> !label.equals(Neo4jMetaProperty.META_PROPERTY_LABEL.name()))
+                .filter(label -> !label.equals(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL.name()))
                 .flatMap(label -> StreamFactory.stream(GlobalGraphOperations.at(this.graph.getBaseGraph()).getAllNodesWithLabel(DynamicLabel.label(label)).iterator()))
-                .filter(node -> !node.hasLabel(Neo4jMetaProperty.META_PROPERTY_LABEL))
+                .filter(node -> !node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL))
                 .map(node -> new Neo4jVertex(node, this.graph));
     }
 
@@ -129,7 +129,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         final AutoIndexer indexer = this.graph.getBaseGraph().index().getNodeAutoIndexer();
         return indexer.isEnabled() && indexer.getAutoIndexedProperties().contains(hasContainer.key) ?
                 StreamFactory.stream(this.graph.getBaseGraph().index().getNodeAutoIndexer().getAutoIndex().get(hasContainer.key, hasContainer.value).iterator())
-                        .map(node -> node.hasLabel(Neo4jMetaProperty.META_PROPERTY_LABEL) ?
+                        .map(node -> node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL) ?
                                 node.getRelationships(Direction.INCOMING).iterator().next().getStartNode() :
                                 node)
                         .map(node -> new Neo4jVertex(node, this.graph)) :
@@ -139,7 +139,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     private Stream<Neo4jEdge> getEdgesUsingAutomaticIndex(final HasContainer indexedContainer) {
         final RelationshipAutoIndexer indexer = this.graph.getBaseGraph().index().getRelationshipAutoIndexer();
         return StreamFactory.stream(indexer.getAutoIndex().get(indexedContainer.key, indexedContainer.value).iterator())
-                .filter(relationship -> !relationship.getType().name().startsWith(Neo4jMetaProperty.META_PROPERTY_PREFIX))
+                .filter(relationship -> !relationship.getType().name().startsWith(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX))
                 .map(relationship -> new Neo4jEdge(relationship, this.graph));
     }
 

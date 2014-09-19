@@ -163,8 +163,8 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public <V> UnaryOperator<Supplier<Void>> getRemoveMetaPropertyStrategy(final Strategy.Context<StrategyWrappedMetaProperty<V>> ctx) {
-        return this.composeStrategyUnaryOperator(s -> s.getRemoveMetaPropertyStrategy(ctx));
+    public <V> UnaryOperator<Supplier<Void>> getRemoveVertexPropertyStrategy(final Strategy.Context<StrategyWrappedVertexProperty<V>> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getRemoveVertexPropertyStrategy(ctx));
     }
 
     @Override

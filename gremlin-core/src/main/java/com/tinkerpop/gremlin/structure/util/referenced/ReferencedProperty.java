@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.structure.util.referenced;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.detached.Attachable;
@@ -64,8 +64,8 @@ public class ReferencedProperty<V> implements Property<V>, Attachable<Property>,
 
     @Override
     public Property attach(final Graph hostGraph) {
-        if (this.element instanceof MetaProperty) {
-            return ((ReferencedMetaProperty) this.element).attach(hostGraph).property(this.key());
+        if (this.element instanceof VertexProperty) {
+            return ((ReferencedVertexProperty) this.element).attach(hostGraph).property(this.key());
         } else if (this.element instanceof Edge) {
             return ((ReferencedEdge) this.element).attach(hostGraph).property(this.key());
         } else {
@@ -75,8 +75,8 @@ public class ReferencedProperty<V> implements Property<V>, Attachable<Property>,
 
     @Override
     public Property attach(final Vertex hostVertex) {
-        if (this.element instanceof MetaProperty) {
-            return ((ReferencedMetaProperty) this.element).attach(hostVertex).property(this.key());
+        if (this.element instanceof VertexProperty) {
+            return ((ReferencedVertexProperty) this.element).attach(hostVertex).property(this.key());
         } else if (this.element instanceof Edge) {
             return ((ReferencedEdge) this.element).attach(hostVertex).property(this.key());
         } else {

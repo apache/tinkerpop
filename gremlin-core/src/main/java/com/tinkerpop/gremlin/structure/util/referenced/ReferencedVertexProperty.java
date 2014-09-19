@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.structure.util.referenced;
 
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.detached.Attachable;
@@ -14,23 +14,23 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReferencedMetaProperty<V> extends ReferencedElement implements MetaProperty<V>, Attachable<MetaProperty> {
+public class ReferencedVertexProperty<V> extends ReferencedElement implements VertexProperty<V>, Attachable<VertexProperty> {
 
     protected String key;
     protected V value;
     protected boolean hidden;
     protected ReferencedVertex vertex;
 
-    public ReferencedMetaProperty() {
+    public ReferencedVertexProperty() {
 
     }
 
-    public ReferencedMetaProperty(final MetaProperty<V> metaProperty) {
-        super(metaProperty);
-        this.key = metaProperty.key();
-        this.value = metaProperty.value();
-        this.hidden = metaProperty.isHidden();
-        this.vertex = ReferencedFactory.detach(metaProperty.getElement());
+    public ReferencedVertexProperty(final VertexProperty<V> vertexProperty) {
+        super(vertexProperty);
+        this.key = vertexProperty.key();
+        this.value = vertexProperty.value();
+        this.hidden = vertexProperty.isHidden();
+        this.vertex = ReferencedFactory.detach(vertexProperty.getElement());
     }
 
     @Override
@@ -59,23 +59,23 @@ public class ReferencedMetaProperty<V> extends ReferencedElement implements Meta
     }
 
     @Override
-    public MetaProperty.Iterators iterators() {
+    public VertexProperty.Iterators iterators() {
         return Iterators.ITERATORS;
     }
 
     @Override
-    public MetaProperty attach(final Graph hostGraph) {
+    public VertexProperty attach(final Graph hostGraph) {
         return this.attach(this.vertex);
     }
 
     @Override
-    public MetaProperty attach(final Vertex hostVertex) {
+    public VertexProperty attach(final Vertex hostVertex) {
         return StreamFactory.stream(hostVertex.iterators().properties(this.key))
-                .filter(metaProperty -> metaProperty.id().toString().equals(this.id()))
+                .filter(vertexProperty -> vertexProperty.id().toString().equals(this.id()))
                 .findFirst().orElseThrow(() -> new IllegalStateException("The referenced meta-property does not reference a meta-property on the host vertex"));
     }
 
-    private static final class Iterators implements MetaProperty.Iterators {
+    private static final class Iterators implements VertexProperty.Iterators {
 
         protected static final Iterators ITERATORS = new Iterators();
 

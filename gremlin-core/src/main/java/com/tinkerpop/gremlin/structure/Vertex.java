@@ -38,35 +38,35 @@ public interface Vertex extends Element, VertexTraversal {
      */
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues);
 
-    public default <V> MetaProperty<V> property(final String key) {
-        final Iterator<MetaProperty<V>> iterator = Graph.Key.isHidden(key) ?
+    public default <V> VertexProperty<V> property(final String key) {
+        final Iterator<VertexProperty<V>> iterator = Graph.Key.isHidden(key) ?
                 this.iterators().hiddens(Graph.Key.unHide(key)) :
                 this.iterators().properties(key);
         if (iterator.hasNext()) {
-            final MetaProperty<V> property = iterator.next();
+            final VertexProperty<V> property = iterator.next();
             if (iterator.hasNext())
                 throw Vertex.Exceptions.multiplePropertiesExistForProvidedKey(key);
             else
                 return property;
         } else {
-            return MetaProperty.<V>empty();
+            return VertexProperty.<V>empty();
         }
     }
 
-    public <V> MetaProperty<V> property(final String key, final V value);
+    public <V> VertexProperty<V> property(final String key, final V value);
 
-    public default <V> MetaProperty<V> property(final String key, final V value, final Object... keyValues) {
+    public default <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
-        final MetaProperty<V> metaProperty = this.property(key, value);
-        ElementHelper.attachProperties(metaProperty, keyValues);
-        return metaProperty;
+        final VertexProperty<V> vertexProperty = this.property(key, value);
+        ElementHelper.attachProperties(vertexProperty, keyValues);
+        return vertexProperty;
     }
 
-    public default <V> MetaProperty<V> singleProperty(final String key, final V value, final Object... keyValues) {
+    public default <V> VertexProperty<V> singleProperty(final String key, final V value, final Object... keyValues) {
         if (Graph.Key.isHidden(key))
-            this.iterators().hiddens(Graph.Key.unHide(key)).forEachRemaining(MetaProperty::remove);
+            this.iterators().hiddens(Graph.Key.unHide(key)).forEachRemaining(VertexProperty::remove);
         else
-            this.iterators().properties(key).forEachRemaining(MetaProperty::remove);
+            this.iterators().properties(key).forEachRemaining(VertexProperty::remove);
         return this.property(key, value, keyValues);
     }
 
@@ -89,9 +89,9 @@ public interface Vertex extends Element, VertexTraversal {
          */
         public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels);
 
-        public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys);
+        public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys);
 
-        public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys);
+        public <V> Iterator<VertexProperty<V>> hiddens(final String... propertyKeys);
     }
 
     /**

@@ -13,15 +13,15 @@ Features are the means by which vendors can expose nuanced difference between th
  . *Vertex Features*
  . *Edge Features*
 
-Vertex MetaProperties
+Vertex Properties
 ---------------------
 
-In TinkerPop3, `MetaProperty<V>` is introduced. All the properties of a `Vertex` are a `MetaProperty`. A `MetaProperty` is like a `Property` in that it has a key/value, but it extends `Property` whereby it can also have a collection of key/value pairs. Moreover, while an `Edge` can only have one property of key "name" (for example), a `Vertex` can have multiple "name" meta-properties. With meta-properties, two features of vertex properties are introduced:
+In TinkerPop3, `VertexProperty<V>` is introduced. All the properties of a `Vertex` are a `VertexProperty`. A `VertexProperty` is like a `Property` in that it has a key/value, but it extends `Property` whereby it can also have a collection of key/value pairs. Moreover, while an `Edge` can only have one property of key "name" (for example), a `Vertex` can have multiple "name" vertex properties. With vertex properties, two features of vertex properties are introduced:
 
  . Multiple properties: a `Vertex` property key can have multiple values (i.e. a vertex can have multiple "name" properties).
  . Properties on properties: a `Vertex` property can have properties (i.e. a vertex property can have key/value data associated with it).
 
-A running example using meta-properties is provided below to demonstrate and explain the API.
+A running example using vertex properties is provided below to demonstrate and explain the API.
 
 [source,groovy]
 gremlin> g = TinkerGraph.open()
@@ -76,19 +76,19 @@ gremlin> v.property('name')
 ==>mp[name->okram]
 
 <1> A vertex can have zero or more properties with the same key associated with it.
-<2> If a vertex has multiple meta-properties for the same key, then `Vertex.property()` is not allowed.
-<3> A vertex meta-property can have standard key/value properties attached to it.
-<4> Meta-property removal is identical to property removal.
-<5> A vertex meta-property can have any number of key/value properties attached to it.
+<2> If a vertex has multiple vertex properties for the same key, then `Vertex.property()` is not allowed.
+<3> A vertex vertex property can have standard key/value properties attached to it.
+<4> Vertex property removal is identical to property removal.
+<5> A vertex vertex property can have any number of key/value properties attached to it.
 <6> `Vertex.singleProperty()` is a helper method that will remove all existing key'd properties before adding the new single property.
 
 A collection of use cases are itemized below:
 
- * *Permissions*: Meta-properties can have key/value ACL-type permission information associated with them.
- * *Auditing*: When a vertex meta-property is manipulated, it can have key/value information attached to it saying who the creator, deletor, etc. are.
+ * *Permissions*: Vertex properties can have key/value ACL-type permission information associated with them.
+ * *Auditing*: When a vertex vertex property is manipulated, it can have key/value information attached to it saying who the creator, deletor, etc. are.
  * *Provenance*: The "name" of a vertex can be declared by multiple users.
 
-If the concept of meta-properties is difficult to grasp, then it may be best to think of meta-properties in terms of "literal vertices." A vertex can have an edge to a "literal vertex" that has a single value key/value -- e.g. "value=okram." The edge that points to that literal vertex has an edge-label of "name." The properties on the edge represent the literal vertex's properties. The "literal vertex" can not have any other edges to it (only one from the associated vertex).
+If the concept of vertex properties is difficult to grasp, then it may be best to think of vertex properties in terms of "literal vertices." A vertex can have an edge to a "literal vertex" that has a single value key/value -- e.g. "value=okram." The edge that points to that literal vertex has an edge-label of "name." The properties on the edge represent the literal vertex's properties. The "literal vertex" can not have any other edges to it (only one from the associated vertex).
 
 Hidden Properties
 -----------------

@@ -1,8 +1,7 @@
 package com.tinkerpop.gremlin.process.graph;
 
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -70,7 +69,7 @@ public class ElementTraversalMethodsTest {
     }
 
     @Test
-    public void shouldHaveAllGraphTraversalMethodsOffMetaProperty() {
+    public void shouldHaveAllGraphTraversalMethodsOffVertexProperty() {
         final List<Method> graphTraversalMethods = Arrays.asList(GraphTraversal.class.getMethods()).stream()
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
                 .filter(m -> !m.getName().equals("addStep"))
@@ -80,10 +79,10 @@ public class ElementTraversalMethodsTest {
                 .filter(m -> !m.getName().equals("key"))
                 .filter(m -> GraphTraversal.class.isAssignableFrom(m.getReturnType())).collect(Collectors.toList());
 
-        final List<Method> metaPropertyMethods = new ArrayList<>(Arrays.asList(MetaProperty.class.getMethods()));
+        final List<Method> vertexPropertyMethods = new ArrayList<>(Arrays.asList(VertexProperty.class.getMethods()));
 
         final List<Method> nonExistent = graphTraversalMethods.stream()
-                .filter(m -> !existsInList(m, metaPropertyMethods))
+                .filter(m -> !existsInList(m, vertexPropertyMethods))
                 .collect(Collectors.toList());
         if (nonExistent.size() > 0) {
             for (Method method : nonExistent) {

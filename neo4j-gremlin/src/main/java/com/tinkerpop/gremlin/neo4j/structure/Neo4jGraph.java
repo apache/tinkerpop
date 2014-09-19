@@ -154,7 +154,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
 
         try {
             final Node node = this.baseGraph.getNodeById(evaluateToLong(id));
-            if (!node.hasLabel(Neo4jMetaProperty.META_PROPERTY_LABEL))
+            if (!node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL))
                 return new Neo4jVertex(node, this);
         } catch (final NotFoundException e) {
             throw Graph.Exceptions.elementNotFound(Vertex.class, id);

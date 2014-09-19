@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.javatuples.Pair;
@@ -317,14 +317,14 @@ public class ElementHelper {
     }
 
     /**
-     * A standard method for determining if two {@link com.tinkerpop.gremlin.structure.MetaProperty} objects are equal. This method should be used by any
+     * A standard method for determining if two {@link com.tinkerpop.gremlin.structure.VertexProperty} objects are equal. This method should be used by any
      * {@link Object#equals(Object)} implementation to ensure consistent behavior.
      *
-     * @param a the first {@link com.tinkerpop.gremlin.structure.MetaProperty}
-     * @param b the second {@link com.tinkerpop.gremlin.structure.MetaProperty}
+     * @param a the first {@link com.tinkerpop.gremlin.structure.VertexProperty}
+     * @param b the second {@link com.tinkerpop.gremlin.structure.VertexProperty}
      * @return true if equal and false otherwise
      */
-    public static boolean areEqual(final MetaProperty a, final Object b) {
+    public static boolean areEqual(final VertexProperty a, final Object b) {
         if (null == a)
             throw Graph.Exceptions.argumentCanNotBeNull("a");
         if (null == b)
@@ -332,9 +332,9 @@ public class ElementHelper {
 
         if (a == b)
             return true;
-        if (!(b instanceof MetaProperty))
+        if (!(b instanceof VertexProperty))
             return false;
-        return haveEqualIds(a, (MetaProperty) b);
+        return haveEqualIds(a, (VertexProperty) b);
     }
 
     public static Map<String, Object> propertyValueMap(final Element element, final boolean getHiddens, final String... propertyKeys) {
@@ -366,7 +366,7 @@ public class ElementHelper {
         return propertyMap;
     }
 
-    public static Map<String, List> metaPropertyValueMap(final Vertex vertex, final boolean getHiddens, final String... propertyKeys) {
+    public static Map<String, List> vertexPropertyValueMap(final Vertex vertex, final boolean getHiddens, final String... propertyKeys) {
         final Map<String, List> valueMap = new HashMap<>();
         if (propertyKeys.length == 0) {
             (getHiddens ? vertex.iterators().hiddens() : vertex.iterators().properties()).forEachRemaining(property -> {
@@ -396,8 +396,8 @@ public class ElementHelper {
         return valueMap;
     }
 
-    public static Map<String, List<MetaProperty>> metaPropertyMap(final Vertex vertex, final boolean getHiddens, final String... propertyKeys) {
-        final Map<String, List<MetaProperty>> propertyMap = new HashMap<>();
+    public static Map<String, List<VertexProperty>> vertexPropertyMap(final Vertex vertex, final boolean getHiddens, final String... propertyKeys) {
+        final Map<String, List<VertexProperty>> propertyMap = new HashMap<>();
         if (null == propertyKeys || propertyKeys.length == 0) {
             (getHiddens ? vertex.iterators().hiddens() : vertex.iterators().properties()).forEachRemaining(property -> {
                 if (propertyMap.containsKey(property.key()))

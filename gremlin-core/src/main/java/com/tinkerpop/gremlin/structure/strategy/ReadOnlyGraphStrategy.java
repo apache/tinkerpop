@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -64,7 +63,7 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public <V> UnaryOperator<Supplier<Void>> getRemoveMetaPropertyStrategy(final Strategy.Context<StrategyWrappedMetaProperty<V>> ctx) {
+    public <V> UnaryOperator<Supplier<Void>> getRemoveVertexPropertyStrategy(final Strategy.Context<StrategyWrappedVertexProperty<V>> ctx) {
         return readOnlySupplier();
     }
 

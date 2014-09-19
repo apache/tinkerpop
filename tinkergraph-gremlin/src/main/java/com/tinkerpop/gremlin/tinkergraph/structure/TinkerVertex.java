@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -30,34 +30,34 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     @Override
-    public <V> MetaProperty<V> property(final String key) {
+    public <V> VertexProperty<V> property(final String key) {
         if (TinkerHelper.inComputerMode(this.graph)) {
-            final List<MetaProperty> list = (List) this.graph.graphView.getProperty(this, key);
+            final List<VertexProperty> list = (List) this.graph.graphView.getProperty(this, key);
             if (list.size() == 0)
-                return MetaProperty.<V>empty();
+                return VertexProperty.<V>empty();
             else if (list.size() == 1)
                 return list.get(0);
             else
                 throw Vertex.Exceptions.multiplePropertiesExistForProvidedKey(key);
         } else {
             if (this.properties.containsKey(key)) {
-                final List<MetaProperty> list = (List) this.properties.get(key);
+                final List<VertexProperty> list = (List) this.properties.get(key);
                 if (list.size() > 1)
                     throw Vertex.Exceptions.multiplePropertiesExistForProvidedKey(key);
                 else
                     return list.get(0);
             } else
-                return MetaProperty.<V>empty();
+                return VertexProperty.<V>empty();
         }
     }
 
     @Override
-    public <V> MetaProperty<V> property(final String key, final V value) {
+    public <V> VertexProperty<V> property(final String key, final V value) {
         if (this.graph.graphView != null && this.graph.graphView.getInUse()) {
-            return (MetaProperty<V>) this.graph.graphView.setProperty(this, key, value);
+            return (VertexProperty<V>) this.graph.graphView.setProperty(this, key, value);
         } else {
             ElementHelper.validateProperty(key, value);
-            final MetaProperty<V> newProperty = new TinkerMetaProperty<>(this, key, value);
+            final VertexProperty<V> newProperty = new TinkerVertexProperty<>(this, key, value);
             final List<Property> list = this.properties.getOrDefault(key, new ArrayList<>());
             list.add(newProperty);
             this.properties.put(key, list);
@@ -96,12 +96,12 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     protected class Iterators extends TinkerElement.Iterators implements Vertex.Iterators {
 
         @Override
-        public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
+        public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
             return (Iterator) super.properties(propertyKeys);
         }
 
         @Override
-        public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
+        public <V> Iterator<VertexProperty<V>> hiddens(final String... propertyKeys) {
             return (Iterator) super.hiddens(propertyKeys);
         }
 

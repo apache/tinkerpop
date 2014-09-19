@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerMetaProperty;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 
@@ -41,7 +41,7 @@ public class TinkerGraphView implements Serializable {
         ElementHelper.validateProperty(key, value);
         if (isComputeKey(key)) {
             if (element instanceof Vertex) {
-                final TinkerMetaProperty<V> property = new TinkerMetaProperty<V>((TinkerVertex) element, key, value) {
+                final TinkerVertexProperty<V> property = new TinkerVertexProperty<V>((TinkerVertex) element, key, value) {
                     @Override
                     public void remove() {
                         removeProperty((TinkerVertex) element, key, this);

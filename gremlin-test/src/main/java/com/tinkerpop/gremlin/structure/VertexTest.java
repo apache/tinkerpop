@@ -253,7 +253,7 @@ public class VertexTest extends AbstractGremlinTest {
         assertTrue(keys.contains("location"));
         assertTrue(keys.contains("status"));
 
-        final List<MetaProperty<Object>> m = v.properties().toList();
+        final List<VertexProperty<Object>> m = v.properties().toList();
         assertEquals(3, m.size());
         assertTrue(m.stream().anyMatch(p -> p.key().equals("name")));
         assertTrue(m.stream().anyMatch(p -> p.key().equals("location")));

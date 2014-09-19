@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.neo4j.structure;
 
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -25,8 +25,8 @@ public class Neo4jProperty<V> implements Property<V>, Serializable {
         this.element = element;
         this.key = key;
         this.value = value;
-        this.graph = element instanceof Neo4jMetaProperty ?
-                ((Neo4jVertex) (((Neo4jMetaProperty) element).getElement())).graph :
+        this.graph = element instanceof Neo4jVertexProperty ?
+                ((Neo4jVertex) (((Neo4jVertexProperty) element).getElement())).graph :
                 ((Neo4jElement) element).graph;
     }
 
@@ -70,8 +70,8 @@ public class Neo4jProperty<V> implements Property<V>, Serializable {
     @Override
     public void remove() {
         this.graph.tx().readWrite();
-        if (this.element instanceof MetaProperty) {
-            final Node node = ((Neo4jMetaProperty) this.element).getBaseVertex();
+        if (this.element instanceof VertexProperty) {
+            final Node node = ((Neo4jVertexProperty) this.element).getBaseVertex();
             if (null != node && node.hasProperty(this.key)) {
                 node.removeProperty(this.key);
             }

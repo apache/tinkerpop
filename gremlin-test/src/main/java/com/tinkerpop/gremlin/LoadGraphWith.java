@@ -52,7 +52,7 @@ public @interface LoadGraphWith {
         MODERN,
 
         /**
-         * Load "The Crew" TinkerPop3 toy graph which includes {@link com.tinkerpop.gremlin.structure.MetaProperty} data.
+         * Load "The Crew" TinkerPop3 toy graph which includes {@link com.tinkerpop.gremlin.structure.VertexProperty} data.
          */
         CREW,
 
@@ -68,7 +68,7 @@ public @interface LoadGraphWith {
             add(FeatureRequirement.Factory.create(FEATURE_FLOAT_VALUES, EdgePropertyFeatures.class));
         }};
 
-        // TODO: need to add metaproperty/multiproperty
+        // TODO: need to add meta-property/multiproperty
         private static final List<FeatureRequirement> featuresRequiredByCrew = new ArrayList<FeatureRequirement>(){{
             add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
             add(FeatureRequirement.Factory.create(FEATURE_INTEGER_VALUES, VertexPropertyFeatures.class));

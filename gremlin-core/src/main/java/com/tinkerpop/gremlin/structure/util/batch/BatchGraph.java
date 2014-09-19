@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -410,12 +410,12 @@ public class BatchGraph<G extends Graph> implements Graph {
         }
 
         @Override
-        public <V> MetaProperty<V> property(final String key) {
+        public <V> VertexProperty<V> property(final String key) {
             return getCachedVertex(externalID).property(key);
         }
 
         @Override
-        public <V> MetaProperty<V> property(final String key, final V value) {
+        public <V> VertexProperty<V> property(final String key, final V value) {
             return getCachedVertex(externalID).property(key, value);
         }
 
@@ -466,12 +466,12 @@ public class BatchGraph<G extends Graph> implements Graph {
             }
 
             @Override
-            public <V> Iterator<MetaProperty<V>> properties(final String... propertyKeys) {
+            public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
                 return getCachedVertex(externalID).iterators().properties(propertyKeys);
             }
 
             @Override
-            public <V> Iterator<MetaProperty<V>> hiddens(final String... propertyKeys) {
+            public <V> Iterator<VertexProperty<V>> hiddens(final String... propertyKeys) {
                 return getCachedVertex(externalID).iterators().hiddens(propertyKeys);
             }
         };

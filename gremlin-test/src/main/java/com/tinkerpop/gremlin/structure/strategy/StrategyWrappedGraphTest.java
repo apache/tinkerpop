@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -17,12 +16,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -180,19 +177,19 @@ public class StrategyWrappedGraphTest  {
     }
 
     // todo: this has to pass and be built out like Property above
-    public static class MetaPropertyShouldBeWrappedTest extends AbstractGremlinTest {
+    public static class VertexPropertyShouldBeWrappedTest extends AbstractGremlinTest {
         @Test
         @org.junit.Ignore
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-        public void shouldWrapVertexMetaProperties() {
+        public void shouldWrapVertexVertexProperties() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
             swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
             final Vertex v = swg.addVertex("any", "a");
 
-            assertTrue(v.property("any") instanceof StrategyWrappedMetaProperty);
-            assertTrue(StreamFactory.stream(v.properties()).allMatch(p -> p instanceof StrategyWrappedMetaProperty));
+            assertTrue(v.property("any") instanceof StrategyWrappedVertexProperty);
+            assertTrue(StreamFactory.stream(v.properties()).allMatch(p -> p instanceof StrategyWrappedVertexProperty));
 
-            assertTrue(g.V().properties("any").next() instanceof StrategyWrappedMetaProperty);
+            assertTrue(g.V().properties("any").next() instanceof StrategyWrappedVertexProperty);
         }
     }
 

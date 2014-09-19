@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -15,13 +15,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty<V>, Serializable {
+public class TinkerVertexProperty<V> extends TinkerElement implements VertexProperty<V>, Serializable {
 
     private final TinkerVertex vertex;
     private final String key;
     private final V value;
 
-    public TinkerMetaProperty(final TinkerVertex vertex, final String key, final V value, final Object... propertyKeyValues) {
+    public TinkerVertexProperty(final TinkerVertex vertex, final String key, final V value, final Object... propertyKeyValues) {
         super(TinkerHelper.getNextId(vertex.graph), key, vertex.graph);
         this.vertex = vertex;
         this.key = key;
@@ -67,7 +67,7 @@ public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty
 
     @Override
     public boolean equals(final Object object) {
-        return ElementHelper.areEqual((MetaProperty) this, object);
+        return ElementHelper.areEqual((VertexProperty) this, object);
     }
 
     @Override
@@ -99,13 +99,13 @@ public class TinkerMetaProperty<V> extends TinkerElement implements MetaProperty
         }
     }
 
-    public MetaProperty.Iterators iterators() {
+    public VertexProperty.Iterators iterators() {
         return this.iterators;
     }
 
-    private final MetaProperty.Iterators iterators = new Iterators();
+    private final VertexProperty.Iterators iterators = new Iterators();
 
-    protected class Iterators extends TinkerElement.Iterators implements MetaProperty.Iterators {
+    protected class Iterators extends TinkerElement.Iterators implements VertexProperty.Iterators {
 
         @Override
         public <U> Iterator<Property<U>> properties(final String... propertyKeys) {

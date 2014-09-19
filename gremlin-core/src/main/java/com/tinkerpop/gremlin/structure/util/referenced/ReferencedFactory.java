@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.MetaProperty;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 
@@ -21,8 +21,8 @@ public class ReferencedFactory {
         return edge instanceof ReferencedEdge ? (ReferencedEdge) edge : new ReferencedEdge(edge);
     }
 
-    public static ReferencedMetaProperty detach(final MetaProperty metaProperty) {
-        return metaProperty instanceof ReferencedMetaProperty ? (ReferencedMetaProperty) metaProperty : new ReferencedMetaProperty(metaProperty);
+    public static ReferencedVertexProperty detach(final VertexProperty vertexProperty) {
+        return vertexProperty instanceof ReferencedVertexProperty ? (ReferencedVertexProperty) vertexProperty : new ReferencedVertexProperty(vertexProperty);
     }
 
     public static ReferencedProperty detach(final Property property) {
@@ -38,8 +38,8 @@ public class ReferencedFactory {
             return detach((Vertex) element);
         else if (element instanceof Edge)
             return detach((Edge) element);
-        else if (element instanceof MetaProperty)
-            return detach((MetaProperty) element);
+        else if (element instanceof VertexProperty)
+            return detach((VertexProperty) element);
         else
             throw new IllegalArgumentException("The provided argument is an unknown element: " + element);
     }
@@ -54,8 +54,8 @@ public class ReferencedFactory {
         return edge.attach(hostVertex);
     }
 
-    public static MetaProperty attach(final ReferencedMetaProperty metaProperty, final Vertex hostVertex) {
-        return metaProperty.attach(hostVertex);
+    public static VertexProperty attach(final ReferencedVertexProperty vertexProperty, final Vertex hostVertex) {
+        return vertexProperty.attach(hostVertex);
     }
 
     public static Property attach(final ReferencedProperty property, final Vertex hostVertex) {
@@ -71,8 +71,8 @@ public class ReferencedFactory {
             return attach((ReferencedVertex) element, hostVertex);
         else if (element instanceof Edge)
             return attach((ReferencedEdge) element, hostVertex);
-        else if (element instanceof MetaProperty)
-            return attach((ReferencedMetaProperty) element, hostVertex);
+        else if (element instanceof VertexProperty)
+            return attach((ReferencedVertexProperty) element, hostVertex);
         else
             throw new IllegalArgumentException("The provided argument is an unknown element: " + element);
     }
@@ -85,8 +85,8 @@ public class ReferencedFactory {
         return edge.attach(hostGraph);
     }
 
-    public static MetaProperty attach(final ReferencedMetaProperty metaProperty, final Graph hostGraph) {
-        return metaProperty.attach(hostGraph);
+    public static VertexProperty attach(final ReferencedVertexProperty vertexProperty, final Graph hostGraph) {
+        return vertexProperty.attach(hostGraph);
     }
 
     public static Property attach(final ReferencedProperty property, final Graph hostGraph) {
@@ -102,8 +102,8 @@ public class ReferencedFactory {
             return attach((ReferencedVertex) element, hostGraph);
         else if (element instanceof Edge)
             return attach((ReferencedEdge) element, hostGraph);
-        else if (element instanceof MetaProperty)
-            return attach((ReferencedMetaProperty) element, hostGraph);
+        else if (element instanceof VertexProperty)
+            return attach((ReferencedVertexProperty) element, hostGraph);
         else
             throw new IllegalArgumentException("The provided argument is an unknown element: " + element);
     }
