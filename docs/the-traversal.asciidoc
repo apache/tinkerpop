@@ -199,28 +199,25 @@ gremlin> g.V().has('age').filter{it.get().value('name').length() == 4}.out().val
 ==>ripple
 ==>lop
 
-Given that statistics above, the following `choose()` examples are made clear.
+Given the facts above, the following examples show how to use `choose()` to select the values.
 
 image::choose-step.png[width=700]
 
 [source,groovy]
-gremlin> g.V().has('age').choose({it.get().value('name').length() == 5},
+gremlin> g.V().has('age').choose({it.get().value('name').length() == 5},   // If the predicate is true, then do `in`, else do `out`.
   g.of().in(),
-  g.of().out()).value('name') <1>
+  g.of().out()).value('name')
 ==>marko
 ==>ripple
 ==>lop
-gremlin> g.V().has('age').choose({it.get().value('name').length()},
+gremlin> g.V().has('age').choose({it.get().value('name').length()},   // Use the result of the function as a key to the map of traversal choices.
   [5:g.of().in(),
-   4:g.of().out()]).value('name') <2>
+   4:g.of().out()]).value('name')
 ==>marko
 ==>ripple
 ==>lop
 
-<1> If the predicate is true, then do `in`, else do `out`.
-<2> Use the result of the function as a key to the map of traversal choices.
-
-In Java8, there is no elegant syntax to create a `Map`. Thus, the last traversal above would look as follows: 
+In Java8, there is no elegant syntax to create a `Map`. Thus, the last traversal above would look as follows:
 
 [source,java]
 g.V().has("age").choose(v -> v.get().value("name").length(), new HashMap() {{
