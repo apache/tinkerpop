@@ -8,13 +8,10 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.MetaProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.io.util.IoEdge;
-import com.tinkerpop.gremlin.structure.io.util.IoVertex;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedMetaProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
-import org.javatuples.Pair;
 
 /**
  * Traverser class for {@link com.tinkerpop.gremlin.structure.Element} serializers.
@@ -23,8 +20,7 @@ import org.javatuples.Pair;
  */
 class ElementSerializer {
     /**
-     * Serializes any Vertex implementation encountered to an {@link com.tinkerpop.gremlin.structure.io.util.IoEdge} and deserializes it out to a
-     * {@link com.tinkerpop.gremlin.structure.util.detached.DetachedEdge}.
+     * Serializes any Vertex implementation encountered to a {@link DetachedEdge}.
      *
      * @author Stephen Mallette (http://stephen.genoprime.com)
      */
@@ -42,8 +38,7 @@ class ElementSerializer {
     }
 
     /**
-     * Serializes any Vertex implementation encountered to an {@link com.tinkerpop.gremlin.structure.io.util.IoVertex} and deserializes it out to a
-     * {@link com.tinkerpop.gremlin.structure.util.detached.DetachedVertex}.
+     * Serializes any Vertex implementation encountered to an {@link DetachedVertex}.
      *
      * @author Stephen Mallette (http://stephen.genoprime.com)
      */
