@@ -232,7 +232,7 @@ GroupBy Step
 As traversers propagate across a graph as defined by a traversal, sideEffect computations are sometimes required. That is, the actually path taken or the current location of a traverser is not the ultimate output of the computation, but some other representation of the traversal. The `groupBy()`-step (*sideEffect*) is one such sideEffect that organizes the objects according to some function of the object. Then, if required, that organization (a list) is reduced. An example is provided below.
 
 [source,groovy]
-gremlin> g.V().groupBy{it.get().value('name')[1]}   // group the vertices by the first letter of their name
+gremlin> g.V().groupBy{it.get().value('name')[1]}   // group the vertices by the second letter of their name
 ==>[a:[v[1], v[2]], e:[v[6]], i:[v[5]], o:[v[3], v[4]]]
 gremlin> g.V().groupBy{it.get().value('name')[1]}{it.get().value('name')}   // for each vertex in the group, get their name (now the name[1] is apparent)
 ==>[a:[marko, vadas], e:[peter], i:[ripple], o:[lop, josh]]
