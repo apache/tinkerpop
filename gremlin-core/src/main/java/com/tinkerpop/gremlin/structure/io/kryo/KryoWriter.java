@@ -104,14 +104,8 @@ public class KryoWriter implements GraphWriter {
     }
 
     private void writeElement(final Output output, final Element e, final Direction direction) {
-        final DetachedElement detached;
-        if (e instanceof Vertex)
-            detached = e instanceof DetachedVertex ? (DetachedVertex) e : DetachedVertex.detach((Vertex) e);
-        else
-            detached = e instanceof DetachedEdge ? (DetachedEdge) e : DetachedEdge.detach((Edge) e);
-
         // todo: possible to just write object?
-        kryo.writeClassAndObject(output, detached);
+        kryo.writeClassAndObject(output, e);
 
         if (e instanceof Vertex) {
             output.writeBoolean(direction != null);
