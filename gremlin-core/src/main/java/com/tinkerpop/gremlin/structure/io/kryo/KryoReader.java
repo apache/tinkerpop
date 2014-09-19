@@ -180,9 +180,6 @@ public class KryoReader implements GraphReader {
                 }
             }
         } catch (Exception ex) {
-            // rollback whatever portion failed
-            ex.printStackTrace();
-            graph.tx().rollback();  // todo: remove
             throw new IOException(ex);
         }
         // done writing to temp
@@ -192,9 +189,7 @@ public class KryoReader implements GraphReader {
             readFromTempEdges(edgeInput, graph);
             graph.tx().commit();
         } catch (Exception ex) {
-            // rollback whatever portion failed
             ex.printStackTrace();
-            graph.tx().rollback();
             throw new IOException(ex);
         } finally {
             deleteTempFileSilently();
