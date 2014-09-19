@@ -141,4 +141,39 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.System<T> {
         this.sideEffects = traversal.sideEffects();
         return this;
     }
+
+    /*
+     @Override
+    public SimpleTraverser<T> deflate() {
+        if (this.t instanceof Vertex) {
+            this.t = (T) DetachedVertex.detach((Vertex) this.t);
+        } else if (this.t instanceof Edge) {
+            this.t = (T) DetachedEdge.detach((Edge) this.t);
+        } else if (this.t instanceof VertexProperty) {
+            this.t = (T) DetachedVertexProperty.detach((VertexProperty) this.t);
+        } else if (this.t instanceof Property) {
+            this.t = (T) DetachedProperty.detach((Property) this.t);
+        } else if (this.t instanceof Path) {
+            this.t = (T) DetachedPath.detach((Path) this.t);
+        }
+        this.dropSideEffects();
+        return this;
+    }
+
+    @Override
+    public SimpleTraverser<T> inflate(final Vertex vertex, final Traversal traversal) {
+        if (this.t instanceof DetachedVertex) {
+            this.t = (T) ((DetachedVertex) this.t).attach(vertex);
+        } else if (this.t instanceof DetachedEdge) {
+            this.t = (T) ((DetachedEdge) this.t).attach(vertex);
+        } else if (this.t instanceof DetachedVertexProperty) {
+            this.t = (T) ((DetachedVertexProperty) this.t).attach(vertex);
+        } else if (this.t instanceof DetachedProperty) {
+            this.t = (T) ((DetachedProperty) this.t).attach(vertex);
+        }
+        // you do not want to attach a path because it will reference graph objects not at the current vertex
+        this.sideEffects = traversal.sideEffects();
+        return this;
+    }
+     */
 }
