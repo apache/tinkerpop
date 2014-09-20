@@ -1,6 +1,8 @@
 package com.tinkerpop.gremlin.structure.util.detached;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.FeatureRequirement;
+import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -60,8 +62,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(GraphData.CLASSIC)
     public void shouldEvaluateToEqual() {
-        final DetachedEdge detachedEdge1 = DetachedEdge.detach(g.e(11));
-        assertTrue(detachedEdge1.equals(DetachedEdge.detach(g.e(11))));
+        assertTrue(DetachedEdge.detach(g.e(11)).equals(DetachedEdge.detach(g.e(11))));
     }
 
     @Test
@@ -71,10 +72,14 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     }
 
     @Test
-    @Ignore
+    @LoadGraphWith(GraphData.MODERN)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldNotEvaluateToEqualDifferentId() {
-        //final DetachedEdge detachedEdge1 = DetachedEdge.detach(e);
-        //assertFalse(detachedEdge1.equals(this.detachedEdge));
+        final Vertex vOut = g.v(4);
+        final Vertex vIn = g.v(3);
+        final Edge e = vOut.addEdge("created", vIn, "weight", 0.4d);
+        assertFalse(DetachedEdge.detach(g.e(11)).equals(DetachedEdge.detach(e)));
     }
 
     @Test
