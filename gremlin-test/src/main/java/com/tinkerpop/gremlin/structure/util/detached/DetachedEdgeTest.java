@@ -33,6 +33,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotConstructWithSomethingAlreadyDetached() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("test", v);
@@ -63,13 +64,13 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(GraphData.MODERN)
     public void shouldEvaluateToEqual() {
-        assertTrue(DetachedEdge.detach(g.e(11)).equals(DetachedEdge.detach(g.e(11))));
+        assertTrue(DetachedEdge.detach(g.e(convertToEdgeId("josh", "created", "lop"))).equals(DetachedEdge.detach(g.e(convertToEdgeId("josh", "created", "lop")))));
     }
 
     @Test
     @LoadGraphWith(GraphData.MODERN)
     public void shouldHaveSameHashCode() {
-        assertEquals(DetachedEdge.detach(g.e(11)).hashCode(), DetachedEdge.detach(g.e(11)).hashCode());
+        assertEquals(DetachedEdge.detach(g.e(convertToEdgeId("josh", "created", "lop"))).hashCode(), DetachedEdge.detach(g.e(convertToEdgeId("josh", "created", "lop"))).hashCode());
     }
 
     @Test
@@ -77,10 +78,10 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldNotEvaluateToEqualDifferentId() {
-        final Vertex vOut = g.v(4);
-        final Vertex vIn = g.v(3);
+        final Vertex vOut = g.v(convertToVertexId("josh"));
+        final Vertex vIn = g.v(convertToVertexId("lop"));
         final Edge e = vOut.addEdge("created", vIn, "weight", 0.4d);
-        assertFalse(DetachedEdge.detach(g.e(11)).equals(DetachedEdge.detach(e)));
+        assertFalse(DetachedEdge.detach(g.e(convertToEdgeId("josh", "created", "lop"))).equals(DetachedEdge.detach(e)));
     }
 
     @Test
@@ -116,6 +117,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowSetProperty() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("test", v);
@@ -124,6 +126,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowRemove() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("test", v);
@@ -132,6 +135,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotTraverse() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("test", v);

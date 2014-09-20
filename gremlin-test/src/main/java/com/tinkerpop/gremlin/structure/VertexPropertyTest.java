@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.ExceptionCoverage;
+import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.process.T;
 import org.javatuples.Pair;
@@ -15,7 +16,10 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -29,6 +33,10 @@ public class VertexPropertyTest extends AbstractGremlinTest {
     public static class VertexPropertyAddition extends AbstractGremlinTest {
 
         @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
         public void shouldAddMultiProperties() {
             final Vertex v = g.addVertex("name", "marko", "age", 34);
             tryCommit(g, g -> {
@@ -99,6 +107,10 @@ public class VertexPropertyTest extends AbstractGremlinTest {
         }
 
         @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
         public void shouldHandleSingleVertexProperties() {
             final Vertex v = g.addVertex("name", "marko", "name", "marko a. rodriguez", "name", "marko rodriguez");
             tryCommit(g, g -> {
@@ -157,9 +169,11 @@ public class VertexPropertyTest extends AbstractGremlinTest {
     public static class VertexPropertyRemoval extends AbstractGremlinTest {
 
         @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
         public void shouldSupportIdempotentVertexPropertyRemoval() {
-            Vertex a = g.addVertex("name", "marko");
-            Vertex b = g.addVertex("name", "daniel", "name", "kuppitz");
+            final Vertex a = g.addVertex("name", "marko");
+            final Vertex b = g.addVertex("name", "daniel", "name", "kuppitz");
             a.property("name").remove();
             a.property("name").remove();
             a.property("name").remove();
@@ -173,8 +187,11 @@ public class VertexPropertyTest extends AbstractGremlinTest {
 
 
         @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
         public void shouldRemoveMultiProperties() {
-            Vertex v = g.addVertex("name", "marko", "age", 34);
+            final Vertex v = g.addVertex("name", "marko", "age", 34);
             v.property("name", "marko a. rodriguez");
             tryCommit(g);
             v.property("name", "marko rodriguez");
@@ -216,9 +233,12 @@ public class VertexPropertyTest extends AbstractGremlinTest {
         }
 
         @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
         public void shouldRemoveMultiPropertiesWhenVerticesAreRemoved() {
-            Vertex marko = g.addVertex("name", "marko", "name", "okram");
-            Vertex stephen = g.addVertex("name", "stephen", "name", "spmallette");
+            final Vertex marko = g.addVertex("name", "marko", "name", "okram");
+            final Vertex stephen = g.addVertex("name", "stephen", "name", "spmallette");
             tryCommit(g, g -> {
                 assertEquals(2, g.V().count().next().intValue());
                 assertEquals(0, g.E().count().next().intValue());
@@ -271,8 +291,12 @@ public class VertexPropertyTest extends AbstractGremlinTest {
     public static class VertexPropertyProperties extends AbstractGremlinTest {
 
         @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
         public void shouldSupportPropertiesOnMultiProperties() {
-            Vertex v = g.addVertex("name", "marko", "age", 34);
+            final Vertex v = g.addVertex("name", "marko", "age", 34);
             tryCommit(g, g -> {
                 assertEquals(2, g.V().properties().count().next().intValue());
                 assertEquals(1, g.V().count().next().intValue());
@@ -319,8 +343,12 @@ public class VertexPropertyTest extends AbstractGremlinTest {
 
     public static class VertexPropertyTraversals extends AbstractGremlinTest {
         @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
         public void shouldHandleVertexPropertyTraversals() {
-            Vertex v = g.addVertex("i", 1, "i", 2, "i", 3);
+            final Vertex v = g.addVertex("i", 1, "i", 2, "i", 3);
             tryCommit(g, g -> {
                 assertEquals(3, v.properties().count().next().intValue());
                 assertEquals(3, v.properties("i").count().next().intValue());
@@ -374,9 +402,10 @@ public class VertexPropertyTest extends AbstractGremlinTest {
         public BiFunction<Graph, Vertex, Boolean> streamGetter;
 
         @Test
-        @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
         public void shouldHandleHiddenVertexProperties() {
-            Vertex v = g.addVertex(Graph.Key.hide("age"), 34, Graph.Key.hide("age"), 29, "age", 16, "name", "marko", "food", "taco", Graph.Key.hide("color"), "purple");
+            final Vertex v = g.addVertex(Graph.Key.hide("age"), 34, Graph.Key.hide("age"), 29, "age", 16, "name", "marko", "food", "taco", Graph.Key.hide("color"), "purple");
             tryCommit(g, g -> {
                 assertTrue(streamGetter.apply(g, v));
             });

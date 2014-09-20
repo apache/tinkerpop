@@ -305,12 +305,32 @@ public interface Graph extends AutoCloseable {
          */
         public interface VertexFeatures extends ElementFeatures {
             public static final String FEATURE_ADD_VERTICES = "AddVertices";
+            public static final String FEATURE_MULTI_PROPERTIES = "MultiProperties";
+            public static final String FEATURE_META_PROPERTIES = "MetaProperties";
 
             /**
              * Determines if a {@link Vertex} can be added to the {@code Graph}.
              */
             @FeatureDescriptor(name = FEATURE_ADD_VERTICES)
             public default boolean supportsAddVertices() {
+                return true;
+            }
+
+            /**
+             * Determines if a {@link Vertex} can support multiple properties with the same key.
+             */
+            @FeatureDescriptor(name = FEATURE_MULTI_PROPERTIES)
+            public default boolean supportsMultiProperties() {
+                return true;
+            }
+
+            /**
+             * Determines if a {@link Vertex} can support properties on vertex properties.  It is assumed that a
+             * graph will support all the same data types for meta-properties that are supported for regular
+             * properties.
+             */
+            @FeatureDescriptor(name = FEATURE_META_PROPERTIES)
+            public default boolean supportsMetaProperties() {
                 return true;
             }
 

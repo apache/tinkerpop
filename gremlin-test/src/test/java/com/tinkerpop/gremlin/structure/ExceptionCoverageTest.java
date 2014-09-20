@@ -35,7 +35,8 @@ public class ExceptionCoverageTest {
                 Graph.Variables.Exceptions.class,
                 Property.Exceptions.class,
                 Transaction.Exceptions.class,
-                Vertex.Exceptions.class
+                Vertex.Exceptions.class,
+                VertexProperty.Exceptions.class
         };
 
         // this is a list of exceptions that are "excused" from the coverage tests.  in most cases there should only
