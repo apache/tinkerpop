@@ -50,7 +50,7 @@ public class ReferencedVertex extends ReferencedElement implements Vertex, Attac
 
     @Override
     public Vertex attach(final Vertex hostVertex) {
-        if (hostVertex.id().toString().equals(this.id().toString()))
+        if (hostVertex.equals(this))
             return hostVertex;
         else
             throw new IllegalStateException("The host vertex must be the referenced vertex to attach: " + this);

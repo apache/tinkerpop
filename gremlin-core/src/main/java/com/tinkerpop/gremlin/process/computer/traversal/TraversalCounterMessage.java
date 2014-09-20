@@ -80,7 +80,7 @@ public class TraversalCounterMessage extends TraversalMessage {
                 final TraversalCounterMessage message = TraversalCounterMessage.of((Traverser.System) traverser);
                 message.setCounter(count);
                 messenger.sendMessage(
-                        MessageType.Global.of(TraversalMessage.getHostingVertices(end)),
+                        MessageType.Global.of(TraversalMessage.getHostingVertex(end)),
                         message);
             } else {
                 ((Traverser.System) traverser).deflate();

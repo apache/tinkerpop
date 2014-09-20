@@ -8,8 +8,6 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -37,15 +35,13 @@ public abstract class TraversalMessage implements Serializable {
             return (T) TraversalCounterMessage.of(traverser);
     }
 
-    public static List<Vertex> getHostingVertices(final Object object) {
+    public static Vertex getHostingVertex(final Object object) {
         if (object instanceof Vertex)
-            return Arrays.asList((Vertex) object);
+            return (Vertex) object;
         else if (object instanceof Edge)
-            return Arrays.asList(((Edge) object).iterators().vertices(Direction.OUT).next());
-            //else if (object instanceof Property)
-            //    return getHostingVertices(((Property) object).getElement());
+            return ((Edge) object).iterators().vertices(Direction.OUT).next();
         else if (object instanceof Property)
-            return getHostingVertices(((Property) object).getElement());
+            return getHostingVertex(((Property) object).getElement());
         else
             throw new IllegalStateException("The host of the object is unknown: " + object.toString());
 

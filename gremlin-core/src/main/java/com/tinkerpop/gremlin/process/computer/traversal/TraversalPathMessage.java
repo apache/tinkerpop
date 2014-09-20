@@ -86,7 +86,7 @@ public class TraversalPathMessage extends TraversalMessage {
             final Object end = traverser.get();
             if (end instanceof Element || end instanceof Property) {
                 messenger.sendMessage(
-                        MessageType.Global.of(getHostingVertices(end)),
+                        MessageType.Global.of(getHostingVertex(end)),
                         TraversalPathMessage.of((Traverser.System) traverser));
             } else {
                 ((Traverser.System) traverser).deflate();
