@@ -1,6 +1,9 @@
 package com.tinkerpop.gremlin.structure.util.detached;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.FeatureRequirement;
+import com.tinkerpop.gremlin.FeatureRequirementSet;
+import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -15,6 +18,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -22,18 +26,19 @@ import static org.junit.Assert.assertTrue;
  */
 public class DetachedVertexTest extends AbstractGremlinTest {
 
-    // todo: clean up all detached tests
-
     @Test(expected = IllegalArgumentException.class)
     public void shouldNotConstructWithNullElement() {
         DetachedVertex.detach(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotConstructWithSomethingAlreadyDetached() {
         final Vertex v = g.addVertex();
         DetachedVertex.detach(DetachedVertex.detach(v));
     }
+
+    // todo: need "the crew"
 
     @Test
     @org.junit.Ignore
@@ -43,15 +48,24 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     }
 
     @Test
-    @org.junit.Ignore
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldEvaluateToEqual() {
-        // assertTrue(detachedVertex1.equals(this.detachedVertex));
+        assertTrue(DetachedVertex.detach(g.v(convertToVertexId("marko"))).equals(DetachedVertex.detach(g.v(convertToVertexId("marko")))));
     }
 
     @Test
-    @org.junit.Ignore
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldHaveSameHashCode() {
+        assertEquals(DetachedVertex.detach(g.v(convertToVertexId("marko"))).hashCode(), DetachedVertex.detach(g.v(convertToVertexId("marko"))).hashCode());
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldNotEvaluateToEqualDifferentId() {
-        //assertFalse(detachedVertex1.equals(this.detachedVertex));
+        final Vertex v = g.addVertex("name", "marko", "age", 29);
+        assertFalse(DetachedVertex.detach(v).equals(DetachedVertex.detach(g.v(convertToVertexId("marko")))));
     }
 
     @Test
@@ -164,6 +178,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
 
 
     @Test(expected = UnsupportedOperationException.class)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowAddEdge() {
         final Vertex v = g.addVertex();
         final DetachedVertex detachedVertex = DetachedVertex.detach(v);
@@ -171,6 +186,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowSetProperty() {
         final Vertex v = g.addVertex();
         final DetachedVertex detachedVertex = DetachedVertex.detach(v);
@@ -178,6 +194,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowRemove() {
         final Vertex v = g.addVertex();
         final DetachedVertex detachedVertex = DetachedVertex.detach(v);
@@ -185,11 +202,14 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotTraverse() {
         final Vertex v = g.addVertex();
         final DetachedVertex detachedVertex = DetachedVertex.detach(v);
         detachedVertex.start();
     }
+
+    // todo: need the crew
 
     @Test(expected = IllegalStateException.class)
     @org.junit.Ignore
@@ -213,19 +233,10 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     }
 
     @Test
-    @org.junit.Ignore
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldBeAbleToCallPropertyIfThereIsASingleProperty() {
-        /*
-        final Map<String,Object> properties = new HashMap<>();
-        final IoVertexProperty propX1 = new IoVertexProperty();
-        propX1.value = "a";
-        propX1.id = 123;
-        propX1.label = VertexProperty.DEFAULT_LABEL;
-        properties.put("x", Arrays.asList(propX1));
-
-        final Map<String,Object> hiddens = new HashMap<>();
-        final DetachedVertex dv = new DetachedVertex(1, "test", properties, hiddens);
-        assertEquals("a", dv.property("x").value());
-        */
+        final DetachedVertex dv = DetachedVertex.detach(g.v(convertToVertexId("marko")));
+        assertEquals("marko", dv.property("name").value());
+        assertEquals(29, dv.property("age").value());
     }
 }
