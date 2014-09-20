@@ -1,28 +1,24 @@
 package com.tinkerpop.gremlin.structure.util.detached;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Pair;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -62,10 +58,10 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     }
 
     @Test
-    @Ignore
+    @LoadGraphWith(GraphData.CLASSIC)
     public void shouldEvaluateToEqual() {
-        //final DetachedEdge detachedEdge1 = DetachedEdge.detach(e);
-        //assertTrue(detachedEdge1.equals(this.detachedEdge));
+        final DetachedEdge detachedEdge1 = DetachedEdge.detach(g.e(11));
+        assertTrue(detachedEdge1.equals(DetachedEdge.detach(g.e(11))));
     }
 
     @Test
