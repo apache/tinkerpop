@@ -65,6 +65,12 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     }
 
     @Test
+    @LoadGraphWith(GraphData.CLASSIC)
+    public void shouldHaveSameHashCode() {
+        assertEquals(DetachedEdge.detach(g.e(11)).hashCode(), DetachedEdge.detach(g.e(11)).hashCode());
+    }
+
+    @Test
     @Ignore
     public void shouldNotEvaluateToEqualDifferentId() {
         //final DetachedEdge detachedEdge1 = DetachedEdge.detach(e);
