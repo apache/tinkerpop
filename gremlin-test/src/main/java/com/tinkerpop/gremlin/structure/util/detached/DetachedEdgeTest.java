@@ -39,6 +39,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         DetachedEdge.detach(DetachedEdge.detach(e));
     }
 
+    // todo: need "the crew"
     @Test
     @Ignore
     public void shouldConstructDetachedEdge() {
@@ -60,13 +61,13 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(GraphData.CLASSIC)
+    @LoadGraphWith(GraphData.MODERN)
     public void shouldEvaluateToEqual() {
         assertTrue(DetachedEdge.detach(g.e(11)).equals(DetachedEdge.detach(g.e(11))));
     }
 
     @Test
-    @LoadGraphWith(GraphData.CLASSIC)
+    @LoadGraphWith(GraphData.MODERN)
     public void shouldHaveSameHashCode() {
         assertEquals(DetachedEdge.detach(g.e(11)).hashCode(), DetachedEdge.detach(g.e(11)).hashCode());
     }
