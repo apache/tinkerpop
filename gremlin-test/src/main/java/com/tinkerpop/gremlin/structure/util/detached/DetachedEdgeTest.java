@@ -33,7 +33,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotConstructWithSomethingAlreadyDetached() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("test", v);
@@ -117,7 +117,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotAllowSetProperty() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("test", v);
@@ -126,7 +126,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotAllowRemove() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("test", v);
@@ -135,7 +135,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotTraverse() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("test", v);
