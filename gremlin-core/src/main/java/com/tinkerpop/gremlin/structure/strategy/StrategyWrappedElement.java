@@ -4,12 +4,10 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
-import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.function.Supplier;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -34,49 +32,49 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
     @Override
     public <V> V value(final String key) throws NoSuchElementException {
         return this.strategyWrappedGraph.strategy().compose(
-                s -> s.<V>getElementValue(elementStrategyContext),
+                s -> s.<V>getElementValueStrategy(elementStrategyContext),
                 this.baseElement::value).apply(key);
     }
 
     @Override
     public <V> Property<V> property(final String key) {
         return new StrategyWrappedProperty<>(this.strategyWrappedGraph.strategy().compose(
-                s -> s.<V>getElementGetProperty(elementStrategyContext),
+                s -> s.<V>getElementGetPropertyStrategy(elementStrategyContext),
                 this.baseElement::property).apply(key), this.strategyWrappedGraph);
     }
 
     @Override
     public Set<String> keys() {
         return this.strategyWrappedGraph.strategy().compose(
-                s -> s.getElementKeys(elementStrategyContext),
+                s -> s.getElementKeysStrategy(elementStrategyContext),
                 this.baseElement::keys).get();
     }
 
     @Override
     public Set<String> hiddenKeys() {
         return this.strategyWrappedGraph.strategy().compose(
-                s -> s.getElementHiddenKeys(elementStrategyContext),
+                s -> s.getElementHiddenKeysStrategy(elementStrategyContext),
                 this.baseElement::hiddenKeys).get();
     }
 
     @Override
     public String label() {
         return this.strategyWrappedGraph.strategy().compose(
-                s -> s.getElementLabel(elementStrategyContext),
+                s -> s.getElementLabelStrategy(elementStrategyContext),
                 this.baseElement::label).get();
     }
 
     @Override
     public Object id() {
         return this.strategyWrappedGraph.strategy().compose(
-                s -> s.getElementId(elementStrategyContext),
+                s -> s.getElementIdStrategy(elementStrategyContext),
                 this.baseElement::id).get();
     }
 
     @Override
     public <V> Property<V> property(final String key, final V value) {
         return this.strategyWrappedGraph.strategy().compose(
-                s -> s.<V>getElementProperty(elementStrategyContext),
+                s -> s.<V>getElementPropertyStrategy(elementStrategyContext),
                 this.baseElement::property).apply(key, value);
     }
 
@@ -107,14 +105,14 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
         @Override
         public <V> Iterator<V> values(final String... propertyKeys) {
             return strategyWrappedGraph.strategy().compose(
-                    s -> s.<V>getElementValues(elementStrategyContext),
+                    s -> s.<V>getElementValuesStrategy(elementStrategyContext),
                     (String[] pks) -> baseElement.iterators().values(pks)).apply(propertyKeys);
         }
 
         @Override
         public <V> Iterator<V> hiddenValues(final String... propertyKeys) {
             return strategyWrappedGraph.strategy().compose(
-                    s -> s.<V>getElementHiddenValues(elementStrategyContext),
+                    s -> s.<V>getElementHiddenValuesStrategy(elementStrategyContext),
                     (String[] pks) -> baseElement.iterators().hiddenValues(pks)).apply(propertyKeys);
         }
     }

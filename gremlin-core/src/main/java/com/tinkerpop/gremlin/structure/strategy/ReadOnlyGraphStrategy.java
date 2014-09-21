@@ -31,7 +31,7 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public <V> UnaryOperator<BiFunction<String, V, ? extends Property<V>>> getElementProperty(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public <V> UnaryOperator<BiFunction<String, V, ? extends Property<V>>> getElementPropertyStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return readOnlyBiFunction();
     }
 

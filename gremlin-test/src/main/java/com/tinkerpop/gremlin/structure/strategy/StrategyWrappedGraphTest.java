@@ -112,7 +112,7 @@ public class StrategyWrappedGraphTest  {
             final AtomicInteger counter = new AtomicInteger(0);
             swg.strategy().setGraphStrategy(new GraphStrategy() {
                 @Override
-                public UnaryOperator<Supplier<Void>> getGraphClose(final Strategy.Context<StrategyWrappedGraph> ctx) {
+                public UnaryOperator<Supplier<Void>> getGraphCloseStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
                     return (t) -> () -> {
                         counter.incrementAndGet();
                         return null;

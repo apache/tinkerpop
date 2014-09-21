@@ -58,7 +58,7 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     public <V> VertexProperty<V> property(final String key, final V value) {
         // todo: explicit vertex/edge strategy methods
         return new StrategyWrappedVertexProperty<V>((VertexProperty<V>) this.strategyWrappedGraph.strategy().compose(
-                s -> s.<V>getElementProperty(strategyContext),
+                s -> s.<V>getElementPropertyStrategy(strategyContext),
                 this.baseVertex::property).apply(key, value), this.strategyWrappedGraph);
     }
 
@@ -66,7 +66,7 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     public <V> VertexProperty<V> property(final String key) {
         // todo: explicit vertex/edge strategy methods
         return new StrategyWrappedVertexProperty<V>((VertexProperty<V>) this.strategyWrappedGraph.strategy().compose(
-                s -> s.<V>getElementGetProperty(strategyContext),
+                s -> s.<V>getElementGetPropertyStrategy(strategyContext),
                 this.baseVertex::property).apply(key), this.strategyWrappedGraph);
     }
 
@@ -91,7 +91,7 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
             // todo: explicit vertex/edge strategy methods
             // todo: wrap it up
             return StreamFactory.stream(strategyWrappedGraph.strategy().compose(
-                    s -> s.<V>getElementPropertiesGetter(elementStrategyContext),
+                    s -> s.<V>getElementPropertiesStrategy(elementStrategyContext),
                     (String[] pks) -> ((Vertex) baseElement).iterators().properties(pks)).apply(propertyKeys))
                     .map(property -> (VertexProperty<V>) new StrategyWrappedVertexProperty<>((VertexProperty<V>) property, strategyWrappedGraph)).iterator();
         }
@@ -101,7 +101,7 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
             // todo: explicit vertex/edge strategy methods
             // todo: wrap it up
             return StreamFactory.stream(strategyWrappedGraph.strategy().compose(
-                    s -> s.<V>getElementHiddens(elementStrategyContext),
+                    s -> s.<V>getElementHiddensStrategy(elementStrategyContext),
                     (String[] pks) -> ((Vertex) baseElement).iterators().hiddens(pks)).apply(propertyKeys))
                     .map(property -> (VertexProperty<V>) new StrategyWrappedVertexProperty<>((VertexProperty<V>) property, strategyWrappedGraph)).iterator();
         }

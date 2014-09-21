@@ -183,7 +183,7 @@ public interface GraphStrategy {
      * {@link com.tinkerpop.gremlin.structure.Element#property(String)} signature
      * and returns an enhanced strategy {@link java.util.function.Function} with the same signature
      */
-    public default <V> UnaryOperator<Function<String, ? extends Property<V>>> getElementGetProperty(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public default <V> UnaryOperator<Function<String, ? extends Property<V>>> getElementGetPropertyStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -197,7 +197,7 @@ public interface GraphStrategy {
      * {@link com.tinkerpop.gremlin.structure.Element#property(String, Object)} signature
      * and returns an enhanced strategy {@link java.util.function.BiFunction} with the same signature
      */
-    public default <V> UnaryOperator<BiFunction<String, V, ? extends Property<V>>> getElementProperty(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public default <V> UnaryOperator<BiFunction<String, V, ? extends Property<V>>> getElementPropertyStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -213,7 +213,7 @@ public interface GraphStrategy {
      * {@link com.tinkerpop.gremlin.structure.Element#properties} signature
      * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
-    public default <V> UnaryOperator<Function<String[],Iterator<? extends Property<V>>>> getElementPropertiesGetter(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public default <V> UnaryOperator<Function<String[],Iterator<? extends Property<V>>>> getElementPropertiesStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -227,7 +227,7 @@ public interface GraphStrategy {
      * {@link com.tinkerpop.gremlin.structure.Element#properties} signature
      * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
-    public default <V> UnaryOperator<Function<String[],Iterator<? extends Property<V>>>> getElementHiddens(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public default <V> UnaryOperator<Function<String[],Iterator<? extends Property<V>>>> getElementHiddensStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -241,7 +241,7 @@ public interface GraphStrategy {
      * {@link com.tinkerpop.gremlin.structure.Element#value(String)} signature
      * and returns an enhanced strategy {@link java.util.function.Function} with the same signature
      */
-    public default <V> UnaryOperator<Function<String, V>> getElementValue(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public default <V> UnaryOperator<Function<String, V>> getElementValueStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -255,7 +255,7 @@ public interface GraphStrategy {
      * {@link com.tinkerpop.gremlin.structure.Element#id()} signature
      * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
-    public default UnaryOperator<Supplier<Object>> getElementId(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public default UnaryOperator<Supplier<Object>> getElementIdStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -269,7 +269,7 @@ public interface GraphStrategy {
      * {@link com.tinkerpop.gremlin.structure.Element#label()} signature
      * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
-    public default UnaryOperator<Supplier<String>> getElementLabel(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public default UnaryOperator<Supplier<String>> getElementLabelStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -283,7 +283,7 @@ public interface GraphStrategy {
      * {@link com.tinkerpop.gremlin.structure.Element#keys()} signature
      * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
-    public default UnaryOperator<Supplier<Set<String>>> getElementKeys(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public default UnaryOperator<Supplier<Set<String>>> getElementKeysStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -297,7 +297,7 @@ public interface GraphStrategy {
      * {@link com.tinkerpop.gremlin.structure.Element#hiddenKeys()} signature
      * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
-    public default UnaryOperator<Supplier<Set<String>>> getElementHiddenKeys(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public default UnaryOperator<Supplier<Set<String>>> getElementHiddenKeysStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -311,7 +311,7 @@ public interface GraphStrategy {
      * {@link com.tinkerpop.gremlin.structure.Element#values} signature
      * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
-    public default <V> UnaryOperator<Function<String[],Iterator<V>>> getElementValues(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public default <V> UnaryOperator<Function<String[],Iterator<V>>> getElementValuesStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -325,7 +325,7 @@ public interface GraphStrategy {
      * {@link com.tinkerpop.gremlin.structure.Element#hiddenValues} signature
      * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
-    public default <V> UnaryOperator<Function<String[],Iterator<V>>> getElementHiddenValues(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public default <V> UnaryOperator<Function<String[],Iterator<V>>> getElementHiddenValuesStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -362,7 +362,7 @@ public interface GraphStrategy {
      * {@link com.tinkerpop.gremlin.structure.Graph#close()} signature
      * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
-    public default UnaryOperator<Supplier<Void>> getGraphClose(final Strategy.Context<StrategyWrappedGraph> ctx) {
+    public default UnaryOperator<Supplier<Void>> getGraphCloseStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return UnaryOperator.identity();
     }
 
