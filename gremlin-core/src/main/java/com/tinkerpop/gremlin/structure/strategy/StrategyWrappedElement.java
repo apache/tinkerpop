@@ -37,13 +37,6 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
     }
 
     @Override
-    public <V> Property<V> property(final String key) {
-        return new StrategyWrappedProperty<>(this.strategyWrappedGraph.strategy().compose(
-                s -> s.<V>getElementGetPropertyStrategy(elementStrategyContext),
-                this.baseElement::property).apply(key), this.strategyWrappedGraph);
-    }
-
-    @Override
     public Set<String> keys() {
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.getElementKeysStrategy(elementStrategyContext),

@@ -36,6 +36,13 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
     }
 
     @Override
+    public <V> Property<V> property(final String key) {
+        return new StrategyWrappedProperty<>(this.strategyWrappedGraph.strategy().compose(
+                s -> s.<V>getEdgeGetPropertyStrategy(strategyContext),
+                this.baseElement::property).apply(key), this.strategyWrappedGraph);
+    }
+
+    @Override
     public void remove() {
         this.strategyWrappedGraph.strategy().compose(
                 s -> s.getRemoveEdgeStrategy(strategyContext),

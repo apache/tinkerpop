@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.util.function.STriFunction;
 import org.junit.Test;
 
@@ -342,7 +343,12 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         }
 
         @Override
-        public <V> UnaryOperator<Function<String, ? extends Property<V>>> getElementGetPropertyStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        public <V> UnaryOperator<Function<String, VertexProperty<V>>> getVertexGetPropertyStrategy(Strategy.Context<StrategyWrappedVertex> ctx) {
+            return spy();
+        }
+
+        @Override
+        public <V> UnaryOperator<Function<String, Property<V>>> getEdgeGetPropertyStrategy(Strategy.Context<StrategyWrappedEdge> ctx) {
             return spy();
         }
 

@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Pair;
 import org.junit.Test;
@@ -134,7 +135,7 @@ public class StrategyWrappedGraphTest  {
 
         @Parameterized.Parameters(name = "{index}: {0}")
         public static Iterable<Object[]> data() {
-            final List<Pair<String, BiFunction<Graph, Edge, Stream<? extends Property<Object>>>>> tests = new ArrayList<>();
+            final List<Pair<String, BiFunction<Graph, Edge, Stream<Property<Object>>>>> tests = new ArrayList<>();
             tests.add(Pair.with("e.property(\"all\")", (Graph g, Edge e) -> Stream.of(e.property("all"))));
             tests.add(Pair.with("e.iterators().properties()", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().properties())));
             tests.add(Pair.with("e.iterators().properties(\"any\")", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().properties("any"))));
@@ -176,20 +177,41 @@ public class StrategyWrappedGraphTest  {
         }
     }
 
-    // todo: this has to pass and be built out like Property above
+    @RunWith(Parameterized.class)
     public static class VertexPropertyShouldBeWrappedTest extends AbstractGremlinTest {
+        @Parameterized.Parameters(name = "{index}: {0}")
+        public static Iterable<Object[]> data() {
+            final List<Pair<String, BiFunction<Graph, Vertex, Stream<VertexProperty<Object>>>>> tests = new ArrayList<>();
+            tests.add(Pair.with("v.property(\"all\")", (Graph g, Vertex v) -> Stream.of(v.property("all"))));
+
+            return tests.stream().map(d -> {
+                final Object[] o = new Object[2];
+                o[0] = d.getValue0();
+                o[1] = d.getValue1();
+                return o;
+            }).collect(Collectors.toList());
+        }
+
+        @Parameterized.Parameter(value = 0)
+        public String name;
+
+        @Parameterized.Parameter(value = 1)
+        public BiFunction<Graph, Vertex, Stream<? extends Property<Object>>> streamGetter;
+
         @Test
-        @org.junit.Ignore
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-        public void shouldWrapVertexVertexProperties() {
+        public void shouldWrapProperty() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
             swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-            final Vertex v = swg.addVertex("any", "a");
+            final Vertex v = swg.addVertex("all", "a", "any", "something", Graph.Key.hide("hideme"), "hidden");
 
-            assertTrue(v.property("any") instanceof StrategyWrappedVertexProperty);
-            assertTrue(StreamFactory.stream(v.properties()).allMatch(p -> p instanceof StrategyWrappedVertexProperty));
+            final AtomicBoolean atLeastOne = new AtomicBoolean(false);
+            assertTrue(streamGetter.apply(g, v).allMatch(p -> {
+                atLeastOne.set(true);
+                return p instanceof StrategyWrappedVertexProperty;
+            }));
 
-            assertTrue(g.V().properties("any").next() instanceof StrategyWrappedVertexProperty);
+            assertTrue(atLeastOne.get());
         }
     }
 
