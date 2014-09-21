@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure.strategy;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.util.function.STriFunction;
 
 import java.util.Collections;
@@ -31,8 +32,17 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public <V> UnaryOperator<BiFunction<String, V, ? extends Property<V>>> getElementPropertyStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
-        return readOnlyBiFunction();
+    public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getEdgePropertyStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
+        return (f) -> (t, u) -> {
+            throw Exceptions.graphUsesReadOnlyStrategy();
+        };
+    }
+
+    @Override
+    public <V> UnaryOperator<BiFunction<String, V, VertexProperty<V>>> getVertexPropertyStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+        return (f) -> (t, u) -> {
+            throw Exceptions.graphUsesReadOnlyStrategy();
+        };
     }
 
     @Override
@@ -80,12 +90,6 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
 
     public static <T, U> UnaryOperator<Function<T, U>> readOnlyFunction() {
         return (f) -> (t) -> {
-            throw Exceptions.graphUsesReadOnlyStrategy();
-        };
-    }
-
-    public static <T, U> UnaryOperator<BiFunction<T, U, ? extends Property<U>>> readOnlyBiFunction() {
-        return (f) -> (t, u) -> {
             throw Exceptions.graphUsesReadOnlyStrategy();
         };
     }

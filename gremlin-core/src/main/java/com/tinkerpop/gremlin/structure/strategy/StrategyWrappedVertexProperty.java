@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
 
@@ -27,6 +28,12 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
     public VertexProperty.Iterators iterators() {
         // todo: iterators on vertex properties
         return null;
+    }
+
+    @Override
+    public <V> Property<V> property(final String key, final V value) {
+        // todo: gotta add a strategy here and cover readonly cases....
+        return this.baseVertexProperty.property(key, value);
     }
 
     @Override

@@ -56,9 +56,8 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
 
     @Override
     public <V> VertexProperty<V> property(final String key, final V value) {
-        // todo: explicit vertex/edge strategy methods
-        return new StrategyWrappedVertexProperty<V>((VertexProperty<V>) this.strategyWrappedGraph.strategy().compose(
-                s -> s.<V>getElementPropertyStrategy(strategyContext),
+        return new StrategyWrappedVertexProperty<>(this.strategyWrappedGraph.strategy().compose(
+                s -> s.<V>getVertexPropertyStrategy(strategyContext),
                 this.baseVertex::property).apply(key, value), this.strategyWrappedGraph);
     }
 
