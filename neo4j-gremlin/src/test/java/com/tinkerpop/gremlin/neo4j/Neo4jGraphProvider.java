@@ -48,6 +48,7 @@ public class Neo4jGraphProvider extends AbstractGraphProvider {
     private void loadGraphData(final Neo4jGraph g, final LoadGraphWith.GraphData graphData) {
         final Random random = new Random();
         final int pick = random.nextInt(3);
+        //final int pick = 2;
         // TODO: add meta_property indices when meta_property graph is provided
         if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL)) {
             if (pick == 1) {

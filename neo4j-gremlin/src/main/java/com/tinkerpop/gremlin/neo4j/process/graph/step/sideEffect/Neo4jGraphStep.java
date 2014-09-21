@@ -3,8 +3,8 @@ package com.tinkerpop.gremlin.neo4j.process.graph.step.sideEffect;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jHelper;
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
+import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
@@ -22,7 +22,6 @@ import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.index.AutoIndexer;
-import org.neo4j.graphdb.index.RelationshipAutoIndexer;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.tooling.GlobalGraphOperations;
 
@@ -68,7 +67,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     private Iterator<? extends Vertex> vertices() {
         this.graph.tx().readWrite();
         // a label and a property
-        final Pair<String, HasContainer> labelHasPair = this.getHasContainerForCypherIndex();
+        final Pair<String, HasContainer> labelHasPair = this.getHasContainerForLabelIndex();
         if (null != labelHasPair)
             return this.getVerticesUsingLabelAndProperty(labelHasPair.getValue0(), labelHasPair.getValue1())
                     .filter(vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers)).iterator();
@@ -78,7 +77,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
             return this.getVerticesUsingAutomaticIndex(hasContainer)
                     .filter(vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers)).iterator();
         // only labels
-        final List<String> labels = this.getLabelsForCypherIndex();
+        final List<String> labels = this.getLabels();
         if (null != labels)
             return this.getVerticesUsingOnlyLabels(labels).filter(vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers)).iterator();
         // linear scan
@@ -87,7 +86,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     }
 
     private Stream<Neo4jVertex> getAllVertices() {
-        // System.out.println("allVertices");
+        //System.out.println("allVertices");
         return StreamFactory.stream(GlobalGraphOperations.at(this.graph.getBaseGraph()).getAllNodes())
                 .filter(node -> !Neo4jHelper.isDeleted(node))
                 .filter(node -> !node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL))
@@ -101,21 +100,21 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
                 .map(relationship -> new Neo4jEdge(relationship, this.graph));
     }
 
-    private Stream<Vertex> getVerticesUsingLabelAndProperty(final String label, final HasContainer hasContainer) {
-        // System.out.println("labelProperty: " + label + ":" + hasContainer);
+    private Stream<Neo4jVertex> getVerticesUsingLabelAndProperty(final String label, final HasContainer hasContainer) {
+        //System.out.println("labelProperty: " + label + ":" + hasContainer);
         final ResourceIterator<Node> iterator1 = graph.getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(label), hasContainer.key, hasContainer.value).iterator();
         final ResourceIterator<Node> iterator2 = graph.getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(Graph.Key.unHide(hasContainer.key)), T.value.getAccessor(), hasContainer.value).iterator();
-        final Stream<Vertex> stream1 = StreamFactory.stream(iterator1)
+        final Stream<Neo4jVertex> stream1 = StreamFactory.stream(iterator1)
                 .map(node -> new Neo4jVertex(node, this.graph));
-        final Stream<Vertex> stream2 = StreamFactory.stream(iterator2)
+        final Stream<Neo4jVertex> stream2 = StreamFactory.stream(iterator2)
                 .filter(node -> node.getProperty(T.key.getAccessor()).equals(hasContainer.key))
                 .map(node -> node.getRelationships(Direction.INCOMING).iterator().next().getStartNode())
                 .map(node -> new Neo4jVertex(node, this.graph));
         return Stream.concat(stream1, stream2);
     }
 
-    private Stream<Vertex> getVerticesUsingOnlyLabels(final List<String> labels) {
-        // System.out.println("labels: " + labels);
+    private Stream<Neo4jVertex> getVerticesUsingOnlyLabels(final List<String> labels) {
+        //System.out.println("labels: " + labels);
         return labels.stream()
                 .filter(label -> !label.equals(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL.name()))
                 .flatMap(label -> StreamFactory.stream(GlobalGraphOperations.at(this.graph.getBaseGraph()).getAllNodesWithLabel(DynamicLabel.label(label)).iterator()))
@@ -123,27 +122,22 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
                 .map(node -> new Neo4jVertex(node, this.graph));
     }
 
-    private Stream<Vertex> getVerticesUsingAutomaticIndex(final HasContainer hasContainer) {
-        // TODO: add query() support
-        // System.out.println("automatic: " + hasContainer);
-        final AutoIndexer indexer = this.graph.getBaseGraph().index().getNodeAutoIndexer();
-        return indexer.isEnabled() && indexer.getAutoIndexedProperties().contains(hasContainer.key) ?
-                StreamFactory.stream(this.graph.getBaseGraph().index().getNodeAutoIndexer().getAutoIndex().get(hasContainer.key, hasContainer.value).iterator())
-                        .map(node -> node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL) ?
-                                node.getRelationships(Direction.INCOMING).iterator().next().getStartNode() :
-                                node)
-                        .map(node -> new Neo4jVertex(node, this.graph)) :
-                Stream.empty();
+    private Stream<Neo4jVertex> getVerticesUsingAutomaticIndex(final HasContainer hasContainer) {
+        //System.out.println("automatic index: " + hasContainer);
+        return StreamFactory.stream(this.graph.getBaseGraph().index().getNodeAutoIndexer().getAutoIndex().get(hasContainer.key, hasContainer.value).iterator())
+                .map(node -> node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL) ?
+                        node.getRelationships(Direction.INCOMING).iterator().next().getStartNode() :
+                        node)
+                .map(node -> new Neo4jVertex(node, this.graph));
     }
 
-    private Stream<Neo4jEdge> getEdgesUsingAutomaticIndex(final HasContainer indexedContainer) {
-        final RelationshipAutoIndexer indexer = this.graph.getBaseGraph().index().getRelationshipAutoIndexer();
-        return StreamFactory.stream(indexer.getAutoIndex().get(indexedContainer.key, indexedContainer.value).iterator())
+    private Stream<Neo4jEdge> getEdgesUsingAutomaticIndex(final HasContainer hasContainer) {
+        return StreamFactory.stream(this.graph.getBaseGraph().index().getRelationshipAutoIndexer().getAutoIndex().get(hasContainer.key, hasContainer.value).iterator())
                 .filter(relationship -> !relationship.getType().name().startsWith(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX))
                 .map(relationship -> new Neo4jEdge(relationship, this.graph));
     }
 
-    private Pair<String, HasContainer> getHasContainerForCypherIndex() {
+    private Pair<String, HasContainer> getHasContainerForLabelIndex() {
         for (final HasContainer hasContainer : this.hasContainers) {
             if (hasContainer.key.equals(T.label.getAccessor()) && hasContainer.predicate.equals(Compare.EQUAL)) {
                 for (final IndexDefinition index : this.graph.getBaseGraph().schema().getIndexes(DynamicLabel.label((String) hasContainer.value))) {
@@ -161,7 +155,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         return null;
     }
 
-    private List<String> getLabelsForCypherIndex() {
+    private List<String> getLabels() {
         for (final HasContainer hasContainer : this.hasContainers) {
             if (hasContainer.key.equals(T.label.getAccessor()) && hasContainer.predicate.equals(Compare.EQUAL))
                 return Arrays.asList(((String) hasContainer.value));
