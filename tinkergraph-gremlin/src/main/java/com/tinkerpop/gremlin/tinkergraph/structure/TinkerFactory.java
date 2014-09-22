@@ -89,24 +89,24 @@ public class TinkerFactory {
         daniel.property("location", "kaiserslautern", "startTime", 2005, "endTime", 2009);
         daniel.property("location", "aachen", "startTime", 2009);
 
-        marko.addEdge("develops", gremlin, "date", 2009);
-        marko.addEdge("develops", tinkergraph, "date", 2010);
+        marko.addEdge("develops", gremlin, "since", 2009);
+        marko.addEdge("develops", tinkergraph, "since", 2010);
         marko.addEdge("uses", gremlin, "skill", 4);
         marko.addEdge("uses", tinkergraph, "skill", 5);
 
-        stephen.addEdge("develops", gremlin, "date", 2010);
-        stephen.addEdge("develops", tinkergraph, "date", 2011);
+        stephen.addEdge("develops", gremlin, "since", 2010);
+        stephen.addEdge("develops", tinkergraph, "since", 2011);
         stephen.addEdge("uses", gremlin, "skill", 5);
         stephen.addEdge("uses", tinkergraph, "skill", 4);
 
-        matthias.addEdge("develops", gremlin, "date", 2012);
+        matthias.addEdge("develops", gremlin, "since", 2012);
         matthias.addEdge("uses", gremlin, "skill", 3);
         matthias.addEdge("uses", tinkergraph, "skill", 2);
 
         daniel.addEdge("uses", gremlin, "skill", 5);
         daniel.addEdge("uses", tinkergraph, "skill", 3);
 
-        tinkergraph.addEdge("dependsOn", gremlin, Graph.Key.hide("visible"), false);
+        tinkergraph.addEdge("traverses", gremlin, Graph.Key.hide("visible"), false);
 
         g.variables().set("creator", "marko");
         g.variables().set("lastModified", 2014);
