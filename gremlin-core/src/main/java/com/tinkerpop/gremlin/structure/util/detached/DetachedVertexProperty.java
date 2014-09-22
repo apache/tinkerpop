@@ -112,7 +112,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
     @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     @Override
     public boolean equals(final Object object) {
-        return ElementHelper.areEqual((VertexProperty) this, object);
+        return ElementHelper.areEqual(this, object);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
+import com.tinkerpop.gremlin.structure.util.referenced.ReferencedFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -54,7 +55,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
     @Override
     public PathTraverser<T> deflate() {
         super.deflate();
-        this.path = DetachedPath.detach(this.path);
+        this.path = ReferencedFactory.detach(this.path);
         return this;
     }
 

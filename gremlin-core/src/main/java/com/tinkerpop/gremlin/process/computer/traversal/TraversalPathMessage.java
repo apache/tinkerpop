@@ -13,7 +13,6 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import com.tinkerpop.gremlin.structure.util.referenced.ReferencedFactory;
 import com.tinkerpop.gremlin.util.function.SSupplier;
 
@@ -29,7 +28,6 @@ public class TraversalPathMessage extends TraversalMessage {
 
     private TraversalPathMessage(final Traverser.System traverser) {
         super(traverser);
-        this.traverser.setPath(DetachedPath.detach(this.traverser.getPath()));
     }
 
     public static TraversalPathMessage of(final Traverser.System traverser) {

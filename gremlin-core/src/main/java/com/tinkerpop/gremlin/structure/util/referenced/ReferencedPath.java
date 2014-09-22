@@ -20,12 +20,14 @@ public class ReferencedPath extends Path implements Attachable, Serializable {
 
     public ReferencedPath(final Path path) {
         path.forEach((as, object) -> {
-            if (object instanceof ReferencedElement || object instanceof ReferencedProperty) {
+            if (object instanceof ReferencedElement || object instanceof ReferencedProperty || object instanceof ReferencedPath) {
                 this.add(as, object);
             } else if (object instanceof Element) {
                 this.add(as, ReferencedFactory.detach((Element) object));
             } else if (object instanceof Property) {
                 this.add(as, ReferencedFactory.detach((Property) object));
+            } else if (object instanceof Path) {
+                this.add(as, ReferencedFactory.detach((Path) object));
             } else {
                 this.add(as, object);
             }

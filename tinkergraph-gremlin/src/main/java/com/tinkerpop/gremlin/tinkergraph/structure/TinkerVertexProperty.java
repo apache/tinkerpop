@@ -67,7 +67,7 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
 
     @Override
     public boolean equals(final Object object) {
-        return ElementHelper.areEqual((VertexProperty) this, object);
+        return ElementHelper.areEqual(this, object);
     }
 
     @Override

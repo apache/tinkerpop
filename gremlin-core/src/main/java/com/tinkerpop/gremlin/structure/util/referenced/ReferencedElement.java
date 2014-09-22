@@ -1,10 +1,8 @@
 package com.tinkerpop.gremlin.structure.util.referenced;
 
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.detached.Attachable;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.io.Serializable;
 
@@ -33,6 +31,16 @@ public abstract class ReferencedElement implements Element, Serializable {
     @Override
     public String label() {
         return this.label;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return ElementHelper.areEqual(this, object);
     }
 
     @Override

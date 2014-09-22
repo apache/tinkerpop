@@ -62,9 +62,9 @@ public class ReferencedFactory {
         return property.attach(hostVertex);
     }
 
-    public static Path attach(final ReferencedPath path, final Vertex hostVertex) {
+    /*public static Path attach(final ReferencedPath path, final Vertex hostVertex) {
         return path.attach(hostVertex);
-    }
+    }*/
 
     public static Element attach(final ReferencedElement element, final Vertex hostVertex) {
         if (element instanceof Vertex)

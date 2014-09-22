@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.detached.Attachable;
 
 import java.io.Serializable;
@@ -60,6 +61,16 @@ public class ReferencedProperty<V> implements Property<V>, Attachable<Property>,
     @Override
     public <E extends Element> E getElement() {
         return (E) this.element;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.key.hashCode() + this.value.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return ElementHelper.areEqual(this, object);
     }
 
     @Override

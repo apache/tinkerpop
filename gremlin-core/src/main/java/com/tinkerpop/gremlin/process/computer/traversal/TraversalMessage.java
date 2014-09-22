@@ -38,9 +38,9 @@ public abstract class TraversalMessage implements Serializable {
     public static Vertex getHostingVertex(final Object object) {
         if (object instanceof Vertex)
             return (Vertex) object;
-        else if (object instanceof Edge)
+        else if (object instanceof Edge) {
             return ((Edge) object).iterators().vertices(Direction.OUT).next();
-        else if (object instanceof Property)
+        } else if (object instanceof Property)
             return getHostingVertex(((Property) object).getElement());
         else
             throw new IllegalStateException("The host of the object is unknown: " + object.toString());

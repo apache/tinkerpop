@@ -4,9 +4,9 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
@@ -259,7 +259,7 @@ public class ElementHelper {
 
     /**
      * A standard method for determining if two {@link com.tinkerpop.gremlin.structure.Element} objects are equal. This method should be used by any
-     * {@link Object#equals(Object)} implementation to ensure consistent behavior.
+     * {@link Object#equals(Object)} implementation to ensure consistent behavior. This method is used for Vertex, Edge, and VertexProperty.
      *
      * @param a The first {@link com.tinkerpop.gremlin.structure.Element}
      * @param b The second {@link com.tinkerpop.gremlin.structure.Element} (as an {@link Object})
@@ -274,9 +274,23 @@ public class ElementHelper {
 
         if (a == b)
             return true;
-        if (!((a instanceof Vertex && b instanceof Vertex) || (a instanceof Edge && b instanceof Edge)))
+        if (!((a instanceof Vertex && b instanceof Vertex) ||
+                (a instanceof Edge && b instanceof Edge) ||
+                (a instanceof VertexProperty && b instanceof VertexProperty)))
             return false;
         return haveEqualIds(a, (Element) b);
+    }
+
+    /**
+     * A standard method for determining if two {@link com.tinkerpop.gremlin.structure.VertexProperty} objects are equal. This method should be used by any
+     * {@link Object#equals(Object)} implementation to ensure consistent behavior.
+     *
+     * @param a the first {@link com.tinkerpop.gremlin.structure.VertexProperty}
+     * @param b the second {@link com.tinkerpop.gremlin.structure.VertexProperty}
+     * @return true if equal and false otherwise
+     */
+    public static boolean areEqual(final VertexProperty a, final Object b) {
+        return ElementHelper.areEqual((Element) a, b);
     }
 
     /**
@@ -314,27 +328,6 @@ public class ElementHelper {
             return false;
         return a.key().equals(((Property) b).key()) && a.value().equals(((Property) b).value()) && areEqual(a.getElement(), ((Property) b).getElement());
 
-    }
-
-    /**
-     * A standard method for determining if two {@link com.tinkerpop.gremlin.structure.VertexProperty} objects are equal. This method should be used by any
-     * {@link Object#equals(Object)} implementation to ensure consistent behavior.
-     *
-     * @param a the first {@link com.tinkerpop.gremlin.structure.VertexProperty}
-     * @param b the second {@link com.tinkerpop.gremlin.structure.VertexProperty}
-     * @return true if equal and false otherwise
-     */
-    public static boolean areEqual(final VertexProperty a, final Object b) {
-        if (null == a)
-            throw Graph.Exceptions.argumentCanNotBeNull("a");
-        if (null == b)
-            throw Graph.Exceptions.argumentCanNotBeNull("b");
-
-        if (a == b)
-            return true;
-        if (!(b instanceof VertexProperty))
-            return false;
-        return haveEqualIds(a, (VertexProperty) b);
     }
 
     public static Map<String, Object> propertyValueMap(final Element element, final boolean getHiddens, final String... propertyKeys) {

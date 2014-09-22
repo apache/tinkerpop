@@ -51,7 +51,6 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     @Override
     public void generateTraverserIterator(final boolean trackPaths) {
         this.start = Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges();
-        //makeCypherQuery();
         super.generateTraverserIterator(trackPaths);
     }
 
@@ -180,7 +179,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         return null;
     }
 
-    private String makeCypherQuery() {
+    /*private String makeCypherQuery() {
         final StringBuilder builder = new StringBuilder("MATCH node WHERE ");
         int counter = 0;
         for (final HasContainer hasContainer : this.hasContainers) {
@@ -204,7 +203,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         }
         System.out.println(builder);
         return builder.toString();
-    }
+    }*/
 
     private String toStringOfValue(final Object value) {
         if (value instanceof String)
