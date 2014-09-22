@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -27,6 +28,11 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
     @Override
     public String label() {
         return this.baseVertexProperty.label();
+    }
+
+    @Override
+    public Set<String> keys() {
+        return this.baseVertexProperty.keys();
     }
 
     @Override

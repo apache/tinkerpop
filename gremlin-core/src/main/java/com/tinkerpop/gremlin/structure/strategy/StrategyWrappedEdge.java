@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -50,6 +51,13 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.<V>getEdgeValueStrategy(strategyContext),
                 this.baseEdge::value).apply(key);
+    }
+
+    @Override
+    public Set<String> keys() {
+        return this.strategyWrappedGraph.strategy().compose(
+                s -> s.getEdgeKeysStrategy(strategyContext),
+                this.baseEdge::keys).get();
     }
 
     @Override

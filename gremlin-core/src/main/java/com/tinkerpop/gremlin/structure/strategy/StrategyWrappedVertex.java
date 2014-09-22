@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -38,6 +39,13 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.getVertexLabelStrategy(strategyContext),
                 this.baseVertex::label).get();
+    }
+
+    @Override
+    public Set<String> keys() {
+        return this.strategyWrappedGraph.strategy().compose(
+                s -> s.getVertexKeysStrategy(strategyContext),
+                this.baseVertex::keys).get();
     }
 
     @Override
