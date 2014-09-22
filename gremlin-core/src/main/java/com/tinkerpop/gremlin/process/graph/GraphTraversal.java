@@ -66,8 +66,10 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
+import com.tinkerpop.gremlin.process.graph.strategy.CountCapStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.GraphComputerStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.UnrollJumpStrategy;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.SideEffectHelper;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -105,7 +107,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, E> submit(final GraphComputer computer) {
         try {
             this.sideEffects().removeGraph();
+            this.strategies().unregister(UnrollJumpStrategy.class);
             this.strategies().unregister(TraverserSourceStrategy.class);
+            this.strategies().register(CountCapStrategy.instance());
             this.strategies().register(GraphComputerStrategy.instance());
             TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> this).create();
             final ComputerResult result = computer.program(vertexProgram).submit().get();

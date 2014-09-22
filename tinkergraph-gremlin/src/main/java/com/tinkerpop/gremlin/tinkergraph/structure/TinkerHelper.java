@@ -1,10 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.process.graph.strategy.CountCapStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.UnrollJumpStrategy;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.MultiIterator;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -14,7 +10,6 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerGraphStepStrategy;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -158,12 +153,6 @@ public class TinkerHelper {
         if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH))
             vertices.add((TinkerVertex) edge.inVertex);
         return vertices.iterator();
-    }
-
-    public static void prepareTraversalForComputer(final Traversal traversal) {
-        traversal.strategies().unregister(TinkerGraphStepStrategy.class);
-        traversal.strategies().unregister(UnrollJumpStrategy.class);
-        traversal.strategies().register(CountCapStrategy.instance());
     }
 
     private static class TinkerVertexIterator implements Iterator<TinkerVertex> {

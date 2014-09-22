@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect.TinkerGraphStep;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerGraphStepStrategy;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 
@@ -33,7 +34,7 @@ public class TinkerElementTraversal<S, E> extends DefaultGraphTraversal<S, E> {
 
     @Override
     public GraphTraversal<S, E> submit(final GraphComputer computer) {
-        TinkerHelper.prepareTraversalForComputer(this);
+        this.strategies().unregister(TinkerGraphStepStrategy.class);
         final String label = this.getSteps().get(0).getLabel();
         TraversalHelper.removeStep(0, this);
         if (TraversalHelper.isLabeled(label)) {
