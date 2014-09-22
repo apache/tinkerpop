@@ -98,6 +98,13 @@ public interface GraphStrategy {
         return UnaryOperator.identity();
     }
 
+    /**
+     * Construct a {@link java.util.function.Consumer} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Variables#remove(String)}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Consumer} with {@link com.tinkerpop.gremlin.structure.Graph.Variables#remove(String)} signature
+     * and returns an enhanced strategy {@link java.util.function.BiConsumer} with the same signature
+     */
     public default UnaryOperator<Consumer<String>> getVariableRemoveStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
         return UnaryOperator.identity();
     }
