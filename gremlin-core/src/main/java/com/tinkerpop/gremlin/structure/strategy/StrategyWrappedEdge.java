@@ -101,7 +101,7 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
         return applyStrategy(this.baseEdge.start());
     }
 
-    public class StrategyWrappedEdgeIterators extends StrategyWrappedElementIterators implements Edge.Iterators {
+    public class StrategyWrappedEdgeIterators implements Edge.Iterators {
         @Override
         public Iterator<Vertex> vertices(final Direction direction) {
             return new StrategyWrappedVertex.StrategyWrappedVertexIterator(baseEdge.iterators().vertices(direction), strategyWrappedGraph);
@@ -112,6 +112,13 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
             return strategyWrappedGraph.strategy().compose(
                     s -> s.<V>getEdgeIteratorsValuesStrategy(strategyContext),
                     (String[] pks) -> baseEdge.iterators().values(pks)).apply(propertyKeys);
+        }
+
+        @Override
+        public <V> Iterator<V> hiddenValues(final String... propertyKeys) {
+            return strategyWrappedGraph.strategy().compose(
+                    s -> s.<V>getEdgeIteratorsHiddenValuesStrategy(strategyContext),
+                    (String[] pks) -> baseEdge.iterators().hiddenValues(pks)).apply(propertyKeys);
         }
 
         @Override

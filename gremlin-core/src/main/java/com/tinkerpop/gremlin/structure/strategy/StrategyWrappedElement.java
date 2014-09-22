@@ -50,14 +50,4 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
         this.strategyWrappedGraph.strategy().getGraphStrategy().ifPresent(s -> s.applyStrategyToTraversal(traversal));
         return traversal;
     }
-
-    public abstract class StrategyWrappedElementIterators implements Iterators {
-
-        @Override
-        public <V> Iterator<V> hiddenValues(final String... propertyKeys) {
-            return strategyWrappedGraph.strategy().compose(
-                    s -> s.<V>getElementHiddenValuesStrategy(elementStrategyContext),
-                    (String[] pks) -> baseElement.iterators().hiddenValues(pks)).apply(propertyKeys);
-        }
-    }
 }

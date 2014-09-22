@@ -489,7 +489,12 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         }
 
         @Override
-        public <V> UnaryOperator<Function<String[], Iterator<V>>> getElementHiddenValuesStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        public <V> UnaryOperator<Function<String[], Iterator<V>>> getVertexIteratorsHiddenValuesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+            return spy();
+        }
+
+        @Override
+        public <V> UnaryOperator<Function<String[], Iterator<V>>> getEdgeIteratorsHiddenValuesStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
             return spy();
         }
 
