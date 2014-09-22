@@ -69,7 +69,7 @@ public class TinkerFactory {
         final Vertex matthias = g.addVertex(T.id, 8, T.label, "person", "name", "matthias", Graph.Key.hide("visible"), true);
         final Vertex daniel = g.addVertex(T.id, 9, T.label, "person", "name", "daniel", Graph.Key.hide("visible"), false);
         final Vertex gremlin = g.addVertex(T.id, 10, T.label, "software", "name", "gremlin", Graph.Key.hide("visible"), true);
-        final Vertex titan = g.addVertex(T.id, 11, T.label, "software", "name", "titan", Graph.Key.hide("visible"), false);
+        final Vertex tinkergraph = g.addVertex(T.id, 11, T.label, "software", "name", "tinkergraph", Graph.Key.hide("visible"), false);
 
         marko.property("location", "san diego", "startTime", 1997, "endTime", 2001);
         marko.property("location", "santa cruz", "startTime", 2001, "endTime", 2004);
@@ -89,25 +89,24 @@ public class TinkerFactory {
         daniel.property("location", "kaiserslautern", "startTime", 2005, "endTime", 2009);
         daniel.property("location", "aachen", "startTime", 2009);
 
-        marko.addEdge("created", gremlin, "date", 2009);
-        marko.addEdge("created", titan, "date", 2012);
+        marko.addEdge("develops", gremlin, "date", 2009);
+        marko.addEdge("develops", tinkergraph, "date", 2010);
         marko.addEdge("uses", gremlin, "skill", 4);
-        marko.addEdge("uses", titan, "skill", 2);
+        marko.addEdge("uses", tinkergraph, "skill", 5);
 
-        stephen.addEdge("created", gremlin, "date", 2011);
-        stephen.addEdge("created", titan, "date", 2012);
-        stephen.addEdge("uses", gremlin, "skill", 4);
-        stephen.addEdge("uses", titan, "skill", 3);
+        stephen.addEdge("develops", gremlin, "date", 2010);
+        stephen.addEdge("develops", tinkergraph, "date", 2011);
+        stephen.addEdge("uses", gremlin, "skill", 5);
+        stephen.addEdge("uses", tinkergraph, "skill", 4);
 
-        matthias.addEdge("created", gremlin, "date", 2012);
-        matthias.addEdge("created", titan, "date", 2011);
+        matthias.addEdge("develops", gremlin, "date", 2012);
         matthias.addEdge("uses", gremlin, "skill", 3);
-        matthias.addEdge("uses", titan, "skill", 5);
+        matthias.addEdge("uses", tinkergraph, "skill", 2);
 
         daniel.addEdge("uses", gremlin, "skill", 5);
-        daniel.addEdge("uses", titan, "skill", 4);
+        daniel.addEdge("uses", tinkergraph, "skill", 3);
 
-        titan.addEdge("dependsOn", gremlin, Graph.Key.hide("visible"), false);
+        tinkergraph.addEdge("dependsOn", gremlin, Graph.Key.hide("visible"), false);
 
         g.variables().set("creator", "marko");
         g.variables().set("lastModified", 2014);
