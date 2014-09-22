@@ -13,7 +13,6 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -39,7 +38,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -140,7 +138,9 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
                 FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + Constants.HIDDEN_G));
                 // job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
                 LOGGER.info(Constants.GIRAPH_GREMLIN_JOB_PREFIX + this.vertexProgram);
-                job.run(true);
+                if (!job.run(true)) {
+                    throw new IllegalStateException("The Giraph-Gremlin job failed -- aborting all subsequent MapReduce jobs");
+                }
                 this.mapReduces.addAll(this.vertexProgram.getMapReducers());
                 // calculate main vertex program memory if desired (costs one mapreduce job)
                 if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_DERIVE_MEMORY, false)) {
@@ -154,8 +154,8 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
             for (final MapReduce mapReduce : this.mapReduces) {
                 MapReduceHelper.executeMapReduceJob(mapReduce, this.memory, this.giraphConfiguration);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (final Exception e) {
+            // e.printStackTrace();
             throw new IllegalStateException(e.getMessage(), e);
         }
         return 0;

@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import com.tinkerpop.gremlin.structure.util.referenced.ReferencedFactory;
 
 /**

@@ -18,7 +18,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.System<T> {
     protected T t;
     protected String future = NO_FUTURE;
     protected int loops = 0;
-    protected Traversal.SideEffects sideEffects;
+    protected transient Traversal.SideEffects sideEffects;
 
     protected SimpleTraverser() {
 
@@ -126,7 +126,6 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.System<T> {
         } else if (this.t instanceof Path) {
             this.t = (T) ReferencedFactory.detach((Path) this.t);
         }
-        this.dropSideEffects();
         return this;
     }
 

@@ -134,9 +134,5 @@ public interface Traverser<T> extends Serializable {
         public Traverser.System<T> inflate(final Vertex hostVertex, final Traversal traversal);
 
         public void setSideEffects(final Traversal.SideEffects sideEffects);
-
-        public default void dropSideEffects() {
-            this.setSideEffects(null);
-        }
     }
 }
