@@ -15,7 +15,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 public class UntilStrategy implements TraversalStrategy {
 
     private static final UntilStrategy INSTANCE = new UntilStrategy();
-    private static final String FAKE_LABEL = Graph.Key.hide(Graph.Key.SYSTEM_PREFIX.concat("43#4"));
+    private static final String FAKE_LABEL = Graph.Key.hide(Graph.System.system("43#4"));
 
     private UntilStrategy() {
     }

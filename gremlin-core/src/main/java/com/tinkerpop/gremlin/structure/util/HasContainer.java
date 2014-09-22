@@ -3,9 +3,10 @@ package com.tinkerpop.gremlin.structure.util;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.VertexProperty;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.util.function.SBiPredicate;
 
 import java.io.Serializable;
@@ -85,11 +86,12 @@ public class HasContainer implements Serializable {
         }
     }
 
+    // note that if the user is looking for a label property key (e.g.), then it will look the same as looking for the label of the element.
     public String toString() {
         return this.value == null ?
                 (this.predicate == Contains.IN ?
-                        "[" + this.key + "]" :
-                        "[!" + this.key + "]") :
-                "[" + this.key + "," + this.predicate + "," + this.value + "]";
+                        "[" + Graph.System.unSystem(this.key) + "]" :
+                        "[!" + Graph.System.unSystem(this.key) + "]") :
+                "[" + Graph.System.unSystem(this.key) + "," + this.predicate + "," + this.value + "]";
     }
 }

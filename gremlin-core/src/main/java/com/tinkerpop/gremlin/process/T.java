@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.util.function.SBiPredicate;
 
 import java.util.Comparator;
@@ -125,10 +126,10 @@ public enum T {
         }
     };
 
-    private static final String LABEL = "%&%label";
-    private static final String ID = "%&%id";
-    private static final String KEY = "%&%key";
-    private static final String VALUE = "%&%value";
+    private static final String LABEL = Graph.System.system("label");
+    private static final String ID = Graph.System.system("id");
+    private static final String KEY = Graph.System.system("key");
+    private static final String VALUE = Graph.System.system("value");
 
 
     public SBiPredicate getPredicate() {

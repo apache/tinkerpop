@@ -130,6 +130,10 @@ public interface Property<V> {
             return new IllegalArgumentException("Property value can not be null");
         }
 
+        public static IllegalArgumentException propertyKeyCanNotBeASystemKey() {
+            return new IllegalArgumentException("Property key can not be a system key");
+        }
+
         public static IllegalStateException propertyDoesNotExist() {
             return new IllegalStateException("The property does not exist as it has no key, value, or associated element");
         }

@@ -54,6 +54,8 @@ public class ElementHelper {
             throw Property.Exceptions.propertyKeyCanNotBeNull();
         if (key.isEmpty())
             throw Property.Exceptions.propertyKeyCanNotBeEmpty();
+        if (Graph.System.isSystem(key))
+            throw Property.Exceptions.propertyKeyCanNotBeASystemKey();
     }
 
     /**

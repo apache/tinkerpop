@@ -234,11 +234,8 @@ public class PropertyTest {
     @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
             "propertyValueCanNotBeNull",
             "propertyKeyCanNotBeNull",
-            "propertyKeyIdIsReserved",
-            "propertyKeyLabelIsReserved",
             "propertyKeyCanNotBeEmpty",
-            "propertyKeyValueIsReserved",
-            "propertyKeyKeyIsReserved"
+            "propertyKeyCanNotBeASystemKey"
     })
     public static class PropertyValidationOnSetExceptionConsistencyTest extends AbstractGremlinTest {
 
@@ -247,7 +244,8 @@ public class PropertyTest {
             return Arrays.asList(new Object[][]{
                     {"k", null, Property.Exceptions.propertyValueCanNotBeNull()},
                     {null, "v", Property.Exceptions.propertyKeyCanNotBeNull()},
-                    {"", "v", Property.Exceptions.propertyKeyCanNotBeEmpty()}});
+                    {"", "v", Property.Exceptions.propertyKeyCanNotBeEmpty()},
+                    {Graph.System.system("systemKey"), "value", Property.Exceptions.propertyKeyCanNotBeASystemKey()}});
         }
 
         @Parameterized.Parameter(value = 0)

@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.graph.strategy.CountCapStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.UnrollJumpStrategy;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.MultiIterator;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -161,6 +162,7 @@ public class TinkerHelper {
 
     public static void prepareTraversalForComputer(final Traversal traversal) {
         traversal.strategies().unregister(TinkerGraphStepStrategy.class);
+        traversal.strategies().unregister(UnrollJumpStrategy.class);
         traversal.strategies().register(CountCapStrategy.instance());
     }
 

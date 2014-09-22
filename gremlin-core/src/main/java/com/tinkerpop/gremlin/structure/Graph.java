@@ -22,8 +22,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * A {@link Graph} is a container object for a collection of {@link Vertex}, {@link Edge}, and {@link Property}
- * objects.
+ * A {@link Graph} is a container object for a collection of {@link Vertex}, {@link Edge}, {@link VertexProperty},
+ * and {@link Property} objects.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -31,16 +31,57 @@ import java.util.stream.Collectors;
 public interface Graph extends AutoCloseable {
 
     /**
+     * This is only used for
+     */
+    public class System {
+
+        /**
+         * The prefix to denote that a key is a system key.
+         */
+        private static final String SYSTEM_PREFIX = "%&%";
+        private static final int SYSTEM_PREFIX_LENGTH = SYSTEM_PREFIX.length();
+
+        /**
+         * Turn the provided key into a system key. If the key is already a system key, return key.
+         *
+         * @param key The key to make a system key
+         * @return The system key
+         */
+        public static String system(final String key) {
+            return isSystem(key) ? key : SYSTEM_PREFIX.concat(key);
+        }
+
+        /**
+         * Turn the provided system key into an non-system key. If the key is not a system key, return key.
+         *
+         * @param key The system key
+         * @return The non-system representation of the key
+         */
+        public static String unSystem(final String key) {
+            return isSystem(key) ? key.substring(SYSTEM_PREFIX_LENGTH) : key;
+        }
+
+        /**
+         * Determines whether the provided key is a system key or not.
+         *
+         * @param key The key to check for system status
+         * @return Whether the provided key is a system key or not
+         */
+        public static boolean isSystem(final String key) {
+            return key.startsWith(SYSTEM_PREFIX);
+        }
+    }
+
+    /**
      * Key is a helper class for manipulating keys wherever they may be (e.g. properties, sideEffects, sideEffects, etc.)
      */
     public class Key {
-
-        public static final String SYSTEM_PREFIX = "%&%";
 
         /**
          * The prefix to denote that a key is hidden.
          */
         private static final String HIDDEN_PREFIX = "~";
+        private static final int HIDDEN_PREFIX_LENGTH = HIDDEN_PREFIX.length();
 
         /**
          * Turn the provided key into a hidden key. If the key is already hidden, return key.
@@ -59,7 +100,7 @@ public interface Graph extends AutoCloseable {
          * @return The unhidden representation of the key
          */
         public static String unHide(final String key) {
-            return isHidden(key) ? key.substring(HIDDEN_PREFIX.length()) : key;
+            return isHidden(key) ? key.substring(HIDDEN_PREFIX_LENGTH) : key;
         }
 
         /**
@@ -700,7 +741,7 @@ public interface Graph extends AutoCloseable {
      */
     public static class Exceptions {
 
-        private static final boolean debug = Boolean.parseBoolean(System.getenv().getOrDefault("gremlin.structure.debug", "false"));
+        private static final boolean debug = Boolean.parseBoolean(java.lang.System.getenv().getOrDefault("gremlin.structure.debug", "false"));
 
         public static UnsupportedOperationException variablesNotSupported() {
             return new UnsupportedOperationException("Graph does not support graph variables");
