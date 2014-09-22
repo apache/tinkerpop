@@ -131,6 +131,8 @@ public class StrategyWrappedGraphTest  {
         }
     }
 
+    // todo: add wrap tests for multi-property
+
     @RunWith(Parameterized.class)
     public static class PropertyShouldBeWrappedTests extends AbstractGremlinTest {
 
@@ -163,7 +165,7 @@ public class StrategyWrappedGraphTest  {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-        public void shouldWrapProperty() {
+        public void shouldWrap() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
             swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
             final Vertex v = swg.addVertex();
@@ -223,41 +225,48 @@ public class StrategyWrappedGraphTest  {
         }
     }
 
-    // todo: convert to the property style above
+    @RunWith(Parameterized.class)
     public static class EdgeShouldBeWrappedTest extends AbstractGremlinTest {
-        @Test
-        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-        public void shouldWrapETraversalEdges() {
-            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-            assertEquals(6l, swg.E().count().next().longValue());
-            swg.E().sideEffect(e -> assertTrue(e.get() instanceof StrategyWrappedEdge)).iterate();
+        @Parameterized.Parameters(name = "{index}: {0}")
+        public static Iterable<Object[]> data() {
+            final List<Pair<String, BiFunction<Graph, AbstractGremlinTest, Stream<Edge>>>> tests = new ArrayList<>();
+            tests.add(Pair.with("g.E()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.E())));
+            tests.add(Pair.with("g.e(11)", (Graph g, AbstractGremlinTest instance) -> Stream.of(g.e(instance.convertToEdgeId("josh", "created", "lop")))));
+            tests.add(Pair.with("g.v(1).outE()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).outE())));
+            tests.add(Pair.with("g.v(4).outE()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).bothE())));
+            tests.add(Pair.with("g.v(4).outE()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).inE())));
+            tests.add(Pair.with("g.v(1).iterators().edge(Direction.BOTH, 1)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).iterators().edges(Direction.BOTH, 1))));
+            tests.add(Pair.with("g.v(4).iterators().edge(Direction.BOTH, Integer.MAX_VALUE)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).iterators().edges(Direction.BOTH, Integer.MAX_VALUE))));
+            tests.add(Pair.with("g.v(1).iterators().edge(Direction.BOTH, Integer.MAX_VALUE)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).iterators().edges(Direction.OUT, Integer.MAX_VALUE))));
+            tests.add(Pair.with("g.v(4).iterators().edge(Direction.BOTH, Integer.MAX_VALUE)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).iterators().edges(Direction.IN, Integer.MAX_VALUE))));
+
+            return tests.stream().map(d -> {
+                final Object[] o = new Object[2];
+                o[0] = d.getValue0();
+                o[1] = d.getValue1();
+                return o;
+            }).collect(Collectors.toList());
         }
+
+        @Parameterized.Parameter(value = 0)
+        public String name;
+
+        @Parameterized.Parameter(value = 1)
+        public BiFunction<Graph, AbstractGremlinTest, Stream<Edge>> streamGetter;
 
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-        public void shouldWrape() {
+        public void shouldWrap() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
             swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-            assertTrue(swg.e(convertToEdgeId("josh", "created", "lop")) instanceof StrategyWrappedEdge);
-        }
 
-        @Test
-        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-        public void shouldWrapvTraversalEdges() {
-            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-            assertEquals(3l, swg.v(convertToVertexId("marko")).outE().count().next().longValue());
-            swg.v(convertToVertexId("marko")).outE().sideEffect(e -> assertTrue(e.get() instanceof StrategyWrappedEdge)).iterate();
-        }
+            final AtomicBoolean atLeastOne = new AtomicBoolean(false);
+            assertTrue(streamGetter.apply(swg, this).allMatch(e -> {
+                atLeastOne.set(true);
+                return e instanceof StrategyWrappedEdge;
+            }));
 
-        @Test
-        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-        public void shouldWrapvEdges() {
-            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-            assertTrue(swg.v(convertToVertexId("marko")).iterators().edges(Direction.BOTH, 1).hasNext());
-            assertTrue(swg.v(convertToVertexId("marko")).iterators().edges(Direction.BOTH, 1).next() instanceof StrategyWrappedEdge);
+            assertTrue(atLeastOne.get());
         }
     }
 
@@ -268,6 +277,9 @@ public class StrategyWrappedGraphTest  {
             final List<Pair<String, BiFunction<Graph, AbstractGremlinTest, Stream<Vertex>>>> tests = new ArrayList<>();
             tests.add(Pair.with("g.V()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V())));
             tests.add(Pair.with("g.v(1)", (Graph g, AbstractGremlinTest instance) -> Stream.of(g.v(instance.convertToVertexId("marko")))));
+            tests.add(Pair.with("g.v(1).outE().inV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).outE().inV())));
+            tests.add(Pair.with("g.v(4).bothE().bothV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).bothE().bothV())));
+            tests.add(Pair.with("g.v(4).inE().outV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).inE().outV())));
             tests.add(Pair.with("g.v(1).out()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).out())));
             tests.add(Pair.with("g.v(1).iterators().vertices(Direction.BOTH, 1)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).iterators().vertices(Direction.BOTH, 1))));
             tests.add(Pair.with("g.v(4).iterators().vertices(Direction.BOTH, Integer.MAX_VALUE)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).iterators().vertices(Direction.BOTH, Integer.MAX_VALUE))));
@@ -294,7 +306,7 @@ public class StrategyWrappedGraphTest  {
 
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-        public void shouldWrapProperty() {
+        public void shouldWrap() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
             swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
 

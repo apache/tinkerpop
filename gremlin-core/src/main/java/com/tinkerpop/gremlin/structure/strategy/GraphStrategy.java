@@ -291,6 +291,18 @@ public interface GraphStrategy {
     }
 
     /**
+     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Vertex.Iterators#vertices}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
+     * {@link com.tinkerpop.gremlin.structure.Vertex.Iterators#vertices} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     */
+    public default UnaryOperator<STriFunction<Direction, Integer, String[], Iterator<Edge>>> getVertexIteratorsEdgesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+        return UnaryOperator.identity();
+    }
+
+    /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element#value(String)}.
      *
      * @param ctx the context within which this strategy function is called
