@@ -122,6 +122,13 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
         }
 
         @Override
+        public <V> Iterator<V> values(final String... propertyKeys) {
+            return strategyWrappedGraph.strategy().compose(
+                    s -> s.<V>getVertexIteratorsValuesStrategy(strategyContext),
+                    (String[] pks) -> baseVertex.iterators().values(pks)).apply(propertyKeys);
+        }
+
+        @Override
         public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
             return StreamFactory.stream(strategyWrappedGraph.strategy().compose(
                     s -> s.<V>getVertexIteratorsPropertiesStrategy(strategyContext),
