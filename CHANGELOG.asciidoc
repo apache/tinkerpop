@@ -9,8 +9,12 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* `T.*` now has `label`, `id`, `key`, `value` and no longer are these `String` representations reserved in TinkerPop
-* `Traverser` now has reference to `Traversal.SideEffects`
+* Added "the crew" toy graph which contains multi-properties, meta-properties, graph variables, hiddens, etc.
+* If the Giraph job fails, then the subsequent `MapReduce` jobs will not execute.
+* Added `Graph.System` class which generates keys prefixed with `%&%` which is considered the vendor namespace.
+* Added `ReferencedVertex` (etc. for all graph object types) for lightweight message passing of graph object ids.
+* `T.*` now has `label`, `id`, `key`, `value` and no longer are these `String` representations reserved in TinkerPop.
+* `Traverser` now has a transient reference to `Traversal.SideEffects`.
 * "Detached" classes are now tested by the standard test suite.
 * Compartmentalized `Traverser` interface so there is now a `Traverser.System` sub-interface with methods that users shouldn't call.
 * Added `OrderByStep` which orders `Elements` according to the value of a provided key.

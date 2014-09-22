@@ -1,26 +1,25 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
-import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
 import com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect.GiraphGraphStep;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.io.Serializable;
@@ -61,10 +60,8 @@ public class GiraphVertex extends GiraphElement implements Vertex, Serializable,
         final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>(this.graph) {
             @Override
             public GraphTraversal<Vertex, Vertex> submit(final GraphComputer computer) {
-
-                GiraphComputerHelper.prepareTraversalForComputer(this);
-                final String label = this.getSteps().get(0).getLabel();
-                TraversalHelper.removeStep(0, this);
+                final String label = TraversalHelper.getStart(this).getLabel();
+                TraversalHelper.removeStep(TraversalHelper.getStart(this), this);
                 final Step identityStep = new IdentityStep(this);
                 if (TraversalHelper.isLabeled(label))
                     identityStep.setLabel(label);
@@ -76,6 +73,7 @@ public class GiraphVertex extends GiraphElement implements Vertex, Serializable,
                 return super.submit(computer);
             }
         };
+        traversal.sideEffects().setGraph(this.graph);
         return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 

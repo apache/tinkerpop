@@ -22,7 +22,7 @@ public class TinkerGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
 
     @Override
     public GraphTraversal<S, E> submit(final GraphComputer computer) {
-        TinkerHelper.prepareTraversalForComputer(this);
+        this.strategies().unregister(TinkerGraphStepStrategy.class);
         return super.submit(computer);
     }
 }

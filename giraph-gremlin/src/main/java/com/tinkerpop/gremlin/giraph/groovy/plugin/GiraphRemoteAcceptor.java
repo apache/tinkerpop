@@ -1,14 +1,18 @@
 package com.tinkerpop.gremlin.giraph.groovy.plugin;
 
-import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.groovy.engine.function.GSSupplier;
 import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.strategy.CountCapStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.GraphComputerStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.UnrollJumpStrategy;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.FileConfiguration;
@@ -88,7 +92,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
             builder.append("traversal = ");
             builder.append(String.join(" ", args));
             builder.append("\n");
-            builder.append(GiraphComputerHelper.class.getCanonicalName() + ".prepareTraversalForComputer(traversal)\n");
+            builder.append(GraphComputerPreparation.class.getCanonicalName() + ".prepare(traversal)\n");
             builder.append("traversal\n");
 
             final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(new GSSupplier<>(builder.toString())).create();
@@ -120,5 +124,16 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
 
     public String toString() {
         return "GiraphRemoteAcceptor[" + this.giraphGraph + "]";
+    }
+
+    // this sucks as this has to ALWAYS be in sync with the submit requirements of GraphTraversal.submit().
+    public static class GraphComputerPreparation {
+        public static void prepare(final Traversal traversal) {
+            traversal.sideEffects().removeGraph();
+            traversal.strategies().unregister(UnrollJumpStrategy.class);
+            traversal.strategies().unregister(TraverserSourceStrategy.class);
+            traversal.strategies().register(CountCapStrategy.instance());
+            traversal.strategies().register(GraphComputerStrategy.instance());
+        }
     }
 }

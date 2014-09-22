@@ -1,14 +1,13 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
-import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
 import com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect.GiraphGraphStep;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
@@ -41,12 +40,11 @@ public class GiraphEdge extends GiraphElement implements Edge, Serializable, Wra
 
     @Override
     public GraphTraversal<Edge, Edge> start() {
-        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>(this.graph) {
+        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<Edge, Edge>(this.graph) {
             @Override
-            public GraphTraversal<Vertex, Vertex> submit(final GraphComputer computer) {
-                GiraphComputerHelper.prepareTraversalForComputer(this);
-                final String label = this.getSteps().get(0).getLabel();
-                TraversalHelper.removeStep(0, this);
+            public GraphTraversal<Edge, Edge> submit(final GraphComputer computer) {
+                final String label = TraversalHelper.getStart(this).getLabel();
+                TraversalHelper.removeStep(TraversalHelper.getStart(this), this);
                 final Step identityStep = new IdentityStep(this);
                 if (TraversalHelper.isLabeled(label))
                     identityStep.setLabel(label);
@@ -58,7 +56,8 @@ public class GiraphEdge extends GiraphElement implements Edge, Serializable, Wra
                 return super.submit(computer);
             }
         };
-        return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
+        traversal.sideEffects().setGraph(this.graph);
+        return traversal.addStep(new StartStep<>(traversal, this));
     }
 
     @Override

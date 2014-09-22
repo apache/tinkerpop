@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.giraph.structure;
 import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
-import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
 import com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect.GiraphGraphStep;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -12,7 +11,6 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -68,13 +66,7 @@ public class GiraphGraph implements Graph, Serializable {
 
     @Override
     public GraphTraversal<Vertex, Vertex> V() {
-        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>() {
-            @Override
-            public GraphTraversal<Vertex, Vertex> submit(final GraphComputer computer) {
-                GiraphComputerHelper.prepareTraversalForComputer(this);
-                return super.submit(computer);
-            }
-        };
+        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>();
         traversal.addStep(new GiraphGraphStep(traversal, Vertex.class, this));
         traversal.sideEffects().setGraph(this);
         return traversal;
@@ -82,13 +74,7 @@ public class GiraphGraph implements Graph, Serializable {
 
     @Override
     public GraphTraversal<Edge, Edge> E() {
-        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<Edge, Edge>() {
-            @Override
-            public GraphTraversal<Edge, Edge> submit(final GraphComputer computer) {
-                GiraphComputerHelper.prepareTraversalForComputer(this);
-                return super.submit(computer);
-            }
-        };
+        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>();
         traversal.addStep(new GiraphGraphStep(traversal, Edge.class, this));
         traversal.sideEffects().setGraph(this);
         return traversal;
