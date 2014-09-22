@@ -41,7 +41,7 @@ public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEf
         this.groupByMap = this.traversal.sideEffects().getOrCreate(this.sideEffectKey, HashMap<K, Collection<V>>::new);
         this.reduceMap = new HashMap<>();
         this.keyFunction = keyFunction;
-        this.valueFunction = valueFunction == null ? s -> (V) s.get() : valueFunction;
+        this.valueFunction = null == valueFunction ? s -> (V) s.get() : valueFunction;
         this.reduceFunction = reduceFunction;
         this.setConsumer(traverser -> {
             doGroup(traverser, this.groupByMap, this.keyFunction, this.valueFunction);
@@ -71,9 +71,7 @@ public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEf
     }
 
     private static <K, V, R> void doReduce(final Map<K, Collection<V>> groupMap, final Map<K, R> reduceMap, final SFunction<Collection<V>, R> reduceFunction) {
-        groupMap.forEach((k, vv) -> {
-            reduceMap.put(k, (R) reduceFunction.apply(vv));
-        });
+        groupMap.forEach((k, vv) -> reduceMap.put(k, reduceFunction.apply(vv)));
     }
 
     public static void addValue(final Object value, final Collection values) {

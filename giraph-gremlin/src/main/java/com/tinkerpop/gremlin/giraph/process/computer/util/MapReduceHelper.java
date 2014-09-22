@@ -12,6 +12,8 @@ import com.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.OutputFormat;
@@ -64,6 +66,11 @@ public class MapReduceHelper {
                     new Path(newConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + Constants.HIDDEN_G) :
                     new Path(newConfiguration.get(Constants.GREMLIN_INPUT_LOCATION));
             final Path memoryPath = new Path(newConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + mapReduce.getSideEffectKey());
+            // necessary if store('a').out.out.store('a') exists twice -- TODO: only need to call the MapReduce once. May want to have a uniqueness critieria on MapReduce.
+            if(FileSystem.get(newConfiguration).exists(memoryPath)) {
+                FileSystem.get(newConfiguration).delete(memoryPath,true);
+            }
+
             FileInputFormat.setInputPaths(job, graphPath);
             FileOutputFormat.setOutputPath(job, memoryPath);
             job.waitForCompletion(true);

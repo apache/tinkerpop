@@ -3,10 +3,12 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -120,7 +122,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_loops_lt_2X_capXaX() {
-            return g.V().as("x").out().groupBy("a", v -> v.get().value("name"), v -> v, vv -> vv.size()).jump("x", t -> t.getLoops() < 2).cap("a");
+            return g.V().as("x").out().groupBy("a", v -> v.get().value("name"), Traverser::get, Collection::size).jump("x", t -> t.getLoops() < 2).cap("a");
         }
     }
 
@@ -154,7 +156,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_loops_lt_2X_capXaX() {
-            return g.V().as("x").out().groupBy("a", v -> v.get().value("name"), v -> v, vv -> vv.size()).jump("x", t -> t.getLoops() < 2).<Map<String, Integer>>cap("a").submit(g.compute());
+            return g.V().as("x").out().groupBy("a", v -> v.get().value("name"), Traverser::get, Collection::size).jump("x", t -> t.getLoops() < 2).<Map<String, Integer>>cap("a").submit(g.compute());
         }
     }
 

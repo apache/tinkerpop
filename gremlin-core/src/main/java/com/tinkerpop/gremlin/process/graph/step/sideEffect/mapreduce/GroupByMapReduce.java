@@ -72,7 +72,7 @@ public class GroupByMapReduce implements MapReduce<Object, Collection, Object, O
     public void reduce(final Object key, final Iterator<Collection> values, final ReduceEmitter<Object, Object> emitter) {
         final List list = new ArrayList();
         values.forEachRemaining(list::addAll);
-        emitter.emit(key, (null == reduceFunction) ? list : reduceFunction.apply(list));
+        emitter.emit(key, (null == this.reduceFunction) ? list : this.reduceFunction.apply(list));
     }
 
     @Override
