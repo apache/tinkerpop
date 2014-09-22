@@ -49,6 +49,13 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     }
 
     @Override
+    public Set<String> hiddenKeys() {
+        return this.strategyWrappedGraph.strategy().compose(
+                s -> s.getVertexHiddenKeysStrategy(strategyContext),
+                this.baseVertex::hiddenKeys).get();
+    }
+
+    @Override
     public Vertex.Iterators iterators() {
         return this.iterators;
     }

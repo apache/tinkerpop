@@ -20,6 +20,8 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
         this.baseVertexProperty = baseVertexProperty;
     }
 
+    // todo: add strategy implementations and tests
+
     @Override
     public Object id() {
         return this.baseVertexProperty.id();
@@ -36,19 +38,22 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
     }
 
     @Override
+    public Set<String> hiddenKeys() {
+        return this.baseVertexProperty.hiddenKeys();
+    }
+
+    @Override
     public Vertex getElement() {
         return this.baseVertexProperty.getElement();
     }
 
     @Override
     public VertexProperty.Iterators iterators() {
-        // todo: iterators on vertex properties
         return this.baseVertexProperty.iterators();
     }
 
     @Override
     public <V> Property<V> property(final String key, final V value) {
-        // todo: gotta add a strategy here and cover readonly cases....
         return this.baseVertexProperty.property(key, value);
     }
 

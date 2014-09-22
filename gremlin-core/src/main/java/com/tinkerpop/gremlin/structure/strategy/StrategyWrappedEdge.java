@@ -61,6 +61,13 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
     }
 
     @Override
+    public Set<String> hiddenKeys() {
+        return this.strategyWrappedGraph.strategy().compose(
+                s -> s.getEdgeHiddenKeysStrategy(strategyContext),
+                this.baseEdge::hiddenKeys).get();
+    }
+
+    @Override
     public Edge getBaseEdge() {
         return this.baseEdge;
     }
