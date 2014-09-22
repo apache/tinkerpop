@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
+import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.STriFunction;
 
 import java.util.Iterator;
@@ -287,6 +288,18 @@ public interface GraphStrategy {
      * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
     public default UnaryOperator<STriFunction<Direction, Integer, String[], Iterator<Vertex>>> getVertexIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+        return UnaryOperator.identity();
+    }
+
+    /**
+     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Edge.Iterators#vertices}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
+     * {@link com.tinkerpop.gremlin.structure.Edge.Iterators#vertices} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     */
+    public default UnaryOperator<SFunction<Direction, Iterator<Vertex>>> getEdgeIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
         return UnaryOperator.identity();
     }
 

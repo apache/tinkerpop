@@ -193,6 +193,7 @@ public class StrategyWrappedGraphTest  {
             tests.add(Pair.with("v.iterators().hiddens(\"hideme\")", (Graph g, Vertex v) -> StreamFactory.stream(v.iterators().hiddens("hideme"))));
             tests.add(Pair.with("v.properties()", (Graph g, Vertex v) -> StreamFactory.stream(v.properties())));
             tests.add(Pair.with("v.property(\"extra\",\"more\")", (Graph g, Vertex v) -> Stream.<VertexProperty<Object>>of(v.property("extra", "more"))));
+            // todo: test e.iterators().vertices() with "crew"
 
             return tests.stream().map(d -> {
                 final Object[] o = new Object[2];

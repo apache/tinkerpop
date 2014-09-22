@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
+import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.STriFunction;
 
 import java.util.ArrayList;
@@ -177,6 +178,11 @@ public class SequenceGraphStrategy implements GraphStrategy {
     @Override
     public <V> UnaryOperator<Function<String[], Iterator<V>>> getEdgeIteratorsHiddenValuesStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getEdgeIteratorsHiddenValuesStrategy(ctx));
+    }
+
+    @Override
+    public UnaryOperator<SFunction<Direction, Iterator<Vertex>>> getEdgeIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getEdgeIteratorsVerticesStrategy(ctx));
     }
 
     @Override

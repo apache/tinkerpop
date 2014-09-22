@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
+import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.STriFunction;
 import org.junit.Test;
 
@@ -511,6 +512,11 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
 
         @Override
         public <V> UnaryOperator<Supplier<Void>> getRemoveVertexPropertyStrategy(final Strategy.Context<StrategyWrappedVertexProperty<V>> ctx) {
+            return spy();
+        }
+
+        @Override
+        public UnaryOperator<SFunction<Direction, Iterator<Vertex>>> getEdgeIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
             return spy();
         }
     }
