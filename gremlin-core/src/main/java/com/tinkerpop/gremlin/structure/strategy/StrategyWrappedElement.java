@@ -30,13 +30,6 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
     }
 
     @Override
-    public <V> V value(final String key) throws NoSuchElementException {
-        return this.strategyWrappedGraph.strategy().compose(
-                s -> s.<V>getElementValueStrategy(elementStrategyContext),
-                this.baseElement::value).apply(key);
-    }
-
-    @Override
     public Set<String> keys() {
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.getElementKeysStrategy(elementStrategyContext),

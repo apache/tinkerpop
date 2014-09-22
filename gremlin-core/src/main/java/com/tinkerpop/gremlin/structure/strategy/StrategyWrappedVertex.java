@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -28,6 +29,13 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     @Override
     public Vertex.Iterators iterators() {
         return this.iterators;
+    }
+
+    @Override
+    public <V> V value(final String key) throws NoSuchElementException {
+        return this.strategyWrappedGraph.strategy().compose(
+                s -> s.<V>getVertexValueStrategy(strategyContext),
+                this.baseElement::value).apply(key);
     }
 
     @Override
