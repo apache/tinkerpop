@@ -30,7 +30,14 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     public Object id() {
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.getVertexIdStrategy(strategyContext),
-                this.baseElement::id).get();
+                this.baseVertex::id).get();
+    }
+
+    @Override
+    public String label() {
+        return this.strategyWrappedGraph.strategy().compose(
+                s -> s.getVertexLabelStrategy(strategyContext),
+                this.baseVertex::label).get();
     }
 
     @Override
@@ -42,7 +49,7 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     public <V> V value(final String key) throws NoSuchElementException {
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.<V>getVertexValueStrategy(strategyContext),
-                this.baseElement::value).apply(key);
+                this.baseVertex::value).apply(key);
     }
 
     @Override
@@ -50,7 +57,7 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
         this.strategyWrappedGraph.strategy().compose(
                 s -> s.getRemoveVertexStrategy(strategyContext),
                 () -> {
-                    this.baseElement.remove();
+                    this.baseVertex.remove();
                     return null;
                 }).get();
     }

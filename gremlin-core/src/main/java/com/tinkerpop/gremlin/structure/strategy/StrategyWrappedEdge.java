@@ -35,14 +35,21 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
     public Object id() {
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.getEdgeIdStrategy(strategyContext),
-                this.baseElement::id).get();
+                this.baseEdge::id).get();
+    }
+
+    @Override
+    public String label() {
+        return this.strategyWrappedGraph.strategy().compose(
+                s -> s.getEdgeLabelStrategy(strategyContext),
+                this.baseEdge::label).get();
     }
 
     @Override
     public <V> V value(final String key) throws NoSuchElementException {
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.<V>getEdgeValueStrategy(strategyContext),
-                this.baseElement::value).apply(key);
+                this.baseEdge::value).apply(key);
     }
 
     @Override
@@ -54,14 +61,14 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
     public <V> Property<V> property(final String key) {
         return new StrategyWrappedProperty<>(this.strategyWrappedGraph.strategy().compose(
                 s -> s.<V>getEdgeGetPropertyStrategy(strategyContext),
-                this.baseElement::property).apply(key), this.strategyWrappedGraph);
+                this.baseEdge::property).apply(key), this.strategyWrappedGraph);
     }
 
     @Override
     public <V> Property<V> property(final String key, final V value) {
         return new StrategyWrappedProperty<>(this.strategyWrappedGraph.strategy().compose(
                 s -> s.<V>getEdgePropertyStrategy(strategyContext),
-                this.baseElement::property).apply(key, value), this.strategyWrappedGraph);
+                this.baseEdge::property).apply(key, value), this.strategyWrappedGraph);
     }
 
     @Override
@@ -69,7 +76,7 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
         this.strategyWrappedGraph.strategy().compose(
                 s -> s.getRemoveEdgeStrategy(strategyContext),
                 () -> {
-                    this.baseElement.remove();
+                    this.baseEdge.remove();
                     return null;
                 }).get();
     }

@@ -25,6 +25,11 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
     }
 
     @Override
+    public String label() {
+        return this.baseVertexProperty.label();
+    }
+
+    @Override
     public Vertex getElement() {
         return this.baseVertexProperty.getElement();
     }
