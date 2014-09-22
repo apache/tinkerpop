@@ -1689,7 +1689,55 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     public static void assertCrewGraph(final Graph g1, final boolean lossyForId) {
-        // todo: still need to assert all this
+        assertEquals(new Long(6), g1.V().count().next());
+        assertEquals(new Long(14), g1.E().count().next());
+
+        assertEquals("marko", g1.variables().get("creator").get().toString());
+        assertEquals(2014, g1.variables().get("lastModified").get());
+        assertEquals("this graph was created to provide examples and test coverage for tinkerpop3 api advances", g1.variables().get("comment").get().toString());
+
+        final Vertex v1 = (Vertex) g1.V().has("name", "marko").next();
+        assertEquals("person", v1.label());
+        assertEquals(true, v1.iterators().hiddenValues("visible").next());
+        assertEquals(2, v1.keys().size());
+        assertEquals(1, v1.hiddenKeys().size());
+        v1.iterators().properties("location").forEachRemaining(vp -> {
+            if (vp.value().equals("san diego")) {
+                assertEquals(1997, (int) vp.value("startTime"));
+                assertEquals(2001, (int) vp.value("endTime"));
+                assertEquals(2, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else if (vp.value().equals("santa cruz")) {
+                assertEquals(2001, (int) vp.value("startTime"));
+                assertEquals(2004, (int) vp.value("endTime"));
+                assertEquals(2, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else if (vp.value().equals("brussels")) {
+                assertEquals(2004, (int) vp.value("startTime"));
+                assertEquals(2005, (int) vp.value("endTime"));
+                assertEquals(2, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else if (vp.value().equals("santa fe")) {
+                assertEquals(2005, (int) vp.value("startTime"));
+                assertEquals(1, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else {
+                fail("Found a value that should be there");
+            }
+        });
+        assertId(g1, lossyForId, v1, 1);
+
+        final List<Edge> v1Edges = v1.bothE().toList();
+        assertEquals(4, v1Edges.size());
+        v1Edges.forEach(e -> {
+            if (e.inV().value("name").next().equals("gremlin") && e.label().equals("develops")) {
+                assertEquals(2009, (int) e.value("since"));
+                assertEquals(1, e.keys().size());
+                //assertId(g1, lossyForId, e, 7);
+            } else if (e.inV().value("name").next().equals("gremlin")  && e.label().equals("uses")) {
+                assertEquals(4, (int) e.value("skill"));
+                assertEquals(1, e.keys().size());
+                //assertId(g1, lossyForId, e, 7);
+            } else {
+                // todo: fail("Edge not expected");
+            }
+        });
     }
 
     // todo: assert specific label? why again?
