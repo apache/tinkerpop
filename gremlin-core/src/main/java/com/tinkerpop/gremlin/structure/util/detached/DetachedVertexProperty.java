@@ -58,8 +58,12 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
         this.value = (V) property.value();
         this.vertex = property.getElement() instanceof DetachedVertex ? (DetachedVertex) property.getElement() : DetachedVertex.detach(property.getElement());
 
-        property.iterators().properties().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
-        property.iterators().hiddens().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
+        try {
+            property.iterators().properties().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
+            property.iterators().hiddens().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
+        } catch (UnsupportedOperationException uoe) {
+            // todo: is there a way to get the feature down here so we can just test it directly?
+        }
     }
 
     DetachedVertexProperty(final VertexProperty property, final DetachedVertex detachedVertex) {
@@ -70,8 +74,12 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
         this.value = (V) property.value();
         this.vertex = detachedVertex;
 
-        property.iterators().properties().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
-        property.iterators().hiddens().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
+        try {
+            property.iterators().properties().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
+            property.iterators().hiddens().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
+        } catch (UnsupportedOperationException uoe) {
+            // todo: is there a way to get the feature down here so we can just test it directly?
+        }
     }
 
     @Override
