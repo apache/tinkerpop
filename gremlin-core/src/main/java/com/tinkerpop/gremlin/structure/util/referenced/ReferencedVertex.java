@@ -24,17 +24,17 @@ public class ReferencedVertex extends ReferencedElement implements Vertex, Attac
     }
 
     @Override
-    public Edge addEdge(String label, Vertex inVertex, Object... keyValues) {
+    public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
         throw new IllegalStateException("Referenced vertices can not have edges:" + this);
     }
 
     @Override
-    public <V> VertexProperty<V> property(String key) {
+    public <V> VertexProperty<V> property(final String key) {
         throw new IllegalStateException("Referenced vertices do not have properties:" + this);
     }
 
     @Override
-    public <V> VertexProperty<V> property(String key, V value) {
+    public <V> VertexProperty<V> property(final String key, V value) {
         throw new IllegalStateException("Referenced vertices can not have properties:" + this);
     }
 
@@ -61,22 +61,22 @@ public class ReferencedVertex extends ReferencedElement implements Vertex, Attac
         protected static final Iterators ITERATORS = new Iterators();
 
         @Override
-        public Iterator<Edge> edges(Direction direction, int branchFactor, String... labels) {
+        public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
             return Collections.emptyIterator();
         }
 
         @Override
-        public Iterator<Vertex> vertices(Direction direction, int branchFactor, String... labels) {
+        public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
             return Collections.emptyIterator();
         }
 
         @Override
-        public <V> Iterator<VertexProperty<V>> properties(String... propertyKeys) {
+        public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
             return Collections.emptyIterator();
         }
 
         @Override
-        public <V> Iterator<VertexProperty<V>> hiddens(String... propertyKeys) {
+        public <V> Iterator<VertexProperty<V>> hiddens(final String... propertyKeys) {
             return Collections.emptyIterator();
         }
     }

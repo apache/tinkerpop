@@ -66,12 +66,12 @@ public class ReferencedEdge extends ReferencedElement implements Edge, Attachabl
         }
 
         @Override
-        public <V> Iterator<Property<V>> properties(String... propertyKeys) {
+        public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
             return Collections.emptyIterator();
         }
 
         @Override
-        public <V> Iterator<Property<V>> hiddens(String... propertyKeys) {
+        public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
             return Collections.emptyIterator();
         }
     }

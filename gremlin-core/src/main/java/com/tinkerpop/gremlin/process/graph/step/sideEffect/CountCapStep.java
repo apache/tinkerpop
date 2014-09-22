@@ -20,16 +20,16 @@ public class CountCapStep<S> extends SideEffectStep<S> implements SideEffectCapa
 
     private static final String COUNT_KEY = Graph.Key.hide("count");
     private long bulkCount = 1l;
-    private AtomicLong count = new AtomicLong(0l);
+    private AtomicLong count;
     private boolean vertexCentric = false;
 
     public CountCapStep(final Traversal traversal) {
         super(traversal);
+        this.count = this.traversal.sideEffects().getOrCreate(COUNT_KEY, () -> new AtomicLong(0l));
         this.setConsumer(traverser -> {
             this.count.set(this.count.get() + this.bulkCount);
             if (!this.vertexCentric) this.traversal.sideEffects().set(COUNT_KEY, this.count.get());
         });
-
     }
 
     @Override

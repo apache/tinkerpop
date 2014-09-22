@@ -44,7 +44,7 @@ public abstract class ReferencedElement implements Element, Serializable {
     }
 
     @Override
-    public <V> Property<V> property(String key, V value) {
+    public <V> Property<V> property(final String key, final V value) {
         throw new IllegalStateException("Referenced elements do not have properties:" + this);
     }
 

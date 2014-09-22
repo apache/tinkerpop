@@ -51,6 +51,7 @@ public class TraversalPathMessage extends TraversalMessage {
                 if (traverser.isDone()) {
                     MapHelper.incr(tracker.getDoneObjectTracks(), object, traverser);
                 } else {
+                    traverser.inflate(vertex, traversal);
                     final Step step = TraversalHelper.getStep(traverser.getFuture(), traversal);
                     if (step instanceof VertexCentric) ((VertexCentric) step).setCurrentVertex(vertex);
                     step.addStarts(new SingleIterator(traverser));

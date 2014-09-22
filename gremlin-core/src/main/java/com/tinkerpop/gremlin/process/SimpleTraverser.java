@@ -100,20 +100,22 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.System<T> {
         this.sideEffects = sideEffects;
     }
 
+    @Override
     public String toString() {
         return t.toString();
     }
 
+    @Override
     public int hashCode() {
-        return this.t.hashCode() + this.getFuture().hashCode() + this.getLoops();
+        return this.t.hashCode() + this.future.hashCode() + this.loops;
     }
 
+    @Override
     public boolean equals(final Object object) {
-        return object instanceof SimpleTraverser && this.t.equals(((SimpleTraverser) object).get());
-        /*return object instanceof SimpleTraverser &&
-                ((SimpleTraverser) object).get().equals(this.t) &&
-                ((SimpleTraverser) object).getFuture().equals(this.getFuture()) &&
-                ((SimpleTraverser) object).getLoops() == this.getLoops();*/
+        return object instanceof SimpleTraverser
+                && ((SimpleTraverser) object).get().equals(this.t)
+                && ((SimpleTraverser) object).getFuture().equals(this.getFuture())
+                && ((SimpleTraverser) object).getLoops() == this.getLoops();
 
     }
 

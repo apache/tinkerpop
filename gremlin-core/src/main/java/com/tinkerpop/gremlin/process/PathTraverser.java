@@ -58,7 +58,17 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
         return this;
     }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode() + this.path.hashCode();
+    }
+
+    @Override
     public boolean equals(final Object object) {
-        return (object instanceof PathTraverser) && this.t.equals(((PathTraverser) object).get()) && this.path.equals(((PathTraverser) object).getPath());
+        return (object instanceof PathTraverser)
+                && ((PathTraverser) object).get().equals(this.t)
+                && ((PathTraverser) object).getFuture().equals(this.getFuture())
+                && ((PathTraverser) object).getLoops() == this.getLoops()
+                && ((PathTraverser) object).getPath().equals(this.path);
     }
 }
