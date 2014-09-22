@@ -109,8 +109,13 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public <V> UnaryOperator<Function<String[],Iterator<? extends Property<V>>>> getElementPropertiesStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
-        return this.composeStrategyUnaryOperator(s -> s.getElementIdStrategy(ctx));
+    public <V> UnaryOperator<Function<String[], Iterator<VertexProperty<V>>>> getVertexIteratorsPropertiesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getVertexIteratorsPropertiesStrategy(ctx));
+    }
+
+    @Override
+    public <V> UnaryOperator<Function<String[], Iterator<Property<V>>>> getEdgeIteratorsPropertiesStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getEdgeIteratorsPropertiesStrategy(ctx));
     }
 
     @Override

@@ -223,16 +223,26 @@ public interface GraphStrategy {
     }
 
     /**
-     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element#properties}.
-     * If a strategy must implement different scenarios for a {@link com.tinkerpop.gremlin.structure.Vertex} versus an {@link com.tinkerpop.gremlin.structure.Edge} the implementation
-     * should check for the type of {@link com.tinkerpop.gremlin.structure.Element} on the {@link Strategy.Context}.
+     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element.Iterators#properties}.
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
-     * {@link com.tinkerpop.gremlin.structure.Element#properties} signature
+     * {@link com.tinkerpop.gremlin.structure.Element.Iterators#properties} signature
      * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
-    public default <V> UnaryOperator<Function<String[],Iterator<? extends Property<V>>>> getElementPropertiesStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public default <V> UnaryOperator<Function<String[],Iterator<VertexProperty<V>>>> getVertexIteratorsPropertiesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+        return UnaryOperator.identity();
+    }
+
+    /**
+     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Edge.Iterators#properties}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
+     * {@link com.tinkerpop.gremlin.structure.Edge.Iterators#properties} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     */
+    public default <V> UnaryOperator<Function<String[],Iterator<Property<V>>>> getEdgeIteratorsPropertiesStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
         return UnaryOperator.identity();
     }
 

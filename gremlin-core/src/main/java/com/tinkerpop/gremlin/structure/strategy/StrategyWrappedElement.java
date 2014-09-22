@@ -87,7 +87,6 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
     }
 
     public abstract class StrategyWrappedElementIterators implements Iterators {
-        // todo: multi-property concerns
         @Override
         public <V> Iterator<V> values(final String... propertyKeys) {
             return strategyWrappedGraph.strategy().compose(

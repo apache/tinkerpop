@@ -86,18 +86,14 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
 
         @Override
         public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
-            // todo: explicit vertex/edge strategy methods
-            // todo: wrap it up
             return StreamFactory.stream(strategyWrappedGraph.strategy().compose(
-                    s -> s.<V>getElementPropertiesStrategy(elementStrategyContext),
+                    s -> s.<V>getVertexIteratorsPropertiesStrategy(strategyContext),
                     (String[] pks) -> ((Vertex) baseElement).iterators().properties(pks)).apply(propertyKeys))
-                    .map(property -> (VertexProperty<V>) new StrategyWrappedVertexProperty<>((VertexProperty<V>) property, strategyWrappedGraph)).iterator();
+                    .map(property -> (VertexProperty<V>) new StrategyWrappedVertexProperty<>(property, strategyWrappedGraph)).iterator();
         }
 
         @Override
         public <V> Iterator<VertexProperty<V>> hiddens(final String... propertyKeys) {
-            // todo: explicit vertex/edge strategy methods
-            // todo: wrap it up
             return StreamFactory.stream(strategyWrappedGraph.strategy().compose(
                     s -> s.<V>getElementHiddensStrategy(elementStrategyContext),
                     (String[] pks) -> ((Vertex) baseElement).iterators().hiddens(pks)).apply(propertyKeys))
