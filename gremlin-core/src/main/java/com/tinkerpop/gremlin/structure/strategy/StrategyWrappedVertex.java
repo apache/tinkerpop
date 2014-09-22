@@ -118,7 +118,9 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
 
         @Override
         public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
-            return new StrategyWrappedVertexIterator(baseVertex.iterators().vertices(direction, branchFactor, labels), strategyWrappedGraph);
+            return new StrategyWrappedVertexIterator(strategyWrappedGraph.strategy().compose(
+                    s -> s.getVertexIteratorsVerticesStrategy(strategyContext),
+                    (Direction d, Integer bf, String[] l) -> ((Vertex) baseElement).iterators().vertices(d, bf, l)).apply(direction, branchFactor, labels), strategyWrappedGraph);
         }
 
         @Override

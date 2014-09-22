@@ -104,6 +104,7 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
     public class StrategyWrappedEdgeIterators implements Edge.Iterators {
         @Override
         public Iterator<Vertex> vertices(final Direction direction) {
+            // todo: add strategy function
             return new StrategyWrappedVertex.StrategyWrappedVertexIterator(baseEdge.iterators().vertices(direction), strategyWrappedGraph);
         }
 
