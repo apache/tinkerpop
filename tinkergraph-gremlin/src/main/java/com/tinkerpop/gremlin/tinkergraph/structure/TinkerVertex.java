@@ -3,9 +3,9 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerElementTraversal;
@@ -53,7 +53,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
     @Override
     public <V> VertexProperty<V> property(final String key, final V value) {
-        if (this.graph.graphView != null && this.graph.graphView.getInUse()) {
+        if (TinkerHelper.inComputerMode(this.graph)) {
             return (VertexProperty<V>) this.graph.graphView.setProperty(this, key, value);
         } else {
             ElementHelper.validateProperty(key, value);

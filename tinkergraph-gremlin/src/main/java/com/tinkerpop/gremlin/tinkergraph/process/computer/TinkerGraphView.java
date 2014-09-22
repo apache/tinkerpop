@@ -29,7 +29,6 @@ public class TinkerGraphView implements Serializable {
     protected final Set<String> computeKeys;
     protected final GraphComputer.Isolation isolation;
     private Map<Element, Map<String, List<Property>>> computeProperties;
-    private boolean inUse = true;
 
     public TinkerGraphView(final GraphComputer.Isolation isolation, final Set<String> computeKeys) {
         this.isolation = isolation;
@@ -90,14 +89,6 @@ public class TinkerGraphView implements Serializable {
         } else {
             throw GraphComputer.Exceptions.providedKeyIsNotAnElementComputeKey(key);
         }
-    }
-
-    public void setInUse(final boolean inUse) {
-        this.inUse = inUse;
-    }
-
-    public boolean getInUse() {
-        return this.inUse;
     }
 
     //////////////////////

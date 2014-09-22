@@ -269,4 +269,8 @@ public class TinkerGraph implements Graph, Serializable {
             throw new IllegalArgumentException("Class is not indexable: " + elementClass);
         }
     }
+
+    public void dropGraphView() {
+        this.graphView = null;
+    }
 }

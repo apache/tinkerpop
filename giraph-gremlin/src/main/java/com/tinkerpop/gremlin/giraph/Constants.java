@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Graph;
  */
 public class Constants {
 
-    public static final Kryo KRYO = new Kryo();
+    public static final Kryo KRYO = new Kryo(); // TODO: this is not used, remove if you don't use it
 
     static {
         KRYO.register(RuleWritable.Rule.class, 1000000);

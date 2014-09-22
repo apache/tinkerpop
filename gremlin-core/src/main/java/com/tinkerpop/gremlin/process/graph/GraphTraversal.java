@@ -111,7 +111,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             this.strategies().unregister(TraverserSourceStrategy.class);
             this.strategies().register(CountCapStrategy.instance());
             this.strategies().register(GraphComputerStrategy.instance());
-            TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> this).create();
+            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> this).create();
             final ComputerResult result = computer.program(vertexProgram).submit().get();
             final GraphTraversal traversal = result.getGraph().of();
             traversal.addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));

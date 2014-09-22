@@ -92,12 +92,8 @@ public class TinkerHelper {
         return graph.edgeIndex.get(key, value);
     }
 
-    public static TinkerGraphView getGraphView(final TinkerGraph graph) {
-        return graph.graphView;
-    }
-
     public static boolean inComputerMode(final TinkerGraph graph) {
-        return null != graph.graphView && graph.graphView.getInUse();
+        return null != graph.graphView;
     }
 
     public static TinkerGraphView createGraphView(final TinkerGraph graph, final GraphComputer.Isolation isolation, final Set<String> computeKeys) {
