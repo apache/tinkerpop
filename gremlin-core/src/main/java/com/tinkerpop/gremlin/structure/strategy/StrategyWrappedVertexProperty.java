@@ -20,14 +20,19 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
     }
 
     @Override
+    public Object id() {
+        return this.baseVertexProperty.id();
+    }
+
+    @Override
     public Vertex getElement() {
-        return null;
+        return this.baseVertexProperty.getElement();
     }
 
     @Override
     public VertexProperty.Iterators iterators() {
         // todo: iterators on vertex properties
-        return null;
+        return this.baseVertexProperty.iterators();
     }
 
     @Override

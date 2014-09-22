@@ -27,6 +27,13 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     }
 
     @Override
+    public Object id() {
+        return this.strategyWrappedGraph.strategy().compose(
+                s -> s.getVertexIdStrategy(strategyContext),
+                this.baseElement::id).get();
+    }
+
+    @Override
     public Vertex.Iterators iterators() {
         return this.iterators;
     }

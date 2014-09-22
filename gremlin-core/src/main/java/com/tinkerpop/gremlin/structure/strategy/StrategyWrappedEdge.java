@@ -32,6 +32,13 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
     }
 
     @Override
+    public Object id() {
+        return this.strategyWrappedGraph.strategy().compose(
+                s -> s.getEdgeIdStrategy(strategyContext),
+                this.baseElement::id).get();
+    }
+
+    @Override
     public <V> V value(final String key) throws NoSuchElementException {
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.<V>getEdgeValueStrategy(strategyContext),
