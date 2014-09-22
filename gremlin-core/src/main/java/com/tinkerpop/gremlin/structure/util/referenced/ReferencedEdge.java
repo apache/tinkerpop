@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.util.referenced;
 
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -47,6 +48,11 @@ public class ReferencedEdge extends ReferencedElement implements Edge, Attachabl
         return StreamFactory.stream(hostVertex.iterators().edges(Direction.OUT, Integer.MAX_VALUE, this.label()))
                 .filter(edge -> edge.equals(this))
                 .findFirst().orElseThrow(() -> new IllegalStateException("The referenced edge does not reference an edge on the host vertex"));
+    }
+
+    @Override
+    public GraphTraversal<Edge, Edge> start() {
+        throw new UnsupportedOperationException("Referenced edges cannot be traversed: " + this);
     }
 
     private final Iterators ITERATORS = new Iterators();

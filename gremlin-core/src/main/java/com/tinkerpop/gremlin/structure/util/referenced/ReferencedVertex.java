@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.util.referenced;
 
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -54,6 +55,11 @@ public class ReferencedVertex extends ReferencedElement implements Vertex, Attac
             return hostVertex;
         else
             throw new IllegalStateException("The host vertex must be the referenced vertex to attach: " + this);
+    }
+
+    @Override
+    public GraphTraversal<Vertex, Vertex> start() {
+        throw new UnsupportedOperationException("Referenced vertices cannot be traversed: " + this);
     }
 
     private static final class Iterators implements Vertex.Iterators {

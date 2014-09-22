@@ -1,9 +1,10 @@
 package com.tinkerpop.gremlin.structure.util.referenced;
 
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.detached.Attachable;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
@@ -73,6 +74,11 @@ public class ReferencedVertexProperty<V> extends ReferencedElement implements Ve
         return StreamFactory.stream(hostVertex.iterators().properties(this.key))
                 .filter(vertexProperty -> vertexProperty.equals(this))
                 .findFirst().orElseThrow(() -> new IllegalStateException("The referenced meta-property does not reference a meta-property on the host vertex"));
+    }
+
+    @Override
+    public GraphTraversal<VertexProperty, VertexProperty> start() {
+        throw new UnsupportedOperationException("Referenced vertex properties cannot be traversed: " + this);
     }
 
     private static final class Iterators implements VertexProperty.Iterators {

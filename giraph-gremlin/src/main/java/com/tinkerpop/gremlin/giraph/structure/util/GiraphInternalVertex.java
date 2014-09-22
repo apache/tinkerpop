@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.giraph.process.computer.util.RuleWritable;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
@@ -51,14 +51,16 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
         final TinkerVertex vertex = (TinkerVertex) this.tinkerGraph.addVertex(T.id, this.tinkerVertex.id(), T.label, this.tinkerVertex.label());
         this.tinkerVertex.iterators().properties().forEachRemaining(property -> vertex.<Object>property(property.key(), property.value()));
         this.tinkerVertex.iterators().hiddens().forEachRemaining(property -> vertex.<Object>property(Graph.Key.hide(property.key()), property.value()));
-        this.tinkerVertex.outE().forEach(edge -> {
-            final TinkerVertex otherVertex = (TinkerVertex) ElementHelper.getOrAddVertex(this.tinkerGraph, edge.inV().id().next(), edge.inV().label().next());
+        this.tinkerVertex.iterators().edges(Direction.OUT, Integer.MAX_VALUE).forEachRemaining(edge -> {
+            final com.tinkerpop.gremlin.structure.Vertex tempOtherVertex = edge.iterators().vertices(Direction.IN).next();
+            final TinkerVertex otherVertex = (TinkerVertex) ElementHelper.getOrAddVertex(this.tinkerGraph, tempOtherVertex.id(), tempOtherVertex.label());
             final TinkerEdge tinkerEdge = (TinkerEdge) vertex.addEdge(edge.label(), otherVertex, T.id, edge.id());
             edge.iterators().properties().forEachRemaining(property -> tinkerEdge.<Object>property(property.key(), property.value()));
             edge.iterators().hiddens().forEachRemaining(property -> tinkerEdge.<Object>property(Graph.Key.hide(property.key()), property.value()));
         });
-        this.tinkerVertex.inE().forEach(edge -> {
-            final TinkerVertex otherVertex = (TinkerVertex) ElementHelper.getOrAddVertex(this.tinkerGraph, edge.outV().id().next(), edge.outV().label().next());
+        this.tinkerVertex.iterators().edges(Direction.IN, Integer.MAX_VALUE).forEachRemaining(edge -> {
+            final com.tinkerpop.gremlin.structure.Vertex tempOtherVertex = edge.iterators().vertices(Direction.OUT).next();
+            final TinkerVertex otherVertex = (TinkerVertex) ElementHelper.getOrAddVertex(this.tinkerGraph, tempOtherVertex.id(), tempOtherVertex.label());
             final TinkerEdge tinkerEdge = (TinkerEdge) otherVertex.addEdge(edge.label(), vertex, T.id, edge.id());
             edge.iterators().properties().forEachRemaining(property -> tinkerEdge.<Object>property(property.key(), property.value()));
             edge.iterators().hiddens().forEachRemaining(property -> tinkerEdge.<Object>property(Graph.Key.hide(property.key()), property.value()));
@@ -99,7 +101,7 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
             bos.flush();
             bos.close();
             return new Text(bos.toByteArray());
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }

@@ -89,7 +89,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
     @Override
     public Vertex attach(final Vertex hostVertex) {
-        if (!hostVertex.id().toString().equals(this.id.toString())) // TODO: Why is this bad?
+        if (!hostVertex.equals(this))
             throw new IllegalStateException("The host vertex must be the vertex trying to be attached: " +
                     hostVertex.id() + "!=" + this.id() + " or " +
                     hostVertex.id().getClass() + "!=" + this.id().getClass());
@@ -108,26 +108,26 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     }
 
     public static Vertex addTo(final Graph graph, final DetachedVertex detachedVertex) {
-        final Vertex v = graph.addVertex(T.id, detachedVertex.id(), T.label, detachedVertex.label());
+        final Vertex vertex = graph.addVertex(T.id, detachedVertex.id(), T.label, detachedVertex.label());
         detachedVertex.properties.entrySet().forEach(kv ->
-            kv.getValue().forEach(p -> {
-                final VertexProperty mp = (VertexProperty) p;
+            kv.getValue().forEach(property -> {
+                final VertexProperty vertexProperty = (VertexProperty) property;
                 final List<Object> propsOnProps = new ArrayList<>();
-                mp.iterators().hiddens().forEachRemaining(h -> {
+                vertexProperty.iterators().hiddens().forEachRemaining(h -> {
                     propsOnProps.add(Graph.Key.hide(h.key()));
                     propsOnProps.add(h.value());
                 });
 
-                mp.iterators().properties().forEachRemaining(h -> {
+                vertexProperty.iterators().properties().forEachRemaining(h -> {
                     propsOnProps.add(h.key());
                     propsOnProps.add(h.value());
                 });
 
-                v.property(kv.getKey(), p.value(), propsOnProps.toArray());
+                vertex.property(kv.getKey(), property.value(), propsOnProps.toArray());
             })
         );
 
-        return v;
+        return vertex;
     }
 
     @Override
@@ -141,7 +141,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
                                 .map(m -> (Property) new DetachedVertexProperty(m.get("id"), (String) m.get("label"), hide ? Graph.Key.hide(entry.getKey()) : entry.getKey(),
                                         m.get("value"), (Map<String, Object>) m.get("properties"), (Map<String, Object>) m.get("hidden"), this))
                                 .collect(Collectors.toList()))
-                ).collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
+                ).collect(Collectors.toMap(Pair::getValue0, Pair::getValue1));
     }
 
     protected class Iterators extends DetachedElement<Vertex>.Iterators implements Vertex.Iterators, Serializable {
