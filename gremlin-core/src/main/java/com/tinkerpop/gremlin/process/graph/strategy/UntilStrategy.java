@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.step.map.JumpStep;
 import com.tinkerpop.gremlin.process.graph.step.map.UntilStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
-import com.tinkerpop.gremlin.process.graph.step.util.MarkerIdentityStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 
@@ -18,6 +17,7 @@ import java.util.UUID;
 public class UntilStrategy implements TraversalStrategy {
 
     private static final UntilStrategy INSTANCE = new UntilStrategy();
+    private static final String U = "u";
 
     private UntilStrategy() {
     }
@@ -26,24 +26,24 @@ public class UntilStrategy implements TraversalStrategy {
     public void apply(final Traversal traversal) {
         // g.V.until('a'){it.object == blah}.out.out.as('a').name
         // g.V.as('a').jump('b'){it.object == blah}.out.out.jump('a').as('b').name
-        TraversalHelper.getStepsOfClass(UntilStep.class, traversal).stream()
-                .forEach(untilStep -> {
-                    final IdentityStep leftEndStep = new IdentityStep(traversal);
-                    leftEndStep.setLabel(UUID.randomUUID().toString());
-                    TraversalHelper.insertBeforeStep(leftEndStep, untilStep, traversal);
-                    final Step rightEndStep = TraversalHelper.getStep(untilStep.jumpLabel, traversal);
-                    final String rightEndLabel = rightEndStep.getLabel();
+        int counter = 0;
+        for (final UntilStep untilStep : TraversalHelper.getStepsOfClass(UntilStep.class, traversal)) {
+            final IdentityStep leftEndStep = new IdentityStep(traversal);
+            leftEndStep.setLabel(Graph.System.system(U + counter++));
+            TraversalHelper.insertBeforeStep(leftEndStep, untilStep, traversal);
+            final Step rightEndStep = TraversalHelper.getStep(untilStep.jumpLabel, traversal);
+            final String rightEndLabel = rightEndStep.getLabel();
 
-                    final JumpStep leftEndJumpStep = new JumpStep(traversal, rightEndLabel, untilStep.jumpPredicate, untilStep.emitPredicate);
-                    leftEndJumpStep.setLabel(untilStep.getLabel());
-                    TraversalHelper.removeStep(untilStep, traversal);
-                    TraversalHelper.insertAfterStep(leftEndJumpStep, leftEndStep, traversal);
+            final JumpStep leftEndJumpStep = new JumpStep(traversal, rightEndLabel, untilStep.jumpPredicate, untilStep.emitPredicate);
+            leftEndJumpStep.setLabel(untilStep.getLabel());
+            TraversalHelper.removeStep(untilStep, traversal);
+            TraversalHelper.insertAfterStep(leftEndJumpStep, leftEndStep, traversal);
 
-                    final JumpStep rightEndJumpStep = new JumpStep(traversal, leftEndStep.getLabel());
-                    rightEndJumpStep.setLabel(rightEndLabel);
-                    rightEndStep.setLabel(Graph.Key.hide(UUID.randomUUID().toString()));
-                    TraversalHelper.insertAfterStep(rightEndJumpStep, rightEndStep, traversal);
-                });
+            final JumpStep rightEndJumpStep = new JumpStep(traversal, leftEndStep.getLabel());
+            rightEndJumpStep.setLabel(rightEndLabel);
+            rightEndStep.setLabel(Graph.Key.hide(UUID.randomUUID().toString()));
+            TraversalHelper.insertAfterStep(rightEndJumpStep, rightEndStep, traversal);
+        }
     }
 
     @Override

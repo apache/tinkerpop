@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 
+import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -32,10 +33,10 @@ public class CountStep<S> extends MapStep<S, Long> implements Bulkable {
     protected Traverser<Long> processNextStart() {
         if (!this.done.get()) {
             this.done.set(true);
-            if (this.starts.hasNext()) {
+            try {
                 return super.processNextStart();
-            } else {
-                return new SimpleTraverser<>(0l,this.traversal.sideEffects());
+            } catch (final NoSuchElementException e) {
+                return new SimpleTraverser<>(0l, this.traversal.sideEffects());
             }
         } else {
             throw FastNoSuchElementException.instance();

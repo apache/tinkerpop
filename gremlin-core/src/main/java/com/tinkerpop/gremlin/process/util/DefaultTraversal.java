@@ -63,13 +63,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     }
 
     public String toString() {
-        final List<Step> temp = new ArrayList<>();
-        Step currentStep = TraversalHelper.getStart(this);
-        while (!(currentStep instanceof EmptyStep)) {
-            temp.add(currentStep);
-            currentStep = currentStep.getNextStep();
-        }
-        return temp.toString();
+        return TraversalHelper.makeTraversalString(this);
     }
 
     public boolean equals(final Object object) {

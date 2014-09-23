@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.function.SPredicate;
 
 /**
@@ -18,6 +19,9 @@ public class UntilStep<S> extends MapStep<S, S> {
         this.jumpLabel = jumpLabel;
         this.jumpPredicate = jumpPredicate;
         this.emitPredicate = emitPredicate;
+    }
 
+    public String toString() {
+        return TraversalHelper.makeStepString(this, this.jumpLabel);
     }
 }

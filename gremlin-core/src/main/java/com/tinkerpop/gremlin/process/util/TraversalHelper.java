@@ -164,6 +164,16 @@ public class TraversalHelper {
         return builder.toString();
     }
 
+    public static String makeTraversalString(final Traversal traversal) {
+        final List<Step> temp = new ArrayList<>();
+        Step currentStep = TraversalHelper.getStart(traversal);
+        while (!(currentStep instanceof EmptyStep)) {
+            temp.add(currentStep);
+            currentStep = currentStep.getNextStep();
+        }
+        return temp.toString();
+    }
+
     public static boolean trackPaths(final Traversal traversal) {
         return traversal.getSteps().stream()
                 .filter(step -> step instanceof PathConsumer && ((PathConsumer) step).requiresPaths())

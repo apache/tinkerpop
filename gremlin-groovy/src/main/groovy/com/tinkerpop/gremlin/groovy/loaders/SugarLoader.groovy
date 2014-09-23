@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.PathTraverser
 import com.tinkerpop.gremlin.process.SimpleTraverser
 import com.tinkerpop.gremlin.process.Traverser
 import com.tinkerpop.gremlin.process.graph.GraphTraversal
+import com.tinkerpop.gremlin.process.util.TraversalHelper
 import com.tinkerpop.gremlin.structure.*
 
 /**
@@ -110,6 +111,10 @@ class SugarLoader {
 
         public static final getAt(final GraphTraversal graphTraversal, final Range range) {
             graphTraversal.range(range.getFrom() as Integer, range.getTo() as Integer);
+        }
+
+        public String toString() {
+            return TraversalHelper.makeTraversalString(this.metaClass.owner);
         }
     }
 }
