@@ -245,7 +245,7 @@ public class PropertyTest {
                     {"k", null, Property.Exceptions.propertyValueCanNotBeNull()},
                     {null, "v", Property.Exceptions.propertyKeyCanNotBeNull()},
                     {"", "v", Property.Exceptions.propertyKeyCanNotBeEmpty()},
-                    {Graph.System.system("systemKey"), "value", Property.Exceptions.propertyKeyCanNotBeASystemKey()}});
+                    {Graph.System.system("systemKey"), "value", Property.Exceptions.propertyKeyCanNotBeASystemKey(Graph.System.system("systemKey"))}});
         }
 
         @Parameterized.Parameter(value = 0)
