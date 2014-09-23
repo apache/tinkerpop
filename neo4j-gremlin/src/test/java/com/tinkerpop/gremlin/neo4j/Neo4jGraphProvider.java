@@ -49,56 +49,77 @@ public class Neo4jGraphProvider extends AbstractGraphProvider {
         final Random random = new Random();
         final int pick = random.nextInt(3);
         //final int pick = 2;
-        // TODO: add meta_property indices when meta_property graph is provided
         if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL)) {
             if (pick == 1) {
                 g.tx().readWrite();
-                if(random.nextBoolean()) g.getBaseGraph().schema().indexFor(DynamicLabel.label("artist")).on("name").create();
-                if(random.nextBoolean()) g.getBaseGraph().schema().indexFor(DynamicLabel.label("song")).on("name").create();
-                if(random.nextBoolean()) g.getBaseGraph().schema().indexFor(DynamicLabel.label("song")).on("songType").create();
-                if(random.nextBoolean()) g.getBaseGraph().schema().indexFor(DynamicLabel.label("song")).on("performances").create();
+                if (random.nextBoolean())
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("artist")).on("name").create();
+                if (random.nextBoolean())
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("song")).on("name").create();
+                if (random.nextBoolean())
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("song")).on("songType").create();
+                if (random.nextBoolean())
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("song")).on("performances").create();
                 g.tx().commit();
             } else if (pick == 2) {
                 g.tx().readWrite();
                 g.getBaseGraph().index().getNodeAutoIndexer().setEnabled(true);
-                if(random.nextBoolean()) g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("name");
-                if(random.nextBoolean()) g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("songType");
-                if(random.nextBoolean()) g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("performances");
+                if (random.nextBoolean())
+                    g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("name");
+                if (random.nextBoolean())
+                    g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("songType");
+                if (random.nextBoolean())
+                    g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("performances");
                 g.tx().commit();
             }
         } else if (graphData.equals(LoadGraphWith.GraphData.MODERN)) {
             if (pick == 1) {
                 g.tx().readWrite();
-                if(random.nextBoolean()) g.getBaseGraph().schema().indexFor(DynamicLabel.label("person")).on("name").create();
-                if(random.nextBoolean()) g.getBaseGraph().schema().indexFor(DynamicLabel.label("person")).on("age").create();
-                if(random.nextBoolean()) g.getBaseGraph().schema().indexFor(DynamicLabel.label("software")).on("name").create();
-                if(random.nextBoolean()) g.getBaseGraph().schema().indexFor(DynamicLabel.label("software")).on("lang").create();
+                if (random.nextBoolean())
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("person")).on("name").create();
+                if (random.nextBoolean())
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("person")).on("age").create();
+                if (random.nextBoolean())
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("software")).on("name").create();
+                if (random.nextBoolean())
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("software")).on("lang").create();
                 g.tx().commit();
             } else if (pick == 2) {
                 g.tx().readWrite();
                 g.getBaseGraph().index().getNodeAutoIndexer().setEnabled(true);
-                if(random.nextBoolean()) g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("name");
-                if(random.nextBoolean()) g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("age");
-                if(random.nextBoolean()) g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("lang");
+                if (random.nextBoolean())
+                    g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("name");
+                if (random.nextBoolean())
+                    g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("age");
+                if (random.nextBoolean())
+                    g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("lang");
                 g.tx().commit();
             }
         } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC)) {
             if (pick == 1) {
                 g.tx().readWrite();
-                if(random.nextBoolean()) g.getBaseGraph().schema().indexFor(DynamicLabel.label("vertex")).on("name").create();
-                if(random.nextBoolean()) g.getBaseGraph().schema().indexFor(DynamicLabel.label("vertex")).on("age").create();
-                if(random.nextBoolean()) g.getBaseGraph().schema().indexFor(DynamicLabel.label("vertex")).on("lang").create();
+                if (random.nextBoolean())
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("vertex")).on("name").create();
+                if (random.nextBoolean())
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("vertex")).on("age").create();
+                if (random.nextBoolean())
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("vertex")).on("lang").create();
                 g.tx().commit();
             } else if (pick == 2) {
                 g.tx().readWrite();
                 g.getBaseGraph().index().getNodeAutoIndexer().setEnabled(true);
-                if(random.nextBoolean()) g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("name");
-                if(random.nextBoolean()) g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("age");
-                if(random.nextBoolean()) g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("lang");
+                if (random.nextBoolean())
+                    g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("name");
+                if (random.nextBoolean())
+                    g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("age");
+                if (random.nextBoolean())
+                    g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("lang");
                 g.tx().commit();
             }
         } else {
-            throw new RuntimeException("Could not load graph with " + graphData);
+            // TODO: add CREW work here.
+            // TODO: add meta_property indices when meta_property graph is provided
+            //throw new RuntimeException("Could not load graph with " + graphData);
         }
     }
 }
