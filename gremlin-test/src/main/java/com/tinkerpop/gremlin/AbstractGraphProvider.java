@@ -25,15 +25,15 @@ public abstract class AbstractGraphProvider implements GraphProvider {
      * the {@code graphName} to ensure that the instance is unique.  It is up to the Gremlin implementation
      * to determine how best to use the {@code graphName} to ensure uniqueness.  For example, Neo4j, might use the
      * {@code graphName} might be used to create a different sub-directory where the graph is stored.
-     *
+     * <p/>
      * The @{code test} and @{code testMethodName} can be used to alter graph configurations for specific tests.
      * For example, a graph that has support for different transaction isolation levels might only support a feature
      * in a specific configuration.  Using these arguments, the implementation could detect when a test was being
      * fired that required the database to be configured in a specific isolation level and return a configuration
      * to support that.
      *
-     * @param graphName a value that represents a unique configuration for a graph
-     * @param test the test class
+     * @param graphName      a value that represents a unique configuration for a graph
+     * @param test           the test class
      * @param testMethodName the name of the test method
      * @return a configuration {@link java.util.Map} that should be unique per the {@code graphName}
      */
@@ -61,7 +61,7 @@ public abstract class AbstractGraphProvider implements GraphProvider {
         try {
             readIntoGraph(g, loadGraphWith.value().location());
         } catch (IOException ioe) {
-            throw new RuntimeException("Graph could not be loaded with data for test.");
+            throw new RuntimeException("Graph could not be loaded with data for test: " + ioe.getMessage());
         }
     }
 

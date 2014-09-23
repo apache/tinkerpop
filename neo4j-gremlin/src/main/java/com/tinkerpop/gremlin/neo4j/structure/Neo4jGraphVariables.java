@@ -3,8 +3,6 @@ package com.tinkerpop.gremlin.neo4j.structure;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.GraphVariableHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import org.neo4j.graphdb.DynamicLabel;
-import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.kernel.impl.core.NodeManager;
@@ -31,7 +29,8 @@ public class Neo4jGraphVariables implements Graph.Variables {
         this.graph.tx().readWrite();
         final Set<String> keys = new HashSet<>();
         for (final String key : this.graphVariables.getPropertyKeys()) {
-            keys.add(key);
+            if (!Graph.System.isSystem(key))
+                keys.add(key);
         }
         return keys;
     }

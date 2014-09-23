@@ -50,11 +50,16 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     private GraphDatabaseService baseGraph;
 
     public static final String CONFIG_DIRECTORY = "gremlin.neo4j.directory";
-    private static final String CONFIG_HA = "gremlin.neo4j.ha";
-    private static final String CONFIG_CONF = "gremlin.neo4j.conf";
+    public static final String CONFIG_HA = "gremlin.neo4j.ha";
+    public static final String CONFIG_CONF = "gremlin.neo4j.conf";
+    public static final String CONFIG_META_PROPERTIES = "gremlin.neo4j.metaProperties";
+    public static final String CONFIG_MULTI_PROPERTIES = "gremlin.neo4j.multiProperties";
 
     private final Neo4jTransaction neo4jTransaction = new Neo4jTransaction();
     private final Neo4jGraphVariables neo4jGraphVariables;
+
+    protected final boolean supportsMetaProperties;
+    protected final boolean supportsMultiProperties;
 
     protected final TransactionManager transactionManager;
     private final ExecutionEngine cypher;
@@ -64,6 +69,24 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         this.transactionManager = ((GraphDatabaseAPI) baseGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
         this.cypher = new ExecutionEngine(this.baseGraph);
         this.neo4jGraphVariables = new Neo4jGraphVariables(this);
+
+        ///////////
+        final Optional<Boolean> metaProperties = this.neo4jGraphVariables.get(Graph.System.system(CONFIG_META_PROPERTIES));
+        if (metaProperties.isPresent()) {
+            this.supportsMetaProperties = metaProperties.get();
+        } else {
+            this.supportsMetaProperties = false;
+            this.neo4jGraphVariables.set(Graph.System.system(CONFIG_META_PROPERTIES), false);
+        }
+        final Optional<Boolean> multiProperties = this.neo4jGraphVariables.get(Graph.System.system(CONFIG_MULTI_PROPERTIES));
+        if (multiProperties.isPresent()) {
+            this.supportsMultiProperties = multiProperties.get();
+        } else {
+            this.supportsMultiProperties = false;
+            this.neo4jGraphVariables.set(Graph.System.system(CONFIG_MULTI_PROPERTIES), false);
+        }
+        tx().commit();
+        ///////////
     }
 
     private Neo4jGraph(final Configuration configuration) {
@@ -79,6 +102,17 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
             this.transactionManager = ((GraphDatabaseAPI) this.baseGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
             this.cypher = new ExecutionEngine(this.baseGraph);
             this.neo4jGraphVariables = new Neo4jGraphVariables(this);
+            ///////////
+            if (!this.neo4jGraphVariables.get(Graph.System.system(CONFIG_META_PROPERTIES)).isPresent())
+                this.neo4jGraphVariables.set(Graph.System.system(CONFIG_META_PROPERTIES), configuration.getBoolean(CONFIG_META_PROPERTIES, false));
+            // TODO: Logger saying the configuration properties are ignored if already in Graph.Variables
+            if (!this.neo4jGraphVariables.get(Graph.System.system(CONFIG_MULTI_PROPERTIES)).isPresent())
+                this.neo4jGraphVariables.set(Graph.System.system(CONFIG_MULTI_PROPERTIES), configuration.getBoolean(CONFIG_MULTI_PROPERTIES, false));
+            // TODO: Logger saying the configuration properties are ignored if already in Graph.Variables
+            this.supportsMetaProperties = this.neo4jGraphVariables.<Boolean>get(Graph.System.system(CONFIG_META_PROPERTIES)).get();
+            this.supportsMultiProperties = this.neo4jGraphVariables.<Boolean>get(Graph.System.system(CONFIG_MULTI_PROPERTIES)).get();
+            tx().commit();
+            ///////////
         } catch (Exception e) {
             if (this.baseGraph != null)
                 this.baseGraph.shutdown();
@@ -350,7 +384,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         }
     }
 
-    public static class Neo4jGraphFeatures implements Features {
+    public class Neo4jGraphFeatures implements Features {
         @Override
         public GraphFeatures graph() {
             return new GraphFeatures() {
@@ -386,21 +420,31 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
             return StringFactory.featureString(this);
         }
 
-        public static class Neo4jVertexFeatures extends Neo4jElementFeatures implements VertexFeatures {
+        public class Neo4jVertexFeatures extends Neo4jElementFeatures implements VertexFeatures {
             @Override
             public VertexPropertyFeatures properties() {
                 return new Neo4jVertexPropertyFeatures();
             }
+
+            @Override
+            public boolean supportsMetaProperties() {
+                return Neo4jGraph.this.supportsMetaProperties;
+            }
+
+            @Override
+            public boolean supportsMultiProperties() {
+                return Neo4jGraph.this.supportsMultiProperties;
+            }
         }
 
-        public static class Neo4jEdgeFeatures extends Neo4jElementFeatures implements EdgeFeatures {
+        public class Neo4jEdgeFeatures extends Neo4jElementFeatures implements EdgeFeatures {
             @Override
             public EdgePropertyFeatures properties() {
                 return new Neo4jEdgePropertyFeatures();
             }
         }
 
-        public static class Neo4jElementFeatures implements ElementFeatures {
+        public class Neo4jElementFeatures implements ElementFeatures {
             @Override
             public boolean supportsUserSuppliedIds() {
                 return false;
@@ -427,7 +471,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
             }
         }
 
-        public static class Neo4jVertexPropertyFeatures implements VertexPropertyFeatures {
+        public class Neo4jVertexPropertyFeatures implements VertexPropertyFeatures {
             @Override
             public boolean supportsMapValues() {
                 return false;
@@ -449,7 +493,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
             }
         }
 
-        public static class Neo4jEdgePropertyFeatures implements EdgePropertyFeatures {
+        public class Neo4jEdgePropertyFeatures implements EdgePropertyFeatures {
             @Override
             public boolean supportsMapValues() {
                 return false;

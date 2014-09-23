@@ -20,7 +20,9 @@ public class Neo4jGraphProvider extends AbstractGraphProvider {
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName) {
         return new HashMap<String, Object>() {{
             put("gremlin.graph", Neo4jGraph.class.getName());
-            put("gremlin.neo4j.directory", getWorkingDirectory() + File.separator + graphName);
+            put(Neo4jGraph.CONFIG_DIRECTORY, getWorkingDirectory() + File.separator + graphName);
+            put(Neo4jGraph.CONFIG_META_PROPERTIES, true);
+            put(Neo4jGraph.CONFIG_MULTI_PROPERTIES, true);
         }};
     }
 
