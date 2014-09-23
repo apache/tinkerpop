@@ -94,28 +94,24 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CREW)
     public void shouldDetachMultiPropertiesAndMetaProperties() {
-        final DetachedVertex v1 = DetachedVertex.detach(convertToVertex(g, "marko"));
-
-        assertEquals("person", v1.label());
-        assertEquals(true, v1.iterators().hiddenValues("visible").next());
-        assertEquals(2, v1.keys().size());
-        assertEquals(1, v1.hiddenKeys().size());
+        final Vertex v1 = convertToVertex(g, "marko");
         v1.iterators().properties("location").forEachRemaining(vp -> {
-            if (vp.value().equals("san diego")) {
-                assertEquals(1997, (int) vp.value("startTime"));
-                assertEquals(2001, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            final DetachedVertexProperty detached = DetachedVertexProperty.detach(vp);
+            if (detached.value().equals("san diego")) {
+                assertEquals(1997, (int) detached.value("startTime"));
+                assertEquals(2001, (int) detached.value("endTime"));
+                assertEquals(2, (int) StreamFactory.stream(detached.iterators().properties()).count());
             } else if (vp.value().equals("santa cruz")) {
-                assertEquals(2001, (int) vp.value("startTime"));
-                assertEquals(2004, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(vp.iterators().properties()).count());
-            } else if (vp.value().equals("brussels")) {
+                assertEquals(2001, (int) detached.value("startTime"));
+                assertEquals(2004, (int) detached.value("endTime"));
+                assertEquals(2, (int) StreamFactory.stream(detached.iterators().properties()).count());
+            } else if (detached.value().equals("brussels")) {
                 assertEquals(2004, (int) vp.value("startTime"));
                 assertEquals(2005, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(vp.iterators().properties()).count());
-            } else if (vp.value().equals("santa fe")) {
-                assertEquals(2005, (int) vp.value("startTime"));
-                assertEquals(1, (int) StreamFactory.stream(vp.iterators().properties()).count());
+                assertEquals(2, (int) StreamFactory.stream(detached.iterators().properties()).count());
+            } else if (detached.value().equals("santa fe")) {
+                assertEquals(2005, (int) detached.value("startTime"));
+                assertEquals(1, (int) StreamFactory.stream(detached.iterators().properties()).count());
             } else {
                 fail("Found a value that should be there");
             }

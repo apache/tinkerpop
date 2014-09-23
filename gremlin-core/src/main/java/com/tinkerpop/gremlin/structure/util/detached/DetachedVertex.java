@@ -158,12 +158,12 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
         @Override
         public GraphTraversal<Vertex, Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
-            throw new IllegalStateException();
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public GraphTraversal<Vertex, Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
-            throw new IllegalStateException();
+            throw new UnsupportedOperationException();
         }
     }
 

@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -38,13 +39,50 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         DetachedVertex.detach(DetachedVertex.detach(v));
     }
 
-    // todo: need "the crew"
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldConstructDetachedVertex() {
+        final Vertex v = g.addVertex("test", "123", Graph.Key.hide("test"), "321");
+        final DetachedVertex detachedVertex = DetachedVertex.detach(v);
+
+        assertEquals(v.id(), detachedVertex.id());
+        assertEquals(v.label(), detachedVertex.label());
+        assertEquals("123", detachedVertex.value("test"));
+        assertEquals("321", detachedVertex.iterators().hiddens("test").next().value().toString());
+        assertEquals(1, StreamFactory.stream(detachedVertex.iterators().properties()).count());
+        assertEquals(1, StreamFactory.stream(detachedVertex.iterators().hiddens()).count());
+    }
 
     @Test
-    @org.junit.Ignore
-    public void shouldConstructDetachedVertex() {
-        //assertEquals("1", this.detachedVertex.id());
-        //assertEquals("l", this.detachedVertex.label());
+    @LoadGraphWith(LoadGraphWith.GraphData.CREW)
+    public void shouldDetachVertexWithMultiPropertiesAndMetaProperties() {
+        final DetachedVertex v1 = DetachedVertex.detach(convertToVertex(g, "marko"));
+
+        assertEquals("person", v1.label());
+        assertEquals(true, v1.iterators().hiddenValues("visible").next());
+        assertEquals(2, v1.keys().size());
+        assertEquals(1, v1.hiddenKeys().size());
+        v1.iterators().properties("location").forEachRemaining(vp -> {
+            assertTrue(vp instanceof DetachedVertexProperty);
+            if (vp.value().equals("san diego")) {
+                assertEquals(1997, (int) vp.value("startTime"));
+                assertEquals(2001, (int) vp.value("endTime"));
+                assertEquals(2, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else if (vp.value().equals("santa cruz")) {
+                assertEquals(2001, (int) vp.value("startTime"));
+                assertEquals(2004, (int) vp.value("endTime"));
+                assertEquals(2, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else if (vp.value().equals("brussels")) {
+                assertEquals(2004, (int) vp.value("startTime"));
+                assertEquals(2005, (int) vp.value("endTime"));
+                assertEquals(2, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else if (vp.value().equals("santa fe")) {
+                assertEquals(2005, (int) vp.value("startTime"));
+                assertEquals(1, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else {
+                fail("Found a value that should be there");
+            }
+        });
     }
 
     @Test
