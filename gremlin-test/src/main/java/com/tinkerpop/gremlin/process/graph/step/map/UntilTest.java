@@ -27,7 +27,7 @@ public abstract class UntilTest extends AbstractGremlinProcessTest {
 
     public static class JavaUntilTest extends UntilTest {
         public JavaUntilTest() {
-            requiresGraphComputer = true;
+            requiresGraphComputer = false;
         }
 
         public Traversal<Vertex, String> get_g_v1_untilXa_loops_gt_1X_out_asXaX_valueXnameX(final Object v1Id) {
