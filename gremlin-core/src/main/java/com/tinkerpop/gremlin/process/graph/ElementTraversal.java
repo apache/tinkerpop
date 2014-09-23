@@ -5,8 +5,6 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.step.map.KeyStep;
-import com.tinkerpop.gremlin.process.graph.step.map.UntilStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -538,12 +536,20 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().jump(jumpLabel);
     }
 
-    public default GraphTraversal<A,A> until(final String breakLabel, final SPredicate<Traverser<A>> breakPredicate, final SPredicate<Traverser<A>> emitPredicate) {
-        return this.start().until(breakLabel, breakPredicate,emitPredicate);
+    public default GraphTraversal<A, A> until(final String breakLabel, final SPredicate<Traverser<A>> breakPredicate, final SPredicate<Traverser<A>> emitPredicate) {
+        return this.start().until(breakLabel, breakPredicate, emitPredicate);
     }
 
-    public default GraphTraversal<A,A> until(final String breakLabel, final SPredicate<Traverser<A>> breakPredicate) {
-        return this.start().until(breakLabel,breakPredicate);
+    public default GraphTraversal<A, A> until(final String breakLabel, final SPredicate<Traverser<A>> breakPredicate) {
+        return this.start().until(breakLabel, breakPredicate);
+    }
+
+    public default GraphTraversal<A, A> until(final String breakLabel, final int loops, final SPredicate<Traverser<A>> emitPredicate) {
+        return this.start().until(breakLabel, loops, emitPredicate);
+    }
+
+    public default GraphTraversal<A, A> until(final String breakLabel, final int loops) {
+        return this.start().until(breakLabel, loops);
     }
 
     ///////////////////// UTILITY STEPS /////////////////////

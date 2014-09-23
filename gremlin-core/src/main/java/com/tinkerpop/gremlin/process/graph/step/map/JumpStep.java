@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.util.function.SPredicate;
 
 import java.util.LinkedList;
@@ -23,13 +24,16 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
     public final SPredicate<Traverser<S>> ifPredicate;
     public final SPredicate<Traverser<S>> emitPredicate;
     public final int loops;
+    public final Compare loopComparator;
     private AtomicBoolean jumpBack;
     private boolean onGraphComputer = false;
     public Queue<Traverser<S>> queue;
+    public boolean doWhile = true;
 
     public JumpStep(final Traversal traversal, final String jumpLabel, final SPredicate<Traverser<S>> ifPredicate, final SPredicate<Traverser<S>> emitPredicate) {
         super(traversal);
         this.loops = -1;
+        this.loopComparator = null;
         this.jumpLabel = jumpLabel;
         this.ifPredicate = ifPredicate;
         this.emitPredicate = emitPredicate;
@@ -40,17 +44,18 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
         this(traversal, jumpLabel, ifPredicate, null);
     }
 
-    public JumpStep(final Traversal traversal, final String jumpLabel, final int loops, final SPredicate<Traverser<S>> emitPredicate) {
+    public JumpStep(final Traversal traversal, final String jumpLabel, final Compare loopComparator, final int loops, final SPredicate<Traverser<S>> emitPredicate) {
         super(traversal);
         this.jumpLabel = jumpLabel;
         this.loops = loops;
+        this.loopComparator = loopComparator;
         this.ifPredicate = null;
         this.emitPredicate = emitPredicate;
         this.futureSetByChild = true;
     }
 
-    public JumpStep(final Traversal traversal, final String jumpLabel, final int loops) {
-        this(traversal, jumpLabel, loops, null);
+    public JumpStep(final Traversal traversal, final String jumpLabel, final Compare loopComparator, final int loops) {
+        this(traversal, jumpLabel, loopComparator, loops, null);
     }
 
     public JumpStep(final Traversal traversal, final String jumpLabel) {
@@ -130,13 +135,17 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
         return !this.onGraphComputer && this.loops != -1 && null == this.emitPredicate;
     }
 
+    public boolean isDoWhile() {
+        return this.doWhile;
+    }
+
     private boolean doJump(final Traverser traverser) {
-        return null == this.ifPredicate ? traverser.getLoops() < this.loops : this.ifPredicate.test(traverser);
+        return null == this.ifPredicate ? this.loopComparator.test(traverser.getLoops(), this.loops) : this.ifPredicate.test(traverser);
     }
 
     public String toString() {
         return this.loops != -1 ?
-                TraversalHelper.makeStepString(this, this.jumpLabel, this.loops) :
+                TraversalHelper.makeStepString(this, this.jumpLabel, this.loopComparator.asString() + this.loops) :
                 TraversalHelper.makeStepString(this, this.jumpLabel);
     }
 }

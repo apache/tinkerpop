@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.JumpStep;
 import com.tinkerpop.gremlin.process.graph.step.map.UntilStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.UUID;
@@ -31,11 +32,14 @@ public class UntilStrategy implements TraversalStrategy {
             final IdentityStep leftEndStep = new IdentityStep(traversal);
             leftEndStep.setLabel(Graph.System.system(U + counter++));
             TraversalHelper.insertBeforeStep(leftEndStep, untilStep, traversal);
-            final Step rightEndStep = TraversalHelper.getStep(untilStep.jumpLabel, traversal);
+            final Step rightEndStep = TraversalHelper.getStep(untilStep.breakLabel, traversal);
             final String rightEndLabel = rightEndStep.getLabel();
 
-            final JumpStep leftEndJumpStep = new JumpStep(traversal, rightEndLabel, untilStep.jumpPredicate, untilStep.emitPredicate);
+            final JumpStep leftEndJumpStep = untilStep.loops == -1 ?
+                    new JumpStep(traversal, rightEndLabel, untilStep.breakPredicate, untilStep.emitPredicate) :
+                    new JumpStep(traversal, rightEndLabel, Compare.GREATER_THAN, untilStep.loops, untilStep.emitPredicate);
             leftEndJumpStep.setLabel(untilStep.getLabel());
+            leftEndJumpStep.doWhile = false;
             TraversalHelper.removeStep(untilStep, traversal);
             TraversalHelper.insertAfterStep(leftEndJumpStep, leftEndStep, traversal);
 

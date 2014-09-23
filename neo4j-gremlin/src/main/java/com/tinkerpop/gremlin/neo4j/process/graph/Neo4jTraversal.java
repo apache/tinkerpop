@@ -538,7 +538,15 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.until(arg0, arg1);
 	}
 
+	public default Neo4jTraversal<S, E> until(java.lang.String arg0, int arg1) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.until(arg0, arg1);
+	}
+
 	public default Neo4jTraversal<S, E> until(java.lang.String arg0, com.tinkerpop.gremlin.util.function.SPredicate<com.tinkerpop.gremlin.process.Traverser<E>> arg1, com.tinkerpop.gremlin.util.function.SPredicate<com.tinkerpop.gremlin.process.Traverser<E>> arg2) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.until(arg0, arg1, arg2);
+	}
+
+	public default Neo4jTraversal<S, E> until(java.lang.String arg0, int arg1, com.tinkerpop.gremlin.util.function.SPredicate<com.tinkerpop.gremlin.process.Traverser<E>> arg2) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.until(arg0, arg1, arg2);
 	}
 

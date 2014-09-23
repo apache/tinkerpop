@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.util.function.SPredicate;
 
 /**
@@ -10,18 +11,30 @@ import com.tinkerpop.gremlin.util.function.SPredicate;
  */
 public class UntilStep<S> extends MapStep<S, S> {
 
-    public final String jumpLabel;
-    public final SPredicate<Traverser<S>> jumpPredicate;
+    public final String breakLabel;
+    public final int loops;
+    public final SPredicate<Traverser<S>> breakPredicate;
     public final SPredicate<Traverser<S>> emitPredicate;
 
-    public UntilStep(Traversal traversal, final String jumpLabel, final SPredicate<Traverser<S>> jumpPredicate, final SPredicate<Traverser<S>> emitPredicate) {
+    public UntilStep(Traversal traversal, final String breakLabel, final SPredicate<Traverser<S>> breakPredicate, final SPredicate<Traverser<S>> emitPredicate) {
         super(traversal);
-        this.jumpLabel = jumpLabel;
-        this.jumpPredicate = jumpPredicate;
+        this.loops = -1;
+        this.breakLabel = breakLabel;
+        this.breakPredicate = breakPredicate;
+        this.emitPredicate = emitPredicate;
+    }
+
+    public UntilStep(Traversal traversal, final String breakLabel, final int loops, final SPredicate<Traverser<S>> emitPredicate) {
+        super(traversal);
+        this.loops = loops;
+        this.breakLabel = breakLabel;
+        this.breakPredicate = null;
         this.emitPredicate = emitPredicate;
     }
 
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.jumpLabel);
+        return this.loops != -1 ?
+                TraversalHelper.makeStepString(this, this.breakLabel, Compare.GREATER_THAN.asString() + this.loops) :
+                TraversalHelper.makeStepString(this, this.breakLabel);
     }
 }

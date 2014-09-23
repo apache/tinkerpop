@@ -57,6 +57,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
@@ -64,7 +65,6 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.strategy.CountCapStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.GraphComputerStrategy;
@@ -673,11 +673,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel, final int loops, final SPredicate<Traverser<E>> emitPredicate) {
-        return this.addStep(new JumpStep<>(this, jumpLabel, loops, emitPredicate));
+        return this.addStep(new JumpStep<>(this, jumpLabel, Compare.LESS_THAN, loops, emitPredicate));
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel, final int loops) {
-        return this.addStep(new JumpStep<>(this, jumpLabel, loops));
+        return this.addStep(new JumpStep<>(this, jumpLabel, Compare.LESS_THAN, loops));
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel) {
@@ -690,6 +690,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> until(final String breakLabel, final SPredicate<Traverser<E>> breakPredicate) {
         return this.addStep(new UntilStep<>(this, breakLabel, breakPredicate, null));
+    }
+
+    public default GraphTraversal<S, E> until(final String breakLabel, final int loops, final SPredicate<Traverser<E>> emitPredicate) {
+        return this.addStep(new UntilStep<>(this, breakLabel, loops, emitPredicate));
+    }
+
+    public default GraphTraversal<S, E> until(final String breakLabel, final int loops) {
+        return this.addStep(new UntilStep<>(this, breakLabel, loops, null));
     }
 
     ///////////////////// UTILITY STEPS /////////////////////
