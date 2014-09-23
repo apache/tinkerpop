@@ -54,8 +54,25 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.ID, property.id());
             m.put(GraphSONTokens.LABEL, property.label());
             m.put(GraphSONTokens.VALUE, property.value());
-            m.put(GraphSONTokens.PROPERTIES, StreamFactory.<Property<Object>>stream(property.iterators().properties()).collect(Collectors.toMap(Property::key, Property::value)));
-            m.put(GraphSONTokens.HIDDENS, StreamFactory.<Property<Object>>stream(property.iterators().hiddens()).collect(Collectors.toMap(Property::key, Property::value)));
+
+            Map<String,Object> properties;
+            try {
+                properties = StreamFactory.<Property<Object>>stream(property.iterators().properties()).collect(Collectors.toMap(Property::key, Property::value));
+            } catch (UnsupportedOperationException uoe) {
+                // todo: is there a way to get the feature down here so we can just test it directly?
+                properties = new HashMap<>();
+            }
+
+            Map<String,Object> hiddens;
+            try {
+                hiddens = StreamFactory.<Property<Object>>stream(property.iterators().hiddens()).collect(Collectors.toMap(Property::key, Property::value));
+            } catch (UnsupportedOperationException uoe) {
+                // todo: is there a way to get the feature down here so we can just test it directly?
+                hiddens = new HashMap<>();
+            }
+
+            m.put(GraphSONTokens.PROPERTIES, properties);
+            m.put(GraphSONTokens.HIDDENS, hiddens);
 
             jsonGenerator.writeObject(m);
         }
