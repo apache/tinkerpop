@@ -61,13 +61,13 @@ class GroovyHasTestImpl extends HasTest {
     }
 
     @Override
-    public Traversal<Edge, Edge> get_g_E_hasXlabelXknows_createdX() {
-        g.E.has(T.label, T.in, ['knows', 'created'])
+    public Traversal<Edge, Edge> get_g_E_hasXlabelXuses_traversesX() {
+        g.E.has(T.label, T.in, ['uses', 'traverses'])
     }
 
     @Override
-    Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_animalX() {
-        g.V.has(T.label, T.in, ["person", "animal"]);
+    Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_software_blahX() {
+        g.V.has(T.label, T.in, ["person", "software", 'blah']);
     }
 
     @Override

@@ -1,15 +1,11 @@
 package com.tinkerpop.gremlin.process.graph.step.filter;
 
-import com.tinkerpop.gremlin.AbstractGremlinSuite;
-import com.tinkerpop.gremlin.FeatureRequirement;
-import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
@@ -18,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
@@ -48,9 +45,9 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Edge, Edge> get_g_E_hasXlabelXknowsX();
 
-    public abstract Traversal<Edge, Edge> get_g_E_hasXlabelXknows_createdX();
+    public abstract Traversal<Edge, Edge> get_g_E_hasXlabelXuses_traversesX();
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_animalX();
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_software_blahX();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX();
 
@@ -167,44 +164,31 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(MODERN)
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    public void g_E_hasXlabelXknows_createdX() {
-        final Vertex marko = (Vertex) g.V().has("name", "marko").next();
-        marko.addEdge("self", marko);
-        tryCommit(g);
-
-        AbstractGremlinSuite.assertVertexEdgeCounts(6, 7);
-
-        final Traversal<Edge, Edge> traversal = get_g_E_hasXlabelXknows_createdX();
+    @LoadGraphWith(CREW)
+    public void g_E_hasXlabelXuses_traversesX() {
+        final Traversal<Edge, Edge> traversal = get_g_E_hasXlabelXuses_traversesX();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
             final String label = traversal.next().label();
-            assertTrue(label.equals("knows") || label.equals("created"));
+            assertTrue(label.equals("uses") || label.equals("traverses"));
         }
-        assertEquals(6, counter);
+        assertEquals(9, counter);
     }
 
     @Test
-    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-    public void g_V_hasXlabelXperson_animalX() {
-        this.g.addVertex(T.label, "person", "name", "a");
-        this.g.addVertex(T.label, "animal", "name", "b");
-        this.g.addVertex(T.label, "alien", "name", "c");
-        this.g.addVertex(T.label, "spirit", "name", "d");
-        tryCommit(g);
-
-        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXlabelXperson_animalX();
+    @LoadGraphWith(CREW)
+    public void g_V_hasXlabelXperson_software_blahX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXlabelXperson_software_blahX();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
             final String label = traversal.next().label();
-            assertTrue(label.equals("animal") || label.equals("person"));
+            assertTrue(label.equals("software") || label.equals("person"));
         }
-        assertEquals(2, counter);
+        assertEquals(6, counter);
     }
 
     @Test
@@ -281,13 +265,13 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_E_hasXlabelXknows_createdX() {
-            return g.E().has(T.label, T.in, Arrays.asList("knows", "created"));
+        public Traversal<Edge, Edge> get_g_E_hasXlabelXuses_traversesX() {
+            return g.E().has(T.label, T.in, Arrays.asList("uses", "traverses"));
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_animalX() {
-            return g.V().has(T.label, T.in, Arrays.asList("person", "animal"));
+        public Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_software_blahX() {
+            return g.V().has(T.label, T.in, Arrays.asList("person", "software", "blah"));
         }
 
         @Override
@@ -357,13 +341,13 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_E_hasXlabelXknows_createdX() {
-            return g.E().<Edge>has(T.label, T.in, Arrays.asList("knows", "created")).submit(g.compute());
+        public Traversal<Edge, Edge> get_g_E_hasXlabelXuses_traversesX() {
+            return g.E().<Edge>has(T.label, T.in, Arrays.asList("uses", "traverses")).submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_animalX() {
-            return g.V().has(T.label, T.in, Arrays.asList("person", "animal"));
+        public Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_software_blahX() {
+            return g.V().has(T.label, T.in, Arrays.asList("person", "software", "blah"));
         }
 
         @Override
@@ -373,7 +357,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_hasXperson_name_markoX_age() {
-            return g.V().has("person","name", "marko").<Integer>value("age").submit(g.compute());
+            return g.V().has("person", "name", "marko").<Integer>value("age").submit(g.compute());
         }
     }
 }
