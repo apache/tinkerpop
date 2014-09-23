@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
-import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jEdgeTraversal;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
@@ -36,15 +35,6 @@ public abstract class Neo4jElement implements Element, WrappedElement<PropertyCo
             return ((Node) this.baseElement).getId();
         else
             return ((Relationship) this.baseElement).getId();
-    }
-
-    @Override
-    public String label() {
-        this.graph.tx().readWrite();
-        if (this.baseElement instanceof Node)
-            return ((Node) this.baseElement).getLabels().iterator().next().name();
-        else
-            return ((Relationship) this.baseElement).getType().name();
     }
 
     @Override

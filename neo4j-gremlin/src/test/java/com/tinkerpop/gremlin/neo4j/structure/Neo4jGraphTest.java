@@ -5,8 +5,8 @@ import com.tinkerpop.gremlin.neo4j.BaseNeo4jGraphTest;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Contains;
-import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
@@ -426,6 +426,62 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             assertEquals(0, StreamFactory.stream(GlobalGraphOperations.at(((Neo4jGraph) g).getBaseGraph()).getAllRelationships()).count());
         });
     }
+
+    @Test
+    public void shouldNotGenerateNodesAndRelationshipsForNoMultiPropertiesNoMetaProperties() {
+        g.tx().readWrite();
+        tryCommit(g, g -> validateCounts(g, 0, 0, 0, 0));
+        Vertex vertex = g.addVertex(T.label, "person");
+        tryCommit(g, g -> validateCounts(g, 1, 0, 1, 0));
+        vertex.property("name", "marko");
+        assertEquals("marko", vertex.value("name"));
+        tryCommit(g, g -> validateCounts(g, 1, 0, 1, 0));
+        vertex.property("name", "okram");
+        tryCommit(g, g -> {
+            validateCounts(g, 1, 0, 1, 0);
+            assertEquals("okram", vertex.value("name"));
+        });
+        VertexProperty vertexProperty = vertex.property("name");
+        tryCommit(g, g -> {
+            assertTrue(vertexProperty.isPresent());
+            assertEquals("name", vertexProperty.key());
+            assertEquals("okram", vertexProperty.value());
+            validateCounts(g, 1, 0, 1, 0);
+        });
+        try {
+            vertexProperty.property("acl", "private");
+        } catch (UnsupportedOperationException e) {
+            assertEquals(VertexProperty.Exceptions.metaPropertiesNotSupported().getMessage(), e.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldNotGenerateNodesAndRelationshipsForNoMultiProperties() {
+        g.tx().readWrite();
+        tryCommit(g, g -> validateCounts(g, 0, 0, 0, 0));
+        Vertex vertex = g.addVertex(T.label, "person");
+        tryCommit(g, g -> validateCounts(g, 1, 0, 1, 0));
+        vertex.property("name", "marko");
+        assertEquals("marko", vertex.value("name"));
+        tryCommit(g, g -> validateCounts(g, 1, 0, 1, 0));
+        vertex.property("name", "okram");
+        tryCommit(g, g -> {
+            validateCounts(g, 1, 0, 1, 0);
+            assertEquals("okram", vertex.value("name"));
+        });
+        VertexProperty vertexProperty = vertex.property("name");
+        tryCommit(g, g -> {
+            assertTrue(vertexProperty.isPresent());
+            assertEquals("name", vertexProperty.key());
+            assertEquals("okram", vertexProperty.value());
+            validateCounts(g, 1, 0, 1, 0);
+        });
+
+        vertexProperty.property("acl", "private");
+        assertEquals("private", vertexProperty.value("acl"));
+        //validateCounts(g, 1, 0, 1, 0); //TODO: Make use of Graph.System keys to hide meta-properties on the baseVertex
+    }
+
 
     @Test
     public void shouldGenerateNodesAndRelationshipsCorrectlyForVertexProperties() {

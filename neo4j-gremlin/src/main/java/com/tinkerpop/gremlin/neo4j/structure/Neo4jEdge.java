@@ -39,6 +39,12 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
     }
 
     @Override
+    public String label() {
+        this.graph.tx().readWrite();
+        return this.getBaseEdge().getType().name();
+    }
+
+    @Override
     public Relationship getBaseEdge() {
         return (Relationship) this.baseElement;
     }

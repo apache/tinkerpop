@@ -178,6 +178,12 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
     }
 
     @Override
+    public String label() {
+        this.graph.tx().readWrite();
+        return this.getBaseVertex().getLabels().iterator().next().name();
+    }
+
+    @Override
     public String toString() {
         return StringFactory.vertexString(this);
     }

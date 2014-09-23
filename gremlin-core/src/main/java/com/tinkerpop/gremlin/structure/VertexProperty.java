@@ -51,11 +51,11 @@ public interface VertexProperty<V> extends Property<V>, Element, VertexPropertyT
      */
     public static class Exceptions {
         public static UnsupportedOperationException multiPropertiesNotSupported() {
-            return new UnsupportedOperationException("Multiple properties on a vertex are not supported");
+            return new UnsupportedOperationException("Multiple properties on a vertex is not supported");
         }
 
         public static UnsupportedOperationException metaPropertiesNotSupported() {
-            return new UnsupportedOperationException("Property on properties are not supported");
+            return new UnsupportedOperationException("Properties on a vertex property is not supported");
         }
     }
 }
