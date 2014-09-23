@@ -1,10 +1,23 @@
 package com.tinkerpop.gremlin.structure.util.detached;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.FeatureRequirementSet;
+import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -18,48 +31,95 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    @org.junit.Ignore
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotConstructWithSomethingAlreadyDetached() {
-        //DetachedVertexProperty.detach(this.mp);
+        final Vertex v = g.addVertex();
+        final VertexProperty vp = v.property("test", "this");
+        DetachedVertexProperty.detach(DetachedVertexProperty.detach(vp));
     }
 
     @Test
-    @org.junit.Ignore
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldConstructDetachedPropertyWithPropertyFromVertex() {
-        /*
-        assertEquals("k", mp.key());
-        assertEquals("val", mp.value());
+        final Vertex v = g.addVertex();
+        final VertexProperty vp = v.property("test", "this");
+        final DetachedVertexProperty mp = DetachedVertexProperty.detach(vp);
+        assertEquals("test", mp.key());
+        assertEquals("this", mp.value());
+        assertFalse(mp.isHidden());
         assertEquals(DetachedVertex.class, mp.getElement().getClass());
-        */
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldConstructDetachedPropertyWithHiddenFromVertex() {
+        final Vertex v = g.addVertex();
+        final VertexProperty vp = v.property(Graph.Key.hide("test"), "this");
+        final DetachedVertexProperty mp = DetachedVertexProperty.detach(vp);
+        assertEquals("test", mp.key());
+        assertEquals("this", mp.value());
+        assertTrue(mp.isHidden());
+        assertEquals(DetachedVertex.class, mp.getElement().getClass());
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    @org.junit.Ignore
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotSupportRemove() {
-        //this.mp.remove();
+        final Vertex v = g.addVertex();
+        final VertexProperty vp = v.property("test", "this");
+        DetachedVertexProperty.detach(vp).remove();
     }
 
     @Test
-    @org.junit.Ignore
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldBeEqualsPropertiesAsIdIsTheSame() {
-        //assertTrue(mp2.equals(this.mp));
+        final Vertex v = g.addVertex();
+        final VertexProperty vp = v.property("test", "this");
+        final DetachedVertexProperty mp1 = DetachedVertexProperty.detach(vp);
+        final DetachedVertexProperty mp2 = DetachedVertexProperty.detach(vp);
+        assertTrue(mp1.equals(mp2));
     }
 
     @Test
-    @org.junit.Ignore
-    public void shouldBeEqualsSinceIdIsSameEvenThoughPropertiesHaveDifferentVertex() {
-        //assertTrue(mp2.equals(this.mp));
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldNotBeEqualsPropertiesAsIdIsDifferent() {
+        final Vertex v = g.addVertex();
+        final VertexProperty vp1 = v.property("test", "this");
+        final DetachedVertexProperty mp1 = DetachedVertexProperty.detach(vp1);
+        final VertexProperty vp2 = v.property("testing", "this");
+        final DetachedVertexProperty mp2 = DetachedVertexProperty.detach(vp2);
+        assertFalse(mp1.equals(mp2));
     }
 
     @Test
-    @org.junit.Ignore
-    public void shouldBeEqualsSinceIdIsSameEvenThoughPropertiesHaveDifferentKeys() {
-        //assertTrue(mp2.equals(this.mp));
+    @LoadGraphWith(LoadGraphWith.GraphData.CREW)
+    public void shouldDetachMultiPropertiesAndMetaProperties() {
+        final DetachedVertex v1 = DetachedVertex.detach(convertToVertex(g, "marko"));
+
+        assertEquals("person", v1.label());
+        assertEquals(true, v1.iterators().hiddenValues("visible").next());
+        assertEquals(2, v1.keys().size());
+        assertEquals(1, v1.hiddenKeys().size());
+        v1.iterators().properties("location").forEachRemaining(vp -> {
+            if (vp.value().equals("san diego")) {
+                assertEquals(1997, (int) vp.value("startTime"));
+                assertEquals(2001, (int) vp.value("endTime"));
+                assertEquals(2, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else if (vp.value().equals("santa cruz")) {
+                assertEquals(2001, (int) vp.value("startTime"));
+                assertEquals(2004, (int) vp.value("endTime"));
+                assertEquals(2, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else if (vp.value().equals("brussels")) {
+                assertEquals(2004, (int) vp.value("startTime"));
+                assertEquals(2005, (int) vp.value("endTime"));
+                assertEquals(2, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else if (vp.value().equals("santa fe")) {
+                assertEquals(2005, (int) vp.value("startTime"));
+                assertEquals(1, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else {
+                fail("Found a value that should be there");
+            }
+        });
     }
 
-    @Test
-    @org.junit.Ignore
-    public void shouldBeEqualsSinceIdIsSameEvenThoughPropertiesHaveDifferentValues() {
-        //assertTrue(mp2.equals(this.mp));
-    }
 }
