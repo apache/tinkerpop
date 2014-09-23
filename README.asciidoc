@@ -44,10 +44,9 @@ Release Process
 . Update `CHANGELOG.asciidoc` with release date.
 . Updated `pom.xml` to reference the non-SNAPSHOT version.
 . Update all `yaml` files to reference the non-SNAPSHOT version.
-. `git commit -a -m "TinkerPop3 x.y.z release"` and `git push`
-. `git tag -a -m "TinkerPop3 x.y.z release" x.y.z` and `git push --tags`
-. Uncomment `maven-gpg-plugin` in parent `pom.xml`
-. `mvn clean deploy`
+. `git commit -a -m "TinkerPop x.y.z release"` and `git push`
+. `git tag -a -m "TinkerPop x.y.z release" x.y.z` and `git push --tags`
+. `mvn clean deploy -Psonatype-oss-release`
 . Log into link:https://oss.sonatype.org/[SonaType], close and then release the release.
 . `mvn deploy -Darchives`
 . `bin/publish-docs.sh`

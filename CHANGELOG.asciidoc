@@ -6,8 +6,11 @@ TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 
 image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 
+TinkerPop 3.0.0.M3 (Release Date: NOT OFFICIALLY RELEASED)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 TinkerPop 3.0.0.M2 (Release Date: September 23, 2014)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Added an exhaust `InnerJoinEnumerator` fix in `MatchStep` to get all solutions correctly.
 * `Neo4jGraph` can be configured to allow or disallow meta- and multi-properties.
