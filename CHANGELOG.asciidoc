@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M3 (Release Date: NOT OFFICIALLY RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `UntilStep` now leverages `UnrollJumpStrategy` accordingly.
 * Fixed a bug where the `toString()` of `Traversal` was being hijacked by `SugarGremlinPlugin`.
 * Fixed compilation bug in `UntilStep` that is realized when used in multi-machine OLAP.
 * Simplified `Enumerator` and implementations for `MatchStep`.
