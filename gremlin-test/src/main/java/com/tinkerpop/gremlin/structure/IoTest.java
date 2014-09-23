@@ -1729,13 +1729,21 @@ public class IoTest extends AbstractGremlinTest {
             if (e.inV().value("name").next().equals("gremlin") && e.label().equals("develops")) {
                 assertEquals(2009, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
-                //assertId(g1, lossyForId, e, 7);
+                assertId(g1, lossyForId, e, 13);
+            } else if (e.inV().value("name").next().equals("tinkergraph")  && e.label().equals("develops")) {
+                assertEquals(2010, (int) e.value("since"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 14);
             } else if (e.inV().value("name").next().equals("gremlin")  && e.label().equals("uses")) {
                 assertEquals(4, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
-                //assertId(g1, lossyForId, e, 7);
+                assertId(g1, lossyForId, e, 15);
+            } else if (e.inV().value("name").next().equals("tinkergraph")  && e.label().equals("uses")) {
+                assertEquals(5, (int) e.value("skill"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 16);
             } else {
-                // todo: fail("Edge not expected");
+                fail("Edge not expected");
             }
         });
     }
