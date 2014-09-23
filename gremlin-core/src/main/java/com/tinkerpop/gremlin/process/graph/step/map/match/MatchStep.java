@@ -53,7 +53,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         super(traversal);
         this.startLabel = startLabel;
         this.traversalsByStartAs = new HashMap<>();
-        this.currentStart = new SimpleTraverser<>(null,this.traversal.sideEffects());
+        this.currentStart = new SimpleTraverser<>(null, this.traversal.sideEffects());
         for (final Traversal tl : traversals) {
             addTraversalPrivate(tl);
         }
@@ -258,6 +258,15 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         }
     }
 
+    private <T> void exhaust(Enumerator<T> enumerator) {
+        BiConsumer<String, T> visitor = (s, t) -> {
+        };
+        int i = 0;
+        if (!enumerator.isComplete()) {
+            while (enumerator.visitSolution(i, visitor)) i++;
+        }
+    }
+
     private <T> Enumerator<T> crossJoin(final Enumerator<T> left,
                                         final Enumerator<T> right,
                                         final Set<String> leftLabels,
@@ -267,6 +276,12 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
             if (leftLabels.contains(s)) {
                 shared.add(s);
             }
+        }
+
+        // TODO: temporary fix for an inner join issue
+        if (shared.size() > 0) {
+            exhaust(left);
+            exhaust(right);
         }
 
         Enumerator<T> cj = new CrossJoinEnumerator<>(left, right);

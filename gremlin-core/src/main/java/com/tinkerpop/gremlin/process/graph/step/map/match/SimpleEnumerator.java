@@ -27,7 +27,7 @@ public class SimpleEnumerator<T> implements Enumerator<T> {
 
     @Override
     public boolean isComplete() {
-        return null == iterator || !iterator.hasNext();
+        return null == iterator;
     }
 
     @Override

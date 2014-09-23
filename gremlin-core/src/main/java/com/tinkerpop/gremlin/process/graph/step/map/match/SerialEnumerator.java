@@ -1,10 +1,8 @@
 package com.tinkerpop.gremlin.process.graph.step.map.match;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -17,7 +15,6 @@ import java.util.function.Function;
  */
 public class SerialEnumerator<T> implements Enumerator<T> {
     private final String name;
-    private final Set<String> variables;
     private final Iterator<T> iterator;
     private final Function<T, Enumerator<T>> constructor;
     private final List<Enumerator<T>> memory = new ArrayList<>();
@@ -30,12 +27,6 @@ public class SerialEnumerator<T> implements Enumerator<T> {
         this.name = name;
         this.iterator = iterator;
         this.constructor = constructor;
-        this.variables = new HashSet<>();
-        this.variables.add(name);
-    }
-
-    public Set<String> getVariables() {
-        return variables;
     }
 
     @Override
@@ -77,10 +68,10 @@ public class SerialEnumerator<T> implements Enumerator<T> {
                     MatchStep.visit(name, values.get(index), visitor);
 
                     return true;
+                } else {
+                    totalSize += e.size();
+                    index++;
                 }
-
-                totalSize += e.size();
-                index++;
             } else {
                 if (!iterator.hasNext()) {
                     return false;
@@ -90,7 +81,7 @@ public class SerialEnumerator<T> implements Enumerator<T> {
                     int lastSize = memory.get(index - 1).size();
 
                     // first remove the head enumeration if it exists and is empty
-                    // only the head will ever be empty, avoiding wasted space
+                    // (only the head will ever be empty, avoiding wasted space)
                     if (0 == lastSize) {
                         index--;
                         memory.remove(index);
