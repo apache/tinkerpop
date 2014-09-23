@@ -89,24 +89,24 @@ public class TinkerFactory {
         daniel.property("location", "kaiserslautern", "startTime", 2005, "endTime", 2009);
         daniel.property("location", "aachen", "startTime", 2009);
 
-        marko.addEdge("develops", gremlin, "since", 2009);
-        marko.addEdge("develops", tinkergraph, "since", 2010);
-        marko.addEdge("uses", gremlin, "skill", 4);
-        marko.addEdge("uses", tinkergraph, "skill", 5);
+        marko.addEdge("develops", gremlin, T.id, 13, "since", 2009);
+        marko.addEdge("develops", tinkergraph, T.id, 14, "since", 2010);
+        marko.addEdge("uses", gremlin, T.id, 15, "skill", 4);
+        marko.addEdge("uses", tinkergraph, T.id, 16, "skill", 5);
 
-        stephen.addEdge("develops", gremlin, "since", 2010);
-        stephen.addEdge("develops", tinkergraph, "since", 2011);
-        stephen.addEdge("uses", gremlin, "skill", 5);
-        stephen.addEdge("uses", tinkergraph, "skill", 4);
+        stephen.addEdge("develops", gremlin, T.id, 17, "since", 2010);
+        stephen.addEdge("develops", tinkergraph, T.id, 18, "since", 2011);
+        stephen.addEdge("uses", gremlin, T.id, 19, "skill", 5);
+        stephen.addEdge("uses", tinkergraph, T.id, 20, "skill", 4);
 
-        matthias.addEdge("develops", gremlin, "since", 2012);
-        matthias.addEdge("uses", gremlin, "skill", 3);
-        matthias.addEdge("uses", tinkergraph, "skill", 2);
+        matthias.addEdge("develops", gremlin, T.id, 21, "since", 2012);
+        matthias.addEdge("uses", gremlin, T.id, 22, "skill", 3);
+        matthias.addEdge("uses", tinkergraph, T.id, 23, "skill", 2);
 
-        daniel.addEdge("uses", gremlin, "skill", 5);
-        daniel.addEdge("uses", tinkergraph, "skill", 3);
+        daniel.addEdge("uses", gremlin, T.id, 24, "skill", 5);
+        daniel.addEdge("uses", tinkergraph, T.id, 25, "skill", 3);
 
-        tinkergraph.addEdge("traverses", gremlin, Graph.Key.hide("visible"), false);
+        tinkergraph.addEdge("traverses", gremlin, T.id, 26, Graph.Key.hide("visible"), false);
 
         g.variables().set("creator", "marko");
         g.variables().set("lastModified", 2014);
