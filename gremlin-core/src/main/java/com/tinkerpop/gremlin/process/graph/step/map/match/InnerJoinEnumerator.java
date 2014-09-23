@@ -18,7 +18,7 @@ import java.util.function.BiConsumer;
  */
 public class InnerJoinEnumerator<T> implements Enumerator<T> {
     private final Enumerator<T> baseEnumerator;
-    private final Iterator<Integer> iterator;
+    private Iterator<Integer> iterator;
     private final List<Integer> joinIndices;
 
     private final Map<String, T> map;
@@ -54,12 +54,11 @@ public class InnerJoinEnumerator<T> implements Enumerator<T> {
                 advanceToNext();
             }
 
-            @Override
             public boolean hasNext() {
-                return currentIndex >= 0;
+                // there are no calls to this method
+                return false;
             }
 
-            @Override
             public Integer next() {
                 int tmp = currentIndex;
                 advanceToNext();
@@ -67,15 +66,12 @@ public class InnerJoinEnumerator<T> implements Enumerator<T> {
             }
 
             private void advanceToNext() {
-                while (++currentIndex < baseEnumerator.size() || !baseEnumerator.isComplete()) {
+                while (true) {
                     map.clear();
                     joinCount = 0;
 
-                    // TODO: remove me
-                    boolean baseEnumeratorIsComplete = baseEnumerator.isComplete();
-
-                    if (!baseEnumerator.visitSolution(currentIndex, joinVisitor)) {
-                        currentIndex = -1;
+                    if (!baseEnumerator.visitSolution(++currentIndex, joinVisitor)) {
+                        iterator = null;
                         return;
                     }
 
@@ -84,40 +80,27 @@ public class InnerJoinEnumerator<T> implements Enumerator<T> {
                         return;
                     }
                 }
-
-                currentIndex = -1;
             }
         };
     }
 
-    @Override
     public int size() {
         return joinIndices.size();
     }
 
-    @Override
-    public boolean isComplete() {
-        return !iterator.hasNext();
-    }
-
-    private void visit(int i) {
-        map.clear();
-        if (!baseEnumerator.visitSolution(i, joinVisitor)) {
-            throw new IllegalStateException();
-        }
-    }
-
-    @Override
     public boolean visitSolution(int i, BiConsumer<String, T> visitor) {
         while (i >= joinIndices.size()) {
-            if (isComplete()) {
+            if (null == iterator) {
                 return false;
             }
 
             iterator.next();
         }
 
-        visit(joinIndices.get(i));
+        map.clear();
+        if (!baseEnumerator.visitSolution(joinIndices.get(i), joinVisitor)) {
+            throw new IllegalStateException();
+        }
 
         for (Map.Entry<String, T> entry : map.entrySet()) {
             visitor.accept(entry.getKey(), entry.getValue());

@@ -26,11 +26,6 @@ public class SimpleEnumerator<T> implements Enumerator<T> {
     }
 
     @Override
-    public boolean isComplete() {
-        return null == iterator;
-    }
-
-    @Override
     public boolean visitSolution(int index, BiConsumer<String, T> visitor) {
         if (0 != index) {
             return false;

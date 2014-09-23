@@ -10,7 +10,7 @@ import java.util.function.BiConsumer;
 */
 public class IteratorEnumerator<T> implements Enumerator<T> {
     private final String name;
-    private final Iterator<T> iterator;
+    private Iterator<T> iterator;
     private final List<T> memory = new ArrayList<>();
 
     public IteratorEnumerator(final String name,
@@ -19,20 +19,10 @@ public class IteratorEnumerator<T> implements Enumerator<T> {
         this.iterator = iterator;
     }
 
-    @Override
     public int size() {
         return memory.size();
     }
 
-    // Returns true as soon as iterator.hasNext() returns false.
-    // Note that DefaultTraversal has the behavior of returning true after it has first returned false,
-    // but that we reset traversals between IteratorEnumerator lifetimes.
-    @Override
-    public boolean isComplete() {
-        return !iterator.hasNext();
-    }
-
-    @Override
     public boolean visitSolution(final int index,
                                  final BiConsumer<String, T> visitor) {
         T value;
@@ -40,7 +30,11 @@ public class IteratorEnumerator<T> implements Enumerator<T> {
         if (index < memory.size()) {
             value = memory.get(index);
         } else do {
-            if (!iterator.hasNext()) {
+            if (null == iterator) {
+                return false;
+            } else if (!iterator.hasNext()) {
+                // free up memory as soon as possible
+                iterator = null;
                 return false;
             }
 

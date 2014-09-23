@@ -12,7 +12,7 @@ TinkerPop 3.0.0.M3 (Release Date: NOT OFFICIALLY RELEASED)
 TinkerPop 3.0.0.M2 (Release Date: September 23, 2014)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Added an exhaust `InnerJoinEnumerator` fix in `MatchStep` to get all solutions correctly.
+* Simplified `Enumerator` and implementations for `MatchStep`
 * `Neo4jGraph` can be configured to allow or disallow meta- and multi-properties.
 * Added `until()`-step as a simpler way to express while-do looping which compiles down to a `jump()`-step equivalent.
 * Added "The Crew" (`CREW`) toy graph which contains multi-properties, meta-properties, graph variables, hiddens, etc.

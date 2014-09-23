@@ -32,6 +32,7 @@ import java.util.function.Function;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
@@ -212,13 +213,12 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         printTraversalForm(traversal);
         assertResults(Function.identity(), traversal,
                 new Bindings<String>().put("a", "marko").put("b", "josh").put("c", "josh"),
+                new Bindings<String>().put("a", "marko").put("b", "josh").put("c", "josh"), // expected duplicate: two paths to this solution
                 new Bindings<String>().put("a", "marko").put("b", "josh").put("c", "marko"),
-                new Bindings<String>().put("a", "marko").put("b", "josh").put("c", "peter"),
-                // TODO: THIS IS REPEATED
-                new Bindings<String>().put("a", "marko").put("b", "josh").put("c", "marko"));
+                new Bindings<String>().put("a", "marko").put("b", "josh").put("c", "peter"));
     }
 
-    /* TODO: this test requires path reversal
+    /* TODO: this test requires Traversal.reverse()
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_created_b__c_created_bX_selectXnameX() throws Exception {
@@ -251,7 +251,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     }
     */
 
-    /* TODO: this test requires path reversal
+    /* TODO: this test requires Traversal.reverse()
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_out_out_hasXname_rippleX_matchXb_created_a__c_knows_bX_selectXcX_outXknowsX_name() throws Exception {
@@ -300,8 +300,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                 new Bindings<String>().put("a", "josh").put("c", "marko"),
                 new Bindings<String>().put("a", "josh").put("c", "peter"),
                 new Bindings<String>().put("a", "peter").put("c", "marko"),
-                new Bindings<String>().put("a", "peter").put("c", "josh"),
-                new Bindings<String>().put("a", "josh").put("c", "marko")); // TODO: THIS IS REPEATED
+                new Bindings<String>().put("a", "peter").put("c", "josh"));
     }
 
 
@@ -501,19 +500,33 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         Enumerator<String> e3 = new IteratorEnumerator<>("punc", Arrays.asList(a3).iterator());
 
         Enumerator<String> e1e2 = new CrossJoinEnumerator<>(e1, e2);
+        Enumerator<String> e2e1 = new CrossJoinEnumerator<>(e2, e1);
         BiConsumer<String, String> visitor = (name, value) -> {
-            //System.out.println("\t" + name + ":\t" + value);
+            System.out.println("\t" + name + ":\t" + value);
         };
         Enumerator<String> e1e2e3 = new CrossJoinEnumerator<>(e1e2, e3);
 
+        Enumerator<String> result;
+
+        result = e1e2;
+        assertEquals(12, exhaust(result));
+        assertEquals(12, result.size());
+
+        result = e2e1;
+        assertEquals(12, exhaust(result));
+        assertEquals(12, result.size());
+
+        result = e1e2e3;
+        assertEquals(24, exhaust(result));
+        assertEquals(24, result.size());
+
+        /*
         int i = 0;
-        Enumerator<String> e
-                = e1e2e3; //e1e2;
-        while (e.visitSolution(i, visitor)) {
-            //System.out.println("solution #" + (i + 1) + "^^");
+        while (result.visitSolution(i, visitor)) {
+            System.out.println("solution #" + (i + 1) + "^^");
             i++;
         }
-        assertEquals(24, i);
+        */
     }
 
     /* TODO: uncomment when optimized cross-joins are available
@@ -1019,13 +1032,12 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         assertEquals(branchFactor, w.findBranchFactor(), 0);
     }
 
-    private <T> void exhaust(Enumerator<T> enumerator) {
+    private <T> int exhaust(Enumerator<T> enumerator) {
         BiConsumer<String, T> visitor = (s, t) -> {
         };
         int i = 0;
-        if (!enumerator.isComplete()) {
-            while (enumerator.visitSolution(i, visitor)) i++;
-        }
+        while (enumerator.visitSolution(i, visitor)) i++;
+        return i;
     }
 
     private void findMissing(String s, final int i, final int n, final byte[] names, final Set<String> actual) {

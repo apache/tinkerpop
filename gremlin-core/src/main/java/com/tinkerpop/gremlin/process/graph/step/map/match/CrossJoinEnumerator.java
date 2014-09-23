@@ -7,6 +7,7 @@ import java.util.function.BiConsumer;
  * This maximizes the size of the product with respect to the number of expansions of the base Enumerators.
  */
 public class CrossJoinEnumerator<T> implements Enumerator<T> {
+
     private final Enumerator<T> xEnum, yEnum;
 
     public CrossJoinEnumerator(final Enumerator<T> xEnum,
@@ -15,26 +16,16 @@ public class CrossJoinEnumerator<T> implements Enumerator<T> {
         this.yEnum = yEnum;
     }
 
-    @Override
     public int size() {
         return xEnum.size() * yEnum.size();
     }
 
-    @Override
-    public boolean isComplete() {
-        boolean xc = xEnum.isComplete(), yc = yEnum.isComplete();
-        return xc && 0 == xEnum.size()
-                || yc && 0 == yEnum.size()
-                || xc && yc;
-    }
-
     // note: permits random access
-    @Override
     public boolean visitSolution(final int index,
                                  final BiConsumer<String, T> visitor) {
         int sq = (int) Math.sqrt(index);
 
-        // choose x and y such that the solution represented by i
+        // choose x and y such that the solution represented by index
         // remains constant as this Enumerator expands
         int x, y;
 
@@ -51,43 +42,36 @@ public class CrossJoinEnumerator<T> implements Enumerator<T> {
             }
         }
 
-        // expand x
-        while (sq >= xEnum.size()) {
-            // ran into x limit
-            if (xEnum.isComplete()) {
-                if (0 == xEnum.size()) {
-                    return false;
-                }
-                x = index % xEnum.size();
-                y = index / xEnum.size();
-                break;
+        // expand x if necessary
+        if (!hasIndex(xEnum, sq)) {
+            if (0 == xEnum.size()) {
+                return false;
             }
-            if (!xEnum.visitSolution(xEnum.size(), (BiConsumer<String, T>) MatchStep.TRIVIAL_CONSUMER)) return false;
+
+            x = index % xEnum.size();
+            y = index / xEnum.size();
         }
 
-        int height = index / Math.min(1 + sq, xEnum.size());
-
-        // expand y
-        while (height >= yEnum.size()) {
-            // ran into y limit; expand x again
-            if (yEnum.isComplete()) {
-                if (0 == yEnum.size()) {
-                    return false;
-                }
-                height = yEnum.size();
-                int width = index / height;
-                while (width >= xEnum.size()) {
-                    if (!xEnum.visitSolution(xEnum.size(), (BiConsumer<String, T>) MatchStep.TRIVIAL_CONSUMER)) return false;
-                }
-                x = index / yEnum.size();
-                y = index % yEnum.size();
-                break;
+        // expand y if necessary
+        if (!hasIndex(yEnum, y)) {
+            int height = yEnum.size();
+            if (0 == height) {
+                return false;
             }
 
-            if (!yEnum.visitSolution(yEnum.size(), (BiConsumer<String, T>) MatchStep.TRIVIAL_CONSUMER)) return false;
+            x = index / height;
+            if (!hasIndex(xEnum, x)) {
+                return false;
+            }
+            y = index % height;
         }
 
         // solutions are visited completely (if we have reached this point), else not at all
         return xEnum.visitSolution(x, visitor) && yEnum.visitSolution(y, visitor);
+    }
+
+    private boolean hasIndex(final Enumerator<T> e,
+                             final int index) {
+        return index < e.size() || e.visitSolution(index, (BiConsumer<String, T>) MatchStep.TRIVIAL_CONSUMER);
     }
 }

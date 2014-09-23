@@ -88,7 +88,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         final BiConsumer<String, S> resultSetter = (name, value) -> map.put(name, (E) value);
 
         while (true) { // break out when the current solution is exhausted and there are no more starts
-            if (null == this.currentSolution || (this.currentIndex >= this.currentSolution.size() && this.currentSolution.isComplete())) {
+            if (null == this.currentSolution) {
                 if (this.starts.hasNext()) {
                     this.optimizeCounter = (this.optimizeCounter + 1) % this.startsPerOptimize;
                     if (0 == this.optimizeCounter) {
@@ -106,6 +106,8 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
             map.clear();
             if (this.currentSolution.visitSolution(this.currentIndex++, resultSetter)) {
                 return result;
+            } else {
+                this.currentSolution = null;
             }
         }
     }
@@ -258,15 +260,6 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         }
     }
 
-    private <T> void exhaust(Enumerator<T> enumerator) {
-        BiConsumer<String, T> visitor = (s, t) -> {
-        };
-        int i = 0;
-        if (!enumerator.isComplete()) {
-            while (enumerator.visitSolution(i, visitor)) i++;
-        }
-    }
-
     private <T> Enumerator<T> crossJoin(final Enumerator<T> left,
                                         final Enumerator<T> right,
                                         final Set<String> leftLabels,
@@ -276,12 +269,6 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
             if (leftLabels.contains(s)) {
                 shared.add(s);
             }
-        }
-
-        // TODO: temporary fix for an inner join issue
-        if (shared.size() > 0) {
-            exhaust(left);
-            exhaust(right);
         }
 
         Enumerator<T> cj = new CrossJoinEnumerator<>(left, right);

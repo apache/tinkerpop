@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process.graph.step.map.match;
 
-import java.util.Set;
 import java.util.function.BiConsumer;
 
 /**
@@ -13,14 +12,10 @@ import java.util.function.BiConsumer;
 public interface Enumerator<T> {
 
     /**
-     * @return the number of solutions so far computed
+     * @return the number of solutions so far known; the enumerator has at least this many.
+     * This should be a relatively cheap operation.
      */
     int size();
-
-    /**
-     * @return whether all solutions have already been computed
-     */
-    boolean isComplete();
 
     /**
      * Provides access to a solution, allowing it to be printed, put into a map, etc.
