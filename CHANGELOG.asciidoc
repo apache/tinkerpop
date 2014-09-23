@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `until()`-step as a simpler way to express while-do looping which compiles down to a `jump()`-step equivalent.
 * Added "the crew" toy graph which contains multi-properties, meta-properties, graph variables, hiddens, etc.
 * If the Giraph job fails, then the subsequent `MapReduce` jobs will not execute.
 * Added `Graph.System` class which generates keys prefixed with `%&%` which is considered the vendor namespace.
