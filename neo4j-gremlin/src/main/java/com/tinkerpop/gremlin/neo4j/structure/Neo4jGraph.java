@@ -85,6 +85,10 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
             this.supportsMultiProperties = false;
             this.neo4jGraphVariables.set(Graph.System.system(CONFIG_MULTI_PROPERTIES), false);
         }
+        if ((this.supportsMetaProperties && !this.supportsMultiProperties) || (!this.supportsMetaProperties && this.supportsMultiProperties)) {
+            tx().rollback();
+            throw new UnsupportedOperationException("Neo4jGraph currently requires either both meta- and multi-properties activated or neither activated");
+        }
         tx().commit();
         ///////////
     }
@@ -111,6 +115,10 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
             // TODO: Logger saying the configuration properties are ignored if already in Graph.Variables
             this.supportsMetaProperties = this.neo4jGraphVariables.<Boolean>get(Graph.System.system(CONFIG_META_PROPERTIES)).get();
             this.supportsMultiProperties = this.neo4jGraphVariables.<Boolean>get(Graph.System.system(CONFIG_MULTI_PROPERTIES)).get();
+            if ((this.supportsMetaProperties && !this.supportsMultiProperties) || (!this.supportsMetaProperties && this.supportsMultiProperties)) {
+                tx().rollback();
+                throw new UnsupportedOperationException("Neo4jGraph currently requires either both meta- and multi-properties activated or neither activated");
+            }
             tx().commit();
             ///////////
         } catch (Exception e) {
