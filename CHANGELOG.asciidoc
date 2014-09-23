@@ -10,7 +10,7 @@ TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Added `until()`-step as a simpler way to express while-do looping which compiles down to a `jump()`-step equivalent.
-* Added "the crew" toy graph which contains multi-properties, meta-properties, graph variables, hiddens, etc.
+* Added "the crew" (`CREW`) toy graph which contains multi-properties, meta-properties, graph variables, hiddens, etc.
 * If the Giraph job fails, then the subsequent `MapReduce` jobs will not execute.
 * Added `Graph.System` class which generates keys prefixed with `%&%` which is considered the vendor namespace.
 * Added `ReferencedVertex` (etc. for all graph object types) for lightweight message passing of graph object ids.
@@ -51,7 +51,7 @@ TinkerPop 3.0.0.M2 (Release Date: NOT RELEASED)
 * Corrected issues with the "branch factor" related traversals under `SubgraphStrategy`.  This change also altered the semantics of the `SubgraphStrategy` a bit as it became more restrictive around `Edge` inclusion (requires both vertices to be in the subgraph).
 * The Gephi Plugin now visualizes traversals and has numerous configuration options.
 * Add more specific features around the types of "identifiers" a graph can support.
-* Add a new test graph called `CLASSIC_DOUBLE` that is copy of the `CLASSIC` graph, but represents floats as doubles.  This graph will be the default graph for testing going forward.
+* Add a new test graph called `MODERN` that is copy of the `CLASSIC` graph, but represents floats as doubles.  This graph will be the default graph for testing going forward.
 * Fix bug in `Neo4jGraph` that was not processing multiple vertex labels properly when doing a `has()` step with `IN`.
 * Changed semantics of `@LoadGraphWith` in gremlin-test to only refer to the ability of a test implementation to process the data types of the test graph (not to actually load it).
 * `StartStep` is a `SideEffect` as it is a process to get data into the stream (like a keyboard) and more efficient as such.

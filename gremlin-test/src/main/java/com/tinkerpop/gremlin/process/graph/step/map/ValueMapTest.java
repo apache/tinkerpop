@@ -30,7 +30,7 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_values() {
+    public void g_V_valueMap() {
         final Traversal<Vertex, Map<String, List>> traversal = get_g_V_valueMap();
         printTraversalForm(traversal);
         int counter = 0;
@@ -60,7 +60,7 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_valuesXname_ageX() {
+    public void g_V_valueMapXname_ageX() {
         final Traversal<Vertex, Map<String, List>> traversal = get_g_V_valueMapXname_ageX();
         printTraversalForm(traversal);
         int counter = 0;
@@ -94,9 +94,9 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore
+    @Ignore("id and label are no longer selectors for value map")
     @LoadGraphWith(MODERN)
-    public void g_E_valuesXid_label_weightX() {
+    public void g_E_valueMapXid_label_weightX() {
         final Traversal<Edge, Map<String, Object>> traversal = get_g_E_valueMapXid_label_weightX();
         printTraversalForm(traversal);
         int counter = 0;
@@ -123,7 +123,7 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_v1_outXcreatedX_values() {
+    public void g_v1_outXcreatedX_valueMap() {
         final Traversal<Vertex, Map<String, List<String>>> traversal = get_g_v1_outXcreatedX_valueMap(convertToVertexId("marko"));
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());

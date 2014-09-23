@@ -33,7 +33,8 @@ public class GiraphGraphProvider extends AbstractGraphProvider {
             final List<String> kryoResources = Arrays.asList(
                     "tinkerpop-modern-vertices.gio",
                     "grateful-dead-vertices.gio",
-                    "tinkerpop-classic-vertices.gio");
+                    "tinkerpop-classic-vertices.gio",
+                    "tinkerpop-crew-vertices.gio");
             for (final String fileName : kryoResources) {
                 PATHS.put(fileName, generateTempFile(KryoResourceAccess.class, fileName));
             }
@@ -87,6 +88,8 @@ public class GiraphGraphProvider extends AbstractGraphProvider {
             ((GiraphGraph) g).variables().getConfiguration().setInputLocation(PATHS.get("tinkerpop-modern-vertices.gio"));
         } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC)) {
             ((GiraphGraph) g).variables().getConfiguration().setInputLocation(PATHS.get("tinkerpop-classic-vertices.gio"));
+        } else if (graphData.equals(LoadGraphWith.GraphData.CREW)) {
+            ((GiraphGraph) g).variables().getConfiguration().setInputLocation(PATHS.get("tinkerpop-crew-vertices.gio"));
         } else {
             throw new RuntimeException("Could not load graph with " + graphData);
         }
