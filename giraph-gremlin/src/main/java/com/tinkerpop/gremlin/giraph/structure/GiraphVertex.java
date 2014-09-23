@@ -62,11 +62,11 @@ public class GiraphVertex extends GiraphElement implements Vertex, Serializable,
             public GraphTraversal<Vertex, Vertex> submit(final GraphComputer computer) {
                 final String label = TraversalHelper.getStart(this).getLabel();
                 TraversalHelper.removeStep(TraversalHelper.getStart(this), this);
-                final Step identityStep = new IdentityStep(this);
-                if (TraversalHelper.isLabeled(label))
+                if (TraversalHelper.isLabeled(label)) {
+                    final Step identityStep = new IdentityStep(this);
                     identityStep.setLabel(label);
-
-                TraversalHelper.insertStep(identityStep, 0, this);
+                    TraversalHelper.insertStep(identityStep, 0, this);
+                }
                 TraversalHelper.insertStep(new HasStep(this, new HasContainer(T.id, Compare.EQUAL, tinkerElement.id())), 0, this);
                 TraversalHelper.insertStep(new GiraphGraphStep<>(this, Vertex.class, graph), 0, this);
 
