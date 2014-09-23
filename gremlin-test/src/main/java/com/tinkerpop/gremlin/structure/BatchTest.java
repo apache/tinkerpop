@@ -186,7 +186,8 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldLoadVerticesIncrementallyWithNamedIdentifierOverwriteExistingVertex() {
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
+    public void shouldLoadVerticesIncrementallyWithNamedIdentifierAddMultiPropertyExistingVertex() {
         final BatchGraph graph = BatchGraph.build(g)
                 .incrementalLoading(true, Exists.OVERWRITE, Exists.IGNORE)
                 .vertexIdKey("name")
