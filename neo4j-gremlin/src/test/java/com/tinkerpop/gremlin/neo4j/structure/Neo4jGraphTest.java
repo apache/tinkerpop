@@ -333,57 +333,60 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
 
     @Test
     public void shouldSupportVertexPropertyToVertexMappingOnIndexCalls() {
-        g.tx().readWrite();
-        final Schema schema = g.getBaseGraph().schema();
-        schema.indexFor(DynamicLabel.label("person")).on("name").create();
-        schema.indexFor(DynamicLabel.label("name")).on(T.value.getAccessor()).create();
-        this.g.tx().commit();
+        // todo: review this feature check - this test does a lot of stuff - maybe losing some important assertions this way
+        if (g.features().vertex().supportsMultiProperties()) {
+            g.tx().readWrite();
+            final Schema schema = g.getBaseGraph().schema();
+            schema.indexFor(DynamicLabel.label("person")).on("name").create();
+            schema.indexFor(DynamicLabel.label("name")).on(T.value.getAccessor()).create();
+            this.g.tx().commit();
 
-        final Vertex a = g.addVertex(T.label, "person", "name", "marko", "age", 34);
-        a.property("name", "okram");
-        a.property("name", "marko a. rodriguez");
-        final Vertex b = g.addVertex(T.label, "person", "name", "stephen");
-        final Vertex c = g.addVertex("name", "matthias", "name", "mbroecheler");
+            final Vertex a = g.addVertex(T.label, "person", "name", "marko", "age", 34);
+            a.property("name", "okram");
+            a.property("name", "marko a. rodriguez");
+            final Vertex b = g.addVertex(T.label, "person", "name", "stephen");
+            final Vertex c = g.addVertex("name", "matthias", "name", "mbroecheler");
 
-        tryCommit(g, g -> {
-            assertEquals(a.id(), g.V().has("person", "name", "okram").id().next());
-            assertEquals(1, g.V().has("person", "name", "okram").count().next().intValue());
-            assertEquals(34, ((Neo4jVertex) g.V().has("person", "name", "okram").next()).getBaseVertex().getProperty("age"));
-            assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) g.V().has("person", "name", "okram").next()).getBaseVertex().getProperty("name"));
-            ///
-            assertEquals(b.id(), g.V().has("person", "name", "stephen").id().next());
-            assertEquals(1, g.V().has("person", "name", "stephen").count().next().intValue());
-            assertEquals("stephen", ((Neo4jVertex) g.V().has("person", "name", "stephen").next()).getBaseVertex().getProperty("name"));
-            ///
-            assertEquals(c.id(), g.V().has("name", "matthias").id().next());
-            assertEquals(c.id(), g.V().has("name", "mbroecheler").id().next());
-            assertEquals(1, g.V().has("name", "matthias").count().next().intValue());
-            assertEquals(1, g.V().has("name", "mbroecheler").count().next().intValue());
-            assertEquals(0, g.V().has("person", "name", "matthias").count().next().intValue());
-            assertEquals(0, g.V().has("person", "name", "mbroecheler").count().next().intValue());
-        });
-
-        final Vertex d = g.addVertex(T.label, "person", "name", "kuppitz");
-        tryCommit(g, g -> {
-            assertEquals(d.id(), g.V().has("person", "name", "kuppitz").id().next());
-            assertEquals("kuppitz", ((Neo4jVertex) g.V().has("person", "name", "kuppitz").next()).getBaseVertex().getProperty("name"));
-        });
-        d.property("name", "daniel", "acl", "private");
-        tryCommit(g, g -> {
-            assertEquals(d.id(), g.V().has("person", "name", Contains.IN, Arrays.asList("daniel", "kuppitz")).id().next());
-            assertEquals(d.id(), g.V().has("person", "name", "kuppitz").id().next());
-            assertEquals(d.id(), g.V().has("person", "name", "daniel").id().next());
-            assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) g.V().has("person", "name", "kuppitz").next()).getBaseVertex().getProperty("name"));
-        });
-        d.property("name", "marko", "acl", "private");
-        tryCommit(g, g -> {
-            assertEquals(2, g.V().has("person", "name", "marko").count().next().intValue());
-            assertEquals(1, g.V().has("person", "name", "marko").properties("name").has(T.value, "marko").has("acl", "private").count().next().intValue());
-            g.V().has("person", "name", "marko").forEach(v -> {
-                assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) v).getBaseVertex().getProperty("name"));
+            tryCommit(g, g -> {
+                assertEquals(a.id(), g.V().has("person", "name", "okram").id().next());
+                assertEquals(1, g.V().has("person", "name", "okram").count().next().intValue());
+                assertEquals(34, ((Neo4jVertex) g.V().has("person", "name", "okram").next()).getBaseVertex().getProperty("age"));
+                assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) g.V().has("person", "name", "okram").next()).getBaseVertex().getProperty("name"));
+                ///
+                assertEquals(b.id(), g.V().has("person", "name", "stephen").id().next());
+                assertEquals(1, g.V().has("person", "name", "stephen").count().next().intValue());
+                assertEquals("stephen", ((Neo4jVertex) g.V().has("person", "name", "stephen").next()).getBaseVertex().getProperty("name"));
+                ///
+                assertEquals(c.id(), g.V().has("name", "matthias").id().next());
+                assertEquals(c.id(), g.V().has("name", "mbroecheler").id().next());
+                assertEquals(1, g.V().has("name", "matthias").count().next().intValue());
+                assertEquals(1, g.V().has("name", "mbroecheler").count().next().intValue());
+                assertEquals(0, g.V().has("person", "name", "matthias").count().next().intValue());
+                assertEquals(0, g.V().has("person", "name", "mbroecheler").count().next().intValue());
             });
 
-        });
+            final Vertex d = g.addVertex(T.label, "person", "name", "kuppitz");
+            tryCommit(g, g -> {
+                assertEquals(d.id(), g.V().has("person", "name", "kuppitz").id().next());
+                assertEquals("kuppitz", ((Neo4jVertex) g.V().has("person", "name", "kuppitz").next()).getBaseVertex().getProperty("name"));
+            });
+            d.property("name", "daniel", "acl", "private");
+            tryCommit(g, g -> {
+                assertEquals(d.id(), g.V().has("person", "name", Contains.IN, Arrays.asList("daniel", "kuppitz")).id().next());
+                assertEquals(d.id(), g.V().has("person", "name", "kuppitz").id().next());
+                assertEquals(d.id(), g.V().has("person", "name", "daniel").id().next());
+                assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) g.V().has("person", "name", "kuppitz").next()).getBaseVertex().getProperty("name"));
+            });
+            d.property("name", "marko", "acl", "private");
+            tryCommit(g, g -> {
+                assertEquals(2, g.V().has("person", "name", "marko").count().next().intValue());
+                assertEquals(1, g.V().has("person", "name", "marko").properties("name").has(T.value, "marko").has("acl", "private").count().next().intValue());
+                g.V().has("person", "name", "marko").forEach(v -> {
+                    assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) v).getBaseVertex().getProperty("name"));
+                });
+
+            });
+        }
     }
 
     @Test
@@ -477,173 +480,178 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             validateCounts(g, 1, 0, 1, 0);
         });
 
-        vertexProperty.property("acl", "private");
-        assertEquals("private", vertexProperty.value("acl"));
+        if (g.features().vertex().supportsMetaProperties()) {
+            vertexProperty.property("acl", "private");
+            assertEquals("private", vertexProperty.value("acl"));
+        }
+
         //validateCounts(g, 1, 0, 1, 0); //TODO: Make use of Graph.System keys to hide meta-properties on the baseVertex
     }
 
 
     @Test
     public void shouldGenerateNodesAndRelationshipsCorrectlyForVertexProperties() {
-        g.tx().readWrite();
-        ExecutionEngine cypher = g.getCypher();
-        Neo4jVertex a = (Neo4jVertex) g.addVertex("name", "marko", "name", "okram");
-        Neo4jVertex b = (Neo4jVertex) g.addVertex("name", "stephen", "location", "virginia");
+        // todo: review this feature check - this test does a lot of stuff - maybe losing some important assertions this way
+        if (g.features().vertex().supportsMultiProperties()) {
+            g.tx().readWrite();
+            ExecutionEngine cypher = g.getCypher();
+            Neo4jVertex a = (Neo4jVertex) g.addVertex("name", "marko", "name", "okram");
+            Neo4jVertex b = (Neo4jVertex) g.addVertex("name", "stephen", "location", "virginia");
 
-        tryCommit(g, g -> {
-            assertEquals(2, g.V().count().next().intValue());
-            assertEquals(2, a.properties("name").count().next().intValue());
-            assertEquals(1, b.properties("name").count().next().intValue());
-            assertEquals(1, b.properties("location").count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
+            tryCommit(g, g -> {
+                assertEquals(2, g.V().count().next().intValue());
+                assertEquals(2, a.properties("name").count().next().intValue());
+                assertEquals(1, b.properties("name").count().next().intValue());
+                assertEquals(1, b.properties("location").count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
 
-            assertEquals(4l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
-            assertEquals(2l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
-            assertEquals(2l, cypher.execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
-            final AtomicInteger counter = new AtomicInteger(0);
-            a.getBaseVertex().getRelationships(Direction.OUTGOING).forEach(relationship -> {
-                assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.getType().name());
-                counter.incrementAndGet();
+                assertEquals(4l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
+                assertEquals(2l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
+                assertEquals(2l, cypher.execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
+                final AtomicInteger counter = new AtomicInteger(0);
+                a.getBaseVertex().getRelationships(Direction.OUTGOING).forEach(relationship -> {
+                    assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.getType().name());
+                    counter.incrementAndGet();
+                });
+                assertEquals(2, counter.getAndSet(0));
+                cypher.execute("MATCH (a)-[]->(m) WHERE id(a) = " + a.id() + " RETURN labels(m)").forEach(results -> {
+                    assertEquals(VertexProperty.DEFAULT_LABEL, ((List<String>) results.get("labels(m)")).get(0));
+                    counter.incrementAndGet();
+                });
+                assertEquals(2, counter.getAndSet(0));
+                StreamFactory.stream(a.getBaseVertex().getRelationships(Direction.OUTGOING)).map(Relationship::getEndNode).forEach(node -> {
+                    assertEquals(2, StreamFactory.stream(node.getPropertyKeys()).count());
+                    assertEquals("name", node.getProperty(T.key.getAccessor()));
+                    assertTrue("marko".equals(node.getProperty(T.value.getAccessor())) || "okram".equals(node.getProperty(T.value.getAccessor())));
+                    assertEquals(0, node.getDegree(Direction.OUTGOING));
+                    assertEquals(1, node.getDegree(Direction.INCOMING));
+                    assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), node.getRelationships(Direction.INCOMING).iterator().next().getType().name());
+                    counter.incrementAndGet();
+                });
+                assertEquals(2, counter.getAndSet(0));
+
+                assertEquals(2, StreamFactory.stream(b.getBaseVertex().getPropertyKeys()).count());
+                assertEquals("stephen", b.getBaseVertex().getProperty("name"));
+                assertEquals("virginia", b.getBaseVertex().getProperty("location"));
             });
-            assertEquals(2, counter.getAndSet(0));
-            cypher.execute("MATCH (a)-[]->(m) WHERE id(a) = " + a.id() + " RETURN labels(m)").forEach(results -> {
-                assertEquals(VertexProperty.DEFAULT_LABEL, ((List<String>) results.get("labels(m)")).get(0));
-                counter.incrementAndGet();
+
+            a.singleProperty("name", "the marko");
+            tryCommit(g, g -> {
+                assertEquals(2, g.V().count().next().intValue());
+                assertEquals(1, a.properties().count().next().intValue());
+                assertEquals(1, b.properties("name").count().next().intValue());
+                assertEquals(1, b.properties("location").count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
+
+                assertEquals(2l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
+                assertEquals(0l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
+
+                assertEquals(1, StreamFactory.stream(a.getBaseVertex().getPropertyKeys()).count());
+                assertEquals("the marko", a.getBaseVertex().getProperty("name"));
+                assertEquals(2, StreamFactory.stream(b.getBaseVertex().getPropertyKeys()).count());
+                assertEquals("stephen", b.getBaseVertex().getProperty("name"));
+                assertEquals("virginia", b.getBaseVertex().getProperty("location"));
             });
-            assertEquals(2, counter.getAndSet(0));
-            StreamFactory.stream(a.getBaseVertex().getRelationships(Direction.OUTGOING)).map(Relationship::getEndNode).forEach(node -> {
-                assertEquals(2, StreamFactory.stream(node.getPropertyKeys()).count());
-                assertEquals("name", node.getProperty(T.key.getAccessor()));
-                assertTrue("marko".equals(node.getProperty(T.value.getAccessor())) || "okram".equals(node.getProperty(T.value.getAccessor())));
-                assertEquals(0, node.getDegree(Direction.OUTGOING));
-                assertEquals(1, node.getDegree(Direction.INCOMING));
-                assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), node.getRelationships(Direction.INCOMING).iterator().next().getType().name());
-                counter.incrementAndGet();
+
+            a.property("name").remove();
+            tryCommit(g, g -> {
+                assertEquals(2, g.V().count().next().intValue());
+                assertEquals(0, a.properties().count().next().intValue());
+                assertEquals(2, b.properties().count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
+                assertEquals(2l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
+                assertEquals(0l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
+                assertEquals(0, StreamFactory.stream(a.getBaseVertex().getPropertyKeys()).count());
+                assertEquals(2, StreamFactory.stream(b.getBaseVertex().getPropertyKeys()).count());
             });
-            assertEquals(2, counter.getAndSet(0));
 
-            assertEquals(2, StreamFactory.stream(b.getBaseVertex().getPropertyKeys()).count());
-            assertEquals("stephen", b.getBaseVertex().getProperty("name"));
-            assertEquals("virginia", b.getBaseVertex().getProperty("location"));
-        });
+            a.singleProperty("name", "the marko", "acl", "private");
+            tryCommit(g, g -> {
+                assertEquals(2, g.V().count().next().intValue());
+                assertEquals(1, a.properties("name").count().next().intValue());
+                assertEquals(1, b.properties("name").count().next().intValue());
+                assertEquals(1, b.properties("location").count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
 
-        a.singleProperty("name", "the marko");
-        tryCommit(g, g -> {
-            assertEquals(2, g.V().count().next().intValue());
-            assertEquals(1, a.properties().count().next().intValue());
-            assertEquals(1, b.properties("name").count().next().intValue());
-            assertEquals(1, b.properties("location").count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
+                assertEquals(3l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
+                assertEquals(1l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
+                assertEquals(1l, cypher.execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
+                final AtomicInteger counter = new AtomicInteger(0);
+                a.getBaseVertex().getRelationships(Direction.OUTGOING).forEach(relationship -> {
+                    assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.getType().name());
+                    counter.incrementAndGet();
+                });
+                assertEquals(1, counter.getAndSet(0));
+                cypher.execute("MATCH (a)-[]->(m) WHERE id(a) = " + a.id() + " RETURN labels(m)").forEach(results -> {
+                    assertEquals(VertexProperty.DEFAULT_LABEL, ((List<String>) results.get("labels(m)")).get(0));
+                    counter.incrementAndGet();
+                });
+                assertEquals(1, counter.getAndSet(0));
+                StreamFactory.stream(a.getBaseVertex().getRelationships(Direction.OUTGOING)).map(Relationship::getEndNode).forEach(node -> {
+                    assertEquals(3, StreamFactory.stream(node.getPropertyKeys()).count());
+                    assertEquals("name", node.getProperty(T.key.getAccessor()));
+                    assertEquals("the marko", node.getProperty(T.value.getAccessor()));
+                    assertEquals("private", node.getProperty("acl"));
+                    assertEquals(0, node.getDegree(Direction.OUTGOING));
+                    assertEquals(1, node.getDegree(Direction.INCOMING));
+                    assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), node.getRelationships(Direction.INCOMING).iterator().next().getType().name());
+                    counter.incrementAndGet();
+                });
+                assertEquals(1, counter.getAndSet(0));
 
-            assertEquals(2l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
-            assertEquals(0l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
-
-            assertEquals(1, StreamFactory.stream(a.getBaseVertex().getPropertyKeys()).count());
-            assertEquals("the marko", a.getBaseVertex().getProperty("name"));
-            assertEquals(2, StreamFactory.stream(b.getBaseVertex().getPropertyKeys()).count());
-            assertEquals("stephen", b.getBaseVertex().getProperty("name"));
-            assertEquals("virginia", b.getBaseVertex().getProperty("location"));
-        });
-
-        a.property("name").remove();
-        tryCommit(g, g -> {
-            assertEquals(2, g.V().count().next().intValue());
-            assertEquals(0, a.properties().count().next().intValue());
-            assertEquals(2, b.properties().count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
-            assertEquals(2l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
-            assertEquals(0l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
-            assertEquals(0, StreamFactory.stream(a.getBaseVertex().getPropertyKeys()).count());
-            assertEquals(2, StreamFactory.stream(b.getBaseVertex().getPropertyKeys()).count());
-        });
-
-        a.singleProperty("name", "the marko", "acl", "private");
-        tryCommit(g, g -> {
-            assertEquals(2, g.V().count().next().intValue());
-            assertEquals(1, a.properties("name").count().next().intValue());
-            assertEquals(1, b.properties("name").count().next().intValue());
-            assertEquals(1, b.properties("location").count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
-
-            assertEquals(3l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
-            assertEquals(1l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
-            assertEquals(1l, cypher.execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
-            final AtomicInteger counter = new AtomicInteger(0);
-            a.getBaseVertex().getRelationships(Direction.OUTGOING).forEach(relationship -> {
-                assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.getType().name());
-                counter.incrementAndGet();
+                assertEquals(1, StreamFactory.stream(a.getBaseVertex().getPropertyKeys()).count());
+                assertTrue(a.getBaseVertex().hasProperty("name"));
+                assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN, a.getBaseVertex().getProperty("name"));
+                assertEquals(2, StreamFactory.stream(b.getBaseVertex().getPropertyKeys()).count());
+                assertEquals("stephen", b.getBaseVertex().getProperty("name"));
+                assertEquals("virginia", b.getBaseVertex().getProperty("location"));
             });
-            assertEquals(1, counter.getAndSet(0));
-            cypher.execute("MATCH (a)-[]->(m) WHERE id(a) = " + a.id() + " RETURN labels(m)").forEach(results -> {
-                assertEquals(VertexProperty.DEFAULT_LABEL, ((List<String>) results.get("labels(m)")).get(0));
-                counter.incrementAndGet();
-            });
-            assertEquals(1, counter.getAndSet(0));
-            StreamFactory.stream(a.getBaseVertex().getRelationships(Direction.OUTGOING)).map(Relationship::getEndNode).forEach(node -> {
-                assertEquals(3, StreamFactory.stream(node.getPropertyKeys()).count());
-                assertEquals("name", node.getProperty(T.key.getAccessor()));
-                assertEquals("the marko", node.getProperty(T.value.getAccessor()));
-                assertEquals("private", node.getProperty("acl"));
-                assertEquals(0, node.getDegree(Direction.OUTGOING));
-                assertEquals(1, node.getDegree(Direction.INCOMING));
-                assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), node.getRelationships(Direction.INCOMING).iterator().next().getType().name());
-                counter.incrementAndGet();
-            });
-            assertEquals(1, counter.getAndSet(0));
 
-            assertEquals(1, StreamFactory.stream(a.getBaseVertex().getPropertyKeys()).count());
-            assertTrue(a.getBaseVertex().hasProperty("name"));
-            assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN, a.getBaseVertex().getProperty("name"));
-            assertEquals(2, StreamFactory.stream(b.getBaseVertex().getPropertyKeys()).count());
-            assertEquals("stephen", b.getBaseVertex().getProperty("name"));
-            assertEquals("virginia", b.getBaseVertex().getProperty("location"));
-        });
+            a.property("name", "marko", "acl", "private");
+            a.property("name", "okram", "acl", "public");
+            // TODO tx.commit() THIS IS REQUIRED: ?! Why does Neo4j not delete vertices correctly?
+            g.tx().commit();
+            a.singleProperty("name", "the marko", "acl", "private");
+            tryCommit(g, g -> {
+                assertEquals(2, g.V().count().next().intValue());
+                assertEquals(1, a.properties("name").count().next().intValue());
+                assertEquals(1, b.properties("name").count().next().intValue());
+                assertEquals(1, b.properties("location").count().next().intValue());
+                assertEquals(0, g.E().count().next().intValue());
 
-        a.property("name", "marko", "acl", "private");
-        a.property("name", "okram", "acl", "public");
-        // TODO tx.commit() THIS IS REQUIRED: ?! Why does Neo4j not delete vertices correctly?
-        g.tx().commit();
-        a.singleProperty("name", "the marko", "acl", "private");
-        tryCommit(g, g -> {
-            assertEquals(2, g.V().count().next().intValue());
-            assertEquals(1, a.properties("name").count().next().intValue());
-            assertEquals(1, b.properties("name").count().next().intValue());
-            assertEquals(1, b.properties("location").count().next().intValue());
-            assertEquals(0, g.E().count().next().intValue());
+                assertEquals(3l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
+                assertEquals(1l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
+                assertEquals(1l, cypher.execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
+                final AtomicInteger counter = new AtomicInteger(0);
+                a.getBaseVertex().getRelationships(Direction.OUTGOING).forEach(relationship -> {
+                    assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.getType().name());
+                    counter.incrementAndGet();
+                });
+                assertEquals(1, counter.getAndSet(0));
+                cypher.execute("MATCH (a)-[]->(m) WHERE id(a) = " + a.id() + " RETURN labels(m)").forEach(results -> {
+                    assertEquals(VertexProperty.DEFAULT_LABEL, ((List<String>) results.get("labels(m)")).get(0));
+                    counter.incrementAndGet();
+                });
+                assertEquals(1, counter.getAndSet(0));
+                StreamFactory.stream(a.getBaseVertex().getRelationships(Direction.OUTGOING)).map(Relationship::getEndNode).forEach(node -> {
+                    assertEquals(3, StreamFactory.stream(node.getPropertyKeys()).count());
+                    assertEquals("name", node.getProperty(T.key.getAccessor()));
+                    assertEquals("the marko", node.getProperty(T.value.getAccessor()));
+                    assertEquals("private", node.getProperty("acl"));
+                    assertEquals(0, node.getDegree(Direction.OUTGOING));
+                    assertEquals(1, node.getDegree(Direction.INCOMING));
+                    assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), node.getRelationships(Direction.INCOMING).iterator().next().getType().name());
+                    counter.incrementAndGet();
+                });
+                assertEquals(1, counter.getAndSet(0));
 
-            assertEquals(3l, cypher.execute("MATCH n RETURN COUNT(n)").iterator().next().get("COUNT(n)"));
-            assertEquals(1l, cypher.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
-            assertEquals(1l, cypher.execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)").iterator().next().get("COUNT(r)"));
-            final AtomicInteger counter = new AtomicInteger(0);
-            a.getBaseVertex().getRelationships(Direction.OUTGOING).forEach(relationship -> {
-                assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.getType().name());
-                counter.incrementAndGet();
+                assertEquals(1, StreamFactory.stream(a.getBaseVertex().getPropertyKeys()).count());
+                assertTrue(a.getBaseVertex().hasProperty("name"));
+                assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN, a.getBaseVertex().getProperty("name"));
+                assertEquals(2, StreamFactory.stream(b.getBaseVertex().getPropertyKeys()).count());
+                assertEquals("stephen", b.getBaseVertex().getProperty("name"));
+                assertEquals("virginia", b.getBaseVertex().getProperty("location"));
             });
-            assertEquals(1, counter.getAndSet(0));
-            cypher.execute("MATCH (a)-[]->(m) WHERE id(a) = " + a.id() + " RETURN labels(m)").forEach(results -> {
-                assertEquals(VertexProperty.DEFAULT_LABEL, ((List<String>) results.get("labels(m)")).get(0));
-                counter.incrementAndGet();
-            });
-            assertEquals(1, counter.getAndSet(0));
-            StreamFactory.stream(a.getBaseVertex().getRelationships(Direction.OUTGOING)).map(Relationship::getEndNode).forEach(node -> {
-                assertEquals(3, StreamFactory.stream(node.getPropertyKeys()).count());
-                assertEquals("name", node.getProperty(T.key.getAccessor()));
-                assertEquals("the marko", node.getProperty(T.value.getAccessor()));
-                assertEquals("private", node.getProperty("acl"));
-                assertEquals(0, node.getDegree(Direction.OUTGOING));
-                assertEquals(1, node.getDegree(Direction.INCOMING));
-                assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), node.getRelationships(Direction.INCOMING).iterator().next().getType().name());
-                counter.incrementAndGet();
-            });
-            assertEquals(1, counter.getAndSet(0));
-
-            assertEquals(1, StreamFactory.stream(a.getBaseVertex().getPropertyKeys()).count());
-            assertTrue(a.getBaseVertex().hasProperty("name"));
-            assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN, a.getBaseVertex().getProperty("name"));
-            assertEquals(2, StreamFactory.stream(b.getBaseVertex().getPropertyKeys()).count());
-            assertEquals("stephen", b.getBaseVertex().getProperty("name"));
-            assertEquals("virginia", b.getBaseVertex().getProperty("location"));
-        });
-
+        }
     }
 }

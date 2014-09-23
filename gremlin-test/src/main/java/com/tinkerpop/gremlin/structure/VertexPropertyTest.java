@@ -401,9 +401,12 @@ public class VertexPropertyTest extends AbstractGremlinTest {
         @Parameterized.Parameter(value = 1)
         public BiFunction<Graph, Vertex, Boolean> streamGetter;
 
+        // todo: revisit this test - it is losing too much w.r.t the MultiProperty assignment.
+
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
         public void shouldHandleHiddenVertexProperties() {
             final Vertex v = g.addVertex(Graph.Key.hide("age"), 34, Graph.Key.hide("age"), 29, "age", 16, "name", "marko", "food", "taco", Graph.Key.hide("color"), "purple");
             tryCommit(g, g -> {
