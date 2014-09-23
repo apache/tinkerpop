@@ -106,7 +106,7 @@ public class TinkerFactory {
         daniel.addEdge("uses", gremlin, T.id, 24, "skill", 5);
         daniel.addEdge("uses", tinkergraph, T.id, 25, "skill", 3);
 
-        tinkergraph.addEdge("traverses", gremlin, T.id, 26, Graph.Key.hide("visible"), false);
+        gremlin.addEdge("traverses", tinkergraph, T.id, 26, Graph.Key.hide("visible"), false);
 
         g.variables().set("creator", "marko");
         g.variables().set("lastModified", 2014);

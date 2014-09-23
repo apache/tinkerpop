@@ -1887,6 +1887,96 @@ public class IoTest extends AbstractGremlinTest {
                 fail("Edge not expected");
             }
         });
+
+        final Vertex v10 = (Vertex) g1.V().has("name", "gremlin").next();
+        assertEquals("software", v10.label());
+        assertEquals(true, v10.iterators().hiddenValues("visible").next());
+        assertEquals(1, v10.keys().size());
+        assertEquals(1, v10.hiddenKeys().size());
+        assertId(g1, lossyForId, v10, 10);
+
+        final List<Edge> v10Edges = v10.bothE().toList();
+        assertEquals(8, v10Edges.size());
+        v10Edges.forEach(e -> {
+            if (e.outV().value("name").next().equals("marko") && e.label().equals("develops")) {
+                assertEquals(2009, (int) e.value("since"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 13);
+            } else if (e.outV().value("name").next().equals("marko")  && e.label().equals("uses")) {
+                assertEquals(4, (int) e.value("skill"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 15);
+            } else if (e.outV().value("name").next().equals("stephen") && e.label().equals("develops")) {
+                assertEquals(2010, (int) e.value("since"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 17);
+            } else if (e.outV().value("name").next().equals("stephen")  && e.label().equals("uses")) {
+                assertEquals(5, (int) e.value("skill"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 19);
+            } else if (e.outV().value("name").next().equals("matthias") && e.label().equals("develops")) {
+                assertEquals(2012, (int) e.value("since"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 21);
+            } else if (e.outV().value("name").next().equals("matthias")  && e.label().equals("uses")) {
+                assertEquals(3, (int) e.value("skill"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 22);
+            } else if (e.outV().value("name").next().equals("daniel")  && e.label().equals("uses")) {
+                assertEquals(5, (int) e.value("skill"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 24);
+            } else if (e.inV().value("name").next().equals("tinkergraph")  && e.label().equals("traverses")) {
+                assertEquals(false, e.value(Graph.Key.hide("visible")));
+                assertEquals(1, e.hiddenKeys().size());
+                assertId(g1, lossyForId, e, 26);
+            } else {
+                fail("Edge not expected");
+            }
+        });
+
+        final Vertex v11 = (Vertex) g1.V().has("name", "tinkergraph").next();
+        assertEquals("software", v11.label());
+        assertEquals(false, v11.iterators().hiddenValues("visible").next());
+        assertEquals(1, v11.keys().size());
+        assertEquals(1, v11.hiddenKeys().size());
+        assertId(g1, lossyForId, v11, 11);
+
+        final List<Edge> v11Edges = v11.bothE().toList();
+        assertEquals(7, v11Edges.size());
+        v11Edges.forEach(e -> {
+            if (e.outV().value("name").next().equals("marko") && e.label().equals("develops")) {
+                assertEquals(2010, (int) e.value("since"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 14);
+            } else if (e.outV().value("name").next().equals("marko")  && e.label().equals("uses")) {
+                assertEquals(5, (int) e.value("skill"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 16);
+            } else if (e.outV().value("name").next().equals("stephen") && e.label().equals("develops")) {
+                assertEquals(2011, (int) e.value("since"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 18);
+            } else if (e.outV().value("name").next().equals("stephen")  && e.label().equals("uses")) {
+                assertEquals(4, (int) e.value("skill"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 20);
+            } else if (e.outV().value("name").next().equals("matthias")  && e.label().equals("uses")) {
+                assertEquals(3, (int) e.value("skill"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 23);
+            } else if (e.outV().value("name").next().equals("daniel")  && e.label().equals("uses")) {
+                assertEquals(3, (int) e.value("skill"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 25);
+            } else if (e.outV().value("name").next().equals("gremlin")  && e.label().equals("traverses")) {
+                assertEquals(false, e.value(Graph.Key.hide("visible")));
+                assertEquals(1, e.hiddenKeys().size());
+                assertId(g1, lossyForId, e, 26);
+            } else {
+                fail("Edge not expected");
+            }
+        });
     }
 
     // todo: assert specific label? why again?
