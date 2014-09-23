@@ -1705,6 +1705,7 @@ public class IoTest extends AbstractGremlinTest {
         assertEquals(true, v1.iterators().hiddenValues("visible").next());
         assertEquals(2, v1.keys().size());
         assertEquals(1, v1.hiddenKeys().size());
+        assertEquals(4, (int) StreamFactory.stream(v1.iterators().properties("location")).count());
         v1.iterators().properties("location").forEachRemaining(vp -> {
             if (vp.value().equals("san diego")) {
                 assertEquals(1997, (int) vp.value("startTime"));
@@ -1746,6 +1747,142 @@ public class IoTest extends AbstractGremlinTest {
                 assertEquals(5, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 16);
+            } else {
+                fail("Edge not expected");
+            }
+        });
+
+        final Vertex v7 = (Vertex) g1.V().has("name", "stephen").next();
+        assertEquals("person", v7.label());
+        assertEquals(true, v7.iterators().hiddenValues("visible").next());
+        assertEquals(2, v7.keys().size());
+        assertEquals(1, v7.hiddenKeys().size());
+        assertEquals(3, (int) StreamFactory.stream(v7.iterators().properties("location")).count());
+        v7.iterators().properties("location").forEachRemaining(vp -> {
+            if (vp.value().equals("centreville")) {
+                assertEquals(1990, (int) vp.value("startTime"));
+                assertEquals(2000, (int) vp.value("endTime"));
+                assertEquals(2, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else if (vp.value().equals("dulles")) {
+                assertEquals(2000, (int) vp.value("startTime"));
+                assertEquals(2006, (int) vp.value("endTime"));
+                assertEquals(2, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else if (vp.value().equals("purcellville")) {
+                assertEquals(2006, (int) vp.value("startTime"));
+                assertEquals(1, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else {
+                fail("Found a value that should be there");
+            }
+        });
+        assertId(g1, lossyForId, v7, 7);
+
+        final List<Edge> v7Edges = v7.bothE().toList();
+        assertEquals(4, v7Edges.size());
+        v7Edges.forEach(e -> {
+            if (e.inV().value("name").next().equals("gremlin") && e.label().equals("develops")) {
+                assertEquals(2010, (int) e.value("since"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 17);
+            } else if (e.inV().value("name").next().equals("tinkergraph")  && e.label().equals("develops")) {
+                assertEquals(2011, (int) e.value("since"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 18);
+            } else if (e.inV().value("name").next().equals("gremlin")  && e.label().equals("uses")) {
+                assertEquals(5, (int) e.value("skill"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 19);
+            } else if (e.inV().value("name").next().equals("tinkergraph")  && e.label().equals("uses")) {
+                assertEquals(4, (int) e.value("skill"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 20);
+            } else {
+                fail("Edge not expected");
+            }
+        });
+
+        final Vertex v8 = (Vertex) g1.V().has("name", "matthias").next();
+        assertEquals("person", v8.label());
+        assertEquals(true, v8.iterators().hiddenValues("visible").next());
+        assertEquals(2, v8.keys().size());
+        assertEquals(1, v8.hiddenKeys().size());
+        assertEquals(4, (int) StreamFactory.stream(v8.iterators().properties("location")).count());
+        v8.iterators().properties("location").forEachRemaining(vp -> {
+            if (vp.value().equals("bremen")) {
+                assertEquals(2004, (int) vp.value("startTime"));
+                assertEquals(2007, (int) vp.value("endTime"));
+                assertEquals(2, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else if (vp.value().equals("baltimore")) {
+                assertEquals(2007, (int) vp.value("startTime"));
+                assertEquals(2011, (int) vp.value("endTime"));
+                assertEquals(2, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else if (vp.value().equals("oakland")) {
+                assertEquals(2011, (int) vp.value("startTime"));
+                assertEquals(2014, (int) vp.value("endTime"));
+                assertEquals(2, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else if (vp.value().equals("seattle")) {
+                assertEquals(2014, (int) vp.value("startTime"));
+                assertEquals(1, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            }else {
+                fail("Found a value that should be there");
+            }
+        });
+        assertId(g1, lossyForId, v8, 8);
+
+        final List<Edge> v8Edges = v8.bothE().toList();
+        assertEquals(3, v8Edges.size());
+        v8Edges.forEach(e -> {
+            if (e.inV().value("name").next().equals("gremlin") && e.label().equals("develops")) {
+                assertEquals(2012, (int) e.value("since"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 21);
+            } else if (e.inV().value("name").next().equals("gremlin")  && e.label().equals("uses")) {
+                assertEquals(3, (int) e.value("skill"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 22);
+            } else if (e.inV().value("name").next().equals("tinkergraph")  && e.label().equals("uses")) {
+                assertEquals(2, (int) e.value("skill"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 23);
+            } else {
+                fail("Edge not expected");
+            }
+        });
+
+        final Vertex v9 = (Vertex) g1.V().has("name", "daniel").next();
+        assertEquals("person", v9.label());
+        assertEquals(false, v9.iterators().hiddenValues("visible").next());
+        assertEquals(2, v9.keys().size());
+        assertEquals(1, v9.hiddenKeys().size());
+        assertEquals(3, (int) StreamFactory.stream(v9.iterators().properties("location")).count());
+        v9.iterators().properties("location").forEachRemaining(vp -> {
+            if (vp.value().equals("spremberg")) {
+                assertEquals(1982, (int) vp.value("startTime"));
+                assertEquals(2005, (int) vp.value("endTime"));
+                assertEquals(2, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else if (vp.value().equals("kaiserslautern")) {
+                assertEquals(2005, (int) vp.value("startTime"));
+                assertEquals(2009, (int) vp.value("endTime"));
+                assertEquals(2, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else if (vp.value().equals("aachen")) {
+                assertEquals(2009, (int) vp.value("startTime"));
+                assertEquals(1, (int) StreamFactory.stream(vp.iterators().properties()).count());
+            } else {
+                fail("Found a value that should be there");
+            }
+        });
+        assertId(g1, lossyForId, v9, 9);
+
+        final List<Edge> v9Edges = v9.bothE().toList();
+        assertEquals(2, v9Edges.size());
+        v9Edges.forEach(e -> {
+            if (e.inV().value("name").next().equals("gremlin")  && e.label().equals("uses")) {
+                assertEquals(5, (int) e.value("skill"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 24);
+            } else if (e.inV().value("name").next().equals("tinkergraph")  && e.label().equals("uses")) {
+                assertEquals(3, (int) e.value("skill"));
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 25);
             } else {
                 fail("Edge not expected");
             }
