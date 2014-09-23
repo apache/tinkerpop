@@ -141,5 +141,17 @@ public abstract interface Element {
         public static IllegalStateException propertyRemovalNotSupported() {
             return new IllegalStateException("Property removal is not supported");
         }
+
+        public static IllegalArgumentException labelCanNotBeNull() {
+            return new IllegalArgumentException("Label can not be null");
+        }
+
+        public static IllegalArgumentException labelCanNotBeEmpty() {
+            return new IllegalArgumentException("Label can not be empty");
+        }
+
+        public static IllegalArgumentException labelCanNotBeASystemKey(final String label) {
+            return new IllegalArgumentException("Label can not be a system key: " + label);
+        }
     }
 }

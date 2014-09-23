@@ -58,6 +58,9 @@ public class ExceptionCoverageTest {
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#isolationNotSupported");
 
             add("com.tinkerpop.gremlin.structure.Element$Exceptions#propertyAdditionNotSupported");
+            add("com.tinkerpop.gremlin.structure.Element$Exceptions#labelCanNotBeNull");
+            add("com.tinkerpop.gremlin.structure.Element$Exceptions#labelCanNotBeEmpty");
+            add("com.tinkerpop.gremlin.structure.Element$Exceptions#labelCanNotBeASystemKey");
 
             add("com.tinkerpop.gremlin.structure.Graph$Exceptions#vertexLookupsNotSupported");
             add("com.tinkerpop.gremlin.structure.Graph$Exceptions#edgeLookupsNotSupported");
