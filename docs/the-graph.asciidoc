@@ -16,10 +16,10 @@ Features are the means by which vendors can expose nuanced difference between th
 Vertex Properties
 -----------------
 
-In TinkerPop3, `VertexProperty<V>` is introduced. All the properties of a `Vertex` are a `VertexProperty`. A `VertexProperty` is like a `Property` in that it has a key/value, but it extends `Property` whereby it can also have a collection of key/value pairs. Moreover, while an `Edge` can only have one property of key "name" (for example), a `Vertex` can have multiple "name" vertex properties. With vertex properties, two features of vertex properties are introduced:
+image:vertex-properties.png[width=215,float=left] TinkerPop3 introduces the concept of a `VertexProperty<V>`. All the properties of a `Vertex` are a `VertexProperty`. A `VertexProperty` implements `Property` and as such, it has a key/value pair. However, `VertexProperty` also implements `Element` and thus, can have a collection of key/value pairs. Moreover, while an `Edge` can only have one property of key "name" (for example), a `Vertex` can have multiple "name" properties. With the inclusion of vertex properties, two features are introduced which ultimately advance the graph modelers toolkit:
 
- . Multiple properties: a vertex property key can have multiple values (i.e. a vertex can have multiple "name" properties).
- . Properties on properties: a vertex property can have properties (i.e. a vertex property can have key/value data associated with it).
+ . Multiple properties (*multi-properties*): a vertex property key can have multiple values (i.e. a vertex can have multiple "name" properties).
+ . Properties on properties (*meta-properties*): a vertex property can have properties (i.e. a vertex property can have key/value data associated with it).
 
 A running example using vertex properties is provided below to demonstrate and explain the API.
 
@@ -36,18 +36,18 @@ gremlin> v.property('name') <2>
 Multiple properties exist for the provided key, use Vertex.properties(name)
 Display stack trace? [yN]
 gremlin> v.properties()
-==>mp[name->marko]
-==>mp[name->marko a. rodriguez]
+==>vp[name->marko]
+==>vp[name->marko a. rodriguez]
 gremlin> v.properties('name')
-==>mp[name->marko]
-==>mp[name->marko a. rodriguez]
-gremlin> mp = v.properties('name').has(value,'marko').next()
-==>mp[name->marko]
-gremlin> mp.property('acl','private') <3>
+==>vp[name->marko]
+==>vp[name->marko a. rodriguez]
+gremlin> vp = v.properties('name').has(value,'marko').next()
+==>vp[name->marko]
+gremlin> vp.property('acl','private') <3>
 ==>p[acl->private]
-gremlin> mp = v.properties('name').has(value,'marko a. rodriguez').next()
-==>mp[name->marko a. rodriguez]
-gremlin> mp.property('acl','public')
+gremlin> vp = v.properties('name').has(value,'marko a. rodriguez').next()
+==>vp[name->marko a. rodriguez]
+gremlin> vp.property('acl','public')
 ==>p[acl->public]
 gremlin> v.properties('name').has('acl','public').value()
 ==>marko a. rodriguez
@@ -56,24 +56,24 @@ gremlin> v.properties('name').has('acl','public').remove() <4>
 gremlin> v.properties('name').has('acl','public').value()
 gremlin> v.properties('name').has('acl','private').value()
 ==>marko
-gremlin> mp = v.properties().next()
-==>mp[name->marko]
-gremlin> mp.properties()
+gremlin> vp = v.properties().next()
+==>vp[name->marko]
+gremlin> vp.properties()
 ==>p[acl->private]
-gremlin> mp.property('date',2014) <5>
+gremlin> vp.property('date',2014) <5>
 ==>p[date->2014]
-gremlin> mp.property('creator','stephen')
+gremlin> vp.property('creator','stephen')
 ==>p[creator->stephen]
-gremlin> mp.properties()
+gremlin> vp.properties()
 ==>p[date->2014]
 ==>p[creator->stephen]
 ==>p[acl->private]
 gremlin> v.properties('name').valueMap()
 ==>[date:2014, creator:stephen, acl:private]
 gremlin> v.singleProperty('name','okram') <6>
-==>mp[name->okram]
+==>vp[name->okram]
 gremlin> v.property('name')
-==>mp[name->okram]
+==>vp[name->okram]
 
 <1> A vertex can have zero or more properties with the same key associated with it.
 <2> If a vertex has multiple vertex properties for the same key, then `Vertex.property()` is not allowed.
@@ -109,20 +109,20 @@ gremlin> g = TinkerGraph.open()
 gremlin> v = g.addVertex('name','pierre')
 ==>v[0]
 gremlin> v.property('location','belgium')
-==>p[location->belgium]
+==>vp[location->belgium]
 gremlin> v.property(Graph.Key.hide('status'),'user')
-==>p[status->user]
+==>vp[status->user]
 gremlin> v.keys()
 ==>name
 ==>location
 gremlin> v.hiddenKeys()
 ==>status
 gremlin> p = v.property(Graph.Key.hide('status'))
-==>p[status->user]
+==>vp[status->user]
 gremlin> p.isHidden()
 ==>true
 gremlin> v.property('status')
-==>p[empty]
+==>vp[empty]
 
 Graph Variables
 ---------------

@@ -127,13 +127,13 @@ gremlin> g = TinkerGraph.open()
 gremlin> gremlin = g.addVertex(label,'software','name','gremlin')
 ==>v[0]
 gremlin> gremlin.property('created',2009)
-==>mp[created->2009]
+==>vp[created->2009]
 gremlin> blueprints = g.addVertex(label,'software','name','blueprints')
 ==>v[1]
 gremlin> gremlin.addEdge('dependsOn',blueprints)
 ==>e[2][0-dependsOn->1]
 gremlin> blueprints.property('created',2010)
-==>mp[created->2010]
+==>vp[created->2010]
 gremlin> blueprints.property('created').remove()
 ==>null
 gremlin> gremlin.addEdge('encapsulates',blueprints)

@@ -5,9 +5,9 @@ import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.javatuples.Pair;
 
@@ -29,7 +29,7 @@ public class StringFactory {
     private static final String V = "v";
     private static final String E = "e";
     private static final String P = "p";
-    private static final String MP = "mp";
+    private static final String VP = "vp";
     private static final String L_BRACKET = "[";
     private static final String R_BRACKET = "]";
     private static final String COMMA_SPACE = ", ";
@@ -39,7 +39,7 @@ public class StringFactory {
     private static final String DASH = "-";
     private static final String ARROW = "->";
     private static final String EMPTY_PROPERTY = "p[empty]";
-    private static final String EMPTY_META_PROPERTY = "mp[empty]";
+    private static final String EMPTY_VERTEX_PROPERTY = "vp[empty]";
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     private static final String featuresStartWith = "supports";
@@ -66,7 +66,7 @@ public class StringFactory {
      */
     public static String propertyString(final Property property) {
         if (property instanceof VertexProperty) {
-            return property.isPresent() ? MP + L_BRACKET + property.key() + ARROW + property.value() + R_BRACKET : EMPTY_META_PROPERTY;
+            return property.isPresent() ? VP + L_BRACKET + property.key() + ARROW + property.value() + R_BRACKET : EMPTY_VERTEX_PROPERTY;
         } else {
             return property.isPresent() ? P + L_BRACKET + property.key() + ARROW + property.value() + R_BRACKET : EMPTY_PROPERTY;
         }
