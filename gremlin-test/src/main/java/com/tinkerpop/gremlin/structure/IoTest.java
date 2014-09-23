@@ -1840,7 +1840,7 @@ public class IoTest extends AbstractGremlinTest {
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 22);
             } else if (e.inV().value("name").next().equals("tinkergraph")  && e.label().equals("uses")) {
-                assertEquals(2, (int) e.value("skill"));
+                assertEquals(3, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 23);
             } else {

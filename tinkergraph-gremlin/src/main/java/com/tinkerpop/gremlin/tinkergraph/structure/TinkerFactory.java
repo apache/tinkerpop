@@ -101,7 +101,7 @@ public class TinkerFactory {
 
         matthias.addEdge("develops", gremlin, T.id, 21, "since", 2012);
         matthias.addEdge("uses", gremlin, T.id, 22, "skill", 3);
-        matthias.addEdge("uses", tinkergraph, T.id, 23, "skill", 2);
+        matthias.addEdge("uses", tinkergraph, T.id, 23, "skill", 3);
 
         daniel.addEdge("uses", gremlin, T.id, 24, "skill", 5);
         daniel.addEdge("uses", tinkergraph, T.id, 25, "skill", 3);
