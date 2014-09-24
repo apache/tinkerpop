@@ -56,7 +56,6 @@ public class GiraphEdge extends GiraphElement implements Edge, Serializable, Wra
                 return super.submit(computer);
             }
         };
-        traversal.sideEffects().setGraph(this.graph); // TODO: this is not needed
         return traversal.addStep(new StartStep<>(traversal, this));
     }
 

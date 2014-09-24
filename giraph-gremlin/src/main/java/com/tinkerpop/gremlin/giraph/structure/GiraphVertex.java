@@ -73,7 +73,6 @@ public class GiraphVertex extends GiraphElement implements Vertex, Serializable,
                 return super.submit(computer);
             }
         };
-        traversal.sideEffects().setGraph(this.graph);
         return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 

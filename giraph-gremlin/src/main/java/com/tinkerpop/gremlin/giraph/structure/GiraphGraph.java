@@ -66,36 +66,20 @@ public class GiraphGraph implements Graph, Serializable {
 
     @Override
     public GraphTraversal<Vertex, Vertex> V() {
-        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>();
-        traversal.addStep(new GiraphGraphStep(traversal, Vertex.class, this));
-        traversal.sideEffects().setGraph(this);
-        return traversal;
+        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this);
+        return traversal.addStep(new GiraphGraphStep<>(traversal, Vertex.class, this));
     }
 
     @Override
     public GraphTraversal<Edge, Edge> E() {
-        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>();
-        traversal.addStep(new GiraphGraphStep(traversal, Edge.class, this));
-        traversal.sideEffects().setGraph(this);
-        return traversal;
+        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>(this);
+        return traversal.addStep(new GiraphGraphStep<>(traversal, Edge.class, this));
     }
 
     @Override
     public <S> GraphTraversal<S, S> of() {
-        final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>();
-        traversal.sideEffects().setGraph(this);
-        traversal.addStep(new StartStep<>(traversal));
-        return traversal;
-    }
-
-    @Override
-    public Vertex v(final Object id) {
-        return this.V().<Vertex>has(T.id, id).next();
-    }
-
-    @Override
-    public Edge e(final Object id) {
-        return this.E().<Edge>has(T.id, id).next();
+        final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>(this);
+        return traversal.addStep(new StartStep<>(traversal));
     }
 
     @Override
