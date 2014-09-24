@@ -33,6 +33,7 @@ public class ComputerResultStep<S> extends AbstractStep<S, S> {
         this.graph = result.getGraph();
         this.memory = result.getMemory();
         this.attachElements = attachElements;
+        this.memory.keys().forEach(key -> traversal.sideEffects().set(key, this.memory.get(key)));
 
         this.computerTraversal = (Traversal) traversalVertexProgram.getTraversalSupplier().get();
         this.computerTraversal.strategies().apply();

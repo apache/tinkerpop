@@ -1,18 +1,12 @@
 package com.tinkerpop.gremlin.giraph.groovy.plugin;
 
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
-import com.tinkerpop.gremlin.groovy.engine.function.GSSupplier;
-import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
+import com.tinkerpop.gremlin.groovy.engine.GroovyTraversal;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.strategy.CountCapStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.GraphComputerStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.UnrollJumpStrategy;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.FileConfiguration;
@@ -83,29 +77,19 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object submit(final List<String> args) {
         try {
-            final StringBuilder builder = new StringBuilder();
-            if (this.useSugarPlugin) {
-                // builder.append(InvokerHelper.class.getCanonicalName() + ".getMetaRegistry().removeMetaClass(" + GiraphGraph.class.getCanonicalName() + ".class)\n");
-                builder.append(SugarLoader.class.getCanonicalName() + ".load()\n");
-            }
-            builder.append(this.graphVariable + " = " + GiraphGraph.class.getCanonicalName() + ".open()\n");
-            builder.append("traversal = ");
-            builder.append(String.join(" ", args));
-            builder.append("\n");
-            builder.append(GraphComputerPreparation.class.getCanonicalName() + ".prepare(traversal)\n");
-            builder.append("traversal\n");
-
-            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(new GSSupplier<>(builder.toString())).create();
-            final ComputerResult result = this.giraphGraph.compute().program(vertexProgram).submit().get();
-
+            final GroovyTraversal<?, ?> traversal = GroovyTraversal.of(String.join(" ", args)).over(this.giraphGraph).using(this.giraphGraph.compute());
+            if (this.useSugarPlugin)
+                traversal.withSugar();
+            final TraversalVertexProgram program = traversal.program();
+            final ComputerResult result = traversal.result().get();
             this.shell.getInterp().getContext().setProperty("result", result);
 
             final GraphTraversal traversal1 = new DefaultGraphTraversal<>();
-            traversal1.addStep(new ComputerResultStep<>(traversal1, result, vertexProgram, false));
+            traversal1.addStep(new ComputerResultStep<>(traversal1, result, program, false));
             this.shell.getInterp().getContext().setProperty("_l", traversal1);
 
             final GraphTraversal traversal2 = new DefaultGraphTraversal<>();
-            traversal2.addStep(new ComputerResultStep<>(traversal2, result, vertexProgram, false));
+            traversal2.addStep(new ComputerResultStep<>(traversal2, result, program, false));
             traversal2.range(0, 19);
             return traversal2;
         } catch (Exception e) {
@@ -124,16 +108,5 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
 
     public String toString() {
         return "GiraphRemoteAcceptor[" + this.giraphGraph + "]";
-    }
-
-    // this sucks as this has to ALWAYS be in sync with the submit requirements of GraphTraversal.submit().
-    public static class GraphComputerPreparation {
-        public static void prepare(final Traversal traversal) {
-            traversal.sideEffects().removeGraph();
-            traversal.strategies().unregister(UnrollJumpStrategy.class);
-            traversal.strategies().unregister(TraverserSourceStrategy.class);
-            traversal.strategies().register(CountCapStrategy.instance());
-            traversal.strategies().register(GraphComputerStrategy.instance());
-        }
     }
 }

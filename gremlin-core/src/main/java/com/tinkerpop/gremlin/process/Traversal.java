@@ -45,11 +45,15 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public List<Step> getSteps();
 
+    public default void prepareForGraphComputer() {
+        this.sideEffects().removeGraph();
+        this.strategies().unregister(TraverserSourceStrategy.class);
+        this.strategies().register(GraphComputerStrategy.instance());
+    }
+
     public default Traversal<S, E> submit(final GraphComputer computer) {
         try {
-            this.sideEffects().removeGraph();
-            this.strategies().unregister(TraverserSourceStrategy.class);
-            this.strategies().register(GraphComputerStrategy.instance());
+            this.prepareForGraphComputer();
             final ComputerResult result = computer.program(TraversalVertexProgram.build().traversal(() -> this).create()).submit().get();
             final Traversal traversal = new DefaultTraversal<>();
             traversal.addStarts(new SingleIterator(result.getMemory()));
