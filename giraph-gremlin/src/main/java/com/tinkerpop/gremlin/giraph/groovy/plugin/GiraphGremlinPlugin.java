@@ -47,7 +47,6 @@ public class GiraphGremlinPlugin extends AbstractGremlinPlugin {
         add(IMPORT_SPACE + HDFSTools.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + GroupCountMapReduce.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + ConfUtil.class.getPackage().getName() + DOT_STAR);
-        add(IMPORT_SPACE + GiraphRemoteAcceptor.class.getPackage().getName() + DOT_STAR); // TODO: may not need
     }};
 
     @Override

@@ -17,7 +17,7 @@ import java.util.concurrent.Future;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroovyTraversal<S,E> implements ScriptTraversal<S,E> {
+public class GroovyTraversal<S, E> implements ScriptTraversal<S, E> {
 
     private String traversalScript;
     private Graph graph;
@@ -33,23 +33,23 @@ public class GroovyTraversal<S,E> implements ScriptTraversal<S,E> {
         this.traversalScript = traversalScript;
     }
 
-    public static <S,E> GroovyTraversal<S,E> of(final String traversalScript) {
+    public static <S, E> GroovyTraversal<S, E> of(final String traversalScript) {
         return new GroovyTraversal<>(traversalScript);
     }
 
     @Override
-    public GroovyTraversal<S,E> over(final Graph graph) {
+    public GroovyTraversal<S, E> over(final Graph graph) {
         this.graph = graph;
         return this;
     }
 
     @Override
-    public GroovyTraversal<S,E> using(final GraphComputer graphComputer) {
+    public GroovyTraversal<S, E> using(final GraphComputer graphComputer) {
         this.graphComputer = graphComputer;
         return this;
     }
 
-    public GroovyTraversal<S,E> withSugar() {
+    public GroovyTraversal<S, E> withSugar() {
         this.withSugar = true;
         return this;
     }
@@ -75,7 +75,7 @@ public class GroovyTraversal<S,E> implements ScriptTraversal<S,E> {
 
     @Override
     public TraversalVertexProgram program() {
-        this.traversalScript = String.format(FULL_SCRIPT, this.graph.getClass().getName(), this.traversalScript);
+        this.traversalScript = String.format(FULL_SCRIPT, this.graph.getClass().getName(), ScriptTraversal.transformToGlobalScan(this.traversalScript));
         if (this.withSugar)
             this.traversalScript = SugarLoader.class.getCanonicalName() + ".load()\n" + this.traversalScript;
         return TraversalVertexProgram.build().traversal(new GSSupplier<>(this.traversalScript)).create();

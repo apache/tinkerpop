@@ -802,7 +802,7 @@ A simple TraversalStrategy is the `IdentityReductionStrategy` and it is a type-1
 [source,java]
 public class IdentityReductionStrategy implements TraversalStrategy.NoDependencies {
     public void apply(final Traversal traversal) {
-        ((List<Step>) traversal.getSteps()).stream()
+        traversal.getSteps().stream()
                 .filter(step -> step instanceof IdentityStep
                     && !TraversalHelper.isLabeled(step))
                 .collect(Collectors.<Step>toList())

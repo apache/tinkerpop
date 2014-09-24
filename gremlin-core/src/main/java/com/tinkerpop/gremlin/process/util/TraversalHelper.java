@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  */
 public class TraversalHelper {
 
-    public static boolean isLabeled(final Step step) {
+    public static boolean isLabeled(final Step<?, ?> step) {
         return !Graph.Key.isHidden(step.getLabel());
     }
 
@@ -26,17 +26,17 @@ public class TraversalHelper {
         return !Graph.Key.isHidden(label);
     }
 
-    public static boolean isReversible(final Traversal traversal) {
+    public static boolean isReversible(final Traversal<?, ?> traversal) {
         return !traversal.getSteps().stream().filter(step -> !(step instanceof Reversible)).findFirst().isPresent();
     }
 
-    public static <C extends Step> Optional<C> getLastStep(final Traversal traversal, final Class<C> classToGet) {
-        final List<C> steps = (List) traversal.getSteps().stream().filter(step -> classToGet.isAssignableFrom(step.getClass())).collect(Collectors.<C>toList());
+    public static <C extends Step> Optional<C> getLastStep(final Traversal<?, ?> traversal, final Class<C> classToGet) {
+        final List<C> steps = (List) traversal.getSteps().stream().filter(step -> classToGet.isAssignableFrom(step.getClass())).collect(Collectors.toList());
         return steps.size() == 0 ? Optional.empty() : Optional.of(steps.get(steps.size() - 1));
     }
 
     public static <S, E> Step<S, E> getStep(final String label, final Traversal<?, ?> traversal) {
-        return (Step) traversal.getSteps().stream()
+        return traversal.getSteps().stream()
                 .filter(step -> label.equals(step.getLabel()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("The provided step label does not exist: " + label));
@@ -48,9 +48,9 @@ public class TraversalHelper {
                 .findFirst().isPresent();
     }
 
-    public static List<String> getLabels(final Traversal traversal) {
+    public static List<String> getLabels(final Traversal<?, ?> traversal) {
         final List<String> labels = new ArrayList<>();
-        for (final Step step : (List<Step>) traversal.getSteps()) {
+        for (final Step step : traversal.getSteps()) {
             final String label = step.getLabel();
             if (isLabeled(label)) {
                 labels.add(label);
@@ -59,9 +59,9 @@ public class TraversalHelper {
         return labels;
     }
 
-    public static List<String> getLabelsUpTo(final Step step, final Traversal traversal) {
+    public static List<String> getLabelsUpTo(final Step<?, ?> step, final Traversal<?, ?> traversal) {
         final List<String> labels = new ArrayList<>();
-        for (final Step temp : (List<Step>) traversal.getSteps()) {
+        for (final Step temp : traversal.getSteps()) {
             if (temp == step) break;
             final String label = temp.getLabel();
             if (isLabeled(label)) {
@@ -99,7 +99,7 @@ public class TraversalHelper {
         }
     }
 
-    public static int removeStep(final Step step, final Traversal traversal) {
+    public static int removeStep(final Step<?, ?> step, final Traversal<?, ?> traversal) {
         final int stepIndex = traversal.getSteps().indexOf(step);
         traversal.getSteps().remove(step);
         reLabelSteps(traversal);
@@ -107,8 +107,8 @@ public class TraversalHelper {
         return stepIndex;
     }
 
-    public static void removeStep(final int index, final Traversal traversal) {
-        TraversalHelper.removeStep((Step) traversal.getSteps().get(index), traversal);
+    public static void removeStep(final int index, final Traversal<?, ?> traversal) {
+        TraversalHelper.removeStep(traversal.getSteps().get(index), traversal);
     }
 
     public static void insertStep(final Step step, final int index, final Traversal traversal) {
@@ -117,20 +117,20 @@ public class TraversalHelper {
         reLinkSteps(traversal);
     }
 
-    public static void insertBeforeStep(final Step step, final Step afterStep, final Traversal traversal) {
+    public static void insertBeforeStep(final Step<?, ?> step, final Step<?, ?> afterStep, final Traversal<?, ?> traversal) {
         TraversalHelper.insertStep(step, traversal.getSteps().indexOf(afterStep), traversal);
     }
 
-    public static void insertAfterStep(final Step step, final Step beforeStep, final Traversal traversal) {
+    public static void insertAfterStep(final Step<?, ?> step, final Step<?, ?> beforeStep, final Traversal<?, ?> traversal) {
         TraversalHelper.insertStep(step, traversal.getSteps().indexOf(beforeStep) + 1, traversal);
     }
 
-    public static void replaceStep(final Step removeStep, final Step insertStep, final Traversal traversal) {
+    public static void replaceStep(final Step<?, ?> removeStep, final Step<?, ?> insertStep, final Traversal<?, ?> traversal) {
         int index = TraversalHelper.removeStep(removeStep, traversal);
         TraversalHelper.insertStep(insertStep, index, traversal);
     }
 
-    private static void reLabelSteps(final Traversal traversal) {
+    private static void reLabelSteps(final Traversal<?, ?> traversal) {
         final List<Step> steps = traversal.getSteps();
         for (int i = 0; i < steps.size(); i++) {
             if (!TraversalHelper.isLabeled(steps.get(i)))
@@ -138,7 +138,7 @@ public class TraversalHelper {
         }
     }
 
-    private static void reLinkSteps(final Traversal traversal) {
+    private static void reLinkSteps(final Traversal<?, ?> traversal) {
         final List<Step> steps = traversal.getSteps();
         for (int i = 0; i < steps.size(); i++) {
             final Step previousStep = i > 0 ? steps.get(i - 1) : null;
@@ -149,7 +149,7 @@ public class TraversalHelper {
         }
     }
 
-    public static String makeStepString(final Step step, final Object... arguments) {
+    public static String makeStepString(final Step<?, ?> step, final Object... arguments) {
         final StringBuilder builder = new StringBuilder(step.getClass().getSimpleName());
         if (arguments.length > 0) {
             builder.append("(");
@@ -164,7 +164,7 @@ public class TraversalHelper {
         return builder.toString();
     }
 
-    public static String makeTraversalString(final Traversal traversal) {
+    public static String makeTraversalString(final Traversal<?, ?> traversal) {
         final List<Step> temp = new ArrayList<>();
         Step currentStep = TraversalHelper.getStart(traversal);
         while (!(currentStep instanceof EmptyStep)) {
@@ -174,14 +174,14 @@ public class TraversalHelper {
         return temp.toString();
     }
 
-    public static boolean trackPaths(final Traversal traversal) {
+    public static boolean trackPaths(final Traversal<?, ?> traversal) {
         return traversal.getSteps().stream()
                 .filter(step -> step instanceof PathConsumer && ((PathConsumer) step).requiresPaths())
                 .findFirst()
                 .isPresent();
     }
 
-    public static List<Step> isolateSteps(final Step from, final Step to) {
+    public static List<Step> isolateSteps(final Step<?, ?> from, final Step<?, ?> to) {
         final List<Step> steps = new ArrayList<>();
         Step step = from.getNextStep();
         while (step != to && !(step instanceof EmptyStep)) {
@@ -193,24 +193,19 @@ public class TraversalHelper {
         return steps;
     }
 
-    public static <S extends Step> List<S> getStepsOfClass(final Class<S> stepClass, final Traversal traversal) {
-        final List<S> steps = new ArrayList<>();
-        for (final Step step : (List<Step>) traversal.getSteps()) {
-            if (step.getClass().equals(stepClass))
-                steps.add((S) step);
-        }
-        return steps;
+    public static <S extends Step> List<S> getStepsOfClass(final Class<S> stepClass, final Traversal<?, ?> traversal) {
+        return (List) traversal.getSteps().stream().filter(step -> step.getClass().equals(stepClass)).collect(Collectors.toList());
     }
 
-    public static void printTraversalChain(final Traversal traversal) {
+    /*public static void printTraversalChain(final Traversal<?,?> traversal) {
         Step step = TraversalHelper.getStart(traversal);
         while (!step.equals(EmptyStep.instance())) {
             System.out.println(step);
             step = step.getNextStep();
         }
-    }
+    }*/
 
-    public static int relativeLabelDirection(Step step, final String label) {
+    public static int relativeLabelDirection(Step<?, ?> step, final String label) {
         if (label.equals(step.getLabel()))
             return 0;
         while (!(step instanceof EmptyStep)) {
@@ -221,17 +216,17 @@ public class TraversalHelper {
         return -1;
     }
 
-    public static void verifySideEffectKeyIsNotAStepLabel(final String key, final Traversal traversal) {
+    public static void verifySideEffectKeyIsNotAStepLabel(final String key, final Traversal<?, ?> traversal) {
         if (TraversalHelper.hasLabel(key, traversal))
             throw new IllegalArgumentException("The provided side effect key is already used as a step label: " + key);
     }
 
-    public static void verifyStepLabelIsNotASideEffectKey(final String label, final Traversal traversal) {
+    public static void verifyStepLabelIsNotASideEffectKey(final String label, final Traversal<?, ?> traversal) {
         if (traversal.sideEffects().exists(label))
             throw new IllegalArgumentException("The provided step label is already used as a side effect key: " + label);
     }
 
-    public static void verifyStepLabelIsNotAlreadyAStepLabel(final String label, final Traversal traversal) {
+    public static void verifyStepLabelIsNotAlreadyAStepLabel(final String label, final Traversal<?, ?> traversal) {
         if (TraversalHelper.hasLabel(label, traversal))
             throw new IllegalArgumentException("The provided step label is already being used as a step label: " + label);
     }
