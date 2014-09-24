@@ -9,7 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M3 (Release Date: NOT OFFICIALLY RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Added `ScriptTraversal` interface with `GroovyTraversal` as an instance. To be used by OLAP engines and any language variant (e.g. gremlin-scala, gremlin-js, etc.)
+* Removed all notions of serializable lambdas as this is a misconception and should not be part of TinkerPop.
+* Added `ScriptTraversal` interface with `GroovyTraversal` as an instance. To be used by OLAP engines and any language variant (e.g. gremlin-scala, gremlin-js, etc.).
 * `UntilStep` now leverages `UnrollJumpStrategy` accordingly.
 * Fixed a bug where the `toString()` of `Traversal` was being hijacked by `SugarGremlinPlugin`.
 * Fixed compilation bug in `UntilStep` that is realized when used in multi-machine OLAP.
