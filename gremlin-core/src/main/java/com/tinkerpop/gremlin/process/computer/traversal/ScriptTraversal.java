@@ -12,10 +12,6 @@ import java.util.concurrent.Future;
  */
 public interface ScriptTraversal<S, E> {
 
-    public static <S, E> ScriptTraversal<S, E> of(final String traversalScript) {
-        throw new UnsupportedOperationException("Implementation must implement this method: ");
-    }
-
     public ScriptTraversal<S, E> over(final Graph graph);
 
     public ScriptTraversal<S, E> using(final GraphComputer graphComputer);
@@ -27,7 +23,7 @@ public interface ScriptTraversal<S, E> {
     public Future<ComputerResult> result();
 
     public static String transformToGlobalScan(final String traversalScript) {
-        return traversalScript.replaceAll("\\.v\\((.*)\\)\\.", ".V().has(id, $1)").replaceAll("\\.e\\((.*)\\)\\.", ".E().has(id, $1)");
+        return traversalScript.replaceAll("\\.v\\((.*)\\)\\.", ".V().has(id, $1).").replaceAll("\\.e\\((.*)\\)\\.", ".E().has(id, $1).");
     }
 
     // provide helper methods for validation
