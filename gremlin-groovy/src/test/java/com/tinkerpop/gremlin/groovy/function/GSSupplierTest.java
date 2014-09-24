@@ -1,5 +1,6 @@
-package com.tinkerpop.gremlin.groovy.engine.function;
+package com.tinkerpop.gremlin.groovy.function;
 
+import com.tinkerpop.gremlin.groovy.function.GSSupplier;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.step.map.ValueStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;

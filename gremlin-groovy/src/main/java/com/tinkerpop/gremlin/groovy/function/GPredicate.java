@@ -2,10 +2,12 @@ package com.tinkerpop.gremlin.groovy.function;
 
 import groovy.lang.Closure;
 
+import java.util.function.Predicate;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GPredicate<A> implements java.util.function.Predicate<A>, java.io.Serializable {
+public class GPredicate<A> implements Predicate<A> {
 
     private final Closure closure;
 
@@ -21,8 +23,6 @@ public class GPredicate<A> implements java.util.function.Predicate<A>, java.io.S
     public static GPredicate[] make(final Closure... closures) {
         final GPredicate[] functions = new GPredicate[closures.length];
         for (int i = 0; i < closures.length; i++) {
-            // TODO: Should we do this?
-            // closures[i].dehydrate();
             functions[i] = new GPredicate(closures[i]);
         }
         return functions;

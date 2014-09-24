@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.groovy.engine;
 
-import com.tinkerpop.gremlin.groovy.engine.function.GSSupplier;
+import com.tinkerpop.gremlin.groovy.function.GSSupplier;
 import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.ComputerResult;

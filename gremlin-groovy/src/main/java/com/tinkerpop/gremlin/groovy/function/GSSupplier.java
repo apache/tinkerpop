@@ -1,11 +1,12 @@
-package com.tinkerpop.gremlin.groovy.engine.function;
+package com.tinkerpop.gremlin.groovy.function;
 
 import javax.script.ScriptException;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GSSupplier<A> extends GLambda implements java.util.function.Supplier<A>, java.io.Serializable {
+public class GSSupplier<A> extends GSLambda implements Supplier<A> {
 
     public GSSupplier(final String gremlinGroovyScript) {
         super(gremlinGroovyScript);

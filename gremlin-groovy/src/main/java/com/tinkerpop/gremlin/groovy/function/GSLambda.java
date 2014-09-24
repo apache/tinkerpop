@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.groovy.engine.function;
+package com.tinkerpop.gremlin.groovy.function;
 
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 
@@ -11,13 +11,13 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class GLambda implements Serializable {
+public abstract class GSLambda implements Serializable {
 
     protected final String gremlinGroovyScript;
     protected final static GremlinGroovyScriptEngine STATIC_ENGINE = new GremlinGroovyScriptEngine();
     private static final List<String> VARIABLE_NAME_ARRAY = Arrays.asList("a", "b", "c", "d", "e", "f", "g");
 
-    public GLambda(final String gremlinGroovyScript) {
+    public GSLambda(final String gremlinGroovyScript) {
         this.gremlinGroovyScript = gremlinGroovyScript;
     }
 

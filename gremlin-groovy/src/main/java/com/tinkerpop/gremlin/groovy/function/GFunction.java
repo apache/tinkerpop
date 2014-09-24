@@ -23,8 +23,6 @@ public class GFunction<A, B> implements Function<A, B> {
     public static GFunction[] make(final Closure... closures) {
         final GFunction[] functions = new GFunction[closures.length];
         for (int i = 0; i < closures.length; i++) {
-            // TODO: Should we do this?
-            // closures[i].dehydrate();
             functions[i] = new GFunction(closures[i]);
         }
         return functions;
