@@ -2,8 +2,8 @@ package com.tinkerpop.gremlin.groovy.loaders
 
 import com.tinkerpop.gremlin.groovy.function.*
 import com.tinkerpop.gremlin.process.graph.GraphTraversal
-import com.tinkerpop.gremlin.structure.Element
-import com.tinkerpop.gremlin.util.function.SFunction
+
+import java.util.function.Function
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -28,7 +28,7 @@ class StepLoader {
         }
 
         GraphTraversal.metaClass.select = { final List<String> asLabels ->
-            return ((GraphTraversal) delegate).select(asLabels, new SFunction[0]);
+            return ((GraphTraversal) delegate).select(asLabels, new Function[0]);
         }
 
         GraphTraversal.metaClass.select = { final List<String> asLabels, final Closure... stepClosures ->
@@ -40,7 +40,7 @@ class StepLoader {
         }
 
         GraphTraversal.metaClass.tree = { final String memoryKey ->
-            return ((GraphTraversal) delegate).tree(memoryKey, new SFunction[0]);
+            return ((GraphTraversal) delegate).tree(memoryKey, new Function[0]);
         }
 
         GraphTraversal.metaClass.tree = { final Closure... branchClosures ->

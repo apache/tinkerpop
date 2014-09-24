@@ -13,7 +13,6 @@ import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.function.SSupplier;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
@@ -24,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -55,9 +55,9 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
         this.distributeVote = configuration.getBoolean(DISTRIBUTE_VOTE, false);
         try {
             if (configuration.containsKey(INCIDENT_TRAVERSAL)) {
-                final SSupplier<Traversal> traversalSupplier = VertexProgramHelper.deserialize(configuration, INCIDENT_TRAVERSAL);
+                final Supplier<Traversal> traversalSupplier = VertexProgramHelper.deserialize(configuration, INCIDENT_TRAVERSAL);
                 VertexProgramHelper.verifyReversibility(traversalSupplier.get());
-                this.messageType = MessageType.Local.of((SSupplier) traversalSupplier);
+                this.messageType = MessageType.Local.of((Supplier) traversalSupplier);
             }
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -162,7 +162,7 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
             return this;
         }
 
-        public Builder incidentTraversal(final SSupplier<Traversal<Vertex, Edge>> incidentTraversal) throws IOException {
+        public Builder incidentTraversal(final Supplier<Traversal<Vertex, Edge>> incidentTraversal) throws IOException {
             try {
                 VertexProgramHelper.serialize(incidentTraversal, this.configuration, INCIDENT_TRAVERSAL);
             } catch (final IOException e) {

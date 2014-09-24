@@ -3,9 +3,9 @@ package com.tinkerpop.gremlin.process;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.util.function.SBiPredicate;
 
 import java.util.Comparator;
+import java.util.function.BiPredicate;
 
 /**
  * A collection of (T)okens which allows for more concise Traversal definitions.
@@ -17,7 +17,7 @@ public enum T {
      * Greater than
      */
     gt {
-        public SBiPredicate getPredicate() {
+        public BiPredicate getPredicate() {
             return Compare.GREATER_THAN;
         }
     },
@@ -25,7 +25,7 @@ public enum T {
      * Less than
      */
     lt {
-        public SBiPredicate getPredicate() {
+        public BiPredicate getPredicate() {
             return Compare.LESS_THAN;
         }
     },
@@ -33,7 +33,7 @@ public enum T {
      * Equal to
      */
     eq {
-        public SBiPredicate getPredicate() {
+        public BiPredicate getPredicate() {
             return Compare.EQUAL;
         }
     },
@@ -41,7 +41,7 @@ public enum T {
      * Greater than or equal to
      */
     gte {
-        public SBiPredicate getPredicate() {
+        public BiPredicate getPredicate() {
             return Compare.GREATER_THAN_EQUAL;
         }
     },
@@ -49,7 +49,7 @@ public enum T {
      * Less than or equal to
      */
     lte {
-        public SBiPredicate getPredicate() {
+        public BiPredicate getPredicate() {
             return Compare.LESS_THAN_EQUAL;
         }
     },
@@ -57,7 +57,7 @@ public enum T {
      * Not equal to
      */
     neq {
-        public SBiPredicate getPredicate() {
+        public BiPredicate getPredicate() {
             return Compare.NOT_EQUAL;
         }
     },
@@ -81,7 +81,7 @@ public enum T {
      * In collection
      */
     in {
-        public SBiPredicate getPredicate() {
+        public BiPredicate getPredicate() {
             return Contains.IN;
         }
     },
@@ -89,7 +89,7 @@ public enum T {
      * Not in collection
      */
     nin {
-        public SBiPredicate getPredicate() {
+        public BiPredicate getPredicate() {
             return Contains.NOT_IN;
         }
     },
@@ -132,7 +132,7 @@ public enum T {
     private static final String VALUE = Graph.System.system("value");
 
 
-    public SBiPredicate getPredicate() {
+    public BiPredicate getPredicate() {
         throw new IllegalArgumentException(this.toString() + " is an unknown predicate type");
     }
 

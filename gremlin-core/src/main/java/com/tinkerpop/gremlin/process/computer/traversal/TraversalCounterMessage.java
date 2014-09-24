@@ -13,11 +13,11 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.function.SSupplier;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -46,7 +46,7 @@ public class TraversalCounterMessage extends TraversalMessage {
         this.counter = counter;
     }
 
-    public static boolean execute(final Vertex vertex, final Messenger messenger, final SSupplier<Traversal> traversalSupplier) {
+    public static boolean execute(final Vertex vertex, final Messenger messenger, final Supplier<Traversal> traversalSupplier) {
 
         final TraverserCountTracker tracker = vertex.value(TraversalVertexProgram.TRAVERSER_TRACKER);
         final Traversal traversal = traversalSupplier.get();
@@ -110,7 +110,7 @@ public class TraversalCounterMessage extends TraversalMessage {
 
     private static boolean processStep(final Step<?, ?> step, final Map<Traverser, Long> localCounts, final long counter) {
         final boolean messageSent = step.hasNext();
-        step.forEachRemaining(traverser ->  MapHelper.incr(localCounts, traverser, counter));
+        step.forEachRemaining(traverser -> MapHelper.incr(localCounts, traverser, counter));
         return messageSent;
     }
 }

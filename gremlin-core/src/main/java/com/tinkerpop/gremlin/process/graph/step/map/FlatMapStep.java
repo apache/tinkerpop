@@ -4,23 +4,23 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
-import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.Iterator;
+import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class FlatMapStep<S, E> extends AbstractStep<S, E> {
 
-    public SFunction<Traverser<S>, Iterator<E>> function = null;
+    public Function<Traverser<S>, Iterator<E>> function = null;
     protected Iterator<Traverser<E>> iterator = null;
 
     public FlatMapStep(final Traversal traversal) {
         super(traversal);
     }
 
-    public void setFunction(final SFunction<Traverser<S>, Iterator<E>> function) {
+    public void setFunction(final Function<Traverser<S>, Iterator<E>> function) {
         this.function = function;
     }
 

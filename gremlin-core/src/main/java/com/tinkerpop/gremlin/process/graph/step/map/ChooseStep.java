@@ -3,11 +3,11 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
-import com.tinkerpop.gremlin.util.function.SFunction;
-import com.tinkerpop.gremlin.util.function.SPredicate;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * A step which offers a choice of two or more Traversals to take
@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public class ChooseStep<S, E, M> extends FlatMapStep<S, E> {
 
-    public ChooseStep(final Traversal traversal, final SPredicate<Traverser<S>> ifPredicate, final Traversal<S, E> trueBranch, final Traversal<S, E> falseBranch) {
+    public ChooseStep(final Traversal traversal, final Predicate<Traverser<S>> ifPredicate, final Traversal<S, E> trueBranch, final Traversal<S, E> falseBranch) {
         super(traversal);
         this.setFunction(traverser -> {
             final Traversal<S, E> branch = ifPredicate.test(traverser) ? trueBranch : falseBranch;
@@ -26,7 +26,7 @@ public class ChooseStep<S, E, M> extends FlatMapStep<S, E> {
         });
     }
 
-    public ChooseStep(final Traversal traversal, final SFunction<Traverser<S>, M> mapFunction, final Map<M, Traversal<S, E>> branches) {
+    public ChooseStep(final Traversal traversal, final Function<Traverser<S>, M> mapFunction, final Map<M, Traversal<S, E>> branches) {
         super(traversal);
         this.setFunction(traverser -> {
             final Traversal<S, E> branch = branches.get(mapFunction.apply(traverser));

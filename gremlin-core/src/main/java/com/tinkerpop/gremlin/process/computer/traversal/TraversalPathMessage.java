@@ -14,9 +14,9 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.referenced.ReferencedFactory;
-import com.tinkerpop.gremlin.util.function.SSupplier;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -34,7 +34,7 @@ public class TraversalPathMessage extends TraversalMessage {
         return new TraversalPathMessage(traverser);
     }
 
-    public static boolean execute(final Vertex vertex, final Messenger messenger, final SSupplier<Traversal> traversalSupplier) {
+    public static boolean execute(final Vertex vertex, final Messenger messenger, final Supplier<Traversal> traversalSupplier) {
 
         final TraverserPathTracker tracker = vertex.value(TraversalVertexProgram.TRAVERSER_TRACKER);
         final Traversal traversal = traversalSupplier.get();

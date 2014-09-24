@@ -1,12 +1,11 @@
 package com.tinkerpop.gremlin.groovy.function;
 
-import com.tinkerpop.gremlin.util.function.SBiFunction;
 import groovy.lang.Closure;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GBiFunction<A, B, C> implements SBiFunction<A, B, C> {
+public class GBiFunction<A, B, C> implements java.util.function.BiFunction<A, B, C>, java.io.Serializable {
 
     private final Closure closure;
 

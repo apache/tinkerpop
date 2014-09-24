@@ -1,13 +1,12 @@
 package com.tinkerpop.gremlin.groovy.engine.function;
 
-import com.tinkerpop.gremlin.util.function.SFunction;
-
 import javax.script.ScriptException;
+import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GSFunction<A, B> extends GLambda implements SFunction<A, B> {
+public class GSFunction<A, B> extends GLambda implements Function<A, B> {
 
     public GSFunction(final String gremlinGroovyScript) {
         super(gremlinGroovyScript);

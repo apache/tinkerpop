@@ -1,13 +1,11 @@
 package com.tinkerpop.gremlin.groovy.engine.function;
 
-import com.tinkerpop.gremlin.util.function.SPredicate;
-
 import javax.script.ScriptException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GSPredicate<A> extends GLambda implements SPredicate<A> {
+public class GSPredicate<A> extends GLambda implements java.util.function.Predicate<A>, java.io.Serializable {
 
     public GSPredicate(final String gremlinGroovyScript) {
         super(gremlinGroovyScript);

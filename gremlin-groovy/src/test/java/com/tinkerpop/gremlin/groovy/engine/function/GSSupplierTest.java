@@ -5,8 +5,9 @@ import com.tinkerpop.gremlin.process.graph.step.map.ValueStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect.TinkerGraphStep;
 import com.tinkerpop.gremlin.util.Serializer;
-import com.tinkerpop.gremlin.util.function.SSupplier;
 import org.junit.Test;
+
+import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
 
@@ -17,9 +18,9 @@ public class GSSupplierTest {
 
     @Test
     public void shouldSerialize() throws Exception {
-        SSupplier<Traversal> traversalSSupplier = new GSSupplier<>("TinkerFactory.createClassic().V().out().value('name')");
+        Supplier<Traversal> traversalSSupplier = new GSSupplier<>("TinkerFactory.createClassic().V().out().value('name')");
         byte[] bytes = Serializer.serializeObject(traversalSSupplier);
-        traversalSSupplier = (SSupplier<Traversal>) Serializer.deserializeObject(bytes);
+        traversalSSupplier = (Supplier<Traversal>) Serializer.deserializeObject(bytes);
         Traversal traversal = traversalSSupplier.get();
         assertEquals(TinkerGraphStep.class, traversal.getSteps().get(0).getClass());
         assertEquals(VertexStep.class, traversal.getSteps().get(1).getClass());

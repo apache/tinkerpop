@@ -1,12 +1,11 @@
 package com.tinkerpop.gremlin.groovy.function;
 
-import com.tinkerpop.gremlin.util.function.SSupplier;
 import groovy.lang.Closure;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GSupplier<A> implements SSupplier<A> {
+public class GSupplier<A> implements java.util.function.Supplier<A>, java.io.Serializable {
 
     private final Closure closure;
 

@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.util.function.SBiPredicate;
-
 import java.util.Collection;
 
 /**
@@ -17,7 +15,7 @@ import java.util.Collection;
  * @author Pierre De Wilde
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public enum Contains implements SBiPredicate<Object, Object> {
+public enum Contains implements java.util.function.BiPredicate<Object, Object>, java.io.Serializable {
 
     IN, NOT_IN;
 

@@ -8,11 +8,11 @@ import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
-import com.tinkerpop.gremlin.util.function.SPredicate;
 
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -21,8 +21,8 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
 
     public final String jumpLabel;
     public Step jumpToStep;
-    public final SPredicate<Traverser<S>> ifPredicate;
-    public final SPredicate<Traverser<S>> emitPredicate;
+    public final Predicate<Traverser<S>> ifPredicate;
+    public final Predicate<Traverser<S>> emitPredicate;
     public final int loops;
     public final Compare loopComparator;
     private AtomicBoolean jumpBack;
@@ -30,7 +30,7 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
     public Queue<Traverser<S>> queue;
     public boolean doWhile = true;
 
-    public JumpStep(final Traversal traversal, final String jumpLabel, final SPredicate<Traverser<S>> ifPredicate, final SPredicate<Traverser<S>> emitPredicate) {
+    public JumpStep(final Traversal traversal, final String jumpLabel, final Predicate<Traverser<S>> ifPredicate, final Predicate<Traverser<S>> emitPredicate) {
         super(traversal);
         this.loops = -1;
         this.loopComparator = null;
@@ -40,11 +40,11 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
         this.futureSetByChild = true;
     }
 
-    public JumpStep(final Traversal traversal, final String jumpLabel, final SPredicate<Traverser<S>> ifPredicate) {
+    public JumpStep(final Traversal traversal, final String jumpLabel, final Predicate<Traverser<S>> ifPredicate) {
         this(traversal, jumpLabel, ifPredicate, null);
     }
 
-    public JumpStep(final Traversal traversal, final String jumpLabel, final Compare loopComparator, final int loops, final SPredicate<Traverser<S>> emitPredicate) {
+    public JumpStep(final Traversal traversal, final String jumpLabel, final Compare loopComparator, final int loops, final Predicate<Traverser<S>> emitPredicate) {
         super(traversal);
         this.jumpLabel = jumpLabel;
         this.loops = loops;

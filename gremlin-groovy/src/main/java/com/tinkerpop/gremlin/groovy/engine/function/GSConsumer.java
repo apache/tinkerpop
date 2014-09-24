@@ -1,13 +1,11 @@
 package com.tinkerpop.gremlin.groovy.engine.function;
 
-import com.tinkerpop.gremlin.util.function.SConsumer;
-
 import javax.script.ScriptException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GSConsumer<A> extends GLambda implements SConsumer<A> {
+public class GSConsumer<A> extends GLambda implements java.util.function.Consumer<A>, java.io.Serializable {
 
     public GSConsumer(final String gremlinGroovyScript) {
         super(gremlinGroovyScript);

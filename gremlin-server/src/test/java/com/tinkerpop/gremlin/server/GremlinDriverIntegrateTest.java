@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.util.TimeUtil;
-import com.tinkerpop.gremlin.util.function.SFunction;
 import groovy.json.JsonBuilder;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,6 +23,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -42,13 +42,13 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Rule
     public TestName name = new TestName();
 
-    public static class RemoteTraversal implements SFunction<Graph, Traversal> {
+    public static class RemoteTraversal implements Function<Graph, Traversal> {
         public Traversal apply(final Graph g) {
             return g.V().out().range(0, 9);
         }
     }
 
-    public static class ParameterizedRemoteTraversal implements SFunction<Graph, Traversal> {
+    public static class ParameterizedRemoteTraversal implements Function<Graph, Traversal> {
         private String name;
         public ParameterizedRemoteTraversal(final String name) {
             this.name = name;

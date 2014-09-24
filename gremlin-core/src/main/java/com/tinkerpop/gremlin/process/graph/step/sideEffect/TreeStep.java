@@ -14,7 +14,8 @@ import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.function.SFunction;
+
+import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -26,7 +27,7 @@ public class TreeStep<S> extends SideEffectStep<S> implements Reversible, PathCo
     private final String sideEffectKey;
     private final String hiddenSideEffectKey;
 
-    public TreeStep(final Traversal traversal, final String sideEffectKey, final SFunction... branchFunctions) {
+    public TreeStep(final Traversal traversal, final String sideEffectKey, final Function... branchFunctions) {
         super(traversal);
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         this.hiddenSideEffectKey = Graph.Key.hide(this.sideEffectKey);

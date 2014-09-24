@@ -15,7 +15,6 @@ import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.batch.cache.VertexCache;
-import com.tinkerpop.gremlin.util.function.SConsumer;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -430,7 +429,7 @@ public class BatchGraph<G extends Graph> implements Graph {
         }
 
         @Override
-        public GraphTraversal<Vertex, Vertex> sideEffect(final SConsumer<Traverser<Vertex>> consumer) {
+        public GraphTraversal<Vertex, Vertex> sideEffect(final Consumer<Traverser<Vertex>> consumer) {
             throw retrievalNotSupported();
         }
 

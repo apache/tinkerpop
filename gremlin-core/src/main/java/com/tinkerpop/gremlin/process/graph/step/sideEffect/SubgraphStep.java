@@ -10,7 +10,6 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.GraphFactory;
-import com.tinkerpop.gremlin.util.function.SPredicate;
 import org.javatuples.Pair;
 
 import java.util.Collections;
@@ -19,6 +18,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * A side-effect step that produces an edge induced subgraph.
@@ -40,7 +40,7 @@ public class SubgraphStep<S> extends SideEffectStep<S> implements SideEffectCapa
     public SubgraphStep(final Traversal traversal, final String sideEffectKey,
                         final Set<Object> edgeIdHolder,
                         final Map<Object, Vertex> idVertexMap,
-                        final SPredicate<Edge> includeEdge) {
+                        final Predicate<Edge> includeEdge) {
         super(traversal);
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         this.edgeIdsAdded = null == edgeIdHolder ? new HashSet<>() : edgeIdHolder;

@@ -1,12 +1,13 @@
 package com.tinkerpop.gremlin.groovy.function;
 
-import com.tinkerpop.gremlin.util.function.SFunction;
 import groovy.lang.Closure;
+
+import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GFunction<A, B> implements SFunction<A, B> {
+public class GFunction<A, B> implements Function<A, B> {
 
     private final Closure closure;
 

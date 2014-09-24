@@ -15,27 +15,27 @@ import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCapable, Reversible, Bulkable, VertexCentric, Barrier, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
 
-    public final SFunction<Traverser<S>, ?> preAggregateFunction;
+    public final Function<Traverser<S>, ?> preAggregateFunction;
     Collection aggregate;
     final Queue<Traverser.System<S>> aggregateTraversers = new LinkedList<>();
     private long bulkCount = 1l;
     private final String sideEffectKey;
     private final String hiddenSideEffectKey;
 
-    public AggregateStep(final Traversal traversal, final String sideEffectKey, final SFunction<Traverser<S>, ?> preAggregateFunction) {
+    public AggregateStep(final Traversal traversal, final String sideEffectKey, final Function<Traverser<S>, ?> preAggregateFunction) {
         super(traversal);
         this.preAggregateFunction = preAggregateFunction;
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;

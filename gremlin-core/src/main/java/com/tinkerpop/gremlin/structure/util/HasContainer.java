@@ -7,11 +7,11 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.util.function.SBiPredicate;
 
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.BiPredicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -19,10 +19,10 @@ import java.util.List;
 public class HasContainer implements Serializable {
 
     public String key;
-    public SBiPredicate predicate;
+    public BiPredicate predicate;
     public Object value;
 
-    public HasContainer(final String key, final SBiPredicate predicate, final Object value) {
+    public HasContainer(final String key, final BiPredicate predicate, final Object value) {
         this.key = key;
         this.predicate = predicate;
         this.value = value;
@@ -35,7 +35,7 @@ public class HasContainer implements Serializable {
         this(key, contains, null);
     }
 
-    public HasContainer(final T accessor, final SBiPredicate predicate, final Object value) {
+    public HasContainer(final T accessor, final BiPredicate predicate, final Object value) {
         this(accessor.getAccessor(), predicate, value);
     }
 

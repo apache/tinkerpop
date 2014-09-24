@@ -13,10 +13,10 @@ import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -24,12 +24,12 @@ import java.util.Map;
 public class GroupCountStep<S> extends SideEffectStep<S> implements SideEffectCapable, Reversible, Bulkable, VertexCentric, MapReducer<Object, Long, Object, Long, Map<Object, Long>> {
 
     public Map<Object, Long> groupCountMap;
-    public SFunction<Traverser<S>, ?> preGroupFunction;
+    public Function<Traverser<S>, ?> preGroupFunction;
     private long bulkCount = 1l;
     private final String sideEffectKey;
     private final String hiddenSideEffectKey;
 
-    public GroupCountStep(final Traversal traversal, final String sideEffectKey, final SFunction<Traverser<S>, ?> preGroupFunction) {
+    public GroupCountStep(final Traversal traversal, final String sideEffectKey, final Function<Traverser<S>, ?> preGroupFunction) {
         super(traversal);
         this.preGroupFunction = preGroupFunction;
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;

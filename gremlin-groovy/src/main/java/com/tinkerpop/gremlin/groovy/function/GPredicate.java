@@ -1,12 +1,11 @@
 package com.tinkerpop.gremlin.groovy.function;
 
-import com.tinkerpop.gremlin.util.function.SPredicate;
 import groovy.lang.Closure;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GPredicate<A> implements SPredicate<A> {
+public class GPredicate<A> implements java.util.function.Predicate<A>, java.io.Serializable {
 
     private final Closure closure;
 

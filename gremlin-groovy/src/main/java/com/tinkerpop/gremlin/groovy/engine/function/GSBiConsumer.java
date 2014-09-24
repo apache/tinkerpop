@@ -1,13 +1,11 @@
 package com.tinkerpop.gremlin.groovy.engine.function;
 
-import com.tinkerpop.gremlin.util.function.SBiConsumer;
-
 import javax.script.ScriptException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GSBiConsumer<A, B> extends GLambda implements SBiConsumer<A, B> {
+public class GSBiConsumer<A, B> extends GLambda implements java.util.function.BiConsumer<A, B>, java.io.Serializable {
 
     public GSBiConsumer(final String gremlinGroovyScript) {
         super(gremlinGroovyScript);

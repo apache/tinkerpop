@@ -6,11 +6,11 @@ import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -22,7 +22,7 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
     private final boolean wasEmpty;
     private boolean requiresPaths = false;
 
-    public SelectStep(final Traversal traversal, final List<String> selectLabels, SFunction... stepFunctions) {
+    public SelectStep(final Traversal traversal, final List<String> selectLabels, Function... stepFunctions) {
         super(traversal);
         this.functionRing = new FunctionRing(stepFunctions);
         this.wasEmpty = selectLabels.size() == 0;

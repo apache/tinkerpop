@@ -1,12 +1,11 @@
 package com.tinkerpop.gremlin.groovy.function;
 
-import com.tinkerpop.gremlin.util.function.SBiPredicate;
 import groovy.lang.Closure;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GBiPredicate<A, B> implements SBiPredicate<A, B> {
+public class GBiPredicate<A, B> implements java.util.function.BiPredicate<A, B>, java.io.Serializable {
 
     private final Closure closure;
 

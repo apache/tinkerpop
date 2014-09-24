@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.function.STriFunction;
+import com.tinkerpop.gremlin.util.function.TriFunction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,7 +80,7 @@ public class PartitionGraphStrategy extends SubgraphStrategy {
     }
 
     @Override
-    public UnaryOperator<STriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
         return (f) -> (label, v, keyValues) -> {
             final List<Object> o = new ArrayList<>(Arrays.asList(keyValues));
             o.addAll(Arrays.asList(this.partitionKey, writePartition));

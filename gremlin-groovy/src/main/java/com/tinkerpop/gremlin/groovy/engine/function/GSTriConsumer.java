@@ -1,13 +1,13 @@
 package com.tinkerpop.gremlin.groovy.engine.function;
 
-import com.tinkerpop.gremlin.util.function.STriConsumer;
+import com.tinkerpop.gremlin.util.function.TriConsumer;
 
 import javax.script.ScriptException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GSTriConsumer<A, B, C> extends GLambda implements STriConsumer<A, B, C> {
+public class GSTriConsumer<A, B, C> extends GLambda implements TriConsumer<A, B, C> {
 
     public GSTriConsumer(final String gremlinGroovyScript) {
         super(gremlinGroovyScript);

@@ -3,16 +3,12 @@ package com.tinkerpop.gremlin.structure.io.graphml;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
-import com.tinkerpop.gremlin.util.function.SFunction;
-import com.tinkerpop.gremlin.util.function.SQuintFunction;
-import com.tinkerpop.gremlin.util.function.STriFunction;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -24,6 +20,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -58,24 +55,24 @@ public class GraphMLReader implements GraphReader {
 
     @Override
     public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
-                                         final SFunction<DetachedVertex, Vertex> vertexMaker,
-                                         final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
+                                         final Function<DetachedVertex, Vertex> vertexMaker,
+                                         final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 
     @Override
-    public Edge readEdge(final InputStream inputStream, final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
+    public Edge readEdge(final InputStream inputStream, final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final SFunction<DetachedVertex, Vertex> vertexMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final Function<DetachedVertex, Vertex> vertexMaker) throws IOException {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Direction direction, final SFunction<DetachedVertex, Vertex> vertexMaker,
-                             final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final Direction direction, final Function<DetachedVertex, Vertex> vertexMaker,
+                             final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 

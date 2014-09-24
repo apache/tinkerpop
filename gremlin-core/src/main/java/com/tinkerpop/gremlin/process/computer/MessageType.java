@@ -8,12 +8,11 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.function.SBiFunction;
-import com.tinkerpop.gremlin.util.function.SSupplier;
 
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 /**
  * A {@link MessageType} represents the "address" of a message. A message can have multiple receivers and message type
@@ -45,24 +44,24 @@ public abstract class MessageType implements Serializable {
     }
 
     public static class Local<M1, M2> extends MessageType {
-        public final SSupplier<Traversal<Vertex, Edge>> incidentTraversal;
-        public final SBiFunction<M1, Edge, M2> edgeFunction;
+        public final Supplier<Traversal<Vertex, Edge>> incidentTraversal;
+        public final BiFunction<M1, Edge, M2> edgeFunction;
 
-        private Local(final SSupplier<Traversal<Vertex, Edge>> incidentTraversal) {
+        private Local(final Supplier<Traversal<Vertex, Edge>> incidentTraversal) {
             this.incidentTraversal = incidentTraversal;
             this.edgeFunction = (final M1 m, final Edge e) -> (M2) m;
         }
 
-        private Local(final SSupplier<Traversal<Vertex, Edge>> incidentTraversal, final SBiFunction<M1, Edge, M2> edgeFunction) {
+        private Local(final Supplier<Traversal<Vertex, Edge>> incidentTraversal, final BiFunction<M1, Edge, M2> edgeFunction) {
             this.incidentTraversal = incidentTraversal;
             this.edgeFunction = edgeFunction;
         }
 
-        public static Local of(final SSupplier<Traversal<Vertex, Edge>> incidentTraversal) {
+        public static Local of(final Supplier<Traversal<Vertex, Edge>> incidentTraversal) {
             return new Local(incidentTraversal);
         }
 
-        public static <M1, M2> Local of(final SSupplier<Traversal<Vertex, Edge>> incidentTraversal, final SBiFunction<M1, Edge, M2> edgeFunction) {
+        public static <M1, M2> Local of(final Supplier<Traversal<Vertex, Edge>> incidentTraversal, final BiFunction<M1, Edge, M2> edgeFunction) {
             return new Local<>(incidentTraversal, edgeFunction);
         }
 
@@ -90,7 +89,7 @@ public abstract class MessageType implements Serializable {
             return this.edgeFunction;
         }
 
-        public SSupplier<Traversal<Vertex, Edge>> getIncidentTraversal() {
+        public Supplier<Traversal<Vertex, Edge>> getIncidentTraversal() {
             return this.incidentTraversal;
         }
     }

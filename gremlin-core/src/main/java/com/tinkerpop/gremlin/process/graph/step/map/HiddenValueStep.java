@@ -4,8 +4,8 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.util.SOptional;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -16,16 +16,16 @@ public class HiddenValueStep<E> extends MapStep<Element, E> {
     private boolean isHidden;
     public String key;
     public String hiddenKey;
-    public SOptional<E> defaultValue;
-    public SOptional<Supplier<E>> defaultSupplier;
+    public Optional<E> defaultValue;
+    public Optional<Supplier<E>> defaultSupplier;
 
     public HiddenValueStep(final Traversal traversal, final String key) {
         super(traversal);
         this.key = key;
         this.isHidden = Graph.Key.isHidden(this.key);
         this.hiddenKey = Graph.Key.hide(this.key);
-        this.defaultValue = SOptional.empty();
-        this.defaultSupplier = SOptional.empty();
+        this.defaultValue = Optional.empty();
+        this.defaultSupplier = Optional.empty();
         this.setFunction(traverser -> this.isHidden ? (E) NO_OBJECT : traverser.get().<E>property(this.hiddenKey).orElse((E) NO_OBJECT));
     }
 
@@ -34,8 +34,8 @@ public class HiddenValueStep<E> extends MapStep<Element, E> {
         this.key = key;
         this.isHidden = Graph.Key.isHidden(this.key);
         this.hiddenKey = Graph.Key.hide(this.key);
-        this.defaultValue = SOptional.of(defaultValue);
-        this.defaultSupplier = SOptional.empty();
+        this.defaultValue = Optional.of(defaultValue);
+        this.defaultSupplier = Optional.empty();
         this.setFunction(traverser -> this.isHidden ? (E) NO_OBJECT : traverser.get().<E>property(this.hiddenKey).orElse(this.defaultValue.get()));
     }
 
@@ -44,8 +44,8 @@ public class HiddenValueStep<E> extends MapStep<Element, E> {
         this.key = key;
         this.isHidden = Graph.Key.isHidden(this.key);
         this.hiddenKey = Graph.Key.hide(this.key);
-        this.defaultValue = SOptional.empty();
-        this.defaultSupplier = SOptional.of(defaultSupplier);
+        this.defaultValue = Optional.empty();
+        this.defaultSupplier = Optional.of(defaultSupplier);
         this.setFunction(traverser -> this.isHidden ? (E) NO_OBJECT : traverser.get().<E>property(this.hiddenKey).orElse(this.defaultSupplier.get().get()));
     }
 

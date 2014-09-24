@@ -6,14 +6,12 @@ import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
-import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
 /**
  * The {@link GraphReader} for the Gremlin Structure serialization format based on Kryo.  The format is meant to be
@@ -63,8 +62,8 @@ public class KryoReader implements GraphReader {
 
     @Override
     public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
-                                         final SFunction<DetachedVertex, Vertex> vertexMaker,
-                                         final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
+                                         final Function<DetachedVertex, Vertex> vertexMaker,
+                                         final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
         final Input input = new Input(inputStream);
         return new Iterator<Vertex>() {
             @Override
@@ -89,7 +88,7 @@ public class KryoReader implements GraphReader {
     }
 
     @Override
-    public Edge readEdge(final InputStream inputStream, final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
+    public Edge readEdge(final InputStream inputStream, final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
         final Input input = new Input(inputStream);
         this.headerReader.read(kryo, input);
         final Object o = kryo.readClassAndObject(input);
@@ -97,12 +96,12 @@ public class KryoReader implements GraphReader {
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final SFunction<DetachedVertex, Vertex> vertexMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final Function<DetachedVertex, Vertex> vertexMaker) throws IOException {
         return readVertex(inputStream, null, vertexMaker, null);
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Direction direction, SFunction<DetachedVertex, Vertex> vertexMaker, final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final Direction direction, Function<DetachedVertex, Vertex> vertexMaker, final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
         final Input input = new Input(inputStream);
         return readVertex(direction, vertexMaker, edgeMaker, input);
     }
@@ -196,8 +195,8 @@ public class KryoReader implements GraphReader {
         }
     }
 
-    private Vertex readVertex(final Direction directionRequested, final SFunction<DetachedVertex, Vertex> vertexMaker,
-                              final SFunction<DetachedEdge, Edge> edgeMaker, final Input input) throws IOException {
+    private Vertex readVertex(final Direction directionRequested, final Function<DetachedVertex, Vertex> vertexMaker,
+                              final Function<DetachedEdge, Edge> edgeMaker, final Input input) throws IOException {
         if (null != directionRequested && null == edgeMaker)
             throw new IllegalArgumentException("If a directionRequested is specified then an edgeAdder function should also be specified");
 
@@ -241,7 +240,7 @@ public class KryoReader implements GraphReader {
         return v;
     }
 
-    private void readEdges(final Input input, final SFunction<DetachedEdge, Edge> edgeMaker) {
+    private void readEdges(final Input input, final Function<DetachedEdge, Edge> edgeMaker) {
         if (input.readBoolean()) {
             Object next = kryo.readClassAndObject(input);
             while (!next.equals(EdgeTerminator.INSTANCE)) {

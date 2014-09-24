@@ -4,10 +4,10 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraverserIterator;
-import com.tinkerpop.gremlin.util.function.SBiPredicate;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.function.BiPredicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -16,11 +16,11 @@ public class WhereStep<E> extends FilterStep<Map<String, E>> {
 
     public final String firstKey;
     public final String secondKey;
-    public final SBiPredicate biPredicate;
+    public final BiPredicate biPredicate;
     public final Traversal constraint;
 
 
-    public WhereStep(final Traversal traversal, final String firstKey, final String secondKey, final SBiPredicate biPredicate) {
+    public WhereStep(final Traversal traversal, final String firstKey, final String secondKey, final BiPredicate biPredicate) {
         super(traversal);
         this.firstKey = firstKey;
         this.secondKey = secondKey;

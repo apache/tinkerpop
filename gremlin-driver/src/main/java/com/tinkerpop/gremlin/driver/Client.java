@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.util.Serializer;
-import com.tinkerpop.gremlin.util.function.SFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -85,11 +85,11 @@ public abstract class Client {
         }
     }
 
-    public ResultSet submit(final SFunction<Graph, Traversal> traversal) {
+    public ResultSet submit(final Function<Graph, Traversal> traversal) {
         return submit("g", traversal);
     }
 
-    public ResultSet submit(final String graph, final SFunction<Graph, Traversal> traversal) {
+    public ResultSet submit(final String graph, final Function<Graph, Traversal> traversal) {
         try {
             return submitAsync(graph, traversal).get();
         } catch (Exception ex) {
@@ -97,11 +97,11 @@ public abstract class Client {
         }
     }
 
-    public CompletableFuture<ResultSet> submitAsync(final SFunction<Graph, Traversal> traversal) {
+    public CompletableFuture<ResultSet> submitAsync(final Function<Graph, Traversal> traversal) {
         return submitAsync("g", traversal);
     }
 
-    public CompletableFuture<ResultSet> submitAsync(final String graph, final SFunction<Graph, Traversal> traversal) {
+    public CompletableFuture<ResultSet> submitAsync(final String graph, final Function<Graph, Traversal> traversal) {
         try {
             final byte[] bytes = Serializer.serializeObject(traversal);
             final RequestMessage request = buildMessage(RequestMessage.build(Tokens.OPS_TRAVERSE)

@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
@@ -17,7 +16,6 @@ import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
-import com.tinkerpop.gremlin.util.function.SFunction;
 import org.javatuples.Pair;
 
 import java.io.BufferedReader;
@@ -29,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -121,28 +120,28 @@ public class GraphSONReader implements GraphReader {
 
     @Override
     public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
-                                         final SFunction<DetachedVertex, Vertex> vertexMaker,
-                                         final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
+                                         final Function<DetachedVertex, Vertex> vertexMaker,
+                                         final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
         final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
         return br.lines().<Vertex>map(FunctionUtils.wrapFunction(line -> readVertex(new ByteArrayInputStream(line.getBytes()), direction, vertexMaker, edgeMaker))).iterator();
     }
 
     @Override
-    public Edge readEdge(final InputStream inputStream, final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
+    public Edge readEdge(final InputStream inputStream, final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
         final Map<String, Object> edgeData = mapper.readValue(inputStream, mapTypeReference);
         return readEdgeData(edgeData, edgeMaker);
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final SFunction<DetachedVertex, Vertex> vertexMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final Function<DetachedVertex, Vertex> vertexMaker) throws IOException {
         final Map<String, Object> vertexData = mapper.readValue(inputStream, mapTypeReference);
         return readVertexData(vertexData, vertexMaker);
     }
 
     @Override
     public Vertex readVertex(final InputStream inputStream, final Direction direction,
-                             final SFunction<DetachedVertex, Vertex> vertexMaker,
-                             final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
+                             final Function<DetachedVertex, Vertex> vertexMaker,
+                             final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
         final Map<String, Object> vertexData = mapper.readValue(inputStream, mapTypeReference);
         final Vertex v = readVertexData(vertexData, vertexMaker);
 
@@ -155,14 +154,14 @@ public class GraphSONReader implements GraphReader {
         return v;
     }
 
-    private static void readVertexEdges(final SFunction<DetachedEdge, Edge> edgeMaker, final Map<String, Object> vertexData, final String direction) throws IOException {
+    private static void readVertexEdges(final Function<DetachedEdge, Edge> edgeMaker, final Map<String, Object> vertexData, final String direction) throws IOException {
         final List<Map<String, Object>> edgeDatas = (List<Map<String, Object>>) vertexData.get(direction);
         for (Map<String, Object> edgeData : edgeDatas) {
             readEdgeData(edgeData, edgeMaker);
         }
     }
 
-    private static Edge readEdgeData(final Map<String, Object> edgeData, final SFunction<DetachedEdge, Edge> edgeMaker) throws IOException {
+    private static Edge readEdgeData(final Map<String, Object> edgeData, final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
         final Map<String, Object> properties = (Map<String, Object>) edgeData.get(GraphSONTokens.PROPERTIES);
         final Map<String, Object> hiddens = ((Map<String, Object>) edgeData.get(GraphSONTokens.HIDDENS)).entrySet().stream().collect(Collectors.toMap((Map.Entry kv) -> Graph.Key.hide(kv.getKey().toString()), (Map.Entry kv) -> kv.getValue()));
 
@@ -175,7 +174,7 @@ public class GraphSONReader implements GraphReader {
         return edgeMaker.apply(edge);
     }
 
-    private static Vertex readVertexData(final Map<String, Object> vertexData, final SFunction<DetachedVertex, Vertex> vertexMaker) throws IOException {
+    private static Vertex readVertexData(final Map<String, Object> vertexData, final Function<DetachedVertex, Vertex> vertexMaker) throws IOException {
         final Map<String, Object> vertexProperties = (Map<String, Object>) vertexData.get(GraphSONTokens.PROPERTIES);
         final Map<String, Object> hiddenVertexProperties = ((Map<String, Object>) vertexData.get(GraphSONTokens.HIDDENS)).entrySet().stream().collect(Collectors.toMap((Map.Entry kv) -> Graph.Key.hide(kv.getKey().toString()), (Map.Entry kv) -> kv.getValue()));
         final DetachedVertex vertex = new DetachedVertex(vertexData.get(GraphSONTokens.ID),

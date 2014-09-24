@@ -3,20 +3,21 @@ package com.tinkerpop.gremlin.process.graph.step.filter;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
-import com.tinkerpop.gremlin.util.function.SPredicate;
+
+import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class FilterStep<S> extends AbstractStep<S, S> {
 
-    public SPredicate<Traverser<S>> predicate = null;
+    public Predicate<Traverser<S>> predicate = null;
 
     public FilterStep(final Traversal traversal) {
         super(traversal);
     }
 
-    public void setPredicate(final SPredicate<Traverser<S>> predicate) {
+    public void setPredicate(final Predicate<Traverser<S>> predicate) {
         this.predicate = predicate;
     }
 

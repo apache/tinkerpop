@@ -1,12 +1,11 @@
 package com.tinkerpop.gremlin.groovy.function;
 
-import com.tinkerpop.gremlin.util.function.SBiConsumer;
 import groovy.lang.Closure;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GBiConsumer<A, B> implements SBiConsumer<A, B> {
+public class GBiConsumer<A, B> implements java.util.function.BiConsumer<A, B>, java.io.Serializable {
 
     private final Closure closure;
 

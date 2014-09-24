@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.function.SFunction;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
@@ -15,6 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -25,7 +25,7 @@ public class GroupByMapReduce implements MapReduce<Object, Collection, Object, O
     public static final String GROUP_BY_REDUCE_FUNCTION = "gremlin.groupByStep.reduceFunction";
 
     private String sideEffectKey;
-    private SFunction reduceFunction;
+    private Function reduceFunction;
 
     public GroupByMapReduce() {
 

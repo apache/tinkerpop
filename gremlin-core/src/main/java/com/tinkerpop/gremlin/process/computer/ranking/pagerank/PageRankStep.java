@@ -7,8 +7,9 @@ import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.function.SSupplier;
 import org.javatuples.Pair;
+
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -19,7 +20,7 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
     private boolean firstNext = true;
     private Graph resultantGraph;
     public double alpha;
-    public SSupplier<Traversal<Vertex, Edge>> incidentTraversal = () -> GraphTraversal.<Vertex>of().outE();
+    public Supplier<Traversal<Vertex, Edge>> incidentTraversal = () -> GraphTraversal.<Vertex>of().outE();
 
     public PageRankStep(final Traversal traversal, final double alpha) {
         super(traversal);
@@ -31,7 +32,7 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
         this(traversal, 0.85d);
     }
 
-    public PageRankStep(final Traversal traversal, final SSupplier<Traversal<Vertex, Edge>> incidentTraversal) {
+    public PageRankStep(final Traversal traversal, final Supplier<Traversal<Vertex, Edge>> incidentTraversal) {
         this(traversal, 0.85);
         this.incidentTraversal = incidentTraversal;
     }

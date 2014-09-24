@@ -11,13 +11,13 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupByMapR
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -26,14 +26,14 @@ public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEf
 
     public Map<K, Collection<V>> groupByMap;
     public final Map<K, R> reduceMap;
-    public final SFunction<Traverser<S>, K> keyFunction;
-    public final SFunction<Traverser<S>, V> valueFunction;
-    public final SFunction<Collection<V>, R> reduceFunction;
+    public final Function<Traverser<S>, K> keyFunction;
+    public final Function<Traverser<S>, V> valueFunction;
+    public final Function<Collection<V>, R> reduceFunction;
     private final String sideEffectKey;
     private final String hiddenSideEffectKey;
     public boolean vertexCentric = false;
 
-    public GroupByStep(final Traversal traversal, final String sideEffectKey, final SFunction<Traverser<S>, K> keyFunction, final SFunction<Traverser<S>, V> valueFunction, final SFunction<Collection<V>, R> reduceFunction) {
+    public GroupByStep(final Traversal traversal, final String sideEffectKey, final Function<Traverser<S>, K> keyFunction, final Function<Traverser<S>, V> valueFunction, final Function<Collection<V>, R> reduceFunction) {
         super(traversal);
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         this.hiddenSideEffectKey = Graph.Key.hide(this.sideEffectKey);
@@ -59,7 +59,7 @@ public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEf
         return this.sideEffectKey;
     }
 
-    private static <S, K, V> void doGroup(final Traverser<S> traverser, final Map<K, Collection<V>> groupMap, final SFunction<Traverser<S>, K> keyFunction, final SFunction<Traverser<S>, V> valueFunction) {
+    private static <S, K, V> void doGroup(final Traverser<S> traverser, final Map<K, Collection<V>> groupMap, final Function<Traverser<S>, K> keyFunction, final Function<Traverser<S>, V> valueFunction) {
         final K key = keyFunction.apply(traverser);
         final V value = valueFunction.apply(traverser);
         Collection<V> values = groupMap.get(key);
@@ -70,7 +70,7 @@ public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEf
         GroupByStep.addValue(value, values);
     }
 
-    private static <K, V, R> void doReduce(final Map<K, Collection<V>> groupMap, final Map<K, R> reduceMap, final SFunction<Collection<V>, R> reduceFunction) {
+    private static <K, V, R> void doReduce(final Map<K, Collection<V>> groupMap, final Map<K, R> reduceMap, final Function<Collection<V>, R> reduceFunction) {
         groupMap.forEach((k, vv) -> reduceMap.put(k, reduceFunction.apply(vv)));
     }
 

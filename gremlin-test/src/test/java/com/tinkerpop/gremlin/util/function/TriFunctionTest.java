@@ -9,17 +9,17 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SHexFunctionTest {
+public class TriFunctionTest {
     @Test
     public void shouldApplyCurrentFunctionAndThenAnotherSuppliedOne() {
-        final SHexFunction<String, String, String, String, String, String, String> f = (a, b, c, d, e, g) -> a + b + c + d + e + g;
+        final TriFunction<String, String, String, String> f = (a, b, c) -> a + b + c;
         final UnaryOperator<String> after = (s) -> s + "last";
-        assertEquals("123456last", f.andThen(after).apply("1", "2", "3", "4", "5", "6"));
+        assertEquals("123last", f.andThen(after).apply("1", "2", "3"));
     }
 
     @Test(expected = NullPointerException.class)
     public void shouldThrowIfAfterFunctionIsNull() {
-        final SHexFunction<String, String, String, String, String, String, String> f = (a, b, c, d, e, g) -> a + b + c + e + g;
+        final TriFunction<String, String, String, String> f = (a, b, c) -> a + b + c;
         f.andThen(null);
     }
 }

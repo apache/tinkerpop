@@ -13,7 +13,6 @@ import com.tinkerpop.gremlin.server.op.OpProcessorException;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.util.Serializer;
-import com.tinkerpop.gremlin.util.function.SFunction;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.collections.iterators.ArrayIterator;
 import org.javatuples.Pair;
@@ -25,6 +24,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -66,11 +66,11 @@ final class StandardOps {
         final Map<String, Object> args = msg.getArgs();
         final Map<String, Object> bindings = Optional.ofNullable((Map<String, Object>) args.get(Tokens.ARGS_BINDINGS)).orElse(new HashMap<>());
 
-        final SFunction<Graph, Traversal> traversal;
+        final Function<Graph, Traversal> traversal;
         try {
             // deserialize the traversal and shove it into the bindings so that it can be executed within the
             // scriptengine.  the scriptengine acts as a sandbox within which to execute the traversal.
-            traversal = (SFunction<Graph, Traversal>) Serializer.deserializeObject((byte[]) args.get(Tokens.ARGS_GREMLIN));
+            traversal = (Function<Graph, Traversal>) Serializer.deserializeObject((byte[]) args.get(Tokens.ARGS_GREMLIN));
             bindings.put("____trvrslScrpt", traversal);
         } catch (Exception ex) {
             logger.warn(String.format("Exception processing a traversal on request [%s].", msg), ex);

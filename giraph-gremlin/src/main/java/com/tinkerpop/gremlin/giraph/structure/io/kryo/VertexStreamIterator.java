@@ -1,25 +1,20 @@
 package com.tinkerpop.gremlin.giraph.structure.io.kryo;
 
-import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import com.tinkerpop.gremlin.util.function.SFunction;
-import com.tinkerpop.gremlin.util.function.SQuintFunction;
-import com.tinkerpop.gremlin.util.function.STriFunction;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.function.Function;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
@@ -125,8 +120,8 @@ public class VertexStreamIterator implements Iterator<Vertex> {
 
             if (terminated) {
                 final Graph gLocal = TinkerGraph.open();
-                final SFunction<DetachedVertex, Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex);
-                final SFunction<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge);
+                final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex);
+                final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge);
                 try (InputStream in = new ByteArrayInputStream(output.toByteArray())) {
                     return reader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
                 }

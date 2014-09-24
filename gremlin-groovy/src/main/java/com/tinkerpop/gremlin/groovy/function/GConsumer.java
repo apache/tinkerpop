@@ -1,12 +1,11 @@
 package com.tinkerpop.gremlin.groovy.function;
 
-import com.tinkerpop.gremlin.util.function.SConsumer;
 import groovy.lang.Closure;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GConsumer<A> implements SConsumer<A> {
+public class GConsumer<A> implements java.util.function.Consumer<A>, java.io.Serializable {
 
     private final Closure closure;
 
