@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
 import java.util.List;
@@ -15,9 +14,12 @@ import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@ExceptionCoverage(exceptionClass = Edge.Exceptions.class, methods = {
-        "edgeLabelCanNotBeNull"
+@ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
+        "labelCanNotBeNull",
+        "labelCanNotBeEmpty",
+        "labelCanNotBeASystemKey"
 })
 public class EdgeTest extends AbstractGremlinTest {
     @Test
@@ -40,7 +42,38 @@ public class EdgeTest extends AbstractGremlinTest {
             v.addEdge(null, v);
             fail("Call to Vertex.addEdge() should throw an exception when label is null");
         } catch (Exception ex) {
-            final Exception expectedException = Edge.Exceptions.edgeLabelCanNotBeNull();
+            final Exception expectedException = Element.Exceptions.labelCanNotBeNull();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    public void shouldHaveExceptionConsistencyWhenUsingEmptyVertexLabel() {
+        final Vertex v = g.addVertex();
+        try {
+            v.addEdge("", v);
+            fail("Call to Vertex.addEdge() should throw an exception when label is empty");
+        } catch (Exception ex) {
+            final Exception expectedException = Element.Exceptions.labelCanNotBeEmpty();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    public void shouldHaveExceptionConsistencyWhenUsingSystemVertexLabel() {
+        final String label = Graph.System.system("systemLabel");
+        final Vertex v = g.addVertex();
+        try {
+            v.addEdge(label, v);
+            fail("Call to Vertex.addEdge() should throw an exception when label is a system key");
+        } catch (Exception ex) {
+            final Exception expectedException = Element.Exceptions.labelCanNotBeASystemKey(label);
             assertEquals(expectedException.getClass(), ex.getClass());
             assertEquals(expectedException.getMessage(), ex.getMessage());
         }

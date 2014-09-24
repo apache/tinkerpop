@@ -29,7 +29,8 @@ import static org.junit.Assert.*;
         "providedKeyIsNotAMemoryComputeKey",
         "computerHasNoVertexProgramNorMapReducers",
         "computerHasAlreadyBeenSubmittedAVertexProgram",
-        "providedKeyIsNotAnElementComputeKey"
+        "providedKeyIsNotAnElementComputeKey",
+        "isolationNotSupported"
 })
 @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
         "graphDoesNotSupportProvidedGraphComputer",
@@ -41,6 +42,31 @@ public class GraphComputerTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldHaveStandardStringRepresentation() {
         final GraphComputer computer = g.compute();
+        assertEquals(StringFactory.computerString(computer), computer.toString());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
+    public void shouldFailIfIsolationIsNotSupported() {
+        final GraphComputer computer = g.compute();
+        if(!computer.features().supportsIsolation(GraphComputer.Isolation.BSP)) {
+            try {
+                computer.isolation(GraphComputer.Isolation.BSP);
+                fail("GraphComputer.isolation() should throw an exception if the isolation is not supported");
+            } catch(Exception e) {
+                assertEquals(GraphComputer.Exceptions.isolationNotSupported(GraphComputer.Isolation.BSP).getMessage(), e.getMessage());
+                assertEquals(GraphComputer.Exceptions.isolationNotSupported(GraphComputer.Isolation.BSP).getCause(), e.getClass());
+            }
+        }
+        if(!computer.features().supportsIsolation(GraphComputer.Isolation.DIRTY_BSP)) {
+            try {
+                computer.isolation(GraphComputer.Isolation.DIRTY_BSP);
+                fail("GraphComputer.isolation() should throw an exception if the isolation is not supported");
+            } catch(Exception e) {
+                assertEquals(GraphComputer.Exceptions.isolationNotSupported(GraphComputer.Isolation.DIRTY_BSP).getMessage(), e.getMessage());
+                assertEquals(GraphComputer.Exceptions.isolationNotSupported(GraphComputer.Isolation.DIRTY_BSP).getCause(), e.getClass());
+            }
+        }
         assertEquals(StringFactory.computerString(computer), computer.toString());
     }
 

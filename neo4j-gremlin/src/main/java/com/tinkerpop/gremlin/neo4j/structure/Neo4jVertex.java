@@ -149,11 +149,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
 
     @Override
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
-        if (label == null)
-            throw Edge.Exceptions.edgeLabelCanNotBeNull();
-        if (label.startsWith(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX))
-            throw new IllegalArgumentException("The edge label prefix " + Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX + " is reserved for Neo4jVertexProperties.");
-
+        ElementHelper.validateLabel(label);
         ElementHelper.legalPropertyKeyValueArray(keyValues);
         if (ElementHelper.getIdValue(keyValues).isPresent())
             throw Edge.Exceptions.userSuppliedIdsNotSupported();

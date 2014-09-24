@@ -201,8 +201,10 @@ public class ElementHelper {
      */
     public static Optional<String> getLabelValue(final Object... keyValues) {
         for (int i = 0; i < keyValues.length; i = i + 2) {
-            if (keyValues[i].equals(T.label))
+            if (keyValues[i].equals(T.label)) {
+                ElementHelper.validateLabel((String) keyValues[i + 1]);
                 return Optional.of((String) keyValues[i + 1]);
+            }
         }
         return Optional.empty();
     }

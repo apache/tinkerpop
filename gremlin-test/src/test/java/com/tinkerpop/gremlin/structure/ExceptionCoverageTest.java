@@ -43,24 +43,15 @@ public class ExceptionCoverageTest {
         // be exceptions ignored if they are "base" exception methods that are used to compose other exceptions,
         // like the first set listed (and labelled as such) below in the list assignments.
         final Set<String> ignore = new HashSet<String>() {{
-            // these exceptions is not used directly...they are called by other exception methods.
-            add("com.tinkerpop.gremlin.structure.Property$Exceptions#propertyKeyIsReserved");
-            add("com.tinkerpop.gremlin.structure.Graph$Variables$Exceptions#memoryKeyIsReserved");
-
-            // this is a general exception to be used as needed.  it is not explicitly tested:
+            // this is a general exception to be used as needed. it is not explicitly tested:
             add("com.tinkerpop.gremlin.structure.Graph$Exceptions#argumentCanNotBeNull");
 
             // todo: need to write consistency tests for the following items still...........
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeRead");
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeWritten");
-            add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#constantComputeKeyHasAlreadyBeenSet");
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentVerticesCanNotBeQueried");
-            add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#isolationNotSupported");
 
             add("com.tinkerpop.gremlin.structure.Element$Exceptions#propertyAdditionNotSupported");
-            add("com.tinkerpop.gremlin.structure.Element$Exceptions#labelCanNotBeNull");
-            add("com.tinkerpop.gremlin.structure.Element$Exceptions#labelCanNotBeEmpty");
-            add("com.tinkerpop.gremlin.structure.Element$Exceptions#labelCanNotBeASystemKey");
 
             add("com.tinkerpop.gremlin.structure.Graph$Exceptions#vertexLookupsNotSupported");
             add("com.tinkerpop.gremlin.structure.Graph$Exceptions#edgeLookupsNotSupported");

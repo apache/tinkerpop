@@ -123,9 +123,19 @@ public class ElementHelperTest {
         ElementHelper.getLabelValue("test", 321, T.label, 4545, "testagain", "that");
     }
 
-    @Test(expected = NullPointerException.class)
-    public void shouldNotFindTheLabelBecauseItIsNull() {
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldFailCauseNullLabelsAreNotAllowed() {
         ElementHelper.getLabelValue("test", 321, T.label, null, "testagain", "that");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldFailCauseSystemLabelsAreNotAllowed() {
+        ElementHelper.getLabelValue("test", 321, T.label, Graph.System.system("systemLabel"), "testagain", "that");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldFailCauseEmptyLabelsAreNotAllowed() {
+        ElementHelper.getLabelValue("test", 321, T.label, "", "testagain", "that");
     }
 
     @Test

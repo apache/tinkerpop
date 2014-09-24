@@ -31,8 +31,7 @@ public class TinkerHelper {
     }
 
     protected static Edge addEdge(final TinkerGraph graph, final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Object... keyValues) {
-        if (null == label)
-            throw Edge.Exceptions.edgeLabelCanNotBeNull();
+        ElementHelper.validateLabel(label);
         ElementHelper.legalPropertyKeyValueArray(keyValues);
 
         Object idValue = ElementHelper.getIdValue(keyValues).orElse(null);

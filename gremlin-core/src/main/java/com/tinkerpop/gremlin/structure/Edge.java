@@ -72,9 +72,6 @@ public interface Edge extends Element, EdgeTraversal {
      * Common exceptions to use with an edge.
      */
     public static class Exceptions extends Element.Exceptions {
-        public static IllegalArgumentException edgeLabelCanNotBeNull() {
-            return new IllegalArgumentException("Edge label can not be null");
-        }
 
         public static UnsupportedOperationException userSuppliedIdsNotSupported() {
             return new UnsupportedOperationException("Edge does not support user supplied identifiers");
