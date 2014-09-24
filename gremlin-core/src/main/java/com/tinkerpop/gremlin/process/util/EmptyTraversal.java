@@ -15,7 +15,7 @@ import java.util.List;
 public class EmptyTraversal<S, E> implements Traversal<S, E> {
 
     private static final EmptyTraversal INSTANCE = new EmptyTraversal();
-    private static final SideEffects SIDE_EFFECTS = new DefaultSideEffects(EmptyTraversal.instance());
+    private static final SideEffects SIDE_EFFECTS = new DefaultSideEffects();
     private static final Strategies TRAVERSAL_STRATEGIES = new DefaultStrategies(EmptyTraversal.instance());
 
     public static <A,B> EmptyTraversal<A,B> instance() {

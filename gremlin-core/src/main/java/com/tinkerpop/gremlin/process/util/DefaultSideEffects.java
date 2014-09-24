@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,14 +11,9 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DefaultSideEffects implements Traversal.SideEffects {
+public class DefaultSideEffects implements Traversal.SideEffects, Serializable {
 
     private Map<String, Object> sideEffects;
-    private Traversal traversal;
-
-    public DefaultSideEffects(final Traversal traversal) {
-        this.traversal = traversal;
-    }
 
     @Override
     public boolean exists(final String key) {

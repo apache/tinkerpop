@@ -63,7 +63,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
         this.getSteps().forEach(Step::reset);
     }
 
-    public interface Strategies extends Serializable {
+    public interface Strategies {
 
         public void register(final TraversalStrategy traversalStrategy);
 
@@ -76,7 +76,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
         public boolean complete();
     }
 
-    public interface SideEffects extends Serializable {
+    public interface SideEffects {
 
         public default boolean exists(final String key) {
             return this.keys().contains(key);
