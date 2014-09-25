@@ -520,7 +520,7 @@ public interface GraphStrategy {
     }
 
     /**
-     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Vertex.Iterators#values}.
+     * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Vertex.Iterators#values}.
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
@@ -532,7 +532,7 @@ public interface GraphStrategy {
     }
 
     /**
-     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Edge.Iterators#values}.
+     * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Edge.Iterators#values}.
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
@@ -540,6 +540,20 @@ public interface GraphStrategy {
      * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
     public default <V> UnaryOperator<Function<String[], Iterator<V>>> getEdgeIteratorsValuesStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
+        return UnaryOperator.identity();
+    }
+
+    // todo: clean up all this javadoc wrt the @return
+
+    /**
+     * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.VertexProperty.Iterators#values}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
+     * {@link com.tinkerpop.gremlin.structure.VertexProperty.Iterators#values} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     */
+    public default <V,U> UnaryOperator<Function<String[], Iterator<V>>> getVertexPropertyIteratorsValuesStrategy(final Strategy.Context<StrategyWrappedVertexProperty<U>> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -564,6 +578,18 @@ public interface GraphStrategy {
      * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
     public default <V> UnaryOperator<Function<String[], Iterator<V>>> getEdgeIteratorsHiddenValuesStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
+        return UnaryOperator.identity();
+    }
+
+    /**
+     * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.VertexProperty.Iterators#hiddenValues}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
+     * {@link com.tinkerpop.gremlin.structure.VertexProperty.Iterators#hiddenValues} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     */
+    public default <V,U> UnaryOperator<Function<String[], Iterator<V>>> getVertexPropertyIteratorsHiddenValuesStrategy(final Strategy.Context<StrategyWrappedVertexProperty<U>> ctx) {
         return UnaryOperator.identity();
     }
 

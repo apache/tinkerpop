@@ -119,13 +119,17 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
         }
 
         @Override
-        public <V> Iterator<V> values(final String... propertyKeys) {
-            return null;
+        public <U> Iterator<U> values(final String... propertyKeys) {
+            return strategyWrappedGraph.strategy().compose(
+                    s -> s.<U,V>getVertexPropertyIteratorsValuesStrategy(strategyContext),
+                    (String[] pks) -> baseVertexProperty.iterators().values(pks)).apply(propertyKeys);
         }
 
         @Override
-        public <V> Iterator<V> hiddenValues(final String... propertyKeys) {
-            return null;
+        public <U> Iterator<U> hiddenValues(final String... propertyKeys) {
+            return strategyWrappedGraph.strategy().compose(
+                    s -> s.<U,V>getVertexPropertyIteratorsHiddenValuesStrategy(strategyContext),
+                    (String[] pks) -> baseVertexProperty.iterators().hiddenValues(pks)).apply(propertyKeys);
         }
     }
 }
