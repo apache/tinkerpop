@@ -62,7 +62,7 @@ public class GraphSONRecordReaderWriterTest {
                 writer.write(NullWritable.get(), v);
 
                 Vertex vertex = v.getTinkerVertex();
-                assertEquals(String.class, vertex.id().getClass());
+                assertEquals(Integer.class, vertex.id().getClass());
 
                 Object value = vertex.property("name");
                 if (null != value && ((Property) value).value().equals("SUGAR MAGNOLIA")) {
@@ -82,7 +82,7 @@ public class GraphSONRecordReaderWriterTest {
         assertEquals(808, lines.length);
         String line42 = lines[41];
         assertTrue(line42.contains("outVLabel"));
-        assertTrue(line42.contains("Jorma"));
+        assertTrue(line42.contains("ITS ALL OVER NOW"));
 
     }
 

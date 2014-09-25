@@ -61,7 +61,7 @@ public class KryoRecordReaderWriterTest {
                 writer.write(NullWritable.get(), v);
 
                 Vertex vertex = v.getTinkerVertex();
-                assertEquals(String.class, vertex.id().getClass());
+                assertEquals(Integer.class, vertex.id().getClass());
 
                 Object value = vertex.property("name");
                 if (null != value && ((Property) value).value().equals("SUGAR MAGNOLIA")) {
@@ -81,7 +81,7 @@ public class KryoRecordReaderWriterTest {
         assertEquals(808, lines.length);
         String line42 = lines[41];
         //System.out.println("line42: " + line42);
-        assertTrue(line42.contains("Jorma"));
+        assertTrue(line42.contains("ITS ALL OVER NO"));
     }
 
     private <T> long count(final Iterable<T> iter) {

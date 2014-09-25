@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -536,39 +537,40 @@ public class TinkerGraphTest {
         }
     }
 
-    // TODO: kill this test below once we're sure we're happy with grateful dead
+    /**
+     * This test helps with data conversions on Grateful Dead.  No Assertions...run as needed.
+     */
     @Test
     @Ignore
-    public void shouldConvertGratefulDeadTypesToLabels() throws IOException {
+    public void shouldConvertGratefulDeadTypes() throws IOException {
         final Graph g = TinkerGraph.open();
         final GraphReader reader = KryoReader.build().create();
-        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/util/io/kryo/grateful-dead.gio")) {
+        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/io/kryo/grateful-dead.gio")) {
             reader.readGraph(stream, g);
         }
 
-        /*
         final Graph ng = TinkerGraph.open();
         g.V().sideEffect(ov -> {
-            Vertex v = ov.get();
-            if (v.value("type").equals("song"))
-                ng.addVertex(Element.ID, v.id(), Element.LABEL, "song", "name", v.value("name"), "performances", v.property("performances").orElse(0), "songType", v.property("songType").orElse(""));
-            else if (v.value("type").equals("artist"))
-                ng.addVertex(Element.ID, v.id(), Element.LABEL, "artist", "name", v.value("name"));
+            final Vertex v = ov.get();
+            if (v.label().equals("song"))
+                ng.addVertex(T.id, Integer.parseInt(v.id().toString()), T.label, "song", "name", v.value("name"), "performances", v.property("performances").orElse(0), "songType", v.property("songType").orElse(""));
+            else if (v.label().equals("artist"))
+                ng.addVertex(T.id, Integer.parseInt(v.id().toString()), T.label, "artist", "name", v.value("name"));
             else
                 throw new RuntimeException("damn");
         }).iterate();
 
         g.E().sideEffect(oe -> {
-            Edge e = oe.get();
-            Vertex v2 = ng.v(e.inV().next().id());
-            Vertex v1 = ng.v(e.outV().next().id());
+            final Edge e = oe.get();
+            final Vertex v2 = ng.v(Integer.parseInt(e.inV().next().id().toString()));
+            final Vertex v1 = ng.v(Integer.parseInt(e.outV().next().id().toString()));
 
             if (e.label().equals("followedBy"))
-                v1.addEdge("followedBy", v2, Element.ID, e.id(), "weight", e.value("weight"));
+                v1.addEdge("followedBy", v2, T.id, Integer.parseInt(e.id().toString()), "weight", e.value("weight"));
             else if (e.label().equals("sungBy"))
-                v1.addEdge("sungBy", v2, Element.ID, e.id());
+                v1.addEdge("sungBy", v2, T.id, Integer.parseInt(e.id().toString()));
             else if (e.label().equals("writtenBy"))
-                v1.addEdge("writtenBy", v2, Element.ID, e.id());
+                v1.addEdge("writtenBy", v2, T.id, Integer.parseInt(e.id().toString()));
             else
                 throw new RuntimeException("bah");
 
@@ -577,7 +579,6 @@ public class TinkerGraphTest {
         final OutputStream os = new FileOutputStream(tempPath + "grateful-dead.gio");
         KryoWriter.build().create().writeGraph(os, ng);
         os.close();
-        */
 
         final OutputStream os2 = new FileOutputStream(tempPath + "grateful-dead.json");
         GraphSONWriter.build().embedTypes(true).create().writeGraph(os2, g);
