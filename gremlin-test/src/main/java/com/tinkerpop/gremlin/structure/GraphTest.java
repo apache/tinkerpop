@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.GraphProvider;
 import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
@@ -198,6 +199,27 @@ public class GraphTest extends AbstractGremlinTest {
         tryCommit(g, graph -> {
             final Vertex v = g.v(customId);
             assertEquals(customId, v.id());
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES, supported = false)
+    public void shouldOverwriteEarlierKeyValuesWithLaterKeyValuesOnAddVertexIfNoMultiProperty() {
+        final Vertex v = g.addVertex("test", "A", "test", "B", "test", "C");
+        tryCommit(g, graph -> assertEquals("C", v.value("test")));
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
+    public void shouldOverwriteEarlierKeyValuesWithLaterKeyValuesOnAddVertexIfMultiProperty() {
+        final Vertex v = g.addVertex("test", "A", "test", "B", "test", "C");
+        tryCommit(g, graph -> {
+            assertEquals(3, StreamFactory.stream(v.iterators().properties("test")).count());
+            assertTrue(StreamFactory.stream(v.iterators().values("test")).anyMatch(t -> t.equals("A")));
+            assertTrue(StreamFactory.stream(v.iterators().values("test")).anyMatch(t -> t.equals("B")));
+            assertTrue(StreamFactory.stream(v.iterators().values("test")).anyMatch(t -> t.equals("C")));
         });
     }
 
