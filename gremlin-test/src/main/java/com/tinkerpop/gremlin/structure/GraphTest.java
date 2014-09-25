@@ -207,7 +207,10 @@ public class GraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES, supported = false)
     public void shouldOverwriteEarlierKeyValuesWithLaterKeyValuesOnAddVertexIfNoMultiProperty() {
         final Vertex v = g.addVertex("test", "A", "test", "B", "test", "C");
-        tryCommit(g, graph -> assertEquals("C", v.value("test")));
+        tryCommit(g, graph -> {
+            assertEquals(1, StreamFactory.stream(v.iterators().properties("test")).count());
+            assertTrue(StreamFactory.stream(v.iterators().values("test")).anyMatch(t -> t.equals("C")));
+        });
     }
 
     @Test
