@@ -143,7 +143,7 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
         public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
             return StreamFactory.stream(strategyWrappedGraph.strategy().compose(
                     s -> s.<V>getVertexIteratorsPropertiesStrategy(strategyContext),
-                    (String[] pks) -> ((Vertex) baseElement).iterators().properties(pks)).apply(propertyKeys))
+                    (String[] pks) -> baseVertex.iterators().properties(pks)).apply(propertyKeys))
                     .map(property -> (VertexProperty<V>) new StrategyWrappedVertexProperty<>(property, strategyWrappedGraph)).iterator();
         }
 
@@ -151,7 +151,7 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
         public <V> Iterator<VertexProperty<V>> hiddens(final String... propertyKeys) {
             return StreamFactory.stream(strategyWrappedGraph.strategy().compose(
                     s -> s.<V>getVertexIteratorsHiddensStrategy(strategyContext),
-                    (String[] pks) -> ((Vertex) baseElement).iterators().hiddens(pks)).apply(propertyKeys))
+                    (String[] pks) -> baseVertex.iterators().hiddens(pks)).apply(propertyKeys))
                     .map(property -> (VertexProperty<V>) new StrategyWrappedVertexProperty<>(property, strategyWrappedGraph)).iterator();
         }
     }

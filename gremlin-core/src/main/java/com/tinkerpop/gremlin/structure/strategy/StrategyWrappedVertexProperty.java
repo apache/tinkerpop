@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure.strategy;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -14,11 +15,13 @@ import java.util.Set;
 public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement implements VertexProperty<V>, StrategyWrapped {
     private final VertexProperty<V> baseVertexProperty;
     private final Strategy.Context<StrategyWrappedVertexProperty<V>> strategyContext;
+    private final StrategyWrappedVertexPropertyIterators iterators;
 
     public StrategyWrappedVertexProperty(final VertexProperty<V> baseVertexProperty, final StrategyWrappedGraph strategyWrappedGraph) {
         super(baseVertexProperty, strategyWrappedGraph);
         this.strategyContext = new Strategy.Context<>(strategyWrappedGraph.getBaseGraph(), this);
         this.baseVertexProperty = baseVertexProperty;
+        this.iterators = new StrategyWrappedVertexPropertyIterators();
     }
 
     @Override
@@ -58,7 +61,7 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
 
     @Override
     public VertexProperty.Iterators iterators() {
-        return this.baseVertexProperty.iterators();
+        return this.iterators;
     }
 
     @Override
@@ -101,7 +104,10 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
     public class StrategyWrappedVertexPropertyIterators implements VertexProperty.Iterators {
         @Override
         public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
-            return null;
+            return StreamFactory.stream(strategyWrappedGraph.strategy().compose(
+                    s -> s.<U,V>getVertexPropertyIteratorsPropertiesStrategy(strategyContext),
+                    (String[] pks) -> baseVertexProperty.iterators().properties(pks)).apply(propertyKeys))
+                    .map(property -> (Property<U>) new StrategyWrappedProperty<>(property, strategyWrappedGraph)).iterator();
         }
 
         @Override
