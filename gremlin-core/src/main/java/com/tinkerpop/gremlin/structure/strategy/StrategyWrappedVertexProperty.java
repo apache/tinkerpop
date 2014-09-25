@@ -50,7 +50,9 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
 
     @Override
     public Vertex getElement() {
-        return this.baseVertexProperty.getElement();
+        return new StrategyWrappedVertex(this.strategyWrappedGraph.strategy().compose(
+                s -> s.getVertexPropertyGetElementStrategy(strategyContext),
+                this.baseVertexProperty::getElement).get(), strategyWrappedGraph);
     }
 
     @Override
