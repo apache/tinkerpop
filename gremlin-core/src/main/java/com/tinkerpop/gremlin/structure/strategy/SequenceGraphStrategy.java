@@ -160,6 +160,11 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
+    public <V> UnaryOperator<Supplier<Set<String>>> getVertexPropertyKeysStrategy(final Strategy.Context<StrategyWrappedVertexProperty<V>> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getVertexPropertyKeysStrategy(ctx));
+    }
+
+    @Override
     public UnaryOperator<Supplier<Set<String>>> getVertexHiddenKeysStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getVertexHiddenKeysStrategy(ctx));
     }
