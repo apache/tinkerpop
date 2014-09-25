@@ -15,16 +15,7 @@ import java.util.Random;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Neo4jGraphProvider extends AbstractGraphProvider {
-    @Override
-    public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName) {
-        return new HashMap<String, Object>() {{
-            put("gremlin.graph", Neo4jGraph.class.getName());
-            put(Neo4jGraph.CONFIG_DIRECTORY, getWorkingDirectory() + File.separator + graphName);
-            put(Neo4jGraph.CONFIG_META_PROPERTIES, true);
-            put(Neo4jGraph.CONFIG_MULTI_PROPERTIES, true);
-        }};
-    }
+public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
 
     @Override
     public void clear(final Graph g, final Configuration configuration) throws Exception {

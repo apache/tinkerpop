@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.neo4j;
 
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
-import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.junit.After;
 import org.junit.Before;
@@ -22,7 +21,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class BaseNeo4jGraphTest {
     protected Configuration conf;
-    protected final Neo4jGraphProvider graphProvider = new Neo4jGraphProvider();
+    protected final DefaultNeo4jGraphProvider graphProvider = new DefaultNeo4jGraphProvider();
     protected Neo4jGraph g;
 
     @Rule
