@@ -16,7 +16,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.referenced.ReferencedFactory;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -34,12 +33,8 @@ public class TraversalPathMessage extends TraversalMessage {
         return new TraversalPathMessage(traverser);
     }
 
-    public static boolean execute(final Vertex vertex, final Messenger messenger, final Supplier<Traversal> traversalSupplier) {
-
+    public static boolean execute(final Vertex vertex, final Messenger messenger, final Traversal traversal) {
         final TraverserPathTracker tracker = vertex.value(TraversalVertexProgram.TRAVERSER_TRACKER);
-        final Traversal traversal = traversalSupplier.get();
-        traversal.strategies().apply();
-
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         messenger.receiveMessages(MessageType.Global.of()).forEach(message -> {
             ((TraversalPathMessage) message).traverser.inflate(vertex, traversal);

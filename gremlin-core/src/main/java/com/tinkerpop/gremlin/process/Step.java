@@ -11,7 +11,7 @@ import java.util.Iterator;
  * @param <S> The incoming object type of the step
  * @param <E> The outgoing object type of the step
  */
-public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable, Cloneable {
+public interface Step<S, E> extends Iterator<Traverser<E>>, Cloneable {
 
     /**
      * A token object that denotes "nothing" and is used to declare an empty spot in a {@link Traversal}
@@ -64,6 +64,12 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable, Clonea
      */
     public <A, B> Traversal<A, B> getTraversal();
 
+    /**
+     * Set the {@link Traversal} that this step is contained within.
+     *
+     * @param traversal the new traversal for this step
+     */
+    public void setTraversal(final Traversal<?, ?> traversal);
 
     /**
      * Reset the state of the step such that it has no incoming starts.
@@ -77,7 +83,7 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable, Clonea
      * @return The cloned step
      * @throws CloneNotSupportedException
      */
-    public Object clone() throws CloneNotSupportedException;
+    public Step<S,E> clone() throws CloneNotSupportedException;
 
     /**
      * Get the label of this step.

@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,28 +10,28 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DefaultSideEffects implements Traversal.SideEffects, Serializable {
+public class DefaultSideEffects implements Traversal.SideEffects {
 
-    private Map<String, Object> sideEffects;
+    private Map<String, Object> sideEffectsMap;
 
     @Override
     public boolean exists(final String key) {
-        return (null != this.sideEffects && this.sideEffects.containsKey(key));
+        return (null != this.sideEffectsMap && this.sideEffectsMap.containsKey(key));
     }
 
     @Override
     public <V> void set(final String key, final V value) {
         SideEffectHelper.validateSideEffect(key, value);
-        if (null == this.sideEffects) this.sideEffects = new HashMap<>();
-        this.sideEffects.put(key, value);
+        if (null == this.sideEffectsMap) this.sideEffectsMap = new HashMap<>();
+        this.sideEffectsMap.put(key, value);
     }
 
     @Override
     public <V> V get(final String key) throws IllegalArgumentException {
-        if (null == this.sideEffects)
+        if (null == this.sideEffectsMap)
             throw Traversal.SideEffects.Exceptions.sideEffectDoesNotExist(key);
         else {
-            final V t = (V) this.sideEffects.get(key);
+            final V t = (V) this.sideEffectsMap.get(key);
             if (null == t)
                 throw Traversal.SideEffects.Exceptions.sideEffectDoesNotExist(key);
             else
@@ -42,11 +41,11 @@ public class DefaultSideEffects implements Traversal.SideEffects, Serializable {
 
     @Override
     public void remove(final String key) {
-        if (null != this.sideEffects) this.sideEffects.remove(key);
+        if (null != this.sideEffectsMap) this.sideEffectsMap.remove(key);
     }
 
     @Override
     public Set<String> keys() {
-        return null == this.sideEffects ? Collections.emptySet() : this.sideEffects.keySet();
+        return null == this.sideEffectsMap ? Collections.emptySet() : this.sideEffectsMap.keySet();
     }
 }

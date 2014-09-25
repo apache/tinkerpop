@@ -365,7 +365,7 @@ public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
     // The position of a traversal in a query never changes, although its priority / likelihood of being executed does.
     // Priority in turn affects branch factor.
     // However, with sufficient inputs and optimizations,the branch factor is expected to converge on a stable value.
-    public static class TraversalWrapper<A, B> implements Comparable<TraversalWrapper<A, B>>, Serializable {
+    public static class TraversalWrapper<A, B> implements Comparable<TraversalWrapper<A, B>> {
         private final Traversal<A, B> traversal;
         private final String startLabel, endLabel;
         private int totalInputs = 0;

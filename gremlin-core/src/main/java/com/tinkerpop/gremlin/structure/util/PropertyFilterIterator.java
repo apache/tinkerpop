@@ -3,14 +3,13 @@ package com.tinkerpop.gremlin.structure.util;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.structure.Property;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PropertyFilterIterator<V> implements Iterator<Property<V>>, Serializable {
+public class PropertyFilterIterator<V> implements Iterator<Property<V>> {
 
     private Iterator<Property> properties;
     private boolean getHiddens;

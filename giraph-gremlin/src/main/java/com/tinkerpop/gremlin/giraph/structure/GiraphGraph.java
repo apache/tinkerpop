@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect.GiraphGraphStep;
-import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
@@ -41,6 +40,10 @@ import java.util.Optional;
         method = "g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_d__c_sungBy_d__d_hasXname_GarciaXX",
         reason = "Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest$JavaCountTest",
+        method = "g_V_both_both_count",
+        reason = "Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
+@Graph.OptOut(
         test = "com.tinkerpop.gremlin.process.computer.GraphComputerTest",
         method = "shouldNotAllowBadMemoryKeys",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
@@ -48,7 +51,7 @@ import java.util.Optional;
         test = "com.tinkerpop.gremlin.process.computer.GraphComputerTest",
         method = "shouldRequireRegisteringMemoryKeys",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
-public class GiraphGraph implements Graph, Serializable {
+public class GiraphGraph implements Graph {
 
     protected final GiraphGraphVariables variables;
 

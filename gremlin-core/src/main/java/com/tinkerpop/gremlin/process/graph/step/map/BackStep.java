@@ -34,4 +34,11 @@ public class BackStep<S, E> extends MapStep<S, E> implements PathConsumer, Engin
     public String toString() {
         return TraversalHelper.makeStepString(this, this.stepLabel);
     }
+
+    @Override
+    public BackStep clone() throws CloneNotSupportedException {
+        final BackStep<S, E> clone = (BackStep) super.clone();
+        clone.setFunction(traverser -> clone.requiresPaths() ? traverser.getPath().get(clone.stepLabel) : traverser.get(clone.stepLabel));
+        return clone;
+    }
 }

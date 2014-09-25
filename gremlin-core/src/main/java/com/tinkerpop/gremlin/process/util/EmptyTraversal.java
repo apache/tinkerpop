@@ -18,7 +18,7 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
     private static final SideEffects SIDE_EFFECTS = new DefaultSideEffects();
     private static final Strategies TRAVERSAL_STRATEGIES = new DefaultStrategies(EmptyTraversal.instance());
 
-    public static <A,B> EmptyTraversal<A,B> instance() {
+    public static <A, B> EmptyTraversal<A, B> instance() {
         return INSTANCE;
     }
 
@@ -63,6 +63,11 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
 
     @Override
     public Traversal<S, E> submit(final GraphComputer computer) {
+        return instance();
+    }
+
+    @Override
+    public EmptyTraversal<S,E> clone() throws CloneNotSupportedException {
         return instance();
     }
 }

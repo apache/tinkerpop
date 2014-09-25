@@ -3,18 +3,17 @@ package com.tinkerpop.gremlin.process;
 import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.strategy.GraphComputerStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
-import com.tinkerpop.gremlin.process.util.DefaultTraversal;
-import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -28,7 +27,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Traversal<S, E> extends Iterator<E>, Serializable {
+public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
     public static final String OF = "of";
 
@@ -54,10 +53,17 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
     public default Traversal<S, E> submit(final GraphComputer computer) {
         try {
             this.prepareForGraphComputer();
-            final ComputerResult result = computer.program(TraversalVertexProgram.build().traversal(() -> this).create()).submit().get();
-            final Traversal traversal = new DefaultTraversal<>();
-            traversal.addStarts(new SingleIterator(result.getMemory()));
-            return traversal;
+            this.strategies().apply();
+            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> {
+                try {
+                    return this.clone();
+                } catch (final CloneNotSupportedException e) {
+                    throw new IllegalStateException(e.getMessage(), e);
+                }
+            }).create();
+            final ComputerResult result = computer.program(vertexProgram).submit().get();
+            final GraphTraversal<S, S> traversal = result.getGraph().of();
+            return traversal.addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -66,6 +72,14 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
     public default void reset() {
         this.getSteps().forEach(Step::reset);
     }
+
+    /**
+     * Cloning is used to duplicate traversal typically in OLAP environments.
+     *
+     * @return The cloned traversal
+     * @throws CloneNotSupportedException
+     */
+    public Traversal<S, E> clone() throws CloneNotSupportedException;
 
     public interface Strategies {
 

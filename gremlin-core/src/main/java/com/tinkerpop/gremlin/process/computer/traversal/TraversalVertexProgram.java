@@ -12,7 +12,6 @@ import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraversalResultMapReduce;
 import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
-import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
@@ -21,9 +20,9 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.function.ThrowingSupplier;
 import org.apache.commons.configuration.Configuration;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -40,12 +39,14 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     // TODO: if not an adjacent traversal, use Local message types
     // TODO: a dual messaging system
+    // TODO: thread local for Traversal so you don't have to keep compiling it over and over again
 
     public static final String TRAVERSAL_SUPPLIER = "gremlin.traversalVertexProgram.traversalSupplier";
     public static final String TRAVERSAL_SUPPLIER_CLASS = "gremlin.traversalVertexProgram.traversalSupplierClass";
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
     public static final String TRAVERSER_TRACKER = Graph.Key.hide("gremlin.traverserTracker");
 
+    private ThreadLocal<Traversal> traversal = new ThreadLocal<>();
     private Supplier<Traversal> traversalSupplier;
     private Class<Supplier<Traversal>> traversalSupplierClass = null;
     private boolean trackPaths = false;
@@ -61,21 +62,21 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         try {
             if (configuration.containsKey(TRAVERSAL_SUPPLIER)) {
                 this.traversalSupplier = (Supplier<Traversal>) configuration.getProperty(TRAVERSAL_SUPPLIER);
+                this.traversal.set(this.traversalSupplier.get());
             } else {
                 this.traversalSupplierClass = (Class) Class.forName(configuration.getProperty(TRAVERSAL_SUPPLIER_CLASS).toString());
                 this.traversalSupplier = this.traversalSupplierClass.getConstructor().newInstance();
+                this.traversal.set(this.traversalSupplier.get());
             }
-
-            final Traversal traversal = this.traversalSupplier.get();
-            traversal.strategies().apply();
-            this.trackPaths = TraversalHelper.trackPaths(traversal);
-            traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
+            this.traversal.get().strategies().apply();
+            this.trackPaths = TraversalHelper.trackPaths(traversal.get());
+            this.traversal.get().getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
                 final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
                 this.mapReducers.add(mapReduce);
                 this.elementComputeKeys.add(Graph.Key.hide(mapReduce.getSideEffectKey()));
             });
 
-            if (!(TraversalHelper.getEnd(traversal) instanceof SideEffectCapStep))
+            if (!(TraversalHelper.getEnd(traversal.get()) instanceof SideEffectCapStep))
                 this.mapReducers.add(new TraversalResultMapReduce());
 
         } catch (final Exception e) {
@@ -89,7 +90,23 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         if (this.traversalSupplierClass != null) {
             configuration.setProperty(TRAVERSAL_SUPPLIER_CLASS, this.traversalSupplierClass.getCanonicalName());
         } else {
-            configuration.setProperty(TRAVERSAL_SUPPLIER,this.traversalSupplier);
+            configuration.setProperty(TRAVERSAL_SUPPLIER, this.traversalSupplier);
+        }
+    }
+
+    private Traversal getTraversal() {
+        try {
+            Traversal traversal = this.traversal.get();
+            if (null != traversal)
+                return traversal;
+            else {
+                traversal = this.traversalSupplier.get();
+                this.traversal.set(traversal);
+                return traversal;
+            }
+
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
@@ -108,8 +125,8 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final Memory memory) {
-        final Traversal traversal = this.traversalSupplier.get();
-        traversal.strategies().apply();
+        final Traversal traversal = this.getTraversal();
+
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
         final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.System.NO_FUTURE : startStep.getNextStep().getLabel();
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);               // TODO: SIDE-EFFECTS IN TRAVERSAL IN OLAP!
@@ -139,11 +156,13 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, final Memory memory) {
+        final Traversal traversal = this.getTraversal();
+
         if (this.trackPaths) {
-            memory.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, messenger, this.traversalSupplier));
+            memory.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, messenger, traversal));
             vertex.<TraverserPathTracker>value(TRAVERSER_TRACKER).completeIteration();
         } else {
-            memory.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, messenger, this.traversalSupplier));
+            memory.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, messenger, traversal));
             vertex.<TraverserCountTracker>value(TRAVERSER_TRACKER).completeIteration();
         }
 
@@ -179,7 +198,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     @Override
     public String toString() {
-        final Traversal traversal = this.traversalSupplier.get();
+        final Traversal traversal = this.getTraversal();
         traversal.strategies().apply();
         return this.getClass().getSimpleName() + traversal.toString();
     }

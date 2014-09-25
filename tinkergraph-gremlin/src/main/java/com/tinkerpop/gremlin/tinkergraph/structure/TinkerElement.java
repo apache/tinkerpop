@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class TinkerElement implements Element, Serializable {
+public abstract class TinkerElement implements Element {
 
     protected Map<String, List<Property>> properties = new HashMap<>();
     protected final Object id;

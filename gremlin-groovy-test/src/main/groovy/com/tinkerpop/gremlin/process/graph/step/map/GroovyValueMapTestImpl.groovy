@@ -20,11 +20,6 @@ class GroovyValueMapTestImpl extends ValueMapTest {
     }
 
     @Override
-    public Traversal<Edge, Map<String, Object>> get_g_E_valueMapXid_label_weightX() {
-        g.E.valueMap('id', 'label', 'weight')
-    }
-
-    @Override
     public Traversal<Vertex, Map<String, List<String>>> get_g_v1_outXcreatedX_valueMap(final Object v1Id) {
         g.v(v1Id).out('created').valueMap
     }

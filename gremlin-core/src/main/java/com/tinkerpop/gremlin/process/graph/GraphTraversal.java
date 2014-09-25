@@ -5,10 +5,7 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
@@ -110,16 +107,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     @Override
     public default GraphTraversal<S, E> submit(final GraphComputer computer) {
-        try {
-            this.prepareForGraphComputer();
-            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> this).create();
-            final ComputerResult result = computer.program(vertexProgram).submit().get();
-            final GraphTraversal traversal = result.getGraph().of();
-            traversal.addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
-            return traversal;
-        } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+       return (GraphTraversal) Traversal.super.submit(computer);
     }
 
     public static <S> GraphTraversal<S, S> of(final Graph graph) {

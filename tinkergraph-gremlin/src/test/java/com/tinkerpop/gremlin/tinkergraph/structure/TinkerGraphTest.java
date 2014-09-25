@@ -509,34 +509,6 @@ public class TinkerGraphTest {
         }, 0.5).has("oid", "1")).count());
     }
 
-    @Test
-    public void shouldSerializeGraph() throws Exception {
-        final TinkerGraph g = TinkerFactory.createModern();
-        final String fileName = UUID.randomUUID().toString() + ".bin";
-        final String location = tempPath + "tp" + File.separator + "tinkergraph-serialization-test" + File.separator;
-        deleteFile(location);
-
-        final File f = new File(location);
-        if (!f.exists())
-            f.mkdirs();
-
-
-        final ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(location + fileName));
-        out.writeObject(g);
-        out.close();
-
-        final ObjectInputStream input = new ObjectInputStream(new FileInputStream(location + fileName));
-
-        try {
-            final TinkerGraph g1 = (TinkerGraph) input.readObject();
-            IoTest.assertClassicGraph(g1, true, false, true);
-        } catch (ClassNotFoundException cnfe) {
-            throw new RuntimeException(cnfe);
-        } finally {
-            input.close();
-        }
-    }
-
     /**
      * This test helps with data conversions on Grateful Dead.  No Assertions...run as needed.
      */

@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.GraphVariableHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -13,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphVariables implements Graph.Variables, Serializable {
+public class TinkerGraphVariables implements Graph.Variables {
 
     private final Map<String, Object> variables = new ConcurrentHashMap<>();
 

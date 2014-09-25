@@ -2,19 +2,17 @@ package com.tinkerpop.gremlin.neo4j.structure;
 
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 
-import java.io.Serializable;
-
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Neo4jProperty<V> implements Property<V>, Serializable {
+public class Neo4jProperty<V> implements Property<V> {
 
     private final Element element;
     private final String key;

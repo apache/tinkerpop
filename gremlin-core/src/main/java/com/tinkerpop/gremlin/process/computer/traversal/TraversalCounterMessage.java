@@ -17,7 +17,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -46,12 +45,9 @@ public class TraversalCounterMessage extends TraversalMessage {
         this.counter = counter;
     }
 
-    public static boolean execute(final Vertex vertex, final Messenger messenger, final Supplier<Traversal> traversalSupplier) {
+    public static boolean execute(final Vertex vertex, final Messenger messenger, final Traversal traversal) {
 
         final TraverserCountTracker tracker = vertex.value(TraversalVertexProgram.TRAVERSER_TRACKER);
-        final Traversal traversal = traversalSupplier.get();
-        traversal.strategies().apply();
-
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         final Map<Traverser, Long> localCounts = new HashMap<>();
 

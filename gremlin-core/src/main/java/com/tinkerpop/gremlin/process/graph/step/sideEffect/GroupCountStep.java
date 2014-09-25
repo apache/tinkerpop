@@ -69,4 +69,15 @@ public class GroupCountStep<S> extends SideEffectStep<S> implements SideEffectCa
     public String toString() {
         return Graph.Key.isHidden(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
     }
+
+    @Override
+    public GroupCountStep clone() throws CloneNotSupportedException {
+        final GroupCountStep<S> clone = (GroupCountStep) super.clone();
+        clone.setConsumer(traverser -> {
+            MapHelper.incr(clone.groupCountMap,
+                    null == clone.preGroupFunction ? traverser.get() : clone.preGroupFunction.apply(traverser),
+                    clone.bulkCount);
+        });
+        return clone;
+    }
 }
