@@ -29,7 +29,9 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
 
     @Override
     public String label() {
-        return this.baseVertexProperty.label();
+        return this.strategyWrappedGraph.strategy().compose(
+                s -> s.getVertexPropertyLabelStrategy(strategyContext),
+                this.baseVertexProperty::label).get();
     }
 
     @Override
