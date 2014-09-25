@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M3 (Release Date: NOT OFFICIALLY RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Add `GraphStrategy` methods for `VertexProperty`.
 * Convert the `id` data type from string to integer in the Grateful Dead sample data.
 * Removed all notions of serializable lambdas as this is a misconception and should not be part of TinkerPop.
 * Added `ScriptTraversal` interface with `GroovyTraversal` as an instance. To be used by OLAP engines and any language variant (e.g. gremlin-scala, gremlin-js, etc.).
