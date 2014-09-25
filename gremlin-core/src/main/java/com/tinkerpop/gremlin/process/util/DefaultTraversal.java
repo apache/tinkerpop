@@ -16,9 +16,9 @@ import java.util.List;
  */
 public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
-    protected final List<Step> steps = new ArrayList<>();
-    protected final Strategies strategies = new DefaultStrategies(this);
-    protected final SideEffects sideEffects = new DefaultSideEffects();
+    protected List<Step> steps = new ArrayList<>();
+    protected DefaultStrategies strategies = new DefaultStrategies(this);
+    protected DefaultSideEffects sideEffects = new DefaultSideEffects();
 
     public DefaultTraversal() {
         this.strategies.register(TraverserSourceStrategy.instance());
@@ -72,5 +72,20 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     private void applyStrategies() {
         if (!this.strategies.complete()) this.strategies.apply();
+    }
+
+    @Override
+    public DefaultTraversal clone() throws CloneNotSupportedException {
+        final DefaultTraversal clone = (DefaultTraversal) super.clone();
+        clone.steps = new ArrayList<>();
+        for (int i = this.steps.size() - 1; i >= 0; i--) {
+            TraversalHelper.insertStep((Step)this.steps.get(i).clone(), 0, clone);
+        }
+        clone.strategies = (DefaultStrategies) this.strategies.clone();
+        clone.strategies.traversal = clone;
+        //clone.sideEffects = (DefaultSideEffects) this.sideEffects.clone();
+        //System.out.println(clone.strategies());
+        clone.strategies().apply();
+        return clone;
     }
 }

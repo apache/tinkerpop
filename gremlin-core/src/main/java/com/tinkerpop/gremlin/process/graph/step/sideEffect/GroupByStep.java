@@ -101,4 +101,19 @@ public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEf
     public String toString() {
         return Graph.Key.isHidden(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
     }
+
+    @Override
+    public GroupByStep clone() throws CloneNotSupportedException {
+        final GroupByStep<S, K, V, R> clone = (GroupByStep) super.clone();
+        clone.setConsumer(traverser -> {
+            doGroup(traverser, clone.groupByMap, clone.keyFunction, clone.valueFunction);
+            if (!clone.vertexCentric) {
+                if (null != clone.reduceFunction && !clone.starts.hasNext()) {
+                    doReduce(clone.groupByMap, clone.reduceMap, clone.reduceFunction);
+                    clone.traversal.sideEffects().set(clone.sideEffectKey, clone.reduceMap);
+                }
+            }
+        });
+        return clone;
+    }
 }

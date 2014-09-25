@@ -3,9 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -23,8 +21,6 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, List>> get_g_V_valueMap();
 
     public abstract Traversal<Vertex, Map<String, List>> get_g_V_valueMapXname_ageX();
-
-    public abstract Traversal<Edge, Map<String, Object>> get_g_E_valueMapXid_label_weightX();
 
     public abstract Traversal<Vertex, Map<String, List<String>>> get_g_v1_outXcreatedX_valueMap(final Object v1Id);
 
@@ -94,34 +90,6 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore("id and label are no longer selectors for value map")
-    @LoadGraphWith(MODERN)
-    public void g_E_valueMapXid_label_weightX() {
-        final Traversal<Edge, Map<String, Object>> traversal = get_g_E_valueMapXid_label_weightX();
-        printTraversalForm(traversal);
-        int counter = 0;
-        int counter2 = 0;
-        while (traversal.hasNext()) {
-            counter++;
-            final Map<String, Object> values = traversal.next();
-            if (values.get("label").equals("knows") && values.get("weight").equals(0.5d) && values.size() == 3)
-                counter2++;
-            else if (values.get("label").equals("knows") && values.get("weight").equals(1.0d) && values.size() == 3)
-                counter2++;
-            else if (values.get("label").equals("created") && values.get("weight").equals(0.4d) && values.size() == 3)
-                counter2++;
-            else if (values.get("label").equals("created") && values.get("weight").equals(1.0d) && values.size() == 3)
-                counter2++;
-            else if (values.get("label").equals("created") && values.get("weight").equals(0.4d) && values.size() == 3)
-                counter2++;
-            else if (values.get("label").equals("created") && values.get("weight").equals(0.2d) && values.size() == 3)
-                counter2++;
-        }
-        assertEquals(6, counter2);
-        assertEquals(6, counter);
-    }
-
-    @Test
     @LoadGraphWith(MODERN)
     public void g_v1_outXcreatedX_valueMap() {
         final Traversal<Vertex, Map<String, List<String>>> traversal = get_g_v1_outXcreatedX_valueMap(convertToVertexId("marko"));
@@ -151,11 +119,6 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Edge, Map<String, Object>> get_g_E_valueMapXid_label_weightX() {
-            return g.E().valueMap("id", "label", "weight");
-        }
-
-        @Override
         public Traversal<Vertex, Map<String, List<String>>> get_g_v1_outXcreatedX_valueMap(final Object v1Id) {
             return g.v(v1Id).out("created").valueMap();
         }
@@ -175,11 +138,6 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, List>> get_g_V_valueMapXname_ageX() {
             return (Traversal) g.V().valueMap("name", "age").submit(g.compute());
-        }
-
-        @Override
-        public Traversal<Edge, Map<String, Object>> get_g_E_valueMapXid_label_weightX() {
-            return g.E().valueMap("id", "label", "weight").submit(g.compute());
         }
 
         @Override

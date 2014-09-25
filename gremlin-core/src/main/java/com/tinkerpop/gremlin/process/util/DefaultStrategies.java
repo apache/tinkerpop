@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,10 +11,10 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DefaultStrategies implements Traversal.Strategies, Serializable {
+public class DefaultStrategies implements Traversal.Strategies, Cloneable {
 
-    private final List<TraversalStrategy> traversalStrategies = new ArrayList<>();
-    private final Traversal traversal;
+    private List<TraversalStrategy> traversalStrategies = new ArrayList<>();
+    protected Traversal traversal;
     private boolean complete = false;
 
     public DefaultStrategies(final Traversal traversal) {
@@ -52,5 +51,19 @@ public class DefaultStrategies implements Traversal.Strategies, Serializable {
     @Override
     public boolean complete() {
         return this.complete;
+    }
+
+    @Override
+    public String toString() {
+        return this.traversalStrategies.toString();
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        final DefaultStrategies clone = (DefaultStrategies) super.clone();
+        clone.traversalStrategies = new ArrayList<>();
+        this.traversalStrategies.forEach(clone.traversalStrategies::add);
+        clone.complete = false;
+        return clone;
     }
 }

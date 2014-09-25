@@ -52,6 +52,11 @@ public class EmptyStep<S, E> implements Step<S, E> {
     }
 
     @Override
+    public void setTraversal(final Traversal<?, ?> traversal) {
+
+    }
+
+    @Override
     public Object clone() throws CloneNotSupportedException {
         return instance();
     }

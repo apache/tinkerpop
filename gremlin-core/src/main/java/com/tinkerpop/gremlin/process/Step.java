@@ -64,6 +64,12 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable, Clonea
      */
     public <A, B> Traversal<A, B> getTraversal();
 
+    /**
+     * Set the {@link Traversal} that this step is contained within.
+     *
+     * @param traversal the new traversal for this step
+     */
+    public void setTraversal(final Traversal<?, ?> traversal);
 
     /**
      * Reset the state of the step such that it has no incoming starts.

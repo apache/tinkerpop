@@ -112,6 +112,7 @@ public class TraversalHelper {
     }
 
     public static void insertStep(final Step step, final int index, final Traversal traversal) {
+        step.setTraversal(traversal);
         traversal.getSteps().add(index, step);
         reLabelSteps(traversal);
         reLinkSteps(traversal);

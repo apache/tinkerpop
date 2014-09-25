@@ -73,7 +73,7 @@ public class TinkerGraphComputer implements GraphComputer {
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
             if (null != this.vertexProgram) {
-                TinkerGraphView graphView = TinkerHelper.createGraphView(this.graph, this.isolation, this.vertexProgram.getElementComputeKeys());
+                TinkerHelper.createGraphView(this.graph, this.isolation, this.vertexProgram.getElementComputeKeys());
                 // execute the vertex program
                 this.vertexProgram.setup(this.memory);
                 this.memory.completeSubRound();

@@ -106,6 +106,11 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         return this.traversal;
     }
 
+    @Override
+    public void setTraversal(final Traversal<?,?> traversal) {
+        this.traversal = traversal;
+    }
+
     protected abstract Traverser<E> processNextStart() throws NoSuchElementException;
 
     public String toString() {
@@ -113,7 +118,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     @Override
-    public Object clone() throws CloneNotSupportedException {
+    public AbstractStep clone() throws CloneNotSupportedException {
         final AbstractStep step = (AbstractStep) super.clone();
         step.starts = new ExpandableStepIterator<S>(step);
         step.previousStep = EmptyStep.instance();

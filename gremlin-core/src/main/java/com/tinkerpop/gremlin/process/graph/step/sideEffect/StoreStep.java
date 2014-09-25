@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.StoreMapReduce;
+import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -64,5 +65,17 @@ public class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable
     @Override
     public MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> getMapReduce() {
         return new StoreMapReduce(this);
+    }
+
+    @Override
+    public StoreStep clone() throws CloneNotSupportedException {
+        final StoreStep<S> clone = (StoreStep) super.clone();
+        clone.setConsumer(traverser -> {
+            final Object storeObject = null == clone.preStoreFunction ? traverser.get() : clone.preStoreFunction.apply(traverser);
+            for (int i = 0; i < clone.bulkCount; i++) {
+                clone.store.add(storeObject);
+            }
+        });
+        return clone;
     }
 }

@@ -61,4 +61,13 @@ public class CountCapStep<S> extends SideEffectStep<S> implements SideEffectCapa
         return new CountCapMapReduce(this);
     }
 
+    @Override
+    public CountCapStep clone() throws CloneNotSupportedException {
+        final CountCapStep clone = (CountCapStep) super.clone();
+        clone.setConsumer(traverser -> {
+            clone.count.set(clone.count.get() + clone.bulkCount);
+            if (!clone.vertexCentric) clone.traversal.sideEffects().set(COUNT_KEY, clone.count.get());
+        });
+        return clone;
+    }
 }

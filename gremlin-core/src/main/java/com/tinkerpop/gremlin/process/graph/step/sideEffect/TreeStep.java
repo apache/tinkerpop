@@ -75,4 +75,21 @@ public class TreeStep<S> extends SideEffectStep<S> implements Reversible, PathCo
     public String toString() {
         return Graph.Key.isHidden(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
     }
+
+    @Override
+    public TreeStep clone() throws CloneNotSupportedException {
+        final TreeStep<S> clone = (TreeStep) super.clone();
+        clone.setConsumer(traverser -> {
+            Tree depth = clone.tree;
+            final Path path = traverser.getPath();
+            for (int i = 0; i < path.size(); i++) {
+                final Object object = clone.functionRing.next().apply(path.get(i));
+                if (!depth.containsKey(object))
+                    depth.put(object, new Tree<>());
+                depth = (Tree) depth.get(object);
+            }
+            this.functionRing.reset();
+        });
+        return clone;
+    }
 }

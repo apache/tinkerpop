@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -42,11 +43,11 @@ public abstract class CountTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(MODERN)
+    @LoadGraphWith(GRATEFUL)
     public void g_V_both_both_count() {
         final Traversal<Vertex, Long> traversal = get_g_V_both_both_count();
         printTraversalForm(traversal);
-        assertEquals(new Long(30), traversal.next());
+        assertEquals(new Long(1406914), traversal.next());
         assertFalse(traversal.hasNext());
     }
 
