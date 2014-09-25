@@ -28,7 +28,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphVertex extends GiraphElement implements Vertex, Serializable, WrappedVertex<TinkerVertex> {
+public class GiraphVertex extends GiraphElement implements Vertex, WrappedVertex<TinkerVertex> {
 
     protected GiraphVertex() {
     }

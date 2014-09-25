@@ -67,7 +67,7 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
     }
 
     @Override
-    public EmptyTraversal clone() throws CloneNotSupportedException {
+    public EmptyTraversal<S,E> clone() throws CloneNotSupportedException {
         return instance();
     }
 }

@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -17,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class TinkerIndex<T extends Element> implements Serializable {
+class TinkerIndex<T extends Element> {
 
     protected Map<String, Map<Object, Set<T>>> index = new ConcurrentHashMap<>();
     protected final Class<T> indexClass;

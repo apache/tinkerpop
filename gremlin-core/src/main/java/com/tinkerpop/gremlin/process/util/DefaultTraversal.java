@@ -75,17 +75,14 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     }
 
     @Override
-    public DefaultTraversal clone() throws CloneNotSupportedException {
-        final DefaultTraversal clone = (DefaultTraversal) super.clone();
+    public DefaultTraversal<S, E> clone() throws CloneNotSupportedException {
+        final DefaultTraversal<S, E> clone = (DefaultTraversal<S, E>) super.clone();
         clone.steps = new ArrayList<>();
         for (int i = this.steps.size() - 1; i >= 0; i--) {
-            TraversalHelper.insertStep((Step)this.steps.get(i).clone(), 0, clone);
+            final Step<?, ?> clonedStep = this.steps.get(i).clone();
+            clonedStep.setTraversal(clone);
+            TraversalHelper.insertStep(clonedStep, 0, clone);
         }
-        clone.strategies = (DefaultStrategies) this.strategies.clone();
-        clone.strategies.traversal = clone;
-        //clone.sideEffects = (DefaultSideEffects) this.sideEffects.clone();
-        //System.out.println(clone.strategies());
-        clone.strategies().apply();
         return clone;
     }
 }

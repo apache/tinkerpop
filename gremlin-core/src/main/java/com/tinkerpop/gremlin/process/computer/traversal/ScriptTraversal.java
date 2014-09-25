@@ -22,9 +22,5 @@ public interface ScriptTraversal<S, E> {
 
     public Future<ComputerResult> result();
 
-    public static String transformToGlobalScan(final String traversalScript) {
-        return traversalScript.replaceAll("\\.v\\((.*)\\)\\.", ".V().has(id, $1).").replaceAll("\\.e\\((.*)\\)\\.", ".E().has(id, $1).");
-    }
-
     // provide helper methods for validation
 }

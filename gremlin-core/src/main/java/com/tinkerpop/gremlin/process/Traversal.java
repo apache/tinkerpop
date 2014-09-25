@@ -14,7 +14,6 @@ import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -28,7 +27,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
+public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
     public static final String OF = "of";
 
@@ -55,12 +54,16 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
         try {
             this.prepareForGraphComputer();
             this.strategies().apply();
-            final Traversal clone = this.clone();
-            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> clone).create();
+            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> {
+                try {
+                    return this.clone();
+                } catch (final CloneNotSupportedException e) {
+                    throw new IllegalStateException(e.getMessage(), e);
+                }
+            }).create();
             final ComputerResult result = computer.program(vertexProgram).submit().get();
-            final GraphTraversal traversal = result.getGraph().of();
-            traversal.addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
-            return traversal;
+            final GraphTraversal<S, S> traversal = result.getGraph().of();
+            return traversal.addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -76,7 +79,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
      * @return The cloned traversal
      * @throws CloneNotSupportedException
      */
-    public Traversal clone() throws CloneNotSupportedException;
+    public Traversal<S, E> clone() throws CloneNotSupportedException;
 
     public interface Strategies {
 

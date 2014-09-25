@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ComputerResult implements Serializable {
+public class ComputerResult {
 
     private final Graph graph;
     private final Memory memory;

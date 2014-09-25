@@ -102,7 +102,7 @@ Finally, specify the test suites that will be supported by the `Graph` implement
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_PERFORMANCE)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
-public class TinkerGraph implements Graph, Serializable {
+public class TinkerGraph implements Graph {
 ----
 
 Only include annotations for the suites the implementation will support.  Note that implementing the suite, but not specifying the appropriate annotation will prevent the suite from running (an obvious error message will appear in this case when running the mis-configured suite).

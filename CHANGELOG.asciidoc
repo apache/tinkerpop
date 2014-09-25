@@ -9,6 +9,9 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M3 (Release Date: NOT OFFICIALLY RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `TinkerGraph` is no longer serializable, use a `GraphReader`/`GraphWriter` to serialize the data.
+* Removed `implements Serializable` on numerous classes to ensure safety and proper usage of utilities for cloning.
+* `Traversal` now implements `Cloneable` as this is the means that inter-JVM threads are able to get sibling `Traversals`.
 * Created "integration" test for `Neo4jGraph` that runs the test suite with multi/meta property features turned off.
 * Add `GraphStrategy` methods for `VertexProperty`.
 * Convert the `id` data type from string to integer in the Grateful Dead sample data.

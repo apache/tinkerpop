@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DefaultSideEffects implements Traversal.SideEffects, Cloneable {
+public class DefaultSideEffects implements Traversal.SideEffects {
 
     private Map<String, Object> sideEffectsMap;
 
@@ -47,17 +47,5 @@ public class DefaultSideEffects implements Traversal.SideEffects, Cloneable {
     @Override
     public Set<String> keys() {
         return null == this.sideEffectsMap ? Collections.emptySet() : this.sideEffectsMap.keySet();
-    }
-
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        final DefaultSideEffects clone = (DefaultSideEffects) super.clone();
-        if (null != this.sideEffectsMap) {
-            clone.sideEffectsMap = new HashMap<>();
-            this.sideEffectsMap.forEach((k, v) -> {
-                clone.sideEffectsMap.put(k, v);
-            });
-        }
-        return clone;
     }
 }

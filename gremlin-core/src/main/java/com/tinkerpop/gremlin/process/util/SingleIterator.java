@@ -1,12 +1,11 @@
 package com.tinkerpop.gremlin.process.util;
 
-import java.io.Serializable;
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SingleIterator<T> implements Iterator<T>, Serializable {
+public class SingleIterator<T> implements Iterator<T> {
 
     private final T t;
     private boolean alive = true;

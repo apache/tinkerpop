@@ -12,7 +12,7 @@ import java.io.Serializable;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerProperty<V> implements Property<V>, Serializable {
+public class TinkerProperty<V> implements Property<V> {
 
     protected final Element element;
     protected final String key;

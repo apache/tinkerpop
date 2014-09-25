@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphView implements Serializable {
+public class TinkerGraphView {
 
     protected final Set<String> computeKeys;
     protected final GraphComputer.Isolation isolation;
@@ -43,7 +43,7 @@ public class TinkerGraphView implements Serializable {
                 final TinkerVertexProperty<V> property = new TinkerVertexProperty<V>((TinkerVertex) element, key, value) {
                     @Override
                     public void remove() {
-                        removeProperty((TinkerVertex) element, key, this);
+                        removeProperty(element, key, this);
                     }
                 };
                 this.setValue(element, key, property);

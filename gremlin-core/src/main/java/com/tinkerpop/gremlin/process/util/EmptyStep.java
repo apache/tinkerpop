@@ -11,7 +11,7 @@ import java.util.Iterator;
  */
 public class EmptyStep<S, E> implements Step<S, E> {
 
-    private static final Step INSTANCE = new EmptyStep<>();
+    private static final EmptyStep INSTANCE = new EmptyStep<>();
 
     private EmptyStep() {
     }
@@ -57,8 +57,8 @@ public class EmptyStep<S, E> implements Step<S, E> {
     }
 
     @Override
-    public Object clone() throws CloneNotSupportedException {
-        return instance();
+    public EmptyStep<S, E> clone() throws CloneNotSupportedException {
+        return (EmptyStep<S, E>) instance();
     }
 
     @Override

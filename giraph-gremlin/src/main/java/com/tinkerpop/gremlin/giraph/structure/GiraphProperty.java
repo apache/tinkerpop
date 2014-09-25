@@ -11,7 +11,7 @@ import java.io.Serializable;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphProperty<V> implements Property<V>, WrappedProperty<TinkerProperty<V>>, Serializable {
+public class GiraphProperty<V> implements Property<V>, WrappedProperty<TinkerProperty<V>> {
 
     private final TinkerProperty<V> tinkerProperty;
     private final Element giraphElement;

@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DefaultStrategies implements Traversal.Strategies, Cloneable {
+public class DefaultStrategies implements Traversal.Strategies {
 
     private List<TraversalStrategy> traversalStrategies = new ArrayList<>();
     protected Traversal traversal;
@@ -56,14 +56,5 @@ public class DefaultStrategies implements Traversal.Strategies, Cloneable {
     @Override
     public String toString() {
         return this.traversalStrategies.toString();
-    }
-
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        final DefaultStrategies clone = (DefaultStrategies) super.clone();
-        clone.traversalStrategies = new ArrayList<>();
-        this.traversalStrategies.forEach(clone.traversalStrategies::add);
-        clone.complete = false;
-        return clone;
     }
 }

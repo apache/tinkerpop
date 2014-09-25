@@ -6,7 +6,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class FunctionRing<A, B> implements Serializable {
+public class FunctionRing<A, B> {
 
     public Function<A, B>[] functions;
     private int currentFunction = -1;

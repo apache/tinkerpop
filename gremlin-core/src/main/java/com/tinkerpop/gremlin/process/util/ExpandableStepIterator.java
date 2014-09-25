@@ -11,7 +11,7 @@ import java.util.Queue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ExpandableStepIterator<E> implements Iterator<Traverser.System<E>>, Serializable {
+public class ExpandableStepIterator<E> implements Iterator<Traverser.System<E>> {
 
     private ExpandableIterator<Traverser.System<E>> expander = null;
     private Step<?, E> hostStep = EmptyStep.instance();
@@ -61,7 +61,7 @@ public class ExpandableStepIterator<E> implements Iterator<Traverser.System<E>>,
             this.expander.clear();
     }
 
-    public class ExpandableIterator<T> implements Iterator<T>, Serializable {
+    public class ExpandableIterator<T> implements Iterator<T> {
 
         private final Queue<Iterator<T>> queue = new LinkedList<>();
 

@@ -16,7 +16,6 @@ import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerTraversal;
 import org.apache.commons.configuration.Configuration;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +30,7 @@ import java.util.Set;
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_PERFORMANCE)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
-public class TinkerGraph implements Graph, Serializable {
+public class TinkerGraph implements Graph {
 
     protected Long currentId = -1l;
     protected Map<Object, Vertex> vertices = new HashMap<>();
@@ -51,7 +50,7 @@ public class TinkerGraph implements Graph, Serializable {
 
     /**
      * Open a new {@link TinkerGraph} instance.
-     * <p>
+     * <p/>
      * <b>Reference Implementation Help:</b> If a {@link com.tinkerpop.gremlin.structure.Graph } implementation does not require a
      * {@link org.apache.commons.configuration.Configuration} (or perhaps has a default configuration) it can choose to implement a zero argument
      * open() method. This is an optional constructor method for TinkerGraph. It is not enforced by the Gremlin
@@ -63,7 +62,7 @@ public class TinkerGraph implements Graph, Serializable {
 
     /**
      * Open a new {@link TinkerGraph} instance.
-     * <p>
+     * <p/>
      * <b>Reference Implementation Help:</b> This method is the one use by the
      * {@link com.tinkerpop.gremlin.structure.util.GraphFactory} to instantiate
      * {@link com.tinkerpop.gremlin.structure.Graph} instances.  This method must be overridden for the Blueprint Test
@@ -176,7 +175,7 @@ public class TinkerGraph implements Graph, Serializable {
 
     /**
      * Return TinkerGraph feature set.
-     * <p>
+     * <p/>
      * <b>Reference Implementation Help:</b> Implementers only need to implement features for which there are
      * negative or instance configured features.  By default, all {@link Features} return true.
      */

@@ -65,8 +65,7 @@ public class GroovyTraversal<S, E> implements ScriptTraversal<S, E> {
             try {
                 final ComputerResult result = this.result().get();
                 final GraphTraversal<S, S> traversal = result.getGraph().<S>of();
-                traversal.addStep(new ComputerResultStep<>(traversal, result, this.program(), true));
-                return (Traversal<S, E>) traversal;
+                return traversal.addStep(new ComputerResultStep<>(traversal, result, this.program(), true));
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -75,9 +74,13 @@ public class GroovyTraversal<S, E> implements ScriptTraversal<S, E> {
 
     @Override
     public TraversalVertexProgram program() {
-        this.traversalScript = String.format(FULL_SCRIPT, this.graph.getClass().getName(), ScriptTraversal.transformToGlobalScan(this.traversalScript));
+        this.traversalScript = String.format(FULL_SCRIPT, this.graph.getClass().getName(), transformToGlobalScan(this.traversalScript));
         if (this.withSugar)
             this.traversalScript = SugarLoader.class.getCanonicalName() + ".load()\n" + this.traversalScript;
         return TraversalVertexProgram.build().traversal(new GSSupplier<>(this.traversalScript)).create();
+    }
+
+    private static String transformToGlobalScan(final String traversalScript) {
+        return traversalScript.replaceAll("\\.v\\((.*)\\)\\.", ".V().has(id, $1).").replaceAll("\\.e\\((.*)\\)\\.", ".E().has(id, $1).");
     }
 }

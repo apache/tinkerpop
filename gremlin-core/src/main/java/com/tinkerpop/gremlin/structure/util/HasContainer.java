@@ -8,7 +8,6 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 
-import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiPredicate;
@@ -16,7 +15,7 @@ import java.util.function.BiPredicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HasContainer implements Serializable {
+public class HasContainer {
 
     public String key;
     public BiPredicate predicate;

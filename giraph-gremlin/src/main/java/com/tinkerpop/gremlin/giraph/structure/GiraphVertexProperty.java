@@ -16,7 +16,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphVertexProperty<V> implements VertexProperty<V>, WrappedVertexProperty<TinkerVertexProperty<V>>, Serializable {
+public class GiraphVertexProperty<V> implements VertexProperty<V>, WrappedVertexProperty<TinkerVertexProperty<V>> {
 
     private final TinkerVertexProperty<V> tinkerVertexProperty;
     private final GiraphVertex giraphVertex;

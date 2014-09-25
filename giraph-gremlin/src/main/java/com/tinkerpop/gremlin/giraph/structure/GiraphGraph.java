@@ -51,7 +51,7 @@ import java.util.Optional;
         test = "com.tinkerpop.gremlin.process.computer.GraphComputerTest",
         method = "shouldRequireRegisteringMemoryKeys",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
-public class GiraphGraph implements Graph, Serializable {
+public class GiraphGraph implements Graph {
 
     protected final GiraphGraphVariables variables;
 

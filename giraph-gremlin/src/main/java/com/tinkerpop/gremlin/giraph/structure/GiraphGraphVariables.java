@@ -15,7 +15,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphGraphVariables implements Graph.Variables, Serializable {
+public class GiraphGraphVariables implements Graph.Variables {
 
     private final Map<String, Object> variables = new HashMap<>();
 

@@ -12,7 +12,7 @@ import java.io.Serializable;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class GiraphElement implements Element, Serializable {
+public abstract class GiraphElement implements Element {
 
     protected TinkerElement tinkerElement;
     protected GiraphGraph graph;

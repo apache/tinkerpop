@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphEdge extends GiraphElement implements Edge, Serializable, WrappedEdge<TinkerEdge> {
+public class GiraphEdge extends GiraphElement implements Edge, WrappedEdge<TinkerEdge> {
 
     protected GiraphEdge() {
     }
