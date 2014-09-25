@@ -43,7 +43,9 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
 
     @Override
     public Set<String> hiddenKeys() {
-        return this.baseVertexProperty.hiddenKeys();
+        return this.strategyWrappedGraph.strategy().compose(
+                s -> s.getVertexPropertyHiddenKeysStrategy(strategyContext),
+                this.baseVertexProperty::hiddenKeys).get();
     }
 
     @Override
