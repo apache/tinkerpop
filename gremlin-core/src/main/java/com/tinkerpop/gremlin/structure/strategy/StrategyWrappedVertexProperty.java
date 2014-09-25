@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -61,8 +62,10 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
     }
 
     @Override
-    public <V> Property<V> property(final String key, final V value) {
-        return this.baseVertexProperty.property(key, value);
+    public <U> Property<U> property(final String key, final U value) {
+        return new StrategyWrappedProperty<U>(this.strategyWrappedGraph.strategy().compose(
+                s -> s.<U, V>getVertexPropertyPropertyStrategy(strategyContext),
+                this.baseVertexProperty::property).<String,U>apply(key, value), this.strategyWrappedGraph);
     }
 
     @Override
@@ -93,5 +96,27 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
                     this.baseVertexProperty.remove();
                     return null;
                 }).get();
+    }
+
+    public class StrategyWrappedVertexPropertyIterators implements VertexProperty.Iterators {
+        @Override
+        public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
+            return null;
+        }
+
+        @Override
+        public <U> Iterator<Property<U>> hiddens(final String... propertyKeys) {
+            return null;
+        }
+
+        @Override
+        public <V> Iterator<V> values(final String... propertyKeys) {
+            return null;
+        }
+
+        @Override
+        public <V> Iterator<V> hiddenValues(final String... propertyKeys) {
+            return null;
+        }
     }
 }

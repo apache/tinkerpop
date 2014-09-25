@@ -46,6 +46,13 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
     }
 
     @Override
+    public <V, U> UnaryOperator<BiFunction<String, V, Property<V>>> getVertexPropertyPropertyStrategy(final Strategy.Context<StrategyWrappedVertexProperty<U>> ctx) {
+        return (f) -> (t, u) -> {
+            throw Exceptions.graphUsesReadOnlyStrategy();
+        };
+    }
+
+    @Override
     public UnaryOperator<Supplier<Void>> getRemoveEdgeStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
         return readOnlySupplier();
     }

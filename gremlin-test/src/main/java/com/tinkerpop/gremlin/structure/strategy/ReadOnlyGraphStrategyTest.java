@@ -79,6 +79,17 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+    public void shouldNotAllowVertexPropertySetProperty() {
+        g.addVertex();
+        assertException(g -> {
+            final VertexProperty p = g.V().next().<String>property("test", "test");
+            p.property("property", "on-a-property");
+        });
+    }
+
+    @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotAllowEdgeSetProperties() {
         final Vertex v = g.addVertex();
