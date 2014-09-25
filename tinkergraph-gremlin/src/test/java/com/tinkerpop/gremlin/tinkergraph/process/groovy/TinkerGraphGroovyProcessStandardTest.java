@@ -1,15 +1,15 @@
-package com.tinkerpop.gremlin.tinkergraph.groovy;
+package com.tinkerpop.gremlin.tinkergraph.process.groovy;
 
-import com.tinkerpop.gremlin.groovy.GroovyEnvironmentSuite;
+import com.tinkerpop.gremlin.process.GroovyProcessStandardSuite;
 import com.tinkerpop.gremlin.process.ProcessStandardSuite;
 import com.tinkerpop.gremlin.tinkergraph.TinkerGraphGraphProvider;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.runner.RunWith;
 
 /**
- * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(GroovyEnvironmentSuite.class)
+@RunWith(GroovyProcessStandardSuite.class)
 @ProcessStandardSuite.GraphProviderClass(provider = TinkerGraphGraphProvider.class, graph = TinkerGraph.class)
-public class TinkerGraphGroovyEnvironmentTest {
+public class TinkerGraphGroovyProcessStandardTest {
 }

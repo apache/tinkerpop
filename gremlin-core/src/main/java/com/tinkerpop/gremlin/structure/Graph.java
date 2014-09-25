@@ -807,6 +807,8 @@ public interface Graph extends AutoCloseable {
         public static String SUITE_STRUCTURE_PERFORMANCE = "com.tinkerpop.gremlin.structure.StructurePerformanceSuite";
         public static String SUITE_PROCESS_COMPUTER = "com.tinkerpop.gremlin.process.ProcessComputerSuite";
         public static String SUITE_PROCESS_STANDARD = "com.tinkerpop.gremlin.process.ProcessStandardSuite";
+        public static String SUITE_GROOVY_PROCESS_STANDARD = "com.tinkerpop.gremlin.process.GroovyProcessStandardSuite";
+        public static String SUITE_GROOVY_PROCESS_COMPUTER = "com.tinkerpop.gremlin.process.GroovyProcessComputerSuite";
         public static String SUITE_GROOVY_ENVIRONMENT = "com.tinkerpop.gremlin.groovy.GroovyEnvironmentSuite";
 
         /**

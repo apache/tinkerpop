@@ -20,8 +20,8 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.function.ThrowingSupplier;
 import org.apache.commons.configuration.Configuration;
+import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,12 +43,17 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     public static final String TRAVERSAL_SUPPLIER = "gremlin.traversalVertexProgram.traversalSupplier";
     public static final String TRAVERSAL_SUPPLIER_CLASS = "gremlin.traversalVertexProgram.traversalSupplierClass";
+    public static final String TRAVERSAL_SCRIPT = "gremlin.traversalVertexProgram.traversalScript";
+    public static final String TRAVERSAL_SCRIPT_ENGINE = "gremlin.traversalVertexProgram.traversalScriptEngine";
+
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
     public static final String TRAVERSER_TRACKER = Graph.Key.hide("gremlin.traverserTracker");
 
     private ThreadLocal<Traversal> traversal = new ThreadLocal<>();
     private Supplier<Traversal> traversalSupplier;
-    private Class<Supplier<Traversal>> traversalSupplierClass = null;
+    private Class<Supplier<Traversal>> traversalSupplierClass;
+    private Pair<String, String> traversalScript;
+
     private boolean trackPaths = false;
     public List<MapReduce> mapReducers = new ArrayList<>();
 
@@ -62,21 +67,24 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         try {
             if (configuration.containsKey(TRAVERSAL_SUPPLIER)) {
                 this.traversalSupplier = (Supplier<Traversal>) configuration.getProperty(TRAVERSAL_SUPPLIER);
-                this.traversal.set(this.traversalSupplier.get());
-            } else {
+            } else if (configuration.containsKey(TRAVERSAL_SUPPLIER_CLASS)) {
                 this.traversalSupplierClass = (Class) Class.forName(configuration.getProperty(TRAVERSAL_SUPPLIER_CLASS).toString());
                 this.traversalSupplier = this.traversalSupplierClass.getConstructor().newInstance();
-                this.traversal.set(this.traversalSupplier.get());
-            }
-            this.traversal.get().strategies().apply();
-            this.trackPaths = TraversalHelper.trackPaths(traversal.get());
-            this.traversal.get().getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
+            } /*else if (configuration.containsKey(TRAVERSAL_SCRIPT)) {
+                this.traversalScript = Pair.with(configuration.getString(TRAVERSAL_SCRIPT), configuration.getString(TRAVERSAL_SCRIPT_ENGINE));
+                final ScriptTraversal scriptTraversal = ScriptTraversalLoader.getScriptTraversal(this.traversalScript.getValue1()).get();
+                scriptTraversal.script(this.traversalScript.getValue0());
+                this.traversalSupplier = scriptTraversal.supplier();
+            }*/
+            final Traversal<?,?> traversal = this.traversalSupplier.get();
+            this.trackPaths = TraversalHelper.trackPaths(traversal);
+            traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
                 final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
                 this.mapReducers.add(mapReduce);
                 this.elementComputeKeys.add(Graph.Key.hide(mapReduce.getSideEffectKey()));
             });
 
-            if (!(TraversalHelper.getEnd(traversal.get()) instanceof SideEffectCapStep))
+            if (!(TraversalHelper.getEnd(traversal) instanceof SideEffectCapStep))
                 this.mapReducers.add(new TraversalResultMapReduce());
 
         } catch (final Exception e) {
@@ -87,9 +95,12 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     @Override
     public void storeState(final Configuration configuration) {
         configuration.setProperty(GraphComputer.VERTEX_PROGRAM, TraversalVertexProgram.class.getName());
-        if (this.traversalSupplierClass != null) {
+        if (null != this.traversalSupplierClass) {
             configuration.setProperty(TRAVERSAL_SUPPLIER_CLASS, this.traversalSupplierClass.getCanonicalName());
-        } else {
+        } /*else if (null != this.traversalScript) {
+            configuration.setProperty(TRAVERSAL_SCRIPT, this.traversalScript.getValue0());
+            configuration.setProperty(TRAVERSAL_SCRIPT_ENGINE, this.traversalScript.getValue1());
+        }*/ else {
             configuration.setProperty(TRAVERSAL_SUPPLIER, this.traversalSupplier);
         }
     }
@@ -233,6 +244,12 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         public Builder() {
             super(TraversalVertexProgram.class);
         }
+
+        /*public Builder traversal(final String traversalScript, final String scriptEngine) {
+            this.configuration.setProperty(TRAVERSAL_SCRIPT, traversalScript);
+            this.configuration.setProperty(TRAVERSAL_SCRIPT_ENGINE, scriptEngine);
+            return this;
+        }*/
 
         public Builder traversal(final Supplier<Traversal> traversalSupplier) {
             this.configuration.setProperty(TRAVERSAL_SUPPLIER, traversalSupplier);

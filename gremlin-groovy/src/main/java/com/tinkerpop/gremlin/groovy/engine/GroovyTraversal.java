@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -29,12 +30,17 @@ public class GroovyTraversal<S, E> implements ScriptTraversal<S, E> {
                     "traversal.prepareForGraphComputer()\n" +
                     "traversal\n";
 
-    private GroovyTraversal(final String traversalScript) {
-        this.traversalScript = traversalScript;
+    private GroovyTraversal() {
     }
 
     public static <S, E> GroovyTraversal<S, E> of(final String traversalScript) {
-        return new GroovyTraversal<>(traversalScript);
+        return (GroovyTraversal) new GroovyTraversal<>().script(traversalScript);
+    }
+
+    @Override
+    public GroovyTraversal<S, E> script(final String script) {
+        this.traversalScript = script;
+        return this;
     }
 
     @Override
@@ -60,6 +66,11 @@ public class GroovyTraversal<S, E> implements ScriptTraversal<S, E> {
     }
 
     @Override
+    public Supplier<Traversal<S, E>> supplier() {
+        return new GSSupplier<>(String.format(FULL_SCRIPT, this.graph.getClass().getName(), transformToGlobalScan(this.traversalScript)));
+    }
+
+    @Override
     public Future<Traversal<S, E>> traversal() {
         return CompletableFuture.<Traversal<S, E>>supplyAsync(() -> {
             try {
@@ -77,10 +88,16 @@ public class GroovyTraversal<S, E> implements ScriptTraversal<S, E> {
         this.traversalScript = String.format(FULL_SCRIPT, this.graph.getClass().getName(), transformToGlobalScan(this.traversalScript));
         if (this.withSugar)
             this.traversalScript = SugarLoader.class.getCanonicalName() + ".load()\n" + this.traversalScript;
-        return TraversalVertexProgram.build().traversal(new GSSupplier<>(this.traversalScript)).create();
+        //return TraversalVertexProgram.build().traversal(this.traversalScript,"gremlin-groovy").create();
+        return TraversalVertexProgram.build().traversal(new GSSupplier<>(String.format(FULL_SCRIPT, this.graph.getClass().getName(), transformToGlobalScan(this.traversalScript)))).create();
     }
 
     private static String transformToGlobalScan(final String traversalScript) {
         return traversalScript.replaceAll("\\.v\\((.*)\\)\\.", ".V().has(id, $1).").replaceAll("\\.e\\((.*)\\)\\.", ".E().has(id, $1).");
+    }
+
+    @Override
+    public String name() {
+        return "gremlin-groovy";
     }
 }

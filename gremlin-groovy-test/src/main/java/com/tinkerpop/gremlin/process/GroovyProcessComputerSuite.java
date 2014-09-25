@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
-import com.tinkerpop.gremlin.process.graph.step.filter.GroovyCyclicPathTestImpl;
+import com.tinkerpop.gremlin.process.graph.step.filter.GroovyCyclicPathTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -20,7 +20,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
-            GroovyCyclicPathTestImpl.ComputerTestImpl.class,
+            GroovyCyclicPathTest.ComputerTest.class,
     };
 
 

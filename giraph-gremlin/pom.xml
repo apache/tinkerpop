@@ -68,6 +68,12 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.tinkerpop</groupId>
+            <artifactId>gremlin-groovy-test</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <repositories>
         <repository>

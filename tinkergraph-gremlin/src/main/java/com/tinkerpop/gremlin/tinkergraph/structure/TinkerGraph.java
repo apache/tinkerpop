@@ -30,6 +30,8 @@ import java.util.Set;
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_PERFORMANCE)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
+@Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_STANDARD)
+@Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_COMPUTER)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT)
 public class TinkerGraph implements Graph {
     protected Long currentId = -1l;

@@ -19,7 +19,6 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.giraph.io.VertexOutputFormat;
 
-import java.io.Serializable;
 import java.util.Optional;
 
 /**
@@ -27,6 +26,8 @@ import java.util.Optional;
  */
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
+@Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_STANDARD)
+@Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_COMPUTER)
 @Graph.OptOut(
         test = "com.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest",
         method = "g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX",
