@@ -20,11 +20,11 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
         this.baseVertexProperty = baseVertexProperty;
     }
 
-    // todo: add strategy implementations and tests
-
     @Override
     public Object id() {
-        return this.baseVertexProperty.id();
+        return this.strategyWrappedGraph.strategy().compose(
+                s -> s.getVertexPropertyIdStrategy(strategyContext),
+                this.baseVertexProperty::id).get();
     }
 
     @Override

@@ -523,5 +523,10 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         public UnaryOperator<Function<Direction, Iterator<Vertex>>> getEdgeIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
             return spy();
         }
+
+        @Override
+        public <V> UnaryOperator<Supplier<Object>> getVertexPropertyIdStrategy(final Strategy.Context<StrategyWrappedVertexProperty<V>> ctx) {
+            return spy();
+        }
     }
 }
