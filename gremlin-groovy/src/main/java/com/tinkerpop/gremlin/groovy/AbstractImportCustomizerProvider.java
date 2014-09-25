@@ -22,8 +22,6 @@ import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.util.GraphFactory;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedElement;
-import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import com.tinkerpop.gremlin.util.Gremlin;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import groovy.grape.Grape;
@@ -66,10 +64,6 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(GremlinLoader.class.getPackage().getName() + DOT_STAR);
         imports.add(FunctionUtils.class.getPackage().getName() + DOT_STAR);
         imports.add(GSLambda.class.getPackage().getName() + DOT_STAR);
-
-        // tinkergraph
-        imports.add(TinkerGraph.class.getPackage().getName() + DOT_STAR);
-        imports.add(TinkerGraphComputer.class.getPackage().getName() + DOT_STAR);
 
         // IO packages
         imports.add(GraphReader.class.getPackage().getName() + DOT_STAR);

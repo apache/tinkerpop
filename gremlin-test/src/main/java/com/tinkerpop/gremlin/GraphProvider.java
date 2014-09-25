@@ -1,6 +1,11 @@
 package com.tinkerpop.gremlin;
 
+import com.tinkerpop.gremlin.process.graph.ElementTraversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
+import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.commons.configuration.Configuration;
@@ -132,4 +137,6 @@ public interface GraphProvider {
      * @param loadGraphWith the annotation for the currently running test
      */
     public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith);
+
+    public Class<? extends GraphStep> getGraphStepImplementation();
 }

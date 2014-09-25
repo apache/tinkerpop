@@ -2,7 +2,9 @@ package com.tinkerpop.gremlin.neo4j;
 
 import com.tinkerpop.gremlin.AbstractGraphProvider;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.neo4j.process.graph.step.sideEffect.Neo4jGraphStep;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.neo4j.graphdb.DynamicLabel;
@@ -114,5 +116,10 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
             // TODO: add meta_property indices when meta_property graph is provided
             //throw new RuntimeException("Could not load graph with " + graphData);
         }
+    }
+
+    @Override
+    public Class<? extends GraphStep> getGraphStepImplementation() {
+        return Neo4jGraphStep.class;
     }
 }

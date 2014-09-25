@@ -18,7 +18,7 @@
         </dependency>
         <dependency>
             <groupId>com.tinkerpop</groupId>
-            <artifactId>gremlin-test</artifactId>
+            <artifactId>gremlin-groovy-test</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
