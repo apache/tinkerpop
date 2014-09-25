@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -134,7 +135,7 @@ public class StrategyWrappedGraphTest  {
     // todo: add wrap tests for multi-property
 
     @RunWith(Parameterized.class)
-    public static class PropertyShouldBeWrappedTests extends AbstractGremlinTest {
+    public static class EdgePropertyShouldBeWrappedTests extends AbstractGremlinTest {
 
         @Parameterized.Parameters(name = "{index}: {0}")
         public static Iterable<Object[]> data() {
@@ -182,11 +183,60 @@ public class StrategyWrappedGraphTest  {
     }
 
     @RunWith(Parameterized.class)
+    public static class VertexPropertyPropertyShouldBeWrappedTests extends AbstractGremlinTest {
+
+        @Parameterized.Parameters(name = "{index}: {0}")
+        public static Iterable<Object[]> data() {
+            final List<Pair<String, BiFunction<Graph, VertexProperty, Stream<Property<Object>>>>> tests = new ArrayList<>();
+            tests.add(Pair.with("vp.property(\"food\")", (Graph g, VertexProperty vp) -> Stream.of(vp.property("food"))));
+            tests.add(Pair.with("vp.property(\"moreFood\",\"sandwhich\")", (Graph g, VertexProperty vp) -> Stream.of(vp.property("moreFood","sandwhich"))));
+            tests.add(Pair.with("vp.property(Graph.Key.hide(\"more\"))", (Graph g, VertexProperty vp) -> Stream.of(vp.property(Graph.Key.hide("more")))));
+            tests.add(Pair.with("vp.property(Graph.Key.hide(\"extra\",\"this\"))", (Graph g, VertexProperty vp) -> Stream.of(vp.property(Graph.Key.hide("extra"), "this"))));
+            tests.add(Pair.with("vp.iterators().properties()", (Graph g, VertexProperty vp) -> StreamFactory.stream(vp.iterators().properties())));
+            tests.add(Pair.with("vp.iterators().properties(\"food\")", (Graph g, VertexProperty vp) -> StreamFactory.stream(vp.iterators().properties("food"))));
+            tests.add(Pair.with("vp.iterators().hiddens(\"more\")", (Graph g, VertexProperty vp) -> StreamFactory.stream(vp.iterators().hiddens("more"))));
+            tests.add(Pair.with("vp.propertyMap().next().values()", (Graph g, VertexProperty vp) -> StreamFactory.stream(vp.propertyMap().next().values())));
+
+            return tests.stream().map(d -> {
+                final Object[] o = new Object[2];
+                o[0] = d.getValue0();
+                o[1] = d.getValue1();
+                return o;
+            }).collect(Collectors.toList());
+        }
+
+        @Parameterized.Parameter(value = 0)
+        public String name;
+
+        @Parameterized.Parameter(value = 1)
+        public BiFunction<Graph, VertexProperty, Stream<? extends Property<Object>>> streamGetter;
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+        public void shouldWrap() {
+            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+            swg.strategy.setGraphStrategy(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
+            final Vertex v = swg.addVertex();
+            final VertexProperty vp = v.property("property", "on-property", "food", "taco", Graph.Key.hide("food"), "burger", "more", "properties", Graph.Key.hide("more"), "hidden");
+
+            final AtomicBoolean atLeastOne = new AtomicBoolean(false);
+            assertTrue(streamGetter.apply(swg, vp).allMatch(p -> {
+                atLeastOne.set(true);
+                return p instanceof StrategyWrappedProperty;
+            }));
+
+            assertTrue(atLeastOne.get());
+        }
+    }
+
+    @RunWith(Parameterized.class)
     public static class VertexPropertyShouldBeWrappedTest extends AbstractGremlinTest {
         @Parameterized.Parameters(name = "{index}: {0}")
         public static Iterable<Object[]> data() {
             final List<Pair<String, BiFunction<Graph, Vertex, Stream<VertexProperty<Object>>>>> tests = new ArrayList<>();
             tests.add(Pair.with("v.property(\"all\")", (Graph g, Vertex v) -> Stream.of(v.property("all"))));
+            tests.add(Pair.with("v.property(\"extra\", \"data\")", (Graph g, Vertex v) -> Stream.of(v.<Object>property("extra", "data"))));
             tests.add(Pair.with("v.iterators().properties()", (Graph g, Vertex v) -> StreamFactory.stream(v.iterators().properties())));
             tests.add(Pair.with("v.iterators().properties(\"any\")", (Graph g, Vertex v) -> StreamFactory.stream(v.iterators().properties("any"))));
             tests.add(Pair.with("v.iterators().hiddens()", (Graph g, Vertex v) -> StreamFactory.stream(v.iterators().hiddens())));

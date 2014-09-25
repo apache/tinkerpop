@@ -244,7 +244,7 @@ public interface GraphStrategy {
     }
 
     /**
-     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element.Iterators#properties}.
+     * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element.Iterators#properties}.
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
@@ -256,7 +256,7 @@ public interface GraphStrategy {
     }
 
     /**
-     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Edge.Iterators#properties}.
+     * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Edge.Iterators#properties}.
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
@@ -268,7 +268,7 @@ public interface GraphStrategy {
     }
 
     /**
-     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.VertexProperty.Iterators#properties}.
+     * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.VertexProperty.Iterators#properties}.
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
@@ -280,7 +280,7 @@ public interface GraphStrategy {
     }
 
     /**
-     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Vertex.Iterators#hiddens}.
+     * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Vertex.Iterators#hiddens}.
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
@@ -292,7 +292,7 @@ public interface GraphStrategy {
     }
 
     /**
-     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Edge.Iterators#hiddens}.
+     * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Edge.Iterators#hiddens}.
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
@@ -300,6 +300,18 @@ public interface GraphStrategy {
      * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
     public default <V> UnaryOperator<Function<String[], Iterator<? extends Property<V>>>> getEdgeIteratorsHiddensStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
+        return UnaryOperator.identity();
+    }
+
+    /**
+     * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.VertexProperty.Iterators#hiddens}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
+     * {@link com.tinkerpop.gremlin.structure.VertexProperty.Iterators#hiddens} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     */
+    public default <V, U> UnaryOperator<Function<String[], Iterator<? extends Property<V>>>> getVertexPropertyIteratorsHiddensStrategy(final Strategy.Context<StrategyWrappedVertexProperty<U>> ctx) {
         return UnaryOperator.identity();
     }
 

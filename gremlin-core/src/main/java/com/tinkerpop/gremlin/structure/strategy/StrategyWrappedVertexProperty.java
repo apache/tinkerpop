@@ -112,7 +112,10 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
 
         @Override
         public <U> Iterator<Property<U>> hiddens(final String... propertyKeys) {
-            return null;
+            return StreamFactory.stream(strategyWrappedGraph.strategy().compose(
+                    s -> s.<U,V>getVertexPropertyIteratorsHiddensStrategy(strategyContext),
+                    (String[] pks) -> baseVertexProperty.iterators().hiddens(pks)).apply(propertyKeys))
+                    .map(property -> (Property<U>) new StrategyWrappedProperty<>(property, strategyWrappedGraph)).iterator();
         }
 
         @Override
