@@ -85,7 +85,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadGraphML() throws IOException {
         readGraphMLIntoGraph(g);
-        assertClassicGraph(g, false, true, false);
+        assertClassicGraph(g, false, true);
     }
 
     @Test
@@ -287,7 +287,7 @@ public class IoTest extends AbstractGremlinTest {
 
         GraphMigrator.migrateGraph(g, g1);
 
-        assertClassicGraph(g1, false, false, false);
+        assertClassicGraph(g1, false, false);
 
         // need to manually close the "g1" instance
         graphProvider.clear(g1, configuration);
@@ -305,7 +305,7 @@ public class IoTest extends AbstractGremlinTest {
         GraphMigrator.migrateGraph(g, g1);
 
         // by making this lossy for float it will assert floats for doubles
-        assertClassicGraph(g1, true, false, true);
+        assertModernGraph(g1, true, false);
 
         // need to manually close the "g1" instance
         graphProvider.clear(g1, configuration);
@@ -332,7 +332,7 @@ public class IoTest extends AbstractGremlinTest {
             }
 
             // by making this lossy for float it will assert floats for doubles
-            assertClassicGraph(g1, true, false, true);
+            assertModernGraph(g1, true, false);
 
             // need to manually close the "g1" instance
             graphProvider.clear(g1, configuration);
@@ -388,7 +388,7 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readGraph(bais, g1);
             }
 
-            assertClassicGraph(g1, false, false, false);
+            assertClassicGraph(g1, false, false);
 
             // need to manually close the "g1" instance
             graphProvider.clear(g1, configuration);
@@ -412,7 +412,7 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readGraph(bais, g1);
             }
 
-            assertClassicGraph(g1, true, false, false);
+            assertClassicGraph(g1, true, false);
 
             // need to manually close the "g1" instance
             graphProvider.clear(g1, configuration);
@@ -436,7 +436,7 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readGraph(bais, g1);
             }
 
-            assertClassicGraph(g1, true, false, true);
+            assertModernGraph(g1, true, false);
 
             // need to manually close the "g1" instance
             graphProvider.clear(g1, configuration);
@@ -1689,7 +1689,7 @@ public class IoTest extends AbstractGremlinTest {
         }
 
         // the id is lossy in migration because TP2 treated ID as String
-        assertClassicGraph(g, false, true, false);
+        assertClassicGraph(g, false, true);
     }
 
     public static void assertCrewGraph(final Graph g1, final boolean lossyForId) {
@@ -1979,8 +1979,15 @@ public class IoTest extends AbstractGremlinTest {
         });
     }
 
-    // todo: assert specific label? why again?
-    public static void assertClassicGraph(final Graph g1, final boolean assertDouble, final boolean lossyForId, final boolean assertSpecificLabel) {
+    public static void assertClassicGraph(final Graph g1, final boolean assertDouble, final boolean lossyForId) {
+        assertToyGraph(g1, assertDouble, lossyForId, false);
+    }
+
+    public static void assertModernGraph(final Graph g1, final boolean assertDouble, final boolean lossyForId) {
+        assertToyGraph(g1, assertDouble, lossyForId, true);
+    }
+
+    private static void assertToyGraph(final Graph g1, final boolean assertDouble, final boolean lossyForId, final boolean assertSpecificLabel) {
         assertEquals(new Long(6), g1.V().count().next());
         assertEquals(new Long(6), g1.E().count().next());
 
