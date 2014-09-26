@@ -3,13 +3,13 @@ package com.tinkerpop.gremlin.process;
 import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyCyclicPathTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.GroovyDedupTestImpl;
-import com.tinkerpop.gremlin.process.graph.step.filter.GroovyExceptTestImpl;
-import com.tinkerpop.gremlin.process.graph.step.filter.GroovyFilterTestImpl;
-import com.tinkerpop.gremlin.process.graph.step.filter.GroovyHasNotTestImpl;
-import com.tinkerpop.gremlin.process.graph.step.filter.GroovyHasTestImpl;
-import com.tinkerpop.gremlin.process.graph.step.filter.GroovyIntervalTestImpl;
-import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRandomTestImpl;
+import com.tinkerpop.gremlin.process.graph.step.filter.GroovyDedupTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.GroovyExceptTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.GroovyFilterTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.GroovyHasNotTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.GroovyHasTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.GroovyIntervalTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRandomTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRangeTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRetainTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovySimplePathTestImpl;
@@ -54,13 +54,13 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
     private static final Class<?>[] testsToExecute = new Class<?>[]{
             // filter
             GroovyCyclicPathTest.StandardTest.class,
-            GroovyDedupTestImpl.class,
-            GroovyExceptTestImpl.class,
-            GroovyFilterTestImpl.class,
-            GroovyHasNotTestImpl.class,
-            GroovyHasTestImpl.class,
-            GroovyIntervalTestImpl.class,
-            GroovyRandomTestImpl.class,
+            GroovyDedupTest.StandardTest.class,
+            GroovyExceptTest.StandardTest.class,
+            GroovyFilterTest.StandardTest.class,
+            GroovyHasNotTest.StandardTest.class,
+            GroovyHasTest.StandardTest.class,
+            GroovyIntervalTest.StandardTest.class,
+            GroovyRandomTest.StandardTest.class,
             GroovyRangeTestImpl.class,
             GroovyRetainTestImpl.class,
             GroovySimplePathTestImpl.class,

@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.giraph.groovy.plugin;
 
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
-import com.tinkerpop.gremlin.groovy.engine.GroovyTraversal;
+import com.tinkerpop.gremlin.groovy.engine.GroovyTraversalScript;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
@@ -77,19 +77,19 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object submit(final List<String> args) {
         try {
-            final GroovyTraversal<?, ?> traversal = GroovyTraversal.of(String.join(" ", args)).over(this.giraphGraph).using(this.giraphGraph.compute());
+            final GroovyTraversalScript<?, ?> traversal = GroovyTraversalScript.of(String.join(" ", args)).over(this.giraphGraph).using(this.giraphGraph.compute());
             if (this.useSugarPlugin)
                 traversal.withSugar();
-            final TraversalVertexProgram program = traversal.program();
-            final ComputerResult result = traversal.result().get();
-            this.shell.getInterp().getContext().setProperty("result", result);
+            final TraversalVertexProgram vertexProgram = traversal.program();
+            final ComputerResult computerResult = traversal.result().get();
+            this.shell.getInterp().getContext().setProperty("result", computerResult);
 
             final GraphTraversal traversal1 = new DefaultGraphTraversal<>();
-            traversal1.addStep(new ComputerResultStep<>(traversal1, result, program, false));
+            traversal1.addStep(new ComputerResultStep<>(traversal1, computerResult, vertexProgram, false));
             this.shell.getInterp().getContext().setProperty("_l", traversal1);
 
             final GraphTraversal traversal2 = new DefaultGraphTraversal<>();
-            traversal2.addStep(new ComputerResultStep<>(traversal2, result, program, false));
+            traversal2.addStep(new ComputerResultStep<>(traversal2, computerResult, vertexProgram, false));
             traversal2.range(0, 19);
             return traversal2;
         } catch (Exception e) {

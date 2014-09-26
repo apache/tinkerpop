@@ -3,16 +3,16 @@ package com.tinkerpop.gremlin.process.computer.util;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class AbstractBuilder<B extends VertexProgram.Builder> implements VertexProgram.Builder {
 
-    protected final Configuration configuration = new BaseConfiguration();
+    protected final BaseConfiguration configuration = new BaseConfiguration();
 
     public AbstractBuilder(final Class<? extends VertexProgram> vertexProgramClass) {
+        this.configuration.setDelimiterParsingDisabled(true);
         this.configuration.setProperty(GraphComputer.VERTEX_PROGRAM, vertexProgramClass.getName());
     }
 

@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.groovy;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutorTest;
-import com.tinkerpop.gremlin.groovy.engine.GroovyTraversalTest;
+import com.tinkerpop.gremlin.groovy.engine.GroovyTraversalScriptTest;
 import com.tinkerpop.gremlin.groovy.function.GSSupplierTest;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTest;
 import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
@@ -28,7 +28,7 @@ public class GroovyEnvironmentSuite extends AbstractGremlinSuite {
             SugarLoaderTest.class,
             GSSupplierTest.class,
             GremlinGroovyScriptEngineTest.class,
-            GroovyTraversalTest.class,
+            GroovyTraversalScriptTest.class,
             GremlinExecutorTest.class
     };
 

@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.process.graph.step.filter
 
-import com.tinkerpop.gremlin.groovy.engine.GroovyTraversal
 import com.tinkerpop.gremlin.process.Path
 import com.tinkerpop.gremlin.process.Traversal
+import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -25,12 +25,12 @@ public abstract class GroovyCyclicPathTest extends CyclicPathTest {
     public static class ComputerTest extends CyclicPathTest {
         @Override
         Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(final Object v1) {
-            GroovyTraversal.of("g.v(${v1}).out('created').in('created').cyclicPath()").over(g).using(g.compute()).traversal().get();
+            ComputerTestHelper.compute("g.v(${v1}).out('created').in('created').cyclicPath", g);
         }
 
         @Override
         Traversal<Vertex, Path> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath_path(final Object v1) {
-            GroovyTraversal.of("g.v(${v1}).out('created').in('created').cyclicPath().path()").over(g).using(g.compute()).traversal().get();
+            ComputerTestHelper.compute("g.v(${v1}).out('created').in('created').cyclicPath().path()", g);
         }
     }
 }

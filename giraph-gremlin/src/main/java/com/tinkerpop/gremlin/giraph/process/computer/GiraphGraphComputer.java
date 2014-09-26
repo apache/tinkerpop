@@ -78,7 +78,8 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
     @Override
     public GraphComputer program(final VertexProgram vertexProgram) {
         this.vertexProgram = vertexProgram;
-        final Configuration apacheConfiguration = new BaseConfiguration();
+        final BaseConfiguration apacheConfiguration = new BaseConfiguration();
+        apacheConfiguration.setDelimiterParsingDisabled(true);
         vertexProgram.storeState(apacheConfiguration);
         ConfUtil.mergeApacheIntoHadoopConfiguration(apacheConfiguration, this.giraphConfiguration);
         return this;

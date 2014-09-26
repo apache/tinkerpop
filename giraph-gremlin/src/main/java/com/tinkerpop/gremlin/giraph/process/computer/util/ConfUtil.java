@@ -12,7 +12,8 @@ import org.apache.hadoop.mapreduce.InputFormat;
 public class ConfUtil {
 
     public static org.apache.commons.configuration.Configuration makeApacheConfiguration(final Configuration hadoopConfiguration) {
-        final org.apache.commons.configuration.Configuration apacheConfiguration = new BaseConfiguration();
+        final BaseConfiguration apacheConfiguration = new BaseConfiguration();
+        apacheConfiguration.setDelimiterParsingDisabled(true);
         hadoopConfiguration.iterator().forEachRemaining(e -> apacheConfiguration.setProperty(e.getKey(), e.getValue()));
         return apacheConfiguration;
     }

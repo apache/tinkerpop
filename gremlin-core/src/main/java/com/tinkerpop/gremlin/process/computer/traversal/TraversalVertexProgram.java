@@ -23,6 +23,8 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -41,22 +43,28 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     // TODO: a dual messaging system
     // TODO: thread local for Traversal so you don't have to keep compiling it over and over again
 
+    public static final String TRAVERSAL_SUPPLIER_TYPE = "gremlin.traversalVertexProgram.traversalSupplierType";
     public static final String TRAVERSAL_SUPPLIER = "gremlin.traversalVertexProgram.traversalSupplier";
-    public static final String TRAVERSAL_SUPPLIER_CLASS = "gremlin.traversalVertexProgram.traversalSupplierClass";
-    public static final String TRAVERSAL_SCRIPT = "gremlin.traversalVertexProgram.traversalScript";
-    public static final String TRAVERSAL_SCRIPT_ENGINE = "gremlin.traversalVertexProgram.traversalScriptEngine";
+    public static final String TRAVERSAL_ENGINE = "gremlin.traversalVertexProgram.traversalEngine";
 
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
     public static final String TRAVERSER_TRACKER = Graph.Key.hide("gremlin.traverserTracker");
 
+    private enum TraversalSupplierType {
+        CLASS,
+        OBJECT,
+        SCRIPT
+    }
+
+    private TraversalSupplierType traversalSupplierType;
+
     private ThreadLocal<Traversal> traversal = new ThreadLocal<>();
     private Supplier<Traversal> traversalSupplier;
     private Class<Supplier<Traversal>> traversalSupplierClass;
-    private Pair<String, String> traversalScript;
+    private Pair<String, String> traversalSupplierScript;
 
     private boolean trackPaths = false;
     public List<MapReduce> mapReducers = new ArrayList<>();
-
     private Set<String> elementComputeKeys = new HashSet<>(Arrays.asList(TRAVERSER_TRACKER));
 
     private TraversalVertexProgram() {
@@ -64,19 +72,30 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     @Override
     public void loadState(final Configuration configuration) {
+        if (!configuration.containsKey(TRAVERSAL_SUPPLIER_TYPE))
+            throw new IllegalArgumentException("The provided configuration does not have the required key: " + TRAVERSAL_SUPPLIER_TYPE);
         try {
-            if (configuration.containsKey(TRAVERSAL_SUPPLIER)) {
-                this.traversalSupplier = (Supplier<Traversal>) configuration.getProperty(TRAVERSAL_SUPPLIER);
-            } else if (configuration.containsKey(TRAVERSAL_SUPPLIER_CLASS)) {
-                this.traversalSupplierClass = (Class) Class.forName(configuration.getProperty(TRAVERSAL_SUPPLIER_CLASS).toString());
+            this.traversalSupplierType = TraversalSupplierType.valueOf(configuration.getString(TRAVERSAL_SUPPLIER_TYPE));
+            if (this.traversalSupplierType.equals(TraversalSupplierType.CLASS)) {
+                this.traversalSupplierClass = (Class) Class.forName(configuration.getString(TRAVERSAL_SUPPLIER));
                 this.traversalSupplier = this.traversalSupplierClass.getConstructor().newInstance();
-            } /*else if (configuration.containsKey(TRAVERSAL_SCRIPT)) {
-                this.traversalScript = Pair.with(configuration.getString(TRAVERSAL_SCRIPT), configuration.getString(TRAVERSAL_SCRIPT_ENGINE));
-                final ScriptTraversal scriptTraversal = ScriptTraversalLoader.getScriptTraversal(this.traversalScript.getValue1()).get();
-                scriptTraversal.script(this.traversalScript.getValue0());
-                this.traversalSupplier = scriptTraversal.supplier();
-            }*/
-            final Traversal<?,?> traversal = this.traversalSupplier.get();
+            } else if (this.traversalSupplierType.equals(TraversalSupplierType.OBJECT)) {
+                this.traversalSupplier = (Supplier<Traversal>) configuration.getProperty(TRAVERSAL_SUPPLIER);
+            } else if (this.traversalSupplierType.equals(TraversalSupplierType.SCRIPT)) {
+                this.traversalSupplierScript = Pair.with(configuration.getString(TRAVERSAL_SUPPLIER), configuration.getString(TRAVERSAL_ENGINE));
+                final ScriptEngine engine = new ScriptEngineManager().getEngineByName(this.traversalSupplierScript.getValue1());
+                this.traversalSupplier = () -> {
+                    try {
+                        return (Traversal) engine.eval(this.traversalSupplierScript.getValue0());
+                    } catch (Exception e) {
+                        throw new IllegalStateException(e.getMessage(), e);
+                    }
+                };
+            } else {
+                throw new IllegalStateException("The traversal supplier provider is unrecognized: " + this.traversalSupplierType);
+            }
+
+            final Traversal<?, ?> traversal = this.traversalSupplier.get();
             this.trackPaths = TraversalHelper.trackPaths(traversal);
             traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
                 final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
@@ -95,13 +114,16 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     @Override
     public void storeState(final Configuration configuration) {
         configuration.setProperty(GraphComputer.VERTEX_PROGRAM, TraversalVertexProgram.class.getName());
-        if (null != this.traversalSupplierClass) {
-            configuration.setProperty(TRAVERSAL_SUPPLIER_CLASS, this.traversalSupplierClass.getCanonicalName());
-        } /*else if (null != this.traversalScript) {
-            configuration.setProperty(TRAVERSAL_SCRIPT, this.traversalScript.getValue0());
-            configuration.setProperty(TRAVERSAL_SCRIPT_ENGINE, this.traversalScript.getValue1());
-        }*/ else {
+        configuration.setProperty(TRAVERSAL_SUPPLIER_TYPE, this.traversalSupplierType.name());
+        if (this.traversalSupplierType.equals(TraversalSupplierType.CLASS)) {
+            configuration.setProperty(TRAVERSAL_SUPPLIER, this.traversalSupplierClass.getCanonicalName());
+        } else if (this.traversalSupplierType.equals(TraversalSupplierType.OBJECT)) {
             configuration.setProperty(TRAVERSAL_SUPPLIER, this.traversalSupplier);
+        } else if (this.traversalSupplierType.equals(TraversalSupplierType.SCRIPT)) {
+            configuration.setProperty(TRAVERSAL_SUPPLIER, this.traversalSupplierScript.getValue0());
+            configuration.setProperty(TRAVERSAL_ENGINE, this.traversalSupplierScript.getValue1());
+        } else {
+            throw new IllegalStateException("The traversal supplier provider is unrecognized: " + this.traversalSupplierType);
         }
     }
 
@@ -245,19 +267,22 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
             super(TraversalVertexProgram.class);
         }
 
-        /*public Builder traversal(final String traversalScript, final String scriptEngine) {
-            this.configuration.setProperty(TRAVERSAL_SCRIPT, traversalScript);
-            this.configuration.setProperty(TRAVERSAL_SCRIPT_ENGINE, scriptEngine);
+        public Builder traversal(final String traversalScript, final String scriptEngine) {
+            this.configuration.setProperty(TRAVERSAL_SUPPLIER_TYPE, TraversalSupplierType.SCRIPT.name());
+            this.configuration.setProperty(TRAVERSAL_SUPPLIER, traversalScript);
+            this.configuration.setProperty(TRAVERSAL_ENGINE, scriptEngine);
             return this;
-        }*/
+        }
 
         public Builder traversal(final Supplier<Traversal> traversalSupplier) {
+            this.configuration.setProperty(TRAVERSAL_SUPPLIER_TYPE, TraversalSupplierType.OBJECT.name());
             this.configuration.setProperty(TRAVERSAL_SUPPLIER, traversalSupplier);
             return this;
         }
 
         public Builder traversal(final Class<Supplier<Traversal>> traversalSupplierClass) {
-            this.configuration.setProperty(TRAVERSAL_SUPPLIER_CLASS, traversalSupplierClass.getCanonicalName());
+            this.configuration.setProperty(TRAVERSAL_SUPPLIER_TYPE, TraversalSupplierType.CLASS.name());
+            this.configuration.setProperty(TRAVERSAL_SUPPLIER, traversalSupplierClass.getCanonicalName());
             return this;
         }
 

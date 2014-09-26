@@ -51,8 +51,8 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String prop) {
-            return g.v(v1Id).hasNot(prop);
+        public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String key) {
+            return g.v(v1Id).hasNot(key);
         }
 
         @Override
@@ -67,8 +67,8 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String prop) {
-            return g.v(v1Id).<Vertex>hasNot(prop).submit(g.compute());
+        public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String key) {
+            return g.v(v1Id).<Vertex>hasNot(key).submit(g.compute());
         }
 
         @Override
