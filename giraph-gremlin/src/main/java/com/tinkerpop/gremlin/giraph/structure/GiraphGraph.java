@@ -29,15 +29,15 @@ import java.util.Optional;
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_COMPUTER)
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest",
+        test = "com.tinkerpop.gremlin.process.graph.step.map.MatchTest$StandardTest",
         method = "g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX",
         reason = "Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest",
+        test = "com.tinkerpop.gremlin.process.graph.step.map.MatchTest$StandardTest",
         method = "g_V_matchXa_0sungBy_b__a_0sungBy_c__b_writtenBy_d__c_writtenBy_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX",
         reason = "Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest",
+        test = "com.tinkerpop.gremlin.process.graph.step.map.MatchTest$StandardTest",
         method = "g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_d__c_sungBy_d__d_hasXname_GarciaXX",
         reason = "Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(

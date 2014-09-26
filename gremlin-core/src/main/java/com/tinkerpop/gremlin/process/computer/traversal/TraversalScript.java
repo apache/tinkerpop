@@ -11,7 +11,7 @@ import java.util.concurrent.Future;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TraversalScript<S, E> extends Serializable {
+public interface TraversalScript<S, E> {
 
     public TraversalScript<S, E> over(final Graph graph);
 
