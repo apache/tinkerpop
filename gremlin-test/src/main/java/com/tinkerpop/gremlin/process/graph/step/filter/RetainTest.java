@@ -38,7 +38,7 @@ public abstract class RetainTest extends AbstractGremlinTest {
         assertFalse(traversal.hasNext());
     }
 
-    public static class JavaRetainTest extends RetainTest {
+    public static class StandardTest extends RetainTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_retainXg_v2X(final Object v1Id, final Object v2Id) {
@@ -51,7 +51,7 @@ public abstract class RetainTest extends AbstractGremlinTest {
         }
     }
 
-    public static class JavaComputerRetainTest extends RetainTest {
+    public static class ComputerTest extends RetainTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_retainXg_v2X(final Object v1Id, final Object v2Id) {

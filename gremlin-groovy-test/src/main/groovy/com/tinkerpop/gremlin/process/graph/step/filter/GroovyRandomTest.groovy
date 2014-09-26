@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class GroovyRandomTest extends RandomTest {
+public abstract class GroovyRandomTest {
 
     public static class StandardTest extends RandomTest {
 

@@ -70,7 +70,7 @@ public abstract class OrderTest extends AbstractGremlinTest {
         assertEquals("vadas", names.get(5));
     }
 
-    public static class JavaOrderTest extends OrderTest {
+    public static class StandardTest extends OrderTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_name_order() {

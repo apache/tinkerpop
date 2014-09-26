@@ -62,7 +62,7 @@ public abstract class FoldTest extends AbstractGremlinTest {
         assertEquals(Integer.valueOf(123), ageSum);
     }
 
-    public static class JavaFoldTest extends FoldTest {
+    public static class StandardTest extends FoldTest {
 
         @Override
         public Traversal<Vertex, List<Vertex>> get_g_V_fold() {

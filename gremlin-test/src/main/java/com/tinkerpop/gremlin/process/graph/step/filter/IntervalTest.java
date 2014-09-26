@@ -30,8 +30,8 @@ public abstract class IntervalTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
-    public static class JavaIntervalTest extends IntervalTest {
-        public JavaIntervalTest() {
+    public static class StandardTest extends IntervalTest {
+        public StandardTest() {
             requiresGraphComputer = false;
         }
 
@@ -41,8 +41,8 @@ public abstract class IntervalTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class JavaComputerIntervalTest extends IntervalTest {
-        public JavaComputerIntervalTest() {
+    public static class ComputerTest extends IntervalTest {
+        public ComputerTest() {
             requiresGraphComputer = true;
         }
 

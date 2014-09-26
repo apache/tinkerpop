@@ -106,7 +106,7 @@ public abstract class ChooseTest extends AbstractGremlinTest {
         assertEquals(Long.valueOf(1), counts.get("josh"));
     }
 
-    public static class JavaChooseTest extends ChooseTest {
+    public static class StandardTest extends ChooseTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name() {

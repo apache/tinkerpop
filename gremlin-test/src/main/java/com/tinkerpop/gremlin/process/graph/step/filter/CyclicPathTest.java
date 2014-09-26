@@ -50,7 +50,7 @@ public abstract class CyclicPathTest extends AbstractGremlinTest {
         assertFalse(traversal.hasNext());
     }
 
-    public static class JavaCyclicPathTest extends CyclicPathTest {
+    public static class StandardTest extends CyclicPathTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(final Object v1Id) {
             return g.v(v1Id).out("created").in("created").cyclicPath();
@@ -62,7 +62,7 @@ public abstract class CyclicPathTest extends AbstractGremlinTest {
         }
     }
 
-    public static class JavaComputerCyclicPathTest extends CyclicPathTest {
+    public static class ComputerTest extends CyclicPathTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(final Object v1Id) {

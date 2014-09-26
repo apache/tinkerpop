@@ -127,8 +127,8 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         }}, traversal);
     }
 
-    public static class JavaBackTest extends BackTest {
-        public JavaBackTest() {
+    public static class StandardTest extends BackTest {
+        public StandardTest() {
             requiresGraphComputer = false;
         }
 
@@ -173,8 +173,8 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class JavaComputerBackTest extends BackTest {
-        public JavaComputerBackTest() {
+    public static class ComputerTest extends BackTest {
+        public ComputerTest() {
             requiresGraphComputer = true;
         }
 

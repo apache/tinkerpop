@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Daniel Kuppitz (daniel at thinkaurelius.com)
  */
-public abstract class GroovyDedupTest extends DedupTest {
+public abstract class GroovyDedupTest {
 
     public static class StandardTest extends DedupTest {
         @Override

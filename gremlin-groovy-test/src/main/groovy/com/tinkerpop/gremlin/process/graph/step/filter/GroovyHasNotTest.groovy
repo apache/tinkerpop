@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public abstract class GroovyHasNotTest extends HasNotTest {
+public abstract class GroovyHasNotTest {
 
     public static class StandardTest extends HasNotTest {
         @Override

@@ -70,7 +70,7 @@ public abstract class DedupTest extends AbstractGremlinTest {
         assertFalse(traversal.hasNext());
     }
 
-    public static class JavaDedupTest extends DedupTest {
+    public static class StandardTest extends DedupTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedup_name() {

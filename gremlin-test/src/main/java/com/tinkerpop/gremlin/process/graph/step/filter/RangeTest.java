@@ -110,8 +110,8 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         assertEquals(2, counter);
     }
 
-    public static class JavaRangeTest extends RangeTest {
-        public JavaRangeTest() {
+    public static class StandardTest extends RangeTest {
+        public StandardTest() {
             requiresGraphComputer = false;
         }
 

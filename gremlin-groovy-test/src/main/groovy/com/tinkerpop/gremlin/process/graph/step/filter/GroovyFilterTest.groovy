@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class GroovyFilterTest extends FilterTest {
+public abstract class GroovyFilterTest {
 
     public static class StandardTest extends FilterTest {
 

@@ -60,7 +60,7 @@ public abstract class OrderByTest extends AbstractGremlinTest {
 
     }
 
-    public static class JavaOrderByTest extends OrderByTest {
+    public static class StandardTest extends OrderByTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_orderByXname_incrX_name() {

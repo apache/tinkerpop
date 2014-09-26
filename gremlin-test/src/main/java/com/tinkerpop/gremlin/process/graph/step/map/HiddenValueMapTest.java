@@ -59,9 +59,9 @@ public abstract class HiddenValueMapTest extends AbstractGremlinProcessTest {
         assertEquals(6, counter);
     }
 
-    public static class JavaHiddenValueMapTest extends HiddenValueMapTest {
+    public static class StandardTest extends HiddenValueMapTest {
 
-        public JavaHiddenValueMapTest() {
+        public StandardTest() {
             requiresGraphComputer = false;
         }
 

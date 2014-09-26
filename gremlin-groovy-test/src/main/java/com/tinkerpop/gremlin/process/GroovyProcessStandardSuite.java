@@ -10,17 +10,17 @@ import com.tinkerpop.gremlin.process.graph.step.filter.GroovyHasNotTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyHasTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyIntervalTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRandomTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRangeTestImpl;
-import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRetainTestImpl;
-import com.tinkerpop.gremlin.process.graph.step.filter.GroovySimplePathTestImpl;
-import com.tinkerpop.gremlin.process.graph.step.filter.GroovyWhereTestImpl;
-import com.tinkerpop.gremlin.process.graph.step.map.GroovyBackTestImpl;
-import com.tinkerpop.gremlin.process.graph.step.map.GroovyChooseTestImpl;
-import com.tinkerpop.gremlin.process.graph.step.map.GroovyFoldTestImpl;
-import com.tinkerpop.gremlin.process.graph.step.map.GroovyJumpTestImpl;
-import com.tinkerpop.gremlin.process.graph.step.map.GroovyMapTestImpl;
-import com.tinkerpop.gremlin.process.graph.step.map.GroovyMatchTestImpl;
-import com.tinkerpop.gremlin.process.graph.step.map.GroovyOrderByTestImpl;
+import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRangeTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRetainTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.GroovySimplePathTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.GroovyWhereTest;
+import com.tinkerpop.gremlin.process.graph.step.map.GroovyBackTest;
+import com.tinkerpop.gremlin.process.graph.step.map.GroovyChooseTest;
+import com.tinkerpop.gremlin.process.graph.step.map.GroovyFoldTest;
+import com.tinkerpop.gremlin.process.graph.step.map.GroovyJumpTest;
+import com.tinkerpop.gremlin.process.graph.step.map.GroovyMapTest;
+import com.tinkerpop.gremlin.process.graph.step.map.GroovyMatchTest;
+import com.tinkerpop.gremlin.process.graph.step.map.GroovyOrderByTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyOrderTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyPathTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovySelectTestImpl;
@@ -61,19 +61,19 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyHasTest.StandardTest.class,
             GroovyIntervalTest.StandardTest.class,
             GroovyRandomTest.StandardTest.class,
-            GroovyRangeTestImpl.class,
-            GroovyRetainTestImpl.class,
-            GroovySimplePathTestImpl.class,
-            GroovyWhereTestImpl.class,
+            GroovyRangeTest.StandardTest.class,
+            GroovyRetainTest.StandardTest.class,
+            GroovySimplePathTest.StandardTest.class,
+            GroovyWhereTest.StandardTest.class,
             // map
-            GroovyBackTestImpl.class,
-            GroovyChooseTestImpl.class,
-            GroovyFoldTestImpl.class,
-            GroovyJumpTestImpl.class,
-            GroovyMapTestImpl.class,
-            GroovyMatchTestImpl.class,
+            GroovyBackTest.StandardTest.class,
+            GroovyChooseTest.StandardTest.class,
+            GroovyFoldTest.StandardTest.class,
+            GroovyJumpTest.StandardTest.class,
+            GroovyMapTest.StandardTest.class,
+            GroovyMatchTest.StandardTest.class,
+            GroovyOrderByTest.StandardTest.class,
             GroovyOrderTestImpl.class,
-            GroovyOrderByTestImpl.class,
             GroovyPathTestImpl.class,
             GroovySelectTestImpl.class,
             GroovyUnfoldTestImpl.class,

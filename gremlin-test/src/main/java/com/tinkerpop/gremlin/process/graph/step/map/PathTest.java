@@ -111,8 +111,8 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         assertEquals(2, counter);
     }
 
-    public static class JavaPathTest extends PathTest {
-        public JavaPathTest() {
+    public static class StandardTest extends PathTest {
+        public StandardTest() {
             requiresGraphComputer = false;
         }
 
@@ -146,8 +146,8 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class JavaComputerPathTest extends PathTest {
-        public JavaComputerPathTest() {
+    public static class ComputerTest extends PathTest {
+        public ComputerTest() {
             requiresGraphComputer = true;
         }
 

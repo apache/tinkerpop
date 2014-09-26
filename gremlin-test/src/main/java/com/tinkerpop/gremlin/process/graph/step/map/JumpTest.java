@@ -178,8 +178,8 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
     }
 
 
-    public static class JavaJumpTest extends JumpTest {
-        public JavaJumpTest() {
+    public static class StandardTest extends JumpTest {
+        public StandardTest() {
             requiresGraphComputer = false;
         }
 
@@ -244,8 +244,8 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class JavaComputerJumpTest extends JumpTest {
-        public JavaComputerJumpTest() {
+    public static class ComputerTest extends JumpTest {
+        public ComputerTest() {
             requiresGraphComputer = true;
         }
 

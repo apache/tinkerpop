@@ -96,8 +96,8 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
     }
 
 
-    public static class JavaMapTest extends MapTest {
-        public JavaMapTest() {
+    public static class StandardTest extends MapTest {
+        public StandardTest() {
             requiresGraphComputer = false;
         }
 
@@ -128,8 +128,8 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class JavaComputerMapTest extends MapTest {
-        public JavaComputerMapTest() {
+    public static class ComputerTest extends MapTest {
+        public ComputerTest() {
             requiresGraphComputer = true;
         }
 

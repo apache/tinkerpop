@@ -142,8 +142,8 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
-    public static class JavaFilterTest extends FilterTest {
-        public JavaFilterTest() {
+    public static class StandardTest extends FilterTest {
+        public StandardTest() {
             this.requiresGraphComputer = false;
         }
 
@@ -191,9 +191,9 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class JavaComputerFilterTest extends FilterTest {
+    public static class ComputerTest extends FilterTest {
 
-        public JavaComputerFilterTest() {
+        public ComputerTest() {
             this.requiresGraphComputer = true;
         }
 

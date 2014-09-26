@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.HasTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.IntervalTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.RandomTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.WhereTest;
 import com.tinkerpop.gremlin.process.graph.step.map.BackTest;
 import com.tinkerpop.gremlin.process.graph.step.map.JumpTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
@@ -67,27 +68,28 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             GraphComputerTest.class,   // todo: not sure this should be here as it forces retest of GraphComputer without an "implementation"
 
             // filter
-            CyclicPathTest.JavaComputerCyclicPathTest.class,
+            CyclicPathTest.ComputerTest.class,
             // TODO: REMOVE? DedupTest.JavaComputerDedupTest.class
             // TODO: Aggregate isn't accessible // ExceptTest.JavaComputerExceptTest.class,
-            FilterTest.JavaComputerFilterTest.class,
-            HasNotTest.JavaComputerHasNotTest.class,
-            HasTest.JavaComputerHasTest.class,
+            FilterTest.ComputerTest.class,
+            HasNotTest.ComputerTest.class,
+            HasTest.ComputerTest.class,
             // TODO: InjectTest.JavaComputerInjectTest.class,
-            IntervalTest.JavaComputerIntervalTest.class,
-            RandomTest.JavaComputerRandomTest.class,
+            IntervalTest.ComputerTest.class,
+            RandomTest.ComputerTest.class,
             // TODO: REMOVE? RangeTest.JavaComputerRangeTest.class,
             // TODO: Aggregate isn't accessible // RetainTest.JavaComputerRetainTest.class,
-            SimplePathTest.JavaComputerSimplePathTest.class,
+            SimplePathTest.ComputerTest.class,
+            WhereTest.ComputerTest.class,
 
             // map
-            BackTest.JavaComputerBackTest.class,
+            BackTest.ComputerTest.class,
             // TODO: REMOVE? FoldTest.JavaComputerFoldTest.class,
-            JumpTest.JavaComputerJumpTest.class,
-            MapTest.JavaComputerMapTest.class,
+            JumpTest.ComputerTest.class,
+            MapTest.ComputerTest.class,
             // TODO: MatchTest.JavaComputerMatchTest.class,
             // TODO: REMOVE? OrderTest.JavaOrderTest.class
-            PathTest.JavaComputerPathTest.class,
+            PathTest.ComputerTest.class,
             SelectTest.JavaComputerSelectTest.class,
             VertexTest.JavaComputerVertexTest.class,
             UnfoldTest.JavaComputerUnfoldTest.class,
@@ -135,6 +137,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // RangeTest.class,
             // RetainTest.class,
             SimplePathTest.class,
+            WhereTest.class,
 
 
             // map

@@ -64,7 +64,7 @@ public abstract class SimplePathTest extends AbstractGremlinTest {
         assertFalse(traversal.hasNext());
     }
 
-    public static class JavaSimplePathTest extends SimplePathTest {
+    public static class StandardTest extends SimplePathTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_simplePath(final Object v1Id) {
@@ -82,7 +82,7 @@ public abstract class SimplePathTest extends AbstractGremlinTest {
         }
     }
 
-    public static class JavaComputerSimplePathTest extends SimplePathTest {
+    public static class ComputerTest extends SimplePathTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_simplePath(final Object v1Id) {

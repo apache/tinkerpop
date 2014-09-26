@@ -209,8 +209,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
-    public static class JavaHasTest extends HasTest {
-        public JavaHasTest() {
+    public static class StandardTest extends HasTest {
+        public StandardTest() {
             requiresGraphComputer = false;
         }
 
@@ -285,8 +285,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class JavaComputerHasTest extends HasTest {
-        public JavaComputerHasTest() {
+    public static class ComputerTest extends HasTest {
+        public ComputerTest() {
             requiresGraphComputer = true;
         }
 

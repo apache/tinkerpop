@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class GroovyIntervalTest extends IntervalTest {
+public abstract class GroovyIntervalTest {
 
     public static class StandardTest extends IntervalTest {
         @Override

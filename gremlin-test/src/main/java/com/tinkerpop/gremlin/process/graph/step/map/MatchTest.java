@@ -622,8 +622,8 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                 new Bindings<String>().put("letter", "c").put("number", "4"));
     }
 
-    public static class JavaMatchTest extends MatchTest {
-        public JavaMatchTest() {
+    public static class StandardTest extends MatchTest {
+        public StandardTest() {
             requiresGraphComputer = false;
         }
 
@@ -779,8 +779,8 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     }
 
-    public static class JavaComputerMatchTest extends MatchTest {
-        public JavaComputerMatchTest() {
+    public static class ComputerTest extends MatchTest {
+        public ComputerTest() {
             requiresGraphComputer = true;
         }
 

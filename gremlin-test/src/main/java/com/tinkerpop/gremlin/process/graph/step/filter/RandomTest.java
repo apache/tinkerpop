@@ -47,7 +47,7 @@ public abstract class RandomTest extends AbstractGremlinTest {
         assertFalse(traversal.hasNext());
     }
 
-    public static class JavaRandomTest extends RandomTest {
+    public static class StandardTest extends RandomTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_randomX1X() {
@@ -60,7 +60,7 @@ public abstract class RandomTest extends AbstractGremlinTest {
         }
     }
 
-    public static class JavaComputerRandomTest extends RandomTest {
+    public static class ComputerTest extends RandomTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_randomX1X() {

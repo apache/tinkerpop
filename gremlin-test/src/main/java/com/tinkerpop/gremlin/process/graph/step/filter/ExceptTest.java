@@ -108,7 +108,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
         assertFalse(traversal.hasNext());
     }
 
-    public static class JavaExceptTest extends ExceptTest {
+    public static class StandardTest extends ExceptTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_exceptXg_v2X(final Object v1Id, final Object v2Id) {
@@ -141,7 +141,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
         }
     }
 
-    public static class JavaComputerExceptTest extends ExceptTest {
+    public static class ComputerTest extends ExceptTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_exceptXg_v2X(final Object v1Id, final Object v2Id) {

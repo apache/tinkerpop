@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class GroovyCyclicPathTest extends CyclicPathTest {
+public abstract class GroovyCyclicPathTest {
 
     public static class StandardTest extends CyclicPathTest {
         @Override

@@ -10,7 +10,7 @@ import org.junit.Ignore
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Daniel Kuppitz (daniel at thinkaurelius.com)
  */
-public abstract class GroovyExceptTest extends ExceptTest {
+public abstract class GroovyExceptTest {
 
     public static class StandardTest extends ExceptTest {
 
