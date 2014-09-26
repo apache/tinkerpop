@@ -63,7 +63,7 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
         assert_g_v1_out_sideEffectXincr_cX_valueXnameX(traversal);
     }
 
-    public static class JavaSideEffectTest extends SideEffectTest {
+    public static class StandardTest extends SideEffectTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_sideEffectXstore_aX_valueXnameX(final Object v1Id) {

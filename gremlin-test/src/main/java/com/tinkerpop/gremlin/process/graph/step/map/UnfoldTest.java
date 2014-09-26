@@ -69,7 +69,7 @@ public abstract class UnfoldTest extends AbstractGremlinTest {
         assertFalse(traversal.hasNext());
     }
 
-    public static class JavaUnfoldTest extends UnfoldTest {
+    public static class StandardTest extends UnfoldTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_mapXoutEX_unfold() {
@@ -82,7 +82,7 @@ public abstract class UnfoldTest extends AbstractGremlinTest {
         }
     }
 
-    public static class JavaComputerUnfoldTest extends UnfoldTest {
+    public static class ComputerTest extends UnfoldTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_mapXoutEX_unfold() {

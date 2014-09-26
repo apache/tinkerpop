@@ -69,7 +69,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
         graphProvider.clear(subgraph, config);
     }
 
-    public static class JavaSubgraphTest extends SubgraphTest {
+    public static class StandardTest extends SubgraphTest {
 
         @Override
         public Traversal<Vertex, Graph> get_g_v1_outE_subgraphXknowsX_name_capXsgX(final Object v1Id, final Graph subgraph) {

@@ -102,9 +102,9 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
         assertEquals(2, values.size());
     }
 
-    public static class JavaValueMapTest extends ValueMapTest {
+    public static class StandardTest extends ValueMapTest {
 
-        public JavaValueMapTest() {
+        public StandardTest() {
             requiresGraphComputer = false;
         }
 
@@ -124,9 +124,9 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class JavaComputerValueMapTest extends ValueMapTest {
+    public static class ComputerTest extends ValueMapTest {
 
-        public JavaComputerValueMapTest() {
+        public ComputerTest() {
             requiresGraphComputer = true;
         }
 

@@ -95,7 +95,7 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
         assertEquals(1, count);
     }
 
-    public static class JavaAddEdgeTest extends AddEdgeTest {
+    public static class StandardTest extends AddEdgeTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(final Object v1Id) {

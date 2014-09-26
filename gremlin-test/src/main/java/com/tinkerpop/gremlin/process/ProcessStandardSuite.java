@@ -39,7 +39,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeTest;
-import com.tinkerpop.gremlin.process.graph.step.util.MemoryTest;
+import com.tinkerpop.gremlin.process.graph.step.util.TraversalSideEffectsTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -84,7 +84,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             FilterTest.StandardTest.class,
             HasNotTest.StandardTest.class,
             HasTest.StandardTest.class,
-            InjectTest.JavaInjectTest.class,
+            InjectTest.StandardTest.class,
             IntervalTest.StandardTest.class,
             RandomTest.StandardTest.class,
             RangeTest.StandardTest.class,
@@ -103,27 +103,27 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             OrderTest.StandardTest.class,
             OrderByTest.StandardTest.class,
             PathTest.StandardTest.class,
-            SelectTest.JavaSelectTest.class,
-            VertexTest.JavaVertexTest.class,
-            UnfoldTest.JavaUnfoldTest.class,
+            SelectTest.StandardTest.class,
+            VertexTest.StandardTest.class,
+            UnfoldTest.StandardTest.class,
             // UnionTest.JavaUnionTest.class,
-            UntilTest.JavaUntilTest.class,
-            ValueMapTest.JavaValueMapTest.class,
+            UntilTest.StandardTest.class,
+            ValueMapTest.StandardTest.class,
 
             // sideEffect
-            AddEdgeTest.JavaAddEdgeTest.class,
-            AggregateTest.JavaAggregateTest.class,
-            CountTest.JavaCountTest.class,
-            GroupByTest.JavaGroupByTest.class,
-            GroupCountTest.JavaGroupCountTest.class,
-            SideEffectCapTest.JavaSideEffectCapTest.class,
-            SideEffectTest.JavaSideEffectTest.class,
-            StoreTest.JavaStoreTest.class,
-            SubgraphTest.JavaSubgraphTest.class,
-            TreeTest.JavaTreeTest.class,
+            AddEdgeTest.StandardTest.class,
+            AggregateTest.StandardTest.class,
+            CountTest.StandardTest.class,
+            GroupByTest.StandardTest.class,
+            GroupCountTest.StandardTest.class,
+            SideEffectCapTest.StandardTest.class,
+            SideEffectTest.StandardTest.class,
+            StoreTest.StandardTest.class,
+            SubgraphTest.StandardTest.class,
+            TreeTest.StandardTest.class,
 
             // util
-            MemoryTest.JavaSideEffectsTest.class,
+            TraversalSideEffectsTest.StandardTest.class,
 
             // compliance
             TraversalCoverageTest.class,
@@ -186,7 +186,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             // PageRankVertexProgramTest.class,
 
             // util
-            MemoryTest.class,
+            TraversalSideEffectsTest.class,
 
             // compliance
             TraversalCoverageTest.class,

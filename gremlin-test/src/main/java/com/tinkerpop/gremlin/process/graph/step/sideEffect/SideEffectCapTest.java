@@ -32,7 +32,7 @@ public abstract class SideEffectCapTest extends AbstractGremlinTest {
         assertEquals(map.size(), 4);
     }
 
-    public static class JavaSideEffectCapTest extends SideEffectCapTest {
+    public static class StandardTest extends SideEffectCapTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXa_nameX_out_capXaX() {
@@ -40,7 +40,7 @@ public abstract class SideEffectCapTest extends AbstractGremlinTest {
         }
     }
 
-    public static class JavaComputerSideEffectCapTest extends SideEffectCapTest {
+    public static class ComputerTest extends SideEffectCapTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXa_nameX_out_capXaX() {

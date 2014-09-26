@@ -12,13 +12,13 @@ import static org.junit.Assert.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class MemoryTest extends AbstractGremlinProcessTest {
-    public abstract Traversal.SideEffects get_g_V_memory();
+public abstract class TraversalSideEffectsTest extends AbstractGremlinProcessTest {
+    public abstract Traversal.SideEffects get_g_V_sideEffects();
 
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_memory() {
-        final Traversal.SideEffects sideEffects = get_g_V_memory();
+        final Traversal.SideEffects sideEffects = get_g_V_sideEffects();
         try {
             assertFalse(sideEffects.get("a"));
         } catch (IllegalArgumentException e) {
@@ -28,13 +28,13 @@ public abstract class MemoryTest extends AbstractGremlinProcessTest {
         assertTrue(Graph.class.isAssignableFrom(sideEffects.getGraph().getClass()));
     }
 
-    public static class JavaSideEffectsTest extends MemoryTest {
-        public JavaSideEffectsTest() {
+    public static class StandardTest extends TraversalSideEffectsTest {
+        public StandardTest() {
             requiresGraphComputer = false;
         }
 
         @Override
-        public Traversal.SideEffects get_g_V_memory() {
+        public Traversal.SideEffects get_g_V_sideEffects() {
             return g.V().sideEffects();
         }
     }

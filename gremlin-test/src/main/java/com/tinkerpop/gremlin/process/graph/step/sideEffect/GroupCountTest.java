@@ -86,7 +86,7 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
         });
     }
 
-    public static class JavaGroupCountTest extends GroupCountTest {
+    public static class StandardTest extends GroupCountTest {
 
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_groupCountXnameX() {
@@ -123,7 +123,7 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
         }
     }
 
-    public static class JavaComputerGroupCountTest extends GroupCountTest {
+    public static class ComputerTest extends GroupCountTest {
 
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_groupCountXnameX() {

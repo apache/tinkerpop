@@ -9,14 +9,16 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M3 (Release Date: NOT OFFICIALLY RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Renamed the test cases in `ProcessTestSuite` to be consistent with other Gremlin language variants.
 * `TinkerGraph` is no longer serializable, use a `GraphReader`/`GraphWriter` to serialize the graph data.
 * Removed `implements Serializable` on numerous classes to ensure safety and proper usage of utilities for cloning.
 * `Traversal` now implements `Cloneable` as this is the means that inter-JVM threads are able to get sibling `Traversals`.
 * Created "integration" test for `Neo4jGraph` that runs the test suite with multi/meta property features turned off.
-* Add `GraphStrategy` methods for `VertexProperty`.
-* Convert the `id` data type from string to integer in the Grateful Dead sample data.
+* Added `GraphStrategy` methods for `VertexProperty`.
+* Converted the `id` data type from string to integer in the Grateful Dead sample data.
 * Removed all notions of serializable lambdas as this is a misconception and should not be part of TinkerPop.
-* Added `ScriptTraversal` interface with `GroovyTraversal` as an instance. To be used by OLAP engines and any language variant (e.g. gremlin-scala, gremlin-js, etc.).
+* Greatly simplified `TraversalVertexProgram` with three arguments: a `Traversal<Supplier>`, `Class<Traversal<Supplier>>`, or a script string with `ScriptEngine` name.
+* Added `TraversalScript` interface with `GroovyTraversalScript` as an instance. To be used by OLAP engines and any language variant (e.g. gremlin-scala, gremlin-js, etc.).
 * `UntilStep` now leverages `UnrollJumpStrategy` accordingly.
 * Fixed a bug where the `toString()` of `Traversal` was being hijacked by `SugarGremlinPlugin`.
 * Fixed compilation bug in `UntilStep` that is realized when used in multi-machine OLAP.
@@ -49,7 +51,7 @@ TinkerPop 3.0.0.M2 (Release Date: September 23, 2014)
 * The result type for result termination messages returned from Gremlin Server is now set to "no content".
 * The `maxContentLength` setting for Gremlin Driver now blocks incoming frames that are too large.
 * After initialization scripts are executed in Gremlin Server, the `Graph` instances are re-bound back to their global references, thus allowing `GraphStrategy` initialization or even dynamic `Graph` creation through scripts.
-* Add "Modern" graph back which is basically the "Classic" graph with double values for the "weight" property on edges and non-default vertex labels.
+* Added "Modern" graph back which is basically the "Classic" graph with double values for the "weight" property on edges and non-default vertex labels.
 * `Traversal.addStep()` is now hard typed so type casting isn't required and traversal APIs look clean.
 * Changed the hidden key prefix from `%$%` to `~` in `Graph.Key.hide()`.
 * Added `has(label,key,predicate,value)` to allow for `has('person','name','marko')`. Various overloaded methods provided.

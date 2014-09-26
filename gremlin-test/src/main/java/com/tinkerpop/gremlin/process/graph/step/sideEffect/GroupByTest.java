@@ -93,7 +93,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
         });
     }
 
-    public static class JavaGroupByTest extends GroupByTest {
+    public static class StandardTest extends GroupByTest {
 
         @Override
         public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_groupByXnameX() {
@@ -126,7 +126,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
         }
     }
 
-    public static class JavaComputerGroupByTest extends GroupByTest {
+    public static class ComputerTest extends GroupByTest {
 
         @Override
         public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_groupByXnameX() {

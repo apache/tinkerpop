@@ -60,7 +60,7 @@ public abstract class InjectTest extends AbstractGremlinTest {
         assertEquals(4, counter);
     }
 
-    public static class JavaInjectTest extends InjectTest {
+    public static class StandardTest extends InjectTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_out_injectXv2X_name(final Object v1Id, final Object v2Id) {
@@ -73,7 +73,7 @@ public abstract class InjectTest extends AbstractGremlinTest {
         }
     }
 
-    public static class JavaComputerInjectTest extends InjectTest {
+    public static class ComputerTest extends InjectTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_out_injectXv2X_name(final Object v1Id, final Object v2Id) {

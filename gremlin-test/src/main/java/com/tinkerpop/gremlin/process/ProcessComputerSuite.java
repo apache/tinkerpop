@@ -90,25 +90,25 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // TODO: MatchTest.JavaComputerMatchTest.class,
             // TODO: REMOVE? OrderTest.JavaOrderTest.class
             PathTest.ComputerTest.class,
-            SelectTest.JavaComputerSelectTest.class,
-            VertexTest.JavaComputerVertexTest.class,
-            UnfoldTest.JavaComputerUnfoldTest.class,
+            SelectTest.ComputerTest.class,
+            VertexTest.ComputerTest.class,
+            UnfoldTest.ComputerTest.class,
             // UnionTest.JavaComputerUnionTest.class,
-            UntilTest.JavaComputerUntilTest.class,
-            ValueMapTest.JavaComputerValueMapTest.class,
+            UntilTest.ComputerTest.class,
+            ValueMapTest.ComputerTest.class,
 
             // sideEffect
             // TODO: REMOVE?  AddEdgeTest.JavaAddEdgeTest.class,
-            AggregateTest.JavaComputerAggregateTest.class,
-            CountTest.JavaComputerCountTest.class,
-            GroupByTest.JavaComputerGroupByTest.class,
-            GroupCountTest.JavaComputerGroupCountTest.class,
+            AggregateTest.ComputerTest.class,
+            CountTest.ComputerTest.class,
+            GroupByTest.ComputerTest.class,
+            GroupCountTest.ComputerTest.class,
 
-            SideEffectCapTest.JavaComputerSideEffectCapTest.class,
+            SideEffectCapTest.ComputerTest.class,
             // TODO: REMOVE? SideEffectTest.JavaSideEffectTest.class,
-            StoreTest.JavaComputerStoreTest.class,
+            StoreTest.ComputerTest.class,
             // TODO: REMOVE? SubgraphTest.JavaSideEffectTest.class,
-            TreeTest.JavaComputerTreeTest.class,
+            TreeTest.ComputerTest.class,
 
             // algorithms
             PageRankVertexProgramTest.class,

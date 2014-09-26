@@ -83,8 +83,8 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
         });
     }
 
-    public static class JavaTreeTest extends TreeTest {
-        public JavaTreeTest() {
+    public static class StandardTest extends TreeTest {
+        public StandardTest() {
             requiresGraphComputer = false;
         }
 
@@ -114,8 +114,8 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class JavaComputerTreeTest extends TreeTest {
-        public JavaComputerTreeTest() {
+    public static class ComputerTest extends TreeTest {
+        public ComputerTest() {
             requiresGraphComputer = true;
         }
 

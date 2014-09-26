@@ -89,8 +89,8 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         assertEquals(2, counter);
     }
 
-    public static class JavaSelectTest extends SelectTest {
-        public JavaSelectTest() {
+    public static class StandardTest extends SelectTest {
+        public StandardTest() {
             requiresGraphComputer = false;
         }
 
@@ -115,8 +115,8 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class JavaComputerSelectTest extends SelectTest {
-        public JavaComputerSelectTest() {
+    public static class ComputerTest extends SelectTest {
+        public ComputerTest() {
             requiresGraphComputer = true;
         }
 

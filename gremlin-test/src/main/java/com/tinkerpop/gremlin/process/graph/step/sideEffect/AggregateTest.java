@@ -101,7 +101,7 @@ public abstract class AggregateTest extends AbstractGremlinTest {
     }*/
 
 
-    public static class JavaAggregateTest extends AggregateTest {
+    public static class StandardTest extends AggregateTest {
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_valueXnameX_aggregate() {
@@ -123,7 +123,7 @@ public abstract class AggregateTest extends AbstractGremlinTest {
         }*/
     }
 
-    public static class JavaComputerAggregateTest extends AggregateTest {
+    public static class ComputerTest extends AggregateTest {
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_valueXnameX_aggregate() {

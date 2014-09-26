@@ -572,8 +572,8 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
     }
 
-    public static class JavaVertexTest extends VertexTest {
-        public JavaVertexTest() {
+    public static class StandardTest extends VertexTest {
+        public StandardTest() {
             requiresGraphComputer = false;
         }
 
@@ -740,8 +740,8 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
     // todo: some of the graph computer tests do not pass
 
-    public static class JavaComputerVertexTest extends VertexTest {
-        public JavaComputerVertexTest() {
+    public static class ComputerTest extends VertexTest {
+        public ComputerTest() {
             requiresGraphComputer = true;
         }
 

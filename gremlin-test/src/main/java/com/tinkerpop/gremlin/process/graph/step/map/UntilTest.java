@@ -66,8 +66,8 @@ public abstract class UntilTest extends AbstractGremlinProcessTest {
         });
     }*/
 
-    public static class JavaUntilTest extends UntilTest {
-        public JavaUntilTest() {
+    public static class StandardTest extends UntilTest {
+        public StandardTest() {
             requiresGraphComputer = false;
         }
 
@@ -92,8 +92,8 @@ public abstract class UntilTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class JavaComputerUntilTest extends UntilTest {
-        public JavaComputerUntilTest() {
+    public static class ComputerTest extends UntilTest {
+        public ComputerTest() {
             requiresGraphComputer = true;
         }
 

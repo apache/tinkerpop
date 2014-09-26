@@ -60,7 +60,7 @@ public abstract class CountTest extends AbstractGremlinTest {
         assertFalse(traversal.hasNext());
     }
 
-    public static class JavaCountTest extends CountTest {
+    public static class StandardTest extends CountTest {
 
         @Override
         public Traversal<Vertex, Long> get_g_V_count() {
@@ -83,7 +83,7 @@ public abstract class CountTest extends AbstractGremlinTest {
         }
     }
 
-    public static class JavaComputerCountTest extends CountTest {
+    public static class ComputerTest extends CountTest {
 
         @Override
         public Traversal<Vertex, Long> get_g_V_count() {
