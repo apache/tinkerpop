@@ -84,7 +84,12 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>com.tinkerpop</groupId>
+            <artifactId>gremlin-groovy-test</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
         <!-- explicit Neo4j dependencies, needed due to internal Neo4j version conflicts.
              Bump the versions here when the Neo4j version is bumped. -->
         <dependency>

@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRangeTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovySimplePathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyWhereTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyBackTest;
+import com.tinkerpop.gremlin.process.graph.step.map.GroovyHiddenValueMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyJumpTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyPathTest;
@@ -54,7 +55,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyHasTest.ComputerTest.class,
             GroovyIntervalTest.ComputerTest.class,
             GroovyRandomTest.ComputerTest.class,
-            GroovyRangeTest.ComputerTest.class,
+            // TODO: GroovyRangeTest.ComputerTest.class,
             // TODO: GroovyRetainTest.ComputerTest.class,
             GroovySimplePathTest.ComputerTest.class,
             GroovyWhereTest.ComputerTest.class,
@@ -63,7 +64,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyBackTest.ComputerTest.class,
             // TODO: GroovyChooseTest.ComputerTest.class,
             // TODO: GroovyFoldTest.ComputerTest.class,
-            // TODO: GroovyHiddenValueMapTest.ComputerTest.class
+            GroovyHiddenValueMapTest.ComputerTest.class,
             GroovyJumpTest.ComputerTest.class,
             GroovyMapTest.ComputerTest.class,
             // TODO: GroovyMatchTest.ComputerTest.class,
@@ -87,7 +88,6 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovySideEffectCapTest.ComputerTest.class,
             GroovyStoreTest.ComputerTest.class,
             GroovyTreeTest.ComputerTest.class
-
     };
 
 
