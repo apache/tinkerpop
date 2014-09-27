@@ -16,7 +16,7 @@ public class EdgeOtherVertexStep extends MapStep<Edge, Vertex> implements PathCo
         super(traversal);
         this.setFunction(traverser -> {
             final Path path = traverser.getPath();
-            final Vertex vertex = path.get(path.size() - 3);
+            final Vertex vertex = path.get(path.size() - 2);
             return ElementHelper.areEqual(vertex, traverser.get().outV().next()) ?
                     traverser.get().inV().next() :
                     traverser.get().outV().next();
