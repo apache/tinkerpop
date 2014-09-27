@@ -36,7 +36,6 @@ import static org.junit.Assert.*;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class SequenceGraphStrategyTest extends AbstractGremlinTest {
-    // todo: revisit this test - it is losing too much w.r.t the MultiProperty assignment.
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
