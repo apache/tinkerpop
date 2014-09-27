@@ -387,8 +387,8 @@ public class StrategyWrappedGraphTest  {
             tests.add(Pair.with("g.v(1).iterators().properties(\"name\").next().getElement()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).iterators().properties("name").next().getElement())));
 
             // todo: how do these tests pass? traversal strategy injects a map step between outE and otherV to wrap the Edge before it gets to outerV.
-            tests.add(Pair.with("g.v(1).outE().otherV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).outE().otherV())));
-            tests.add(Pair.with("g.v(4).inE().otherV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).inE().otherV())));
+            //tests.add(Pair.with("g.v(1).outE().otherV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).outE().otherV())));
+            //tests.add(Pair.with("g.v(4).inE().otherV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).inE().otherV())));
 
             return tests.stream().map(d -> {
                 final Object[] o = new Object[2];
