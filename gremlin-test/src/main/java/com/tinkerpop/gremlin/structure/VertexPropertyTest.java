@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.util.function.TriFunction;
 import org.javatuples.Pair;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -366,26 +367,26 @@ public class VertexPropertyTest extends AbstractGremlinTest {
     }
 
     @RunWith(Parameterized.class)
-    public static class VertexPropertiesShouldHideCorrectly extends AbstractGremlinTest {
+    public static class VertexPropertiesShouldHideCorrectlyGivenMultiProperty extends AbstractGremlinTest {
 
         @Parameterized.Parameters(name = "{index}: {0}")
         public static Iterable<Object[]> data() {
-            final List<Pair<String, BiFunction<Graph, Vertex, Boolean>>> tests = new ArrayList<>();
-            tests.add(Pair.with("v.property(\"age\").isPresent()", (Graph g, Vertex v) -> v.property("age").isPresent()));
-            tests.add(Pair.with("v.value(\"age\").equals(16)", (Graph g, Vertex v) -> v.value("age").equals(16)));
-            tests.add(Pair.with("v.properties(\"age\").count().next().intValue() == 1", (Graph g, Vertex v) -> v.properties("age").count().next().intValue() == 1));
-            tests.add(Pair.with("v.properties(\"age\").value().next().equals(16)", (Graph g, Vertex v) -> v.properties("age").value().next().equals(16)));
-            tests.add(Pair.with("v.hiddens(\"age\").count().next().intValue() == 2", (Graph g, Vertex v) -> v.hiddens("age").count().next().intValue() == 2));
-            tests.add(Pair.with("v.hiddens(Graph.Key.hide(\"age\")).count().next().intValue() == 0", (Graph g, Vertex v) -> v.hiddens(Graph.Key.hide("age")).count().next().intValue() == 0));
-            tests.add(Pair.with("v.properties(Graph.Key.hide(\"age\")).count().next().intValue() == 0", (Graph g, Vertex v) -> v.properties(Graph.Key.hide("age")).count().next().intValue() == 0));
-            tests.add(Pair.with("v.hiddens(\"age\").value().toList().contains(34)", (Graph g, Vertex v) -> v.hiddens("age").value().toList().contains(34)));
-            tests.add(Pair.with("v.hiddens(\"age\").value().toList().contains(29)", (Graph g, Vertex v) -> v.hiddens("age").value().toList().contains(29)));
-            tests.add(Pair.with("v.hiddenKeys().size() == 2", (Graph g, Vertex v) -> v.hiddenKeys().size() == 2));
-            tests.add(Pair.with("v.keys().size() == 3", (Graph g, Vertex v) -> v.keys().size() == 3));
-            tests.add(Pair.with("v.keys().contains(\"age\")", (Graph g, Vertex v) -> v.keys().contains("age")));
-            tests.add(Pair.with("v.keys().contains(\"name\")", (Graph g, Vertex v) -> v.keys().contains("name")));
-            tests.add(Pair.with("v.hiddenKeys().contains(\"age\")", (Graph g, Vertex v) -> v.hiddenKeys().contains("age")));
-            tests.add(Pair.with("v.property(Graph.Key.hide(\"color\")).key().equals(\"color\")", (Graph g, Vertex v) -> v.property(Graph.Key.hide("color")).key().equals("color")));
+            final List<Pair<String, TriFunction<Graph, Vertex, Boolean, Boolean>>> tests = new ArrayList<>();
+            tests.add(Pair.with("v.property(\"age\").isPresent()", (Graph g, Vertex v, Boolean multi) -> v.property("age").isPresent()));
+            tests.add(Pair.with("v.value(\"age\").equals(16)", (Graph g, Vertex v, Boolean multi) -> v.value("age").equals(16)));
+            tests.add(Pair.with("v.properties(\"age\").count().next().intValue() == 1", (Graph g, Vertex v, Boolean multi) -> v.properties("age").count().next().intValue() == 1));
+            tests.add(Pair.with("v.properties(\"age\").value().next().equals(16)", (Graph g, Vertex v, Boolean multi) -> v.properties("age").value().next().equals(16)));
+            tests.add(Pair.with("v.hiddens(\"age\").count().next().intValue() == 2", (Graph g, Vertex v, Boolean multi) -> v.hiddens("age").count().next().intValue() == (multi ? 2 : 1)));
+            tests.add(Pair.with("v.hiddens(Graph.Key.hide(\"age\")).count().next().intValue() == 0", (Graph g, Vertex v, Boolean multi) -> v.hiddens(Graph.Key.hide("age")).count().next().intValue() == 0));
+            tests.add(Pair.with("v.properties(Graph.Key.hide(\"age\")).count().next().intValue() == 0", (Graph g, Vertex v, Boolean multi) -> v.properties(Graph.Key.hide("age")).count().next().intValue() == 0));
+            tests.add(Pair.with("v.hiddens(\"age\").value().toList().contains(34)", (Graph g, Vertex v, Boolean multi) -> multi ? v.hiddens("age").value().toList().contains(34) : v.hiddens("age").value().toList().contains(29)));
+            tests.add(Pair.with("v.hiddens(\"age\").value().toList().contains(29)", (Graph g, Vertex v, Boolean multi) -> v.hiddens("age").value().toList().contains(29)));
+            tests.add(Pair.with("v.hiddenKeys().size() == 2", (Graph g, Vertex v, Boolean multi) -> v.hiddenKeys().size() == 2));
+            tests.add(Pair.with("v.keys().size() == 3", (Graph g, Vertex v, Boolean multi) -> v.keys().size() == 3));
+            tests.add(Pair.with("v.keys().contains(\"age\")", (Graph g, Vertex v, Boolean multi) -> v.keys().contains("age")));
+            tests.add(Pair.with("v.keys().contains(\"name\")", (Graph g, Vertex v, Boolean multi) -> v.keys().contains("name")));
+            tests.add(Pair.with("v.hiddenKeys().contains(\"age\")", (Graph g, Vertex v, Boolean multi) -> v.hiddenKeys().contains("age")));
+            tests.add(Pair.with("v.property(Graph.Key.hide(\"color\")).key().equals(\"color\")", (Graph g, Vertex v, Boolean multi) -> v.property(Graph.Key.hide("color")).key().equals("color")));
 
             return tests.stream().map(d -> {
                 final Object[] o = new Object[2];
@@ -399,18 +400,26 @@ public class VertexPropertyTest extends AbstractGremlinTest {
         public String name;
 
         @Parameterized.Parameter(value = 1)
-        public BiFunction<Graph, Vertex, Boolean> streamGetter;
-
-        // todo: revisit this test - it is losing too much w.r.t the MultiProperty assignment.
+        public TriFunction<Graph, Vertex, Boolean, Boolean> streamGetter;
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
-        public void shouldHandleHiddenVertexProperties() {
+        public void shouldHandleHiddenVertexMultiProperties() {
             final Vertex v = g.addVertex(Graph.Key.hide("age"), 34, Graph.Key.hide("age"), 29, "age", 16, "name", "marko", "food", "taco", Graph.Key.hide("color"), "purple");
             tryCommit(g, g -> {
-                assertTrue(streamGetter.apply(g, v));
+                assertTrue(streamGetter.apply(g, v, true));
+            });
+        }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
+        public void shouldHandleHiddenVertexProperties() {
+            final Vertex v = g.addVertex(Graph.Key.hide("age"), 29, "age", 16, "name", "marko", "food", "taco", Graph.Key.hide("color"), "purple");
+            tryCommit(g, g -> {
+                assertTrue(streamGetter.apply(g, v, false));
             });
         }
     }
