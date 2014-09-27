@@ -384,6 +384,7 @@ public class StrategyWrappedGraphTest  {
             tests.add(Pair.with("g.e(11).iterators().vertices(Direction.OUT)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.e(instance.convertToEdgeId("josh", "created", "lop")).iterators().vertices(Direction.OUT))));
             tests.add(Pair.with("g.e(11).iterators().vertices(Direction.BOTH)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.e(instance.convertToEdgeId("josh", "created", "lop")).iterators().vertices(Direction.BOTH))));
             tests.add(Pair.with("g.v(1).iterators().properties(\"name\").next().getElement()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).iterators().properties("name").next().getElement())));
+            tests.add(Pair.with("g.v(1).outE().otherV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).outE().otherV())));
 
             return tests.stream().map(d -> {
                 final Object[] o = new Object[2];
