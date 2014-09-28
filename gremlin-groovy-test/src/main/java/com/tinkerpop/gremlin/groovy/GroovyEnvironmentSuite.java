@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.groovy.engine.GroovyTraversalScriptTest;
 import com.tinkerpop.gremlin.groovy.function.GSSupplierTest;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTest;
 import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
+import com.tinkerpop.gremlin.groovy.loaders.GremlinLoaderTest;
 import com.tinkerpop.gremlin.groovy.loaders.SugarLoaderTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
@@ -25,11 +26,12 @@ public class GroovyEnvironmentSuite extends AbstractGremlinSuite {
     }
 
     private static final Class<?>[] allTests = new Class<?>[]{
-            SugarLoaderTest.class,
-            GSSupplierTest.class,
             GremlinGroovyScriptEngineTest.class,
+            GremlinExecutorTest.class,
+            GremlinLoaderTest.class,
             GroovyTraversalScriptTest.class,
-            GremlinExecutorTest.class
+            GSSupplierTest.class,
+            SugarLoaderTest.class,
     };
 
     /**
