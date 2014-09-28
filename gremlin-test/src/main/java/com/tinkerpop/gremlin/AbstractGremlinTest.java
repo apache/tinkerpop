@@ -187,8 +187,10 @@ public abstract class AbstractGremlinTest {
     }
 
     public void printTraversalForm(final Traversal traversal) {
-        System.out.println("Testing: " + traversal);
+        final boolean muted = Boolean.parseBoolean(System.getProperty("muteTestLogs", "false"));
+
+        if (!muted) System.out.println("Testing: " + traversal);
         traversal.strategies().apply();
-        System.out.println("         " + traversal);
+        if (!muted) System.out.println("         " + traversal);
     }
 }

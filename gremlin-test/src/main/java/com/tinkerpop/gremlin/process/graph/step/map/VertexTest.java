@@ -443,7 +443,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_v4_bothE_outV() {
         final Traversal<Vertex, Vertex> traversal = get_g_v4_bothE_otherV(convertToVertexId("josh"));
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         final List<Vertex> vertices = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(3, vertices.size());
         assertTrue(vertices.stream().anyMatch(v -> v.value("name").equals("marko")));
@@ -456,7 +456,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_v4_bothE_hasXweight_LT_1X_otherV() {
         final Traversal<Vertex, Vertex> traversal = get_g_v4_bothE_hasXweight_lt_1X_otherV(convertToVertexId("josh"));
-        System.out.println("Testing: " + traversal);
+        printTraversalForm(traversal);
         final List<Vertex> vertices = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(1, vertices.size());
         assertEquals(vertices.get(0).value("name"), "lop");
