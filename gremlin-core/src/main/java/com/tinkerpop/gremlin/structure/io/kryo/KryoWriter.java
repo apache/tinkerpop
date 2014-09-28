@@ -104,7 +104,6 @@ public class KryoWriter implements GraphWriter {
     }
 
     private void writeElement(final Output output, final Element e, final Direction direction) {
-        // todo: possible to just write object?
         kryo.writeClassAndObject(output, e);
 
         if (e instanceof Vertex) {
