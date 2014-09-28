@@ -170,8 +170,23 @@ public class GiraphGraph implements Graph {
                     }
 
                     @Override
+                    public boolean supportsAddProperty() {
+                        return false;
+                    }
+
+                    @Override
                     public boolean supportsCustomIds() {
                         return false;
+                    }
+
+                    @Override
+                    public VertexPropertyFeatures properties() {
+                        return new VertexPropertyFeatures() {
+                            @Override
+                            public boolean supportsAddProperty() {
+                                return false;
+                            }
+                        };
                     }
                 };
             }
@@ -181,6 +196,11 @@ public class GiraphGraph implements Graph {
                 return new EdgeFeatures() {
                     @Override
                     public boolean supportsAddEdges() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean supportsAddProperty() {
                         return false;
                     }
 

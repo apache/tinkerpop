@@ -145,6 +145,9 @@ public class FeatureSupportTest {
     @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
             "vertexAdditionsNotSupported"
     })
+    @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
+            "propertyAdditionNotSupported"
+    })
     public static class VertexFunctionalityTest extends AbstractGremlinTest {
 
         @Test
@@ -202,6 +205,21 @@ public class FeatureSupportTest {
             final Vertex v = g.addVertex();
             if (v.id() instanceof Number)
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = VertexFeatures.FEATURE_ADD_PROPERTY, supported = false)
+        public void shouldSupportAddVertexPropertyIfItCanBeAdded() throws Exception {
+            try {
+                final Vertex v = g.addVertex();
+                v.property("should", "not-add-property");
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_ADD_PROPERTY));
+            } catch (Exception ex) {
+                final Exception expectedException = Element.Exceptions.propertyAdditionNotSupported();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
         }
     }
 
@@ -278,6 +296,23 @@ public class FeatureSupportTest {
             if (e.id() instanceof Number)
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
         }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = EdgeFeatures.FEATURE_ADD_PROPERTY, supported = false)
+        public void shouldSupportAddVertexPropertyIfItCanBeAdded() throws Exception {
+            try {
+                final Vertex v = g.addVertex();
+                final Edge e = v.addEdge("test", v);
+                e.property("should", "not-add-property");
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgePropertyFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_ADD_PROPERTY));
+            } catch (Exception ex) {
+                final Exception expectedException = Element.Exceptions.propertyAdditionNotSupported();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
     }
 
     /**
@@ -288,7 +323,7 @@ public class FeatureSupportTest {
     @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
             "dataTypeOfPropertyValueNotSupported"
     })
-    public static class ElementPropertyFunctionalityTest extends AbstractGremlinTest {
+    public static class ElementPropertyDataTypeFunctionalityTest extends AbstractGremlinTest {
         private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
 
         @Parameterized.Parameters(name = "{index}: supports{0}({1})")
@@ -305,6 +340,7 @@ public class FeatureSupportTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = EdgeFeatures.FEATURE_ADD_PROPERTY)
         public void shouldEnableFeatureOnEdgeIfNotEnabled() throws Exception {
             assumeThat(g.features().supports(EdgePropertyFeatures.class, featureName), is(false));
             try {
@@ -399,10 +435,26 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = VertexFeatures.FEATURE_META_PROPERTIES, supported = false)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = VertexPropertyFeatures.FEATURE_ADD_PROPERTY)
         public void shouldSupportMetaPropertyIfPropertiesCanBePutOnProperties() throws Exception {
             try {
                 final Vertex v = g.addVertex();
                 v.property("name", "stephen", "property", "on-property");
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_META_PROPERTIES));
+            } catch (Exception ex) {
+                assertEquals(VertexProperty.Exceptions.metaPropertiesNotSupported().getMessage(), ex.getMessage());
+            }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = VertexFeatures.FEATURE_META_PROPERTIES, supported = false)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = VertexPropertyFeatures.FEATURE_ADD_PROPERTY)
+        public void shouldSupportMetaPropertyIfPropertiesCanBePutOnPropertiesViaVertexProperty() throws Exception {
+            try {
+                final Vertex v = g.addVertex("name", "stephen");
+                v.property("name").property("property", "on-property");
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_META_PROPERTIES));
             } catch (Exception ex) {
                 assertEquals(VertexProperty.Exceptions.metaPropertiesNotSupported().getMessage(), ex.getMessage());

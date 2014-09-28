@@ -260,6 +260,7 @@ public class PropertyTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = VertexPropertyFeatures.FEATURE_ADD_PROPERTY)
         public void testGraphVertexSetPropertyStandard() throws Exception {
             try {
                 final Vertex v = this.g.addVertex();
@@ -275,6 +276,7 @@ public class PropertyTest {
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_PROPERTY)
         public void shouldThrowOnGraphEdgeSetPropertyStandard() throws Exception {
             try {
                 final Vertex v = this.g.addVertex();
@@ -365,6 +367,7 @@ public class PropertyTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_PROPERTY)
         public void shouldSetValueOnEdge() throws Exception {
             assumeThat(g.features().supports(EdgePropertyFeatures.class, featureName), is(true));
             final Edge edge = createEdgeForPropertyFeatureTests();
@@ -374,7 +377,26 @@ public class PropertyTest {
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
         public void shouldSetValueOnVertex() throws Exception {
+            assumeThat(g.features().supports(VertexPropertyFeatures.class, featureName), is(true));
+            final Vertex vertex = g.addVertex();
+            vertex.property("aKey", value);
+            assertPropertyValue(vertex);
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        public void shouldSetValueOnEdgeOnAdd() throws Exception {
+            assumeThat(g.features().supports(EdgePropertyFeatures.class, featureName), is(true));
+            final Edge edge = createEdgeForPropertyFeatureTests("aKey", value);
+            assertPropertyValue(edge);
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        public void shouldSetValueOnVertexOnAdd() throws Exception {
             assumeThat(g.features().supports(VertexPropertyFeatures.class, featureName), is(true));
             final Vertex vertex = g.addVertex("aKey", value);
             assertPropertyValue(vertex);
@@ -456,6 +478,12 @@ public class PropertyTest {
             final Vertex vertexA = g.addVertex();
             final Vertex vertexB = g.addVertex();
             return vertexA.addEdge(GraphManager.get().convertLabel("knows"), vertexB);
+        }
+
+        private Edge createEdgeForPropertyFeatureTests(final String k, Object v) {
+            final Vertex vertexA = g.addVertex();
+            final Vertex vertexB = g.addVertex();
+            return vertexA.addEdge(GraphManager.get().convertLabel("knows"), vertexB, k, v);
         }
     }
 

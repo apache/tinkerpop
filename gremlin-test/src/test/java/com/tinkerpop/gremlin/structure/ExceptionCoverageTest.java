@@ -51,8 +51,6 @@ public class ExceptionCoverageTest {
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeWritten");
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentVerticesCanNotBeQueried");
 
-            add("com.tinkerpop.gremlin.structure.Element$Exceptions#propertyAdditionNotSupported");
-
             add("com.tinkerpop.gremlin.structure.Graph$Exceptions#vertexLookupsNotSupported");
             add("com.tinkerpop.gremlin.structure.Graph$Exceptions#edgeLookupsNotSupported");
 

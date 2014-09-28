@@ -417,6 +417,16 @@ public interface Graph extends AutoCloseable {
             public static final String FEATURE_UUID_IDS = "UuidIds";
             public static final String FEATURE_CUSTOM_IDS = "CustomIds";
             public static final String FEATURE_ANY_IDS = "AnyIds";
+            public static final String FEATURE_ADD_PROPERTY = "AddProperty";
+
+            /**
+             * Determines if an {@link Element} allows properties to be added.  This feature is set independently from
+             * supporting "data types" and refers to support of calls to {@link Element#property(String, Object)}.
+             */
+            @FeatureDescriptor(name = FEATURE_ADD_PROPERTY)
+            public default boolean supportsAddProperty() {
+                return true;
+            }
 
             /**
              * Determines if an {@link Element} can have a user defined identifier.  Implementation that do not support
@@ -473,6 +483,18 @@ public interface Graph extends AutoCloseable {
          * Features that are related to {@link Vertex} {@link Property} objects.
          */
         public interface VertexPropertyFeatures extends PropertyFeatures {
+            public static final String FEATURE_ADD_PROPERTY = "AddProperty";
+
+            /**
+             * Determines if an {@link Element} allows properties to be added.  This feature is set independently from
+             * supporting "data types" and refers to support of calls to {@link Element#property(String, Object)} as
+             * well as calls to {@link Graph#addVertex(Object...)} and {@link Vertex#addEdge(String, Vertex, Object...)}
+             * where properties are included.
+             */
+            @FeatureDescriptor(name = FEATURE_ADD_PROPERTY)
+            public default boolean supportsAddProperty() {
+                return true;
+            }
         }
 
         /**
@@ -488,7 +510,9 @@ public interface Graph extends AutoCloseable {
             public static final String FEATURE_PROPERTIES = "Properties";
 
             /**
-             * If any of the features on PropertyFeatures is true then this value must be true.
+             * Determines if an {@link Element} allows for the processing of at least one data type defined by the
+             * features.  In this case "processing" refers to at least "reading" the data type. If any of the
+             * features on {@link PropertyFeatures} is true then this value must be true.
              */
             @FeatureDescriptor(name = FEATURE_PROPERTIES)
             public default boolean supportsProperties() {
