@@ -66,7 +66,7 @@ while getopts "elv" opt; do
 done
 
 if [ -z "${JAVA_OPTIONS:-}" ]; then
-    JAVA_OPTIONS="-Dlog4j.configuration=log4j-repl.properties -Dgremlin.log4j.level=$GREMLIN_LOG_LEVEL"
+    JAVA_OPTIONS="-Dlog4j.configuration=conf/log4j-repl.properties -Dgremlin.log4j.level=$GREMLIN_LOG_LEVEL"
 fi
 
 if [ -n "$SCRIPT_DEBUG" ]; then

@@ -16,8 +16,8 @@
             <outputDirectory>/ext</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>config</directory>
-            <outputDirectory>/config</outputDirectory>
+            <directory>conf</directory>
+            <outputDirectory>/conf</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>scripts</directory>

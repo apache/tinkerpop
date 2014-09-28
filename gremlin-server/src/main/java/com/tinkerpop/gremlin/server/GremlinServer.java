@@ -150,7 +150,7 @@ public class GremlinServer {
         if (args.length > 0)
             file = args[0];
         else
-            file = "config/gremlin-server.yaml";
+            file = "conf/gremlin-server.yaml";
 
         final Settings settings;
         try {

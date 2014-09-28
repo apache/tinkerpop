@@ -14,7 +14,7 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>config</directory>
+            <directory>conf</directory>
         </fileSet>
         <fileSet>
             <directory>target/${project.artifactId}-${project.version}-standalone/data</directory>

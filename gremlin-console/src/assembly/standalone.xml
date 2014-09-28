@@ -12,8 +12,8 @@
             <fileMode>0755</fileMode>
         </fileSet>
         <fileSet>
-            <directory>config</directory>
-            <outputDirectory>/config</outputDirectory>
+            <directory>conf</directory>
+            <outputDirectory>/conf</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>src/main/ext</directory>
