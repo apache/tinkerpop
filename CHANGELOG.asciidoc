@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M3 (Release Date: NOT OFFICIALLY RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Made `TinkerGraph` a plugin for the Console as it is no longer a direct dependency in `gremlin-groovy`.
 * Add features for supporting the addition of properties via `Element.property(String,Object)`.
 * `GiraphGraph` OLTP tested against Gremlin-Java8 and Gremlin-Groovy -- OLAP tested against Gremlin-Groovy.
 * `Neo4jGraph` is now tested against both Gremlin-Java8 and Gremlin-Groovy.

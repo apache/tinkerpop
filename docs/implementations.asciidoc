@@ -341,6 +341,7 @@ $ bin/gremlin.sh
 -----oOOo-(3)-oOOo-----
 plugin activated: server
 plugin activated: utilities
+plugin activated: tinkergraph
 gremlin> :install com.tinkerpop giraph-gremlin x.y.z
 ==>loaded: [com.tinkerpop, giraph-gremlin, x.y.z] - restart the console to use [giraph]
 gremlin> :q
@@ -351,6 +352,7 @@ $ bin/gremlin.sh
 -----oOOo-(3)-oOOo-----
 plugin activated: server
 plugin activated: utilities
+plugin activated: tinkergraph
 gremlin> :plugin use giraph
 ==>giraph activated
 gremlin> 

@@ -2,3 +2,4 @@ com.tinkerpop.gremlin.console.plugin.DriverGremlinPlugin
 com.tinkerpop.gremlin.console.plugin.GephiGremlinPlugin
 com.tinkerpop.gremlin.console.plugin.SugarGremlinPlugin
 com.tinkerpop.gremlin.console.plugin.UtilitiesGremlinPlugin
+com.tinkerpop.gremlin.console.plugin.TinkerGraphGremlinPlugin
