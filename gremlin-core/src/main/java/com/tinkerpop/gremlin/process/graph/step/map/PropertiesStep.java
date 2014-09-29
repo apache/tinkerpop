@@ -28,6 +28,6 @@ public class PropertiesStep<E> extends FlatMapStep<Element, Property<E>> impleme
     }
 
     public String toString() {
-        return this.propertyKeys.length == 0 ? super.toString() : TraversalHelper.makeStepString(this, Arrays.asList(this.propertyKeys));
+        return this.propertyKeys.length == 0 ? super.toString() : TraversalHelper.makeStepString(this, Arrays.toString(this.propertyKeys));
     }
 }

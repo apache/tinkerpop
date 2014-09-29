@@ -20,6 +20,6 @@ public class ValuesStep<E> extends FlatMapStep<Element, E> {
     }
 
     public String toString() {
-        return TraversalHelper.makeStepString(this, Arrays.asList(this.propertyKeys));
+        return TraversalHelper.makeStepString(this, Arrays.toString(this.propertyKeys));
     }
 }

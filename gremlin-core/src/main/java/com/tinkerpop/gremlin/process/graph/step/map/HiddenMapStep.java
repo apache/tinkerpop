@@ -28,6 +28,6 @@ public class HiddenMapStep<E> extends MapStep<Element, Map<String, E>> {
     }
 
     public String toString() {
-        return TraversalHelper.makeStepString(this, Arrays.asList(this.propertyKeys));
+        return TraversalHelper.makeStepString(this, Arrays.toString(this.propertyKeys));
     }
 }

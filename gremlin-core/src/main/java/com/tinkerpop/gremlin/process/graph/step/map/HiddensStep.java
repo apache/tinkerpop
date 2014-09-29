@@ -29,6 +29,6 @@ public class HiddensStep<E> extends FlatMapStep<Element, Property<E>> implements
     }
 
     public String toString() {
-        return this.propertyKeys.length == 0 ? super.toString() : TraversalHelper.makeStepString(this, Arrays.asList(this.propertyKeys));
+        return this.propertyKeys.length == 0 ? super.toString() : TraversalHelper.makeStepString(this, Arrays.toString(this.propertyKeys));
     }
 }
