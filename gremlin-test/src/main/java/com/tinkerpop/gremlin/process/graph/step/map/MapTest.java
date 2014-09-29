@@ -123,7 +123,6 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_out_mapXa_name_it_nameX() {
-            // TODO: Doesn't work for graph computer because sideEffects are not accessible
             return g.V().as("a").out().out().map(v -> v.<Vertex>get("a").<String>value("name") + v.get().<String>value("name"));
         }
     }

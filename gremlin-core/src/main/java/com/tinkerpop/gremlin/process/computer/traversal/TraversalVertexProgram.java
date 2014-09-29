@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraversalResultMapReduce;
 import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
+import com.tinkerpop.gremlin.process.computer.util.SupplierType;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
@@ -23,10 +24,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -43,88 +41,48 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     // TODO: a dual messaging system
     // TODO: thread local for Traversal so you don't have to keep compiling it over and over again
 
-    public static final String TRAVERSAL_SUPPLIER_TYPE = "gremlin.traversalVertexProgram.traversalSupplierType";
-    public static final String TRAVERSAL_SUPPLIER = "gremlin.traversalVertexProgram.traversalSupplier";
-    public static final String TRAVERSAL_ENGINE = "gremlin.traversalVertexProgram.traversalEngine";
-
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
     public static final String TRAVERSER_TRACKER = Graph.Key.hide("gremlin.traverserTracker");
+    private static final String SUPPLIER_TYPE_KEY = Graph.Key.hide("gremlin.traversalVertexProgram.supplierType");
+    private static final String SUPPLIER_KEY = Graph.Key.hide("gremlin.traversalVertexProgram.supplier");
 
-    private enum TraversalSupplierType {
-        CLASS,
-        OBJECT,
-        SCRIPT
-    }
-
-    private TraversalSupplierType traversalSupplierType;
-
-    private ThreadLocal<Traversal> traversal = new ThreadLocal<>();
+    private SupplierType supplierType;
+    private Pair<?, Supplier<Traversal>> supplierTypeObject;
     private Supplier<Traversal> traversalSupplier;
-    private Class<Supplier<Traversal>> traversalSupplierClass;
-    private Pair<String, String> traversalSupplierScript;
+    private ThreadLocal<Traversal> traversal = new ThreadLocal<>();
 
     private boolean trackPaths = false;
     public List<MapReduce> mapReducers = new ArrayList<>();
-    private Set<String> elementComputeKeys = new HashSet<>(Arrays.asList(TRAVERSER_TRACKER));
+    private Set<String> elementComputeKeys = new HashSet<String>() {{
+        add(TRAVERSER_TRACKER);
+    }};
 
     private TraversalVertexProgram() {
     }
 
     @Override
     public void loadState(final Configuration configuration) {
-        if (!configuration.containsKey(TRAVERSAL_SUPPLIER_TYPE))
-            throw new IllegalArgumentException("The provided configuration does not have the required key: " + TRAVERSAL_SUPPLIER_TYPE);
-        try {
-            this.traversalSupplierType = TraversalSupplierType.valueOf(configuration.getString(TRAVERSAL_SUPPLIER_TYPE));
-            if (this.traversalSupplierType.equals(TraversalSupplierType.CLASS)) {
-                this.traversalSupplierClass = (Class) Class.forName(configuration.getString(TRAVERSAL_SUPPLIER));
-                this.traversalSupplier = this.traversalSupplierClass.getConstructor().newInstance();
-            } else if (this.traversalSupplierType.equals(TraversalSupplierType.OBJECT)) {
-                this.traversalSupplier = (Supplier<Traversal>) configuration.getProperty(TRAVERSAL_SUPPLIER);
-            } else if (this.traversalSupplierType.equals(TraversalSupplierType.SCRIPT)) {
-                this.traversalSupplierScript = Pair.with(configuration.getString(TRAVERSAL_SUPPLIER), configuration.getString(TRAVERSAL_ENGINE));
-                final ScriptEngine engine = new ScriptEngineManager().getEngineByName(this.traversalSupplierScript.getValue1());
-                this.traversalSupplier = () -> {
-                    try {
-                        return (Traversal) engine.eval(this.traversalSupplierScript.getValue0());
-                    } catch (Exception e) {
-                        throw new IllegalStateException(e.getMessage(), e);
-                    }
-                };
-            } else {
-                throw new IllegalStateException("The traversal supplier provider is unrecognized: " + this.traversalSupplierType);
-            }
+        this.supplierType = SupplierType.getType(configuration, SUPPLIER_TYPE_KEY);
+        this.supplierTypeObject = this.supplierType.get(configuration, SUPPLIER_KEY);
+        this.traversalSupplier = this.supplierTypeObject.getValue1();
 
-            final Traversal<?, ?> traversal = this.traversalSupplier.get();
-            this.trackPaths = TraversalHelper.trackPaths(traversal);
-            traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
-                final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
-                this.mapReducers.add(mapReduce);
-                this.elementComputeKeys.add(Graph.Key.hide(mapReduce.getSideEffectKey()));
-            });
+        final Traversal<?, ?> traversal = this.traversalSupplier.get();
+        this.trackPaths = TraversalHelper.trackPaths(traversal);
+        traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
+            final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
+            this.mapReducers.add(mapReduce);
+            this.elementComputeKeys.add(Graph.Key.hide(mapReduce.getSideEffectKey()));
+        });
 
-            if (!(TraversalHelper.getEnd(traversal) instanceof SideEffectCapStep))
-                this.mapReducers.add(new TraversalResultMapReduce());
+        if (!(TraversalHelper.getEnd(traversal) instanceof SideEffectCapStep))
+            this.mapReducers.add(new TraversalResultMapReduce());
 
-        } catch (final Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
     }
 
     @Override
     public void storeState(final Configuration configuration) {
         configuration.setProperty(GraphComputer.VERTEX_PROGRAM, TraversalVertexProgram.class.getName());
-        configuration.setProperty(TRAVERSAL_SUPPLIER_TYPE, this.traversalSupplierType.name());
-        if (this.traversalSupplierType.equals(TraversalSupplierType.CLASS)) {
-            configuration.setProperty(TRAVERSAL_SUPPLIER, this.traversalSupplierClass.getCanonicalName());
-        } else if (this.traversalSupplierType.equals(TraversalSupplierType.OBJECT)) {
-            configuration.setProperty(TRAVERSAL_SUPPLIER, this.traversalSupplier);
-        } else if (this.traversalSupplierType.equals(TraversalSupplierType.SCRIPT)) {
-            configuration.setProperty(TRAVERSAL_SUPPLIER, this.traversalSupplierScript.getValue0());
-            configuration.setProperty(TRAVERSAL_ENGINE, this.traversalSupplierScript.getValue1());
-        } else {
-            throw new IllegalStateException("The traversal supplier provider is unrecognized: " + this.traversalSupplierType);
-        }
+        this.supplierType.set(configuration, SUPPLIER_TYPE_KEY, SUPPLIER_KEY, this.supplierTypeObject.getValue0());
     }
 
     private Traversal getTraversal() {
@@ -267,22 +225,18 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
             super(TraversalVertexProgram.class);
         }
 
-        public Builder traversal(final String traversalScript, final String scriptEngine) {
-            this.configuration.setProperty(TRAVERSAL_SUPPLIER_TYPE, TraversalSupplierType.SCRIPT.name());
-            this.configuration.setProperty(TRAVERSAL_SUPPLIER, traversalScript);
-            this.configuration.setProperty(TRAVERSAL_ENGINE, scriptEngine);
+        public Builder traversal(final String scriptEngine, final String traversalScript) {
+            SupplierType.SCRIPT.set(this.configuration, SUPPLIER_TYPE_KEY, SUPPLIER_KEY, new String[]{scriptEngine, traversalScript});
             return this;
         }
 
         public Builder traversal(final Supplier<Traversal> traversalSupplier) {
-            this.configuration.setProperty(TRAVERSAL_SUPPLIER_TYPE, TraversalSupplierType.OBJECT.name());
-            this.configuration.setProperty(TRAVERSAL_SUPPLIER, traversalSupplier);
+            SupplierType.OBJECT.set(this.configuration, SUPPLIER_TYPE_KEY, SUPPLIER_KEY, traversalSupplier);
             return this;
         }
 
         public Builder traversal(final Class<Supplier<Traversal>> traversalSupplierClass) {
-            this.configuration.setProperty(TRAVERSAL_SUPPLIER_TYPE, TraversalSupplierType.CLASS.name());
-            this.configuration.setProperty(TRAVERSAL_SUPPLIER, traversalSupplierClass.getCanonicalName());
+            SupplierType.CLASS.set(this.configuration, SUPPLIER_TYPE_KEY, SUPPLIER_KEY, traversalSupplierClass);
             return this;
         }
 

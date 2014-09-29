@@ -738,8 +738,6 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         }
     }
 
-    // todo: some of the graph computer tests do not pass
-
     public static class ComputerTest extends VertexTest {
         public ComputerTest() {
             requiresGraphComputer = true;

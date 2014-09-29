@@ -135,7 +135,6 @@ public abstract class GroupByTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Map<String, List<String>>> get_g_V_hasXlangX_groupByXa_lang_nameX_out_capXaX() {
-            // TODO: This doesn't work with GraphComputer cause there are no results so you get a NoSuchElementException
             return (Traversal) g.V().<Vertex>has("lang")
                     .groupBy("a", v -> v.get().value("lang"),
                             v -> v.get().value("name")).out().cap("a").submit(g.compute());

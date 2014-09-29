@@ -78,7 +78,7 @@ public class GroovyTraversalScript<S, E> implements TraversalScript<S, E> {
 
     @Override
     public TraversalVertexProgram program() {
-        return TraversalVertexProgram.build().traversal(this.makeFullScript(), ENGINE_NAME).create();
+        return TraversalVertexProgram.build().traversal(ENGINE_NAME, this.makeFullScript()).create();
     }
 
     private String makeFullScript() {
