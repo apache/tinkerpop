@@ -67,7 +67,11 @@ public class SingleGraphTraversal<S> implements GraphTraversal<S, S> {
     }
 
     @Override
-    public SingleGraphTraversal clone() throws CloneNotSupportedException {
-        return (SingleGraphTraversal) super.clone();
+    public SingleGraphTraversal clone() {
+        try {
+            return (SingleGraphTraversal) super.clone();
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 }

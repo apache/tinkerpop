@@ -62,7 +62,7 @@ import java.util.Optional;
         reason = "Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
         test = "com.tinkerpop.gremlin.process.computer.GraphComputerTest",
-        method = "shouldNotAllowBadMemoryKeys",
+        method = "shouldNotAllowNullMemoryKeys",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
         test = "com.tinkerpop.gremlin.process.computer.GraphComputerTest",

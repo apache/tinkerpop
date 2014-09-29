@@ -12,7 +12,7 @@ import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraversalResultMapReduce;
 import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
-import com.tinkerpop.gremlin.process.computer.util.SupplierType;
+import com.tinkerpop.gremlin.process.computer.util.LambdaType;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
@@ -43,12 +43,11 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
     public static final String TRAVERSER_TRACKER = Graph.Key.hide("gremlin.traverserTracker");
-    private static final String SUPPLIER_TYPE_KEY = Graph.Key.hide("gremlin.traversalVertexProgram.supplierType");
-    private static final String SUPPLIER_KEY = Graph.Key.hide("gremlin.traversalVertexProgram.supplier");
+    private static final String LAMBDA_TYPE_KEY = Graph.Key.hide("gremlin.traversalVertexProgram.lambdaType");
+    private static final String TRAVERSAL_SUPPLIER_KEY = Graph.Key.hide("gremlin.traversalVertexProgram.traversalSupplier");
 
-    private SupplierType supplierType;
-    private Pair<?, Supplier<Traversal>> supplierTypeObject;
-    private Supplier<Traversal> traversalSupplier;
+    private LambdaType lambdaType;
+    private Pair<?, Supplier<Traversal>> traversalPair;
     private ThreadLocal<Traversal> traversal = new ThreadLocal<>();
 
     private boolean trackPaths = false;
@@ -62,11 +61,10 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     @Override
     public void loadState(final Configuration configuration) {
-        this.supplierType = SupplierType.getType(configuration, SUPPLIER_TYPE_KEY);
-        this.supplierTypeObject = this.supplierType.get(configuration, SUPPLIER_KEY);
-        this.traversalSupplier = this.supplierTypeObject.getValue1();
+        this.lambdaType = LambdaType.getType(configuration, LAMBDA_TYPE_KEY);
+        this.traversalPair = this.lambdaType.get(configuration, TRAVERSAL_SUPPLIER_KEY);
 
-        final Traversal<?, ?> traversal = this.traversalSupplier.get();
+        final Traversal<?, ?> traversal = this.traversalPair.getValue1().get();
         this.trackPaths = TraversalHelper.trackPaths(traversal);
         traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
             final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
@@ -82,16 +80,16 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     @Override
     public void storeState(final Configuration configuration) {
         configuration.setProperty(GraphComputer.VERTEX_PROGRAM, TraversalVertexProgram.class.getName());
-        this.supplierType.set(configuration, SUPPLIER_TYPE_KEY, SUPPLIER_KEY, this.supplierTypeObject.getValue0());
+        this.lambdaType.set(configuration, LAMBDA_TYPE_KEY, TRAVERSAL_SUPPLIER_KEY, this.traversalPair.getValue0());
     }
 
-    private Traversal getTraversal() {
+    public Traversal getTraversal() {
         try {
             Traversal traversal = this.traversal.get();
             if (null != traversal)
                 return traversal;
             else {
-                traversal = this.traversalSupplier.get();
+                traversal = this.traversalPair.getValue1().get();
                 this.traversal.set(traversal);
                 return traversal;
             }
@@ -194,10 +192,6 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         return this.getClass().getSimpleName() + traversal.toString();
     }
 
-    public Supplier<Traversal> getTraversalSupplier() {
-        return this.traversalSupplier;
-    }
-
     @Override
     public Features getFeatures() {
         return new Features() {
@@ -226,17 +220,17 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         }
 
         public Builder traversal(final String scriptEngine, final String traversalScript) {
-            SupplierType.SCRIPT.set(this.configuration, SUPPLIER_TYPE_KEY, SUPPLIER_KEY, new String[]{scriptEngine, traversalScript});
+            LambdaType.SCRIPT.set(this.configuration, LAMBDA_TYPE_KEY, TRAVERSAL_SUPPLIER_KEY, new String[]{scriptEngine, traversalScript});
             return this;
         }
 
-        public Builder traversal(final Supplier<Traversal> traversalSupplier) {
-            SupplierType.OBJECT.set(this.configuration, SUPPLIER_TYPE_KEY, SUPPLIER_KEY, traversalSupplier);
+        public Builder traversal(final Supplier<Traversal> traversal) {
+            LambdaType.OBJECT.set(this.configuration, LAMBDA_TYPE_KEY, TRAVERSAL_SUPPLIER_KEY, traversal);
             return this;
         }
 
-        public Builder traversal(final Class<Supplier<Traversal>> traversalSupplierClass) {
-            SupplierType.CLASS.set(this.configuration, SUPPLIER_TYPE_KEY, SUPPLIER_KEY, traversalSupplierClass);
+        public Builder traversal(final Class<Supplier<Traversal>> traversalClass) {
+            LambdaType.CLASS.set(this.configuration, LAMBDA_TYPE_KEY, TRAVERSAL_SUPPLIER_KEY, traversalClass);
             return this;
         }
 

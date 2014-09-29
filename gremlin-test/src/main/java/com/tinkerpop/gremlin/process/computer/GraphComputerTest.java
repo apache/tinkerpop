@@ -1,22 +1,17 @@
 package com.tinkerpop.gremlin.process.computer;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.ExceptionCoverage;
-import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaMapReduce;
 import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -36,33 +31,51 @@ import static org.junit.Assert.*;
         "graphDoesNotSupportProvidedGraphComputer",
         "onlyOneOrNoGraphComputerClass"
 })
-public class GraphComputerTest extends AbstractGremlinTest {
+public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
+
+    public abstract GraphComputer get_g_compute();
+
+    public abstract GraphComputer get_g_compute_setupXX_executeXX_terminateXtrueX();
+
+    public abstract GraphComputer get_g_compute_setupXX_executeXX_terminateXtrueX_memoryKeysXset_incr_and_orX();
+
+    public abstract GraphComputer get_g_compute_setupXX_executeXX_terminateXtrueX_memoryKeysXnullX();
+
+    public abstract GraphComputer get_g_compute_setupXX_executeXX_terminateXtrueX_memoryKeysX_X();
+
+    public abstract GraphComputer get_g_compute_setupXsetXa_trueXX_executeXX_terminateXtrueX();
+
+    public abstract GraphComputer get_g_compute_setupXX_executeXv_blah_m_incrX_terminateX1X_elementKeysXnameLengthCounterX_memoryKeysXa_bX();
+
+    public abstract GraphComputer get_g_compute_setupXabcdeX_executeXtestMemoryX_terminateXtestMemoryXmemoryKeysXabcdeX();
+
+    public abstract GraphComputer g_compute_mapXageXreduceXsumX_memoryXnextX_memoryKeyXageSumX();
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
+    @LoadGraphWith(MODERN)
     public void shouldHaveStandardStringRepresentation() {
-        final GraphComputer computer = g.compute();
+        final GraphComputer computer = get_g_compute();
         assertEquals(StringFactory.computerString(computer), computer.toString());
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
+    @LoadGraphWith(MODERN)
     public void shouldFailIfIsolationIsNotSupported() {
-        final GraphComputer computer = g.compute();
-        if(!computer.features().supportsIsolation(GraphComputer.Isolation.BSP)) {
+        final GraphComputer computer = get_g_compute();
+        if (!computer.features().supportsIsolation(GraphComputer.Isolation.BSP)) {
             try {
                 computer.isolation(GraphComputer.Isolation.BSP);
                 fail("GraphComputer.isolation() should throw an exception if the isolation is not supported");
-            } catch(Exception e) {
+            } catch (Exception e) {
                 assertEquals(GraphComputer.Exceptions.isolationNotSupported(GraphComputer.Isolation.BSP).getMessage(), e.getMessage());
                 assertEquals(GraphComputer.Exceptions.isolationNotSupported(GraphComputer.Isolation.BSP).getCause(), e.getClass());
             }
         }
-        if(!computer.features().supportsIsolation(GraphComputer.Isolation.DIRTY_BSP)) {
+        if (!computer.features().supportsIsolation(GraphComputer.Isolation.DIRTY_BSP)) {
             try {
                 computer.isolation(GraphComputer.Isolation.DIRTY_BSP);
                 fail("GraphComputer.isolation() should throw an exception if the isolation is not supported");
-            } catch(Exception e) {
+            } catch (Exception e) {
                 assertEquals(GraphComputer.Exceptions.isolationNotSupported(GraphComputer.Isolation.DIRTY_BSP).getMessage(), e.getMessage());
                 assertEquals(GraphComputer.Exceptions.isolationNotSupported(GraphComputer.Isolation.DIRTY_BSP).getCause(), e.getClass());
             }
@@ -71,98 +84,81 @@ public class GraphComputerTest extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
+    @LoadGraphWith(MODERN)
     public void shouldNotAllowBadGraphComputers() {
         try {
             g.compute(BadGraphComputer.class);
             fail("Providing a bad graph computer class should fail");
         } catch (Exception ex) {
-            final Exception expectedException = Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(BadGraphComputer.class);
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(BadGraphComputer.class), ex);
         }
     }
 
     @Test
     @LoadGraphWith(MODERN)
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldHaveImmutableComputeResultMemory() throws Exception {
-        final ComputerResult results = g.compute().program(LambdaVertexProgram.build().
-                setup(memory -> {
-                }).
-                execute((vertex, messenger, memory) -> {
-                }).
-                terminate(memory -> true).memoryComputeKeys(new HashSet<>(Arrays.asList("set", "incr", "and", "or"))).create()).submit().get();
+        final ComputerResult results = this.get_g_compute_setupXX_executeXX_terminateXtrueX_memoryKeysXset_incr_and_orX().submit().get();
 
         try {
             results.getMemory().set("set", "test");
         } catch (Exception ex) {
-            final Exception expectedException = Memory.Exceptions.memoryCompleteAndImmutable();
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Memory.Exceptions.memoryCompleteAndImmutable(), ex);
         }
 
         try {
             results.getMemory().incr("incr", 1);
         } catch (Exception ex) {
-            final Exception expectedException = Memory.Exceptions.memoryCompleteAndImmutable();
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Memory.Exceptions.memoryCompleteAndImmutable(), ex);
         }
 
         try {
             results.getMemory().and("and", true);
         } catch (Exception ex) {
-            final Exception expectedException = Memory.Exceptions.memoryCompleteAndImmutable();
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Memory.Exceptions.memoryCompleteAndImmutable(), ex);
         }
 
         try {
             results.getMemory().or("or", false);
         } catch (Exception ex) {
-            final Exception expectedException = Memory.Exceptions.memoryCompleteAndImmutable();
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Memory.Exceptions.memoryCompleteAndImmutable(), ex);
         }
     }
 
     @Test
     @LoadGraphWith(MODERN)
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
-    public void shouldNotAllowBadMemoryKeys() throws Exception {
+    public void shouldNotAllowNullMemoryKeys() throws Exception {
         try {
-            g.compute().program(LambdaVertexProgram.build().
-                    setup(memory -> memory.set("", true)).
-                    execute((vertex, messenger, memory) -> {
-                    }).
-                    terminate(memory -> true).memoryComputeKeys("")
-                    .create()).submit().get();
-            fail("Providing empty memory key should fail");
-        } catch (Exception ex) {
-            final Exception expectedException = Memory.Exceptions.memoryKeyCanNotBeEmpty();
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
-        }
-
-        try {
-            g.compute().program(LambdaVertexProgram.build().
-                    setup(memory -> memory.set("blah", null)).
-                    execute((vertex, messenger, memory) -> {
-                    }).
-                    terminate(memory -> true).memoryComputeKeys(new HashSet<>(Arrays.asList(""))).
-                    memoryComputeKeys("blah")
-                    .create()).submit().get();
+            get_g_compute_setupXX_executeXX_terminateXtrueX_memoryKeysXnullX().submit().get();
             fail("Providing null memory key should fail");
         } catch (Exception ex) {
-            final Exception expectedException = Memory.Exceptions.memoryValueCanNotBeNull();
-            assertEquals(expectedException.getClass(), ex.getCause().getClass());
-            assertEquals(expectedException.getMessage(), ex.getCause().getMessage());
+// TODO:            validateException(Memory.Exceptions.memoryKeyCanNotBeNull(), ex);
         }
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
+    @LoadGraphWith(MODERN)
+    public void shouldNotAllowEmptyMemoryKeys() throws Exception {
+        try {
+            get_g_compute_setupXX_executeXX_terminateXtrueX_memoryKeysX_X().submit().get();
+            fail("Providing empty memory key should fail");
+        } catch (Exception ex) {
+            validateException(Memory.Exceptions.memoryKeyCanNotBeEmpty(), ex);
+        }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldNotAllowSettingUndeclaredMemoryKeys() throws Exception {
+        try {
+            get_g_compute_setupXsetXa_trueXX_executeXX_terminateXtrueX().submit().get();
+            fail("Setting a memory key that wasn't declared should fail");
+        } catch (Exception ex) {
+            validateException(GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey("a"), ex);
+        }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
     public void shouldOnlyAllowOneOrNoGraphComputerClass() throws Exception {
         try {
             g.compute(BadGraphComputer.class, BadGraphComputer.class).submit().get();
@@ -176,30 +172,15 @@ public class GraphComputerTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
-    public void shouldNotAllowWithNoVertexProgramNorMapReducers() throws Exception {
-        try {
-            g.compute().submit().get();
-            fail("Should throw an IllegalStateException when there is no vertex program nor map reducers");
-        } catch (Exception ex) {
-            final Exception expectedException = GraphComputer.Exceptions.computerHasNoVertexProgramNorMapReducers();
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
-        }
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldNotAllowTheSameComputerToExecutedTwice() throws Exception {
-        final GraphComputer computer = g.compute().program(identity());
+        final GraphComputer computer = get_g_compute_setupXX_executeXX_terminateXtrueX();
         computer.submit().get(); // this should work as its the first run of the graph computer
 
         try {
             computer.submit(); // this should fail as the computer has already been executed
             fail("Using the same graph computer to compute again should not be possible");
         } catch (IllegalStateException e) {
-            assertTrue(true);
+
         } catch (Exception e) {
             fail("Should yield an illegal state exception for graph computer being executed twice");
         }
@@ -210,7 +191,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
             computer.submit(); // this should fail as the computer has already been executed even through new program submitted
             fail("Using the same graph computer to compute again should not be possible");
         } catch (IllegalStateException e) {
-            assertTrue(true);
+
         } catch (Exception e) {
             fail("Should yield an illegal state exception for graph computer being executed twice");
         }
@@ -218,68 +199,8 @@ public class GraphComputerTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
-    public void shouldRequireRegisteringMemoryKeys() throws Exception {
-        try {
-            g.compute().program(LambdaVertexProgram.build().
-                    setup(memory -> memory.set("or", true)).
-                    execute((vertex, messenger, memory) -> {
-                    }).
-                    terminate(memory -> memory.getIteration() >= 2).create()).submit().get();
-            // TODO: Giraph fails HARD and kills the process (thus, test doesn't proceed past this point)
-            fail("Should fail with an ExecutionException[IllegalArgumentException]");
-        } catch (ExecutionException e) {
-            assertEquals(IllegalArgumentException.class, e.getCause().getClass());
-        } catch (Exception e) {
-            fail("Should fail with an ExecutionException[IllegalArgumentException]: " + e);
-        }
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
-    public void shouldAllowMapReduceWithNoVertexProgram() throws Exception {
-        final ComputerResult results = g.compute().mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()
-                .map((v, e) -> v.<Integer>property("age").ifPresent(age -> e.emit(MapReduce.NullObject.instance(), age)))
-                .reduce((k, vv, e) -> e.emit(MapReduce.NullObject.instance(), StreamFactory.stream(vv).mapToInt(i -> i).sum()))
-                .memory(i -> i.next().getValue1())
-                .memoryKey("ageSum").create())
-                .submit().get();
-        assertEquals(123, results.getMemory().<Integer>get("ageSum").intValue());
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
     public void shouldHaveConsistentMemoryVertexPropertiesAndExceptions() throws Exception {
-        GraphComputer computer = g.compute();
-        ComputerResult results = computer.program(LambdaVertexProgram.build().
-                setup(memory -> {
-                }).
-                execute((vertex, messenger, memory) -> {
-                    /*
-                    // TODO: Implement wrapper for GiraphGraph internal TinkerVertex
-                    try {
-                        vertex.property("blah", "blah");
-                        fail("Should throw an IllegalArgumentException");
-                    } catch (IllegalArgumentException e) {
-                        assertEquals(GraphComputer.Exceptions.providedKeyIsNotAnElementComputeKey("blah").getMessage(), e.getMessage());
-                    } catch (Exception e) {
-                        fail("Should throw an IllegalArgumentException: " + e);
-                    }*/
-
-                    memory.incr("a", 1);
-                    if (memory.isInitialIteration()) {
-                        vertex.property("nameLengthCounter", vertex.<String>value("name").length());
-                        memory.incr("b", vertex.<String>value("name").length());
-                    } else {
-                        vertex.singleProperty("nameLengthCounter", vertex.<String>value("name").length() + vertex.<Integer>value("nameLengthCounter"));
-                    }
-                }).
-                terminate(memory -> memory.getIteration() == 1).
-                elementComputeKeys("nameLengthCounter").
-                memoryComputeKeys("a", "b").create()).submit().get();
+        ComputerResult results = get_g_compute_setupXX_executeXv_blah_m_incrX_terminateX1X_elementKeysXnameLengthCounterX_memoryKeysXa_bX().submit().get();
         assertEquals(1, results.getMemory().getIteration());
         assertEquals(2, results.getMemory().asMap().size());
         assertEquals(2, results.getMemory().keys().size());
@@ -302,6 +223,197 @@ public class GraphComputerTest extends AbstractGremlinTest {
             assertEquals(Integer.valueOf(v.<String>value("name").length() * 2), Integer.valueOf(v.<Integer>value("nameLengthCounter")));
         });
     }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldAndOrIncrCorrectlyThroughSubStages() throws Exception {
+        ComputerResult results = get_g_compute_setupXabcdeX_executeXtestMemoryX_terminateXtestMemoryXmemoryKeysXabcdeX().submit().get();
+        assertEquals(2, results.getMemory().getIteration());
+        assertEquals(5, results.getMemory().asMap().size());
+        assertEquals(5, results.getMemory().keys().size());
+        assertTrue(results.getMemory().keys().contains("a"));
+        assertTrue(results.getMemory().keys().contains("b"));
+        assertTrue(results.getMemory().keys().contains("c"));
+        assertTrue(results.getMemory().keys().contains("d"));
+        assertTrue(results.getMemory().keys().contains("e"));
+
+        assertEquals(Long.valueOf(18), results.getMemory().get("a"));
+        assertEquals(Long.valueOf(0), results.getMemory().get("b"));
+        assertFalse(results.getMemory().get("c"));
+        assertTrue(results.getMemory().get("d"));
+        assertTrue(results.getMemory().get("e"));
+    }
+
+
+    @Test
+    @Ignore
+    @LoadGraphWith(MODERN)
+    public void shouldAllowMapReduceWithNoVertexProgram() throws Exception {
+        final ComputerResult results = g_compute_mapXageXreduceXsumX_memoryXnextX_memoryKeyXageSumX().submit().get();
+        assertEquals(123, results.getMemory().<Integer>get("ageSum").intValue());
+    }
+
+
+    public static class ComputerTest extends GraphComputerTest {
+
+        public ComputerTest() {
+            requiresGraphComputer = true;
+        }
+
+        @Override
+        public GraphComputer get_g_compute() {
+            return g.compute();
+        }
+
+        @Override
+        public GraphComputer get_g_compute_setupXX_executeXX_terminateXtrueX() {
+            return g.compute().program(LambdaVertexProgram.build().create());
+        }
+
+        @Override
+        public GraphComputer get_g_compute_setupXX_executeXX_terminateXtrueX_memoryKeysXset_incr_and_orX() {
+            return g.compute().program(LambdaVertexProgram.build().memoryComputeKeys("set", "incr", "and", "or").create());
+        }
+
+        @Override
+        public GraphComputer get_g_compute_setupXX_executeXX_terminateXtrueX_memoryKeysXnullX() {
+            return g.compute().program(LambdaVertexProgram.build().memoryComputeKeys(new HashSet<String>() {{
+                add(null);
+            }}).create());
+        }
+
+        @Override
+        public GraphComputer get_g_compute_setupXX_executeXX_terminateXtrueX_memoryKeysX_X() {
+            return g.compute().program(LambdaVertexProgram.build().memoryComputeKeys("").create());
+        }
+
+        @Override
+        public GraphComputer get_g_compute_setupXsetXa_trueXX_executeXX_terminateXtrueX() {
+            return g.compute().program(LambdaVertexProgram.build().setup(m -> m.set("a", true)).create());
+        }
+
+        @Override
+        public GraphComputer get_g_compute_setupXX_executeXv_blah_m_incrX_terminateX1X_elementKeysXnameLengthCounterX_memoryKeysXa_bX() {
+            return g.compute().program(LambdaVertexProgram.build().
+                    setup(memory -> {
+                    }).
+                    execute((vertex, messenger, memory) -> {
+                        // TODO: Implement wrapper for GiraphGraph internal TinkerVertex
+                        try {
+                            vertex.property("blah", "blah");
+                            fail("Should throw an IllegalArgumentException");
+                        } catch (IllegalArgumentException e) {
+                            assertEquals(GraphComputer.Exceptions.providedKeyIsNotAnElementComputeKey("blah").getMessage(), e.getMessage());
+                        } catch (Exception e) {
+                            fail("Should throw an IllegalArgumentException: " + e);
+                        }
+
+                        memory.incr("a", 1);
+                        if (memory.isInitialIteration()) {
+                            vertex.property("nameLengthCounter", vertex.<String>value("name").length());
+                            memory.incr("b", vertex.<String>value("name").length());
+                        } else {
+                            vertex.singleProperty("nameLengthCounter", vertex.<String>value("name").length() + vertex.<Integer>value("nameLengthCounter"));
+                        }
+                    }).
+                    terminate(memory -> memory.getIteration() == 1).
+                    elementComputeKeys("nameLengthCounter").
+                    memoryComputeKeys("a", "b").create());
+        }
+
+        @Override
+        public GraphComputer get_g_compute_setupXabcdeX_executeXtestMemoryX_terminateXtestMemoryXmemoryKeysXabcdeX() {
+            return g.compute().program(LambdaVertexProgram.build().
+                    setup(memory -> {
+                        memory.set("a", 0l);
+                        memory.set("b", 0l);
+                        memory.set("c", true);
+                        memory.set("d", false);
+                        memory.set("e", true);
+                    }).
+                    execute((vertex, messenger, memory) -> {
+                        // test current step values
+                        assertEquals(Long.valueOf(6 * memory.getIteration()), memory.get("a"));
+                        assertEquals(Long.valueOf(0), memory.get("b"));
+                        if (memory.isInitialIteration()) {
+                            assertTrue(memory.get("c"));
+                            assertFalse(memory.get("d"));
+                        } else {
+                            assertFalse(memory.get("c"));
+                            assertTrue(memory.get("d"));
+                        }
+                        assertTrue(memory.get("e"));
+
+                        // update current step values and make sure returns are correct
+                        assertEquals(Long.valueOf(6 * memory.getIteration()) + 1l, memory.incr("a", 1l));
+                        assertEquals(Long.valueOf(0) + 1l, memory.incr("b", 1l));
+                        assertFalse(memory.and("c", false));
+                        assertTrue(memory.or("d", true));
+                        assertFalse(memory.and("e", false));
+
+                        // test current step values, should be the same as previous prior to update
+                        assertEquals(Long.valueOf(6 * memory.getIteration()), memory.get("a"));
+                        assertEquals(Long.valueOf(0), memory.get("b"));
+                        if (memory.isInitialIteration()) {
+                            assertTrue(memory.get("c"));
+                            assertFalse(memory.get("d"));
+                        } else {
+                            assertFalse(memory.get("c"));
+                            assertTrue(memory.get("d"));
+                        }
+                        assertTrue(memory.get("e"));
+                    }).
+                    terminate(memory -> {
+                        assertEquals(Long.valueOf(6 * (memory.getIteration() + 1)), memory.get("a"));
+                        assertEquals(Long.valueOf(6), memory.get("b"));
+                        assertFalse(memory.get("c"));
+                        assertTrue(memory.get("d"));
+                        assertFalse(memory.get("e"));
+                        memory.set("b", 0l);
+                        memory.set("e", true);
+                        return memory.getIteration() > 1;
+                    }).
+                    memoryComputeKeys("a", "b", "c", "d", "e").create());
+        }
+
+        @Override
+        public GraphComputer g_compute_mapXageXreduceXsumX_memoryXnextX_memoryKeyXageSumX() {
+            return g.compute().mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()
+                    .map((v, e) -> v.<Integer>property("age").ifPresent(age -> e.emit(MapReduce.NullObject.instance(), age)))
+                    .reduce((k, vv, e) -> e.emit(MapReduce.NullObject.instance(), StreamFactory.stream(vv).mapToInt(i -> i).sum()))
+                    .memory(i -> i.next().getValue1())
+                    .memoryKey("ageSum").create());
+        }
+
+    }
+
+
+
+   /*
+
+
+
+
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
+    public void shouldNotAllowWithNoVertexProgramNorMapReducers() throws Exception {
+        try {
+            g.compute().submit().get();
+            fail("Should throw an IllegalStateException when there is no vertex program nor map reducers");
+        } catch (Exception ex) {
+            final Exception expectedException = GraphComputer.Exceptions.computerHasNoVertexProgramNorMapReducers();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+    }
+
+
+
+
+
+
 
 
     @Test
@@ -339,77 +451,6 @@ public class GraphComputerTest extends AbstractGremlinTest {
         assertEquals(1, results.getMemory().<Integer>get("b").intValue());
     }
 
-    @Test
-    @LoadGraphWith(MODERN)
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
-    public void shouldAndOrIncrCorrectlyThroughSubStages() throws Exception {
-        GraphComputer computer = g.compute();
-        ComputerResult results = computer.program(LambdaVertexProgram.build().
-                setup(memory -> {
-                    memory.set("a", 0l);
-                    memory.set("b", 0l);
-                    memory.set("c", true);
-                    memory.set("d", false);
-                    memory.set("e", true);
-                }).
-                execute((vertex, messenger, memory) -> {
-                    // test current step values
-                    assertEquals(Long.valueOf(6 * memory.getIteration()), memory.get("a"));
-                    assertEquals(Long.valueOf(0), memory.get("b"));
-                    if (memory.isInitialIteration()) {
-                        assertTrue(memory.get("c"));
-                        assertFalse(memory.get("d"));
-                    } else {
-                        assertFalse(memory.get("c"));
-                        assertTrue(memory.get("d"));
-                    }
-                    assertTrue(memory.get("e"));
-
-                    // update current step values and make sure returns are correct
-                    assertEquals(Long.valueOf(6 * memory.getIteration()) + 1l, memory.incr("a", 1l));
-                    assertEquals(Long.valueOf(0) + 1l, memory.incr("b", 1l));
-                    assertFalse(memory.and("c", false));
-                    assertTrue(memory.or("d", true));
-                    assertFalse(memory.and("e", false));
-
-                    // test current step values, should be the same as previous prior to update
-                    assertEquals(Long.valueOf(6 * memory.getIteration()), memory.get("a"));
-                    assertEquals(Long.valueOf(0), memory.get("b"));
-                    if (memory.isInitialIteration()) {
-                        assertTrue(memory.get("c"));
-                        assertFalse(memory.get("d"));
-                    } else {
-                        assertFalse(memory.get("c"));
-                        assertTrue(memory.get("d"));
-                    }
-                    assertTrue(memory.get("e"));
-                }).
-                terminate(memory -> {
-                    assertEquals(Long.valueOf(6 * (memory.getIteration() + 1)), memory.get("a"));
-                    assertEquals(Long.valueOf(6), memory.get("b"));
-                    assertFalse(memory.get("c"));
-                    assertTrue(memory.get("d"));
-                    assertFalse(memory.get("e"));
-                    memory.set("b", 0l);
-                    memory.set("e", true);
-                    return memory.getIteration() > 1;
-                }).
-                memoryComputeKeys("a","b","c","d","e").create()).submit().get();
-        assertEquals(2, results.getMemory().getIteration());
-        assertEquals(5, results.getMemory().asMap().size());
-        assertEquals(5, results.getMemory().keys().size());
-        assertTrue(results.getMemory().keys().contains("a"));
-        assertTrue(results.getMemory().keys().contains("b"));
-        assertTrue(results.getMemory().keys().contains("c"));
-        assertTrue(results.getMemory().keys().contains("d"));
-        assertTrue(results.getMemory().keys().contains("e"));
-
-        assertEquals(Long.valueOf(18), results.getMemory().get("a"));
-        assertEquals(Long.valueOf(0), results.getMemory().get("b"));
-        assertFalse(results.getMemory().get("c"));
-        assertTrue(results.getMemory().get("d"));
-        assertTrue(results.getMemory().get("e"));
-    }
 
     @Test
     @LoadGraphWith(MODERN)
@@ -498,7 +539,7 @@ public class GraphComputerTest extends AbstractGremlinTest {
         assertEquals(1, vertex.properties("a").has(T.value, 1).count().next().intValue());
         assertEquals(3, vertex.properties("a").has(T.value, 2).count().next().intValue());
         assertEquals(1, vertex.properties("b").count().next().intValue());
-    }
+    }*/
 
     private static LambdaVertexProgram identity() {
         return LambdaVertexProgram.build().

@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.computer.lambda;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.computer.util.SupplierType;
+import com.tinkerpop.gremlin.process.computer.util.LambdaType;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.TriConsumer;
 import org.apache.commons.configuration.BaseConfiguration;
@@ -26,18 +26,18 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
 
     private static final String SUPPLIER_TYPE_KEY = "gremlin.lambdaMapReduce.supplierType";
 
-    private SupplierType supplierType;
+    private LambdaType lambdaType;
 
-    private Pair<?, Supplier<BiConsumer<Vertex, MapEmitter<MK, MV>>>> supplierMapLambda;
+    private Pair<?, BiConsumer<Vertex, MapEmitter<MK, MV>>> supplierMapLambda;
     private BiConsumer<Vertex, MapEmitter<MK, MV>> mapLambda;
 
-    private Pair<?, Supplier<TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>>> supplierCombineLambda;
+    private Pair<?, TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>> supplierCombineLambda;
     private TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>> combineLambda;
 
-    private Pair<?, Supplier<TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>>> supplierReduceLambda;
+    private Pair<?, TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>> supplierReduceLambda;
     private TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>> reduceLambda;
 
-    private Pair<?, Supplier<Function<Iterator<Pair<RK, RV>>, R>>> supplierMemoryLambda;
+    private Pair<?, Function<Iterator<Pair<RK, RV>>, R>> supplierMemoryLambda;
     private Function<Iterator<Pair<RK, RV>>, R> memoryLambda;
 
     private String sideEffectKey;
@@ -48,23 +48,23 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
 
     @Override
     public void loadState(final Configuration configuration) {
-        this.supplierType = SupplierType.getType(configuration, SUPPLIER_TYPE_KEY);
+        this.lambdaType = LambdaType.getType(configuration, SUPPLIER_TYPE_KEY);
         try {
             if (configuration.containsKey(LAMBDA_MAP_REDUCE_MAP_LAMBDA)) {
-                this.supplierMapLambda = this.supplierType.<BiConsumer<Vertex, MapEmitter<MK, MV>>>get(configuration, LAMBDA_MAP_REDUCE_MAP_LAMBDA);
-                this.mapLambda = this.supplierMapLambda.getValue1().get();
+                this.supplierMapLambda = this.lambdaType.<BiConsumer<Vertex, MapEmitter<MK, MV>>>get(configuration, LAMBDA_MAP_REDUCE_MAP_LAMBDA);
+                this.mapLambda = this.supplierMapLambda.getValue1();
             }
             if (configuration.containsKey(LAMBDA_MAP_REDUCE_COMBINE_LAMBDA)) {
-                this.supplierCombineLambda = this.supplierType.<TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>>get(configuration, LAMBDA_MAP_REDUCE_COMBINE_LAMBDA);
-                this.combineLambda = this.supplierCombineLambda.getValue1().get();
+                this.supplierCombineLambda = this.lambdaType.<TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>>get(configuration, LAMBDA_MAP_REDUCE_COMBINE_LAMBDA);
+                this.combineLambda = this.supplierCombineLambda.getValue1();
             }
             if (configuration.containsKey(LAMBDA_MAP_REDUCE_REDUCE_LAMBDA)) {
-                this.supplierReduceLambda = this.supplierType.<TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>>get(configuration, LAMBDA_MAP_REDUCE_REDUCE_LAMBDA);
-                this.reduceLambda = this.supplierReduceLambda.getValue1().get();
+                this.supplierReduceLambda = this.lambdaType.<TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>>get(configuration, LAMBDA_MAP_REDUCE_REDUCE_LAMBDA);
+                this.reduceLambda = this.supplierReduceLambda.getValue1();
             }
             if (configuration.containsKey(LAMBDA_MAP_REDUCE_MEMORY_LAMBDA)) {
-                this.supplierMemoryLambda = this.supplierType.<Function<Iterator<Pair<RK, RV>>, R>>get(configuration, LAMBDA_MAP_REDUCE_MEMORY_LAMBDA);
-                this.memoryLambda = this.supplierMemoryLambda.getValue1().get();
+                this.supplierMemoryLambda = this.lambdaType.<Function<Iterator<Pair<RK, RV>>, R>>get(configuration, LAMBDA_MAP_REDUCE_MEMORY_LAMBDA);
+                this.memoryLambda = this.supplierMemoryLambda.getValue1();
             } else {
                 this.memoryLambda = s -> (R) s;
             }
@@ -76,10 +76,10 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
 
     @Override
     public void storeState(final Configuration configuration) {
-        this.supplierType.set(configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_MAP_LAMBDA, this.supplierMapLambda.getValue0());
-        this.supplierType.set(configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_COMBINE_LAMBDA, this.supplierCombineLambda.getValue0());
-        this.supplierType.set(configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_REDUCE_LAMBDA, this.supplierReduceLambda.getValue0());
-        this.supplierType.set(configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_MEMORY_LAMBDA, this.supplierMemoryLambda.getValue0());
+        this.lambdaType.set(configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_MAP_LAMBDA, this.supplierMapLambda.getValue0());
+        this.lambdaType.set(configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_COMBINE_LAMBDA, this.supplierCombineLambda.getValue0());
+        this.lambdaType.set(configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_REDUCE_LAMBDA, this.supplierReduceLambda.getValue0());
+        this.lambdaType.set(configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_MEMORY_LAMBDA, this.supplierMemoryLambda.getValue0());
         configuration.setProperty(LAMBDA_MAP_REDUCE_MEMORY_KEY, this.sideEffectKey);
     }
 
@@ -121,7 +121,7 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
     //////////////////
 
     public static <MK, MV, RK, RV, R> Builder<MK, MV, RK, RV, R> build() {
-        return new Builder<MK, MV, RK, RV, R>();
+        return new Builder<>();
     }
 
     public static class Builder<MK, MV, RK, RV, R> {
@@ -129,22 +129,42 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
         private Configuration configuration = new BaseConfiguration();
 
         public Builder<MK, MV, RK, RV, R> map(final BiConsumer<Vertex, MapReduce.MapEmitter<MK, MV>> mapLambda) {
-            SupplierType.OBJECT.set(this.configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_MAP_LAMBDA, (Supplier) () ->  mapLambda);
+            LambdaType.OBJECT.set(this.configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_MAP_LAMBDA, mapLambda);
+            return this;
+        }
+
+        public Builder<MK, MV, RK, RV, R> map(final String scriptEngine, final String mapScript) {
+            LambdaType.SCRIPT.set(this.configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_MAP_LAMBDA, new String[]{scriptEngine, mapScript});
             return this;
         }
 
         public Builder<MK, MV, RK, RV, R> combine(TriConsumer<MK, Iterator<MV>, MapReduce.ReduceEmitter<RK, RV>> combineLambda) {
-            SupplierType.OBJECT.set(this.configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_COMBINE_LAMBDA, (Supplier) () -> combineLambda);
+            LambdaType.OBJECT.set(this.configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_COMBINE_LAMBDA, combineLambda);
+            return this;
+        }
+
+        public Builder<MK, MV, RK, RV, R> combine(final String scriptEngine, final String combineScript) {
+            LambdaType.SCRIPT.set(this.configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_COMBINE_LAMBDA, new String[]{scriptEngine, combineScript});
             return this;
         }
 
         public Builder<MK, MV, RK, RV, R> reduce(TriConsumer<MK, Iterator<MV>, MapReduce.ReduceEmitter<RK, RV>> reduceLambda) {
-            SupplierType.OBJECT.set(this.configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_REDUCE_LAMBDA, (Supplier) () -> reduceLambda);
+            LambdaType.OBJECT.set(this.configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_REDUCE_LAMBDA, reduceLambda);
+            return this;
+        }
+
+        public Builder<MK, MV, RK, RV, R> reduce(final String scriptEngine, final String reduceScript) {
+            LambdaType.SCRIPT.set(this.configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_REDUCE_LAMBDA, new String[]{scriptEngine, reduceScript});
             return this;
         }
 
         public Builder<MK, MV, RK, RV, R> memory(Function<Iterator<Pair<RK, RV>>, R> memoryLambda) {
-            SupplierType.OBJECT.set(this.configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_MEMORY_LAMBDA, (Supplier) () -> memoryLambda);
+            LambdaType.OBJECT.set(this.configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_MEMORY_LAMBDA, memoryLambda);
+            return this;
+        }
+
+        public Builder<MK, MV, RK, RV, R> memory(final String scriptEngine, final String memoryScript) {
+            LambdaType.SCRIPT.set(this.configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_MEMORY_LAMBDA, new String[]{scriptEngine, memoryScript});
             return this;
         }
 

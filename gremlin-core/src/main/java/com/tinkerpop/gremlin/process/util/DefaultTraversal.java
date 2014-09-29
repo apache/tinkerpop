@@ -75,14 +75,18 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     }
 
     @Override
-    public DefaultTraversal<S, E> clone() throws CloneNotSupportedException {
-        final DefaultTraversal<S, E> clone = (DefaultTraversal<S, E>) super.clone();
-        clone.steps = new ArrayList<>();
-        for (int i = this.steps.size() - 1; i >= 0; i--) {
-            final Step<?, ?> clonedStep = this.steps.get(i).clone();
-            clonedStep.setTraversal(clone);
-            TraversalHelper.insertStep(clonedStep, 0, clone);
+    public DefaultTraversal<S, E> clone() {
+        try {
+            final DefaultTraversal<S, E> clone = (DefaultTraversal<S, E>) super.clone();
+            clone.steps = new ArrayList<>();
+            for (int i = this.steps.size() - 1; i >= 0; i--) {
+                final Step<?, ?> clonedStep = this.steps.get(i).clone();
+                clonedStep.setTraversal(clone);
+                TraversalHelper.insertStep(clonedStep, 0, clone);
+            }
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
-        return clone;
     }
 }
