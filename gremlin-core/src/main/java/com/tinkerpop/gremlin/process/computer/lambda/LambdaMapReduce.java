@@ -11,7 +11,6 @@ import org.javatuples.Pair;
 import java.util.Iterator;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -27,19 +26,10 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
     private static final String SUPPLIER_TYPE_KEY = "gremlin.lambdaMapReduce.supplierType";
 
     private LambdaType lambdaType;
-
-    private Pair<?, BiConsumer<Vertex, MapEmitter<MK, MV>>> supplierMapLambda;
-    private BiConsumer<Vertex, MapEmitter<MK, MV>> mapLambda;
-
-    private Pair<?, TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>> supplierCombineLambda;
-    private TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>> combineLambda;
-
-    private Pair<?, TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>> supplierReduceLambda;
-    private TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>> reduceLambda;
-
-    private Pair<?, Function<Iterator<Pair<RK, RV>>, R>> supplierMemoryLambda;
-    private Function<Iterator<Pair<RK, RV>>, R> memoryLambda;
-
+    private Pair<?, BiConsumer<Vertex, MapEmitter<MK, MV>>> pairMapLambda;
+    private Pair<?, TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>> pairCombineLambda;
+    private Pair<?, TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>> pairReduceLambda;
+    private Pair<?, Function<Iterator<Pair<RK, RV>>, R>> pairMemoryLambda;
     private String sideEffectKey;
 
     private LambdaMapReduce() {
@@ -51,22 +41,16 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
         this.lambdaType = LambdaType.getType(configuration, SUPPLIER_TYPE_KEY);
         try {
             if (configuration.containsKey(LAMBDA_MAP_REDUCE_MAP_LAMBDA)) {
-                this.supplierMapLambda = this.lambdaType.<BiConsumer<Vertex, MapEmitter<MK, MV>>>get(configuration, LAMBDA_MAP_REDUCE_MAP_LAMBDA);
-                this.mapLambda = this.supplierMapLambda.getValue1();
+                this.pairMapLambda = this.lambdaType.<BiConsumer<Vertex, MapEmitter<MK, MV>>>get(configuration, LAMBDA_MAP_REDUCE_MAP_LAMBDA);
             }
             if (configuration.containsKey(LAMBDA_MAP_REDUCE_COMBINE_LAMBDA)) {
-                this.supplierCombineLambda = this.lambdaType.<TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>>get(configuration, LAMBDA_MAP_REDUCE_COMBINE_LAMBDA);
-                this.combineLambda = this.supplierCombineLambda.getValue1();
+                this.pairCombineLambda = this.lambdaType.<TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>>get(configuration, LAMBDA_MAP_REDUCE_COMBINE_LAMBDA);
             }
             if (configuration.containsKey(LAMBDA_MAP_REDUCE_REDUCE_LAMBDA)) {
-                this.supplierReduceLambda = this.lambdaType.<TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>>get(configuration, LAMBDA_MAP_REDUCE_REDUCE_LAMBDA);
-                this.reduceLambda = this.supplierReduceLambda.getValue1();
+                this.pairReduceLambda = this.lambdaType.<TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>>get(configuration, LAMBDA_MAP_REDUCE_REDUCE_LAMBDA);
             }
             if (configuration.containsKey(LAMBDA_MAP_REDUCE_MEMORY_LAMBDA)) {
-                this.supplierMemoryLambda = this.lambdaType.<Function<Iterator<Pair<RK, RV>>, R>>get(configuration, LAMBDA_MAP_REDUCE_MEMORY_LAMBDA);
-                this.memoryLambda = this.supplierMemoryLambda.getValue1();
-            } else {
-                this.memoryLambda = s -> (R) s;
+                this.pairMemoryLambda = this.lambdaType.<Function<Iterator<Pair<RK, RV>>, R>>get(configuration, LAMBDA_MAP_REDUCE_MEMORY_LAMBDA);
             }
             this.sideEffectKey = configuration.getString(LAMBDA_MAP_REDUCE_MEMORY_KEY, null);
         } catch (Exception e) {
@@ -76,41 +60,48 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
 
     @Override
     public void storeState(final Configuration configuration) {
-        this.lambdaType.set(configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_MAP_LAMBDA, this.supplierMapLambda.getValue0());
-        this.lambdaType.set(configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_COMBINE_LAMBDA, this.supplierCombineLambda.getValue0());
-        this.lambdaType.set(configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_REDUCE_LAMBDA, this.supplierReduceLambda.getValue0());
-        this.lambdaType.set(configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_MEMORY_LAMBDA, this.supplierMemoryLambda.getValue0());
+        if (null != this.pairMapLambda)
+            this.lambdaType.set(configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_MAP_LAMBDA, this.pairMapLambda.getValue0());
+        if (null != this.pairCombineLambda)
+            this.lambdaType.set(configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_COMBINE_LAMBDA, this.pairCombineLambda.getValue0());
+        if (null != this.pairReduceLambda)
+            this.lambdaType.set(configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_REDUCE_LAMBDA, this.pairReduceLambda.getValue0());
+        if (null != this.pairMemoryLambda)
+            this.lambdaType.set(configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_MEMORY_LAMBDA, this.pairMemoryLambda.getValue0());
         configuration.setProperty(LAMBDA_MAP_REDUCE_MEMORY_KEY, this.sideEffectKey);
     }
 
     @Override
     public boolean doStage(final Stage stage) {
         if (stage.equals(Stage.MAP))
-            return null != this.mapLambda;
+            return null != this.pairMapLambda;
         else if (stage.equals(Stage.COMBINE))
-            return null != this.combineLambda;
+            return null != this.pairCombineLambda;
         else
-            return null != this.reduceLambda;
+            return null != this.pairReduceLambda;
     }
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<MK, MV> emitter) {
-        this.mapLambda.accept(vertex, emitter);
+        if (null != this.pairMapLambda)
+            this.pairMapLambda.getValue1().accept(vertex, emitter);
     }
 
     @Override
     public void combine(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter) {
-        this.combineLambda.accept(key, values, emitter);
+        if (null != this.pairCombineLambda)
+            this.pairCombineLambda.getValue1().accept(key, values, emitter);
     }
 
     @Override
     public void reduce(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter) {
-        this.reduceLambda.accept(key, values, emitter);
+        if (null != this.pairReduceLambda)
+            this.pairReduceLambda.getValue1().accept(key, values, emitter);
     }
 
     @Override
     public R generateSideEffect(final Iterator<Pair<RK, RV>> keyValues) {
-        return this.memoryLambda.apply(keyValues);
+        return null == this.pairMemoryLambda ? (R) keyValues : this.pairMemoryLambda.getValue1().apply(keyValues);
     }
 
     @Override
@@ -126,7 +117,11 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
 
     public static class Builder<MK, MV, RK, RV, R> {
 
-        private Configuration configuration = new BaseConfiguration();
+        private BaseConfiguration configuration = new BaseConfiguration();
+
+        private Builder() {
+            //this.configuration.setDelimiterParsingDisabled(true);
+        }
 
         public Builder<MK, MV, RK, RV, R> map(final BiConsumer<Vertex, MapReduce.MapEmitter<MK, MV>> mapLambda) {
             LambdaType.OBJECT.set(this.configuration, SUPPLIER_TYPE_KEY, LAMBDA_MAP_REDUCE_MAP_LAMBDA, mapLambda);

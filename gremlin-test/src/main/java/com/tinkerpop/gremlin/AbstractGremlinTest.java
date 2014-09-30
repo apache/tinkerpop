@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -196,7 +196,9 @@ public abstract class AbstractGremlinTest {
     }
 
     public static void validateException(final Throwable expected, final Throwable actual) {
-        Throwable cause = actual;
+        assertEquals(expected.getMessage(), actual.getMessage());
+        assertEquals(expected.getClass(), actual.getClass());
+        /*Throwable cause = actual;
         while (cause != null) {
             if (cause.getClass().equals(expected.getClass()) && cause.getMessage().equals(expected.getMessage())) {
                 return;
@@ -204,6 +206,6 @@ public abstract class AbstractGremlinTest {
                 cause = cause.getCause();
             }
         }
-        fail("The exception doesn't match excepted: " + actual + "::" + expected);
+        fail("The exception doesn't match excepted: " + actual + "::" + expected);*/
     }
 }

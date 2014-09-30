@@ -96,7 +96,6 @@ public class TinkerGraphComputer implements GraphComputer {
             }
 
             // execute mapreduce jobs
-
             for (final MapReduce mapReduce : this.mapReduces) {
                 if (mapReduce.doStage(MapReduce.Stage.MAP)) {
                     final TinkerMapEmitter mapEmitter = new TinkerMapEmitter(mapReduce.doStage(MapReduce.Stage.REDUCE));

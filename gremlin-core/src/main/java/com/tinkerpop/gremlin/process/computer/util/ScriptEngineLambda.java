@@ -38,7 +38,7 @@ public class ScriptEngineLambda implements Function, Supplier, Consumer, Predica
             bindings.put(A, a);
             return this.engine.eval(this.script, bindings);
         } catch (final ScriptException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
+            throw new IllegalArgumentException(e.getMessage());
         }
     }
 
@@ -46,7 +46,7 @@ public class ScriptEngineLambda implements Function, Supplier, Consumer, Predica
         try {
             return this.engine.eval(this.script);
         } catch (final ScriptException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
+            throw new IllegalArgumentException(e.getMessage());
         }
     }
 
@@ -56,7 +56,7 @@ public class ScriptEngineLambda implements Function, Supplier, Consumer, Predica
             bindings.put(A, a);
             this.engine.eval(this.script, bindings);
         } catch (final ScriptException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
+            throw new IllegalArgumentException(e.getMessage());
         }
     }
 
@@ -67,7 +67,7 @@ public class ScriptEngineLambda implements Function, Supplier, Consumer, Predica
             bindings.put(B, b);
             this.engine.eval(this.script, bindings);
         } catch (final ScriptException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
+            throw new IllegalArgumentException(e.getMessage());
         }
     }
 
@@ -79,7 +79,7 @@ public class ScriptEngineLambda implements Function, Supplier, Consumer, Predica
             bindings.put(C, c);
             this.engine.eval(this.script, bindings);
         } catch (final ScriptException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
+            throw new IllegalArgumentException(e.getMessage());
         }
     }
 
@@ -89,7 +89,7 @@ public class ScriptEngineLambda implements Function, Supplier, Consumer, Predica
             bindings.put(A, a);
             return (boolean) this.engine.eval(this.script, bindings);
         } catch (final ScriptException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
+            throw new IllegalArgumentException(e.getMessage());
         }
     }
 

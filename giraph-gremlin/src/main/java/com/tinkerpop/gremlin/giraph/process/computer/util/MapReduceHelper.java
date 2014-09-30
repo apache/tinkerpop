@@ -34,7 +34,7 @@ public class MapReduceHelper {
 
     public static void executeMapReduceJob(final MapReduce mapReduce, final Memory memory, final Configuration configuration) throws IOException, ClassNotFoundException, InterruptedException {
         final Configuration newConfiguration = new Configuration(configuration);
-        final org.apache.commons.configuration.Configuration apacheConfiguration = new BaseConfiguration();
+        final BaseConfiguration apacheConfiguration = new BaseConfiguration();
         mapReduce.storeState(apacheConfiguration);
         ConfUtil.mergeApacheIntoHadoopConfiguration(apacheConfiguration, newConfiguration);
         if (!mapReduce.doStage(MapReduce.Stage.MAP)) {

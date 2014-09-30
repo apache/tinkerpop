@@ -12,7 +12,7 @@ public abstract class AbstractBuilder<B extends VertexProgram.Builder> implement
     protected final BaseConfiguration configuration = new BaseConfiguration();
 
     public AbstractBuilder(final Class<? extends VertexProgram> vertexProgramClass) {
-        this.configuration.setDelimiterParsingDisabled(true);
+        // this.configuration.setDelimiterParsingDisabled(true);
         this.configuration.setProperty(GraphComputer.VERTEX_PROGRAM, vertexProgramClass.getName());
     }
 

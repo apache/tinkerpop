@@ -15,7 +15,7 @@ import java.util.Map;
 class TinkerMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {
 
     public Map<K, List<V>> reduceMap = new HashMap<>();
-    public List<Pair<K, V>> mapList = new ArrayList();
+    public List<Pair<K, V>> mapList = new ArrayList<>();
     private final boolean doReduce;
 
     public TinkerMapEmitter(final boolean doReduce) {

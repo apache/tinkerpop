@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.computer.util;
 
 
+import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
@@ -46,14 +47,26 @@ public enum LambdaType {
         public <S> Pair<String[], S> get(final Configuration configuration, final String key) {
             if (!configuration.containsKey(key))
                 throw new IllegalArgumentException("The provided configuration does not have the supplier key: " + key);
-            final String[] script = configuration.getString(key).split(SPLIT_TOKEN);
-            return Pair.with(script, (S) new ScriptEngineLambda(script[0], script[1]));
+            try {
+                final String[] script = VertexProgramHelper.deserialize(configuration,key);
+                return Pair.with(script, (S) new ScriptEngineLambda(script[0], script[1]));
+            } catch(Exception e) {
+                throw new IllegalArgumentException(e.getMessage(),e);
+            }
+
+           // final String[] script = configuration.getString(key).split(SPLIT_TOKEN);
+
         }
 
         @Override
         public void set(final Configuration configuration, final String supplierTypeKey, final String key, final Object supplierScript) {
             configuration.setProperty(supplierTypeKey, this.name());
-            configuration.setProperty(key, ((String[]) supplierScript)[0] + SPLIT_TOKEN + ((String[]) supplierScript)[1]);
+            try {
+                VertexProgramHelper.serialize(supplierScript, configuration, key);
+            } catch(Exception e) {
+                throw new IllegalArgumentException(e.getMessage(),e);
+            }
+            //configuration.setProperty(key, ((String[]) supplierScript)[0] + SPLIT_TOKEN + ((String[]) supplierScript)[1]);
         }
     };
 
