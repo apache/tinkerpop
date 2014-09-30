@@ -18,6 +18,8 @@ import java.util.function.Supplier;
  */
 public class ScriptEngineLambda implements Function, Supplier, Consumer, Predicate, BiConsumer, TriConsumer {
 
+    private static final ScriptEngineManager SCRIPT_ENGINE_MANAGER = new ScriptEngineManager();
+
     private static final String A = "a";
     private static final String B = "b";
     private static final String C = "c";
@@ -26,7 +28,7 @@ public class ScriptEngineLambda implements Function, Supplier, Consumer, Predica
     protected final String script;
 
     public ScriptEngineLambda(final String engineName, final String script) {
-        this.engine = new ScriptEngineManager().getEngineByName(engineName);
+        this.engine = SCRIPT_ENGINE_MANAGER.getEngineByName(engineName);
         if (null == this.engine)
             throw new IllegalArgumentException("There is no script engine with provided name: " + engineName);
         this.script = script;

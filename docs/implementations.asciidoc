@@ -122,14 +122,14 @@ There are times when there may be a specific test in the suite that the implemen
         method = "g_V_matchXa_inXsungByX_b__a_inXsungByX_c__b_outXwrittenByX_d__c_outXwrittenByX_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX",
         reason = "Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.computer.GraphComputerTest",
+        test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
         method = "shouldNotAllowBadMemoryKeys",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.computer.GraphComputerTest",
+        test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
         method = "shouldRequireRegisteringMemoryKeys",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
-public class GiraphGraph implements Graph, Serializable {
+public class GiraphGraph implements Graph {
 ----
 
 These annotations help provide users a level of transparency into test suite compliance (via the xref:describe-graph[describeGraph()] utility function). It also allows implementers to have a lot of flexibility in terms of how they wish to support TinkerPop.  For example, maybe there is a single test case that prevents an implementer from claiming support of a `Feature`.  The implementer could choose to either not support the `Feature` or support it but "opt-out" of the test with a "reason" as to why so that users understand the limitation.
@@ -375,8 +375,8 @@ giraph.gremlin.outputLocation=output
 giraph.vertexOutputFormatClass=com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexOutputFormat
 giraph.gremlin.memoryOutputFormatClass=org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat
 gremlin.vertexProgram=com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
-gremlin.traversalVertexProgram.traversalSupplier=com.tinkerpop.gremlin.giraph.process.graph.example.TraversalSupplier1
-gremlin.traversalVertexProgram.traversalSupplierType=CLASS
+gremlin.traversalVertexProgram.traversalSupplier.type=CLASS
+gremlin.traversalVertexProgram.traversalSupplier.object=com.tinkerpop.gremlin.giraph.process.graph.example.TraversalSupplier1
 giraph.gremlin.jarsInDistributedCache=true
 giraph.gremlin.deriveMemory=false
 giraph.minWorkers=2
@@ -394,8 +394,8 @@ A review of the properties above are presented in the table below.
 |giraph.vertexOutputFormatClass |The format that the output file(s) should be represented in.
 |giraph.gremlin.memoryOutputFormatClass |The format of any resultant GraphComputer Memory.
 |gremlin.vertexProgram |The `VertexProgram` to distribute to all vertices in the `GiraphGraph`
-|gremlin.traversalVertexProgram.traversalSupplier |For `TraversalVertexProgram`, the location of the Gremlin traversal to use (if not using Gremlin Console).
-|gremlin.traversalVertexProgram.traversalSupplierType | Whether the traversal supplier is a CLASS, SCRIPT, or OBJECT.
+|gremlin.traversalVertexProgram.traversalSupplier.object |For `TraversalVertexProgram`, the location of the Gremlin traversal to use (if not using Gremlin Console).
+|gremlin.traversalVertexProgram.traversalSupplier.type | Whether the traversal supplier is a CLASS, SCRIPT, or OBJECT.
 |giraph.gremlin.jarsInDistributedCache |Whether to upload the Giraph-Gremlin jars to Hadoop's distributed cache (necessary if jars are not on machines' classpaths).
 |giraph.gremlin.deriveMemory |Whether or not `Memory` is yielded (requires an extra MapReduce job if true).
 |giraph.minWorkers |The minimum number of parallel workers to execute the vertices of the graph.
@@ -434,8 +434,6 @@ gremlin> g.V().groupBy{it.get().value('name')[1]}{it.get().value('name')}.next()
 ==>e=[peter]
 ==>i=[ripple]
 ==>o=[lop, josh]
-
-NOTE: When executing a <<vertexprogram,`VertexProgram`>> via `g.compute().program(...).submit()`, it is important that `g` is created with `GiraphGraph.open()`.  
 
 OLAP Giraph-Gremlin
 ~~~~~~~~~~~~~~~~~~~
@@ -536,8 +534,8 @@ The `TraversalSupplier1` class mentioned in the `giraph-kryo.properties` file is
 
 [source,java]
 ----
-// gremlin.traversalVertexProgram.traversalSupplier=com.tinkerpop.gremlin.giraph.process.graph.example.TraversalSupplier1
-// gremlin.traversalVertexProgram.traversalSupplierType=CLASS
+// gremlin.traversalVertexProgram.traversalSupplier.type=CLASS
+// gremlin.traversalVertexProgram.traversalSupplier.object=com.tinkerpop.gremlin.giraph.process.graph.example.TraversalSupplier1
 
 public class TraversalSupplier1 implements SSupplier<Traversal> {
     public Traversal get() {

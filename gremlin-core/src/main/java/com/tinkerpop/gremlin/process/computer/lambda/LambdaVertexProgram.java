@@ -5,12 +5,11 @@ import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
-import com.tinkerpop.gremlin.process.computer.util.LambdaType;
+import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.TriConsumer;
 import org.apache.commons.configuration.Configuration;
-import org.javatuples.Pair;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -25,19 +24,17 @@ import java.util.function.Predicate;
  */
 public class LambdaVertexProgram<M extends Serializable> implements VertexProgram<M> {
 
-    private static final String LAMBDA_TYPE_KEY = "gremlin.lambdaVertexProgram.lambdaType";
-    private static final String SETUP_LAMBDA_KEY = "gremlin.lambdaVertexProgram.setupLambdaKey";
-    private static final String EXECUTE_LAMBDA_KEY = "gremlin.lambdaVertexProgram.executeLambdaKey";
-    private static final String TERMINATE_LAMBDA_KEY = "gremlin.lambdaVertexProgram.terminateLambdaKey";
+    private static final String SETUP_LAMBDA = "gremlin.lambdaVertexProgram.setupLambda";
+    private static final String EXECUTE_LAMBDA = "gremlin.lambdaVertexProgram.executeLambda";
+    private static final String TERMINATE_LAMBDA = "gremlin.lambdaVertexProgram.terminateLambda";
     private static final String ELEMENT_COMPUTE_KEYS = "gremlin.lambdaVertexProgram.elementComputeKeys";
     private static final String MEMORY_COMPUTE_KEYS = "gremlin.lambdaVertexProgram.memoryComputeKeys";
 
-    private LambdaType lambdaType;
-    private Pair<?, Consumer<Memory>> supplierSetupLambda;
+    private LambdaHolder<Consumer<Memory>> setupLambdaHolder;
     private Consumer<Memory> setupLambda;
-    private Pair<?, TriConsumer<Vertex, Messenger<M>, Memory>> supplierExecuteLambda;
+    private LambdaHolder<TriConsumer<Vertex, Messenger<M>, Memory>> executeLambdaHolder;
     private TriConsumer<Vertex, Messenger<M>, Memory> executeLambda;
-    private Pair<?, Predicate<Memory>> supplierTerminateLambda;
+    private LambdaHolder<Predicate<Memory>> terminateLambdaHolder;
     private Predicate<Memory> terminateLambda;
     private Set<String> elementComputeKeys;
     private Set<String> memoryComputeKeys;
@@ -47,27 +44,14 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
 
     @Override
     public void loadState(final Configuration configuration) {
-        this.lambdaType = LambdaType.getType(configuration, LAMBDA_TYPE_KEY);
-        if (configuration.containsKey(SETUP_LAMBDA_KEY)) {
-            this.supplierSetupLambda = this.lambdaType.<Consumer<Memory>>get(configuration, SETUP_LAMBDA_KEY);
-            this.setupLambda = this.supplierSetupLambda.getValue1();
-        } else {
-            this.setupLambda = s -> {
-            };
-        }
-        if (configuration.containsKey(EXECUTE_LAMBDA_KEY)) {
-            this.supplierExecuteLambda = this.lambdaType.<TriConsumer<Vertex, Messenger<M>, Memory>>get(configuration, EXECUTE_LAMBDA_KEY);
-            this.executeLambda = this.supplierExecuteLambda.getValue1();
-        } else {
-            this.executeLambda = (v, m, s) -> {
-            };
-        }
-        if (configuration.containsKey(TERMINATE_LAMBDA_KEY)) {
-            this.supplierTerminateLambda = this.lambdaType.<Predicate<Memory>>get(configuration, TERMINATE_LAMBDA_KEY);
-            this.terminateLambda = this.supplierTerminateLambda.getValue1();
-        } else {
-            this.terminateLambda = m -> true;
-        }
+        this.setupLambdaHolder = LambdaHolder.loadState(configuration, SETUP_LAMBDA);
+        this.executeLambdaHolder = LambdaHolder.loadState(configuration, EXECUTE_LAMBDA);
+        this.terminateLambdaHolder = LambdaHolder.loadState(configuration, TERMINATE_LAMBDA);
+        this.setupLambda = null == this.setupLambdaHolder ? s -> {
+        } : this.setupLambdaHolder.get();
+        this.executeLambda = null == this.executeLambdaHolder ? (v, m, s) -> {
+        } : this.executeLambdaHolder.get();
+        this.terminateLambda = null == this.terminateLambdaHolder ? s -> true : this.terminateLambdaHolder.get();
 
         try {
             this.elementComputeKeys = configuration.containsKey(ELEMENT_COMPUTE_KEYS) ?
@@ -82,14 +66,14 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
     @Override
     public void storeState(final Configuration configuration) {
         configuration.setProperty(GraphComputer.VERTEX_PROGRAM, this.getClass().getName());
-        try {
-            if (null != this.supplierSetupLambda)
-                this.lambdaType.set(configuration, LAMBDA_TYPE_KEY, SETUP_LAMBDA_KEY, this.supplierSetupLambda.getValue0());
-            if (null != this.supplierExecuteLambda)
-                this.lambdaType.set(configuration, LAMBDA_TYPE_KEY, EXECUTE_LAMBDA_KEY, this.supplierExecuteLambda.getValue0());
-            if (null != this.supplierTerminateLambda)
-                this.lambdaType.set(configuration, LAMBDA_TYPE_KEY, TERMINATE_LAMBDA_KEY, this.supplierTerminateLambda.getValue0());
+        if (null != this.setupLambdaHolder)
+            this.setupLambdaHolder.storeState(configuration);
+        if (null != this.executeLambdaHolder)
+            this.executeLambdaHolder.storeState(configuration);
+        if (null != this.terminateLambdaHolder)
+            this.terminateLambdaHolder.storeState(configuration);
 
+        try {
             VertexProgramHelper.serialize(this.elementComputeKeys, configuration, ELEMENT_COMPUTE_KEYS);
             VertexProgramHelper.serialize(this.memoryComputeKeys, configuration, MEMORY_COMPUTE_KEYS);
         } catch (Exception e) {
@@ -137,35 +121,55 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
         }
 
         public Builder setup(final Consumer<Memory> setupLambda) {
-            LambdaType.OBJECT.set(this.configuration, LAMBDA_TYPE_KEY, SETUP_LAMBDA_KEY, setupLambda);
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, SETUP_LAMBDA, setupLambda);
+            return this;
+        }
+
+        public Builder setup(final Class<? extends Consumer<Memory>> setupClass) {
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.CLASS, SETUP_LAMBDA, setupClass);
             return this;
         }
 
         public Builder setup(final String scriptEngine, final String setupScript) {
-            LambdaType.SCRIPT.set(this.configuration, LAMBDA_TYPE_KEY, SETUP_LAMBDA_KEY, new String[]{scriptEngine, setupScript});
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SCRIPT, SETUP_LAMBDA, new String[]{scriptEngine, setupScript});
             return this;
         }
 
+        ///////
+
         public Builder execute(final TriConsumer<Vertex, Messenger, Memory> executeLambda) {
-            LambdaType.OBJECT.set(this.configuration, LAMBDA_TYPE_KEY, EXECUTE_LAMBDA_KEY, executeLambda);
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, EXECUTE_LAMBDA, executeLambda);
+            return this;
+        }
+
+        public Builder execute(final Class<? extends TriConsumer<Vertex, Messenger, Memory>> executeClass) {
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.CLASS, EXECUTE_LAMBDA, executeClass);
             return this;
         }
 
         public Builder execute(final String scriptEngine, final String executeScript) {
-            LambdaType.SCRIPT.set(this.configuration, LAMBDA_TYPE_KEY, EXECUTE_LAMBDA_KEY, new String[]{scriptEngine, executeScript});
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SCRIPT, EXECUTE_LAMBDA, new String[]{scriptEngine, executeScript});
             return this;
         }
 
+        ///////
 
         public Builder terminate(final Predicate<Memory> terminateLambda) {
-            LambdaType.OBJECT.set(this.configuration, LAMBDA_TYPE_KEY, TERMINATE_LAMBDA_KEY, terminateLambda);
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, TERMINATE_LAMBDA, terminateLambda);
             return this;
         }
 
-        public Builder terminate(final String scriptEngine, final String executeScript) {
-            LambdaType.SCRIPT.set(this.configuration, LAMBDA_TYPE_KEY, TERMINATE_LAMBDA_KEY, new String[]{scriptEngine, executeScript});
+        public Builder terminate(final Class<? extends Predicate<Memory>> terminateClass) {
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.CLASS, TERMINATE_LAMBDA, terminateClass);
             return this;
         }
+
+        public Builder terminate(final String scriptEngine, final String terminateScript) {
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SCRIPT, TERMINATE_LAMBDA, new String[]{scriptEngine, terminateScript});
+            return this;
+        }
+
+        ///////
 
         public Builder memoryComputeKeys(final Set<String> memoryComputeKeys) {
             try {
