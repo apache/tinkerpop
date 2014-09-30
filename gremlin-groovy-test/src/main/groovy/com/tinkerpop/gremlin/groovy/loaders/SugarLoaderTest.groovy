@@ -158,12 +158,8 @@ class SugarLoaderTest extends AbstractGremlinTest {
         */
     }
 
-    private clearRegistry() {
+    private static clearRegistry() {
         // these calls are required to clear the metaclass registry assuming other "sugar" tests execute first
-        //InvokerHelper.getMetaRegistry().removeMetaClass(graphProvider.getVertexImplementation())
-        //InvokerHelper.getMetaRegistry().removeMetaClass(g.getClass())
-        //InvokerHelper.getMetaRegistry().removeMetaClass(graphProvider.getGraphTraversalImplementation())
-        //InvokerHelper.getMetaRegistry().removeMetaClass(graphProvider.getElementTraversalImplementation())  TinkerElementTraversal
         InvokerHelper.getMetaRegistry().removeMetaClass(Graph.class)
         InvokerHelper.getMetaRegistry().removeMetaClass(GraphTraversal.class)
         InvokerHelper.getMetaRegistry().removeMetaClass(PathTraverser.class)
