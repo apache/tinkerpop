@@ -109,9 +109,4 @@ public class GiraphGraphProvider extends AbstractGraphProvider {
         inputStream.close();
         return temp.getPath();
     }
-
-    @Override
-    public Class<? extends GraphStep> getGraphStepImplementation() {
-        return GiraphGraphStep.class;
-    }
 }

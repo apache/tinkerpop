@@ -37,9 +37,4 @@ public class TinkerGraphGraphProvider extends AbstractGraphProvider {
         if (g != null)
             g.close();
     }
-
-    @Override
-    public Class<? extends GraphStep> getGraphStepImplementation() {
-        return TinkerGraphStep.class;
-    }
 }

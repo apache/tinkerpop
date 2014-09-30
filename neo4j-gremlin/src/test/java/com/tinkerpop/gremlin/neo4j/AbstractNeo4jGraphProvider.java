@@ -117,9 +117,4 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
             //throw new RuntimeException("Could not load graph with " + graphData);
         }
     }
-
-    @Override
-    public Class<? extends GraphStep> getGraphStepImplementation() {
-        return Neo4jGraphStep.class;
-    }
 }

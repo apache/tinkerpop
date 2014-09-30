@@ -137,6 +137,4 @@ public interface GraphProvider {
      * @param loadGraphWith the annotation for the currently running test
      */
     public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith);
-
-    public Class<? extends GraphStep> getGraphStepImplementation();
 }
