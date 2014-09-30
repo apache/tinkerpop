@@ -23,8 +23,6 @@ import java.util.Map;
  */
 public class TinkerGraphGraphProvider extends AbstractGraphProvider {
 
-    // todo: why am i not using this???????!!!!!!!!
-
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName) {
         return new HashMap<String, Object>() {{
