@@ -43,8 +43,8 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
     public static final String TRAVERSER_TRACKER = Graph.Key.hide("gremlin.traverserTracker");
-    private static final String LAMBDA_TYPE_KEY = Graph.Key.hide("gremlin.traversalVertexProgram.lambdaType");
-    private static final String TRAVERSAL_SUPPLIER_KEY = Graph.Key.hide("gremlin.traversalVertexProgram.traversalSupplier");
+    private static final String TRAVERSAL_SUPPLIER_TYPE_KEY = "gremlin.traversalVertexProgram.traversalSupplierType";
+    private static final String TRAVERSAL_SUPPLIER_KEY = "gremlin.traversalVertexProgram.traversalSupplier";
 
     private LambdaType lambdaType;
     private Pair<?, Supplier<Traversal>> traversalPair;
@@ -61,7 +61,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     @Override
     public void loadState(final Configuration configuration) {
-        this.lambdaType = LambdaType.getType(configuration, LAMBDA_TYPE_KEY);
+        this.lambdaType = LambdaType.getType(configuration, TRAVERSAL_SUPPLIER_TYPE_KEY);
         this.traversalPair = this.lambdaType.get(configuration, TRAVERSAL_SUPPLIER_KEY);
 
         final Traversal<?, ?> traversal = this.traversalPair.getValue1().get();
@@ -80,7 +80,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     @Override
     public void storeState(final Configuration configuration) {
         configuration.setProperty(GraphComputer.VERTEX_PROGRAM, TraversalVertexProgram.class.getName());
-        this.lambdaType.set(configuration, LAMBDA_TYPE_KEY, TRAVERSAL_SUPPLIER_KEY, this.traversalPair.getValue0());
+        this.lambdaType.set(configuration, TRAVERSAL_SUPPLIER_TYPE_KEY, TRAVERSAL_SUPPLIER_KEY, this.traversalPair.getValue0());
     }
 
     public Traversal getTraversal() {
@@ -220,17 +220,17 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         }
 
         public Builder traversal(final String scriptEngine, final String traversalScript) {
-            LambdaType.SCRIPT.set(this.configuration, LAMBDA_TYPE_KEY, TRAVERSAL_SUPPLIER_KEY, new String[]{scriptEngine, traversalScript});
+            LambdaType.SCRIPT.set(this.configuration, TRAVERSAL_SUPPLIER_TYPE_KEY, TRAVERSAL_SUPPLIER_KEY, new String[]{scriptEngine, traversalScript});
             return this;
         }
 
         public Builder traversal(final Supplier<Traversal> traversal) {
-            LambdaType.OBJECT.set(this.configuration, LAMBDA_TYPE_KEY, TRAVERSAL_SUPPLIER_KEY, traversal);
+            LambdaType.OBJECT.set(this.configuration, TRAVERSAL_SUPPLIER_TYPE_KEY, TRAVERSAL_SUPPLIER_KEY, traversal);
             return this;
         }
 
         public Builder traversal(final Class<Supplier<Traversal>> traversalClass) {
-            LambdaType.CLASS.set(this.configuration, LAMBDA_TYPE_KEY, TRAVERSAL_SUPPLIER_KEY, traversalClass);
+            LambdaType.CLASS.set(this.configuration, TRAVERSAL_SUPPLIER_TYPE_KEY, TRAVERSAL_SUPPLIER_KEY, traversalClass);
             return this;
         }
 

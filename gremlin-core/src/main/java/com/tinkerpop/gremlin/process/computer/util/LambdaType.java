@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process.computer.util;
 
 
-import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
@@ -48,13 +47,13 @@ public enum LambdaType {
             if (!configuration.containsKey(key))
                 throw new IllegalArgumentException("The provided configuration does not have the supplier key: " + key);
             try {
-                final String[] script = VertexProgramHelper.deserialize(configuration,key);
+                final String[] script = VertexProgramHelper.deserialize(configuration, key);
                 return Pair.with(script, (S) new ScriptEngineLambda(script[0], script[1]));
-            } catch(Exception e) {
-                throw new IllegalArgumentException(e.getMessage(),e);
+            } catch (Exception e) {
+                throw new IllegalArgumentException(e.getMessage(), e);
             }
 
-           // final String[] script = configuration.getString(key).split(SPLIT_TOKEN);
+            // final String[] script = configuration.getString(key).split(SPLIT_TOKEN);
 
         }
 
@@ -63,8 +62,8 @@ public enum LambdaType {
             configuration.setProperty(supplierTypeKey, this.name());
             try {
                 VertexProgramHelper.serialize(supplierScript, configuration, key);
-            } catch(Exception e) {
-                throw new IllegalArgumentException(e.getMessage(),e);
+            } catch (Exception e) {
+                throw new IllegalArgumentException(e.getMessage(), e);
             }
             //configuration.setProperty(key, ((String[]) supplierScript)[0] + SPLIT_TOKEN + ((String[]) supplierScript)[1]);
         }

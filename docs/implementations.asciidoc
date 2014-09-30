@@ -369,15 +369,16 @@ The `GiraphGraphComputer` makes use of a properties file much like any other `Gr
 
 [source,text]
 gremlin.graph=com.tinkerpop.gremlin.giraph.structure.GiraphGraph
-gremlin.inputLocation=tinkerpop-classic-vertices.gio
+giraph.gremlin.inputLocation=tinkerpop-classic-vertices.gio
 giraph.vertexInputFormatClass=com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexInputFormat
-gremlin.outputLocation=output
+giraph.gremlin.outputLocation=output
 giraph.vertexOutputFormatClass=com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexOutputFormat
-gremlin.memoryOutputFormatClass=org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat
+giraph.gremlin.memoryOutputFormatClass=org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat
 gremlin.vertexProgram=com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
-gremlin.traversalVertexProgram.traversalSupplierClass=com.tinkerpop.gremlin.giraph.process.graph.example.TraversalSupplier1
-gremlin.jarsInDistributedCache=true
-gremlin.deriveMemory=false
+gremlin.traversalVertexProgram.traversalSupplier=com.tinkerpop.gremlin.giraph.process.graph.example.TraversalSupplier1
+gremlin.traversalVertexProgram.traversalSupplierType=CLASS
+giraph.gremlin.jarsInDistributedCache=true
+giraph.gremlin.deriveMemory=false
 giraph.minWorkers=2
 giraph.maxWorkers=2
 
@@ -387,15 +388,16 @@ A review of the properties above are presented in the table below.
 |=========================================================
 |Property |Description
 |gremlin.graph |The class of the graph to construct using GraphFactory
-|gremlin.inputLocation |The location of the input file(s) for Giraph to read the graph from.
+|giraph.gremlin.inputLocation |The location of the input file(s) for Giraph to read the graph from.
 |giraph.vertexInputFormatClass |The format that the graph input file(s) are represented in.
-|gremlin.outputLocation |The location to write the computed Giraph graph to.
+|giraph.gremlin.outputLocation |The location to write the computed Giraph graph to.
 |giraph.vertexOutputFormatClass |The format that the output file(s) should be represented in.
-|gremlin.memoryOutputFormatClass |The format of any resultant GraphComputer Memory.
+|giraph.gremlin.memoryOutputFormatClass |The format of any resultant GraphComputer Memory.
 |gremlin.vertexProgram |The `VertexProgram` to distribute to all vertices in the `GiraphGraph`
-|gremlin.traversalVertexProgram.traversalSupplierClass |For `TraversalVertexProgram`, the location of the Gremlin traversal to use (if not using Gremlin Console).
-|gremlin.jarsInDistributedCache |Whether to upload the Giraph-Gremlin jars to Hadoop's distributed cache (necessary if jars are not on machines' classpaths).
-|gremlin.deriveMemory |Whether or not `Memory` is yielded (requires an extra MapReduce job if true).
+|gremlin.traversalVertexProgram.traversalSupplier |For `TraversalVertexProgram`, the location of the Gremlin traversal to use (if not using Gremlin Console).
+|gremlin.traversalVertexProgram.traversalSupplierType | Whether the traversal supplier is a CLASS, SCRIPT, or OBJECT.
+|giraph.gremlin.jarsInDistributedCache |Whether to upload the Giraph-Gremlin jars to Hadoop's distributed cache (necessary if jars are not on machines' classpaths).
+|giraph.gremlin.deriveMemory |Whether or not `Memory` is yielded (requires an extra MapReduce job if true).
 |giraph.minWorkers |The minimum number of parallel workers to execute the vertices of the graph.
 |giraph.maxWorkers |The maximum number of parallel workers to execute the vertices of the graph.
 |=========================================================
@@ -530,11 +532,12 @@ A list of the HDFS methods available are itemized below. Note that these methods
 |=========================================================
 
 
-The `TraversalSupplier1` class mentioned in the `giraph-kryo.properties` file is distributed with Giraph-Gremlin. It declares what Gremlin-Java traversal to execute on the loaded `GiraphGraph`. This is the means why which traversals can be programmatically executed in Giraph-Gremlin.
+The `TraversalSupplier1` class mentioned in the `giraph-kryo.properties` file is distributed with Giraph-Gremlin. It declares what Gremlin-Java traversal to execute on the loaded `GiraphGraph`. This is the means by which traversals can be programmatically executed in Giraph-Gremlin.
 
 [source,java]
 ----
-// gremlin.traversalVertexProgram.traversalSupplierClass=com.tinkerpop.gremlin.giraph.process.graph.example.TraversalSupplier1
+// gremlin.traversalVertexProgram.traversalSupplier=com.tinkerpop.gremlin.giraph.process.graph.example.TraversalSupplier1
+// gremlin.traversalVertexProgram.traversalSupplierType=CLASS
 
 public class TraversalSupplier1 implements SSupplier<Traversal> {
     public Traversal get() {

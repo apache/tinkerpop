@@ -125,22 +125,13 @@ class SugarLoaderTest extends AbstractGremlinTest {
         println "  Groovy-style: " + clock(5000) { g.v(1).name }
         assertEquals(g.v(1).value('name'), g.v(1).name)
 
-        // todo: turn the below back on
-
-        /*
-        println("\ng.v(1)['name'] = 'okram'")
-        g = TinkerFactory.createClassic();
+        /*println("\ng.v(1)['name'] = 'okram'")
         println "  Java8-style:  " + clock(5000) { g.v(1).property('name', 'okram') }
-        g = TinkerFactory.createClassic();
         println "  Groovy-style: " + clock(5000) { g.v(1)['name'] = 'okram' }
-        g = TinkerFactory.createClassic();
 
         println("\ng.v(1).name = 'okram'")
-        g = TinkerFactory.createClassic();
         println "  Java8-style:  " + clock(5000) { g.v(1).singleProperty('name', 'okram') }
-        g = TinkerFactory.createClassic();
-        println "  Groovy-style: " + clock(5000) { g.v(1).name = 'okram' }
-        g = TinkerFactory.createClassic();
+        println "  Groovy-style: " + clock(5000) { g.v(1).name = 'okram' }*/
 
         println("\ng.v(1).outE")
         println "  Java8-style:  " + clock(5000) { g.v(1).outE() }
@@ -155,7 +146,7 @@ class SugarLoaderTest extends AbstractGremlinTest {
         assertEquals(g.V().as('a').map { [it.get('a').value('name'), it.get().value('name')] }, g.V.as('a').map {
             [it.a.name, it.name]
         })
-        */
+
     }
 
     private static clearRegistry() {
