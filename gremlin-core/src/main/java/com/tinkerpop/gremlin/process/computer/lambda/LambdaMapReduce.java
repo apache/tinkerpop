@@ -45,7 +45,7 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
     @Override
     public void storeState(final Configuration configuration) {
         if (null != this.mapLambdaHolder)
-            this.memoryLambdaHolder.storeState(configuration);
+            this.mapLambdaHolder.storeState(configuration);
         if (null != this.combineLambdaHolder)
             this.combineLambdaHolder.storeState(configuration);
         if (null != this.reduceLambdaHolder)
@@ -67,20 +67,17 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<MK, MV> emitter) {
-        if (null != this.mapLambdaHolder)
-            this.mapLambdaHolder.get().accept(vertex, emitter);
+        this.mapLambdaHolder.get().accept(vertex, emitter);
     }
 
     @Override
     public void combine(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter) {
-        if (null != this.combineLambdaHolder)
-            this.combineLambdaHolder.get().accept(key, values, emitter);
+       this.combineLambdaHolder.get().accept(key, values, emitter);
     }
 
     @Override
     public void reduce(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter) {
-        if (null != this.reduceLambdaHolder)
-            this.reduceLambdaHolder.get().accept(key, values, emitter);
+        this.reduceLambdaHolder.get().accept(key, values, emitter);
     }
 
     @Override
