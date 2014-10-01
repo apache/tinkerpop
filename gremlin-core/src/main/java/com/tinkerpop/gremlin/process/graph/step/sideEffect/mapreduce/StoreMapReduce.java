@@ -9,6 +9,7 @@ import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -47,9 +48,7 @@ public class StoreMapReduce implements MapReduce<MapReduce.NullObject, Object, M
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<NullObject, Object> emitter) {
-        vertex.<Map<String, Object>>property(Traversal.SideEffects.DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY).ifPresent(sideEffects -> {
-            ((Collection) sideEffects.get(this.sideEffectKey)).forEach(object -> emitter.emit(NullObject.instance(), object));
-        });
+        MapReduce.getLocalSideEffects(vertex).<Collection<?>>orElse(this.sideEffectKey, Collections.emptyList()).forEach(object -> emitter.emit(NullObject.instance(), object));
     }
 
     @Override

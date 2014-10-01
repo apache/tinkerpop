@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Barrier;
-import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCap;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
