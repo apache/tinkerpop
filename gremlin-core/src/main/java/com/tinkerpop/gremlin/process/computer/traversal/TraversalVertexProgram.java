@@ -136,11 +136,8 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                 voteToHalt.set(false);
             });
         }
-        if (this.trackPaths)
-            vertex.property(TRAVERSER_TRACKER, new TraverserPathTracker());
-        else
-            vertex.property(TRAVERSER_TRACKER, new TraverserCountTracker());
 
+        vertex.property(TRAVERSER_TRACKER, this.trackPaths ? new TraverserPathTracker() : new TraverserCountTracker());
         memory.and(VOTE_TO_HALT, voteToHalt.get());
     }
 

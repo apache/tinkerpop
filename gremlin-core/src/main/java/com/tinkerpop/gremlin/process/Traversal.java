@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.strategy.GraphComputerStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
-import com.tinkerpop.gremlin.process.util.DefaultSideEffects;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -23,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -101,6 +101,10 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
         public <V> V get(final String key) throws IllegalArgumentException;
 
+        public default <V> V orElse(final String key, final V otherValue) {
+            return this.exists(key) ? this.get(key) : otherValue;
+        }
+
         public void remove(final String key);
 
         public Set<String> keys();
@@ -132,6 +136,10 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
                 this.set(key, t);
                 return t;
             }
+        }
+
+        public default <V> void forEach(final BiConsumer<String, V> biConsumer) {
+            this.keys().forEach(key -> biConsumer.accept(key, this.get(key)));
         }
 
         public void setLocalVertex(final Vertex vertex);

@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -14,90 +13,52 @@ import java.util.Set;
  */
 public class DefaultSideEffects implements Traversal.SideEffects {
 
-    private Map<String, Object> sideEffectsMap;
-    private boolean isLocal = true;
-    private ThreadLocal<Vertex> vertex = new ThreadLocal<>();
+    private Map<String, Object> sideEffectMap = new HashMap<>();
 
+    public DefaultSideEffects() {
+
+    }
+
+    public DefaultSideEffects(final Vertex localVertex) {
+        this.setLocalVertex(localVertex);
+    }
 
     @Override
     public boolean exists(final String key) {
-        if (this.isLocal) {
-            return (null != this.sideEffectsMap && this.sideEffectsMap.containsKey(key));
-        } else {
-            final Property<Map<String, Object>> property = vertex.get().property(DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY);
-            return property.isPresent() && property.value().containsKey(key);
-        }
+        return this.sideEffectMap.containsKey(key);
     }
 
     @Override
     public <V> void set(final String key, final V value) {
         SideEffectHelper.validateSideEffect(key, value);
-        if (this.isLocal) {
-            if (null == this.sideEffectsMap) this.sideEffectsMap = new HashMap<>();
-            this.sideEffectsMap.put(key, value);
-        } else {
-            final Property<Map<String, Object>> property = vertex.get().property(DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY);
-            final Map<String, Object> sideEffects;
-            if (!property.isPresent()) {
-                sideEffects = new HashMap<>();
-                vertex.get().property(DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY, sideEffects);
-            } else {
-                sideEffects = property.value();
-            }
-            sideEffects.put(key, value);
-        }
+        this.sideEffectMap.put(key, value);
     }
 
     @Override
     public <V> V get(final String key) throws IllegalArgumentException {
-        if (this.isLocal) {
-            if (null == this.sideEffectsMap)
-                throw Traversal.SideEffects.Exceptions.sideEffectDoesNotExist(key);
-            else {
-                final V v = (V) this.sideEffectsMap.get(key);
-                if (null == v)
-                    throw Traversal.SideEffects.Exceptions.sideEffectDoesNotExist(key);
-                else
-                    return v;
-            }
-        } else {
-            final Property<Map<String, Object>> property = vertex.get().property(DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY);
-            if (!property.isPresent())
-                throw Traversal.SideEffects.Exceptions.sideEffectDoesNotExist(key);
-            else {
-                final Map<String, Object> sideEffects = property.value();
-                if (!sideEffects.containsKey(key))
-                    throw Traversal.SideEffects.Exceptions.sideEffectDoesNotExist(key);
-                else
-                    return (V) sideEffects.get(key);
-            }
-        }
+        final V value = (V) this.sideEffectMap.get(key);
+        if (null == value)
+            throw Traversal.SideEffects.Exceptions.sideEffectDoesNotExist(key);
+        return value;
     }
 
     @Override
     public void remove(final String key) {
-        if (this.isLocal) {
-            if (null != this.sideEffectsMap) this.sideEffectsMap.remove(key);
-        } else {
-
-            final Property<Map<String, Object>> property = vertex.get().property(DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY);
-            if (property.isPresent())
-                property.value().remove(key);
-        }
+        this.sideEffectMap.remove(key);
     }
 
     @Override
     public Set<String> keys() {
-        if (this.isLocal) {
-            return null == this.sideEffectsMap ? Collections.emptySet() : this.sideEffectsMap.keySet();
-        } else {
-            final Property<Map<String, Object>> property = vertex.get().property(DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY);
-            return property.isPresent() ? property.value().keySet() : Collections.emptySet();
-        }
+        return this.sideEffectMap.keySet();
     }
 
     public void setLocalVertex(final Vertex vertex) {
-        this.isLocal = false;
-        this.vertex.set(vertex);
+        final Property<Map<String, Object>> property = vertex.property(DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY);
+        if (property.isPresent()) {
+            this.sideEffectMap = property.value();
+        } else {
+            this.sideEffectMap = new HashMap<>();
+            vertex.property(DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY, this.sideEffectMap);
+        }
     }
 }

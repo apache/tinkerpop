@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.process.computer;
 
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.util.DefaultSideEffects;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
@@ -40,6 +42,10 @@ public interface MapReduce<MK, MV, RK, RV, R> {
 
     public default void addSideEffectToMemory(final Memory memory, final Iterator<Pair<RK, RV>> keyValues) {
         memory.set(this.getSideEffectKey(), this.generateSideEffect(keyValues));
+    }
+
+    public static Traversal.SideEffects getLocalSideEffects(final Vertex localVertex) {
+        return new DefaultSideEffects(localVertex);
     }
 
     //////////////////

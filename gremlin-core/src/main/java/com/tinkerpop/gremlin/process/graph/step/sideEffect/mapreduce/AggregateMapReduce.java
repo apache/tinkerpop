@@ -1,19 +1,16 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -49,9 +46,7 @@ public class AggregateMapReduce implements MapReduce<MapReduce.NullObject, Objec
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<NullObject, Object> emitter) {
-        vertex.<Map<String, Object>>property(Traversal.SideEffects.DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY).ifPresent(sideEffects -> {
-            ((Collection) sideEffects.get(this.sideEffectKey)).forEach(object -> emitter.emit(NullObject.instance(), object));
-        });
+        MapReduce.getLocalSideEffects(vertex).<Collection<?>>orElse(this.sideEffectKey, Collections.emptyList()).forEach(object -> emitter.emit(NullObject.instance(), object));
     }
 
     @Override

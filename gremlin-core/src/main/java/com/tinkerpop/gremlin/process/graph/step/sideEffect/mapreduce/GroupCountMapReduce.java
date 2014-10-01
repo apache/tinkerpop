@@ -1,12 +1,12 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -45,11 +45,7 @@ public class GroupCountMapReduce implements MapReduce<Object, Long, Object, Long
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<Object, Long> emitter) {
-        vertex.<Map<String, Object>>property(Traversal.SideEffects.DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY).ifPresent(sideEffects -> {
-            ((Map<Object, Number>) sideEffects.get(this.sideEffectKey)).forEach((k, v) -> {
-                emitter.emit(k, v.longValue());
-            });
-        });
+        MapReduce.getLocalSideEffects(vertex).<Map<Object, Number>>orElse(this.sideEffectKey, Collections.emptyMap()).forEach((k, v) -> emitter.emit(k, v.longValue()));
     }
 
     @Override
