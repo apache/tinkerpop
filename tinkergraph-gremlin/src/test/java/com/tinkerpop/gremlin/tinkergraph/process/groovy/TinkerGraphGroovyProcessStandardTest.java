@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.tinkergraph.process.groovy;
 
+import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
+import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import com.tinkerpop.gremlin.process.GroovyProcessStandardSuite;
 import com.tinkerpop.gremlin.process.ProcessStandardSuite;
 import com.tinkerpop.gremlin.tinkergraph.TinkerGraphGraphProvider;
@@ -12,4 +14,8 @@ import org.junit.runner.RunWith;
 @RunWith(GroovyProcessStandardSuite.class)
 @ProcessStandardSuite.GraphProviderClass(provider = TinkerGraphGraphProvider.class, graph = TinkerGraph.class)
 public class TinkerGraphGroovyProcessStandardTest {
+    static {
+        GremlinLoader.load();
+        SugarLoader.load();
+    }
 }
