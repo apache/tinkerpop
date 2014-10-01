@@ -56,14 +56,14 @@
         <module>gremlin-core</module>
         <module>gremlin-algorithm</module>
         <module>gremlin-test</module>
+        <module>gremlin-groovy</module>
+        <module>gremlin-groovy-test</module>
         <module>tinkergraph-gremlin</module>
         <module>neo4j-gremlin</module>
         <module>giraph-gremlin</module>
-        <module>gremlin-groovy</module>
         <module>gremlin-driver</module>
         <module>gremlin-console</module>
         <module>gremlin-server</module>
-        <module>gremlin-groovy-test</module>
     </modules>
     <scm>
         <connection>scm:git:git@github.com:tinkerpop/tinkerpop3.git</connection>
