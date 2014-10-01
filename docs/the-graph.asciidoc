@@ -137,7 +137,7 @@ gremlin> g.V().as('a').hiddens('visible').value().as('b').select(){it.value('nam
 Hidden Properties
 -----------------
 
-A hidden property is a property that is hidden from the various property accessor methods. Hidden properties are typically used in situations where administrative data about an element must be stored that is not so much a description of the element itself. An itemization of use cases are presented below.
+image:hidden-properties.png[width=215,float=right] A hidden property is a property that is hidden from the various property accessor methods. Hidden properties are typically used in situations where administrative data about an element must be stored that is not so much a description of the element itself. An itemization of use cases are presented below.
 
  * *Permissions*: What user or groups have read/write permission to this element?
  * *Time keeping*: When was this element created? When does this element expire?
