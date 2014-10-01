@@ -17,7 +17,7 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements SideEffectCap, EngineDependent, Barrier, Bulkable {
+public class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements SideEffectCap, EngineDependent, Barrier {
 
     private boolean done = false;
     private boolean onGraphComputer = false;
@@ -35,7 +35,7 @@ public class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements SideE
 
     private Traverser<E> standardAlgorithm() {
         if (!this.done) {
-            Traverser.System<E> traverser = new SimpleTraverser<>((E) NO_OBJECT, this.traversal.sideEffects());
+            Traverser.System<E> traverser = new SimpleTraverser<>((E) NO_OBJECT, this.getTraversal().sideEffects());
             try {
                 while (true) {
                     traverser = (Traverser.System<E>) this.starts.next();
@@ -43,7 +43,7 @@ public class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements SideE
             } catch (final NoSuchElementException ignored) {
             }
             this.done = true;
-            return traverser.makeChild(this.getLabel(), this.traversal.sideEffects().<E>get(this.sideEffectKey));
+            return traverser.makeChild(this.getLabel(), traverser.getSideEffects().<E>get(this.sideEffectKey));
         } else {
             throw FastNoSuchElementException.instance();
         }
@@ -64,11 +64,6 @@ public class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements SideE
                 super.toString() :
                 TraversalHelper.makeStepString(this, this.sideEffectKey);
     }
-
-    @Override
-    public void setCurrentBulkCount(final long bulkCount) {
-    }
-
 
     @Override
     public String getSideEffectKey() {

@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
@@ -10,6 +11,7 @@ import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -45,8 +47,9 @@ public class TreeMapReduce implements MapReduce<Object, Tree, Object, Tree, Tree
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<Object, Tree> emitter) {
-        final Property<Tree> treeProperty = vertex.property(Graph.Key.hide(this.sideEffectKey));
-        treeProperty.ifPresent(tree -> tree.splitParents().forEach(t -> emitter.emit(((Tree) t).keySet().iterator().next(), (Tree) t)));
+        vertex.<Map<String, Object>>property(Traversal.SideEffects.DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY).ifPresent(sideEffects -> {
+            ((Tree) sideEffects.get(this.sideEffectKey)).splitParents().forEach(t -> emitter.emit(((Tree) t).keySet().iterator().next(), (Tree) t));
+        });
     }
 
     @Override

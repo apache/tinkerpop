@@ -1,13 +1,15 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountCapStep;
-import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -45,8 +47,14 @@ public class CountCapMapReduce implements MapReduce<MapReduce.NullObject, Long, 
 
     @Override
     public void map(Vertex vertex, MapEmitter<MapReduce.NullObject, Long> emitter) {
-        final AtomicLong count = vertex.<AtomicLong>property(Graph.Key.hide(this.sideEffectKey)).orElse(new AtomicLong(0));
-        emitter.emit(NullObject.instance(), count.get());
+        final Property<Map<String, Object>> sideEffectProperty = vertex.property(Traversal.SideEffects.DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY);
+        if (sideEffectProperty.isPresent()) {
+            emitter.emit(NullObject.instance(),
+                    sideEffectProperty.value().containsKey(this.sideEffectKey) ?
+                            ((AtomicLong) sideEffectProperty.value().get(this.sideEffectKey)).get() : 0l);
+        } else {
+            emitter.emit(NullObject.instance(), 0l);
+        }
     }
 
     @Override

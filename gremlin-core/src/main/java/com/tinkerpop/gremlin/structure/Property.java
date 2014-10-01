@@ -62,11 +62,11 @@ public interface Property<V> {
     /**
      * If the value is present, return the value, else generate a value given the {@link Supplier}.
      *
-     * @param edgeSupplier The supplier to use to generate a value if the property is not present
+     * @param valueSupplier The supplier to use to generate a value if the property is not present
      * @return A value
      */
-    public default V orElseGet(final Supplier<? extends V> edgeSupplier) {
-        return this.isPresent() ? this.value() : edgeSupplier.get();
+    public default V orElseGet(final Supplier<? extends V> valueSupplier) {
+        return this.isPresent() ? this.value() : valueSupplier.get();
     }
 
     /**

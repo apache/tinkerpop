@@ -34,6 +34,13 @@ public interface Traverser<T> extends Serializable {
      */
     public int getLoops();
 
+    /**
+     * A traverser may represent a grouping of traversers to allow for more efficient data propagation.
+     *
+     * @return the number of traversers represented in this traverser.
+     */
+    public long getBulk();
+
     public Traversal.SideEffects getSideEffects();
 
     public default <A> A get(final String sideEffectKey) {
@@ -89,6 +96,12 @@ public interface Traverser<T> extends Serializable {
          * @param label The future labeled step of the traverser
          */
         public void setFuture(final String label);
+
+        /**
+         * Set the number of traversers represented by this traverser.
+         * @param count the number of traversers
+         */
+        public void setBulk(final long count);
 
         /**
          * If the traverser has "no future" then it is done with its lifecycle.

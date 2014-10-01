@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
@@ -64,8 +65,11 @@ public class GroupByMapReduce implements MapReduce<Object, Collection, Object, O
 
     @Override
     public void map(Vertex vertex, MapEmitter<Object, Collection> emitter) {
-        final HashMap<Object, Collection> groupByProperty = vertex.<HashMap<Object, Collection>>property(Graph.Key.hide(this.sideEffectKey)).orElse(new HashMap<>());
-        groupByProperty.forEach((k, v) -> emitter.emit(k, v));
+        vertex.<Map<String, Object>>property(Traversal.SideEffects.DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY).ifPresent(sideEffects -> {
+            ((Map<Object, Collection>) sideEffects.get(this.sideEffectKey)).forEach((k, v) -> {
+                emitter.emit(k, v);
+            });
+        });
     }
 
     @Override

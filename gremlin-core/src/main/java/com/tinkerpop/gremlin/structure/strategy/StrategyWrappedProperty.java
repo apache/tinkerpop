@@ -53,8 +53,8 @@ public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped 
     }
 
     @Override
-    public V orElseGet(final Supplier<? extends V> edgeSupplier) {
-        return this.baseProperty.orElseGet(edgeSupplier);
+    public V orElseGet(final Supplier<? extends V> valueSupplier) {
+        return this.baseProperty.orElseGet(valueSupplier);
     }
 
     @Override

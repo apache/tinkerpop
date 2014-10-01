@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
-import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -38,7 +37,7 @@ public class TraversalPathMessage extends TraversalMessage {
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         messenger.receiveMessages(MessageType.Global.of()).forEach(message -> {
             ((TraversalPathMessage) message).traverser.inflate(vertex, traversal);
-            if (((TraversalPathMessage) message).executePaths(vertex, messenger, tracker, traversal))
+            if (((TraversalPathMessage) message).executePaths(messenger, tracker, traversal))
                 voteToHalt.set(false);
         });
         tracker.getPreviousObjectTracks().forEach((object, traversers) -> {
@@ -48,7 +47,6 @@ public class TraversalPathMessage extends TraversalMessage {
                 } else {
                     traverser.inflate(vertex, traversal);
                     final Step step = TraversalHelper.getStep(traverser.getFuture(), traversal);
-                    if (step instanceof VertexCentric) ((VertexCentric) step).setCurrentVertex(vertex);
                     step.addStarts(new SingleIterator(traverser));
                     if (processStep(step, messenger, tracker))
                         voteToHalt.set(false);
@@ -59,7 +57,7 @@ public class TraversalPathMessage extends TraversalMessage {
 
     }
 
-    private boolean executePaths(final Vertex vertex, final Messenger messenger,
+    private boolean executePaths(final Messenger messenger,
                                  final TraverserPathTracker tracker,
                                  final Traversal traversal) {
         if (this.traverser.isDone()) {
@@ -69,7 +67,6 @@ public class TraversalPathMessage extends TraversalMessage {
         }
 
         final Step step = TraversalHelper.getStep(this.traverser.getFuture(), traversal);
-        if (step instanceof VertexCentric) ((VertexCentric) step).setCurrentVertex(vertex);
         step.addStarts(new SingleIterator(this.traverser));
         return processStep(step, messenger, tracker);
     }

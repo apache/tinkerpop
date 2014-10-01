@@ -51,6 +51,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     public List<MapReduce> mapReducers = new ArrayList<>();
     private Set<String> elementComputeKeys = new HashSet<String>() {{
         add(TRAVERSER_TRACKER);
+        add(Traversal.SideEffects.DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY);
     }};
 
     private TraversalVertexProgram() {
@@ -113,6 +114,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final Memory memory) {
         final Traversal traversal = this.getTraversal();
+        traversal.sideEffects().setLocalVertex(vertex);
 
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
         final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.System.NO_FUTURE : startStep.getNextStep().getLabel();
@@ -144,6 +146,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, final Memory memory) {
         final Traversal traversal = this.getTraversal();
+        traversal.sideEffects().setLocalVertex(vertex);
 
         if (this.trackPaths) {
             memory.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, messenger, traversal));

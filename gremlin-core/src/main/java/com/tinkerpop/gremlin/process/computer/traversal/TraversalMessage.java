@@ -46,4 +46,5 @@ public abstract class TraversalMessage implements Serializable {
             throw new IllegalStateException("The host of the object is unknown: " + object.toString());
 
     }
+
 }

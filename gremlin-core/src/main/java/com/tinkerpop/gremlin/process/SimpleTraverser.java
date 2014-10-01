@@ -19,6 +19,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.System<T> {
     protected String future = NO_FUTURE;
     protected int loops = 0;
     protected transient Traversal.SideEffects sideEffects;
+    protected long bulk = 1l;
 
     protected SimpleTraverser() {
 
@@ -79,11 +80,20 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.System<T> {
         this.loops = 0;
     }
 
+    public void setBulk(final long count) {
+        this.bulk = count;
+    }
+
+    public long getBulk() {
+        return this.bulk;
+    }
+
     @Override
     public <R> SimpleTraverser<R> makeChild(final String label, final R r) {
         final SimpleTraverser<R> traverser = new SimpleTraverser<>(r, this.sideEffects);
         traverser.future = this.future;
         traverser.loops = this.loops;
+        traverser.bulk = this.bulk;
         return traverser;
     }
 
@@ -92,6 +102,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.System<T> {
         final SimpleTraverser<T> traverser = new SimpleTraverser<>(this.t, this.sideEffects);
         traverser.future = this.future;
         traverser.loops = this.loops;
+        traverser.bulk = this.bulk;
         return traverser;
     }
 

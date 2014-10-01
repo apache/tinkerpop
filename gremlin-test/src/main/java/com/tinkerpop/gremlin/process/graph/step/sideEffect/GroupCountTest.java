@@ -40,8 +40,8 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
         printTraversalForm(traversal);
         final Map<Object, Long> map = traversal.next();
         assertEquals(map.size(), 2);
-        assertEquals(map.get("lop"), Long.valueOf(3l));
-        assertEquals(map.get("ripple"), Long.valueOf(1l));
+        assertEquals(Long.valueOf(3l),map.get("lop"));
+        assertEquals(Long.valueOf(1l),map.get("ripple"));
         assertFalse(traversal.hasNext());
     }
 
@@ -52,8 +52,8 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
             printTraversalForm(traversal);
             final Map<Object, Long> map = traversal.next();
             assertEquals(map.size(), 2);
-            assertEquals(map.get("lop").longValue(), 3l);
-            assertEquals(map.get("ripple").longValue(), 1l);
+            assertEquals(3l,map.get("lop").longValue());
+            assertEquals(1l,map.get("ripple").longValue());
             assertFalse(traversal.hasNext());
         });
     }
@@ -64,7 +64,7 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
         final Traversal<Vertex, Map<Object, Long>> traversal = get_g_V_filterXfalseX_groupCount();
         printTraversalForm(traversal);
         final Map<Object, Long> map = traversal.next();
-        assertEquals(map.size(), 0);
+        assertEquals(0,map.size());
         assertFalse(traversal.hasNext());
     }
 
@@ -78,11 +78,11 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
             printTraversalForm(traversal);
             final Map<Object, Long> map = traversal.next();
             assertFalse(traversal.hasNext());
-            assertEquals(map.size(), 4);
-            assertEquals(map.get("lop").longValue(), 4l);
-            assertEquals(map.get("ripple").longValue(), 2l);
-            assertEquals(map.get("josh").longValue(), 1l);
-            assertEquals(map.get("vadas").longValue(), 1l);
+            assertEquals(4,map.size(), 4);
+            assertEquals(4l,map.get("lop").longValue());
+            assertEquals(2l,map.get("ripple").longValue());
+            assertEquals(1l,map.get("josh").longValue());
+            assertEquals(1l,map.get("vadas").longValue());
         });
     }
 

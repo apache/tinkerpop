@@ -11,8 +11,10 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.strategy.GraphComputerStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
+import com.tinkerpop.gremlin.process.util.DefaultSideEffects;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -89,6 +91,8 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
     public interface SideEffects {
 
+        public static final String DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY = Graph.Key.hide("gremlin.traversalVertexProgram.sideEffects");
+
         public default boolean exists(final String key) {
             return this.keys().contains(key);
         }
@@ -129,6 +133,8 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
                 return t;
             }
         }
+
+        public void setLocalVertex(final Vertex vertex);
 
         public static class Exceptions {
 

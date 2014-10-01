@@ -1,9 +1,8 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
@@ -12,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -47,9 +47,9 @@ public class StoreMapReduce implements MapReduce<MapReduce.NullObject, Object, M
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<NullObject, Object> emitter) {
-        final Property<Collection> storeProperty = vertex.property(Graph.Key.hide(this.sideEffectKey));
-        if (storeProperty.isPresent())
-            storeProperty.value().forEach(object -> emitter.emit(NullObject.instance(), object));
+        vertex.<Map<String, Object>>property(Traversal.SideEffects.DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY).ifPresent(sideEffects -> {
+            ((Collection) sideEffects.get(this.sideEffectKey)).forEach(object -> emitter.emit(NullObject.instance(), object));
+        });
     }
 
     @Override
