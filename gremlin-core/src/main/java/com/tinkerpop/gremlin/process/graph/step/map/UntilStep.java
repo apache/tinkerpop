@@ -13,7 +13,7 @@ import java.util.function.Predicate;
 public class UntilStep<S> extends MapStep<S, S> {
 
     public final String breakLabel;
-    public final int loops;
+    public final short loops;
     public final Predicate<Traverser<S>> breakPredicate;
     public final Predicate<Traverser<S>> emitPredicate;
 
@@ -27,7 +27,7 @@ public class UntilStep<S> extends MapStep<S, S> {
 
     public UntilStep(Traversal traversal, final String breakLabel, final int loops, final Predicate<Traverser<S>> emitPredicate) {
         super(traversal);
-        this.loops = loops;
+        this.loops = (short) loops;
         this.breakLabel = breakLabel;
         this.breakPredicate = null;
         this.emitPredicate = emitPredicate;

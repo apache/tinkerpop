@@ -32,7 +32,7 @@ public interface Traverser<T> extends Serializable {
      *
      * @return The number of times the traverser has gone through a loop
      */
-    public int getLoops();
+    public short getLoops();
 
     /**
      * A traverser may represent a grouping of traversers to allow for more efficient data propagation.
