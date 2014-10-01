@@ -316,11 +316,8 @@ The following GraphSON example shows the output of `GraphSonWriter.writeVertex()
 [source,js]
 ----
 {
-    "inV": [],
-    "id": 1,
-    "label": "vertex",
-    "type": "vertex",
-    "outV": [
+    "inE": [],
+    "outE": [
         {
             "inV": 3,
             "inVLabel": "vertex",
@@ -329,6 +326,7 @@ The following GraphSON example shows the output of `GraphSonWriter.writeVertex()
             "label": "created",
             "type": "edge",
             "outV": 1,
+            "hiddens": {},
             "properties": {
                 "weight": 0.4
             }
@@ -341,6 +339,7 @@ The following GraphSON example shows the output of `GraphSonWriter.writeVertex()
             "label": "knows",
             "type": "edge",
             "outV": 1,
+            "hiddens": {},
             "properties": {
                 "weight": 0.5
             }
@@ -353,14 +352,35 @@ The following GraphSON example shows the output of `GraphSonWriter.writeVertex()
             "label": "knows",
             "type": "edge",
             "outV": 1,
+            "hiddens": {},
             "properties": {
                 "weight": 1
             }
         }
     ],
+    "id": 1,
+    "label": "vertex",
+    "type": "vertex",
+    "hiddens": {},
     "properties": {
-        "name": "marko",
-        "age": 29
+        "name": [
+            {
+                "id": 0,
+                "label": "name",
+                "hiddens": {},
+                "value": "marko",
+                "properties": {}
+            }
+        ],
+        "age": [
+            {
+                "id": 1,
+                "label": "age",
+                "hiddens": {},
+                "value": 29,
+                "properties": {}
+            }
+        ]
     }
 }
 ----
@@ -381,14 +401,11 @@ In the above code, the `embedTypes` option is set to `true` and the output below
 ----
 {
     "@class": "java.util.HashMap",
-    "inV": [
+    "inE": [
         "java.util.ArrayList",
         []
     ],
-    "id": 1,
-    "label": "vertex",
-    "type": "vertex",
-    "outV": [
+    "outE": [
         "java.util.ArrayList",
         [
             {
@@ -400,6 +417,9 @@ In the above code, the `embedTypes` option is set to `true` and the output below
                 "label": "created",
                 "type": "edge",
                 "outV": 1,
+                "hiddens": {
+                    "@class": "java.util.HashMap"
+                },
                 "properties": {
                     "@class": "java.util.HashMap",
                     "weight": [
@@ -417,6 +437,9 @@ In the above code, the `embedTypes` option is set to `true` and the output below
                 "label": "knows",
                 "type": "edge",
                 "outV": 1,
+                "hiddens": {
+                    "@class": "java.util.HashMap"
+                },
                 "properties": {
                     "@class": "java.util.HashMap",
                     "weight": [
@@ -434,6 +457,9 @@ In the above code, the `embedTypes` option is set to `true` and the output below
                 "label": "knows",
                 "type": "edge",
                 "outV": 1,
+                "hiddens": {
+                    "@class": "java.util.HashMap"
+                },
                 "properties": {
                     "@class": "java.util.HashMap",
                     "weight": [
@@ -444,10 +470,54 @@ In the above code, the `embedTypes` option is set to `true` and the output below
             }
         ]
     ],
+    "id": 1,
+    "label": "vertex",
+    "type": "vertex",
+    "hiddens": {
+        "@class": "java.util.HashMap"
+    },
     "properties": {
         "@class": "java.util.HashMap",
-        "name": "marko",
-        "age": 29
+        "name": [
+            "java.util.ArrayList",
+            [
+                {
+                    "@class": "java.util.HashMap",
+                    "id": [
+                        "java.lang.Long",
+                        0
+                    ],
+                    "label": "name",
+                    "hiddens": {
+                        "@class": "java.util.HashMap"
+                    },
+                    "value": "marko",
+                    "properties": {
+                        "@class": "java.util.HashMap"
+                    }
+                }
+            ]
+        ],
+        "age": [
+            "java.util.ArrayList",
+            [
+                {
+                    "@class": "java.util.HashMap",
+                    "id": [
+                        "java.lang.Long",
+                        1
+                    ],
+                    "label": "age",
+                    "hiddens": {
+                        "@class": "java.util.HashMap"
+                    },
+                    "value": 29,
+                    "properties": {
+                        "@class": "java.util.HashMap"
+                    }
+                }
+            ]
+        ]
     }
 }
 ----
