@@ -231,7 +231,8 @@ public class TinkerGraphTest {
             reader.readGraph(stream, g);
         }
 
-        final OutputStream os = new FileOutputStream(tempPath + "grateful-dead.gio");
+        // todo: pass through "conversion" to get ids right
+        final OutputStream os = new FileOutputStream(tempPath + "grateful-dead-via-xml.gio");
         KryoWriter.build().create().writeGraph(os, g);
         os.close();
     }
@@ -239,8 +240,8 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteGratefulGraphAsGraphSON() throws IOException {
         final Graph g = TinkerGraph.open();
-        final GraphReader reader = GraphMLReader.build().create();
-        try (final InputStream stream = GraphMLResourceAccess.class.getResourceAsStream("grateful-dead.xml")) {
+        final GraphReader reader = KryoReader.build().create();
+        try (final InputStream stream = KryoResourceAccess.class.getResourceAsStream("grateful-dead.gio")) {
             reader.readGraph(stream, g);
         }
 
@@ -548,7 +549,7 @@ public class TinkerGraphTest {
 
         }).iterate();
 
-        final OutputStream os = new FileOutputStream(tempPath + "grateful-dead.gio");
+        final OutputStream os = new FileOutputStream(tempPath + "grateful-dead-convert.gio");
         KryoWriter.build().create().writeGraph(os, ng);
         os.close();
 
