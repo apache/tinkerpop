@@ -99,6 +99,16 @@ public class TinkerGraphTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
+    public void shouldWriteClassicVerticesAsGraphSON() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-vertices.ldjson");
+        GraphSONWriter.build().create().writeVertices(os, TinkerFactory.createClassic().V(), Direction.BOTH);
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
     public void shouldWriteModernVerticesAsKryo() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-vertices.gio");
         final TinkerGraph g = TinkerFactory.createModern();
