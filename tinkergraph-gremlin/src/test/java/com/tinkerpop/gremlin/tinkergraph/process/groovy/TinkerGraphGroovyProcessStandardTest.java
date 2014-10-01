@@ -14,8 +14,4 @@ import org.junit.runner.RunWith;
 @RunWith(GroovyProcessStandardSuite.class)
 @ProcessStandardSuite.GraphProviderClass(provider = TinkerGraphGraphProvider.class, graph = TinkerGraph.class)
 public class TinkerGraphGroovyProcessStandardTest {
-    static {
-        GremlinLoader.load();
-        SugarLoader.load();
-    }
 }
