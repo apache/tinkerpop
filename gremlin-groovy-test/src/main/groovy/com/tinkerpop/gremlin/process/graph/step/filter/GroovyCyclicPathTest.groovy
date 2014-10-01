@@ -11,12 +11,14 @@ import com.tinkerpop.gremlin.structure.Vertex
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class GroovyCyclicPathTest {
-    static {
-        GremlinLoader.load();
-        SugarLoader.load();
-    }
 
     public static class StandardTest extends CyclicPathTest {
+
+        static {
+            GremlinLoader.load();
+            SugarLoader.load();
+        }
+
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(final Object v1Id) {
             g.v(v1Id).out('created').in('created').cyclicPath
@@ -29,6 +31,12 @@ public abstract class GroovyCyclicPathTest {
     }
 
     public static class ComputerTest extends CyclicPathTest {
+
+        static {
+            GremlinLoader.load();
+            SugarLoader.load();
+        }
+
         @Override
         Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(final Object v1) {
             ComputerTestHelper.compute("g.v(${v1}).out('created').in('created').cyclicPath", g);

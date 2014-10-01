@@ -12,11 +12,6 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyDedupTest {
 
-    static {
-        GremlinLoader.load();
-        SugarLoader.load();
-    }
-
     public static class StandardTest extends DedupTest {
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedup_name() {
