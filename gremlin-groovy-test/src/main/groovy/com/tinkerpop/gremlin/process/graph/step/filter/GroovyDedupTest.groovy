@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.filter
 
+import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader
+import com.tinkerpop.gremlin.groovy.loaders.SugarLoader
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Vertex
@@ -9,6 +11,11 @@ import com.tinkerpop.gremlin.structure.Vertex
  * @author Daniel Kuppitz (daniel at thinkaurelius.com)
  */
 public abstract class GroovyDedupTest {
+
+    static {
+        GremlinLoader.load();
+        SugarLoader.load();
+    }
 
     public static class StandardTest extends DedupTest {
         @Override

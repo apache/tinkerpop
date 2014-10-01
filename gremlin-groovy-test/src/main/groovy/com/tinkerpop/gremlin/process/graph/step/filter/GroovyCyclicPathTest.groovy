@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.filter
 
+import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader
+import com.tinkerpop.gremlin.groovy.loaders.SugarLoader
 import com.tinkerpop.gremlin.process.Path
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
@@ -9,6 +11,10 @@ import com.tinkerpop.gremlin.structure.Vertex
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class GroovyCyclicPathTest {
+    static {
+        GremlinLoader.load();
+        SugarLoader.load();
+    }
 
     public static class StandardTest extends CyclicPathTest {
         @Override
