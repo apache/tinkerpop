@@ -17,7 +17,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.System<T> {
 
     protected T t;
     protected String future = NO_FUTURE;
-    protected int loops = 0;
+    protected short loops = 0;
     protected transient Traversal.SideEffects sideEffects;
     protected long bulk = 1l;
 
@@ -66,7 +66,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.System<T> {
     }
 
     @Override
-    public int getLoops() {
+    public short getLoops() {
         return this.loops;
     }
 

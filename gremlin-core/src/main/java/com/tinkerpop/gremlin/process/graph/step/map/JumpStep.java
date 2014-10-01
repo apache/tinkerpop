@@ -23,7 +23,7 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
     public Step jumpToStep;
     public final Predicate<Traverser<S>> ifPredicate;
     public final Predicate<Traverser<S>> emitPredicate;
-    public final int loops;
+    public final short loops;
     public final Compare loopComparator;
     private AtomicBoolean jumpBack;
     private boolean onGraphComputer = false;
@@ -47,7 +47,7 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
     public JumpStep(final Traversal traversal, final String jumpLabel, final Compare loopComparator, final int loops, final Predicate<Traverser<S>> emitPredicate) {
         super(traversal);
         this.jumpLabel = jumpLabel;
-        this.loops = loops;
+        this.loops = (short)loops;
         this.loopComparator = loopComparator;
         this.ifPredicate = null;
         this.emitPredicate = emitPredicate;
