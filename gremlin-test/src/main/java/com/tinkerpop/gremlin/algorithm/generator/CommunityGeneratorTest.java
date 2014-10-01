@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.algorithm.generator;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -59,7 +58,7 @@ public class CommunityGeneratorTest {
             try {
                 communityGeneratorTest(g, null);
 
-                prepareGraph(g1);
+                afterLoad(g1);
                 communityGeneratorTest(g1, null);
 
                 assertTrue(g.E().count().next() > 0);
@@ -86,7 +85,7 @@ public class CommunityGeneratorTest {
             try {
                 communityGeneratorTest(g, () -> 123456789l);
 
-                prepareGraph(g1);
+                afterLoad(g1);
                 communityGeneratorTest(g1, () -> 123456789l);
 
                 assertTrue(g.E().count().next() > 0);
@@ -105,7 +104,7 @@ public class CommunityGeneratorTest {
         }
 
         @Override
-        protected void prepareGraph(final Graph graph) throws Exception {
+        protected void afterLoad(final Graph graph) throws Exception {
             final int numNodes = numberOfVertices;
             for (int i = 0; i < numNodes; i++) graph.addVertex("oid", i);
             tryCommit(graph);
@@ -146,7 +145,7 @@ public class CommunityGeneratorTest {
 
                     graph.V().remove();
                     tryCommit(graph);
-                    prepareGraph(graph);
+                    afterLoad(graph);
                     System.out.println(String.format("Ran CommunityGeneratorTest with different CrossCommunityPercentage, expected %s but used %s", crossPcent, localCrossPcent));
                 }
             }
@@ -185,7 +184,7 @@ public class CommunityGeneratorTest {
         }
 
         @Override
-        protected void prepareGraph(final Graph graph) throws Exception {
+        protected void afterLoad(final Graph graph) throws Exception {
             final int numNodes = numberOfVertices;
             for (int i = 0; i < numNodes; i++) graph.addVertex("oid", i);
             tryCommit(graph);

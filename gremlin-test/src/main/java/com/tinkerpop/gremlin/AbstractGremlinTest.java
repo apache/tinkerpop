@@ -87,13 +87,19 @@ public abstract class AbstractGremlinTest {
             }
         }
 
+        beforeLoad(g);
+
         // load a graph with sample data if the annotation is present on the test
         if (loadGraphWiths.length > 0) graphProvider.loadGraphData(g, loadGraphWiths[0]);
 
-        prepareGraph(g);
+        afterLoad(g);
     }
 
-    protected void prepareGraph(final Graph g) throws Exception {
+    protected void beforeLoad(final Graph g) throws Exception  {
+        // do nothing
+    }
+
+    protected void afterLoad(final Graph g) throws Exception {
         // do nothing
     }
 

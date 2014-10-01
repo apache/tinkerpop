@@ -41,7 +41,7 @@ public class GraphReadPerformanceTest {
         private Set<Object> ids = new HashSet<>();
 
         @Override
-        protected void prepareGraph(final Graph g) throws Exception {
+        protected void afterLoad(final Graph g) throws Exception {
             ids.clear();
             final int numVertices = 10000;
             final Random r = new Random(854939487556l);

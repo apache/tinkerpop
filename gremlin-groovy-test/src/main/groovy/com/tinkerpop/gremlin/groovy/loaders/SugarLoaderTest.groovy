@@ -3,7 +3,9 @@ package com.tinkerpop.gremlin.groovy.loaders
 import com.tinkerpop.gremlin.AbstractGremlinTest
 import com.tinkerpop.gremlin.LoadGraphWith
 import com.tinkerpop.gremlin.process.SimpleTraverser
+import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.GraphTraversal
+import com.tinkerpop.gremlin.process.graph.marker.TraverserSource
 import com.tinkerpop.gremlin.structure.Graph
 import com.tinkerpop.gremlin.structure.Vertex
 import com.tinkerpop.gremlin.process.SimpleTraverser;
@@ -26,11 +28,13 @@ import static org.junit.Assert.*
  */
 class SugarLoaderTest extends AbstractGremlinTest {
 
-    // todo: figure out how to not "ignore" the test below
+    @Override
+    protected void afterLoad(Graph g) throws Exception {
+        clearRegistry()
+    }
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
-    @Ignore
     public void shouldNotAllowSugar() {
         clearRegistry()
         try {
@@ -64,7 +68,6 @@ class SugarLoaderTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldAllowSugar() {
-        clearRegistry()
         SugarLoader.load()
         assertEquals(g.V(), g.V)
         assertEquals(g.V().out(), g.V.out)
@@ -74,13 +77,11 @@ class SugarLoaderTest extends AbstractGremlinTest {
         assertEquals('okram', g.v(1).name);
         g.v(1)['name'] = 'marko a. rodriguez'
         assertEquals(g.v(1).values('name').toSet(), ["okram", "marko a. rodriguez"] as Set);
-        clearRegistry()
     }
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldUseTraverserCategoryCorrectly() {
-        clearRegistry()
         SugarLoader.load()
         g.V.as('a').out.as('x').name.as('b').back('x').has('age').map { [it.a, it.b, it.age] }.forEach {
             // println it;
@@ -93,8 +94,7 @@ class SugarLoaderTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void performanceTesting() {
-        clearRegistry()
-        SugarLoader.load();
+        SugarLoader.load()
 
         // warm up
         clock(5000) { g.V().both.both.both.value("name").iterate() }
@@ -149,13 +149,19 @@ class SugarLoaderTest extends AbstractGremlinTest {
 
     }
 
-    private static clearRegistry() {
-        // these calls are required to clear the metaclass registry assuming other "sugar" tests execute first
-        InvokerHelper.getMetaRegistry().removeMetaClass(Graph.class)
-        InvokerHelper.getMetaRegistry().removeMetaClass(GraphTraversal.class)
-        InvokerHelper.getMetaRegistry().removeMetaClass(PathTraverser.class)
-        InvokerHelper.getMetaRegistry().removeMetaClass(SimpleTraverser.class)
-        InvokerHelper.getMetaRegistry().removeMetaClass(Traverser.class)
+    /**
+     * Clear the metaclass registry to "turn-off" sugar.
+     */
+    private clearRegistry() {
+        def metaRegistry = InvokerHelper.getMetaRegistry()
+
+        // this call returns interfaces and removes meta clases from there.  not sure why it doesn't return
+        // concrete classes that are in the registry, but such is the nature of groovy
+        def metaClassesToRemove = metaRegistry.iterator()
+        metaClassesToRemove.collect{(Class) it.theClass}.each{ metaRegistry.removeMetaClass(it) }
+
+        // since we don't get concrete classes those must come from the GraphProvider.
+        graphProvider.getImplementations().each{ metaRegistry.removeMetaClass(it) }
     }
 
     def clock = { int loops = 100, Closure closure ->
