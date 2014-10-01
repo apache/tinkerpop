@@ -21,6 +21,12 @@ image:vertex-properties.png[width=215,float=left] TinkerPop3 introduces the conc
  . Multiple properties (*multi-properties*): a vertex property key can have multiple values (i.e. a vertex can have multiple "name" properties).
  . Properties on properties (*meta-properties*): a vertex property can have properties (i.e. a vertex property can have key/value data associated with it).
 
+A collection of use cases are itemized below:
+
+ * *Permissions*: Vertex properties can have key/value ACL-type permission information associated with them.
+ * *Auditing*: When a vertex vertex property is manipulated, it can have key/value information attached to it saying who the creator, deletor, etc. are.
+ * *Provenance*: The "name" of a vertex can be declared by multiple users.
+
 A running example using vertex properties is provided below to demonstrate and explain the API.
 
 [source,groovy]
@@ -82,15 +88,51 @@ gremlin> v.property('name')
 <5> A vertex vertex property can have any number of key/value properties attached to it.
 <6> `Vertex.singleProperty()` is a helper method that will remove all existing key'd properties before adding the new single property.
 
-A collection of use cases are itemized below:
-
- * *Permissions*: Vertex properties can have key/value ACL-type permission information associated with them.
- * *Auditing*: When a vertex vertex property is manipulated, it can have key/value information attached to it saying who the creator, deletor, etc. are.
- * *Provenance*: The "name" of a vertex can be declared by multiple users.
-
 If the concept of vertex properties is difficult to grasp, then it may be best to think of vertex properties in terms of "literal vertices." A vertex can have an edge to a "literal vertex" that has a single value key/value -- e.g. "value=okram." The edge that points to that literal vertex has an edge-label of "name." The properties on the edge represent the literal vertex's properties. The "literal vertex" can not have any other edges to it (only one from the associated vertex).
 
 NOTE: A toy graph demonstrating all of the new TinkerPop3 graph structure features is available at `TinkerFactory.createTheCrew()` and `data/tinkerpop-crew*`. This graph demonstrates multi-properties, meta-properties, hidden properties, and graph variables.
+
+image::the-crew-graph.png[width=685]
+
+[source,groovy]
+gremlin> g = TinkerFactory.createTheCrew()
+==>tinkergraph[vertices:6 edges:14]
+gremlin> g.V().as('a').properties('location').hasNot('endTime').as('b')
+          .select{it.value('name')}{it.value() + ':' + it.value('startTime')} // determine the current location of each person
+==>[a:marko, b:santa fe:2005]
+==>[a:stephen, b:purcellville:2006]
+==>[a:matthias, b:seattle:2014]
+==>[a:daniel, b:aachen:2009]
+gremlin> g.V().has('name','gremlin').inE('uses')
+          .orderBy('skill').as('a')
+          .outV().as('b')
+            .select{it.value('skill')}{it.value('name')} // rank the users of gremlin by their skill level
+==>[a:3, b:matthias]
+==>[a:4, b:marko]
+==>[a:5, b:stephen]
+==>[a:5, b:daniel]
+gremlin> g.variables() // access the global graph variables
+==>variables[size:3]
+gremlin> g.variables().get('creator')
+==>Optional[marko]
+gremlin> g.variables().get('creator').get()
+==>marko
+gremlin> g.V().has('name',g.variables().get('creator').get())
+          .properties('location').as('a')
+          .valueMap().as('b')
+            .select(['a','b']){it.value()}{it} // get the creator's vertex and for each location, get the associated properties
+==>[a:san diego, b:[startTime:1997, endTime:2001]]
+==>[a:santa cruz, b:[startTime:2001, endTime:2004]]
+==>[a:brussels, b:[startTime:2004, endTime:2005]]
+==>[a:santa fe, b:[startTime:2005]]
+gremlin> g.V().properties('visible') // hidden properties are not accessible via properties()
+gremlin> g.V().as('a').hiddens('visible').value().as('b').select(){it.value('name')}{it} // determine which vertices are visible
+==>[a:marko, b:true]
+==>[a:stephen, b:true]
+==>[a:matthias, b:true]
+==>[a:daniel, b:false]
+==>[a:gremlin, b:true]
+==>[a:tinkergraph, b:false]
 
 Hidden Properties
 -----------------
