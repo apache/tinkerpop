@@ -22,7 +22,7 @@ public class CountCapStep<S> extends SideEffectStep<S> implements SideEffectCapa
         super(traversal);
         this.setConsumer(traverser -> {
             final AtomicLong count = traverser.getSideEffects().getOrCreate(COUNT_KEY, () -> new AtomicLong(0l));
-            count.set(count.get() + ((Traverser.System) traverser).getBulk());
+            count.set(count.get() + traverser.getBulk());
             traverser.getSideEffects().set(COUNT_KEY, count);
         });
     }

@@ -33,7 +33,7 @@ public class GroupCountStep<S> extends SideEffectStep<S> implements SideEffectCa
             final Map<Object, Long> groupCountMap = traverser.getSideEffects().getOrCreate(this.sideEffectKey, HashMap::new);
             MapHelper.incr(groupCountMap,
                     null == this.preGroupFunction ? traverser.get() : this.preGroupFunction.apply(traverser),
-                    ((Traverser.System) traverser).getBulk());
+                    traverser.getBulk());
         });
     }
 

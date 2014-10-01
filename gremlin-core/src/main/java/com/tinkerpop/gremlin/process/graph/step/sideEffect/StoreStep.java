@@ -30,7 +30,7 @@ public class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable
         this.setConsumer(traverser -> {
             final Collection store = traverser.getSideEffects().getOrCreate(this.sideEffectKey, ArrayList::new);
             final Object storeObject = null == this.preStoreFunction ? traverser.get() : this.preStoreFunction.apply(traverser);
-            for (int i = 0; i < ((Traverser.System) traverser).getBulk(); i++) {
+            for (int i = 0; i < traverser.getBulk(); i++) {
                 store.add(storeObject);
             }
         });

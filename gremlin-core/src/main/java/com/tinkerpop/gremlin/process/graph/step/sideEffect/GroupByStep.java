@@ -63,7 +63,8 @@ public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEf
             values = new ArrayList<>();
             groupMap.put(key, values);
         }
-        GroupByStep.addValue(value, values);
+        for (int i = 0; i < traverser.getBulk(); i++)
+            GroupByStep.addValue(value, values);
     }
 
     private static <K, V, R> void doReduce(final Map<K, Collection<V>> groupMap, final Map<K, R> reduceMap, final Function<Collection<V>, R> reduceFunction) {

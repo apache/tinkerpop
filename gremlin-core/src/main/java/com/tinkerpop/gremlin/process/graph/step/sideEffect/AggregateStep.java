@@ -26,7 +26,6 @@ import java.util.function.Function;
 public class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCapable, Reversible, Barrier, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
 
     public final Function<Traverser<S>, ?> preAggregateFunction;
-    ;
     final Queue<Traverser.System<S>> aggregateTraversers = new LinkedList<>();
     private final String sideEffectKey;
 
