@@ -16,13 +16,18 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
 
     public PathTraverser(final T t, final Traversal.SideEffects sideEffects) {
         super(t, sideEffects);
-        this.sideEffects = new PathAwareSideEffects(this.path, this.sideEffects);
     }
 
     public PathTraverser(final String as, final T t, final Traversal.SideEffects sideEffects) {
         super(t, sideEffects);
         this.path.add(as, t);
-        this.sideEffects = new PathAwareSideEffects(this.path, this.sideEffects);
+    }
+
+    @Override
+    public Traversal.SideEffects getSideEffects() {
+        if (!(this.sideEffects instanceof PathAwareSideEffects))
+            this.sideEffects = new PathAwareSideEffects(this.path, this.sideEffects);
+        return this.sideEffects;
     }
 
     @Override
