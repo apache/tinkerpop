@@ -28,6 +28,7 @@
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
             <version>${groovy.version}</version>
+            <classifier>indy</classifier>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
