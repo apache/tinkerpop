@@ -528,14 +528,13 @@ gremlin> g.V().value('name').order(comparing{it.get()[1]}) // order by the secon
 ==>lop
 ==>josh
 gremlin> g.V().value('name').
-           order(comparing{it.get()[1]}.thenComparing((Function){it.get()[2]})) // order by second letters and if a tie, the third letter
+           order(comparing{it.get()[1]}.thenComparing((Function){it.get()[2]})) // order by second letter and if a tie, the third letter
 ==>vadas
 ==>marko
 ==>peter
 ==>ripple
 ==>lop
 ==>josh
-
 
 [[orderby-step]]
 OrderBy Step
