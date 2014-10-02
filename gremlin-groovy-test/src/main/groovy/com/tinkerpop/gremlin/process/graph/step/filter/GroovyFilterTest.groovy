@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyFilterTest {
 
-    public static class StandardTest extends FilterTest {
+    public static class StandardTestImpl extends FilterTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXfalseX() {
@@ -53,7 +53,7 @@ public abstract class GroovyFilterTest {
         }
     }
 
-    public static class ComputerTest extends FilterTest {
+    public static class ComputerTestImpl extends FilterTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXfalseX() {

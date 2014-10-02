@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyRandomTest {
 
-    public static class StandardTest extends RandomTest {
+    public static class StandardTestImpl extends RandomTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_randomX1X() {
@@ -22,7 +22,7 @@ public abstract class GroovyRandomTest {
         }
     }
 
-    public static class ComputerTest extends RandomTest {
+    public static class ComputerTestImpl extends RandomTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_randomX1X() {

@@ -13,7 +13,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyHasTest {
 
-    public static class StandardTest extends HasTest {
+    public static class StandardTestImpl extends HasTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_hasXkeyX(final Object v1Id, final String key) {
@@ -86,7 +86,7 @@ public abstract class GroovyHasTest {
         }
     }
 
-    public static class ComputerTest extends HasTest {
+    public static class ComputerTestImpl extends HasTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_hasXkeyX(final Object v1Id, final String key) {

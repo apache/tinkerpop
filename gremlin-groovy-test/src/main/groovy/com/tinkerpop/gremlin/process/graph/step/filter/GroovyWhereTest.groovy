@@ -11,7 +11,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyWhereTest {
 
-    public static class StandardTest extends WhereTest {
+    public static class StandardTestImpl extends WhereTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX() {
             g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', Compare.eq, 'b');
@@ -33,7 +33,7 @@ public abstract class GroovyWhereTest {
         }
     }
 
-    public static class ComputerTest extends WhereTest {
+    public static class ComputerTestImpl extends WhereTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX() {
             ComputerTestHelper.compute("g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', Compare.eq, 'b')", g);

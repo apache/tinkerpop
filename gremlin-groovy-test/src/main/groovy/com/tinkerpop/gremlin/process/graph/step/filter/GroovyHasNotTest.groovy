@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyHasNotTest {
 
-    public static class StandardTest extends HasNotTest {
+    public static class StandardTestImpl extends HasNotTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String key) {
             g.v(v1Id).hasNot(key)
@@ -21,7 +21,7 @@ public abstract class GroovyHasNotTest {
         }
     }
 
-    public static class ComputerTest extends HasNotTest {
+    public static class ComputerTestImpl extends HasNotTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String key) {
            ComputerTestHelper.compute("g.v(${v1Id}).hasNot('${key}')",g);

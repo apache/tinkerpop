@@ -12,7 +12,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyDedupTest {
 
-    public static class StandardTest extends DedupTest {
+    public static class StandardTestImpl extends DedupTest {
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedup_name() {
             g.V.both.dedup.value('name')
@@ -29,7 +29,7 @@ public abstract class GroovyDedupTest {
         }
     }
 
-    public static class ComputerTest extends DedupTest {
+    public static class ComputerTestImpl extends DedupTest {
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedup_name() {
             ComputerTestHelper.compute("g.V.both.dedup.name", g);

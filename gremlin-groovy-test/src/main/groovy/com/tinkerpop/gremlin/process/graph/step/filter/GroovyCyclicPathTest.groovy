@@ -23,7 +23,7 @@ public abstract class GroovyCyclicPathTest {
         }
     }
 
-    public static class ComputerTest extends CyclicPathTest {
+    public static class ComputerTestImpl extends CyclicPathTest {
 
         @Override
         Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(final Object v1) {

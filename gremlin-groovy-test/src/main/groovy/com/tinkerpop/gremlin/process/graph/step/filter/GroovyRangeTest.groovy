@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyRangeTest {
 
-    public static class StandardTest extends RangeTest {
+    public static class StandardTestImpl extends RangeTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_rangeX0_1X(final Object v1Id) {
@@ -42,7 +42,7 @@ public abstract class GroovyRangeTest {
         }
     }
 
-    public static class ComputerTest extends RangeTest {
+    public static class ComputerTestImpl extends RangeTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_rangeX0_1X(final Object v1Id) {

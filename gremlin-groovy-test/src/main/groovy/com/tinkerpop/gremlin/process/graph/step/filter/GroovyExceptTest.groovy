@@ -12,7 +12,7 @@ import org.junit.Ignore
  */
 public abstract class GroovyExceptTest {
 
-    public static class StandardTest extends ExceptTest {
+    public static class StandardTestImpl extends ExceptTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_exceptXg_v2X(final Object v1Id, final Object v2Id) {
@@ -46,7 +46,7 @@ public abstract class GroovyExceptTest {
         }
     }
 
-    public static class ComputerTest extends ExceptTest {
+    public static class ComputerTestImpl extends ExceptTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_exceptXg_v2X(final Object v1Id, final Object v2Id) {

@@ -48,18 +48,18 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
     private static final Class<?>[] testsToExecute = new Class<?>[]{
             GroovyGraphComputerTest.ComputerTest.class,
             // filter
-            GroovyCyclicPathTest.ComputerTest.class,
+            GroovyCyclicPathTest.ComputerTestImpl.class,
             // TODO: GroovyDedupTest.ComputerTest.class
             // TODO: GroovyExceptTest.ComputerTest.class,
-            GroovyFilterTest.ComputerTest.class,
-            GroovyHasNotTest.ComputerTest.class,
-            GroovyHasTest.ComputerTest.class,
-            GroovyIntervalTest.ComputerTest.class,
-            GroovyRandomTest.ComputerTest.class,
+            GroovyFilterTest.ComputerTestImpl.class,
+            GroovyHasNotTest.ComputerTestImpl.class,
+            GroovyHasTest.ComputerTestImpl.class,
+            GroovyIntervalTest.ComputerTestImpl.class,
+            GroovyRandomTest.ComputerTestImpl.class,
             // TODO: GroovyRangeTest.ComputerTest.class,
             // TODO: GroovyRetainTest.ComputerTest.class,
-            GroovySimplePathTest.ComputerTest.class,
-            GroovyWhereTest.ComputerTest.class,
+            GroovySimplePathTest.ComputerTestImpl.class,
+            GroovyWhereTest.ComputerTestImpl.class,
 
             // map
             GroovyBackTest.ComputerTest.class,
