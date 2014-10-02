@@ -73,7 +73,7 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
         final ScriptEngine engineWithImports = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider());
         engineWithImports.put("g", g);
         assertEquals(Vertex.class.getName(), engineWithImports.eval("Vertex.class.getName()"));
-        assertEquals(2l, engineWithImports.eval("g.V().has('age',T.gt,30).count().next()"));
+        assertEquals(2l, engineWithImports.eval("g.V().has('age',Compare.gt,30).count().next()"));
         assertEquals(Direction.IN, engineWithImports.eval("Direction.IN"));
         assertEquals(Direction.OUT, engineWithImports.eval("Direction.OUT"));
         assertEquals(Direction.BOTH, engineWithImports.eval("Direction.BOTH"));
@@ -86,7 +86,7 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider());
         engine.put("g", g);
         assertEquals(Vertex.class.getName(), engine.eval("Vertex.class.getName()"));
-        assertEquals(2l, engine.eval("g.V().has('age',T.gt,30).count().next()"));
+        assertEquals(2l, engine.eval("g.V().has('age',Compare.gt,30).count().next()"));
         assertEquals(Direction.IN, engine.eval("Direction.IN"));
         assertEquals(Direction.OUT, engine.eval("Direction.OUT"));
         assertEquals(Direction.BOTH, engine.eval("Direction.BOTH"));
@@ -102,7 +102,7 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
         engine.put("g", g);
         assertEquals(YamlConfiguration.class.getName(), engine.eval("YamlConfiguration.class.getName()"));
         assertEquals(Vertex.class.getName(), engine.eval("Vertex.class.getName()"));
-        assertEquals(2l, engine.eval("g.V().has('age',T.gt,30).count().next()"));
+        assertEquals(2l, engine.eval("g.V().has('age',Compare.gt,30).count().next()"));
         assertEquals(Direction.IN, engine.eval("Direction.IN"));
         assertEquals(Direction.OUT, engine.eval("Direction.OUT"));
         assertEquals(Direction.BOTH, engine.eval("Direction.BOTH"));
