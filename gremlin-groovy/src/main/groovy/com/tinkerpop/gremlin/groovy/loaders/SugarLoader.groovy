@@ -12,32 +12,6 @@ import com.tinkerpop.gremlin.structure.*
  */
 class SugarLoader {
 
-    public void loadIt() {
-
-        new GremlinLoader().loadIt();
-
-        [Traverser, PathTraverser, SimpleTraverser].forEach {
-            it.metaClass.getProperty = { final String key ->
-                TraverserCategory.get((Traverser) delegate, key);
-            }
-            // g.V.map{it.label()}
-            it.metaClass.methodMissing = { final String name, final def args ->
-                ((Traverser) delegate).get()."$name"(*args);
-            }
-        }
-
-        GraphTraversal.metaClass.methodMissing = { final String name, final def args ->
-            ((GraphTraversal) delegate).value(name);
-        }
-
-        Traverser.metaClass.mixin(TraverserCategory.class);
-        GraphTraversal.metaClass.mixin(GraphTraversalCategory.class);
-        Graph.metaClass.mixin(GraphCategory.class);
-        Vertex.metaClass.mixin(VertexCategory.class);
-        Edge.metaClass.mixin(ElementCategory.class);
-        VertexProperty.metaClass.mixin(ElementCategory.class);
-    }
-
     public static void load() {
 
         GremlinLoader.load();

@@ -27,12 +27,6 @@ class GremlinLoader {
         }
     }
 
-    public void loadIt() {
-        new GraphLoader().load()
-        new ObjectLoader().load()
-        new StepLoader().load()
-    }
-
     public static void load() {
         GraphLoader.load()
         ObjectLoader.load()
