@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyCyclicPathTest {
 
-    public static class StandardTest extends CyclicPathTest {
+    public static class StandardTestImpl extends CyclicPathTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(final Object v1Id) {
