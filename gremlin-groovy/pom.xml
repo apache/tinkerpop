@@ -30,6 +30,7 @@
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
             <version>${groovy.version}</version>
+            <classifier>indy</classifier>
         </dependency>
         <dependency>
             <groupId>jline</groupId>
@@ -125,6 +126,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <invokeDynamic>true</invokeDynamic>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
