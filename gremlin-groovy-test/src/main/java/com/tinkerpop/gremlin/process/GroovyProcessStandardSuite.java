@@ -49,7 +49,7 @@ import org.junit.runners.model.RunnerBuilder;
 public class GroovyProcessStandardSuite extends ProcessStandardSuite {
 
     static {
-        SugarLoader.load();
+        new SugarLoader().loadIt();
     }
 
     /**

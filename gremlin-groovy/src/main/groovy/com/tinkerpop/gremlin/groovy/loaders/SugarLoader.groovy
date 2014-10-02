@@ -14,7 +14,7 @@ class SugarLoader {
 
     public void loadIt() {
 
-        GremlinLoader.load();
+        new GremlinLoader().loadIt();
 
         [Traverser, PathTraverser, SimpleTraverser].forEach {
             it.metaClass.getProperty = { final String key ->
