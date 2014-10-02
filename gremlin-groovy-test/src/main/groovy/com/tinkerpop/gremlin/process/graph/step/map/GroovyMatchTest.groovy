@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.map
 
 import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
+import com.tinkerpop.gremlin.structure.Compare
 import com.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -142,7 +143,7 @@ public abstract class GroovyMatchTest {
             g.V().match('a',
                     g.of().as('a').out('created').as('b'),
                     g.of().as('b').in('created').as('c'))
-                    .where('a', T.neq, 'c')
+                    .where('a', Compare.neq, 'c')
                     .select(['a', 'c']) { it.name }
         }
 
