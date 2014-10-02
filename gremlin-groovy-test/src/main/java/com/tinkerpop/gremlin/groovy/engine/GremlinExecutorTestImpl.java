@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.groovy.engine;
 
-import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTest;
+import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTestImpl;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -31,7 +31,7 @@ import static org.junit.Assert.fail;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinExecutorTest {
+public class GremlinExecutorTestImpl {
     @Test
     public void shouldEvalScript() throws Exception {
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
@@ -264,7 +264,7 @@ public class GremlinExecutorTest {
                 .addEngineSettings("gremlin-groovy",
                         Collections.emptyList(),
                         Collections.emptyList(),
-                        Arrays.asList(new File(GremlinExecutorTest.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()),
+                        Arrays.asList(new File(GremlinExecutorTestImpl.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()),
                         Collections.emptyMap())
                 .create();
 
@@ -278,12 +278,12 @@ public class GremlinExecutorTest {
     public void shouldSecureAll() throws Exception {
         GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
         final Map<String,Object> config = new HashMap<>();
-        config.put("sandbox", GremlinGroovyScriptEngineTest.DenyAll.class.getName());
+        config.put("sandbox", GremlinGroovyScriptEngineTestImpl.DenyAll.class.getName());
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .addEngineSettings("gremlin-groovy",
                         Collections.emptyList(),
                         Collections.emptyList(),
-                        Arrays.asList(new File(GremlinExecutorTest.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()),
+                        Arrays.asList(new File(GremlinExecutorTestImpl.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()),
                         config)
                 .create();
         try {
@@ -303,12 +303,12 @@ public class GremlinExecutorTest {
     public void shouldSecureSome() throws Exception {
         GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
         final Map<String,Object> config = new HashMap<>();
-        config.put("sandbox", GremlinGroovyScriptEngineTest.AllowSome.class.getName());
+        config.put("sandbox", GremlinGroovyScriptEngineTestImpl.AllowSome.class.getName());
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .addEngineSettings("gremlin-groovy",
                         Collections.emptyList(),
                         Collections.emptyList(),
-                        Arrays.asList(new File(GremlinExecutorTest.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()),
+                        Arrays.asList(new File(GremlinExecutorTestImpl.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()),
                         config)
                 .create();
         try {
@@ -338,7 +338,7 @@ public class GremlinExecutorTest {
                 .addEngineSettings("gremlin-groovy",
                         Collections.emptyList(),
                         Collections.emptyList(),
-                        Arrays.asList(new File(GremlinExecutorTest.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()),
+                        Arrays.asList(new File(GremlinExecutorTestImpl.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()),
                         Collections.emptyMap())
                 .create();
 

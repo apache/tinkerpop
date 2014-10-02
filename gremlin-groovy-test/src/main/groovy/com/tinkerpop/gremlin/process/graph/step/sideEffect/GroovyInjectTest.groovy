@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyInjectTest {
 
-    public static class StandardTest extends InjectTest {
+    public static class StandardTestImpl extends InjectTest {
         @Override
         public Traversal<Vertex, String> get_g_v1_out_injectXv2X_name(final Object v1Id, final Object v2Id) {
             g.v(v1Id).out.inject(g.v(v2Id)).name
@@ -21,7 +21,7 @@ public abstract class GroovyInjectTest {
         }
     }
 
-    public static class ComputerTest extends InjectTest {
+    public static class ComputerTestImpl extends InjectTest {
         @Override
         public Traversal<Vertex, String> get_g_v1_out_injectXv2X_name(final Object v1Id, final Object v2Id) {
             g.v(v1Id).out.inject(g.v(v2Id)).name

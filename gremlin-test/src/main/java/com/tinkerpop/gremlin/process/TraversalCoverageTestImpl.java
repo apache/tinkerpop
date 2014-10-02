@@ -18,7 +18,7 @@ import static org.junit.Assert.fail;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalCoverageTest extends AbstractGremlinProcessTest {
+public class TraversalCoverageTestImpl extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(CLASSIC)

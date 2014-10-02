@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyGroupCountTest {
 
-    public static class StandardTest extends GroupCountTest {
+    public static class StandardTestImpl extends GroupCountTest {
 
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_groupCountXnameX() {
@@ -42,7 +42,7 @@ public abstract class GroovyGroupCountTest {
         }
     }
 
-    public static class ComputerTest extends GroupCountTest {
+    public static class ComputerTestImpl extends GroupCountTest {
 
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_groupCountXnameX() {

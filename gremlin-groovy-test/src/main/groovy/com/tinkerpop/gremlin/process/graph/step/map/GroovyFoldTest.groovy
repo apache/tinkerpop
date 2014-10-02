@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyFoldTest {
 
-    public static class StandardTest extends FoldTest {
+    public static class StandardTestImpl extends FoldTest {
         @Override
         public Traversal<Vertex, List<Vertex>> get_g_V_fold() {
             g.V.fold

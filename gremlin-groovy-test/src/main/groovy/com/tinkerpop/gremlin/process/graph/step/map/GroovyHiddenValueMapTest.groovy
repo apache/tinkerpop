@@ -9,9 +9,9 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyHiddenValueMapTest {
 
-    public static class StandardTest extends HiddenValueMapTest {
+    public static class StandardTestImpl extends HiddenValueMapTest {
 
-        public StandardTest() {
+        public StandardTestImpl() {
             requiresGraphComputer = false;
         }
 
@@ -27,7 +27,7 @@ public abstract class GroovyHiddenValueMapTest {
 
     }
 
-    public static class ComputerTest extends HiddenValueMapTest {
+    public static class ComputerTestImpl extends HiddenValueMapTest {
 
         public StandardTest() {
             requiresGraphComputer = true;

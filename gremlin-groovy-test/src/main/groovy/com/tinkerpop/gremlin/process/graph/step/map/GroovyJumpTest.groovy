@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyJumpTest {
 
-    public static class StandardTest extends JumpTest {
+    public static class StandardTestImpl extends JumpTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(final Object v1Id) {
@@ -74,7 +74,7 @@ public abstract class GroovyJumpTest {
         }
     }
 
-    public static class ComputerTest extends JumpTest {
+    public static class ComputerTestImpl extends JumpTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(final Object v1Id) {

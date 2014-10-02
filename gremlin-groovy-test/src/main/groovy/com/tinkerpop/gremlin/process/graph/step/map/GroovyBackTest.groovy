@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyBackTest {
 
-    public static class StandardTest extends BackTest {
+    public static class StandardTestImpl extends BackTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_asXhereX_out_backXhereX(final Object v1Id) {
@@ -57,7 +57,7 @@ public abstract class GroovyBackTest {
         }
     }
 
-    public static class ComputerTest extends BackTest {
+    public static class ComputerTestImpl extends BackTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_asXhereX_out_backXhereX(final Object v1Id) {

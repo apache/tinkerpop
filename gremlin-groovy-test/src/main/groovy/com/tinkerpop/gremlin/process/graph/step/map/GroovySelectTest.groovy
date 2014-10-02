@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovySelectTest {
 
-    public static class StandardTest extends SelectTest {
+    public static class StandardTestImpl extends SelectTest {
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
@@ -48,7 +48,7 @@ public abstract class GroovySelectTest {
         }
     }
 
-    public static class ComputerTest extends SelectTest {
+    public static class ComputerTestImpl extends SelectTest {
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id) {

@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyCountTest {
 
-    public static class StandardTest extends CountTest {
+    public static class StandardTestImpl extends CountTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_count() {
             g.V.count()
@@ -31,7 +31,7 @@ public abstract class GroovyCountTest {
         }
     }
 
-    public static class ComputerTest extends CountTest {
+    public static class ComputerTestImpl extends CountTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_count() {
             ComputerTestHelper.compute("g.V.count()", g)

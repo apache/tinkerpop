@@ -123,11 +123,11 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             TreeTest.StandardTest.class,
 
             // util
-            TraversalSideEffectsTest.StandardTest.class,
+            TraversalSideEffectsTest.StandardTestImpl.class,
 
             // compliance
-            TraversalCoverageTest.class,
-            CoreTraversalTest.class,
+            TraversalCoverageTestImpl.class,
+            CoreTraversalTestImpl.class,
 
             // algorithms
             // PageRankVertexProgramTest.class
@@ -189,8 +189,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             TraversalSideEffectsTest.class,
 
             // compliance
-            TraversalCoverageTest.class,
-            CoreTraversalTest.class
+            TraversalCoverageTestImpl.class,
+            CoreTraversalTestImpl.class
     };
 
     /**

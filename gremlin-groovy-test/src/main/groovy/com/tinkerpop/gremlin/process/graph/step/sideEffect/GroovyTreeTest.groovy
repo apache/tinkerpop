@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyTreeTest {
 
-    public static class StandardTest extends TreeTest {
+    public static class StandardTestImpl extends TreeTest {
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_treeXidX() {
@@ -38,7 +38,7 @@ public abstract class GroovyTreeTest {
         }
     }
 
-    public static class ComputerTest extends TreeTest {
+    public static class ComputerTestImpl extends TreeTest {
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_treeXidX() {

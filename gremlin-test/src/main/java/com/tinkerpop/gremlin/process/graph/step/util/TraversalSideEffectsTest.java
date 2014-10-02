@@ -28,8 +28,8 @@ public abstract class TraversalSideEffectsTest extends AbstractGremlinProcessTes
         assertTrue(Graph.class.isAssignableFrom(sideEffects.getGraph().getClass()));
     }
 
-    public static class StandardTest extends TraversalSideEffectsTest {
-        public StandardTest() {
+    public static class StandardTestImpl extends TraversalSideEffectsTest {
+        public StandardTestImpl() {
             requiresGraphComputer = false;
         }
 

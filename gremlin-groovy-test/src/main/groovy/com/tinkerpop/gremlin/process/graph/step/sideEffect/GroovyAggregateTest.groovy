@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyAggregateTest {
 
-    public static class StandardTest extends AggregateTest {
+    public static class StandardTestImpl extends AggregateTest {
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_valueXnameX_aggregate() {
@@ -28,7 +28,7 @@ public abstract class GroovyAggregateTest {
         }
     }
 
-    public static class ComputerTest extends AggregateTest {
+    public static class ComputerTestImpl extends AggregateTest {
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_valueXnameX_aggregate() {

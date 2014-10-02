@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyStoreTest {
 
-    public static class StandardTest extends StoreTest {
+    public static class StandardTestImpl extends StoreTest {
 
         @Override
         public Traversal<Vertex, Collection> get_g_V_storeXa_nameX_out_capXaX() {
@@ -27,7 +27,7 @@ public abstract class GroovyStoreTest {
         }
     }
 
-    public static class ComputerTest extends StoreTest {
+    public static class ComputerTestImpl extends StoreTest {
 
         @Override
         public Traversal<Vertex, Collection> get_g_V_storeXa_nameX_out_capXaX() {

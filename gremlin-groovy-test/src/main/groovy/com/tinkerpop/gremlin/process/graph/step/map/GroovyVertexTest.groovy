@@ -12,7 +12,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyVertexTest {
 
-    public static class StandardTest extends VertexTest {
+    public static class StandardTestImpl extends VertexTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V() {
@@ -175,7 +175,7 @@ public abstract class GroovyVertexTest {
         }
     }
 
-    public static class ComputerTest extends VertexTest {
+    public static class ComputerTestImpl extends VertexTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V() {

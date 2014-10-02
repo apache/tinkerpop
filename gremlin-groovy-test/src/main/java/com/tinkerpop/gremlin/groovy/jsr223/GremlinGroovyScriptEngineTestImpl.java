@@ -45,7 +45,7 @@ import static org.junit.Assert.fail;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
+public class GremlinGroovyScriptEngineTestImpl extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)

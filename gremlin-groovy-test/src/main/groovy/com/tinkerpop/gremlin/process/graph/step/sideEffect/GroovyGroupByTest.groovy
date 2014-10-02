@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyGroupByTest {
 
-    public static class StandardTest extends GroupByTest {
+    public static class StandardTestImpl extends GroupByTest {
 
         @Override
         public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_groupByXnameX() {
@@ -37,7 +37,7 @@ public abstract class GroovyGroupByTest {
         }
     }
 
-    public static class ComputerTest extends GroupByTest {
+    public static class ComputerTestImpl extends GroupByTest {
 
         @Override
         public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_groupByXnameX() {

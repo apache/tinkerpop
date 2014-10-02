@@ -62,33 +62,33 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyWhereTest.ComputerTestImpl.class,
 
             // map
-            GroovyBackTest.ComputerTest.class,
+            GroovyBackTest.ComputerTestImpl.class,
             // TODO: GroovyChooseTest.ComputerTest.class,
             // TODO: GroovyFoldTest.ComputerTest.class,
-            GroovyHiddenValueMapTest.ComputerTest.class,
-            GroovyJumpTest.ComputerTest.class,
-            GroovyMapTest.ComputerTest.class,
+            GroovyHiddenValueMapTest.ComputerTestImpl.class,
+            GroovyJumpTest.ComputerTestImpl.class,
+            GroovyMapTest.ComputerTestImpl.class,
             // TODO: GroovyMatchTest.ComputerTest.class,
             // TODO: GroovyOrderByTest.ComputerTest.class,
             // TODO: GroovyOrderTest.ComputerTest.class,
-            GroovyPathTest.ComputerTest.class,
-            GroovySelectTest.ComputerTest.class,
-            GroovyUnfoldTest.ComputerTest.class,
+            GroovyPathTest.ComputerTestImpl.class,
+            GroovySelectTest.ComputerTestImpl.class,
+            GroovyUnfoldTest.ComputerTestImpl.class,
             // TODO: GroovyUnionTest.ComputerTest.class,
-            GroovyUntilTest.ComputerTest.class,
-            GroovyValueMapTest.ComputerTest.class,
-            GroovyVertexTest.ComputerTest.class,
+            GroovyUntilTest.ComputerTestImpl.class,
+            GroovyValueMapTest.ComputerTestImpl.class,
+            GroovyVertexTest.ComputerTestImpl.class,
 
             // sideEffect
             // TODO: GroovyAddEdgeTest.ComputerTest.class,
-            GroovyAggregateTest.ComputerTest.class,
-            GroovyCountTest.ComputerTest.class,
-            GroovyGroupByTest.ComputerTest.class,
-            GroovyGroupCountTest.ComputerTest.class,
-            GroovyInjectTest.ComputerTest.class,
-            GroovySideEffectCapTest.ComputerTest.class,
-            GroovyStoreTest.ComputerTest.class,
-            GroovyTreeTest.ComputerTest.class
+            GroovyAggregateTest.ComputerTestImpl.class,
+            GroovyCountTest.ComputerTestImpl.class,
+            GroovyGroupByTest.ComputerTestImpl.class,
+            GroovyGroupCountTest.ComputerTestImpl.class,
+            GroovyInjectTest.ComputerTestImpl.class,
+            GroovySideEffectCapTest.ComputerTestImpl.class,
+            GroovyStoreTest.ComputerTestImpl.class,
+            GroovyTreeTest.ComputerTestImpl.class
     };
 
 

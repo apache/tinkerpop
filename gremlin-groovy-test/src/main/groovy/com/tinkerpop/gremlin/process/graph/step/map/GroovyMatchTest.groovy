@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyMatchTest {
 
-    public static class StandardTest extends MatchTest {
+    public static class StandardTestImpl extends MatchTest {
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_out_bX() {

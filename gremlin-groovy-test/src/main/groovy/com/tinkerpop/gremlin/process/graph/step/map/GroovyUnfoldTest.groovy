@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 class GroovyUnfoldTest {
 
-    public static class StandardTest extends UnfoldTest {
+    public static class StandardTestImpl extends UnfoldTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_mapXoutEX_unfold() {
@@ -23,7 +23,7 @@ class GroovyUnfoldTest {
         }
     }
 
-    public static class ComputerTest extends UnfoldTest {
+    public static class ComputerTestImpl extends UnfoldTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_mapXoutEX_unfold() {

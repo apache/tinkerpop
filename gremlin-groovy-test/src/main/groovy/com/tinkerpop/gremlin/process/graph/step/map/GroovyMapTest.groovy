@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 class GroovyMapTest {
 
-    public static class StandardTest extends MapTest {
+    public static class StandardTestImpl extends MapTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_mapXnameX(final Object v1Id) {
@@ -37,7 +37,7 @@ class GroovyMapTest {
         }
     }
 
-    public static class ComputerTest extends MapTest {
+    public static class ComputerTestImpl extends MapTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_mapXnameX(final Object v1Id) {

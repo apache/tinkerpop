@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyChooseTest {
 
-    public static class StandardTest extends ChooseTest {
+    public static class StandardTestImpl extends ChooseTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name() {

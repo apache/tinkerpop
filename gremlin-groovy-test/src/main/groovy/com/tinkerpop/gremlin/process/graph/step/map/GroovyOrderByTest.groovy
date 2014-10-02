@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyOrderByTest {
 
-    public static class StandardTest extends OrderByTest {
+    public static class StandardTestImpl extends OrderByTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_orderByXname_incrX_name() {

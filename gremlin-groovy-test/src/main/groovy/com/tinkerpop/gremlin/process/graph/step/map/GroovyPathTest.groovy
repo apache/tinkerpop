@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyPathTest {
 
-    public static class StandardTest extends PathTest {
+    public static class StandardTestImpl extends PathTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_v1_valueXnameX_path(final Object v1Id) {
@@ -38,7 +38,7 @@ public abstract class GroovyPathTest {
         }
     }
 
-    public static class ComputerTest extends PathTest {
+    public static class ComputerTestImpl extends PathTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_v1_valueXnameX_path(final Object v1Id) {

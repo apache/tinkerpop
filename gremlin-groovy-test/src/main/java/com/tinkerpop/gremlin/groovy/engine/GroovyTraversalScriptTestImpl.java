@@ -13,7 +13,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroovyTraversalScriptTest extends AbstractGremlinTest {
+public class GroovyTraversalScriptTestImpl extends AbstractGremlinTest {
 
     // todo: review for other required features???
 

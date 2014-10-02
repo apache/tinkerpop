@@ -15,7 +15,7 @@ import static org.junit.Assert.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CoreTraversalTest extends AbstractGremlinProcessTest {
+public class CoreTraversalTestImpl extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)

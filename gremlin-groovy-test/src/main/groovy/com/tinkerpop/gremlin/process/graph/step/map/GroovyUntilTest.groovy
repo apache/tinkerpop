@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyUntilTest {
 
-    public static class StandardTest extends UntilTest {
+    public static class StandardTestImpl extends UntilTest {
         public Traversal<Vertex, String> get_g_v1_untilXa_loops_gt_1X_out_asXaX_valueXnameX(final Object v1Id) {
             g.v(v1Id).until('a') { it.loops > 1 }.out.as('a').name
         }
@@ -31,7 +31,7 @@ public abstract class GroovyUntilTest {
         }
     }
 
-    public static class ComputerTest extends UntilTest {
+    public static class ComputerTestImpl extends UntilTest {
         public Traversal<Vertex, String> get_g_v1_untilXa_loops_gt_1X_out_asXaX_valueXnameX(final Object v1Id) {
             ComputerTestHelper.compute("g.v(${v1Id}).until('a') { it.loops > 1 }.out.as('a').name", g)
         }
