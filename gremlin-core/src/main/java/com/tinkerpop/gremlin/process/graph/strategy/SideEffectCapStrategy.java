@@ -18,7 +18,7 @@ public class SideEffectCapStrategy implements TraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal traversal) {
+    public void apply(final Traversal<?,?> traversal) {
         final Step endStep = TraversalHelper.getEnd(traversal);
         if (endStep instanceof SideEffectCapable && !(endStep instanceof SideEffectCapStep)) {
             traversal.cap();

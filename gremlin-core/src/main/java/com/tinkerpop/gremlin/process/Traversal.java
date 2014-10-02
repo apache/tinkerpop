@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.strategy.GraphComputerStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.GraphStandardStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -49,6 +50,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
     public default void prepareForGraphComputer() {
         this.sideEffects().removeGraph();
         this.strategies().unregister(TraverserSourceStrategy.class);
+        this.strategies().unregister(GraphStandardStrategy.class);
         this.strategies().register(GraphComputerStrategy.instance());
     }
 

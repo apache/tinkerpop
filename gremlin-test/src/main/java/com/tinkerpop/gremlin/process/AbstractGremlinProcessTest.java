@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
@@ -43,7 +44,11 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
         final List<T> results = traversal.toList();
         assertEquals("Checking result size", expectedResults.size(), results.size());
         for (T t : results) {
-            assertTrue("Checking result existence", expectedResults.contains(t));
+            if (t instanceof Map) {
+                assertTrue("Checking map result existence: " + t, expectedResults.stream().filter(e -> e instanceof Map).filter(e -> checkMap((Map) e, (Map) t)).findFirst().isPresent());
+            } else {
+                assertTrue("Checking result existence: " + t, expectedResults.contains(t));
+            }
         }
         final Map<T, Long> expectedResultsCount = new HashMap<>();
         final Map<T, Long> resultsCount = new HashMap<>();
@@ -62,5 +67,38 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
             }
         });
         checkResults(list, traversal);
+    }
+
+    private <A, B> boolean checkMap(final Map<A, B> expectedMap, final Map<A, B> actualMap) {
+        final List<Map.Entry<A, B>> actualList = actualMap.entrySet().stream().sorted((a, b) -> a.getKey().toString().compareTo(b.getKey().toString())).collect(Collectors.toList());
+        final List<Map.Entry<A, B>> expectedList = expectedMap.entrySet().stream().sorted((a, b) -> a.getKey().toString().compareTo(b.getKey().toString())).collect(Collectors.toList());
+
+        if (expectedList.size() > actualList.size()) {
+            return false;
+        } else if (actualList.size() > expectedList.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < actualList.size(); i++) {
+            if (!actualList.get(i).getKey().equals(expectedList.get(i).getKey())) {
+                return false;
+            }
+            if (!actualList.get(i).getValue().equals(expectedList.get(i).getValue())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public <A, B> List<Map<A, B>> makeMapList(final int size, final Object... keyValues) {
+        final List<Map<A, B>> mapList = new ArrayList<>();
+        for (int i = 0; i < keyValues.length; i = i + (2 * size)) {
+            final Map<A, B> map = new HashMap<>();
+            for (int j = 0; j < (2 * size); j = j + 2) {
+                map.put((A) keyValues[i + j], (B) keyValues[i + j + 1]);
+            }
+            mapList.add(map);
+        }
+        return mapList;
     }
 }

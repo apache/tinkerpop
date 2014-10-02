@@ -35,7 +35,7 @@ public class UntilStep<S> extends MapStep<S, S> {
 
     public String toString() {
         return this.loops != -1 ?
-                TraversalHelper.makeStepString(this, this.breakLabel, Compare.GREATER_THAN.asString() + this.loops) :
+                TraversalHelper.makeStepString(this, this.breakLabel, Compare.gt.asString() + this.loops) :
                 TraversalHelper.makeStepString(this, this.breakLabel);
     }
 }

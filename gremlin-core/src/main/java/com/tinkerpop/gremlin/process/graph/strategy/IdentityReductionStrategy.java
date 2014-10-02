@@ -17,7 +17,7 @@ public class IdentityReductionStrategy implements TraversalStrategy.NoDependenci
     }
 
     @Override
-    public void apply(final Traversal traversal) {
+    public void apply(final Traversal<?,?> traversal) {
         TraversalHelper.getStepsOfClass(IdentityStep.class, traversal)
                 .stream()
                 .filter(step -> !TraversalHelper.isLabeled(step))

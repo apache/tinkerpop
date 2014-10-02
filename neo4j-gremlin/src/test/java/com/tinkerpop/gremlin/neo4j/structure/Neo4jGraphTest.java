@@ -372,7 +372,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             });
             d.property("name", "daniel", "acl", "private");
             tryCommit(g, g -> {
-                assertEquals(d.id(), g.V().has("person", "name", Contains.IN, Arrays.asList("daniel", "kuppitz")).id().next());
+                assertEquals(d.id(), g.V().has("person", "name", Contains.in, Arrays.asList("daniel", "kuppitz")).id().next());
                 assertEquals(d.id(), g.V().has("person", "name", "kuppitz").id().next());
                 assertEquals(d.id(), g.V().has("person", "name", "daniel").id().next());
                 assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) g.V().has("person", "name", "kuppitz").next()).getBaseVertex().getProperty("name"));

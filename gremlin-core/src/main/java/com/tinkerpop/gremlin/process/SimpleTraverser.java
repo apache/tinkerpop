@@ -31,6 +31,11 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.System<T> {
     }
 
     @Override
+    public boolean hasPath() {
+        return false;
+    }
+
+    @Override
     public T get() {
         return this.t;
     }

@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.process.util.PathAwareSideEffects;
 import com.tinkerpop.gremlin.structure.util.referenced.ReferencedFactory;
 
 /**
@@ -9,17 +10,24 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
 
     private Path path = new Path();
 
-    private PathTraverser() {
+    protected PathTraverser() {
         super();
     }
 
     public PathTraverser(final T t, final Traversal.SideEffects sideEffects) {
         super(t, sideEffects);
+        this.sideEffects = new PathAwareSideEffects(this.path, this.sideEffects);
     }
 
     public PathTraverser(final String as, final T t, final Traversal.SideEffects sideEffects) {
         super(t, sideEffects);
         this.path.add(as, t);
+        this.sideEffects = new PathAwareSideEffects(this.path, this.sideEffects);
+    }
+
+    @Override
+    public boolean hasPath() {
+        return true;
     }
 
     @Override

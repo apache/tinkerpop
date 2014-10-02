@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -714,7 +715,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_lt_1X_otherV(Object v4Id) {
-            return g.v(v4Id).bothE().has("weight", T.lt, 1d).otherV();
+            return g.v(v4Id).bothE().has("weight", Compare.lt, 1d).otherV();
         }
 
         @Override
@@ -880,7 +881,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_lt_1X_otherV(Object v4Id) {
-            return g.v(v4Id).bothE().has("weight", T.lt, 1d).otherV().submit(g.compute());
+            return g.v(v4Id).bothE().has("weight", Compare.lt, 1d).otherV().submit(g.compute());
         }
 
         @Override

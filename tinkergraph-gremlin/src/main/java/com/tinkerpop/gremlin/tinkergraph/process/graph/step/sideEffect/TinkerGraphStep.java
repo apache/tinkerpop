@@ -58,7 +58,7 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
     private HasContainer getIndexKey(final Class<? extends Element> indexedClass) {
         final Set<String> indexedKeys = ((TinkerGraph)this.traversal.sideEffects().getGraph()).getIndexedKeys(indexedClass);
         return this.hasContainers.stream()
-                .filter(c -> indexedKeys.contains(c.key) && c.predicate.equals(Compare.EQUAL))
+                .filter(c -> indexedKeys.contains(c.key) && c.predicate.equals(Compare.eq))
                 .findFirst()
                 .orElseGet(() -> null);
     }

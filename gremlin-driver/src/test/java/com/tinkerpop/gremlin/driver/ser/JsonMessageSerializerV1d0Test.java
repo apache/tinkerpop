@@ -10,7 +10,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import io.netty.buffer.ByteBuf;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -253,7 +252,7 @@ public class JsonMessageSerializerV1d0Test {
     public void serializeToJsonMapWithElementForKey() throws Exception {
         final TinkerGraph g = TinkerFactory.createClassic();
         final Map<Vertex, Integer> map = new HashMap<>();
-        map.put(g.V().<Vertex>has("name", Compare.EQUAL, "marko").next(), 1000);
+        map.put(g.V().<Vertex>has("name", Compare.eq, "marko").next(), 1000);
 
         final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(map).create());
         final JSONObject json = new JSONObject(results);

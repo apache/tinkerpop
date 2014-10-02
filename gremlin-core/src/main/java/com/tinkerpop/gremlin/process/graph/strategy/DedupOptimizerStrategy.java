@@ -23,7 +23,7 @@ public class DedupOptimizerStrategy implements TraversalStrategy.NoDependencies{
     private DedupOptimizerStrategy() {
     }
 
-    private static final List<Class> BIJECTIVE_PIPES = new ArrayList<Class>(
+    private static final List<Class<? extends Step>> BIJECTIVE_PIPES = new ArrayList<>(
             Arrays.asList(
                     IdentityStep.class,
                     OrderStep.class,
@@ -31,15 +31,15 @@ public class DedupOptimizerStrategy implements TraversalStrategy.NoDependencies{
             ));
 
     @Override
-    public void apply(final Traversal traversal) {
+    public void apply(final Traversal<?,?> traversal) {
         boolean done = false;
         while (!done) {
             done = true;
             for (int i = 0; i < traversal.getSteps().size(); i++) {
-                final Step step1 = (Step) traversal.getSteps().get(i);
+                final Step step1 = traversal.getSteps().get(i);
                 if (step1 instanceof DedupStep && !((DedupStep) step1).hasUniqueFunction) {
                     for (int j = i; j >= 0; j--) {
-                        final Step step2 = (Step) traversal.getSteps().get(j);
+                        final Step step2 = traversal.getSteps().get(j);
                         if (BIJECTIVE_PIPES.stream().filter(c -> c.isAssignableFrom(step2.getClass())).findFirst().isPresent()) {
                             TraversalHelper.removeStep(step1, traversal);
                             TraversalHelper.insertStep(step1, j, traversal);

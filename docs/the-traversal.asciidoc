@@ -484,6 +484,35 @@ gremlin> traversal <5>
 <5> The Gremlin Console will automatically iterate anything that is an iterator or is iterable.
 <6> Both marko and josh are co-developers and marko knows josh.
 
+[[orderby-step]]
+OrderBy Step
+~~~~~~~~~~~~
+
+One of the most traversed objects in a traversal is an `Element`. An element can have properties associated with it (i.e. key/value pairs). In many situations, it is desirable to sort an element traversal stream according to a comparison of their properties. The `orderBy()`-step exists to support this. (*map*)
+
+[source,groovy]
+gremlin> g.V().map{it.get().value('name') + ' is ' + it.get()}
+==>marko is v[1]
+==>vadas is v[2]
+==>lop is v[3]
+==>josh is v[4]
+==>ripple is v[5]
+==>peter is v[6]
+gremlin> g.V().orderBy('name').map{it.get().value('name') + ' is ' + it.get()}
+==>josh is v[4]
+==>lop is v[3]
+==>marko is v[1]
+==>peter is v[6]
+==>ripple is v[5]
+==>vadas is v[2]
+gremlin> g.V().orderBy('name',decr).map{it.get().value('name') + ' is ' + it.get()}
+==>vadas is v[2]
+==>ripple is v[5]
+==>peter is v[6]
+==>marko is v[1]
+==>lop is v[3]
+==>josh is v[4]
+
 [[path-step]]
 Path Step
 ~~~~~~~~~

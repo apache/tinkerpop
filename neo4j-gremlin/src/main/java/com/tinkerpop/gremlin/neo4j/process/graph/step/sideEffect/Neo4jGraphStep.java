@@ -138,10 +138,10 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
     private Pair<String, HasContainer> getHasContainerForLabelIndex() {
         for (final HasContainer hasContainer : this.hasContainers) {
-            if (hasContainer.key.equals(T.label.getAccessor()) && hasContainer.predicate.equals(Compare.EQUAL)) {
+            if (hasContainer.key.equals(T.label.getAccessor()) && hasContainer.predicate.equals(Compare.eq)) {
                 for (final IndexDefinition index : this.graph.getBaseGraph().schema().getIndexes(DynamicLabel.label((String) hasContainer.value))) {
                     for (final HasContainer hasContainer1 : this.hasContainers) {
-                        if (!hasContainer1.key.equals(T.label.getAccessor()) && hasContainer1.predicate.equals(Compare.EQUAL)) {
+                        if (!hasContainer1.key.equals(T.label.getAccessor()) && hasContainer1.predicate.equals(Compare.eq)) {
                             for (final String key : index.getPropertyKeys()) {
                                 if (key.equals(hasContainer1.key))
                                     return Pair.with((String) hasContainer.value, hasContainer1);
@@ -156,9 +156,9 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
     private List<String> getLabels() {
         for (final HasContainer hasContainer : this.hasContainers) {
-            if (hasContainer.key.equals(T.label.getAccessor()) && hasContainer.predicate.equals(Compare.EQUAL))
+            if (hasContainer.key.equals(T.label.getAccessor()) && hasContainer.predicate.equals(Compare.eq))
                 return Arrays.asList(((String) hasContainer.value));
-            else if (hasContainer.key.equals(T.label.getAccessor()) && hasContainer.predicate.equals(Contains.IN))
+            else if (hasContainer.key.equals(T.label.getAccessor()) && hasContainer.predicate.equals(Contains.in))
                 return new ArrayList<>((Collection<String>) hasContainer.value);
         }
         return null;
@@ -173,7 +173,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
             return null;
         final Set<String> indexKeys = indexer.getAutoIndexedProperties();
         for (final HasContainer hasContainer : this.hasContainers) {
-            if (hasContainer.predicate.equals(Compare.EQUAL) && indexKeys.contains(hasContainer.key))
+            if (hasContainer.predicate.equals(Compare.eq) && indexKeys.contains(hasContainer.key))
                 return hasContainer;
         }
         return null;

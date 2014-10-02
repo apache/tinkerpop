@@ -91,11 +91,9 @@ gremlin> v.property('name')
 If the concept of vertex properties is difficult to grasp, then it may be best to think of vertex properties in terms of "literal vertices." A vertex can have an edge to a "literal vertex" that has a single value key/value -- e.g. "value=okram." The edge that points to that literal vertex has an edge-label of "name." The properties on the edge represent the literal vertex's properties. The "literal vertex" can not have any other edges to it (only one from the associated vertex).
 
 [[the-crew-toy-graph]]
-The Crew Toy Graph
-^^^^^^^^^^^^^^^^^^
+TIP: A toy graph demonstrating all of the new TinkerPop3 graph structure features is available at `TinkerFactory.createTheCrew()` and `data/tinkerpop-crew*`. This graph demonstrates multi-properties, meta-properties, hidden properties, and graph variables.
 
-A toy graph demonstrating all of the new TinkerPop3 graph structure features is available at `TinkerFactory.createTheCrew()` and `data/tinkerpop-crew*`. This graph demonstrates multi-properties, meta-properties, hidden properties, and graph variables.
-
+.TinkerPop Crew
 image::the-crew-graph.png[width=685]
 
 [source,groovy]
@@ -175,7 +173,13 @@ gremlin> v.property('status')
 Graph Variables
 ---------------
 
-TinkerPop3 introduces the concept of `Graph.Variables`. Variables are key/value pairs associated with the graph itself -- in essence, a `Map<String,Object>`. These variables are intended to store metadata about the graph. Examples include: schema information, global permissions data, system user information, etc. An example of their use is presented below in Gremlin-Groovy:
+TinkerPop3 introduces the concept of `Graph.Variables`. Variables are key/value pairs associated with the graph itself -- in essence, a `Map<String,Object>`. These variables are intended to store metadata about the graph. Example use cases include:
+
+ * *Schema information*: What do the namespace prefixes resolve to and when was the schema last modified?
+ * *Global permissions*: What are the access rights for particular groups?
+ * *System user information*: Who are the admins of the system?
+
+An example of graph variables in use is presented below in Gremlin-Groovy:
 
 [source,groovy]
 gremlin> g = TinkerGraph.open()

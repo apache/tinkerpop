@@ -3,6 +3,8 @@ package com.tinkerpop.gremlin.process.graph.step.filter
 import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
+import com.tinkerpop.gremlin.structure.Compare
+import com.tinkerpop.gremlin.structure.Contains
 import com.tinkerpop.gremlin.structure.Edge
 import com.tinkerpop.gremlin.structure.Vertex
 
@@ -40,7 +42,7 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_hasXage_gt_30X(final Object v1Id) {
-            g.v(v1Id).has('age', T.gt, 30)
+            g.v(v1Id).has('age', Compare.gt, 30)
         }
 
         @Override
@@ -50,7 +52,7 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXage_gt_30X() {
-            g.V.has('age', T.gt, 30)
+            g.V.has('age', Compare.gt, 30)
         }
 
         @Override
@@ -65,12 +67,12 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Edge, Edge> get_g_E_hasXlabelXuses_traversesX() {
-            g.E.has(T.label, T.in, ['uses', 'traverses'])
+            g.E.has(T.label, Contains.in, ['uses', 'traverses'])
         }
 
         @Override
         Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_software_blahX() {
-            g.V.has(T.label, T.in, ["person", "software", 'blah']);
+            g.V.has(T.label, Contains.in, ["person", "software", 'blah']);
         }
 
         @Override
@@ -113,7 +115,7 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_hasXage_gt_30X(final Object v1Id) {
-            ComputerTestHelper.compute("g.v(${v1Id}).has('age', T.gt, 30)", g);
+            ComputerTestHelper.compute("g.v(${v1Id}).has('age', Compare.gt, 30)", g);
         }
 
         @Override
@@ -123,7 +125,7 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXage_gt_30X() {
-            ComputerTestHelper.compute("g.V.has('age', T.gt, 30)", g);
+            ComputerTestHelper.compute("g.V.has('age', Compare.gt, 30)", g);
         }
 
         @Override
@@ -138,12 +140,12 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Edge, Edge> get_g_E_hasXlabelXuses_traversesX() {
-            ComputerTestHelper.compute("g.E.has(T.label, T.in, ['uses', 'traverses'])", g);
+            ComputerTestHelper.compute("g.E.has(T.label, Contains.in, ['uses', 'traverses'])", g);
         }
 
         @Override
         Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_software_blahX() {
-            ComputerTestHelper.compute("g.V.has(T.label, T.in, ['person', 'software', 'blah'])", g);
+            ComputerTestHelper.compute("g.V.has(T.label, Contains.in, ['person', 'software', 'blah'])", g);
         }
 
         @Override

@@ -15,7 +15,6 @@ import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect.TinkerGraphStep;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerGraphStepStrategy;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -47,7 +46,7 @@ public class TinkerElementTraversal<S, E> extends DefaultGraphTraversal<S, E> {
             identityStep.setLabel(label);
             TraversalHelper.insertStep(identityStep, 0, this);
         }
-        TraversalHelper.insertStep(new HasStep(this, new HasContainer(T.id, Compare.EQUAL, this.id)), 0, this);
+        TraversalHelper.insertStep(new HasStep(this, new HasContainer(T.id, Compare.eq, this.id)), 0, this);
         TraversalHelper.insertStep(new TinkerGraphStep<>(this, this.elementClass), 0, this);
         return super.submit(computer);
     }

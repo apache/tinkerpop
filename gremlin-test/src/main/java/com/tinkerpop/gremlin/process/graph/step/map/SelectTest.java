@@ -7,7 +7,9 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
@@ -26,6 +28,12 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id);
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id);
+
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_selectXnameX();
+
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_selectXnameX();
+
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_valueXnameX_order_asXbX_selectXname_itX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -89,6 +97,42 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         assertEquals(2, counter);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_out_asXbX_selectXnameX() {
+        Arrays.asList(
+                get_g_V_asXaX_out_asXbX_selectXnameX(),
+                get_g_V_asXaX_out_aggregate_asXbX_selectXnameX()).forEach(traversal -> {
+            printTraversalForm(traversal);
+            final List<Map<String, String>> expected = makeMapList(2,
+                    "a", "marko", "b", "lop",
+                    "a", "marko", "b", "vadas",
+                    "a", "marko", "b", "josh",
+                    "a", "josh", "b", "ripple",
+                    "a", "josh", "b", "lop",
+                    "a", "peter", "b", "lop");
+            checkResults(expected, traversal);
+        });
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_valueXnameX_order_asXbX_selectXname_itX() {
+        Arrays.asList(
+                get_g_V_asXaX_valueXnameX_order_asXbX_selectXname_itX()).forEach(traversal -> {
+            printTraversalForm(traversal);
+            final List<Map<String, String>> expected = makeMapList(2,
+                    "a", "marko", "b", "marko",
+                    "a", "vadas", "b", "vadas",
+                    "a", "josh", "b", "josh",
+                    "a", "ripple", "b", "ripple",
+                    "a", "lop", "b", "lop",
+                    "a", "peter", "b", "peter");
+            checkResults(expected, traversal);
+        });
+    }
+
+
     public static class StandardTest extends SelectTest {
         public StandardTest() {
             requiresGraphComputer = false;
@@ -113,6 +157,23 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Map<String, String>> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id) {
             return g.v(v1Id).as("a").out("knows").as("b").select(Arrays.asList("a"), v -> ((Vertex) v).value("name"));
         }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_selectXnameX() {
+            return g.V().as("a").out().as("b").select(v -> ((Vertex) v).value("name"));
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_selectXnameX() {
+            return g.V().as("a").out().aggregate().as("b").select(v -> ((Vertex) v).value("name"));
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_valueXnameX_order_asXbX_selectXname_itX() {
+            return g.V().as("a").value("name").order().as("b").select(v -> ((Vertex) v).value("name"), Function.identity());
+        }
+
+
     }
 
     public static class ComputerTest extends SelectTest {
@@ -140,6 +201,24 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Map<String, String>> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id) {
             // TODO: Micro elements do not store properties
             return g.v(v1Id).as("a").out("knows").as("b").select(Arrays.asList("a"), v -> ((Vertex) v).value("name"));  // .submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_selectXnameX() {
+            // TODO: Micro elements do not store properties
+            return g.V().as("a").out().as("b").select(v -> ((Vertex) v).value("name"));  // .submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_selectXnameX() {
+            // TODO: Micro elements do not store properties
+            return g.V().as("a").out().aggregate().as("b").select(v -> ((Vertex) v).value("name"));
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_valueXnameX_order_asXbX_selectXname_itX() {
+            // TODO: Micro elements do not store properties
+            return g.V().as("a").value("name").order().as("b").select(v -> ((Vertex) v).value("name"), Function.identity());
         }
     }
 }

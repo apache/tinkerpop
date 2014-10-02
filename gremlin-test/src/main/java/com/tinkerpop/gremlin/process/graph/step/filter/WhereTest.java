@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -115,7 +116,7 @@ public abstract class WhereTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX() {
-            return g.V().has("age").as("a").out().in().has("age").as("b").select().where("a", T.eq, "b");
+            return g.V().has("age").as("a").out().in().has("age").as("b").select().where("a", Compare.eq, "b");
         }
 
         @Override
@@ -140,7 +141,7 @@ public abstract class WhereTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX() {
-            return g.V().has("age").as("a").out().in().has("age").as("b").select().where("a", T.eq, "b").submit(g.compute());
+            return g.V().has("age").as("a").out().in().has("age").as("b").select().where("a", Compare.eq, "b").submit(g.compute());
         }
 
         @Override

@@ -50,7 +50,7 @@ public class GiraphEdge extends GiraphElement implements Edge, WrappedEdge<Tinke
                     identityStep.setLabel(label);
                     TraversalHelper.insertStep(identityStep, 0, this);
                 }
-                TraversalHelper.insertStep(new HasStep(this, new HasContainer(T.id, Compare.EQUAL, tinkerElement.id())), 0, this);
+                TraversalHelper.insertStep(new HasStep(this, new HasContainer(T.id, Compare.eq, tinkerElement.id())), 0, this);
                 TraversalHelper.insertStep(new GiraphGraphStep<>(this, Edge.class, graph), 0, this);
 
                 return super.submit(computer);

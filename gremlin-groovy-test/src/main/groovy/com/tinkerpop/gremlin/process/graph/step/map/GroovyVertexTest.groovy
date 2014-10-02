@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.process.graph.step.map
 
-import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
+import com.tinkerpop.gremlin.structure.Compare
 import com.tinkerpop.gremlin.structure.Direction
 import com.tinkerpop.gremlin.structure.Edge
 import com.tinkerpop.gremlin.structure.Vertex
@@ -166,7 +166,7 @@ public abstract class GroovyVertexTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_lt_1X_otherV(final Object v4Id) {
-            g.v(v4Id).bothE.has('weight', T.lt, 1.0d).otherV
+            g.v(v4Id).bothE.has('weight', Compare.lt, 1.0d).otherV
         }
 
         @Override
@@ -329,7 +329,7 @@ public abstract class GroovyVertexTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_lt_1X_otherV(final Object v4Id) {
-            ComputerTestHelper.compute("g.v(${v4Id}).bothE.has('weight', T.lt, 1.0d).otherV", g);
+            ComputerTestHelper.compute("g.v(${v4Id}).bothE.has('weight', Compare.lt, 1.0d).otherV", g);
         }
 
         @Override

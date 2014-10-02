@@ -17,7 +17,7 @@ public class GraphComputerStrategy implements TraversalStrategy {
 
 
     @Override
-    public void apply(final Traversal traversal) {
+    public void apply(final Traversal<?,?> traversal) {
         traversal.getSteps().stream()
                 .filter(step -> step instanceof EngineDependent)
                 .forEach(step -> ((EngineDependent) step).onEngine(EngineDependent.Engine.COMPUTER));
@@ -25,7 +25,7 @@ public class GraphComputerStrategy implements TraversalStrategy {
 
     @Override
     public int compareTo(final TraversalStrategy traversalStrategy) {
-        return traversalStrategy instanceof UnrollJumpStrategy || traversalStrategy instanceof PathConsumer ? -1 : 1;
+        return traversalStrategy instanceof UnrollJumpStrategy ? -1 : 0;
     }
 
     public static GraphComputerStrategy instance() {

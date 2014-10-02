@@ -19,7 +19,7 @@ public class UnrollJumpStrategy implements TraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal traversal) {
+    public void apply(final Traversal<?,?> traversal) {
 
         TraversalHelper.getStepsOfClass(JumpStep.class, traversal).stream()
                 .filter(JumpStep::unRollable)

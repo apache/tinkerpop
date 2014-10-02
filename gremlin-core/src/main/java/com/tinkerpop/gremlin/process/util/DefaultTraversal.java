@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.strategy.GraphStandardStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.LabeledEndStepStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -23,6 +24,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     public DefaultTraversal() {
         this.strategies.register(TraverserSourceStrategy.instance());
         this.strategies.register(LabeledEndStepStrategy.instance());
+        this.strategies().register(GraphStandardStrategy.instance());
     }
 
     public DefaultTraversal(final Graph graph) {

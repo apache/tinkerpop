@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.match.InnerJoinEnumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.IteratorEnumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStep;
 import com.tinkerpop.gremlin.process.util.MapHelper;
+import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -29,10 +30,9 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
@@ -759,7 +759,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             return g.V().match("a",
                     g.of().as("a").out("created").as("b"),
                     g.of().as("b").in("created").as("c"))
-                    .where("a", T.neq, "c")
+                    .where("a", Compare.neq, "c")
                     .select(Arrays.asList("a", "c"), v -> ((Vertex) v).value("name"));
         }
 
@@ -918,7 +918,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             return (Traversal) g.V().match("a",
                     g.of().as("a").out("created").as("b"),
                     g.of().as("b").in("created").as("c"))
-                    .where("a", T.neq, "c")
+                    .where("a", Compare.neq, "c")
                     .select(Arrays.asList("a", "c"), v -> ((Vertex) v).value("name")).submit(g.compute());
         }
 

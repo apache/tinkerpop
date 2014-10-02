@@ -67,7 +67,7 @@ public class GiraphVertex extends GiraphElement implements Vertex, WrappedVertex
                     identityStep.setLabel(label);
                     TraversalHelper.insertStep(identityStep, 0, this);
                 }
-                TraversalHelper.insertStep(new HasStep(this, new HasContainer(T.id, Compare.EQUAL, tinkerElement.id())), 0, this);
+                TraversalHelper.insertStep(new HasStep(this, new HasContainer(T.id, Compare.eq, tinkerElement.id())), 0, this);
                 TraversalHelper.insertStep(new GiraphGraphStep<>(this, Vertex.class, graph), 0, this);
 
                 return super.submit(computer);

@@ -9,6 +9,10 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M3 (Release Date: NOT OFFICIALLY RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added abstract `BarrierStep` which greatly simplifies implementing barries like `AggregateStep`, `OrderStep, etc.
+* `SelectStep` is now intelligent about when to trigger path computations based on label selectors and barriers.
+* `T` no longer has `eq`, `neq`, `lt`, `in`, etc. Renamed all respective enums and with `static import`, good in console (e.g. `Compare.eq`).
+* Added `Order` enum which provides `Order.decr` and `Order.incr`.
 * `Traverser.loops` and `Jump.loops` are now shorts (`32767` max-loops is probably sufficient for 99.9999% of use cases).
 * Greatly simplified sideEffect steps where there is no distinction between OLAP vs. OLTP (from the `Step` perspective).
 * Removed the need for `Bulkable` and `VertexCentric` marker interfaces in process API.

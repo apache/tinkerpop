@@ -157,16 +157,8 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().order(comparator);
     }
 
-    public default GraphTraversal<A, A> order(final T comparator) {
-        return this.start().order(comparator);
-    }
-
     public default GraphTraversal<A, A> orderBy(final String key) {
         return this.start().orderBy(key);
-    }
-
-    public default GraphTraversal<A, A> orderBy(final String key, final T comparator) {
-        return this.start().orderBy(key, comparator);
     }
 
     public default GraphTraversal<A, A> orderBy(final String key, final Comparator comparator) {
@@ -303,14 +295,6 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().has(accessor, value);
     }
 
-    public default GraphTraversal<A, A> has(final String key, final T predicate, final Object value) {
-        return this.start().has(key, predicate, value);
-    }
-
-    public default GraphTraversal<A, A> has(final T accessor, final T predicate, final Object value) {
-        return this.start().has(accessor, predicate, value);
-    }
-
     public default GraphTraversal<A, A> has(final String key, final BiPredicate predicate, final Object value) {
         return this.start().has(key, predicate, value);
     }
@@ -321,10 +305,6 @@ public abstract interface ElementTraversal<A extends Element> {
 
     public default GraphTraversal<A, A> has(final String label, final String key, final Object value) {
         return this.start().has(label, key, value);
-    }
-
-    public default GraphTraversal<A, A> has(final String label, final String key, final T predicate, final Object value) {
-        return this.start().has(label, key, predicate, value);
     }
 
     public default GraphTraversal<A, A> has(final String label, final String key, final BiPredicate predicate, final Object value) {
@@ -340,10 +320,6 @@ public abstract interface ElementTraversal<A extends Element> {
     }
 
     public default <E2> GraphTraversal<A, Map<String, E2>> where(final String firstKey, final BiPredicate predicate, final String secondKey) {
-        return this.start().where(firstKey, predicate, secondKey);
-    }
-
-    public default <E2> GraphTraversal<A, Map<String, E2>> where(final String firstKey, final T predicate, final String secondKey) {
         return this.start().where(firstKey, predicate, secondKey);
     }
 

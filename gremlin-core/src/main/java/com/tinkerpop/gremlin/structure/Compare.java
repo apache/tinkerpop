@@ -10,51 +10,59 @@ import java.util.function.BiPredicate;
  */
 public enum Compare implements BiPredicate<Object, Object> {
 
-    EQUAL, NOT_EQUAL, GREATER_THAN, GREATER_THAN_EQUAL, LESS_THAN, LESS_THAN_EQUAL;
+    eq {
+        public boolean test(final Object first, final Object second) {
+            if (null == first)
+                return second == null;
+            return first.equals(second);
+        }
+    }, neq {
+        public boolean test(final Object first, final Object second) {
+            if (null == first)
+                return second != null;
+            return !first.equals(second);
+        }
+    }, gt {
+        public boolean test(final Object first, final Object second) {
+            return !(null == first || second == null) && ((Comparable) first).compareTo(second) >= 1;
+        }
+
+    }, gte {
+        public boolean test(final Object first, final Object second) {
+            return !(null == first || second == null) && ((Comparable) first).compareTo(second) >= 0;
+        }
+    }, lt {
+        public boolean test(final Object first, final Object second) {
+            return !(null == first || second == null) && ((Comparable) first).compareTo(second) <= -1;
+        }
+    }, lte {
+        public boolean test(final Object first, final Object second) {
+            return !(null == first || second == null) && ((Comparable) first).compareTo(second) <= 0;
+        }
+    };
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean test(final Object first, final Object second) {
-        switch (this) {
-            case EQUAL:
-                if (null == first)
-                    return second == null;
-                return first.equals(second);
-            case NOT_EQUAL:
-                if (null == first)
-                    return second != null;
-                return !first.equals(second);
-            case GREATER_THAN:
-                return !(null == first || second == null) && ((Comparable) first).compareTo(second) >= 1;
-            case LESS_THAN:
-                return !(null == first || second == null) && ((Comparable) first).compareTo(second) <= -1;
-            case GREATER_THAN_EQUAL:
-                return !(null == first || second == null) && ((Comparable) first).compareTo(second) >= 0;
-            case LESS_THAN_EQUAL:
-                return !(null == first || second == null) && ((Comparable) first).compareTo(second) <= 0;
-            default:
-                throw new IllegalStateException("Invalid state as no valid compare was provided");
-        }
-    }
+    public abstract boolean test(final Object first, final Object second);
 
     /**
-     * Produce the opposite representation of the current {@code Compare} object.
+     * Produce the opposite representation of the current {@code Compare} enum.
      */
     public Compare opposite() {
-        if (this.equals(EQUAL))
-            return NOT_EQUAL;
-        else if (this.equals(NOT_EQUAL))
-            return EQUAL;
-        else if (this.equals(GREATER_THAN))
-            return LESS_THAN_EQUAL;
-        else if (this.equals(GREATER_THAN_EQUAL))
-            return LESS_THAN;
-        else if (this.equals(LESS_THAN))
-            return GREATER_THAN_EQUAL;
-        else if (this.equals(LESS_THAN_EQUAL))
-            return GREATER_THAN;
+        if (this.equals(eq))
+            return neq;
+        else if (this.equals(neq))
+            return eq;
+        else if (this.equals(gt))
+            return lte;
+        else if (this.equals(gte))
+            return lt;
+        else if (this.equals(lt))
+            return gte;
+        else if (this.equals(lte))
+            return gt;
         else
             throw new IllegalStateException("Comparator does not have an opposite");
     }
@@ -63,17 +71,17 @@ public enum Compare implements BiPredicate<Object, Object> {
      * Gets the operator representation of the {@code Compare} object.
      */
     public String asString() {
-        if (this.equals(EQUAL))
+        if (this.equals(eq))
             return "=";
-        else if (this.equals(GREATER_THAN))
+        else if (this.equals(gt))
             return ">";
-        else if (this.equals(GREATER_THAN_EQUAL))
+        else if (this.equals(gte))
             return ">=";
-        else if (this.equals(LESS_THAN_EQUAL))
+        else if (this.equals(lte))
             return "<=";
-        else if (this.equals(LESS_THAN))
+        else if (this.equals(lt))
             return "<";
-        else if (this.equals(NOT_EQUAL))
+        else if (this.equals(neq))
             return "<>";
         else
             throw new IllegalStateException("Comparator does not have a string representation");
@@ -84,17 +92,17 @@ public enum Compare implements BiPredicate<Object, Object> {
      */
     public static Compare fromString(final String c) {
         if (c.equals("="))
-            return EQUAL;
+            return eq;
         else if (c.equals("<>"))
-            return NOT_EQUAL;
+            return neq;
         else if (c.equals(">"))
-            return GREATER_THAN;
+            return gt;
         else if (c.equals(">="))
-            return GREATER_THAN_EQUAL;
+            return gte;
         else if (c.equals("<"))
-            return LESS_THAN;
+            return lt;
         else if (c.equals("<="))
-            return LESS_THAN_EQUAL;
+            return lte;
         else
             throw new IllegalArgumentException("String representation does not match any comparator");
     }

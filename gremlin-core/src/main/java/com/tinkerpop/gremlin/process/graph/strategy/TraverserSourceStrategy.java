@@ -16,7 +16,7 @@ public class TraverserSourceStrategy implements TraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal traversal) {
+    public void apply(final Traversal<?,?> traversal) {
         final boolean trackPaths = TraversalHelper.trackPaths(traversal);
         traversal.getSteps().forEach(step -> {
             if (step instanceof TraverserSource)

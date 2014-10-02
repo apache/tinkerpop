@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.filter
 import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
+import com.tinkerpop.gremlin.structure.Compare
 import com.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -13,7 +14,7 @@ public abstract class GroovyWhereTest {
     public static class StandardTest extends WhereTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX() {
-            g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', T.eq, 'b');
+            g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', Compare.eq, 'b');
         }
 
         @Override
@@ -35,7 +36,7 @@ public abstract class GroovyWhereTest {
     public static class ComputerTest extends WhereTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX() {
-            ComputerTestHelper.compute("g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', T.eq, 'b')", g);
+            ComputerTestHelper.compute("g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', Compare.eq, 'b')", g);
         }
 
         @Override

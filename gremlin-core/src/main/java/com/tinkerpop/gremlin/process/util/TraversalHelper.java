@@ -71,6 +71,15 @@ public class TraversalHelper {
         return labels;
     }
 
+    public static List<Step<?, ?>> getStepsUpTo(final Step<?, ?> step, final Traversal<?, ?> traversal) {
+        final List<Step<?, ?>> steps = new ArrayList<>();
+        for (final Step temp : traversal.getSteps()) {
+            if (temp == step) break;
+            steps.add(temp);
+        }
+        return steps;
+    }
+
     public static <S, E> Step<S, ?> getStart(final Traversal<S, E> traversal) {
         return traversal.getSteps().get(0);
     }

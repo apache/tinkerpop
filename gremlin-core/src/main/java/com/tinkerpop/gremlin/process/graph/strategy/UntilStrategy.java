@@ -24,7 +24,7 @@ public class UntilStrategy implements TraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal traversal) {
+    public void apply(final Traversal<?,?> traversal) {
         // g.V.until('a'){it.object == blah}.out.out.as('a').name
         // g.V.as('a').jump('b'){it.object == blah}.out.out.jump('a').as('b').name
         int counter = 0;
@@ -37,7 +37,7 @@ public class UntilStrategy implements TraversalStrategy {
 
             final JumpStep leftEndJumpStep = untilStep.loops == -1 ?
                     new JumpStep(traversal, rightEndLabel, untilStep.breakPredicate, untilStep.emitPredicate) :
-                    new JumpStep(traversal, rightEndLabel, Compare.GREATER_THAN, untilStep.loops, untilStep.emitPredicate);
+                    new JumpStep(traversal, rightEndLabel, Compare.gt, untilStep.loops, untilStep.emitPredicate);
             leftEndJumpStep.setLabel(untilStep.getLabel());
             leftEndJumpStep.doWhile = false;
             TraversalHelper.removeStep(untilStep, traversal);

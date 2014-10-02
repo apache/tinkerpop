@@ -31,13 +31,28 @@ public abstract class GroovySelectTest {
                 final Object v1Id) {
             g.v(v1Id).as('a').out('knows').as('b').select(['a']) { it.name }
         }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_selectXnameX() {
+            g.V.as('a').out.as('b').select { it.name }
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_selectXnameX() {
+            g.V.as('a').out.aggregate.as('b').select { it.name }
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_valueXnameX_order_asXbX_selectXname_itX() {
+            g.V().as('a').value('name').order().as('b').select { it.name } { it }
+        }
     }
 
     public static class ComputerTest extends SelectTest {
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
-            ComputerTestHelper.compute("g.v(${v1Id}).as('a').out('knows').as('b').select()",g);
+            ComputerTestHelper.compute("g.v(${v1Id}).as('a').out('knows').as('b').select()", g);
         }
 
         @Override
@@ -48,7 +63,7 @@ public abstract class GroovySelectTest {
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
-            ComputerTestHelper.compute("g.v(${v1Id}).as('a').out('knows').as('b').select(['a'])",g);
+            ComputerTestHelper.compute("g.v(${v1Id}).as('a').out('knows').as('b').select(['a'])", g);
         }
 
         @Override
@@ -56,6 +71,21 @@ public abstract class GroovySelectTest {
                 final Object v1Id) {
             g.v(v1Id).as('a').out('knows').as('b').select(['a']) { it.name }
             //TODO: ComputerTestHelper.compute("g.v(${v1Id}).as('a').out('knows').as('b').select(['a']) { it.name }",g);
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_selectXnameX() {
+            g.V.as('a').out.as('b').select { it.name }  // TODO computer
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_selectXnameX() {
+            g.V.as('a').out.aggregate.as('b').select { it.name } // TODO computer
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_valueXnameX_order_asXbX_selectXname_itX() {
+            g.V().as('a').value('name').order().as('b').select { it.name } { it } // TODO: computer
         }
     }
 }

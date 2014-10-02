@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Order;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
@@ -64,7 +65,7 @@ public abstract class OrderByTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_orderByXname_incrX_name() {
-            return g.V().orderBy("name", T.incr).value("name");
+            return g.V().orderBy("name", Order.incr).value("name");
         }
 
         @Override
@@ -74,7 +75,7 @@ public abstract class OrderByTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_outE_orderByXweight_decrX_weight() {
-            return g.V().outE().orderBy("weight", T.decr).value("weight");
+            return g.V().outE().orderBy("weight", Order.decr).value("weight");
         }
     }
 }

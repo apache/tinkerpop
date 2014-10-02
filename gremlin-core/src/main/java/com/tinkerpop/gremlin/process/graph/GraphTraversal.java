@@ -74,6 +74,7 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Order;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
@@ -253,20 +254,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.addStep(new OrderStep<>(this, comparator));
     }
 
-    public default GraphTraversal<S, E> order(final T comparator) {
-        return this.addStep(new OrderStep(this, comparator.getComparator()));
-    }
-
     public default <E2 extends Element> GraphTraversal<S, E2> orderBy(final String key) {
-        return this.orderBy(key, T.incr);
+        return this.orderBy(key, Order.incr);
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> orderBy(final String key, final Comparator comparator) {
         return this.addStep(new OrderByStep<>(this, key, comparator));
-    }
-
-    public default <E2 extends Element> GraphTraversal<S, E2> orderBy(final String key, final T comparator) {
-        return this.addStep(new OrderByStep<>(this, key, comparator.getComparator()));
     }
 
     public default GraphTraversal<S, E> shuffle() {
@@ -431,32 +424,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.where(firstKey, secondKey, predicate);
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> where(final String firstKey, final T predicate, final String secondKey) {
-        return this.where(firstKey, secondKey, predicate.getPredicate());
-    }
-
     public default <E2> GraphTraversal<S, Map<String, E2>> where(final Traversal constraint) {
         return this.addStep(new WhereStep<>(this, constraint));
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final String key) {
-        return this.addStep(new HasStep<>(this, new HasContainer(key, Contains.IN)));
+        return this.addStep(new HasStep<>(this, new HasContainer(key, Contains.in)));
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final String key, final Object value) {
-        return this.has(key, Compare.EQUAL, value);
+        return this.has(key, Compare.eq, value);
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final T accessor, final Object value) {
         return this.has(accessor.getAccessor(), value);
-    }
-
-    public default <E2 extends Element> GraphTraversal<S, E2> has(final String key, final T predicate, final Object value) {
-        return this.has(key, predicate.getPredicate(), value);
-    }
-
-    public default <E2 extends Element> GraphTraversal<S, E2> has(final T accessor, final T predicate, final Object value) {
-        return this.has(accessor, predicate.getPredicate(), value);
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final String key, final BiPredicate predicate, final Object value) {
@@ -468,11 +449,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final String label, final String key, final Object value) {
-        return this.has(label, key, Compare.EQUAL, value);
-    }
-
-    public default <E2 extends Element> GraphTraversal<S, E2> has(final String label, final String key, final T predicate, final Object value) {
-        return this.has(label, key, predicate.getPredicate(), value);
+        return this.has(label, key, Compare.eq, value);
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final String label, final String key, final BiPredicate predicate, final Object value) {
@@ -480,13 +457,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> hasNot(final String key) {
-        return this.addStep(new HasStep<>(this, new HasContainer(key, Contains.NOT_IN)));
+        return this.addStep(new HasStep<>(this, new HasContainer(key, Contains.nin)));
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> interval(final String key, final Comparable startValue, final Comparable endValue) {
         return this.addStep(new IntervalStep<>(this,
-                new HasContainer(key, Compare.GREATER_THAN_EQUAL, startValue),
-                new HasContainer(key, Compare.LESS_THAN, endValue)));
+                new HasContainer(key, Compare.gte, startValue),
+                new HasContainer(key, Compare.lt, endValue)));
     }
 
     public default GraphTraversal<S, E> random(final double probability) {
@@ -662,11 +639,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel, final int loops, final Predicate<Traverser<E>> emitPredicate) {
-        return this.addStep(new JumpStep<>(this, jumpLabel, Compare.LESS_THAN, loops, emitPredicate));
+        return this.addStep(new JumpStep<>(this, jumpLabel, Compare.lt, loops, emitPredicate));
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel, final int loops) {
-        return this.addStep(new JumpStep<>(this, jumpLabel, Compare.LESS_THAN, loops));
+        return this.addStep(new JumpStep<>(this, jumpLabel, Compare.lt, loops));
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel) {

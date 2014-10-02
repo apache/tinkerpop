@@ -14,6 +14,7 @@ import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Order;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
@@ -89,6 +90,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         staticImports.add(Direction.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Compare.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Contains.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(Order.class.getCanonicalName() + DOT_STAR);
     }
 
     @Override

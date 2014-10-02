@@ -28,6 +28,13 @@ public interface Traverser<T> extends Serializable {
     public Path getPath();
 
     /**
+     * Determine whether the traverser has path information.
+     *
+     * @return whether the traverser has path information
+     */
+    public boolean hasPath();
+
+    /**
      * Return the number of times the traverser has gone through a looping section of a traversal.
      *
      * @return The number of times the traverser has gone through a loop

@@ -20,7 +20,7 @@ public enum Direction {
     public static final Direction[] proper = new Direction[]{OUT, IN};
 
     /**
-     * Produce the opposite representation of the current {@code Contains} object.
+     * Produce the opposite representation of the current {@code Direction} enum.
      */
     public Direction opposite() {
         if (this.equals(OUT))

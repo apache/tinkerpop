@@ -22,7 +22,7 @@ public class MatchWhereStrategy implements TraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal traversal) {
+    public void apply(final Traversal<?,?> traversal) {
         final List<MatchStep> matchSteps = TraversalHelper.getStepsOfClass(MatchStep.class, traversal);
         for (final MatchStep matchStep : matchSteps) {
             boolean foundWhereWithNoTraversal = false;
@@ -50,6 +50,6 @@ public class MatchWhereStrategy implements TraversalStrategy {
 
     @Override
     public int compareTo(final TraversalStrategy traversalStrategy) {
-        return traversalStrategy instanceof IdentityReductionStrategy ? 1 : -1;
+        return traversalStrategy instanceof IdentityReductionStrategy ? 1 : 0;
     }
 }

@@ -67,7 +67,7 @@ public class HasContainer {
                 }
             }
         } else {
-            return Contains.IN.equals(this.predicate) ?
+            return Contains.in.equals(this.predicate) ?
                     element.property(this.key).isPresent() :
                     !element.property(this.key).isPresent();
         }
@@ -88,7 +88,7 @@ public class HasContainer {
     // note that if the user is looking for a label property key (e.g.), then it will look the same as looking for the label of the element.
     public String toString() {
         return this.value == null ?
-                (this.predicate == Contains.IN ?
+                (this.predicate == Contains.in ?
                         "[" + Graph.System.unSystem(this.key) + "]" :
                         "[!" + Graph.System.unSystem(this.key) + "]") :
                 "[" + Graph.System.unSystem(this.key) + "," + this.predicate + "," + this.value + "]";
