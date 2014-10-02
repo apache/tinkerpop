@@ -484,6 +484,59 @@ gremlin> traversal <5>
 <5> The Gremlin Console will automatically iterate anything that is an iterator or is iterable.
 <6> Both marko and josh are co-developers and marko knows josh.
 
+[[order-step]]
+Order Step
+~~~~~~~~~~
+
+When the objects of the traversal stream need to be sorted, `order()`-step can be leveraged.
+
+[source,groovy]
+gremlin> g.V().value('name').order()
+==>josh
+==>lop
+==>marko
+==>peter
+==>ripple
+==>vadas
+gremlin> g.V().value('name').order(decr)
+==>vadas
+==>ripple
+==>peter
+==>marko
+==>lop
+==>josh
+gremlin> g.V().value('name').order{a,b -> a.get()[1] <=> b.get[1]} // order by the second letter
+==>marko
+==>vadas
+==>peter
+==>ripple
+==>lop
+==>josh
+
+Note that `order()` takes a `Comparator` and thus, its possible to use comparator chaining to do multi-level comparisons.
+
+[source,groovy]
+gremlin> import static java.util.Comparator.*
+...
+gremlin> import java.util.function.*
+...
+gremlin> g.V().value('name').order(comparing{it.get()[1]}) // order by the second letter
+==>marko
+==>vadas
+==>peter
+==>ripple
+==>lop
+==>josh
+gremlin> g.V().value('name').
+           order(comparing{it.get()[1]}.thenComparing((Function){it.get()[2]})) // order by second letters and if a tie, the third letter
+==>vadas
+==>marko
+==>peter
+==>ripple
+==>lop
+==>josh
+
+
 [[orderby-step]]
 OrderBy Step
 ~~~~~~~~~~~~

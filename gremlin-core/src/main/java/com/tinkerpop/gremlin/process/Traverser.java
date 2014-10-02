@@ -11,7 +11,7 @@ import java.io.Serializable;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Traverser<T> extends Serializable {
+public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
 
     /**
      * Get the object that the traverser is current at.
@@ -52,6 +52,14 @@ public interface Traverser<T> extends Serializable {
 
     public default <A> A get(final String sideEffectKey) {
         return this.getSideEffects().get(sideEffectKey);
+    }
+
+    public default int compareTo(final Traverser<T> other) {
+        final T a = this.get();
+        if (a instanceof Comparable)
+            return ((Comparable) a).compareTo(other.get());
+        else
+            throw new IllegalArgumentException("The traverser does not contain a comparable object: " + a.getClass());
     }
 
     /**
@@ -106,6 +114,7 @@ public interface Traverser<T> extends Serializable {
 
         /**
          * Set the number of traversers represented by this traverser.
+         *
          * @param count the number of traversers
          */
         public void setBulk(final long count);
