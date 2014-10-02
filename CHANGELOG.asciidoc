@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M3 (Release Date: NOT OFFICIALLY RELEASED)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `Path` is now an interface with `DefaultImmutablePath` and `DefaultMutablePath` as implementations (2x speedup on path calculations).
 * `Traverser` now implements `Comparable`. If the underlying object doesn't implement `Comparable`, then a runtime exception.
 * Added abstract `BarrierStep` which greatly simplifies implementing barriers like `AggregateStep`, `OrderStep`, etc.
 * `SelectStep` is now intelligent about when to trigger path computations based on label selectors and barriers.

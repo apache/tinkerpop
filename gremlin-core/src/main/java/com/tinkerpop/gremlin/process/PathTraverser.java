@@ -1,14 +1,19 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.process.util.DefaultImmutablePath;
+import com.tinkerpop.gremlin.process.util.DefaultMutablePath;
+import com.tinkerpop.gremlin.process.util.EmptyPath;
 import com.tinkerpop.gremlin.process.util.PathAwareSideEffects;
 import com.tinkerpop.gremlin.structure.util.referenced.ReferencedFactory;
+
+import java.util.Collections;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class PathTraverser<T> extends SimpleTraverser<T> {
 
-    private Path path = new Path();
+    private Path path;
 
     protected PathTraverser() {
         super();
@@ -16,11 +21,14 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
 
     public PathTraverser(final T t, final Traversal.SideEffects sideEffects) {
         super(t, sideEffects);
+        this.path = new DefaultImmutablePath(EmptyPath.instance(), Collections.emptySet(), t);
+        this.path.extend(Collections.emptySet(),t);
     }
 
-    public PathTraverser(final String as, final T t, final Traversal.SideEffects sideEffects) {
+    public PathTraverser(final String label, final T t, final Traversal.SideEffects sideEffects) {
         super(t, sideEffects);
-        this.path.add(as, t);
+        this.path = new DefaultImmutablePath(EmptyPath.instance(), label, t);
+        this.path.extend(label,t);
     }
 
     @Override
@@ -47,20 +55,25 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
 
     @Override
     public <R> PathTraverser<R> makeChild(final String label, final R r) {
-        final PathTraverser<R> traverser = new PathTraverser<>(r, this.sideEffects);
+        final PathTraverser<R> traverser = new PathTraverser<>();
+        traverser.t = r;
+        traverser.sideEffects = this.sideEffects;
         traverser.loops = this.loops;
-        traverser.path.add(this.path);
-        traverser.path.add(label, r);
+        traverser.path = this.path.clone().extend(label,r);
         traverser.future = this.future;
+        traverser.bulk = this.bulk;
         return traverser;
     }
 
     @Override
     public PathTraverser<T> makeSibling() {
-        final PathTraverser<T> traverser = new PathTraverser<>(this.t, this.sideEffects);
+        final PathTraverser<T> traverser = new PathTraverser<>();
+        traverser.t = this.t;
+        traverser.sideEffects = this.sideEffects;
         traverser.loops = this.loops;
-        traverser.path.add(this.path);
+        traverser.path = this.path.clone();
         traverser.future = this.future;
+        traverser.bulk = this.bulk;
         return traverser;
     }
 

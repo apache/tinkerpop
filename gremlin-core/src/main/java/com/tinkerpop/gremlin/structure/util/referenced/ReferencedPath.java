@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure.util.referenced;
 
 import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.process.util.DefaultMutablePath;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
@@ -8,51 +9,60 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.detached.Attachable;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReferencedPath extends Path implements Attachable, Serializable {
+public class ReferencedPath extends DefaultMutablePath implements Attachable, Serializable {
 
     public ReferencedPath() {
 
     }
 
     public ReferencedPath(final Path path) {
-        path.forEach((as, object) -> {
+        path.forEach((labels, object) -> {
             if (object instanceof ReferencedElement || object instanceof ReferencedProperty || object instanceof ReferencedPath) {
-                this.add(as, object);
+                this.labels.add(labels);
+                this.objects.add(object);
             } else if (object instanceof Element) {
-                this.add(as, ReferencedFactory.detach((Element) object));
+                this.labels.add(labels);
+                this.objects.add(ReferencedFactory.detach((Element) object));
             } else if (object instanceof Property) {
-                this.add(as, ReferencedFactory.detach((Property) object));
+                this.labels.add(labels);
+                this.objects.add(ReferencedFactory.detach((Property) object));
             } else if (object instanceof Path) {
-                this.add(as, ReferencedFactory.detach((Path) object));
+                this.labels.add(labels);
+                this.objects.add(ReferencedFactory.detach((Path) object));
             } else {
-                this.add(as, object);
+                this.labels.add(labels);
+                this.objects.add(object);
             }
         });
     }
 
     public Path attach(final Graph hostGraph) {
-        final Path path = new Path();
-        this.forEach((as, object) -> {
+        final Path path = new DefaultMutablePath();
+        this.forEach((labels, object) -> {
             if (object instanceof Attachable) {
-                path.add(as, ((Attachable) object).attach(hostGraph));
+                path.extend(labels, ((Attachable) object).attach(hostGraph));
             } else {
-                path.add(as, object);
+                path.extend(labels, object);
             }
         });
         return path;
     }
 
     public Path attach(final Vertex hostVertex) {
-        final Path path = new Path();
-        this.forEach((as, object) -> {
+        final Path path = new DefaultMutablePath();
+        this.forEach((labels, object) -> {
             if (object instanceof Attachable) {
-                path.add(as, ((Attachable) object).attach(hostVertex));
+                path.extend(labels, ((Attachable) object).attach(hostVertex));
             } else {
-                path.add(as, object);
+                path.extend(labels, object);
             }
         });
         return path;

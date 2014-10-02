@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
+import com.tinkerpop.gremlin.process.util.DefaultMutablePath;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 
 import java.util.function.Function;
@@ -18,14 +19,15 @@ public class PathStep<S> extends MapStep<S, Path> implements PathConsumer {
         super(traversal);
         this.functionRing = (pathFunctions.length == 0) ? null : new FunctionRing(pathFunctions);
         this.setFunction(traverser -> {
-            final Path path = new Path();
+
             if (null == this.functionRing)
-                path.add(traverser.getPath());
+                return traverser.getPath();
             else {
-                traverser.getPath().forEach((a, b) -> path.add(a, this.functionRing.next().apply(b)));
+                final Path path = new DefaultMutablePath();
+                traverser.getPath().forEach((a, b) -> path.extend(a, this.functionRing.next().apply(b)));
                 this.functionRing.reset();
+                return path;
             }
-            return path;
         });
     }
 

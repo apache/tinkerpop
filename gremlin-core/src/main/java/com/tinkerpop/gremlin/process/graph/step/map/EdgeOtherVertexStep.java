@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -17,9 +18,9 @@ public class EdgeOtherVertexStep extends MapStep<Edge, Vertex> implements PathCo
         this.setFunction(traverser -> {
             final Path path = traverser.getPath();
             final Vertex vertex = path.get(path.size() - 2);
-            return ElementHelper.areEqual(vertex, traverser.get().outV().next()) ?
-                    traverser.get().inV().next() :
-                    traverser.get().outV().next();
+            return ElementHelper.areEqual(vertex, traverser.get().iterators().vertices(Direction.OUT).next()) ?
+                    traverser.get().iterators().vertices(Direction.IN).next() :
+                    traverser.get().iterators().vertices(Direction.OUT).next();
         });
     }
 }

@@ -1,16 +1,12 @@
 package com.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import org.javatuples.Pair;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -22,73 +18,27 @@ import java.util.stream.Stream;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Path implements Serializable {
+public interface Path extends Cloneable {
 
-    protected List<Set<String>> labels = new ArrayList<>();
-    protected List<Object> objects = new ArrayList<>();
+    public int size();
 
-    public Path() {
+    public Path extend(final String label, final Object object);
 
-    }
+    public Path extend(final Set<String> labels, final Object object);
 
-    public int size() {
-        return this.objects.size();
-    }
+    public <A> A get(final String label);
 
-    public void add(final String label, final Object object) {
-        final Set<String> labels = new HashSet<>();
-        if (TraversalHelper.isLabeled(label))
-            labels.add(label);
-        this.labels.add(labels);
-        this.objects.add(object);
-    }
+    public <A> A get(final int index);
 
-    public void add(final Set<String> labels, final Object object) {
-        this.labels.add(labels.stream().filter(TraversalHelper::isLabeled).collect(Collectors.toSet()));
-        this.objects.add(object);
-    }
+    public boolean hasLabel(final String label);
 
-    public void add(final Path path) {
-        this.labels.addAll(path.labels);
-        this.objects.addAll(path.objects);
-    }
+    public void addLabel(final String label);
 
-    public <A> A get(final String label) {
-        for (int i = 0; i < this.labels.size(); i++) {
-            if (this.labels.get(i).contains(label))
-                return (A) this.objects.get(i);
-        }
-        throw new IllegalArgumentException("The step with label " + label + "  does not exist");
-    }
+    public List<Object> getObjects();
 
-    public <A> A get(final int index) {
-        return (A) this.objects.get(index);
-    }
+    public List<Set<String>> getLabels();
 
-    public boolean hasLabel(final String label) {
-        for (final Set<String> labels : this.labels) {
-            if (labels.contains(label))
-                return true;
-        }
-        return false;
-    }
-
-    public void addLabel(final String label) {
-        if (TraversalHelper.isLabeled(label))
-            this.labels.get(this.labels.size() - 1).add(label);
-    }
-
-    public List<Object> getObjects() {
-        return new ArrayList<>(this.objects);
-    }
-
-    public List<Set<String>> getLabels() {
-        final List<Set<String>> labelSets = new ArrayList<>();
-        for (final Set<String> set : this.labels) {
-            labelSets.add(new HashSet<>(set));
-        }
-        return labelSets;
-    }
+    public Path clone();
 
     /**
      * Determines whether the path is a simple or not.
@@ -96,26 +46,33 @@ public class Path implements Serializable {
      *
      * @return Whether the path is simple or not
      */
-    public boolean isSimple() {
-        return new HashSet<>(this.objects).size() == this.objects.size();
+    public default boolean isSimple() {
+        final List<Object> objects = this.getObjects();
+        return new HashSet<>(objects).size() == objects.size();
     }
 
-    public void forEach(final Consumer<Object> consumer) {
-        this.objects.forEach(consumer);
+    public default void forEach(final Consumer<Object> consumer) {
+        this.getObjects().forEach(consumer);
     }
 
-    public void forEach(final BiConsumer<Set<String>, Object> consumer) {
-        for (int i = 0; i < this.size(); i++) {
-            consumer.accept(this.labels.get(i), this.objects.get(i));
+    public default void forEach(final BiConsumer<Set<String>, Object> consumer) {
+        final List<Set<String>> labels = this.getLabels();
+        final List<Object> objects = this.getObjects();
+        for (int i = 0; i < objects.size(); i++) {
+            consumer.accept(labels.get(i), objects.get(i));
         }
     }
 
-    public Stream<Pair<Set<String>, Object>> stream() {
-        return IntStream.range(0, this.size()).mapToObj(i -> Pair.with(this.labels.get(i), this.objects.get(i)));
+    public default Stream<Pair<Set<String>, Object>> stream() {
+        final List<Set<String>> labels = this.getLabels();
+        final List<Object> objects = this.getObjects();
+        return IntStream.range(0, this.size()).mapToObj(i -> Pair.with(labels.get(i), objects.get(i)));
     }
 
-    public String toString() {
-        return this.objects.toString();
-    }
+    public static class Exceptions {
 
+        public static IllegalArgumentException stepWithProvidedLabelDoesNotExist(final String label) {
+            return new IllegalArgumentException("The step with label " + label + "  does not exist");
+        }
+    }
 }
