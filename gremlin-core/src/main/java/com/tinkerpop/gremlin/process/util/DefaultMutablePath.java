@@ -22,10 +22,10 @@ public class DefaultMutablePath implements Path, Serializable, Cloneable {
 
     public DefaultMutablePath clone() {
         final DefaultMutablePath clone = new DefaultMutablePath();
-        this.forEach((labels, object) -> {
-            clone.objects.add(object);
-            clone.labels.add(new HashSet<>(labels));
-        });
+        for (int i = 0; i < this.objects.size(); i++) {
+            clone.objects.add(this.objects.get(i));
+            clone.labels.add(new HashSet<>(this.labels.get(i)));
+        }
         return clone;
     }
 

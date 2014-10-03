@@ -33,7 +33,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
 
     @Override
     public Traversal.SideEffects getSideEffects() {
-        if (!(this.sideEffects instanceof PathAwareSideEffects))
+        if (null != this.sideEffects && !(this.sideEffects instanceof PathAwareSideEffects))
             this.sideEffects = new PathAwareSideEffects(this.path, this.sideEffects);
         return this.sideEffects;
     }
@@ -80,7 +80,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
     @Override
     public PathTraverser<T> deflate() {
         super.deflate();
-        this.path = ReferencedFactory.detach(this.path);
+        this.path = ReferencedFactory.detach(this.path.clone());
         return this;
     }
 
