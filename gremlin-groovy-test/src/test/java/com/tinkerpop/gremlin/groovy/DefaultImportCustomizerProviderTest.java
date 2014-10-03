@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.groovy;
 
 import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
+import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -13,6 +14,10 @@ import static org.junit.Assert.assertTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class DefaultImportCustomizerProviderTest {
+    static {
+        SugarLoader.load();
+    }
+
     @Test
     public void shouldReturnDefaultImports() {
         final DefaultImportCustomizerProvider provider = new DefaultImportCustomizerProvider();

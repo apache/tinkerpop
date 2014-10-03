@@ -37,7 +37,6 @@ import org.junit.runners.model.RunnerBuilder;
  */
 public class GroovyProcessComputerSuite extends ProcessComputerSuite {
     static {
-        GremlinLoader.load();
         SugarLoader.load();
     }
 
