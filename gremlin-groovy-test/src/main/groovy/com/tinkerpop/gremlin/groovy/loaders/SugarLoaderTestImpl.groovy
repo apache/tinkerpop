@@ -34,7 +34,6 @@ class SugarLoaderTestImpl extends AbstractGremlinTest {
     }
 
     @Test
-    @org.junit.Ignore
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldNotAllowSugar() {
         clearRegistry()
@@ -67,7 +66,6 @@ class SugarLoaderTestImpl extends AbstractGremlinTest {
     }
 
     @Test
-    @org.junit.Ignore
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldAllowSugar() {
         SugarLoader.load()
@@ -82,7 +80,6 @@ class SugarLoaderTestImpl extends AbstractGremlinTest {
     }
 
     @Test
-    @org.junit.Ignore
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldUseTraverserCategoryCorrectly() {
         SugarLoader.load()
@@ -95,7 +92,6 @@ class SugarLoaderTestImpl extends AbstractGremlinTest {
     }
 
     @Test
-    @org.junit.Ignore
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void performanceTesting() {
         SugarLoader.load()
