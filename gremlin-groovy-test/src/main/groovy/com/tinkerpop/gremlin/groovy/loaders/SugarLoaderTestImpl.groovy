@@ -26,7 +26,7 @@ import static org.junit.Assert.*
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class SugarLoaderTest extends AbstractGremlinTest {
+class SugarLoaderTestImpl extends AbstractGremlinTest {
 
     @Override
     protected void afterLoad(final Graph g) throws Exception {
