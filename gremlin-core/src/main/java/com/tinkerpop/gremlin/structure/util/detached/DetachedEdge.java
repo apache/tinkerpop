@@ -81,7 +81,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
     public Edge attach(final Vertex hostVertex) {
         return StreamFactory.stream(hostVertex.iterators().edges(Direction.OUT, Integer.MAX_VALUE, this.label))
                 .filter(edge -> edge.equals(this))
-                .findFirst().orElseThrow(() -> new IllegalStateException("The detached edge could not be be found incident to the provided vertex: " + this));
+                .findAny().orElseThrow(() -> new IllegalStateException("The detached edge could not be be found incident to the provided vertex: " + this));
     }
 
     @Override

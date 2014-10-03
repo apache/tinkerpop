@@ -45,7 +45,7 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
         assertEquals("Checking result size", expectedResults.size(), results.size());
         for (T t : results) {
             if (t instanceof Map) {
-                assertTrue("Checking map result existence: " + t, expectedResults.stream().filter(e -> e instanceof Map).filter(e -> checkMap((Map) e, (Map) t)).findFirst().isPresent());
+                assertTrue("Checking map result existence: " + t, expectedResults.stream().filter(e -> e instanceof Map).filter(e -> checkMap((Map) e, (Map) t)).findAny().isPresent());
             } else {
                 assertTrue("Checking result existence: " + t, expectedResults.contains(t));
             }

@@ -42,7 +42,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
     public static final String TRAVERSER_TRACKER = Graph.Key.hide("gremlin.traverserTracker");
-    private static final String TRAVERSAL_SUPPLIER_KEY = "gremlin.traversalVertexProgram.traversalSupplier";
+    public static final String TRAVERSAL_SUPPLIER = "gremlin.traversalVertexProgram.traversalSupplier";
 
     private LambdaHolder<Supplier<Traversal>> traversalSupplier;
     private ThreadLocal<Traversal> traversal = new ThreadLocal<>();
@@ -59,7 +59,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     @Override
     public void loadState(final Configuration configuration) {
-        this.traversalSupplier = LambdaHolder.loadState(configuration, TRAVERSAL_SUPPLIER_KEY);
+        this.traversalSupplier = LambdaHolder.loadState(configuration, TRAVERSAL_SUPPLIER);
         if (null == this.traversalSupplier) {
             throw new IllegalArgumentException("The configuration does not have a traversal supplier");
         }
@@ -218,17 +218,17 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         }
 
         public Builder traversal(final String scriptEngine, final String traversalScript) {
-            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SCRIPT, TRAVERSAL_SUPPLIER_KEY, new String[]{scriptEngine, traversalScript});
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SCRIPT, TRAVERSAL_SUPPLIER, new String[]{scriptEngine, traversalScript});
             return this;
         }
 
         public Builder traversal(final Supplier<Traversal> traversal) {
-            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, TRAVERSAL_SUPPLIER_KEY, traversal);
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, TRAVERSAL_SUPPLIER, traversal);
             return this;
         }
 
         public Builder traversal(final Class<Supplier<Traversal>> traversalClass) {
-            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.CLASS, TRAVERSAL_SUPPLIER_KEY, traversalClass);
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.CLASS, TRAVERSAL_SUPPLIER, traversalClass);
             return this;
         }
 

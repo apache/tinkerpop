@@ -2,7 +2,8 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
@@ -16,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -23,9 +25,10 @@ import java.util.function.Function;
 public class GroupByMapReduce implements MapReduce<Object, Collection, Object, Object, Map> {
 
     public static final String GROUP_BY_STEP_SIDE_EFFECT_KEY = "gremlin.groupByStep.sideEffectKey";
-    public static final String GROUP_BY_REDUCE_FUNCTION = "gremlin.groupByStep.reduceFunction";
+    public static final String GROUP_BY_STEP_STEP_LABEL = "gremlin.groupByStep.stepLabel";
 
     private String sideEffectKey;
+    private String groupByStepKey;
     private Function reduceFunction;
 
     public GroupByMapReduce() {
@@ -33,29 +36,27 @@ public class GroupByMapReduce implements MapReduce<Object, Collection, Object, O
     }
 
     public GroupByMapReduce(final GroupByStep step) {
+        this.groupByStepKey = step.getLabel();
         this.sideEffectKey = step.getSideEffectKey();
         this.reduceFunction = step.reduceFunction;
     }
 
     @Override
     public void storeState(final Configuration configuration) {
-        try {
-            configuration.setProperty(GROUP_BY_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
-            VertexProgramHelper.serialize(this.reduceFunction, configuration, GROUP_BY_REDUCE_FUNCTION);
-        } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-
+        configuration.setProperty(GROUP_BY_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
+        configuration.setProperty(GROUP_BY_STEP_STEP_LABEL, this.groupByStepKey);
     }
 
     @Override
     public void loadState(final Configuration configuration) {
-        try {
-            this.sideEffectKey = configuration.getString(GROUP_BY_STEP_SIDE_EFFECT_KEY);
-            this.reduceFunction = VertexProgramHelper.deserialize(configuration, GROUP_BY_REDUCE_FUNCTION);
-        } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+        this.sideEffectKey = configuration.getString(GROUP_BY_STEP_SIDE_EFFECT_KEY);
+        this.groupByStepKey = configuration.getString(GROUP_BY_STEP_STEP_LABEL);
+        final LambdaHolder<Supplier<Traversal>> traversalSupplier = LambdaHolder.loadState(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER); // TODO: dah.
+        final Traversal<?, ?> traversal = traversalSupplier.get().get();
+        final GroupByStep groupByStep = (GroupByStep) traversal.getSteps().stream()
+                .filter(step -> step.getLabel().equals(this.groupByStepKey))
+                .findAny().get();
+        this.reduceFunction = groupByStep.reduceFunction;
     }
 
     @Override

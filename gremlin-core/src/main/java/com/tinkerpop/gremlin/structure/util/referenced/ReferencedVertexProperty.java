@@ -73,7 +73,7 @@ public class ReferencedVertexProperty<V> extends ReferencedElement implements Ve
     public VertexProperty attach(final Vertex hostVertex) {
         return StreamFactory.stream(hostVertex.iterators().properties(this.key))
                 .filter(vertexProperty -> vertexProperty.equals(this))
-                .findFirst().orElseThrow(() -> new IllegalStateException("The referenced meta-property does not reference a meta-property on the host vertex"));
+                .findAny().orElseThrow(() -> new IllegalStateException("The referenced meta-property does not reference a meta-property on the host vertex"));
     }
 
     @Override

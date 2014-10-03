@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
-import com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest;
+import com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyCyclicPathTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyFilterTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyHasNotTestImpl;
@@ -45,7 +45,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
-            GroovyGraphComputerTest.ComputerTest.class,
+            GroovyGraphComputerTestImpl.ComputerTestImpl.class,
             // filter
             GroovyCyclicPathTestImpl.ComputerTestImpl.class,
             // TODO: GroovyDedupTest.ComputerTest.class

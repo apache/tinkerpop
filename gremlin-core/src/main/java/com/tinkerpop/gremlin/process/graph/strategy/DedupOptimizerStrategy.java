@@ -40,7 +40,7 @@ public class DedupOptimizerStrategy implements TraversalStrategy.NoDependencies{
                 if (step1 instanceof DedupStep && !((DedupStep) step1).hasUniqueFunction) {
                     for (int j = i; j >= 0; j--) {
                         final Step step2 = traversal.getSteps().get(j);
-                        if (BIJECTIVE_PIPES.stream().filter(c -> c.isAssignableFrom(step2.getClass())).findFirst().isPresent()) {
+                        if (BIJECTIVE_PIPES.stream().filter(c -> c.isAssignableFrom(step2.getClass())).findAny().isPresent()) {
                             TraversalHelper.removeStep(step1, traversal);
                             TraversalHelper.insertStep(step1, j, traversal);
                             done = false;

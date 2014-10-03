@@ -57,7 +57,7 @@ public class Session {
 
         final Settings.ProcessorSettings processorSettings = this.settings.processors.stream()
                 .filter(p -> p.className.equals(SessionOpProcessor.class.getCanonicalName()))
-                .findFirst().orElse(SessionOpProcessor.DEFAULT_SETTINGS);
+                .findAny().orElse(SessionOpProcessor.DEFAULT_SETTINGS);
         this.configuredSessionTimeout = Long.parseLong(processorSettings.config.get(SessionOpProcessor.CONFIG_SESSION_TIMEOUT).toString());
 
         this.gremlinExecutor =  initializeGremlinExecutor().create();

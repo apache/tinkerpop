@@ -47,7 +47,7 @@ public class ReferencedEdge extends ReferencedElement implements Edge, Attachabl
     public Edge attach(final Vertex hostVertex) {
         return StreamFactory.stream(hostVertex.iterators().edges(Direction.OUT, Integer.MAX_VALUE, this.label()))
                 .filter(edge -> edge.equals(this))
-                .findFirst().orElseThrow(() -> new IllegalStateException("The referenced edge does not reference an edge on the host vertex"));
+                .findAny().orElseThrow(() -> new IllegalStateException("The referenced edge does not reference an edge on the host vertex"));
     }
 
     @Override

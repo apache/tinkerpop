@@ -75,8 +75,8 @@ public class TraversalSourceGenerator {
     private static String sharedToGenericString(final Method method) {
         try {
             StringBuilder sb = new StringBuilder();
-            Method printModifiersIfNonzeroMethod = Arrays.asList(Executable.class.getDeclaredMethods()).stream().filter(m -> m.getName().equals("printModifiersIfNonzero")).findFirst().get();
-            Method specificToGenericStringHeaderMethod = Arrays.asList(Executable.class.getDeclaredMethods()).stream().filter(m -> m.getName().equals("specificToGenericStringHeader")).findFirst().get();
+            Method printModifiersIfNonzeroMethod = Arrays.asList(Executable.class.getDeclaredMethods()).stream().filter(m -> m.getName().equals("printModifiersIfNonzero")).findAny().get();
+            Method specificToGenericStringHeaderMethod = Arrays.asList(Executable.class.getDeclaredMethods()).stream().filter(m -> m.getName().equals("specificToGenericStringHeader")).findAny().get();
             printModifiersIfNonzeroMethod.setAccessible(true);
             specificToGenericStringHeaderMethod.setAccessible(true);
 

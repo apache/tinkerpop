@@ -68,7 +68,7 @@ public class DefaultMutablePath implements Path, Serializable, Cloneable {
 
     @Override
     public boolean hasLabel(final String label) {
-        return this.labels.stream().filter(l -> l.contains(label)).findFirst().isPresent();
+        return this.labels.stream().filter(l -> l.contains(label)).findAny().isPresent();
     }
 
     @Override
