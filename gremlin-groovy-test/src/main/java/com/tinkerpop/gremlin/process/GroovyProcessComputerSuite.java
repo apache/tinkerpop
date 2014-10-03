@@ -46,7 +46,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
-            GroovyGraphComputerTest.ComputerTest.class,
+            GroovyGraphComputerTest.ComputerTestImpl.class,
             // filter
             GroovyCyclicPathTestImpl.ComputerTestImpl.class,
             // TODO: GroovyDedupTest.ComputerTest.class

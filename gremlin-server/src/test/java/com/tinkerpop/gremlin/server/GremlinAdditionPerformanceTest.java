@@ -64,7 +64,7 @@ public class GremlinAdditionPerformanceTest extends AbstractGremlinServerPerform
                 .serializer(mimeType)
                 .create();
         final Client client = cluster.connect();
-        assertEquals("2", client.submit("1+1").stream().map(Item::getString).findFirst().orElse("invalid"));
+        assertEquals("2", client.submit("1+1").stream().map(Item::getString).findAny().orElse("invalid"));
     }
 
     @BeforeClass
@@ -80,6 +80,6 @@ public class GremlinAdditionPerformanceTest extends AbstractGremlinServerPerform
 
     private void tryWebSocketGremlin() throws Exception {
         final Client client = cluster.connect();
-        assertEquals("2", client.submit("1+1").stream().map(Item::getString).findFirst().orElse("invalid"));
+        assertEquals("2", client.submit("1+1").stream().map(Item::getString).findAny().orElse("invalid"));
     }
 }

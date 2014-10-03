@@ -42,7 +42,7 @@ public abstract class UnfoldTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_values_unfold_mapXkeyX() {
+    public void g_V_valueMap_unfold_mapXkeyX() {
         final Traversal<Vertex, String> traversal = get_V_valueMap_unfold_mapXkeyX();
         printTraversalForm(traversal);
         int counter = 0;

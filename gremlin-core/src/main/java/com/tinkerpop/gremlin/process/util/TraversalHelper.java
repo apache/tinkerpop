@@ -27,7 +27,7 @@ public class TraversalHelper {
     }
 
     public static boolean isReversible(final Traversal<?, ?> traversal) {
-        return !traversal.getSteps().stream().filter(step -> !(step instanceof Reversible)).findFirst().isPresent();
+        return !traversal.getSteps().stream().filter(step -> !(step instanceof Reversible)).findAny().isPresent();
     }
 
     public static <C extends Step> Optional<C> getLastStep(final Traversal<?, ?> traversal, final Class<C> classToGet) {
@@ -38,14 +38,14 @@ public class TraversalHelper {
     public static <S, E> Step<S, E> getStep(final String label, final Traversal<?, ?> traversal) {
         return traversal.getSteps().stream()
                 .filter(step -> label.equals(step.getLabel()))
-                .findFirst()
+                .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("The provided step label does not exist: " + label));
     }
 
     public static boolean hasLabel(final String label, final Traversal<?, ?> traversal) {
         return traversal.getSteps().stream()
                 .filter(step -> label.equals(step.getLabel()))
-                .findFirst().isPresent();
+                .findAny().isPresent();
     }
 
     public static List<String> getLabels(final Traversal<?, ?> traversal) {
@@ -186,7 +186,7 @@ public class TraversalHelper {
     public static boolean trackPaths(final Traversal<?, ?> traversal) {
         return traversal.getSteps().stream()
                 .filter(step -> step instanceof PathConsumer && ((PathConsumer) step).requiresPaths())
-                .findFirst()
+                .findAny()
                 .isPresent();
     }
 

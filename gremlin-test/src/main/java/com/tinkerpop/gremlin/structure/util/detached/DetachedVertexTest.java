@@ -193,7 +193,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
                         && (p.value().equals("a") || p.value().equals("c"))));
 
         // there should be only one with properties on properties
-        final VertexProperty propertyOnProperty = propertyX.stream().filter(p -> p.iterators().properties().hasNext()).findFirst().get();
+        final VertexProperty propertyOnProperty = propertyX.stream().filter(p -> p.iterators().properties().hasNext()).findAny().get();
         assertEquals("a", propertyOnProperty.iterators().properties("propX1a").next().value());
         assertEquals(1, propertyOnProperty.iterators().properties("propX11").next().value());
         assertEquals(123.01d, propertyOnProperty.iterators().properties("same").next().value());

@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram
  */
 public abstract class GroovyGraphComputerTest {
 
-    public static class ComputerTest extends GraphComputerTest {
+    public static class ComputerTestImpl extends GraphComputerTest {
         public GraphComputer get_g_compute() {
             g.compute();
         }

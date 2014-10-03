@@ -67,7 +67,7 @@ public class TraversalCoverageTestImpl extends AbstractGremlinProcessTest {
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
                 .filter(m -> m.getName().equals(method.getName()))
                 .filter(m -> Arrays.asList(m.getParameterTypes()).toString().equals(Arrays.asList(method.getParameterTypes()).toString()))
-                .findFirst().orElseGet(() -> {
+                .findAny().orElseGet(() -> {
                     final boolean muted = Boolean.parseBoolean(System.getProperty("muteTestLogs", "false"));
                     if (!muted) System.out.println("IGNORE IF TEST PASSES: Can not find native implementation of: " + method);
                     return method;

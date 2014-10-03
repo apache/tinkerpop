@@ -171,9 +171,9 @@ public class EdgeTest extends AbstractGremlinTest {
         assertTrue(m.stream().anyMatch(p -> p.key().equals("name")));
         assertTrue(m.stream().anyMatch(p -> p.key().equals("location")));
         assertTrue(m.stream().anyMatch(p -> p.key().equals("status")));
-        assertEquals("marko", m.stream().filter(p -> p.key().equals("name")).map(Property::value).findFirst().orElse(null));
-        assertEquals("desert", m.stream().filter(p -> p.key().equals("location")).map(Property::value).findFirst().orElse(null));
-        assertEquals("dope", m.stream().filter(p -> p.key().equals("status")).map(Property::value).findFirst().orElse(null));
+        assertEquals("marko", m.stream().filter(p -> p.key().equals("name")).map(Property::value).findAny().orElse(null));
+        assertEquals("desert", m.stream().filter(p -> p.key().equals("location")).map(Property::value).findAny().orElse(null));
+        assertEquals("dope", m.stream().filter(p -> p.key().equals("status")).map(Property::value).findAny().orElse(null));
 
         e.property("status").remove();
 

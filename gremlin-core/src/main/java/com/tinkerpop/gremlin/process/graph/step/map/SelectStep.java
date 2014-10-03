@@ -81,11 +81,11 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
     public void onEngine(final Engine engine) {
         this.onGraphComputer = engine.equals(Engine.COMPUTER);
         this.requiresPaths = engine.equals(Engine.COMPUTER) ?
-                TraversalHelper.getLabelsUpTo(this, this.traversal).stream().filter(this.selectLabels::contains).findFirst().isPresent() :
+                TraversalHelper.getLabelsUpTo(this, this.traversal).stream().filter(this.selectLabels::contains).findAny().isPresent() :
                 TraversalHelper.getStepsUpTo(this, this.traversal).stream()
                         .filter(step -> step instanceof Barrier)
-                        .filter(step -> TraversalHelper.getLabelsUpTo(step, this.traversal).stream().filter(this.selectLabels::contains).findFirst().isPresent())
-                        .findFirst().isPresent();
+                        .filter(step -> TraversalHelper.getLabelsUpTo(step, this.traversal).stream().filter(this.selectLabels::contains).findAny().isPresent())
+                        .findAny().isPresent();
     }
 
     public String toString() {
