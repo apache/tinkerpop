@@ -22,7 +22,7 @@ TinkerPop 3.0.0.M3 (Release Date: NOT OFFICIALLY RELEASED)
 * Renamed configuration parameters in Giraph-Gremlin to be consistent with a `giraph.gremlin`-prefix.
 * Made it possible to pass a `ScriptEngine` name and string script in `TraversalVertexProgram` and `LambdaVertexProgram`.
 * Made `TinkerGraph` a plugin for the Console as it is no longer a direct dependency in `gremlin-groovy`.
-* Add features for supporting the addition of properties via `Element.property(String,Object)`.
+* Added features for supporting the addition of properties via `Element.property(String,Object)`.
 * `GiraphGraph` OLTP tested against Gremlin-Java8 and Gremlin-Groovy -- OLAP tested against Gremlin-Groovy.
 * `Neo4jGraph` is now tested against both Gremlin-Java8 and Gremlin-Groovy.
 * Renamed the test cases in `ProcessTestSuite` to be consistent with other Gremlin language variants.
