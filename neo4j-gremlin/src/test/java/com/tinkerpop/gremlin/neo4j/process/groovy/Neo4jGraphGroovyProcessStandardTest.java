@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.neo4j.process.groovy;
 
-import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import com.tinkerpop.gremlin.neo4j.DefaultNeo4jGraphProvider;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
@@ -14,4 +13,7 @@ import org.junit.runner.RunWith;
 @RunWith(GroovyProcessStandardSuite.class)
 @ProcessStandardSuite.GraphProviderClass(provider = DefaultNeo4jGraphProvider.class, graph = Neo4jGraph.class)
 public class Neo4jGraphGroovyProcessStandardTest {
+    static {
+        SugarLoader.load();
+    }
 }
