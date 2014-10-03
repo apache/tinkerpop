@@ -28,8 +28,8 @@ public class GroovyEnvironmentSuite extends AbstractGremlinSuite {
             GremlinGroovyScriptEngineTestImpl.class,
             GremlinExecutorTestImpl.class,
             GremlinLoaderTestImpl.class,
-            GroovyTraversalScriptTestImpl.class,
-            SugarLoaderTestImpl.class,
+            GroovyTraversalScriptTestImpl.class
+            //SugarLoaderTestImpl.class,
     };
 
     /**
