@@ -11,27 +11,27 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DefaultImmutablePath implements Path, Serializable, Cloneable {
+public class ImmutablePath implements Path, Serializable, Cloneable {
 
     private Path previousPath = EmptyPath.instance();
     private Set<String> currentLabels = new HashSet<>();
     private Object currentObject;
 
-    protected DefaultImmutablePath() {
+    protected ImmutablePath() {
 
     }
 
-    public DefaultImmutablePath clone() {
+    public ImmutablePath clone() {
         return this;
     }
 
-    public DefaultImmutablePath(final Path previousPath, final String currentLabel, final Object currentObject) {
+    public ImmutablePath(final Path previousPath, final String currentLabel, final Object currentObject) {
         this.previousPath = previousPath;
         this.currentLabels.add(currentLabel);
         this.currentObject = currentObject;
     }
 
-    public DefaultImmutablePath(final Path previousPath, final Set<String> currentLabels, final Object currentObject) {
+    public ImmutablePath(final Path previousPath, final Set<String> currentLabels, final Object currentObject) {
         this.previousPath = previousPath;
         this.currentLabels.addAll(currentLabels);
         this.currentObject = currentObject;
@@ -42,11 +42,11 @@ public class DefaultImmutablePath implements Path, Serializable, Cloneable {
     }
 
     public Path extend(final String label, final Object object) {
-        return new DefaultImmutablePath(this, label, object);
+        return new ImmutablePath(this, label, object);
     }
 
     public Path extend(final Set<String> labels, final Object object) {
-        return new DefaultImmutablePath(this, labels, object);
+        return new ImmutablePath(this, labels, object);
     }
 
     public <A> A get(final String label) {

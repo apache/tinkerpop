@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.structure.util.referenced;
 
 import com.tinkerpop.gremlin.process.Path;
-import com.tinkerpop.gremlin.process.util.DefaultMutablePath;
+import com.tinkerpop.gremlin.process.util.MutablePath;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
@@ -9,15 +9,11 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.detached.Attachable;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReferencedPath extends DefaultMutablePath implements Attachable, Serializable {
+public class ReferencedPath extends MutablePath implements Attachable, Serializable {
 
     public ReferencedPath() {
 
@@ -45,7 +41,19 @@ public class ReferencedPath extends DefaultMutablePath implements Attachable, Se
     }
 
     public Path attach(final Graph hostGraph) {
-        final Path path = new DefaultMutablePath();
+        /*Path path = EmptyPath.instance();
+        for (int i = 0; i < this.objects.size(); i++) {
+            if (this.objects.get(i) instanceof Attachable) {
+                path.extend(this.labels.get(i), ((Attachable) this.objects.get(i)).attach(hostGraph));
+            } else {
+                path.extend(this.labels.get(i), this.objects.get(i));
+            }
+
+            path = path.extend(this.labels.get(i), this.objects.get(i));
+        }
+        return path;*/
+
+        final Path path = new MutablePath();
         this.forEach((labels, object) -> {
             if (object instanceof Attachable) {
                 path.extend(labels, ((Attachable) object).attach(hostGraph));
@@ -57,7 +65,18 @@ public class ReferencedPath extends DefaultMutablePath implements Attachable, Se
     }
 
     public Path attach(final Vertex hostVertex) {
-        final Path path = new DefaultMutablePath();
+        /*Path path = EmptyPath.instance();
+        for (int i = 0; i < this.objects.size(); i++) {
+            if (this.objects.get(i) instanceof Attachable) {
+                path.extend(this.labels.get(i), ((Attachable) this.objects.get(i)).attach(hostVertex));
+            } else {
+                path.extend(this.labels.get(i), this.objects.get(i));
+            }
+
+            path = path.extend(this.labels.get(i), this.objects.get(i));
+        }
+        return path;*/
+        final Path path = new MutablePath();
         this.forEach((labels, object) -> {
             if (object instanceof Attachable) {
                 path.extend(labels, ((Attachable) object).attach(hostVertex));
@@ -66,5 +85,9 @@ public class ReferencedPath extends DefaultMutablePath implements Attachable, Se
             }
         });
         return path;
+    }
+
+    public String toString() {
+        return this.objects.toString();
     }
 }

@@ -12,8 +12,8 @@ import java.util.stream.Stream;
 
 /**
  * A Path denotes a particular walk through a {@link com.tinkerpop.gremlin.structure.Graph} as defined by a {@link Traverser}.
- * Internal to a Path are two lists: a list of labels and a list of objects.
- * The list of labels are the as-labels of the steps traversed.
+ * In abstraction, any Path implementation maintains two lists: a list of sets of labels and a list of objects.
+ * The list of labels are the labels of the steps traversed.
  * The list of objects are the objects traversed.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)

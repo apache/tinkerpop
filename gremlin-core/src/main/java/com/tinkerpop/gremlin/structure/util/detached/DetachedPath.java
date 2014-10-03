@@ -1,22 +1,17 @@
 package com.tinkerpop.gremlin.structure.util.detached;
 
 import com.tinkerpop.gremlin.process.Path;
-import com.tinkerpop.gremlin.process.util.DefaultMutablePath;
+import com.tinkerpop.gremlin.process.util.MutablePath;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DetachedPath extends DefaultMutablePath {
+public class DetachedPath extends MutablePath {
 
     public DetachedPath() {
 
@@ -47,7 +42,7 @@ public class DetachedPath extends DefaultMutablePath {
     }
 
     public Path attach(final Graph graph) {
-        final Path path = new DefaultMutablePath();
+        final Path path = new MutablePath();
         this.forEach((as, object) -> {
             if (object instanceof DetachedVertex) {
                 path.extend(as, ((DetachedVertex) object).attach(graph));
@@ -68,5 +63,7 @@ public class DetachedPath extends DefaultMutablePath {
         return new DetachedPath(path);
     }
 
-
+    public String toString() {
+        return this.objects.toString();
+    }
 }

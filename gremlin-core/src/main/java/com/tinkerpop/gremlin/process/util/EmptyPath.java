@@ -25,12 +25,12 @@ public class EmptyPath implements Path, Serializable {
 
     @Override
     public Path extend(final String label, final Object object) {
-        return new DefaultImmutablePath(this, label, object);
+        return new ImmutablePath(this, label, object);
     }
 
     @Override
     public Path extend(final Set<String> labels, final Object object) {
-        return new DefaultImmutablePath(this, labels, object);
+        return new ImmutablePath(this, labels, object);
     }
 
     @Override
