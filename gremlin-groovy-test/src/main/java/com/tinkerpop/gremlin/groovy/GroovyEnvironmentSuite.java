@@ -3,12 +3,12 @@ package com.tinkerpop.gremlin.groovy;
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.GraphManager;
-import com.tinkerpop.gremlin.groovy.engine.GremlinExecutorTestImpl;
-import com.tinkerpop.gremlin.groovy.engine.GroovyTraversalScriptTestImpl;
-import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTestImpl;
-import com.tinkerpop.gremlin.groovy.loaders.GremlinLoaderTestImpl;
+import com.tinkerpop.gremlin.groovy.engine.GremlinExecutorTest;
+import com.tinkerpop.gremlin.groovy.engine.GroovyTraversalScriptTest;
+import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTest;
+import com.tinkerpop.gremlin.groovy.loaders.GremlinLoaderTest;
 import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
-import com.tinkerpop.gremlin.groovy.loaders.SugarLoaderTestImpl;
+import com.tinkerpop.gremlin.groovy.loaders.SugarLoaderTest;
 import com.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
@@ -24,11 +24,11 @@ import java.util.stream.Stream;
 public class GroovyEnvironmentSuite extends AbstractGremlinSuite {
 
     private static final Class<?>[] allTests = new Class<?>[]{
-            GremlinGroovyScriptEngineTestImpl.class,
-            GremlinExecutorTestImpl.class,
-            GremlinLoaderTestImpl.class,
-            GroovyTraversalScriptTestImpl.class,
-            SugarLoaderTestImpl.class,
+            GremlinGroovyScriptEngineTest.class,
+            GremlinExecutorTest.class,
+            GremlinLoaderTest.class,
+            GroovyTraversalScriptTest.class,
+            SugarLoaderTest.class,
     };
 
     /**

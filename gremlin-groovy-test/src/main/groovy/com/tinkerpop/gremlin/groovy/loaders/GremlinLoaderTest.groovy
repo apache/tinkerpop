@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class GremlinLoaderTestImpl {
+class GremlinLoaderTest {
 
     @Test
     public void shouldHideAndUnhideKeys() {
