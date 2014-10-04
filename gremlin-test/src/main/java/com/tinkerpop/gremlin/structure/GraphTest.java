@@ -591,6 +591,7 @@ public class GraphTest extends AbstractGremlinTest {
         final Graph.OptOut[] optOuts = graphClass.getAnnotationsByType(Graph.OptOut.class);
         Arrays.stream(optOuts).forEach(optOut -> {
             try {
+                // todo: seems to be missing a case here because when tests were renamed for Impl GiraphGraph didn't error properly
                 final Class testClass = Class.forName(optOut.test());
                 assertTrue(Arrays.stream(testClass.getMethods()).anyMatch(m -> m.getName().equals(optOut.method())));
             } catch (Exception ex) {
