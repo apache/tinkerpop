@@ -2,22 +2,15 @@ package com.tinkerpop.gremlin.groovy.loaders
 
 import com.tinkerpop.gremlin.AbstractGremlinTest
 import com.tinkerpop.gremlin.LoadGraphWith
-import com.tinkerpop.gremlin.process.SimpleTraverser
-import com.tinkerpop.gremlin.process.Traversal
-import com.tinkerpop.gremlin.process.graph.GraphTraversal
-import com.tinkerpop.gremlin.process.graph.marker.TraverserSource
+import com.tinkerpop.gremlin.groovy.util.SugarTestHelper
 import com.tinkerpop.gremlin.structure.Graph
 import com.tinkerpop.gremlin.structure.Vertex
-import com.tinkerpop.gremlin.process.SimpleTraverser;
-import com.tinkerpop.gremlin.process.PathTraverser;
-import com.tinkerpop.gremlin.process.Traverser
+
 /*import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerElementTraversal;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex*/
-import org.codehaus.groovy.runtime.InvokerHelper
-import org.junit.Ignore
 import org.junit.Test
 
 import static org.junit.Assert.*
@@ -29,14 +22,14 @@ import static org.junit.Assert.*
 class SugarLoaderTestImpl extends AbstractGremlinTest {
 
     @Override
-    protected void afterLoad(final Graph g) throws Exception {
-        clearRegistry()
+    protected void afterLoadGraphWith(final Graph g) throws Exception {
+        SugarTestHelper.clearRegistry(graphProvider)
     }
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldNotAllowSugar() {
-        clearRegistry()
+        SugarTestHelper.clearRegistry(graphProvider)
         try {
             g.V
             fail("Without sugar loaded, the traversal should fail");
@@ -147,21 +140,6 @@ class SugarLoaderTestImpl extends AbstractGremlinTest {
             [it.a.name, it.name]
         })
 
-    }
-
-    /**
-     * Clear the metaclass registry to "turn-off" sugar.
-     */
-    private clearRegistry() {
-        def metaRegistry = InvokerHelper.getMetaRegistry()
-
-        // this call returns interfaces and removes meta clases from there.  not sure why it doesn't return
-        // concrete classes that are in the registry, but such is the nature of groovy
-        def metaClassesToRemove = metaRegistry.iterator()
-        metaClassesToRemove.collect{(Class) it.theClass}.each{ metaRegistry.removeMetaClass(it) }
-
-        // since we don't get concrete classes those must come from the GraphProvider.
-        graphProvider.getImplementations().each{ metaRegistry.removeMetaClass(it) }
     }
 
     def clock = { int loops = 100, Closure closure ->

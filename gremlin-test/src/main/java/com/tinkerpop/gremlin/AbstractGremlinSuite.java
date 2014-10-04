@@ -4,8 +4,10 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.GraphTest;
 import org.javatuples.Pair;
 import org.junit.runner.Description;
+import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.manipulation.NoTestsRemainException;
+import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.Suite;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
@@ -138,6 +140,23 @@ public abstract class AbstractGremlinSuite extends Suite {
             assertEquals(new Long(expectedEdgeCount), g.E().count().next());
         };
     }
+
+    @Override
+    protected void runChild(final Runner runner, final RunNotifier notifier) {
+        if (beforeTestExecution((Class<? extends AbstractGremlinTest>) runner.getDescription().getTestClass())) super.runChild(runner, notifier);
+        afterTestExecution((Class<? extends AbstractGremlinTest>) runner.getDescription().getTestClass());
+    }
+
+    /**
+     * Called just prior to test class execution.  Return false to ignore test class. By default this always returns
+     * true.
+     */
+    public boolean beforeTestExecution(final Class<? extends AbstractGremlinTest> testClass) { return true; }
+
+    /**
+     * Called just after test class execution.
+     */
+    public void afterTestExecution(final Class<? extends AbstractGremlinTest> testClass) {}
 
     /**
      * Filter for tests in the suite which is controlled by the {@link Graph.OptOut} annotation.

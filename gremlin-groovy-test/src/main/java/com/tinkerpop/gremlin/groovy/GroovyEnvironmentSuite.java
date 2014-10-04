@@ -1,13 +1,15 @@
 package com.tinkerpop.gremlin.groovy;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
+import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutorTestImpl;
 import com.tinkerpop.gremlin.groovy.engine.GroovyTraversalScriptTestImpl;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTestImpl;
-import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import com.tinkerpop.gremlin.groovy.loaders.GremlinLoaderTestImpl;
 import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import com.tinkerpop.gremlin.groovy.loaders.SugarLoaderTestImpl;
+import com.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -21,16 +23,12 @@ import java.util.stream.Stream;
  */
 public class GroovyEnvironmentSuite extends AbstractGremlinSuite {
 
-    static {
-        SugarLoader.load();
-    }
-
     private static final Class<?>[] allTests = new Class<?>[]{
             GremlinGroovyScriptEngineTestImpl.class,
             GremlinExecutorTestImpl.class,
             GremlinLoaderTestImpl.class,
-            GroovyTraversalScriptTestImpl.class
-            //SugarLoaderTestImpl.class,
+            GroovyTraversalScriptTestImpl.class,
+            SugarLoaderTestImpl.class,
     };
 
     /**
@@ -54,5 +52,25 @@ public class GroovyEnvironmentSuite extends AbstractGremlinSuite {
 
     public GroovyEnvironmentSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
         super(klass, builder, testsToExecute);
+    }
+
+    @Override
+    public boolean beforeTestExecution(final Class<? extends AbstractGremlinTest> testClass) {
+        unloadSugar();
+        SugarLoader.load();
+        return true;
+    }
+
+    @Override
+    public void afterTestExecution(final Class<? extends AbstractGremlinTest> testClass) {
+        unloadSugar();
+    }
+
+    private void unloadSugar() {
+        try {
+            SugarTestHelper.clearRegistry(GraphManager.get());
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }

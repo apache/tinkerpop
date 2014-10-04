@@ -58,7 +58,7 @@ public class CommunityGeneratorTest {
             try {
                 communityGeneratorTest(g, null);
 
-                afterLoad(g1);
+                afterLoadGraphWith(g1);
                 communityGeneratorTest(g1, null);
 
                 assertTrue(g.E().count().next() > 0);
@@ -85,7 +85,7 @@ public class CommunityGeneratorTest {
             try {
                 communityGeneratorTest(g, () -> 123456789l);
 
-                afterLoad(g1);
+                afterLoadGraphWith(g1);
                 communityGeneratorTest(g1, () -> 123456789l);
 
                 assertTrue(g.E().count().next() > 0);
@@ -104,7 +104,7 @@ public class CommunityGeneratorTest {
         }
 
         @Override
-        protected void afterLoad(final Graph graph) throws Exception {
+        protected void afterLoadGraphWith(final Graph graph) throws Exception {
             final int numNodes = numberOfVertices;
             for (int i = 0; i < numNodes; i++) graph.addVertex("oid", i);
             tryCommit(graph);
@@ -145,7 +145,7 @@ public class CommunityGeneratorTest {
 
                     graph.V().remove();
                     tryCommit(graph);
-                    afterLoad(graph);
+                    afterLoadGraphWith(graph);
                     System.out.println(String.format("Ran CommunityGeneratorTest with different CrossCommunityPercentage, expected %s but used %s", crossPcent, localCrossPcent));
                 }
             }
@@ -184,7 +184,7 @@ public class CommunityGeneratorTest {
         }
 
         @Override
-        protected void afterLoad(final Graph graph) throws Exception {
+        protected void afterLoadGraphWith(final Graph graph) throws Exception {
             final int numNodes = numberOfVertices;
             for (int i = 0; i < numNodes; i++) graph.addVertex("oid", i);
             tryCommit(graph);

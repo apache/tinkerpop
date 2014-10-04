@@ -62,11 +62,11 @@ public class DistributionGeneratorTest {
                 final Graph g2 = graphProvider.openTestGraph(configuration2);
 
                 try {
-                    afterLoad(g1);
+                    afterLoadGraphWith(g1);
                     final DistributionGenerator generator = makeGenerator(g1).create();
                     distributionGeneratorTest(g1, generator);
 
-                    afterLoad(g2);
+                    afterLoadGraphWith(g2);
                     final DistributionGenerator generator1 = makeGenerator(g2).create();
                     distributionGeneratorTest(g2, generator1);
 
@@ -99,7 +99,7 @@ public class DistributionGeneratorTest {
                 final DistributionGenerator generator = makeGenerator(g).seedGenerator(() -> 123456789l).inVertices(vordered).outVertices(vordered).create();
                 distributionGeneratorTest(g, generator);
 
-                afterLoad(g1);
+                afterLoadGraphWith(g1);
                 final Iterable<Vertex> vordered1 = verticesByOid(g1);
                 final DistributionGenerator generator1 = makeGenerator(g1).seedGenerator(() -> 123456789l).inVertices(vordered1).outVertices(vordered1).create();
                 distributionGeneratorTest(g1, generator1);
@@ -114,7 +114,7 @@ public class DistributionGeneratorTest {
         }
 
         @Override
-        protected void afterLoad(final Graph graph) throws Exception {
+        protected void afterLoadGraphWith(final Graph graph) throws Exception {
             final int numNodes = numberOfVertices;
             for (int i = 0; i < numNodes; i++) graph.addVertex("oid", i);
             tryCommit(graph);
@@ -157,7 +157,7 @@ public class DistributionGeneratorTest {
         }
 
         @Override
-        protected void afterLoad(final Graph graph) throws Exception {
+        protected void afterLoadGraphWith(final Graph graph) throws Exception {
             final int numNodes = numberOfVertices;
             for (int i = 0; i < numNodes; i++) graph.addVertex("oid", i);
             tryCommit(graph);

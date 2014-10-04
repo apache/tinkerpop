@@ -1,6 +1,9 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
+import com.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyCyclicPathTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyDedupTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyExceptTestImpl;
@@ -46,10 +49,6 @@ import org.junit.runners.model.RunnerBuilder;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GroovyProcessStandardSuite extends ProcessStandardSuite {
-
-    static {
-        SugarLoader.load();
-    }
 
     /**
      * This list of tests in the suite that will be executed.  Gremlin developers should add to this list
@@ -106,5 +105,25 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
 
     public GroovyProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
         super(klass, builder, testsToExecute, testsToEnforce, true);
+    }
+
+    @Override
+    public boolean beforeTestExecution(final Class<? extends AbstractGremlinTest> testClass) {
+        unloadSugar();
+        SugarLoader.load();
+        return true;
+    }
+
+    @Override
+    public void afterTestExecution(final Class<? extends AbstractGremlinTest> testClass) {
+        unloadSugar();
+    }
+
+    private void unloadSugar() {
+        try {
+            SugarTestHelper.clearRegistry(GraphManager.get());
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }
