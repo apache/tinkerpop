@@ -41,15 +41,15 @@ import java.util.Optional;
         method = "g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_d__c_sungBy_d__d_hasXname_GarciaXX",
         reason = "Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.map.GroovyMatchTestImpl$StandardTestImpl",
+        test = "com.tinkerpop.gremlin.process.graph.step.map.GroovyMatchTest$StandardTest",
         method = "g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX",
         reason = "Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.map.GroovyMatchTestImpl$StandardTestImpl",
+        test = "com.tinkerpop.gremlin.process.graph.step.map.GroovyMatchTest$StandardTest",
         method = "g_V_matchXa_0sungBy_b__a_0sungBy_c__b_writtenBy_d__c_writtenBy_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX",
         reason = "Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.map.GroovyMatchTestImpl$StandardTestImpl",
+        test = "com.tinkerpop.gremlin.process.graph.step.map.GroovyMatchTest$StandardTest",
         method = "g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_d__c_sungBy_d__d_hasXname_GarciaXX",
         reason = "Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
@@ -57,19 +57,19 @@ import java.util.Optional;
         method = "g_V_both_both_count",
         reason = "Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyCountTestImpl$StandardTestImpl",
+        test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyCountTest$StandardTest",
         method = "g_V_both_both_count",
         reason = "Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTestImpl$ComputerTestImpl",
+        test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
         method = "shouldNotAllowNullMemoryKeys",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTestImpl$ComputerTestImpl",
+        test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
         method = "shouldRequireRegisteringMemoryKeys",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTestImpl$ComputerTestImpl",
+        test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
         method = "shouldNotAllowSettingUndeclaredMemoryKeys",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 public class GiraphGraph implements Graph {
