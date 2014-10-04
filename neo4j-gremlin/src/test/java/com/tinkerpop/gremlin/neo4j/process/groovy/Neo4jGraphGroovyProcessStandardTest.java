@@ -13,7 +13,4 @@ import org.junit.runner.RunWith;
 @RunWith(GroovyProcessStandardSuite.class)
 @ProcessStandardSuite.GraphProviderClass(provider = DefaultNeo4jGraphProvider.class, graph = Neo4jGraph.class)
 public class Neo4jGraphGroovyProcessStandardTest {
-    static {
-        SugarLoader.load();
-    }
 }

@@ -25,10 +25,6 @@ public class BaseNeo4jGraphTest {
     protected final DefaultNeo4jGraphProvider graphProvider = new DefaultNeo4jGraphProvider();
     protected Neo4jGraph g;
 
-    static {
-        SugarLoader.load();
-    }
-
     @Rule
     public TestName name = new TestName();
 
