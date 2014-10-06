@@ -6,8 +6,8 @@ TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 
 image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 
-TinkerPop 3.0.0.M3 (Release Date: NOT OFFICIALLY RELEASED)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TinkerPop 3.0.0.M3 (Release Date: October 6, 2014)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * All `Step` fields are now `private`/`protected` with respective getters as currently needed and will be added to as needed.
 * Gremlin Server no longer has the `traverse` operation as lambdas aren't really serialized.
