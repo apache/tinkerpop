@@ -23,10 +23,15 @@ import java.util.List;
  */
 public class GiraphRemoteAcceptor implements RemoteAcceptor {
 
+    private static final String RESULT = "result";
+    private static final String USE_SUGAR = "useSugar";
+    private static final String SPACE = " ";
+
     private GiraphGraph giraphGraph;
     private Groovysh shell;
     private boolean useSugarPlugin = false;
     private String graphVariable = "g";
+
 
     public GiraphRemoteAcceptor(final Groovysh shell) {
         this.shell = shell;
@@ -65,7 +70,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object configure(final List<String> args) {
         for (int i = 0; i < args.size(); i = i + 2) {
-            if (args.get(i).equals("useSugar"))
+            if (args.get(i).equals(USE_SUGAR))
                 this.useSugarPlugin = Boolean.valueOf(args.get(i + 1));
             else {
                 this.giraphGraph.variables().getConfiguration().setProperty(args.get(i), args.get(i + 1));
@@ -77,16 +82,12 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object submit(final List<String> args) {
         try {
-            final GroovyTraversalScript<?, ?> traversal = GroovyTraversalScript.of(String.join(" ", args)).over(this.giraphGraph).using(this.giraphGraph.compute());
+            final GroovyTraversalScript<?, ?> traversal = GroovyTraversalScript.of(String.join(SPACE, args)).over(this.giraphGraph).using(this.giraphGraph.compute());
             if (this.useSugarPlugin)
                 traversal.withSugar();
             final TraversalVertexProgram vertexProgram = traversal.program();
             final ComputerResult computerResult = traversal.result().get();
-            this.shell.getInterp().getContext().setProperty("result", computerResult);
-
-            final GraphTraversal traversal1 = new DefaultGraphTraversal<>();
-            traversal1.addStep(new ComputerResultStep<>(traversal1, computerResult, vertexProgram, false));
-            this.shell.getInterp().getContext().setProperty("_l", traversal1);
+            this.shell.getInterp().getContext().setProperty(RESULT, computerResult);
 
             final GraphTraversal traversal2 = new DefaultGraphTraversal<>();
             traversal2.addStep(new ComputerResultStep<>(traversal2, computerResult, vertexProgram, false));
