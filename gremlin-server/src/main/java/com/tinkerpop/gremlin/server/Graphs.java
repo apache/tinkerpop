@@ -24,7 +24,6 @@ public class Graphs {
      * Create a new instance using the {@link Settings} from Gremlin Server.
      */
     public Graphs(final Settings settings) {
-        final Map<String, Graph> m = new HashMap<>();
         settings.graphs.entrySet().forEach(e -> {
             try {
                 final Graph newGraph = GraphFactory.open(e.getValue());
