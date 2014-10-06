@@ -10,7 +10,7 @@ use:
   - [org.apache.commons, commons-math3, "3.2"]
 scriptEngines: {
   gremlin-groovy: {
-    imports: [java.lang.Math, org.apache.commons.math3.util.FastMath],
+    imports: [com.tinkerpop.gremlin.tinkergraph.structure.*, com.tinkerpop.gremlin.tinkergraph.process.computer.*,java.lang.Math, org.apache.commons.math3.util.FastMath],
     staticImports: [java.lang.Math.PI],
     scripts: [scripts/generate-classic.groovy]}}
 serializers:
