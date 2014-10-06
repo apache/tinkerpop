@@ -42,24 +42,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Rule
     public TestName name = new TestName();
 
-    /**
-     * Configure specific Gremlin Server settings for specific tests.
-     */
-    @Override
-    public Settings overrideSettings(final Settings settings) {
-        final String nameOfTest = name.getMethodName();
-        switch (nameOfTest) {
-            case "shouldSendTraversal":
-                settings.scriptEngines.get("gremlin-groovy").scripts.add("scripts/generate-sample.groovy");
-                break;
-            case "shouldSendParameterizedTraversal":
-                settings.scriptEngines.get("gremlin-groovy").scripts.add("scripts/generate-classic.groovy");
-                break;
-        }
-
-        return settings;
-    }
-
     @Test
     public void shouldProcessRequestsOutOfOrder() throws Exception {
         final Cluster cluster = Cluster.open();
