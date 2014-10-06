@@ -2,14 +2,13 @@ package com.tinkerpop.gremlin.process.computer;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -21,7 +20,7 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-public abstract class MessageType implements Serializable {
+public abstract class MessageType {
 
     public static class Global extends MessageType {
         private final Iterable<Vertex> vertices;

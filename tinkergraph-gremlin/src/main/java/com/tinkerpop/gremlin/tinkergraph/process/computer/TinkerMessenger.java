@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
+public class TinkerMessenger<M> implements Messenger<M> {
 
     private final Vertex vertex;
     private final TinkerMessageBoard<M> messageBoard;

@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process.computer;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 
-import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.List;
@@ -18,7 +17,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-public interface VertexProgram<M extends Serializable> {
+public interface VertexProgram<M> {
 
     public default void loadState(final Configuration configuration) {
 

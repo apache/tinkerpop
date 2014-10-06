@@ -7,12 +7,10 @@ import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.hadoop.io.LongWritable;
 
-import java.io.Serializable;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphMessenger implements Messenger<Serializable> {
+public class GiraphMessenger<M> implements Messenger<M> {
 
     private final GiraphInternalVertex giraphInternalVertex;
     private final Iterable<KryoWritable> messages;
@@ -23,12 +21,12 @@ public class GiraphMessenger implements Messenger<Serializable> {
     }
 
     @Override
-    public Iterable<Serializable> receiveMessages(final MessageType messageType) {
+    public Iterable<M> receiveMessages(final MessageType messageType) {
         return (Iterable) StreamFactory.iterable(StreamFactory.stream(this.messages).map(m -> m.get()));
     }
 
     @Override
-    public void sendMessage(final MessageType messageType, final Serializable message) {
+    public void sendMessage(final MessageType messageType, final M message) {
         if (messageType instanceof MessageType.Local) {
             final MessageType.Local<Object, Double> localMessageType = (MessageType.Local) messageType;
             localMessageType.vertices(this.giraphInternalVertex.getTinkerVertex()).forEach(v ->

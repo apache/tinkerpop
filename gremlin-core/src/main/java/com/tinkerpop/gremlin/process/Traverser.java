@@ -48,8 +48,20 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
      */
     public long getBulk();
 
+    /**
+     * Get the sideEffects associated with the traversal of the traverser.
+     *
+     * @return the traversal sideEffects of the traverser
+     */
     public Traversal.SideEffects getSideEffects();
 
+    /**
+     * Get a particular value from the sideEffects of the traverser.
+     *
+     * @param sideEffectKey the key of the value to get from the sideEffects
+     * @param <A>           the type of the returned object
+     * @return the object in the sideEffects of the respective key
+     */
     public default <A> A get(final String sideEffectKey) {
         return this.getSideEffects().get(sideEffectKey);
     }

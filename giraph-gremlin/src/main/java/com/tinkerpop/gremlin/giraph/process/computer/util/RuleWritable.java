@@ -14,7 +14,7 @@ import java.io.IOException;
 public class RuleWritable implements Writable {
 
     public enum Rule {
-        OR, AND, INCR, SET, NO_OP;
+        OR, AND, INCR, SET, NO_OP
     }
 
     private Rule rule;
