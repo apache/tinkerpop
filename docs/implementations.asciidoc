@@ -279,6 +279,62 @@ IMPORTANT: `Neo4jGraph` supports both meta- and multi-properties (see <<_vertex_
 
 TIP: To host Neo4j in Gremlin Server, the dependencies must first be "installed" or otherwise copied to the Gremlin Server path.  The automated method for doing this would be to execute `bin/gremlin-server.sh -i com.tinkerpop neo4j-gremlin x.y.z`.
 
+Indices
+~~~~~~~
+
+Neo4j 2.x supports two types of indices: link:http://docs.neo4j.org/chunked/stable/query-schema-index.html[schema indices] and link:http://docs.neo4j.org/chunked/stable/auto-indexing.html[automatic indices]. Automatic indices have been around since Neo4j 1.x and automatically index an element based on a pre-defined property keys. Schema indices are new to Neo4j 2.x and leverage vertex labels to partition the index space. TinkerPop3 does not provide method interfaces for defining schemas/indices for the underlying graph system. Thus, in order to create indices, the Neo4j API is leveraged.
+
+NOTE: `Neo4jGraph` will attempt to discern which indices to use when executing a traversal of the form `g.V().has()`. The general order of checking is: schema indices, automatic indices, label grouping linear-scan iteration, full linear-scan iteration.
+
+Using Schema Indices
+^^^^^^^^^^^^^^^^^^^^
+
+The Gremlin-Console session below demonstrates schema indices. For more information, please refer to the Neo4j documentation:
+
+* Manipulating schema indices with link:http://docs.neo4j.org/chunked/stable/query-schema-index.html[Cypher].
+* Manipulating schema indices with the Neo4j link:http://docs.neo4j.org/chunked/stable/tutorials-java-embedded-new-index.html[Java API].
+
+[source,groovy]
+gremlin> g = Neo4jGraph.open('/tmp/neo4j')
+==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
+gremlin> g.tx().open() // direct Neo4j access requires explicit transaction creation
+==>null
+gremlin> import org.neo4j.graphdb.*
+...
+gremlin> g.getBaseGraph().schema().indexFor(DynamicLabel.label('name')).on('person').create()
+==>IndexDefinition[label:name, on:person]
+gremlin> g.tx().commit()
+==>null
+gremlin> g.addVertex(label,'person','name','marko')
+==>v[0]
+gremlin> g.addVertex(label,'dog','name','puppy')
+==>v[1]
+gremlin> g.V().has(label,'person').has('name','marko').value('name')
+==>marko
+
+Using Automatic Indices
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The Gremlin-Console session below demonstates automatic indices. For more information, please refer to the Neo4j documentation:
+
+* Manipulating automatic indices with the Neo4j link:http://docs.neo4j.org/chunked/stable/auto-indexing.html[Java API].
+
+[source,groovy]
+gremlin> g = Neo4jGraph.open('/tmp/neo4j')
+==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
+gremlin> g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty('name')
+==>null
+gremlin> g.getBaseGraph().index().getNodeAutoIndexer().setEnabled(true)
+==>null
+gremlin> g.addVertex(label,'person','name','marko')
+==>v[0]
+gremlin> g.addVertex(label,'dog','name','puppy')
+==>v[1]
+gremlin> g.V().has(label,'person').has('name','marko').value('name')
+==>marko
+
+WARNING: The preferred method for dealing with automatic indices in Neo4j is via `Neo4jGraph.open()` configuration as opposed to runtime updating as demonstrated above. This is because with runtime updating, index information is not propagated across Neo4j connections.
+
 Cypher
 ~~~~~~
 
