@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.tinkerpop</groupId>
     <artifactId>tinkerpop</artifactId>
-    <version>3.0.0.M3</version>
+    <version>3.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <url>http://tinkerpop.com</url>
     <name>TinkerPop3: A Graph Computing Framework</name>
@@ -88,7 +88,7 @@
         <skipPerformanceTests>true</skipPerformanceTests>
         <slf4j.version>1.7.7</slf4j.version>
         <javadoc-plugin.version>2.9.1</javadoc-plugin.version>
-        <tinkerpop.version>3.0.0.M3</tinkerpop.version>
+        <tinkerpop.version>3.0.0-SNAPSHOT</tinkerpop.version>
         <muteTestLogs>false</muteTestLogs>
     </properties>
     <build>
