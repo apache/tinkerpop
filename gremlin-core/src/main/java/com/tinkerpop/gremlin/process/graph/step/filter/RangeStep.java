@@ -11,9 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class RangeStep<S> extends FilterStep<S> {
 
-    // TODO: May need to make AtomicInteger for the sake of adjustments in setPredicate
-    public int low;
-    public int high;
+    private final int low;
+    private final int high;
 
     public RangeStep(final Traversal traversal, final int low, final int high) {
         super(traversal);
@@ -37,5 +36,13 @@ public class RangeStep<S> extends FilterStep<S> {
 
     public String toString() {
         return TraversalHelper.makeStepString(this, this.low, this.high);
+    }
+
+    public int getLowRange() {
+        return this.low;
+    }
+
+    public int getHighRange() {
+        return this.high;
     }
 }

@@ -13,11 +13,17 @@ import java.util.Comparator;
  */
 public class OrderStep<S> extends BarrierStep<S> implements Reversible {
 
-    public Comparator<Traverser<S>> comparator;
+    private final Comparator<Traverser<S>> comparator;
 
     public OrderStep(final Traversal traversal, final Comparator<Traverser<S>> comparator) {
         super(traversal);
         this.comparator = comparator;
         this.setConsumer(traversers -> Collections.sort(traversers, this.comparator));
     }
+
+    public Comparator<Traverser<S>> getComparator() {
+        return this.comparator;
+    }
+
+
 }

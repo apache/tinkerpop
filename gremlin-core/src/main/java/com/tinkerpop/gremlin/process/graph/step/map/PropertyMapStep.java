@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> {
 
-    public String[] propertyKeys;
+    private final String[] propertyKeys;
 
     public PropertyMapStep(final Traversal traversal, final String... propertyKeys) {
         super(traversal);

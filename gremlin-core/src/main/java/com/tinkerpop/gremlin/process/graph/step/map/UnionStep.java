@@ -13,7 +13,7 @@ import com.tinkerpop.gremlin.process.util.TraversalRing;
 // TODO: Not connected to GraphTraversal, don't rush it. We can wait post TP3 GA.
 public class UnionStep<S, E> extends AbstractStep<S, E> {
 
-    public TraversalRing<S, E> traversalRing;
+    private final TraversalRing<S, E> traversalRing;
 
     @SafeVarargs
     public UnionStep(final Traversal traversal, final Traversal<S, E>... branchTraversals) {

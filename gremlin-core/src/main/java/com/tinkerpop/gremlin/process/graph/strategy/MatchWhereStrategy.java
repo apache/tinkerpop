@@ -22,7 +22,7 @@ public class MatchWhereStrategy implements TraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal<?,?> traversal) {
+    public void apply(final Traversal<?, ?> traversal) {
         final List<MatchStep> matchSteps = TraversalHelper.getStepsOfClass(MatchStep.class, traversal);
         for (final MatchStep matchStep : matchSteps) {
             boolean foundWhereWithNoTraversal = false;
@@ -30,7 +30,7 @@ public class MatchWhereStrategy implements TraversalStrategy {
             while (currentStep instanceof WhereStep || currentStep instanceof SelectStep || currentStep instanceof IdentityStep) {
                 if (currentStep instanceof WhereStep) {
                     if (!((WhereStep) currentStep).hasBiPredicate()) {
-                        matchStep.addTraversal(((WhereStep) currentStep).constraint);
+                        matchStep.addTraversal(((WhereStep) currentStep).getConstraint());
                         TraversalHelper.removeStep(currentStep, traversal);
                     } else {
                         foundWhereWithNoTraversal = true;

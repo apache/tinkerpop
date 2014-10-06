@@ -12,9 +12,9 @@ import com.tinkerpop.gremlin.structure.Vertex;
  */
 public class AddEdgeStep extends SideEffectStep<Vertex> implements PathConsumer, Reversible {
 
-    public Direction direction;
-    public String edgeLabel;
-    public String stepLabel;
+    private final Direction direction;
+    private final String edgeLabel;
+    private final String stepLabel;
 
     public AddEdgeStep(final Traversal traversal, final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
         super(traversal);

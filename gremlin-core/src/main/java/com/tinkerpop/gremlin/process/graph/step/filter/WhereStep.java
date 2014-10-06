@@ -14,10 +14,10 @@ import java.util.function.BiPredicate;
  */
 public class WhereStep<E> extends FilterStep<Map<String, E>> {
 
-    public final String firstKey;
-    public final String secondKey;
-    public final BiPredicate biPredicate;
-    public final Traversal constraint;
+    private final String firstKey;
+    private final String secondKey;
+    private final BiPredicate biPredicate;
+    private final Traversal constraint;
 
 
     public WhereStep(final Traversal traversal, final String firstKey, final String secondKey, final BiPredicate biPredicate) {
@@ -29,11 +29,11 @@ public class WhereStep<E> extends FilterStep<Map<String, E>> {
 
         this.setPredicate(traverser -> {
             final Map<String, E> map = traverser.get();
-            if (!map.containsKey(firstKey))
-                throw new IllegalArgumentException("The provided key is not in the current map: " + firstKey);
-            if (!map.containsKey(secondKey))
-                throw new IllegalArgumentException("The provided key is not in the current map: " + secondKey);
-            return biPredicate.test(map.get(firstKey), map.get(secondKey));
+            if (!map.containsKey(this.firstKey))
+                throw new IllegalArgumentException("The provided key is not in the current map: " + this.firstKey);
+            if (!map.containsKey(this.secondKey))
+                throw new IllegalArgumentException("The provided key is not in the current map: " + this.secondKey);
+            return biPredicate.test(map.get(this.firstKey), map.get(this.secondKey));
         });
     }
 
@@ -83,6 +83,10 @@ public class WhereStep<E> extends FilterStep<Map<String, E>> {
 
     public boolean hasBiPredicate() {
         return null != this.biPredicate;
+    }
+
+    public Traversal getConstraint() {
+        return this.constraint;
     }
 
 

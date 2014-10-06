@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public class HiddenValueMapStep<E> extends MapStep<Element, Map<String, E>> {
 
-    public String[] propertyKeys;
+    private final String[] propertyKeys;
 
     public HiddenValueMapStep(final Traversal traversal, final String... propertyKeys) {
         super(traversal);

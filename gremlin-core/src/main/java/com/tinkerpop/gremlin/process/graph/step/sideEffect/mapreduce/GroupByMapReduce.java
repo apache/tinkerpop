@@ -38,7 +38,7 @@ public class GroupByMapReduce implements MapReduce<Object, Collection, Object, O
     public GroupByMapReduce(final GroupByStep step) {
         this.groupByStepKey = step.getLabel();
         this.sideEffectKey = step.getSideEffectKey();
-        this.reduceFunction = step.reduceFunction;
+        this.reduceFunction = step.getReduceFunction();
     }
 
     @Override
@@ -56,7 +56,7 @@ public class GroupByMapReduce implements MapReduce<Object, Collection, Object, O
         final GroupByStep groupByStep = (GroupByStep) traversal.getSteps().stream()
                 .filter(step -> step.getLabel().equals(this.groupByStepKey))
                 .findAny().get();
-        this.reduceFunction = groupByStep.reduceFunction;
+        this.reduceFunction = groupByStep.getReduceFunction();
     }
 
     @Override

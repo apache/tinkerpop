@@ -13,11 +13,11 @@ import java.util.function.Supplier;
  */
 public class HiddenValueStep<E> extends MapStep<Element, E> {
 
-    private boolean isHidden;
-    public String key;
-    public String hiddenKey;
-    public Optional<E> defaultValue;
-    public Optional<Supplier<E>> defaultSupplier;
+    private final boolean isHidden;
+    private final String key;
+    private final String hiddenKey;
+    private final Optional<E> defaultValue;
+    private final Optional<Supplier<E>> defaultSupplier;
 
     public HiddenValueStep(final Traversal traversal, final String key) {
         super(traversal);

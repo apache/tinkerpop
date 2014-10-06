@@ -13,7 +13,7 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 // TODO: Not connected to GraphTraversal, don't rush it. We can wait post TP3 GA.
 public class IntersectStep<S, E> extends AbstractStep<S, E> {
 
-    public final TraversalRing<S, E> traversalRing;
+    private final TraversalRing<S, E> traversalRing;
     private boolean drainState = false; // TODO: Make an AtomicBoolean?
 
     @SafeVarargs

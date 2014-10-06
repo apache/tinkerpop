@@ -4,8 +4,8 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.IntervalStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect.TinkerGraphStep;
@@ -30,11 +30,10 @@ public class TinkerGraphStepStrategy implements TraversalStrategy.NoDependencies
                 if (currentStep == EmptyStep.instance() || TraversalHelper.isLabeled(currentStep)) break;
 
                 if (currentStep instanceof HasStep) {
-                    tinkerGraphStep.hasContainers.add(((HasStep) currentStep).hasContainer);
+                    tinkerGraphStep.hasContainers.addAll(((HasStep) currentStep).getHasContainers());
                     TraversalHelper.removeStep(currentStep, traversal);
                 } else if (currentStep instanceof IntervalStep) {
-                    tinkerGraphStep.hasContainers.add(((IntervalStep) currentStep).startContainer);
-                    tinkerGraphStep.hasContainers.add(((IntervalStep) currentStep).endContainer);
+                    tinkerGraphStep.hasContainers.addAll(((IntervalStep) currentStep).getHasContainers());
                     TraversalHelper.removeStep(currentStep, traversal);
                 } else if (currentStep instanceof IdentityStep) {
                     // do nothing

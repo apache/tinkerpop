@@ -16,7 +16,7 @@ import java.util.Iterator;
  */
 public class StartStep<S> extends SideEffectStep<S> implements TraverserSource, Reversible {
 
-    public Object start;
+    protected Object start;
 
     public StartStep(final Traversal traversal, final Object start) {
         super(traversal);

@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class TimeLimitStep<S> extends SideEffectStep<S> implements Reversible {
 
     private final AtomicLong startTime = new AtomicLong(-1);
-    public final long timeLimit;
+    private final long timeLimit;
 
     public TimeLimitStep(final Traversal traversal, final long timeLimit) {
         super(traversal);

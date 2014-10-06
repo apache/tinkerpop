@@ -12,9 +12,9 @@ import java.util.function.Supplier;
  */
 public class ValueStep<E> extends MapStep<Element, E> {
 
-    public String key;
-    public Optional<E> defaultValue;
-    public Optional<Supplier<E>> defaultSupplier;
+    private final String key;
+    private final Optional<E> defaultValue;
+    private final Optional<Supplier<E>> defaultSupplier;
 
     public ValueStep(final Traversal traversal, final String key) {
         super(traversal);

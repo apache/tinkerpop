@@ -13,8 +13,8 @@ import java.util.function.Function;
  */
 public class FlatMapStep<S, E> extends AbstractStep<S, E> {
 
-    public Function<Traverser<S>, Iterator<E>> function = null;
-    protected Iterator<Traverser<E>> iterator = null;
+    protected Function<Traverser<S>, Iterator<E>> function = null;
+    private Iterator<Traverser<E>> iterator = null;
 
     public FlatMapStep(final Traversal traversal) {
         super(traversal);

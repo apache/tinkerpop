@@ -15,15 +15,23 @@ import java.util.function.Function;
  */
 public class OrderByStep<S extends Element, C extends Comparable> extends BarrierStep<S> implements Reversible {
 
-    public Comparator comparator;
-    public final String key;
+    private final Comparator comparator;
+    private final String elementKey;
 
-    public OrderByStep(final Traversal traversal, final String key, final Comparator comparator) {
+    public OrderByStep(final Traversal traversal, final String elementKey, final Comparator comparator) {
         super(traversal);
-        this.key = key;
+        this.elementKey = elementKey;
         this.comparator = comparator;
         this.setConsumer(traversers -> {
-            Collections.sort(traversers, Comparator.comparing((Function<Traverser<S>, Comparable>) traverser -> traverser.get().value(key), this.comparator));
+            Collections.sort(traversers, Comparator.comparing((Function<Traverser<S>, Comparable>) traverser -> traverser.get().value(this.elementKey), this.comparator));
         });
+    }
+
+    public String getElementKey() {
+        return this.elementKey;
+    }
+
+    public Comparator getComparator() {
+        return this.comparator;
     }
 }

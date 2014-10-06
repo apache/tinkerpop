@@ -13,7 +13,7 @@ import java.util.function.Function;
  */
 public class PathStep<S> extends MapStep<S, Path> implements PathConsumer {
 
-    public FunctionRing functionRing;
+    private final FunctionRing functionRing;
 
     public PathStep(final Traversal traversal, final Function... pathFunctions) {
         super(traversal);

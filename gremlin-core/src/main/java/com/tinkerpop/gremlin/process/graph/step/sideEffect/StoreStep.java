@@ -19,7 +19,7 @@ import java.util.function.Function;
  */
 public class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable, Reversible, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
 
-    public Function<Traverser<S>, ?> preStoreFunction;
+    private final Function<Traverser<S>, ?> preStoreFunction;
     private final String sideEffectKey;
 
     public StoreStep(final Traversal traversal, final String sideEffectKey, final Function<Traverser<S>, ?> preStoreFunction) {

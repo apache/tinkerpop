@@ -16,7 +16,7 @@ import java.util.function.Consumer;
  */
 public abstract class BarrierStep<S> extends AbstractStep<S, S> implements Barrier {
 
-    private Queue<Traverser.System<S>> previousTraversers = new LinkedList<>();
+    private final Queue<Traverser.System<S>> previousTraversers = new LinkedList<>();
     private Consumer<List<Traverser<S>>> barrierConsumer;
 
     public BarrierStep(final Traversal traversal) {
@@ -44,6 +44,6 @@ public abstract class BarrierStep<S> extends AbstractStep<S, S> implements Barri
     @Override
     public void reset() {
         super.reset();
-        this.previousTraversers = new LinkedList<>();
+        this.previousTraversers.clear();
     }
 }

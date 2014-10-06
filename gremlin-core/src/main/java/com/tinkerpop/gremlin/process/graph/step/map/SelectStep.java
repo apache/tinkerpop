@@ -18,13 +18,13 @@ import java.util.function.Function;
  */
 public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements PathConsumer, EngineDependent {
 
-    public final FunctionRing functionRing;
-    public final List<String> selectLabels;
+    private final FunctionRing functionRing;
+    private final List<String> selectLabels;
     private final boolean wasEmpty;
     private boolean requiresPaths = false;
     private boolean onGraphComputer = false;
 
-    public SelectStep(final Traversal traversal, final List<String> selectLabels, Function... stepFunctions) {
+    public SelectStep(final Traversal traversal, final List<String> selectLabels, final Function... stepFunctions) {
         super(traversal);
         this.functionRing = new FunctionRing(stepFunctions);
         this.wasEmpty = selectLabels.size() == 0;

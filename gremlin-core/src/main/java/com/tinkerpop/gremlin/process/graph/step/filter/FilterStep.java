@@ -11,7 +11,7 @@ import java.util.function.Predicate;
  */
 public class FilterStep<S> extends AbstractStep<S, S> {
 
-    public Predicate<Traverser<S>> predicate = null;
+    protected Predicate<Traverser<S>> predicate = null;
 
     public FilterStep(final Traversal traversal) {
         super(traversal);

@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
  */
 public class BackStep<S, E> extends MapStep<S, E> implements PathConsumer, EngineDependent {
 
-    public String stepLabel;
+    private final String stepLabel;
     private boolean requiresPaths = false;
 
     public BackStep(final Traversal traversal, final String stepLabel) {

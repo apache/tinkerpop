@@ -15,12 +15,13 @@ public class FoldStep<S, E> extends MapStep<S, E> {
 
     private final AtomicReference<E> mutatingSeed;
     private final E seed;
-    public BiFunction<E, Traverser<S>, E> foldFunction;
+    private final BiFunction<E, Traverser<S>, E> foldFunction;
 
     public FoldStep(final Traversal traversal) {
         super(traversal);
         this.seed = null;
         this.mutatingSeed = null;
+        this.foldFunction = null;
         this.setFunction(traverser -> {
             final List<S> list = new ArrayList<>();
             final S s = traverser.get();

@@ -20,7 +20,7 @@ import java.util.function.Function;
  */
 public class TreeStep<S> extends SideEffectStep<S> implements Reversible, PathConsumer, SideEffectCapable, MapReducer<Object, Tree, Object, Tree, Tree> {
 
-    public FunctionRing functionRing;
+    private final FunctionRing functionRing;
     private final String sideEffectKey;
 
     public TreeStep(final Traversal traversal, final String sideEffectKey, final Function... branchFunctions) {

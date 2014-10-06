@@ -1,12 +1,12 @@
 package com.tinkerpop.gremlin.process.graph.strategy;
 
-import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderByStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DedupOptimizerStrategy implements TraversalStrategy.NoDependencies{
+public class DedupOptimizerStrategy implements TraversalStrategy.NoDependencies {
 
     private static final DedupOptimizerStrategy INSTANCE = new DedupOptimizerStrategy();
 
@@ -31,13 +31,13 @@ public class DedupOptimizerStrategy implements TraversalStrategy.NoDependencies{
             ));
 
     @Override
-    public void apply(final Traversal<?,?> traversal) {
+    public void apply(final Traversal<?, ?> traversal) {
         boolean done = false;
         while (!done) {
             done = true;
             for (int i = 0; i < traversal.getSteps().size(); i++) {
                 final Step step1 = traversal.getSteps().get(i);
-                if (step1 instanceof DedupStep && !((DedupStep) step1).hasUniqueFunction) {
+                if (step1 instanceof DedupStep && !((DedupStep) step1).hasUniqueFunction()) {
                     for (int j = i; j >= 0; j--) {
                         final Step step2 = traversal.getSteps().get(j);
                         if (BIJECTIVE_PIPES.stream().filter(c -> c.isAssignableFrom(step2.getClass())).findAny().isPresent()) {

@@ -19,7 +19,7 @@ public class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements SideE
 
     private boolean done = false;
     private boolean onGraphComputer = false;
-    public String sideEffectKey;
+    private final String sideEffectKey;
 
     public SideEffectCapStep(final Traversal traversal, final String sideEffectKey) {
         super(traversal);

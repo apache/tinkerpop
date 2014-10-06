@@ -11,13 +11,13 @@ import java.util.Random;
  */
 public class RandomStep<S> extends FilterStep<S> implements Reversible {
 
-    private final Random random = new Random();
-    public double probability;
+    private static final Random RANDOM = new Random();
+    private final double probability;
 
     public RandomStep(final Traversal traversal, final double probability) {
         super(traversal);
         this.probability = probability;
-        this.setPredicate(traverser -> this.probability >= this.random.nextDouble());
+        this.setPredicate(traverser -> this.probability >= RANDOM.nextDouble());
     }
 
     public String toString() {

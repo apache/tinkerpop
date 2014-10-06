@@ -119,14 +119,14 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
         final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.System.NO_FUTURE : startStep.getNextStep().getLabel();
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);               // TODO: SIDE-EFFECTS IN TRAVERSAL IN OLAP!
-        if (Vertex.class.isAssignableFrom(startStep.returnClass)) {
+        if (startStep.returnsVertices()) {
             final Traverser.System<Vertex> traverser = this.trackPaths ?
                     new PathTraverser<>(startStep.getLabel(), vertex, null) :
                     new SimpleTraverser<>(vertex, null);
             traverser.setFuture(future);
             messenger.sendMessage(MessageType.Global.of(vertex), TraversalMessage.of(traverser));
             voteToHalt.set(false);
-        } else if (Edge.class.isAssignableFrom(startStep.returnClass)) {
+        } else if (startStep.returnsEdges()) {
             vertex.outE().forEach(e -> {
                 final Traverser.System<Edge> traverser = this.trackPaths ?
                         new PathTraverser<>(startStep.getLabel(), e, null) :
@@ -135,6 +135,8 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                 messenger.sendMessage(MessageType.Global.of(vertex), TraversalMessage.of(traverser));
                 voteToHalt.set(false);
             });
+        } else {
+            throw new UnsupportedOperationException("TraversalVertexProgram currently only supports vertex and edge starts");
         }
 
         vertex.property(TRAVERSER_TRACKER, this.trackPaths ? new TraverserPathTracker() : new TraverserCountTracker());

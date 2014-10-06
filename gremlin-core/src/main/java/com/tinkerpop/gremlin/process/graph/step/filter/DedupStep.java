@@ -13,7 +13,7 @@ import java.util.function.Function;
  */
 public class DedupStep<S> extends FilterStep<S> implements Reversible {
 
-    public boolean hasUniqueFunction;
+    private final boolean hasUniqueFunction;
 
     public DedupStep(final Traversal traversal, final Function<Traverser<S>, ?> uniqueFunction) {
         super(traversal);
@@ -29,5 +29,9 @@ public class DedupStep<S> extends FilterStep<S> implements Reversible {
 
     public DedupStep(final Traversal traversal) {
         this(traversal, null);
+    }
+
+    public boolean hasUniqueFunction() {
+        return this.hasUniqueFunction;
     }
 }

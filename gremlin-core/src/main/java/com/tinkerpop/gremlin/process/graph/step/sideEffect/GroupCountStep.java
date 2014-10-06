@@ -20,7 +20,7 @@ import java.util.function.Function;
  */
 public class GroupCountStep<S> extends SideEffectStep<S> implements SideEffectCapable, Reversible, MapReducer<Object, Long, Object, Long, Map<Object, Long>> {
 
-    public Function<Traverser<S>, ?> preGroupFunction;
+    private final Function<Traverser<S>, ?> preGroupFunction;
     private final String sideEffectKey;
 
     public GroupCountStep(final Traversal traversal, final String sideEffectKey, final Function<Traverser<S>, ?> preGroupFunction) {

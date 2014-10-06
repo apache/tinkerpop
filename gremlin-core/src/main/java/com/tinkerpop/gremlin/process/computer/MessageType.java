@@ -74,7 +74,7 @@ public abstract class MessageType implements Serializable {
         public Traversal<Vertex, Vertex> vertices(final Vertex vertex) {
             final Traversal traversal = this.incidentTraversal.get();
             final VertexStep step = TraversalHelper.getLastStep(traversal, VertexStep.class).get();
-            TraversalHelper.insertStep(new EdgeVertexStep(traversal, step.direction.opposite()), traversal.getSteps().size(), traversal);
+            TraversalHelper.insertStep(new EdgeVertexStep(traversal, step.getDirection().opposite()), traversal.getSteps().size(), traversal);
             TraversalHelper.insertStep(new StartStep<>(traversal, vertex), 0, traversal);
             return traversal;
         }
@@ -82,7 +82,7 @@ public abstract class MessageType implements Serializable {
         public Direction getDirection() {
             final Traversal traversal = this.incidentTraversal.get();
             final VertexStep step = TraversalHelper.getLastStep(traversal, VertexStep.class).get();
-            return step.direction;
+            return step.getDirection();
         }
 
         public BiFunction<M1, Edge, M2> getEdgeFunction() {

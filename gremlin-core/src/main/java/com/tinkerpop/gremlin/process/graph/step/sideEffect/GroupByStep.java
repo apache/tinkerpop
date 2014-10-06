@@ -23,12 +23,12 @@ import java.util.function.Function;
  */
 public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEffectCapable, Reversible, EngineDependent, MapReducer<Object, Collection, Object, Object, Map> {
 
-    public final Map<K, R> reduceMap;
-    public final Function<Traverser<S>, K> keyFunction;
-    public final Function<Traverser<S>, V> valueFunction;
-    public final Function<Collection<V>, R> reduceFunction;
+    private final Map<K, R> reduceMap;
+    private final Function<Traverser<S>, K> keyFunction;
+    private final Function<Traverser<S>, V> valueFunction;
+    private final Function<Collection<V>, R> reduceFunction;
     private final String sideEffectKey;
-    public boolean vertexCentric = false;
+    private boolean vertexCentric = false;
 
     public GroupByStep(final Traversal traversal, final String sideEffectKey, final Function<Traverser<S>, K> keyFunction, final Function<Traverser<S>, V> valueFunction, final Function<Collection<V>, R> reduceFunction) {
         super(traversal);
@@ -94,5 +94,9 @@ public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEf
     @Override
     public String toString() {
         return Graph.Key.isHidden(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
+    }
+
+    public Function<Collection<V>, R> getReduceFunction() {
+        return this.reduceFunction;
     }
 }

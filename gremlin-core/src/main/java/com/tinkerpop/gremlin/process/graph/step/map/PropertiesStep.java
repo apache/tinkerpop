@@ -14,7 +14,7 @@ import java.util.Iterator;
  */
 public class PropertiesStep<E> extends FlatMapStep<Element, Property<E>> implements Reversible {
 
-    public String[] propertyKeys;
+    private final String[] propertyKeys;
 
     public PropertiesStep(final Traversal traversal, final String... propertyKeys) {
         super(traversal);

@@ -11,7 +11,7 @@ import java.util.Arrays;
  */
 public class ValuesStep<E> extends FlatMapStep<Element, E> {
 
-    public String[] propertyKeys;
+    private final String[] propertyKeys;
 
     public ValuesStep(final Traversal traversal, final String... propertyKeys) {
         super(traversal);

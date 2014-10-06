@@ -11,7 +11,7 @@ import java.util.Collection;
  */
 public class RetainStep<S> extends FilterStep<S> implements Reversible {
 
-    public final String collectionSideEffectKey;
+    private final String collectionSideEffectKey;
 
     public RetainStep(final Traversal traversal, final String collectionSideEffectKey) {
         super(traversal);

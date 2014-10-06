@@ -19,11 +19,11 @@ import java.util.function.Predicate;
  */
 public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
 
-    public String jumpLabel;
+    private String jumpLabel;
     private Step jumpToStep;
     /////////////////////
     private Predicate<Traverser<S>> jumpPredicate;
-    public Pair<Short, Compare> jumpLoops;
+    private Pair<Short, Compare> jumpLoops;
     private Boolean jumpChoice;
     /////////////////////
     private Predicate<Traverser<S>> emitPredicate;
@@ -127,6 +127,14 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
 
     private Boolean doEmit(final Traverser<S> traverser) {
         return null != this.emitChoice ? this.emitChoice : this.emitPredicate.test(traverser);
+    }
+
+    public String getJumpLabel() {
+        return this.jumpLabel;
+    }
+
+    public Pair<Short, Compare> getJumpLoops() {
+        return this.jumpLoops;
     }
 
     public String toString() {
