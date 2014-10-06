@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.process.graph.step.map.JumpStep;
 import com.tinkerpop.gremlin.process.graph.step.map.UntilStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.UUID;
@@ -32,7 +31,7 @@ public class UntilStrategy implements TraversalStrategy {
             final IdentityStep leftEndStep = new IdentityStep(traversal);
             leftEndStep.setLabel(Graph.System.system(U + counter++));
             TraversalHelper.insertBeforeStep(leftEndStep, untilStep, traversal);
-            final Step rightEndStep = TraversalHelper.getStep(untilStep.breakLabel, traversal);
+            final Step rightEndStep = TraversalHelper.getStep(untilStep.getBreakLabel(), traversal);
             final String rightEndLabel = rightEndStep.getLabel();
 
             final JumpStep leftEndJumpStep = untilStep.createLeftJumpStep(traversal, rightEndLabel);
@@ -41,7 +40,7 @@ public class UntilStrategy implements TraversalStrategy {
             TraversalHelper.removeStep(untilStep, traversal);
             TraversalHelper.insertAfterStep(leftEndJumpStep, leftEndStep, traversal);
 
-            final JumpStep rightEndJumpStep = JumpStep.build(traversal).jumpLabel(leftEndStep.getLabel()).jumpChoice(true).emitChoice(false).create();
+            final JumpStep rightEndJumpStep = untilStep.createRightJumpStep(traversal, leftEndStep.getLabel());
             //new JumpStep(traversal, leftEndStep.getLabel());
             rightEndJumpStep.setLabel(rightEndLabel);
             rightEndStep.setLabel(Graph.Key.hide(UUID.randomUUID().toString()));

@@ -32,7 +32,7 @@ public class UnrollJumpStrategy implements TraversalStrategy {
                         for (int i = 0; i < (short) toStep.jumpLoops.getValue0(); i++) {
                             for (int j = stepsToClone.size() - 1; j >= 0; j--) {
                                 try {
-                                    final Step clonedStep = (Step) stepsToClone.get(j).clone();
+                                    final Step clonedStep = stepsToClone.get(j).clone();
                                     TraversalHelper.insertStep(clonedStep, traversal.getSteps().indexOf(fromStep) + 1, traversal);
                                 } catch (final CloneNotSupportedException e) {
                                     throw new IllegalStateException(e.getMessage(), e);
@@ -50,7 +50,7 @@ public class UnrollJumpStrategy implements TraversalStrategy {
                         for (int i = 0; i < ((short) toStep.jumpLoops.getValue0() + 1); i++) {
                             for (int j = stepsToClone.size() - 1; j >= 0; j--) {
                                 try {
-                                    final Step clonedStep = (Step) stepsToClone.get(j).clone();
+                                    final Step clonedStep = stepsToClone.get(j).clone();
                                     TraversalHelper.insertStep(clonedStep, traversal.getSteps().indexOf(fromStep) + 1, traversal);
                                 } catch (final CloneNotSupportedException e) {
                                     throw new IllegalStateException(e.getMessage(), e);

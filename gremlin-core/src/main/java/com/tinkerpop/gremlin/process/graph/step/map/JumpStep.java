@@ -20,18 +20,18 @@ import java.util.function.Predicate;
 public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
 
     public String jumpLabel;
-    public Step jumpToStep;
-
-    public Predicate<Traverser<S>> jumpPredicate;
+    private Step jumpToStep;
+    /////////////////////
+    private Predicate<Traverser<S>> jumpPredicate;
     public Pair<Short, Compare> jumpLoops;
-    public Boolean jumpChoice;
-
-    public Predicate<Traverser<S>> emitPredicate;
-    public Boolean emitChoice;
-
+    private Boolean jumpChoice;
+    /////////////////////
+    private Predicate<Traverser<S>> emitPredicate;
+    private Boolean emitChoice;
+    /////////////////////
     private Boolean jumpBack;
     private boolean onGraphComputer = false;
-    public Queue<Traverser<S>> queue;
+    private Queue<Traverser<S>> queue;
     public boolean doWhile = true;
 
     public JumpStep(final Traversal traversal) {
@@ -82,8 +82,8 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
 
     private Traverser<S> computerAlgorithm() {
         final String loopFuture = TraversalHelper.getStep(this.jumpLabel, this.traversal).getNextStep().getLabel();
-        // if (null == this.jumpBack)
-        this.jumpBack = this.traversal.getSteps().indexOf(this) > this.traversal.getSteps().indexOf(TraversalHelper.getStep(this.jumpLabel, this.traversal).getNextStep());
+        if (null == this.jumpBack)
+            this.jumpBack = TraversalHelper.relativeLabelDirection(this, this.jumpLabel) == -1;
         while (true) {
             if (!this.queue.isEmpty()) {
                 return this.queue.remove();
@@ -100,8 +100,8 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
                         this.queue.add(emitTraverser);
                     }
                 } else {
-                    traverser.setFuture(this.nextStep.getLabel());
                     if (this.jumpBack) traverser.resetLoops();
+                    traverser.setFuture(this.nextStep.getLabel());
                     this.queue.add(traverser);
                 }
             }
@@ -109,14 +109,14 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
     }
 
     public boolean unRollable() {
-        return !this.onGraphComputer && this.jumpLoops != null && null == this.emitPredicate;
+        return !this.onGraphComputer && this.jumpLoops != null && null == this.emitPredicate && !this.emitChoice;
     }
 
     public boolean isDoWhile() {
         return this.doWhile;
     }
 
-    private boolean doJump(final Traverser<S> traverser) {
+    private Boolean doJump(final Traverser<S> traverser) {
         if (null != this.jumpChoice)
             return this.jumpChoice;
         else if (null != this.jumpLoops)
@@ -125,11 +125,8 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
             return this.jumpPredicate.test(traverser);
     }
 
-    private boolean doEmit(final Traverser<S> traverser) {
-        if (null != this.emitChoice)
-            return this.emitChoice;
-        else
-            return this.emitPredicate.test(traverser);
+    private Boolean doEmit(final Traverser<S> traverser) {
+        return null != this.emitChoice ? this.emitChoice : this.emitPredicate.test(traverser);
     }
 
     public String toString() {
@@ -155,7 +152,6 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
         private Predicate<Traverser<S>> emitPredicate = null;
         private Boolean emitChoice = null;
 
-        private Boolean jumpBack = null;
         private Traversal traversal = null;
 
         public Builder(final Traversal traversal) {
@@ -201,7 +197,6 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
 
         public Builder<S> jumpLabel(final String jumpLabel) {
             this.jumpLabel = jumpLabel;
-            this.jumpBack = TraversalHelper.hasLabel(jumpLabel, traversal);
             return this;
         }
 
@@ -213,7 +208,6 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
             jumpStep.emitChoice = this.emitChoice;
             jumpStep.jumpPredicate = this.jumpPredicate;
             jumpStep.emitPredicate = this.emitPredicate;
-            jumpStep.jumpBack = this.jumpBack;
             return jumpStep;
         }
     }

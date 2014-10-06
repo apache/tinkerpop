@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
+import org.javatuples.Pair;
 
 import java.util.function.Predicate;
 
@@ -12,14 +13,14 @@ import java.util.function.Predicate;
  */
 public class UntilStep<S> extends MapStep<S, S> {
 
-    public final String breakLabel;
-    public final short loops;
-    public final Predicate<Traverser<S>> breakPredicate;
-    public final Predicate<Traverser<S>> emitPredicate;
+    private final String breakLabel;
+    private final Pair<Short, Compare> jumpLoops;
+    private final Predicate<Traverser<S>> breakPredicate;
+    private final Predicate<Traverser<S>> emitPredicate;
 
     public UntilStep(Traversal traversal, final String breakLabel, final Predicate<Traverser<S>> breakPredicate, final Predicate<Traverser<S>> emitPredicate) {
         super(traversal);
-        this.loops = -1;
+        this.jumpLoops = null;
         this.breakLabel = breakLabel;
         this.breakPredicate = breakPredicate;
         this.emitPredicate = emitPredicate;
@@ -27,28 +28,36 @@ public class UntilStep<S> extends MapStep<S, S> {
 
     public UntilStep(Traversal traversal, final String breakLabel, final int loops, final Predicate<Traverser<S>> emitPredicate) {
         super(traversal);
-        this.loops = (short) loops;
+        this.jumpLoops = Pair.with((short) loops, Compare.gt);
         this.breakLabel = breakLabel;
         this.breakPredicate = null;
         this.emitPredicate = emitPredicate;
     }
 
     public String toString() {
-        return this.loops != -1 ?
-                TraversalHelper.makeStepString(this, this.breakLabel, Compare.gt.asString() + this.loops) :
+        return null != this.jumpLoops ?
+                TraversalHelper.makeStepString(this, this.breakLabel, Compare.gt.asString() + this.jumpLoops.getValue0()) :
                 TraversalHelper.makeStepString(this, this.breakLabel);
+    }
+
+    public String getBreakLabel() {
+        return this.breakLabel;
     }
 
     public JumpStep<S> createLeftJumpStep(final Traversal traversal, final String jumpLabel) {
         final JumpStep.Builder<S> builder = JumpStep.<S>build(traversal).jumpLabel(jumpLabel);
-        if(null != this.breakPredicate)
+        if (null != this.breakPredicate)
             builder.jumpPredicate(this.breakPredicate);
         else
-            builder.jumpLoops((int)this.loops, Compare.gt);
-        if(null != this.emitPredicate)
+            builder.jumpLoops(this.jumpLoops.getValue0(), this.jumpLoops.getValue1());
+        if (null != this.emitPredicate)
             builder.emitPredicate(this.emitPredicate);
         else
             builder.emitChoice(false);
-       return builder.create();
+        return builder.create();
+    }
+
+    public JumpStep<S> createRightJumpStep(final Traversal traversal, final String jumpLabel) {
+        return JumpStep.<S>build(traversal).jumpLabel(jumpLabel).jumpChoice(true).emitChoice(false).create();
     }
 }
