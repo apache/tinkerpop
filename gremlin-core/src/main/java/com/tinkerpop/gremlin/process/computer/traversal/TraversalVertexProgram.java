@@ -18,6 +18,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -127,10 +128,10 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
             messenger.sendMessage(MessageType.Global.of(vertex), TraversalMessage.of(traverser));
             voteToHalt.set(false);
         } else if (startStep.returnsEdges()) {
-            vertex.outE().forEach(e -> {
+            vertex.iterators().edges(Direction.OUT,Integer.MAX_VALUE).forEachRemaining(edge -> {
                 final Traverser.System<Edge> traverser = this.trackPaths ?
-                        new PathTraverser<>(startStep.getLabel(), e, null) :
-                        new SimpleTraverser<>(e, null);
+                        new PathTraverser<>(startStep.getLabel(), edge, null) :
+                        new SimpleTraverser<>(edge, null);
                 traverser.setFuture(future);
                 messenger.sendMessage(MessageType.Global.of(vertex), TraversalMessage.of(traverser));
                 voteToHalt.set(false);
