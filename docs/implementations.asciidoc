@@ -312,7 +312,7 @@ gremlin> g.addVertex(label,'dog','name','puppy')
 gremlin> g.V().has(label,'person').has('name','marko').value('name')
 ==>marko
 
-Below demonstrates the runtime benefits of indices and demonstrates how if there is no defined schema index (only vertex labels), a linear scan of vertex-label partition is still faster than linear scan of all vertices.
+Below demonstrates the runtime benefits of indices and demonstrates how if there is no defined schema index (only vertex labels), a linear scan of the vertex-label partition is still faster than a linear scan of all vertices.
 
 [source,groovy]
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
