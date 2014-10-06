@@ -108,7 +108,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     @Override
     public default GraphTraversal<S, E> submit(final GraphComputer computer) {
-       return (GraphTraversal) Traversal.super.submit(computer);
+        return (GraphTraversal) Traversal.super.submit(computer);
     }
 
     public static <S> GraphTraversal<S, S> of(final Graph graph) {
@@ -630,24 +630,29 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ///////////////////// BRANCH STEPS /////////////////////
 
-    public default GraphTraversal<S, E> jump(final String jumpLabel, final Predicate<Traverser<E>> ifPredicate, final Predicate<Traverser<E>> emitPredicate) {
-        return this.addStep(new JumpStep<>(this, jumpLabel, ifPredicate, emitPredicate));
+    public default GraphTraversal<S, E> jump(final String jumpLabel, final Predicate<Traverser<E>> jumpPredicate, final Predicate<Traverser<E>> emitPredicate) {
+        return this.addStep(JumpStep.<E>build(this).jumpLabel(jumpLabel).jumpPredicate(jumpPredicate).emitPredicate(emitPredicate).create());
+        //return this.addStep(new JumpStep<>(this, jumpLabel, ifPredicate, emitPredicate));
     }
 
-    public default GraphTraversal<S, E> jump(final String jumpLabel, final Predicate<Traverser<E>> ifPredicate) {
-        return this.addStep(new JumpStep<>(this, jumpLabel, ifPredicate));
+    public default GraphTraversal<S, E> jump(final String jumpLabel, final Predicate<Traverser<E>> jumpPredicate) {
+        return this.addStep(JumpStep.<E>build(this).jumpLabel(jumpLabel).jumpPredicate(jumpPredicate).create());
+        //return this.addStep(new JumpStep<>(this, jumpLabel, ifPredicate));
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel, final int loops, final Predicate<Traverser<E>> emitPredicate) {
-        return this.addStep(new JumpStep<>(this, jumpLabel, Compare.lt, loops, emitPredicate));
+        return this.addStep(JumpStep.<E>build(this).jumpLabel(jumpLabel).jumpLoops(loops, Compare.lt).emitPredicate(emitPredicate).create());
+        //return this.addStep(new JumpStep<>(this, jumpLabel, Compare.lt, loops, emitPredicate));
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel, final int loops) {
-        return this.addStep(new JumpStep<>(this, jumpLabel, Compare.lt, loops));
+        return this.addStep(JumpStep.<E>build(this).jumpLabel(jumpLabel).jumpLoops(loops, Compare.lt).create());
+        //return this.addStep(new JumpStep<>(this, jumpLabel, Compare.lt, loops));
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel) {
-        return this.addStep(new JumpStep<>(this, jumpLabel));
+        return this.addStep(JumpStep.<E>build(this).jumpLabel(jumpLabel).jumpPredicate(t -> true).create());
+        //return this.addStep(new JumpStep<>(this, jumpLabel));
     }
 
     public default GraphTraversal<S, E> until(final String breakLabel, final Predicate<Traverser<E>> breakPredicate, final Predicate<Traverser<E>> emitPredicate) {

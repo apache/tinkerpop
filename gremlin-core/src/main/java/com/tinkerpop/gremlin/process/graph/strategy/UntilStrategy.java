@@ -24,7 +24,7 @@ public class UntilStrategy implements TraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal<?,?> traversal) {
+    public void apply(final Traversal<?, ?> traversal) {
         // g.V.until('a'){it.object == blah}.out.out.as('a').name
         // g.V.as('a').jump('b'){it.object == blah}.out.out.jump('a').as('b').name
         int counter = 0;
@@ -36,14 +36,17 @@ public class UntilStrategy implements TraversalStrategy {
             final String rightEndLabel = rightEndStep.getLabel();
 
             final JumpStep leftEndJumpStep = untilStep.loops == -1 ?
-                    new JumpStep(traversal, rightEndLabel, untilStep.breakPredicate, untilStep.emitPredicate) :
-                    new JumpStep(traversal, rightEndLabel, Compare.gt, untilStep.loops, untilStep.emitPredicate);
+                    JumpStep.build(traversal).jumpLabel(rightEndLabel).jumpPredicate(untilStep.breakPredicate).emitPredicate(untilStep.emitPredicate).create() :
+                    //new JumpStep(traversal, rightEndLabel, untilStep.breakPredicate, untilStep.emitPredicate) :
+                    JumpStep.build(traversal).jumpLabel(rightEndLabel).jumpLoops(untilStep.loops, Compare.gt).emitPredicate(untilStep.emitPredicate).create();
+            //new JumpStep(traversal, rightEndLabel, Compare.gt, untilStep.loops, untilStep.emitPredicate);
             leftEndJumpStep.setLabel(untilStep.getLabel());
             leftEndJumpStep.doWhile = false;
             TraversalHelper.removeStep(untilStep, traversal);
             TraversalHelper.insertAfterStep(leftEndJumpStep, leftEndStep, traversal);
 
-            final JumpStep rightEndJumpStep = new JumpStep(traversal, leftEndStep.getLabel());
+            final JumpStep rightEndJumpStep = JumpStep.build(traversal).jumpLabel(leftEndStep.getLabel()).jumpPredicate(t -> true).create();
+            //new JumpStep(traversal, leftEndStep.getLabel());
             rightEndJumpStep.setLabel(rightEndLabel);
             rightEndStep.setLabel(Graph.Key.hide(UUID.randomUUID().toString()));
             TraversalHelper.insertAfterStep(rightEndJumpStep, rightEndStep, traversal);

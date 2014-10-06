@@ -29,7 +29,7 @@ public class UnrollJumpStrategy implements TraversalStrategy {
                         final Step fromStep = TraversalHelper.getStep(toStep.jumpLabel, traversal);
                         final List<Step> stepsToClone = TraversalHelper.isolateSteps(fromStep, toStep);
                         stepsToClone.forEach(stepToClone -> TraversalHelper.removeStep(stepToClone, traversal));
-                        for (int i = 0; i < toStep.loops; i++) {
+                        for (int i = 0; i < (short) toStep.jumpLoops.getValue0(); i++) {
                             for (int j = stepsToClone.size() - 1; j >= 0; j--) {
                                 try {
                                     final Step clonedStep = (Step) stepsToClone.get(j).clone();
@@ -47,7 +47,7 @@ public class UnrollJumpStrategy implements TraversalStrategy {
                         final JumpStep fromStep = (JumpStep) TraversalHelper.getStep(toStep.jumpLabel, traversal);
                         final List<Step> stepsToClone = TraversalHelper.isolateSteps(toStep, fromStep);
                         stepsToClone.forEach(stepToClone -> TraversalHelper.removeStep(stepToClone, traversal));
-                        for (int i = 0; i < (toStep.loops + 1); i++) {
+                        for (int i = 0; i < ((short) toStep.jumpLoops.getValue0() + 1); i++) {
                             for (int j = stepsToClone.size() - 1; j >= 0; j--) {
                                 try {
                                     final Step clonedStep = (Step) stepsToClone.get(j).clone();
