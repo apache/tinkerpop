@@ -25,7 +25,7 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
     public final Predicate<Traverser<S>> emitPredicate;
     public final short loops;
     public final Compare loopComparator;
-    private AtomicBoolean jumpBack;
+    private Boolean jumpBack;
     private boolean onGraphComputer = false;
     public Queue<Traverser<S>> queue;
     public boolean doWhile = true;
@@ -80,23 +80,23 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
     private Traverser<S> standardAlgorithm() {
         if (null == this.jumpToStep) {
             this.jumpToStep = TraversalHelper.getStep(this.jumpLabel, this.traversal).getNextStep();
-            this.jumpBack = new AtomicBoolean(TraversalHelper.relativeLabelDirection(this, this.jumpLabel) == -1);
+            this.jumpBack = TraversalHelper.relativeLabelDirection(this, this.jumpLabel) == -1;
             // TODO: getNextStep() may be dependent on whether its a jump back or a jump forward
         }
         while (true) {
             final Traverser<S> traverser = this.starts.next();
-            if (this.jumpBack.get()) ((Traverser.System<S>) traverser).incrLoops();
+            if (this.jumpBack) ((Traverser.System<S>) traverser).incrLoops();
             if (doJump(traverser)) {
                 ((Traverser.System<S>) traverser).setFuture(this.jumpLabel);
                 this.jumpToStep.addStarts(new SingleIterator(traverser));
                 if (this.emitPredicate != null && this.emitPredicate.test(traverser)) {
                     final Traverser<S> emitTraverser = ((Traverser.System<S>) traverser).makeSibling();
-                    if (this.jumpBack.get()) ((Traverser.System<S>) emitTraverser).resetLoops();
+                    if (this.jumpBack) ((Traverser.System<S>) emitTraverser).resetLoops();
                     ((Traverser.System<S>) emitTraverser).setFuture(this.getNextStep().getLabel());
                     return emitTraverser;
                 }
             } else {
-                if (this.jumpBack.get()) ((Traverser.System<S>) traverser).resetLoops();
+                if (this.jumpBack) ((Traverser.System<S>) traverser).resetLoops();
                 ((Traverser.System<S>) traverser).setFuture(this.getNextStep().getLabel());
                 return traverser;
             }
@@ -106,25 +106,25 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
     private Traverser<S> computerAlgorithm() {
         final String loopFuture = TraversalHelper.getStep(this.jumpLabel, this.traversal).getNextStep().getLabel();
         if (null == this.jumpBack)
-            this.jumpBack = new AtomicBoolean(this.traversal.getSteps().indexOf(this) > this.traversal.getSteps().indexOf(TraversalHelper.getStep(this.jumpLabel, this.traversal).getNextStep()));
+            this.jumpBack = this.traversal.getSteps().indexOf(this) > this.traversal.getSteps().indexOf(TraversalHelper.getStep(this.jumpLabel, this.traversal).getNextStep());
         while (true) {
             if (!this.queue.isEmpty()) {
                 return this.queue.remove();
             } else {
                 final Traverser.System<S> traverser = this.starts.next();
-                if (this.jumpBack.get()) traverser.incrLoops();
+                if (this.jumpBack) traverser.incrLoops();
                 if (doJump(traverser)) {
                     traverser.setFuture(loopFuture);
                     this.queue.add(traverser);
                     if (null != this.emitPredicate && this.emitPredicate.test(traverser)) {
                         final Traverser.System<S> emitTraverser = traverser.makeSibling();
-                        if (this.jumpBack.get()) emitTraverser.resetLoops();
+                        if (this.jumpBack) emitTraverser.resetLoops();
                         emitTraverser.setFuture(this.nextStep.getLabel());
                         this.queue.add(emitTraverser);
                     }
                 } else {
                     traverser.setFuture(this.nextStep.getLabel());
-                    if (this.jumpBack.get()) traverser.resetLoops();
+                    if (this.jumpBack) traverser.resetLoops();
                     this.queue.add(traverser);
                 }
             }
