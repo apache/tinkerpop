@@ -35,17 +35,13 @@ public class UntilStrategy implements TraversalStrategy {
             final Step rightEndStep = TraversalHelper.getStep(untilStep.breakLabel, traversal);
             final String rightEndLabel = rightEndStep.getLabel();
 
-            final JumpStep leftEndJumpStep = untilStep.loops == -1 ?
-                    JumpStep.build(traversal).jumpLabel(rightEndLabel).jumpPredicate(untilStep.breakPredicate).emitPredicate(untilStep.emitPredicate).create() :
-                    //new JumpStep(traversal, rightEndLabel, untilStep.breakPredicate, untilStep.emitPredicate) :
-                    JumpStep.build(traversal).jumpLabel(rightEndLabel).jumpLoops(untilStep.loops, Compare.gt).emitPredicate(untilStep.emitPredicate).create();
-            //new JumpStep(traversal, rightEndLabel, Compare.gt, untilStep.loops, untilStep.emitPredicate);
+            final JumpStep leftEndJumpStep = untilStep.createLeftJumpStep(traversal, rightEndLabel);
             leftEndJumpStep.setLabel(untilStep.getLabel());
             leftEndJumpStep.doWhile = false;
             TraversalHelper.removeStep(untilStep, traversal);
             TraversalHelper.insertAfterStep(leftEndJumpStep, leftEndStep, traversal);
 
-            final JumpStep rightEndJumpStep = JumpStep.build(traversal).jumpLabel(leftEndStep.getLabel()).jumpPredicate(t -> true).create();
+            final JumpStep rightEndJumpStep = JumpStep.build(traversal).jumpLabel(leftEndStep.getLabel()).jumpChoice(true).emitChoice(false).create();
             //new JumpStep(traversal, leftEndStep.getLabel());
             rightEndJumpStep.setLabel(rightEndLabel);
             rightEndStep.setLabel(Graph.Key.hide(UUID.randomUUID().toString()));

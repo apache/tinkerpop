@@ -24,10 +24,10 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
 
     public Predicate<Traverser<S>> jumpPredicate;
     public Pair<Short, Compare> jumpLoops;
-    //public Boolean jumpChoice;
+    public Boolean jumpChoice;
 
     public Predicate<Traverser<S>> emitPredicate;
-    //public Boolean emitChoice;
+    public Boolean emitChoice;
 
     private Boolean jumpBack;
     private boolean onGraphComputer = false;
@@ -66,7 +66,7 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
             if (doJump(traverser)) {
                 traverser.setFuture(this.jumpLabel);
                 this.jumpToStep.addStarts(new SingleIterator(traverser));
-                if (this.emitPredicate != null && this.emitPredicate.test(traverser)) {
+                if (doEmit(traverser)) {
                     final Traverser.System<S> emitTraverser = traverser.makeSibling();
                     if (this.jumpBack) emitTraverser.resetLoops();
                     emitTraverser.setFuture(this.getNextStep().getLabel());
@@ -82,8 +82,8 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
 
     private Traverser<S> computerAlgorithm() {
         final String loopFuture = TraversalHelper.getStep(this.jumpLabel, this.traversal).getNextStep().getLabel();
-       // if (null == this.jumpBack)
-            this.jumpBack = this.traversal.getSteps().indexOf(this) > this.traversal.getSteps().indexOf(TraversalHelper.getStep(this.jumpLabel, this.traversal).getNextStep());
+        // if (null == this.jumpBack)
+        this.jumpBack = this.traversal.getSteps().indexOf(this) > this.traversal.getSteps().indexOf(TraversalHelper.getStep(this.jumpLabel, this.traversal).getNextStep());
         while (true) {
             if (!this.queue.isEmpty()) {
                 return this.queue.remove();
@@ -93,7 +93,7 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
                 if (doJump(traverser)) {
                     traverser.setFuture(loopFuture);
                     this.queue.add(traverser);
-                    if (null != this.emitPredicate && this.emitPredicate.test(traverser)) {
+                    if (doEmit(traverser)) {
                         final Traverser.System<S> emitTraverser = traverser.makeSibling();
                         if (this.jumpBack) emitTraverser.resetLoops();
                         emitTraverser.setFuture(this.nextStep.getLabel());
@@ -116,14 +116,20 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
         return this.doWhile;
     }
 
-    private boolean doJump(final Traverser traverser) {
-        /*if (null != this.jumpChoice)
+    private boolean doJump(final Traverser<S> traverser) {
+        if (null != this.jumpChoice)
             return this.jumpChoice;
-        else if(null != this.jumpLoops)
-            return this.jumpLoops.getValue1().test(traverser.getLoops(),this.jumpLoops.getValue0());
+        else if (null != this.jumpLoops)
+            return this.jumpLoops.getValue1().test(traverser.getLoops(), this.jumpLoops.getValue0());
         else
-            return this.jumpPredicate.test(traverser);*/
-       return null == this.jumpPredicate ? this.jumpLoops.getValue1().test(traverser.getLoops(), this.jumpLoops.getValue0()) : this.jumpPredicate.test(traverser);
+            return this.jumpPredicate.test(traverser);
+    }
+
+    private boolean doEmit(final Traverser<S> traverser) {
+        if (null != this.emitChoice)
+            return this.emitChoice;
+        else
+            return this.emitPredicate.test(traverser);
     }
 
     public String toString() {
@@ -141,11 +147,14 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
     public static class Builder<S> {
 
         private String jumpLabel = null;
-        private Pair<Short, Compare> jumpLoops = null;
-        private Boolean emitChoice = null;
-        private Boolean jumpChoice = null;
+
         private Predicate<Traverser<S>> jumpPredicate = null;
+        private Pair<Short, Compare> jumpLoops = null;
+        private Boolean jumpChoice = null;
+
         private Predicate<Traverser<S>> emitPredicate = null;
+        private Boolean emitChoice = null;
+
         private Boolean jumpBack = null;
         private Traversal traversal = null;
 
@@ -200,8 +209,8 @@ public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
             final JumpStep<S> jumpStep = new JumpStep<>(this.traversal);
             jumpStep.jumpLabel = this.jumpLabel;
             jumpStep.jumpLoops = this.jumpLoops;
-            //jumpStep.jumpChoice = this.jumpChoice;
-            //jumpStep.emitChoice = this.emitChoice;
+            jumpStep.jumpChoice = this.jumpChoice;
+            jumpStep.emitChoice = this.emitChoice;
             jumpStep.jumpPredicate = this.jumpPredicate;
             jumpStep.emitPredicate = this.emitPredicate;
             jumpStep.jumpBack = this.jumpBack;

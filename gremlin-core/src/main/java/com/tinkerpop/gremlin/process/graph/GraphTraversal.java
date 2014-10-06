@@ -636,7 +636,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel, final Predicate<Traverser<E>> jumpPredicate) {
-        return this.addStep(JumpStep.<E>build(this).jumpLabel(jumpLabel).jumpPredicate(jumpPredicate).create());
+        return this.addStep(JumpStep.<E>build(this).jumpLabel(jumpLabel).jumpPredicate(jumpPredicate).emitChoice(false).create());
         //return this.addStep(new JumpStep<>(this, jumpLabel, ifPredicate));
     }
 
@@ -646,12 +646,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel, final int loops) {
-        return this.addStep(JumpStep.<E>build(this).jumpLabel(jumpLabel).jumpLoops(loops, Compare.lt).create());
+        return this.addStep(JumpStep.<E>build(this).jumpLabel(jumpLabel).jumpLoops(loops, Compare.lt).emitChoice(false).create());
         //return this.addStep(new JumpStep<>(this, jumpLabel, Compare.lt, loops));
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel) {
-        return this.addStep(JumpStep.<E>build(this).jumpLabel(jumpLabel).jumpPredicate(t -> true).create());
+        return this.addStep(JumpStep.<E>build(this).jumpLabel(jumpLabel).jumpChoice(true).emitChoice(false).create());
         //return this.addStep(new JumpStep<>(this, jumpLabel));
     }
 

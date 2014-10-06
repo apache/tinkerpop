@@ -38,4 +38,17 @@ public class UntilStep<S> extends MapStep<S, S> {
                 TraversalHelper.makeStepString(this, this.breakLabel, Compare.gt.asString() + this.loops) :
                 TraversalHelper.makeStepString(this, this.breakLabel);
     }
+
+    public JumpStep<S> createLeftJumpStep(final Traversal traversal, final String jumpLabel) {
+        final JumpStep.Builder<S> builder = JumpStep.<S>build(traversal).jumpLabel(jumpLabel);
+        if(null != this.breakPredicate)
+            builder.jumpPredicate(this.breakPredicate);
+        else
+            builder.jumpLoops((int)this.loops, Compare.gt);
+        if(null != this.emitPredicate)
+            builder.emitPredicate(this.emitPredicate);
+        else
+            builder.emitChoice(false);
+       return builder.create();
+    }
 }
