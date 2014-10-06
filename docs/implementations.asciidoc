@@ -312,6 +312,42 @@ gremlin> g.addVertex(label,'dog','name','puppy')
 gremlin> g.V().has(label,'person').has('name','marko').value('name')
 ==>marko
 
+Below demonstrates the runtime benefits of indices and demonstrates how if there is no defined schema index (only vertex labels), a linear scan of vertex-label partition is still faster than linear scan of all vertices.
+
+[source,groovy]
+gremlin> g = Neo4jGraph.open('/tmp/neo4j')
+==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
+gremlin> g.tx().open()
+==>null
+gremlin> import org.neo4j.graphdb.*
+...
+gremlin> g.getBaseGraph().schema().indexFor(DynamicLabel.label('artist')).on('name').create() <1>
+==>IndexDefinition[label:artist, on:name]
+gremlin> g.tx().commit()
+==>null
+gremlin> g.loadGraphML('data/grateful-dead.xml')
+==>null
+gremlin> clock(1000){g.V().has(label,'artist').has('name','Garcia').next()}  <2>
+==>0.0585639999999997
+gremlin> clock(1000){g.V().has('name','Garcia').next()} <3>
+==>0.6039889999999992
+gremlin> g.getBaseGraph().schema().getIndexes(DynamicLabel.label('artist')).iterator().next().drop() <4>
+==>null
+gremlin> g.tx().commit()
+==>null
+gremlin> clock(1000){g.V().has(label,'artist').has('name','Garcia').next()} <5>
+==>0.26470499999999936
+gremlin> clock(1000){g.V().has('name','Garcia').next()} <6>
+==>0.6293959999999993
+
+<1> Create a schema index for all artist vertices on their name property.
+<2> Find all artists whose name is Garcia which uses the pre-defined schema index.
+<3> Find all vertices whose name is Garcia which requires a linear scan of all the data in the graph.
+<4> Drop the created index schema.
+<5> Find all artists whose name is Garcia which does a linear scan of the artist vertex-label partition.
+<6> Find all vertices whose name is Garcia which requires a linear scan of all the data in the graph.
+
+
 Using Automatic Indices
 ^^^^^^^^^^^^^^^^^^^^^^^
 
