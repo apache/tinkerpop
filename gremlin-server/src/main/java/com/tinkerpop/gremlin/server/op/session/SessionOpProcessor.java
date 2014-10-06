@@ -60,9 +60,6 @@ public class SessionOpProcessor implements OpProcessor {
             case Tokens.OPS_EVAL:
                 op = validateEvalMessage(message).orElse(SessionOps::evalOp);
                 break;
-            case Tokens.OPS_TRAVERSE:
-                op = validateTraverseMessage(message, ctx.getGraphs()).orElse(SessionOps::traverseOp);
-                break;
             case Tokens.OPS_INVALID:
                 final String msgInvalid = String.format("Message could not be parsed.  Check the format of the request. [%s]", message);
                 throw new OpProcessorException(msgInvalid, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST).result(msgInvalid).create());

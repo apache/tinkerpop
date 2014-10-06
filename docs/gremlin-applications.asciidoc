@@ -297,21 +297,6 @@ client.submit("[1,2,3,x]", params); <5>
 <4> Submit a script asynchronously without waiting for the request to be written to the server.
 <5> Parameterized request are considered the most efficient way to send Gremlin to the server as they can be cached, which will boost performance and reduce resources required on the server.
 
-The above examples submit Gremlin `String` values to the server for evaluation.  It is also possible to submit actual Java-based `Traversal` instances:
-
-[source,java]
-----
-public static class RemoteTraversal implements SFunction<Graph, Traversal> {
-    public Traversal apply(final Graph g) {
-        return g.V().out().range(0,9);
-    }
-}
-
-List<Item> results = client.submit(new RemoteTraversal()).all().get();
-----
-
-The code above shows that a `Traversal` instance can be sent for remote execution in Gremlin Server.  This feature is *highly experimental*, but has some interesting implications in that it provides a way to avoid maintaining "fat strings" of Gremlin in the application code base.  While the "fat string" approach can also be avoided by developing a server-side DSL, the sending of an actual `Traversal` provides another method that might provide new and better patterns for developing graph-based applications.
-
 Configuring
 ~~~~~~~~~~~
 
@@ -501,7 +486,6 @@ The "standard" `OpProcessor` handles requests for the primary function of Gremli
 !=========================================================
 !Key !Description
 !`eval` !evaluate a Gremlin script provided as a `String`
-!`traverse` !evaluate a serialized `Traversal` object - available to JVM clients only
 !=========================================================
 |=========================================================
 
@@ -510,16 +494,6 @@ The "standard" `OpProcessor` handles requests for the primary function of Gremli
 |=========================================================
 |Key |Type |Description
 |gremlin |String | *Required* The Gremlin script to evaluate
-|bindings |Map |A set of key/value pairs to apply as variables in the context of the Gremlin script
-|language |String |The flavor used (e.g. `gremlin-groovy`)
-|=========================================================
-
-'`traverse` operation arguments'
-[width="100%",cols="2,2,10",options="header"]
-|=========================================================
-|Key |Type |Description
-|gremlin |String | *Required* The Gremlin `Traversal` to evaluate
-|graphName |String | *Required* The name of graph to traverse. This graph name is set in the Gremlin Server configuration
 |bindings |Map |A set of key/value pairs to apply as variables in the context of the Gremlin script
 |language |String |The flavor used (e.g. `gremlin-groovy`)
 |=========================================================
@@ -538,7 +512,6 @@ The "session" `OpProcessor` handles requests for the primary function of Gremlin
 !=========================================================
 !Key !Description
 !`eval` !evaluate a Gremlin script
-!`traverse` !evaluate a serialized `Traversal` object - available to JVM clients only
 !=========================================================
 |=========================================================
 
@@ -548,16 +521,6 @@ The "session" `OpProcessor` handles requests for the primary function of Gremlin
 |Key |Type |Description
 |gremlin |String | *Required* The Gremlin script to evaluate
 |session |String | *Required* The session identifier for the current session - typically this value should be a UUID (the session will be created if it doesn't exist)
-|bindings |Map |A set of key/value pairs to apply as variables in the context of the Gremlin script
-|language |String |The flavor used (e.g. `gremlin-groovy`)
-|=========================================================
-
-'`traverse` operation arguments'
-[width="100%",cols="1,1,10",options="header"]
-|=========================================================
-|Key |Type |Description
-|gremlin |String | *Required* The Gremlin `Traversal` to evaluate
-|graphName |String | *Required* The name of graph to traverse. This graph name is set in the Gremlin Server configuration
 |bindings |Map |A set of key/value pairs to apply as variables in the context of the Gremlin script
 |language |String |The flavor used (e.g. `gremlin-groovy`)
 |=========================================================

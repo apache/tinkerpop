@@ -42,23 +42,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Rule
     public TestName name = new TestName();
 
-    public static class RemoteTraversal implements Function<Graph, Traversal> {
-        public Traversal apply(final Graph g) {
-            return g.V().out().range(0, 9);
-        }
-    }
-
-    public static class ParameterizedRemoteTraversal implements Function<Graph, Traversal> {
-        private String name;
-        public ParameterizedRemoteTraversal(final String name) {
-            this.name = name;
-        }
-
-        public Traversal apply(final Graph g) {
-            return g.V().has("name", name).value("name");
-        }
-    }
-
     /**
      * Configure specific Gremlin Server settings for specific tests.
      */
@@ -75,27 +58,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         return settings;
-    }
-
-    @Test
-    public void shouldSendTraversal() throws Exception {
-        final Cluster cluster = Cluster.open();
-        final Client client = cluster.connect();
-
-        final List<Item> results = client.submit(new RemoteTraversal()).all().get();
-        assertEquals(10, results.size());
-        cluster.close();
-    }
-
-    @Test
-    public void shouldSendParameterizedTraversal() throws Exception {
-        final Cluster cluster = Cluster.open();
-        final Client client = cluster.connect();
-
-        final List<Item> results = client.submit(new ParameterizedRemoteTraversal("marko")).all().get();
-        assertEquals(1, results.size());
-        assertEquals("marko", results.get(0).getString());
-        cluster.close();
     }
 
     @Test
