@@ -8,7 +8,6 @@ import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
-import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +74,7 @@ public class TinkerGraphComputer implements GraphComputer {
                 this.vertexProgram.setup(this.memory);
                 this.memory.completeSubRound();
                 while (true) {
-                    StreamFactory.parallelStream(this.graph.V()).forEach(vertex ->
+                    TinkerHelper.getVertices(this.graph).stream().forEach(vertex ->
                             this.vertexProgram.execute(vertex,
                                     new TinkerMessenger(vertex, this.messageBoard, this.vertexProgram.getMessageCombiner()),
                                     this.memory));
@@ -95,12 +94,12 @@ public class TinkerGraphComputer implements GraphComputer {
             // execute mapreduce jobs
             for (final MapReduce mapReduce : this.mapReduces) {
                 if (mapReduce.doStage(MapReduce.Stage.MAP)) {
-                    final TinkerMapEmitter<?,?> mapEmitter = new TinkerMapEmitter<>(mapReduce.doStage(MapReduce.Stage.REDUCE));
-                    StreamFactory.parallelStream(this.graph.V()).forEach(vertex -> mapReduce.map(vertex, mapEmitter));
+                    final TinkerMapEmitter<?, ?> mapEmitter = new TinkerMapEmitter<>(mapReduce.doStage(MapReduce.Stage.REDUCE));
+                    TinkerHelper.getVertices(this.graph).parallelStream().forEach(vertex -> mapReduce.map(vertex, mapEmitter));
                     // no need to run combiners as this is single machine
                     if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
-                        final TinkerReduceEmitter<?,?> reduceEmitter = new TinkerReduceEmitter<>();
-                        mapEmitter.reduceMap.forEach((k, v) -> mapReduce.reduce(k, ((List) v).iterator(), reduceEmitter));
+                        final TinkerReduceEmitter<?, ?> reduceEmitter = new TinkerReduceEmitter<>();
+                        mapEmitter.reduceMap.entrySet().parallelStream().forEach(entry -> mapReduce.reduce(entry.getKey(), entry.getValue().iterator(), reduceEmitter));
                         mapReduce.addSideEffectToMemory(this.memory, reduceEmitter.resultList.iterator());
                     } else {
                         mapReduce.addSideEffectToMemory(this.memory, mapEmitter.mapList.iterator());

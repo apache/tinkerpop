@@ -3,6 +3,8 @@ package com.tinkerpop.gremlin.process.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -18,8 +20,18 @@ public class MapHelper {
     }
 
     public static <T, U> void incr(final Map<T, List<U>> map, final T key, final U value) {
-        final List<U> temp = map.getOrDefault(key, new ArrayList<>());
-        temp.add(value);
-        map.put(key, temp);
+        map.compute(key, (k, v) -> {
+            if (null == v) v = new ArrayList<>();
+            v.add(value);
+            return v;
+        });
+    }
+
+    public static <T, U> void concurrentIncr(final Map<T, Queue<U>> map, final T key, final U value) {
+        map.compute(key, (k, v) -> {
+            if (null == v) v = new ConcurrentLinkedQueue<>();
+            v.add(value);
+            return v;
+        });
     }
 }
