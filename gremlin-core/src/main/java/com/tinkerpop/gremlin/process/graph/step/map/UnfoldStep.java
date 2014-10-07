@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class UnfoldStep<S, E> extends FlatMapStep<S, E> {
+public final class UnfoldStep<S, E> extends FlatMapStep<S, E> {
 
     public UnfoldStep(final Traversal traversal) {
         super(traversal);

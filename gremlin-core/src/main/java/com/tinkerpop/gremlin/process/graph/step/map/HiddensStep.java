@@ -13,7 +13,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HiddensStep<E> extends FlatMapStep<Element, Property<E>> implements Reversible {
+public final class HiddensStep<E> extends FlatMapStep<Element, Property<E>> implements Reversible {
 
     private final String[] propertyKeys;
 

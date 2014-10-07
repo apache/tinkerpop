@@ -6,10 +6,10 @@ import com.tinkerpop.gremlin.structure.Property;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PropertyValueStep<E> extends MapStep<Property, E> {
+public final class PropertyValueStep<E> extends MapStep<Property<E>, E> {
 
     public PropertyValueStep(final Traversal traversal) {
         super(traversal);
-        this.setFunction(traverser -> (E) traverser.get().value());
+        this.setFunction(traverser -> traverser.get().value());
     }
 }

@@ -11,7 +11,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DedupStep<S> extends FilterStep<S> implements Reversible {
+public final class DedupStep<S> extends FilterStep<S> implements Reversible {
 
     private final boolean hasUniqueFunction;
 
@@ -20,10 +20,16 @@ public class DedupStep<S> extends FilterStep<S> implements Reversible {
         final Set<Object> set = new LinkedHashSet<>();
         if (null == uniqueFunction) {
             this.hasUniqueFunction = false;
-            this.setPredicate(traverser -> set.add(traverser.get()));
+            this.setPredicate(traverser -> {
+                traverser.asSystem().setBulk(1);
+                return set.add(traverser.get());
+            });
         } else {
             this.hasUniqueFunction = true;
-            this.setPredicate(traverser -> set.add(uniqueFunction.apply(traverser)));
+            this.setPredicate(traverser -> {
+                traverser.asSystem().setBulk(1);
+                return set.add(uniqueFunction.apply(traverser));
+            });
         }
     }
 

@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.structure.Element;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IdStep<E extends Element> extends MapStep<E, Object> {
+public final class IdStep<E extends Element> extends MapStep<E, Object> {
 
     public IdStep(final Traversal traversal) {
         super(traversal);

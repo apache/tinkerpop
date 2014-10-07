@@ -27,6 +27,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.GroovyOrderByTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyOrderTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyPathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovySelectTest;
+import com.tinkerpop.gremlin.process.graph.step.map.GroovyShuffleTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyUnfoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyUntilTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyValueMapTest;
@@ -80,6 +81,7 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyOrderTest.StandardTest.class,
             GroovyPathTest.StandardTest.class,
             GroovySelectTest.StandardTest.class,
+            GroovyShuffleTest.StandardTest.class,
             GroovyUnfoldTest.StandardTest.class,
             GroovyUntilTest.StandardTest.class,
             GroovyValueMapTest.StandardTest.class,

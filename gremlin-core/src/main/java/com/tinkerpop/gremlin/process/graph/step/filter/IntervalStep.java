@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IntervalStep<S extends Element> extends FilterStep<S> implements HasContainerHolder, Reversible {
+public final class IntervalStep<S extends Element> extends FilterStep<S> implements HasContainerHolder, Reversible {
 
     private final HasContainer startContainer;
     private final HasContainer endContainer;

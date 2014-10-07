@@ -17,7 +17,7 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
+public final class JumpStep<S> extends AbstractStep<S, S> implements EngineDependent {
 
     private String jumpLabel;
     private Step jumpToStep;

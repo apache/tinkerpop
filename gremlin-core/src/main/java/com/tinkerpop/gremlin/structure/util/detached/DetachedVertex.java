@@ -123,6 +123,8 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
                     propsOnProps.add(h.value());
                 });
 
+                propsOnProps.add(T.id);
+                propsOnProps.add(vertexProperty.id());
                 vertex.property(kv.getKey(), property.value(), propsOnProps.toArray());
             })
         );

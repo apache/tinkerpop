@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SimplePathStep<S> extends FilterStep<S> implements PathConsumer, Reversible {
+public final class SimplePathStep<S> extends FilterStep<S> implements PathConsumer, Reversible {
 
     public SimplePathStep(final Traversal traversal) {
         super(traversal);

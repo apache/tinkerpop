@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ValueStep<E> extends MapStep<Element, E> {
+public final class ValueStep<E> extends MapStep<Element, E> {
 
     private final String key;
     private final Optional<E> defaultValue;

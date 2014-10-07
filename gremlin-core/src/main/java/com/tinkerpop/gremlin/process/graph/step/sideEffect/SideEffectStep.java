@@ -12,8 +12,7 @@ import java.util.function.Consumer;
  */
 public class SideEffectStep<S> extends AbstractStep<S, S> implements Reversible {
 
-    protected static final Consumer NO_OP_CONSUMER = null;
-    protected Consumer<Traverser<S>> consumer = NO_OP_CONSUMER;
+    private Consumer<Traverser<S>> consumer = null;
 
     public SideEffectStep(final Traversal traversal) {
         super(traversal);
@@ -26,7 +25,7 @@ public class SideEffectStep<S> extends AbstractStep<S, S> implements Reversible 
     @Override
     protected Traverser<S> processNextStart() {
         final Traverser<S> traverser = this.starts.next();
-        if (NO_OP_CONSUMER != this.consumer) this.consumer.accept(traverser);
+        if (null != this.consumer) this.consumer.accept(traverser);
         return traverser;
     }
 }

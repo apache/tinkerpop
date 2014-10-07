@@ -75,6 +75,16 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
     }
 
     /**
+     * Typecast the traverser to a "system traverser" so {@link Traverser.System} methods can be accessed.
+     * Used as a helper method to avoid the awkwardness of <code>((Traverser.System)traverser)</code>.
+     *
+     * @return The typecasted traverser
+     */
+    public default Traverser.System<T> asSystem() {
+        return (Traverser.System<T>) this;
+    }
+
+    /**
      * The methods in System.Traverser are useful to underlying Step and Traversal implementations.
      * They should not be accessed by the user during lambda-based manipulations.
      */

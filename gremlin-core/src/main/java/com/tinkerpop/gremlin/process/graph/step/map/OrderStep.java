@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.util.BarrierStep;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -11,7 +12,7 @@ import java.util.Comparator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class OrderStep<S> extends BarrierStep<S> implements Reversible {
+public final class OrderStep<S> extends BarrierStep<S> implements Reversible {
 
     private final Comparator<Traverser<S>> comparator;
 
@@ -25,5 +26,8 @@ public class OrderStep<S> extends BarrierStep<S> implements Reversible {
         return this.comparator;
     }
 
-
+    @Override
+    public String toString() {
+        return TraversalHelper.makeStepString(this, this.comparator);
+    }
 }

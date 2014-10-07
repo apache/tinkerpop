@@ -12,7 +12,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PropertiesStep<E> extends FlatMapStep<Element, Property<E>> implements Reversible {
+public final class PropertiesStep<E> extends FlatMapStep<Element, Property<E>> implements Reversible {
 
     private final String[] propertyKeys;
 
@@ -27,6 +27,7 @@ public class PropertiesStep<E> extends FlatMapStep<Element, Property<E>> impleme
         TraversalHelper.replaceStep(this, new PropertyElementStep(this.traversal), this.traversal);
     }
 
+    @Override
     public String toString() {
         return this.propertyKeys.length == 0 ? super.toString() : TraversalHelper.makeStepString(this, Arrays.toString(this.propertyKeys));
     }

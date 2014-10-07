@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EdgeVertexStep extends FlatMapStep<Edge, Vertex> implements Reversible {
+public final class EdgeVertexStep extends FlatMapStep<Edge, Vertex> implements Reversible {
 
     private Direction direction;
 

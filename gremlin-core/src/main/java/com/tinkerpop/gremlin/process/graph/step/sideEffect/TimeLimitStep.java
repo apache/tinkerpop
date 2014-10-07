@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class TimeLimitStep<S> extends SideEffectStep<S> implements Reversible {
+public final class TimeLimitStep<S> extends SideEffectStep<S> implements Reversible {
 
     private final AtomicLong startTime = new AtomicLong(-1);
     private final long timeLimit;

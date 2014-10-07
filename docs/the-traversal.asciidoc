@@ -44,7 +44,7 @@ The `Traverser<S>` object provides access to:
 . The side-effects associated with the traversal -- `Traverser.getSideEffects()`.
 . A helper shorthand to get a particular side-effect -- `Traverser.get(String) == Traverser.getSideEffects().get(String)`.
 
-IMPORTANT: If a specific traversal step can do the necessary step-computation, use it. Lambda steps can not be optimized by the Gremlin <<traversalstrategy,traversal strategies>> and should only be used when the requisite computation does not have a corresponding standard Gremlin step. For example, instead of `filter{it.property('name').isPresent()}` use `has('name')`.
+IMPORTANT: If a specific traversal step can do the necessary step-computation, use it. Lambda steps can not be optimized by the Gremlin <<traversalstrategy,traversal strategies>> and should only be used when the requisite computation does not have a corresponding standard Gremlin step. For example, instead of `filter{it.get().property('name').isPresent()}` use `has('name')`.
 
 image:map-lambda.png[width=150,float=right]
 [source,groovy]

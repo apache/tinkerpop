@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.structure.Property;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PropertyElementStep<E> extends MapStep<Property<E>, Element> {
+public final class PropertyElementStep<E> extends MapStep<Property<E>, Element> {
 
     public PropertyElementStep(final Traversal traversal) {
         super(traversal);

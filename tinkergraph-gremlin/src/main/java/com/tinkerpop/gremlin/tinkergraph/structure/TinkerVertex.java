@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -24,6 +25,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
     protected Map<String, Set<Edge>> outEdges = new HashMap<>();
     protected Map<String, Set<Edge>> inEdges = new HashMap<>();
+    private static final Object[] EMPTY_ARGS = new Object[0];
 
     protected TinkerVertex(final Object id, final String label, final TinkerGraph graph) {
         super(id, label, graph);
@@ -53,17 +55,31 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
     @Override
     public <V> VertexProperty<V> property(final String key, final V value) {
+        return this.property(key, value, EMPTY_ARGS);
+    }
+
+    @Override
+    public <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
+        ElementHelper.legalPropertyKeyValueArray(keyValues);
+        final Optional<Object> optionalId = ElementHelper.getIdValue(keyValues);
         if (TinkerHelper.inComputerMode(this.graph)) {
-            return (VertexProperty<V>) this.graph.graphView.setProperty(this, key, value);
+            VertexProperty<V> vertexProperty = (VertexProperty<V>) this.graph.graphView.setProperty(this, key, value);
+            ElementHelper.attachProperties(vertexProperty, keyValues);
+            return vertexProperty;
         } else {
             ElementHelper.validateProperty(key, value);
-            final VertexProperty<V> newProperty = new TinkerVertexProperty<>(this, key, value);
+            final VertexProperty<V> vertexProperty = optionalId.isPresent() ?
+                    new TinkerVertexProperty<V>(optionalId.get(), this, key, value) :
+                    new TinkerVertexProperty<V>(this, key, value);
             final List<Property> list = this.properties.getOrDefault(key, new ArrayList<>());
-            list.add(newProperty);
+            list.add(vertexProperty);
             this.properties.put(key, list);
             this.graph.vertexIndex.autoUpdate(key, value, null, this);
-            return newProperty;
+            ElementHelper.attachProperties(vertexProperty, keyValues);
+            return vertexProperty;
         }
+
+
     }
 
     @Override

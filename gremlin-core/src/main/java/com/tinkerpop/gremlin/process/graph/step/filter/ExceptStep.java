@@ -9,7 +9,7 @@ import java.util.Collection;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ExceptStep<S> extends FilterStep<S> implements Reversible {
+public final class ExceptStep<S> extends FilterStep<S> implements Reversible {
 
     private final String collectionSideEffectKey;
 

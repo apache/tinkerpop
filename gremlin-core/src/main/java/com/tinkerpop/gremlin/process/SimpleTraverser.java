@@ -132,7 +132,6 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.System<T> {
                 && ((SimpleTraverser) object).get().equals(this.t)
                 && ((SimpleTraverser) object).getFuture().equals(this.getFuture())
                 && ((SimpleTraverser) object).getLoops() == this.getLoops();
-
     }
 
     @Override

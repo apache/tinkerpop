@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.structure.Element;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LabelStep<E extends Element> extends MapStep<E, String> {
+public final class LabelStep<E extends Element> extends MapStep<E, String> {
 
     public LabelStep(final Traversal traversal) {
         super(traversal);

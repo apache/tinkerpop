@@ -11,7 +11,7 @@ import java.util.function.BiFunction;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class FoldStep<S, E> extends MapStep<S, E> {
+public final class FoldStep<S, E> extends MapStep<S, E> {
 
     private final AtomicReference<E> mutatingSeed;
     private final E seed;

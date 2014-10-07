@@ -9,7 +9,7 @@ import java.util.Random;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class RandomStep<S> extends FilterStep<S> implements Reversible {
+public final class RandomStep<S> extends FilterStep<S> implements Reversible {
 
     private static final Random RANDOM = new Random();
     private final double probability;

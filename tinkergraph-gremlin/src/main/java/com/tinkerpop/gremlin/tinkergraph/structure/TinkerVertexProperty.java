@@ -29,6 +29,15 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
         ElementHelper.attachProperties(this, propertyKeyValues);
     }
 
+    public TinkerVertexProperty(final Object id, final TinkerVertex vertex, final String key, final V value, final Object... propertyKeyValues) {
+        super(id, key, vertex.graph);
+        this.vertex = vertex;
+        this.key = key;
+        this.value = value;
+        ElementHelper.legalPropertyKeyValueArray(propertyKeyValues);
+        ElementHelper.attachProperties(this, propertyKeyValues);
+    }
+
     @Override
     public String key() {
         return Graph.Key.unHide(this.key);

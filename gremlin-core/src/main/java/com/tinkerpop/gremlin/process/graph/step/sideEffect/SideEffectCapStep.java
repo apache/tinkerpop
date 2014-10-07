@@ -15,7 +15,7 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements SideEffectCap, EngineDependent {
+public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements SideEffectCap, EngineDependent {
 
     private boolean done = false;
     private boolean onGraphComputer = false;

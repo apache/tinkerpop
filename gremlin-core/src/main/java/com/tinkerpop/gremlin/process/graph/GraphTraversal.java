@@ -347,7 +347,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, E2> select(final String label, Function stepFunction) {
-        return this.addStep(new SelectOneStep<>(this, label, stepFunction));
+        return this.addStep(new SelectOneStep(this, label, stepFunction));
     }
 
     public default <E2> GraphTraversal<S, E2> select(final String label) {

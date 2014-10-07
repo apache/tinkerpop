@@ -21,7 +21,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEffectCapable, Reversible, EngineDependent, MapReducer<Object, Collection, Object, Object, Map> {
+public final class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements SideEffectCapable, Reversible, EngineDependent, MapReducer<Object, Collection, Object, Object, Map> {
 
     private final Map<K, R> reduceMap;
     private final Function<Traverser<S>, K> keyFunction;

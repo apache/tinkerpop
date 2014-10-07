@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CountStep<S> extends MapStep<S, Long> {
+public final class CountStep<S> extends MapStep<S, Long> {
 
     private final AtomicBoolean done = new AtomicBoolean(false);
     private final AtomicLong counter = new AtomicLong(0l);
@@ -22,8 +22,8 @@ public class CountStep<S> extends MapStep<S, Long> {
         super(traversal);
         this.setFunction(traverser -> {
             final long bulk = traverser.getBulk();
-            this.counter.set(this.counter.get() + bulk);
-            this.starts.forEachRemaining(previousTraverser -> this.counter.set(this.counter.get() + bulk));
+            this.counter.getAndAdd(bulk);
+            this.starts.forEachRemaining(previousTraverser -> this.counter.getAndAdd(previousTraverser.getBulk()));
             return this.counter.get();
         });
     }

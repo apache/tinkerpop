@@ -26,7 +26,7 @@ import java.util.function.Function;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
+public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
 
     static final BiConsumer<String, Object> TRIVIAL_CONSUMER = (s, t) -> {
     };

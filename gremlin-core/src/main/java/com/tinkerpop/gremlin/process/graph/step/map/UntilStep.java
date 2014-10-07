@@ -11,7 +11,7 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class UntilStep<S> extends MapStep<S, S> {
+public final class UntilStep<S> extends MapStep<S, S> {
 
     private final String breakLabel;
     private final Pair<Short, Compare> jumpLoops;

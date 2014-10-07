@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.structure.Property;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class KeyStep extends MapStep<Property, String> {
+public final class KeyStep extends MapStep<Property, String> {
 
     public KeyStep(final Traversal traversal) {
         super(traversal);

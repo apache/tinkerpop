@@ -12,17 +12,13 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CountCapStep<S> extends SideEffectStep<S> implements SideEffectCapable, MapReducer<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
+public final class CountCapStep<S> extends SideEffectStep<S> implements SideEffectCapable, MapReducer<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
 
     private static final String COUNT_KEY = Graph.Key.hide("count");
 
     public CountCapStep(final Traversal traversal) {
         super(traversal);
-        this.setConsumer(traverser -> {
-            final AtomicLong count = traverser.getSideEffects().getOrCreate(COUNT_KEY, () -> new AtomicLong(0l));
-            count.set(count.get() + traverser.getBulk());
-            traverser.getSideEffects().set(COUNT_KEY, count);
-        });
+        this.setConsumer(traverser -> traverser.getSideEffects().getOrCreate(COUNT_KEY, () -> new AtomicLong(0l)).getAndAdd(traverser.getBulk()));
     }
 
     @Override

@@ -9,6 +9,12 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added a default `Traverser.asSystem()` method as a typecast convenience to `Traverser.System`.
+* Fixed a TinkerGraph bug around user supplied vertex property ids.
+* Most `Step` classes are now defined as `public final class` to prevent inheritance.
+* `ShuffleStep` now extends `BarrierStep` which enables semantically correct step-sideEffects.
+* Leveraged `Traverser.getBulk()` consistently throughout all steps.
+
 TinkerPop 3.0.0.M3 (Release Date: October 6, 2014)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

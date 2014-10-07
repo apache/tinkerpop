@@ -19,7 +19,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AggregateStep<S> extends BarrierStep<S> implements SideEffectCapable, Reversible, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
+public final class AggregateStep<S> extends BarrierStep<S> implements SideEffectCapable, Reversible, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
 
     private final Function<Traverser<S>, ?> preAggregateFunction;
     private final String sideEffectKey;
@@ -31,7 +31,12 @@ public class AggregateStep<S> extends BarrierStep<S> implements SideEffectCapabl
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
         this.setConsumer(traversers -> {
             final Collection aggregate = this.getTraversal().sideEffects().getOrCreate(this.sideEffectKey, ArrayList::new);
-            traversers.forEach(traverser -> aggregate.add(null == this.preAggregateFunction ? traverser.get() : this.preAggregateFunction.apply(traverser)));
+            traversers.forEach(traverser -> {
+                final Object aggregateObject = null == this.preAggregateFunction ? traverser.get() : this.preAggregateFunction.apply(traverser);
+                for (int i = 0; i < traverser.getBulk(); i++) {
+                    aggregate.add(aggregateObject);
+                }
+            });
         });
     }
 

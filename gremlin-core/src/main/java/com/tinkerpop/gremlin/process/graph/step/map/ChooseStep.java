@@ -15,7 +15,7 @@ import java.util.function.Predicate;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ChooseStep<S, E, M> extends FlatMapStep<S, E> {
+public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> {
 
     public ChooseStep(final Traversal traversal, final Predicate<Traverser<S>> ifPredicate, final Traversal<S, E> trueBranch, final Traversal<S, E> falseBranch) {
         super(traversal);

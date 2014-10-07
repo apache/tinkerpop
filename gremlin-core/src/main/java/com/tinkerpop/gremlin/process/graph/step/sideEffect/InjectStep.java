@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class InjectStep<S> extends SideEffectStep<S> implements TraverserSource {
+public final class InjectStep<S> extends SideEffectStep<S> implements TraverserSource {
 
     private final List<S> injections;
 

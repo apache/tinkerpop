@@ -10,7 +10,9 @@ import com.tinkerpop.gremlin.structure.Vertex;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AddEdgeStep extends SideEffectStep<Vertex> implements PathConsumer, Reversible {
+public final class AddEdgeStep extends SideEffectStep<Vertex> implements PathConsumer, Reversible {
+
+    // TODO: Weight key based on Traverser.getBulk() ?
 
     private final Direction direction;
     private final String edgeLabel;

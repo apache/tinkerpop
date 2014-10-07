@@ -25,7 +25,7 @@ import java.util.function.Predicate;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SubgraphStep<S> extends SideEffectStep<S> implements SideEffectCapable, PathConsumer, Reversible {
+public final class SubgraphStep<S> extends SideEffectStep<S> implements SideEffectCapable, PathConsumer, Reversible {
     private final Graph subgraph;
     private final boolean subgraphSupportsUserIds;
     private final Map<Object, Vertex> idVertexMap;

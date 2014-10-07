@@ -5,9 +5,11 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Barrier;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
+import com.tinkerpop.gremlin.structure.Element;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.function.Consumer;
 
@@ -15,7 +17,6 @@ import java.util.function.Consumer;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class BarrierStep<S> extends AbstractStep<S, S> implements Barrier {
-
     private final Queue<Traverser.System<S>> previousTraversers = new LinkedList<>();
     private Consumer<List<Traverser<S>>> barrierConsumer;
 
@@ -31,7 +32,15 @@ public abstract class BarrierStep<S> extends AbstractStep<S, S> implements Barri
     public Traverser<S> processNextStart() {
         while (true) {
             if (this.starts.hasNext()) {
-                this.starts.forEachRemaining(this.previousTraversers::add);
+                this.starts.forEachRemaining(start -> {
+                    final Optional<Traverser.System<S>> optional = this.previousTraversers.stream().filter(previous -> previous.equals(start)).findAny();
+                    if (optional.isPresent()) {
+                        final Traverser.System<S> previous = optional.get();
+                        previous.setBulk(previous.getBulk() + start.getBulk());
+                    } else {
+                        this.previousTraversers.add(start);
+                    }
+                });
                 this.barrierConsumer.accept((List) this.previousTraversers);
             } else {
                 if (this.previousTraversers.isEmpty())

@@ -9,7 +9,7 @@ import java.util.Arrays;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ValuesStep<E> extends FlatMapStep<Element, E> {
+public final class ValuesStep<E> extends FlatMapStep<Element, E> {
 
     private final String[] propertyKeys;
 

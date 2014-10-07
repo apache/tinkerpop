@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Barrier;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
@@ -23,13 +24,14 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
     private final boolean wasEmpty;
     private boolean requiresPaths = false;
     private boolean onGraphComputer = false;
+    protected Function<Traverser<S>, Map<String, E>> selectFunction;
 
     public SelectStep(final Traversal traversal, final List<String> selectLabels, final Function... stepFunctions) {
         super(traversal);
         this.functionRing = new FunctionRing(stepFunctions);
         this.wasEmpty = selectLabels.size() == 0;
         this.selectLabels = this.wasEmpty ? TraversalHelper.getLabelsUpTo(this, this.traversal) : selectLabels;
-        this.setFunction(traverser -> {
+        this.selectFunction = traverser -> {
             final S start = traverser.get();
             final Map<String, E> bindings = new LinkedHashMap<>();
 
@@ -59,7 +61,8 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
 
             this.functionRing.reset();
             return bindings;
-        });
+        };
+        this.setFunction(this.selectFunction);
     }
 
     @Override

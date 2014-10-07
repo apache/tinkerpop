@@ -11,7 +11,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PathStep<S> extends MapStep<S, Path> implements PathConsumer {
+public final class PathStep<S> extends MapStep<S, Path> implements PathConsumer {
 
     private final FunctionRing functionRing;
 

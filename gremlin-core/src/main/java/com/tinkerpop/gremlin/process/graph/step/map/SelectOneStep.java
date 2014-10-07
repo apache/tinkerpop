@@ -10,14 +10,14 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SelectOneStep<S, E> extends SelectStep {
+public final class SelectOneStep<S, E> extends SelectStep {
 
-    private final Function<Traverser<S>, Map<String, E>> selectFunction;
+    private final Function<Traverser<S>, Map<String, E>> tempFunction;
 
     public SelectOneStep(final Traversal traversal, final String selectLabel, final Function stepFunction) {
         super(traversal, Arrays.asList(selectLabel), stepFunction);
-        this.selectFunction = this.function;
-        this.setFunction(traverser -> this.selectFunction.apply(((Traverser<S>) traverser)).get(selectLabel));
+        this.tempFunction = this.selectFunction;
+        this.setFunction(traverser -> this.tempFunction.apply(((Traverser<S>) traverser)).get(selectLabel));
     }
 }
 

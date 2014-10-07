@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HiddenValueStep<E> extends MapStep<Element, E> {
+public final class HiddenValueStep<E> extends MapStep<Element, E> {
 
     private final boolean isHidden;
     private final String key;

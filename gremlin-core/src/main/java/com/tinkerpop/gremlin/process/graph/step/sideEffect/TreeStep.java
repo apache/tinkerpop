@@ -18,7 +18,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TreeStep<S> extends SideEffectStep<S> implements Reversible, PathConsumer, SideEffectCapable, MapReducer<Object, Tree, Object, Tree, Tree> {
+public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, PathConsumer, SideEffectCapable, MapReducer<Object, Tree, Object, Tree, Tree> {
 
     private final FunctionRing functionRing;
     private final String sideEffectKey;
