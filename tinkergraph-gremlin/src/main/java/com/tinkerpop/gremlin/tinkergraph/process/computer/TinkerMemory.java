@@ -28,11 +28,11 @@ public class TinkerMemory implements Memory.Administrative {
     private final AtomicLong runtime = new AtomicLong(0l);
     private boolean complete = false;
 
-    public TinkerMemory(final VertexProgram vertexProgram, final List<MapReduce> mapReducers) {
+    public TinkerMemory(final VertexProgram<?> vertexProgram, final List<MapReduce> mapReducers) {
         this.currentMap = new ConcurrentHashMap<>();
         this.previousMap = new ConcurrentHashMap<>();
         if (null != vertexProgram) {
-            for (final String key : (Set<String>) vertexProgram.getMemoryComputeKeys()) {
+            for (final String key : vertexProgram.getMemoryComputeKeys()) {
                 MemoryHelper.validateKey(key);
                 this.memoryKeys.add(key);
             }
@@ -129,6 +129,7 @@ public class TinkerMemory implements Memory.Administrative {
         this.currentMap.put(key, value);
     }
 
+    @Override
     public String toString() {
         return StringFactory.computeMemoryString(this);
     }

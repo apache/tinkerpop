@@ -5,8 +5,6 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
@@ -14,7 +12,6 @@ import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -98,11 +95,11 @@ public class TinkerGraphComputer implements GraphComputer {
             // execute mapreduce jobs
             for (final MapReduce mapReduce : this.mapReduces) {
                 if (mapReduce.doStage(MapReduce.Stage.MAP)) {
-                    final TinkerMapEmitter mapEmitter = new TinkerMapEmitter(mapReduce.doStage(MapReduce.Stage.REDUCE));
+                    final TinkerMapEmitter<?,?> mapEmitter = new TinkerMapEmitter<>(mapReduce.doStage(MapReduce.Stage.REDUCE));
                     StreamFactory.parallelStream(this.graph.V()).forEach(vertex -> mapReduce.map(vertex, mapEmitter));
                     // no need to run combiners as this is single machine
                     if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
-                        final TinkerReduceEmitter reduceEmitter = new TinkerReduceEmitter();
+                        final TinkerReduceEmitter<?,?> reduceEmitter = new TinkerReduceEmitter<>();
                         mapEmitter.reduceMap.forEach((k, v) -> mapReduce.reduce(k, ((List) v).iterator(), reduceEmitter));
                         mapReduce.addSideEffectToMemory(this.memory, reduceEmitter.resultList.iterator());
                     } else {
@@ -117,6 +114,7 @@ public class TinkerGraphComputer implements GraphComputer {
         });
     }
 
+    @Override
     public String toString() {
         return StringFactory.computerString(this);
     }

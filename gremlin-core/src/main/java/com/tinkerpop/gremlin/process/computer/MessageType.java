@@ -22,7 +22,7 @@ import java.util.function.Supplier;
  */
 public abstract class MessageType {
 
-    public static class Global extends MessageType {
+    public final static class Global extends MessageType {
         private final Iterable<Vertex> vertices;
 
         private Global(final Iterable<Vertex> vertices) {
@@ -42,7 +42,7 @@ public abstract class MessageType {
         }
     }
 
-    public static class Local<M1, M2> extends MessageType {
+    public final static class Local<M1, M2> extends MessageType {
         public final Supplier<Traversal<Vertex, Edge>> incidentTraversal;
         public final BiFunction<M1, Edge, M2> edgeFunction;
 

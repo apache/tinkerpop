@@ -25,5 +25,10 @@ public abstract class GroovyOrderTest {
         public Traversal<Vertex, String> get_g_V_orderXa_nameXb_nameX_name() {
             g.V.order { a, b -> a.name <=> b.name }.name
         }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_lang_order() {
+            g.V.lang.order();
+        }
     }
 }

@@ -176,6 +176,7 @@ public class GiraphMemory extends MasterCompute implements Memory {
         // is this true?
     }
 
+    @Override
     public String toString() {
         return StringFactory.computeMemoryString(this);
     }

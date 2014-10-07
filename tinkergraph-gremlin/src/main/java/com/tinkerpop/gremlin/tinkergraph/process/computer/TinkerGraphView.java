@@ -130,13 +130,4 @@ public class TinkerGraphView {
     public boolean isComputeKey(final String key) {
         return this.computeKeys.contains(key);
     }
-
-    public Set<String> getComputeKeys() {
-        return this.computeKeys;
-    }
-
-    /*public boolean isVariableKey(final String key) {
-        return VertexProgram.KeyType.VARIABLE.equals(this.computeKeys.get(key));
-    }*/
-
 }

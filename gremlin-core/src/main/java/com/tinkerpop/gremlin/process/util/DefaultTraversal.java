@@ -17,6 +17,10 @@ import java.util.List;
  */
 public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
+    private E lastEnd = null;
+    private long lastEndCount = 0l;
+
+
     protected List<Step> steps = new ArrayList<>();
     protected DefaultStrategies strategies = new DefaultStrategies(this);
     protected DefaultSideEffects sideEffects = new DefaultSideEffects();
@@ -55,13 +59,25 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     @Override
     public boolean hasNext() {
         this.applyStrategies();
-        return TraversalHelper.getEnd(this).hasNext();
+        return this.lastEndCount > 0l || TraversalHelper.getEnd(this).hasNext();
     }
 
     @Override
     public E next() {
         this.applyStrategies();
-        return TraversalHelper.getEnd(this).next().get();
+        if (this.lastEndCount > 0l) {
+            this.lastEndCount--;
+            return this.lastEnd;
+        } else {
+            final Traverser<E> next = TraversalHelper.getEnd(this).next();
+            if (next.getBulk() == 1) {
+                return next.get();
+            } else {
+                this.lastEndCount = next.getBulk() - 1;
+                this.lastEnd = next.get();
+                return this.lastEnd;
+            }
+        }
     }
 
     public String toString() {

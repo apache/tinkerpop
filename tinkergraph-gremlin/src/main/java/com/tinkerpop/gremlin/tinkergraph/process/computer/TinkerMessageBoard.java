@@ -11,7 +11,6 @@ import java.util.Queue;
  */
 class TinkerMessageBoard<M> {
 
-    // Map<Vertex, MessageQueue>
     public Map<Vertex, Queue<M>> sendMessages = new HashMap<>();
     public Map<Vertex, Queue<M>> receiveMessages = new HashMap<>();
 

@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -24,6 +25,8 @@ public abstract class OrderTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, String> get_g_V_name_orderXabX();
 
     public abstract Traversal<Vertex, String> get_g_V_orderXa_nameXb_nameX_name();
+
+    public abstract Traversal<Vertex, String> get_g_V_lang_order();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -70,6 +73,20 @@ public abstract class OrderTest extends AbstractGremlinTest {
         assertEquals("vadas", names.get(5));
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_lang_order() {
+        final Traversal<Vertex, String> traversal = get_g_V_lang_order();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            assertEquals("java", traversal.next());
+        }
+        assertEquals(2, counter);
+        assertFalse(traversal.hasNext());
+    }
+
     public static class StandardTest extends OrderTest {
 
         @Override
@@ -85,6 +102,11 @@ public abstract class OrderTest extends AbstractGremlinTest {
         @Override
         public Traversal<Vertex, String> get_g_V_orderXa_nameXb_nameX_name() {
             return g.V().order((a, b) -> a.get().<String>value("name").compareTo(b.get().<String>value("name"))).value("name");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_lang_order() {
+            return g.V().<String>value("lang").order();
         }
     }
 }

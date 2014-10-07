@@ -31,7 +31,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritable, KryoWritable> {
+public final class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritable, KryoWritable> {
 
     //TODO: Dangerous that the underlying TinkerGraph Vertex can have edges written to it.
 
