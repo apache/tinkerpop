@@ -49,8 +49,8 @@ public final class GiraphInternalVertex extends Vertex<LongWritable, Text, NullW
         this.tinkerVertex = tinkerVertex;
         this.tinkerGraph.variables().set(VERTEX_ID, this.tinkerVertex.id());
         final TinkerVertex vertex = (TinkerVertex) this.tinkerGraph.addVertex(T.id, this.tinkerVertex.id(), T.label, this.tinkerVertex.label());
-        this.tinkerVertex.iterators().properties().forEachRemaining(property -> vertex.<Object>property(property.key(), property.value()));
-        this.tinkerVertex.iterators().hiddens().forEachRemaining(property -> vertex.<Object>property(Graph.Key.hide(property.key()), property.value()));
+        this.tinkerVertex.iterators().properties().forEachRemaining(property -> vertex.<Object>property(property.key(), property.value(), T.id, property.id()));
+        this.tinkerVertex.iterators().hiddens().forEachRemaining(property -> vertex.<Object>property(Graph.Key.hide(property.key()), property.value(), T.id, property.id()));
         this.tinkerVertex.iterators().edges(Direction.OUT, Integer.MAX_VALUE).forEachRemaining(edge -> {
             final com.tinkerpop.gremlin.structure.Vertex tempOtherVertex = edge.iterators().vertices(Direction.IN).next();
             final TinkerVertex otherVertex = (TinkerVertex) ElementHelper.getOrAddVertex(this.tinkerGraph, tempOtherVertex.id(), tempOtherVertex.label());
