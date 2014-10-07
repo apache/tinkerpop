@@ -13,7 +13,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphReduce extends Reducer<KryoWritable, KryoWritable, KryoWritable, KryoWritable> {
+public final class GiraphReduce extends Reducer<KryoWritable, KryoWritable, KryoWritable, KryoWritable> {
 
     private MapReduce mapReduce;
 

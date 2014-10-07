@@ -32,7 +32,7 @@ public final class RangeStep<S> extends FilterStep<S> {
             } else if (this.high != -1 && tempCounter > this.high) {
                 final long differenceCounter = tempCounter - this.high;
                 if (traverser.getBulk() > differenceCounter) {
-                    traverser.asSystem().setBulk(differenceCounter);
+                    traverser.asAdmin().setBulk(differenceCounter);
                     this.counter.set(this.counter.get() + differenceCounter);
                     return true;
                 } else

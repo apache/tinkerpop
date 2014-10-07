@@ -9,7 +9,9 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Added a default `Traverser.asSystem()` method as a typecast convenience to `Traverser.System`.
+* Added a default `Traverser.asAdmin()` method as a typecast convenience to `Traverser.Admin`.
+* Renamed `Traverser.System` to `Traverser.Admin` as to not cause `java.lang.System` reference issues.
+* Renamed `Memory.Administrative` to `Memory.Admin` to make it shorter and consistent with `Traverser.Admin`.
 * Fixed a TinkerGraph bug around user supplied vertex property ids.
 * Most `Step` classes are now defined as `public final class` to prevent inheritance.
 * `ShuffleStep` now extends `BarrierStep` which enables semantically correct step-sideEffects.

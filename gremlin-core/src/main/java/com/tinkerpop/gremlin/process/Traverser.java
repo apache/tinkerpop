@@ -75,20 +75,20 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
     }
 
     /**
-     * Typecast the traverser to a "system traverser" so {@link Traverser.System} methods can be accessed.
-     * Used as a helper method to avoid the awkwardness of <code>((Traverser.System)traverser)</code>.
+     * Typecast the traverser to a "system traverser" so {@link com.tinkerpop.gremlin.process.Traverser.Admin} methods can be accessed.
+     * Used as a helper method to avoid the awkwardness of <code>((Traverser.Administrative)traverser)</code>.
      *
      * @return The typecasted traverser
      */
-    public default Traverser.System<T> asSystem() {
-        return (Traverser.System<T>) this;
+    public default Admin<T> asAdmin() {
+        return (Admin<T>) this;
     }
 
     /**
      * The methods in System.Traverser are useful to underlying Step and Traversal implementations.
      * They should not be accessed by the user during lambda-based manipulations.
      */
-    public interface System<T> extends Traverser<T> {
+    public interface Admin<T> extends Traverser<T> {
 
         public static final String NO_FUTURE = "noFuture";
 
@@ -160,21 +160,21 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
          * @param <R>   The current object type of the child
          * @return The newly created traverser
          */
-        public <R> Traverser.System<R> makeChild(final String label, final R r);
+        public <R> Admin<R> makeChild(final String label, final R r);
 
         /**
          * Generate a sibling traverser of the current traverser with a full copy of all state within the sibling.
          *
          * @return The sibling traverser
          */
-        public Traverser.System<T> makeSibling();
+        public Admin<T> makeSibling();
 
         /**
          * Prepare the traverser for migration across a JVM boundary.
          *
          * @return The deflated traverser
          */
-        public Traverser.System<T> deflate();
+        public Admin<T> deflate();
 
         /**
          * Regenerate the deflated traverser given its location at a particular vertex.
@@ -182,7 +182,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
          * @param hostVertex The vertex that is hosting the traverser
          * @return The inflated traverser
          */
-        public Traverser.System<T> inflate(final Vertex hostVertex, final Traversal traversal);
+        public Admin<T> inflate(final Vertex hostVertex, final Traversal traversal);
 
         public void setSideEffects(final Traversal.SideEffects sideEffects);
     }

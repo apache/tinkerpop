@@ -10,7 +10,7 @@ import org.apache.hadoop.io.LongWritable;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphMessenger<M> implements Messenger<M> {
+public final class GiraphMessenger<M> implements Messenger<M> {
 
     private final GiraphInternalVertex giraphInternalVertex;
     private final Iterable<KryoWritable> messages;

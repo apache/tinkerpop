@@ -14,7 +14,7 @@ import java.lang.reflect.Constructor;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphMap extends Mapper<NullWritable, GiraphInternalVertex, KryoWritable, KryoWritable> {
+public final class GiraphMap extends Mapper<NullWritable, GiraphInternalVertex, KryoWritable, KryoWritable> {
 
     private MapReduce mapReduce;
 

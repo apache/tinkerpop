@@ -19,7 +19,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MemoryMapReduce implements MapReduce<String, Object, String, Object, Map<String, Object>> {
+public final class MemoryMapReduce implements MapReduce<String, Object, String, Object, Map<String, Object>> {
 
     public Set<String> memoryKeys = new HashSet<>();
 

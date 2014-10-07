@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphImmutableMemory implements Memory {
+public final class GiraphImmutableMemory implements Memory {
 
     private long runtime = 0l;
     private int iteration = -1;

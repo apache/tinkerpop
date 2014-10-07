@@ -20,7 +20,7 @@ public class MapStep<S, E> extends AbstractStep<S, E> {
     @Override
     protected Traverser<E> processNextStart() {
         while (true) {
-            final Traverser.System<S> traverser = this.starts.next();
+            final Traverser.Admin<S> traverser = this.starts.next();
             final E end = this.function.apply(traverser);
             if (NO_OBJECT != end) return traverser.makeChild(this.getLabel(), end);
         }

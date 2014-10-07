@@ -11,7 +11,7 @@ import com.tinkerpop.gremlin.structure.util.referenced.ReferencedProperty;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SimpleTraverser<T> implements Traverser<T>, Traverser.System<T> {
+public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
 
     private static final String PATH_ERROR_MESSAGE = "Path tracking is not supported by this Traverser: " + SimpleTraverser.class;
 

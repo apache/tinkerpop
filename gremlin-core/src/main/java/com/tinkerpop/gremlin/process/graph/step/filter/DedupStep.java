@@ -21,13 +21,13 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible {
         if (null == uniqueFunction) {
             this.hasUniqueFunction = false;
             this.setPredicate(traverser -> {
-                traverser.asSystem().setBulk(1);
+                traverser.asAdmin().setBulk(1);
                 return set.add(traverser.get());
             });
         } else {
             this.hasUniqueFunction = true;
             this.setPredicate(traverser -> {
-                traverser.asSystem().setBulk(1);
+                traverser.asAdmin().setBulk(1);
                 return set.add(uniqueFunction.apply(traverser));
             });
         }

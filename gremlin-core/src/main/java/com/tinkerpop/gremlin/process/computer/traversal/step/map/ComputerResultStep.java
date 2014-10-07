@@ -22,7 +22,7 @@ import java.util.Iterator;
  */
 public class ComputerResultStep<S> extends AbstractStep<S, S> {
 
-    private final Iterator<Traverser.System<S>> traversers;
+    private final Iterator<Traverser.Admin<S>> traversers;
     private final Graph graph;
     private final Memory memory;
     private final Traversal computerTraversal;
@@ -40,13 +40,13 @@ public class ComputerResultStep<S> extends AbstractStep<S, S> {
         final Step endStep = TraversalHelper.getEnd(this.computerTraversal);
         this.traversers = endStep instanceof SideEffectCap ?
                 new SingleIterator<>(new SimpleTraverser<>((S) this.memory.get(((SideEffectCap) endStep).getSideEffectKey()), this.traversal.sideEffects())) :
-                (Iterator<Traverser.System<S>>) this.memory.get(TraversalResultMapReduce.TRAVERSERS);
+                (Iterator<Traverser.Admin<S>>) this.memory.get(TraversalResultMapReduce.TRAVERSERS);
 
     }
 
     @Override
     public Traverser<S> processNextStart() {
-        final Traverser.System<S> traverser = this.traversers.next();
+        final Traverser.Admin<S> traverser = this.traversers.next();
         if (this.attachElements && (traverser.get() instanceof Attachable))
             traverser.set((S) ((Attachable) traverser.get()).attach(this.graph));
         return traverser;

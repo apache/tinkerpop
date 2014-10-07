@@ -34,7 +34,7 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
 
     protected Traverser<E> getNext() {
         if (null == this.iterator) {
-            final Traverser.System<S> traverser = this.starts.next();
+            final Traverser.Admin<S> traverser = this.starts.next();
             this.iterator = new FlatMapTraverserIterator<>(traverser, this, this.function.apply(traverser));
             return null;
         } else {
@@ -49,11 +49,11 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
 
     private class FlatMapTraverserIterator<A, B> implements Iterator<Traverser<B>> {
 
-        private final Traverser.System<A> head;
+        private final Traverser.Admin<A> head;
         private final Iterator<B> iterator;
         private final Step step;
 
-        protected FlatMapTraverserIterator(final Traverser.System<A> head, final Step step, final Iterator<B> iterator) {
+        protected FlatMapTraverserIterator(final Traverser.Admin<A> head, final Step step, final Iterator<B> iterator) {
             this.iterator = iterator;
             this.head = head;
             this.step = step;

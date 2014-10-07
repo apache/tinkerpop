@@ -5,7 +5,7 @@ import org.apache.giraph.aggregators.Aggregator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MemoryAggregator implements Aggregator<RuleWritable> {
+public final class MemoryAggregator implements Aggregator<RuleWritable> {
 
     private Object value;
     private RuleWritable.Rule lastRule = null;

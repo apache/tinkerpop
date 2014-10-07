@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traverser;
 
-import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -11,9 +10,9 @@ import java.util.Queue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ExpandableStepIterator<E> implements Iterator<Traverser.System<E>> {
+public class ExpandableStepIterator<E> implements Iterator<Traverser.Admin<E>> {
 
-    private ExpandableIterator<Traverser.System<E>> expander = null;
+    private ExpandableIterator<Traverser.Admin<E>> expander = null;
     private Step<?, E> hostStep = EmptyStep.instance();
 
     public ExpandableStepIterator(final Step<?, E> hostStep) {
@@ -26,12 +25,12 @@ public class ExpandableStepIterator<E> implements Iterator<Traverser.System<E>> 
     }
 
     @Override
-    public Traverser.System<E> next() {
+    public Traverser.Admin<E> next() {
         if (this.expanderHasNext())
             return this.expander.next();
 
         if (this.hostStep.getPreviousStep().hasNext())
-            return (Traverser.System<E>) this.hostStep.getPreviousStep().next();
+            return (Traverser.Admin<E>) this.hostStep.getPreviousStep().next();
         else
             return this.expanderNext();
     }
@@ -51,7 +50,7 @@ public class ExpandableStepIterator<E> implements Iterator<Traverser.System<E>> 
         return null != this.expander && this.expander.hasNext();
     }
 
-    public Traverser.System<E> expanderNext() {
+    public Traverser.Admin<E> expanderNext() {
         if (null == this.expander) throw FastNoSuchElementException.instance();
         else return this.expander.next();
     }

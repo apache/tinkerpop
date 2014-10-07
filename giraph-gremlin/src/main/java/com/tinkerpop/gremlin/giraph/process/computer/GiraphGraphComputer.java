@@ -46,7 +46,7 @@ import java.util.concurrent.Future;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphGraphComputer extends Configured implements GraphComputer, Tool {
+public final class GiraphGraphComputer extends Configured implements GraphComputer, Tool {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputer.class);
 

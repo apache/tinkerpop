@@ -44,7 +44,7 @@ public interface Memory {
         return this.getIteration() == 0;
     }
 
-    public interface Administrative extends Memory {
+    public interface Admin extends Memory {
 
         public void incrIteration();
 

@@ -20,7 +20,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphMemory extends MasterCompute implements Memory {
+public final class GiraphMemory extends MasterCompute implements Memory {
 
     private VertexProgram vertexProgram;
     private GiraphInternalVertex giraphInternalVertex;

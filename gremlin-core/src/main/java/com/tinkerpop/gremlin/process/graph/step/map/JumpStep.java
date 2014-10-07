@@ -61,13 +61,13 @@ public final class JumpStep<S> extends AbstractStep<S, S> implements EngineDepen
             // TODO: getNextStep() may be dependent on whether its a jump back or a jump forward
         }
         while (true) {
-            final Traverser.System<S> traverser = this.starts.next();
+            final Traverser.Admin<S> traverser = this.starts.next();
             if (this.jumpBack) traverser.incrLoops();
             if (doJump(traverser)) {
                 traverser.setFuture(this.jumpLabel);
                 this.jumpToStep.addStarts(new SingleIterator(traverser));
                 if (doEmit(traverser)) {
-                    final Traverser.System<S> emitTraverser = traverser.makeSibling();
+                    final Traverser.Admin<S> emitTraverser = traverser.makeSibling();
                     if (this.jumpBack) emitTraverser.resetLoops();
                     emitTraverser.setFuture(this.getNextStep().getLabel());
                     return emitTraverser;
@@ -88,13 +88,13 @@ public final class JumpStep<S> extends AbstractStep<S, S> implements EngineDepen
             if (!this.queue.isEmpty()) {
                 return this.queue.remove();
             } else {
-                final Traverser.System<S> traverser = this.starts.next();
+                final Traverser.Admin<S> traverser = this.starts.next();
                 if (this.jumpBack) traverser.incrLoops();
                 if (doJump(traverser)) {
                     traverser.setFuture(loopFuture);
                     this.queue.add(traverser);
                     if (doEmit(traverser)) {
-                        final Traverser.System<S> emitTraverser = traverser.makeSibling();
+                        final Traverser.Admin<S> emitTraverser = traverser.makeSibling();
                         if (this.jumpBack) emitTraverser.resetLoops();
                         emitTraverser.setFuture(this.nextStep.getLabel());
                         this.queue.add(emitTraverser);

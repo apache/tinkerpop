@@ -25,11 +25,11 @@ public class TraversalCounterMessage extends TraversalMessage {
     private TraversalCounterMessage() {
     }
 
-    private TraversalCounterMessage(final Traverser.System traverser) {
+    private TraversalCounterMessage(final Traverser.Admin traverser) {
         super(traverser);
     }
 
-    public static TraversalCounterMessage of(final Traverser.System traverser) {
+    public static TraversalCounterMessage of(final Traverser.Admin traverser) {
         return new TraversalCounterMessage(traverser);
     }
 
@@ -37,7 +37,7 @@ public class TraversalCounterMessage extends TraversalMessage {
 
         final TraverserCountTracker tracker = vertex.value(TraversalVertexProgram.TRAVERSER_TRACKER);
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
-        final Map<Traverser.System, Long> localCounts = new HashMap<>();
+        final Map<Traverser.Admin, Long> localCounts = new HashMap<>();
 
         messenger.receiveMessages(MessageType.Global.of()).forEach(message -> {
             ((TraversalCounterMessage) message).traverser.inflate(vertex, traversal);
@@ -75,7 +75,7 @@ public class TraversalCounterMessage extends TraversalMessage {
 
     private boolean executeCounts(final TraverserCountTracker tracker,
                                   final Traversal traversal,
-                                  final Map<Traverser.System, Long> localCounts) {
+                                  final Map<Traverser.Admin, Long> localCounts) {
 
         if (this.traverser.isDone()) {
             this.traverser.deflate();
@@ -88,9 +88,9 @@ public class TraversalCounterMessage extends TraversalMessage {
         return processStep(step, localCounts);
     }
 
-    private static boolean processStep(final Step<?, ?> step, final Map<Traverser.System, Long> localCounts) {
+    private static boolean processStep(final Step<?, ?> step, final Map<Traverser.Admin, Long> localCounts) {
         final boolean messageSent = step.hasNext();
-        step.forEachRemaining(traverser -> MapHelper.incr(localCounts, (Traverser.System) traverser, traverser.getBulk()));
+        step.forEachRemaining(traverser -> MapHelper.incr(localCounts, (Traverser.Admin) traverser, traverser.getBulk()));
         return messageSent;
     }
 }

@@ -118,10 +118,10 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         traversal.sideEffects().setLocalVertex(vertex);
 
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
-        final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.System.NO_FUTURE : startStep.getNextStep().getLabel();
+        final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.Admin.NO_FUTURE : startStep.getNextStep().getLabel();
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);               // TODO: SIDE-EFFECTS IN TRAVERSAL IN OLAP!
         if (startStep.returnsVertices()) {
-            final Traverser.System<Vertex> traverser = this.trackPaths ?
+            final Traverser.Admin<Vertex> traverser = this.trackPaths ?
                     new PathTraverser<>(startStep.getLabel(), vertex, null) :
                     new SimpleTraverser<>(vertex, null);
             traverser.setFuture(future);
@@ -129,7 +129,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
             voteToHalt.set(false);
         } else if (startStep.returnsEdges()) {
             vertex.iterators().edges(Direction.OUT,Integer.MAX_VALUE).forEachRemaining(edge -> {
-                final Traverser.System<Edge> traverser = this.trackPaths ?
+                final Traverser.Admin<Edge> traverser = this.trackPaths ?
                         new PathTraverser<>(startStep.getLabel(), edge, null) :
                         new SimpleTraverser<>(edge, null);
                 traverser.setFuture(future);

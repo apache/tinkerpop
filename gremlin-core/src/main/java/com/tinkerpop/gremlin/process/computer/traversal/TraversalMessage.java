@@ -14,12 +14,12 @@ import java.io.Serializable;
  */
 public abstract class TraversalMessage implements Serializable {
 
-    protected Traverser.System traverser;
+    protected Traverser.Admin traverser;
 
     protected TraversalMessage() {
     }
 
-    protected TraversalMessage(final Traverser.System traverser) {
+    protected TraversalMessage(final Traverser.Admin traverser) {
         this.traverser = traverser;
         this.traverser.deflate();
     }
@@ -28,7 +28,7 @@ public abstract class TraversalMessage implements Serializable {
         return this.traverser;
     }
 
-    public static <T extends TraversalMessage> T of(final Traverser.System traverser) {
+    public static <T extends TraversalMessage> T of(final Traverser.Admin traverser) {
         if (traverser instanceof PathTraverser)
             return (T) TraversalPathMessage.of(traverser);
         else

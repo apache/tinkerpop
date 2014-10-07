@@ -33,10 +33,10 @@ public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements
 
     private Traverser<E> standardAlgorithm() {
         if (!this.done) {
-            Traverser.System<E> traverser = new SimpleTraverser<>((E) NO_OBJECT, this.getTraversal().sideEffects());
+            Traverser.Admin<E> traverser = new SimpleTraverser<>((E) NO_OBJECT, this.getTraversal().sideEffects());
             try {
                 while (true) {
-                    traverser = (Traverser.System<E>) this.starts.next();
+                    traverser = (Traverser.Admin<E>) this.starts.next();
                 }
             } catch (final NoSuchElementException ignored) {
             }

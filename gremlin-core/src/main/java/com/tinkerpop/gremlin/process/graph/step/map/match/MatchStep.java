@@ -8,7 +8,6 @@ import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,7 +46,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
     private int currentIndex;
 
     // initial value allows MatchStep to be used as a stand-alone query engine
-    private Traverser.System<S> currentStart;
+    private Traverser.Admin<S> currentStart;
 
     public MatchStep(final Traversal traversal, final String startLabel, final Traversal... traversals) {
         super(traversal);
@@ -434,7 +433,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
                 outputs = 0;
             });
             Iterator<Traverser<A>> starts = new MapIterator<>(seIter,
-                    o -> ((Traverser.System<A>) start).makeChild(as, o));
+                    o -> ((Traverser.Admin<A>) start).makeChild(as, o));
 
             w.reset();
 

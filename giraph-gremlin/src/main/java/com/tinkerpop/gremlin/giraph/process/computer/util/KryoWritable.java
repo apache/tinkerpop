@@ -11,7 +11,7 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class KryoWritable<T> implements WritableComparable<KryoWritable> {
+public final class KryoWritable<T> implements WritableComparable<KryoWritable> {
 
     T t;
 
