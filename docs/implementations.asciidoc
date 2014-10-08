@@ -8,7 +8,7 @@ image::gremlin-racecar.png[width=325]
 Vendor Requirements
 -------------------
 
-image:tinkerpop-enabled.png[width=125,float=left] At the core of TinkerPop3 is a Java8 API. The implementation of this core API and its validation via the `gremlin-test` suite is all that is required of a vendor wishing to provide a TinkerPop3-enabled graph engine. Once a vendor has a valid implementation, then all the applications provided by TinkerPop (e.g. Gremlin Console, Gremlin Server, etc.) and 3rd-party developers (e.g. Gremlin-Scale, Gremlin-JS, etc.) will integrate properly with their graph engine. Finally, please feel free to use the logo on the left to promote your TinkerPop3 implementation.
+image:tinkerpop-enabled.png[width=140,float=left] At the core of TinkerPop3 is a Java8 API. The implementation of this core API and its validation via the `gremlin-test` suite is all that is required of a vendor wishing to provide a TinkerPop3-enabled graph engine. Once a vendor has a valid implementation, then all the applications provided by TinkerPop (e.g. Gremlin Console, Gremlin Server, etc.) and 3rd-party developers (e.g. Gremlin-Scale, Gremlin-JS, etc.) will integrate properly with their graph engine. Finally, please feel free to use the logo on the left to promote your TinkerPop3 implementation.
 
 Implementing Gremlin-Core
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -24,9 +24,181 @@ The classes that a vendor should focus on implemented are itemized below. Please
 
 A collection of implementation notes:
 
-* Please ensure your `Graph` implementation is named as `XXXGraph` (e.g. TinkerGraph, Neo4jGraph, GiraphGraph, etc.).
+* Be sure your `Graph` implementation is named as `XXXGraph` (e.g. TinkerGraph, Neo4jGraph, GiraphGraph, etc.).
 * Use `StringHelper` to ensuring that the `toString()` representation of classes are consistent with other implementations.
 * Ensure that your implementation's `Features` (Graph, Vertex, etc.) are correct so that test cases handle particulars accordingly.
+* Use the numerous static method helper classes such as `ElementHelper`, `GraphComputerHelper`, `VertexProgramHelper`, etc.
+* There are a number of default methods on the provided interfaces that are semantically correct. However, if they are not efficient for the implementation, override them.
+* Implement the `structure/` package interfaces first and then, if desired, interfaces in the `process/` package interfaces.
+
+[[oltp-implementations]]
+OLTP Implementations
+^^^^^^^^^^^^^^^^^^^^
+
+image:pipes-character-1.png[width=110,float=right] The most important interfaces to implement is the `structure/` package interfaces. These include interfaces like Graph, Vertex, Edge, Property, Transaction, etc. The only required `process/` interface to implement is a `GraphStep` extension. A `GraphStep` provides the means by which vertices and edges are retrieved from the graph and is required by `Graph.V()`, `Graph.E()`, `Graph.v()`, and `Graph.e()`. A bare-bones functional implementation will look as follow:
+
+[source,java]
+----
+public class MyGraphStep<E extends Element> extends GraphStep<E> {
+
+    private final MyGraph graph;
+
+    public MyGraphStep(final Traversal traversal, final Class<E> returnClass, final MyGraph graph) {
+        super(traversal, returnClass);
+        this.graph = graph;
+    }
+
+    @Override
+    public void generateTraverserIterator(final boolean trackPaths) {
+        this.start = Vertex.class.isAssignableFrom(this.returnClass) ? new MyGraphVertexIterator(this.graph) : new MyGraphEdgeIterator(this.graph);
+        super.generateTraverserIterator(trackPaths);
+    }
+}
+----
+
+Note the two references to `MyGraphVertexIterator` and `MyGraphEdgeIterator` in the code above. There are no explicit methods in Gremlin for iterating vertices out of the graph so private iterators should be developed which yield respective `Iterator<Vertex>` and `Iterator<Edge>` iterators. Once `MyGraphStep` has been created, it is tied into `MyGraph` via the `V()` and `E()` methods.
+
+[source,java]
+----
+public class MyGraph implements Graph {
+
+    ...
+
+    @Override
+    public GraphTraversal<Vertex, Vertex> V() {
+        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this);
+        return traversal.addStep(new MyGraphStep<>(traversal, Vertex.class, this));
+    }
+
+     @Override
+     public GraphTraversal<Vertex, Vertex> E() {
+        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this);
+        return traversal.addStep(new MyGraphStep<>(traversal, Edge.class, this));
+     }
+
+     ...
+}
+----
+
+The methods `Graph.v()` and `Graph.e()` are default methods in Graph and can be overridden as desired if a more optimal retrieval is possible.
+
+IMPORTANT: The MyGraph implementation of V() and E() are linear scans. In many situations, indices can be leveraged in situations such as `g.V().has('name','dan')`. In order to "fold" the has()-step into MyGraphStep, a <<traversalstrategy,`TraversalStrategy`>> is required. Please review TinkerGraph's `TinkerGraphStepStrategy` and `TinkerGraphStep` for the fundamentals.
+
+[[olap-implementations]]
+OLAP Implementations
+^^^^^^^^^^^^^^^^^^^^
+
+image:furnace-character-1.png[width=110,float=right] Implementing the OLAP interfaces may be a bit more complicated. Note that before OLAP interfaces are implemented, it is necessary for the OLTP interfaces to be, at minimally, implemented as specified in <<oltp-implementations,OLTP Implementations>>. A summary of each required interface implementation is presented below:
+
+. `GraphComputer`: A fluent builder for specifying an isolation level, a VertexProgram, and any number of MapReduce jobs to be submitted.
+. `Memory`: A global blackboard for ANDing, ORing, INCRing, and SETing values for specified keys.
+. `Messenger`: The system that collects and distributes messages being propagated by vertices executing the VertexProgram application.
+. `MapReduce.MapEmitter`: The system that collects key/value pairs being emitted by the MapReduce applications map-phase.
+. `MapReduce.ReduceEmitter`: The system that collects key/value pairs being emitted by the MapReduce applications combine- and reduce-phases.
+
+NOTE: The interfaces VertexProgram and MapReduce in the `process/computer/` package are not required by the vendor to implement. Instead, these are interfaces to be implemented by application developers writing VertexPrograms and MapReduce jobs.
+
+IMPORTANT: TinkerPop3 provides two OLAP implementations: <<tinkergraph-gremlin,TinkerGraphComputer>> and <<giraph-gremlin,GiraphGraphComputer>>. It is a good idea to study these implementations to understand the nuances of the implementation requirements.
+
+Implementing GraphComputer
+++++++++++++++++++++++++++
+
+image:furnace-character-3.png[width=150,float=right] The most complex method in GraphComputer is the `submit()`-method. The method must do the following:
+
+. Ensure the the GraphComputer has not already been executed.
+. Ensure that at least there is a VertexProgram or 1 MapReduce job.
+. If there is a VertexProgram, validate that it can execute on the GraphComputer given the respectively defined features.
+. Create the Memory to be used for the computation.
+. Execute the VertexProgram.setup() method once and only once.
+. Execute the VertexProgram.execute() method for each vertex.
+. Execute the VertexProgram.terminate() method once and if true, repeat VertexProgram.execute().
+. When VertexProgram.terminate() returns true, move to MapReduce job execution.
+. MapReduce jobs are not required to be executed in any specified order.
+. For each Vertex, execute MapReduce.map(). Then (if defined) execute MapReduce.combine() and MapReduce.reduce().
+. Update Memory with runtime information.
+. Construct a new `ComputerResult` containing the compute Graph and Memory.
+
+Implementing Memory
++++++++++++++++++++
+
+image:gremlin-brain.png[width=175,float=left] The Memory object is initially defined by `VertexProgram.setup()`. The memory data is available in the first round of the `VertexProgram.execute()` method. Each Vertex, when executing the VertexProgram, can update the Memory in its round. However, the update is not seen by the other vertices until the next round. At the end of the first round, all the updates are aggregated and the new memory data is available on the second round. This process repeats until the VertexProgram terminates.
+
+Implementing Messenger
+++++++++++++++++++++++
+
+The Messenger object is similar to the Memory object in that a vertex can read and write to the Messenger. However, the data it reads are the messages sent to the vertex in the previous step and the data it writes are the messages that will be readable by the receiving vertices in the subsequent round.
+
+Implementing MapReduce Emitters
++++++++++++++++++++++++++++++++
+
+The MapReduce framework in TinkerPop3 is similar to the model popularized by link:http://apache.hadoop.org[Hadoop]. The primary difference is that all Mappers process the vertices of the graph, not an arbitrary key/value pair. A Gremlin OLAP vendor needs to provide implementations for to particular classes: `MapReduce.MapEmitter` and `MapReduce.ReduceEmitter`. TinkerGraph's implementation is provided below which demonstrates the simplicity of the algorithm (especially when the data is all within the same JVM).
+
+[source,java]
+----
+class TinkerMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {
+
+    public Map<K, Queue<V>> reduceMap = new ConcurrentHashMap<>();
+    public Queue<Pair<K, V>> mapQueue = new ConcurrentLinkedQueue<>();
+    private final boolean doReduce;
+
+    public TinkerMapEmitter(final boolean doReduce) {  <1>
+        this.doReduce = doReduce;
+    }
+
+    @Override
+    public void emit(K key, V value) {
+        if (this.doReduce)
+            MapHelper.concurrentIncr(this.reduceMap, key, value); <2>
+        else
+            this.mapQueue.add(new Pair<>(key, value)); <3>
+    }
+}
+----
+
+<1> If the MapReduce job has a reduce, then use one data structure (`reduceMap`), else use another (`mapList`). The difference being that a reduction requires a grouping by key and therefore, the `Map<K,Queue<V>>` definition. If no reduction/grouping is required, then a simple `Queue<Pair<K,V>>` can be leveraged.
+<2> If reduce is to follow, then increment the Map with a new value for the key. `MapHelper` is a TinkerPop3 class with static methods for adding data to a Map.
+<3> If no reduce is to follow, then simply append a Pair to the queue.
+
+[source,java]
+----
+class TinkerReduceEmitter<OK, OV> implements MapReduce.ReduceEmitter<OK, OV> {
+
+    public Queue<Pair<OK, OV>> resultList = new ConcurrentLinkedQueue<>();
+
+    @Override
+    public void emit(final OK key, final OV value) {
+        this.resultList.add(new Pair<>(key, value));
+    }
+}
+----
+
+The method `MapReduce.reduce()` is defined as:
+
+[source,java]
+public void reduce(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter) { ... }
+
+In other words, for the TinkerGraph implementation, iterate through the entrySet of the `reduceMap` and call the `reduce()` method on each entry. The `reduce()` method can emit key/value pairs which are simply aggregated into a `Queue<Pair<OK,OV>>` in an analogous fashion to `TinkerMapEmitter` when no reduce is to follow. These two emitters are tied together in `TinkerGraphComputer.submit()`.
+
+[source,java]
+...
+for (final MapReduce mapReduce : this.mapReduces) {
+    if (mapReduce.doStage(MapReduce.Stage.MAP)) {
+        final TinkerMapEmitter<?, ?> mapEmitter = new TinkerMapEmitter<>(mapReduce.doStage(MapReduce.Stage.REDUCE));
+        TinkerHelper.getVertices(this.graph).parallelStream().forEach(vertex -> mapReduce.map(vertex, mapEmitter));
+        // no need to run combiners as this is single machine
+        if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
+            final TinkerReduceEmitter<?, ?> reduceEmitter = new TinkerReduceEmitter<>();
+            mapEmitter.reduceMap.entrySet().parallelStream().forEach(entry -> mapReduce.reduce(entry.getKey(), entry.getValue().iterator(), reduceEmitter));
+            mapReduce.addSideEffectToMemory(this.memory, reduceEmitter.resultList.iterator()); <1>
+        } else {
+            mapReduce.addSideEffectToMemory(this.memory, mapEmitter.mapQueue.iterator()); <2>
+        }
+    }
+}
+...
+
+<1> Note that the final results of the reducer are provided to the Memory as specified by the application developer's `MapReduce.addSideEffectToMemory()` implementation.
+<2> If there is no reduce stage, the the map-stage results are inserted into Memory as specified by the application developer's `MapReduce.addSideEffectToMemory()` implementation.
 
 [[validating-with-gremlin-test]]
 Validating with Gremlin-Test

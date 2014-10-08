@@ -19,7 +19,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 class TinkerMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {
 
     public Map<K, Queue<V>> reduceMap = new ConcurrentHashMap<>();
-    public Queue<Pair<K, V>> mapList = new ConcurrentLinkedQueue<>();
+    public Queue<Pair<K, V>> mapQueue = new ConcurrentLinkedQueue<>();
     private final boolean doReduce;
 
     public TinkerMapEmitter(final boolean doReduce) {
@@ -31,6 +31,6 @@ class TinkerMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {
         if (this.doReduce)
             MapHelper.concurrentIncr(this.reduceMap, key, value);
         else
-            this.mapList.add(new Pair<>(key, value));
+            this.mapQueue.add(new Pair<>(key, value));
     }
 }
