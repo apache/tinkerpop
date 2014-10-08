@@ -21,10 +21,9 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
     V value;
     transient DetachedElement element;
 
-    private DetachedProperty() {
-
-    }
-
+    /**
+     * Construct a {@code DetachedProperty} during manual deserialization.
+     */
     public DetachedProperty(final String key, final V value, final DetachedElement element) {
         if (null == key) throw Graph.Exceptions.argumentCanNotBeNull("key");
         if (null == value) throw Graph.Exceptions.argumentCanNotBeNull("value");
@@ -35,7 +34,32 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
         this.element = element;
     }
 
-    // todo: straighten out all these constructors and their scopes - what do we really need here?
+    /**
+     * Construct a {@code DetachedProperty} internally when a {@link DetachedEdge} is being constructed.
+     */
+    DetachedProperty(final Property property, final DetachedEdge element) {
+        this(property, (DetachedElement) element);
+    }
+
+    /**
+     * Construct a {@code DetachedProperty} internally when a {@link DetachedVertexProperty} is being constructed.
+     */
+    DetachedProperty(final Property property, final DetachedVertexProperty element) {
+        this(property, (DetachedElement) element);
+    }
+
+    private DetachedProperty(final Property property, final DetachedElement element) {
+        if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
+        if (element instanceof Vertex) throw new IllegalArgumentException("Element cannot be of type " + Vertex.class.getSimpleName());
+
+        this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
+        this.value = (V) property.value();
+        this.element = element;
+    }
+
+    private DetachedProperty() {
+        // no implementation
+    }
 
     private DetachedProperty(final Property property) {
         if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
@@ -50,22 +74,6 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
             this.element = element instanceof DetachedVertexProperty ? (DetachedElement) element : DetachedVertexProperty.detach((VertexProperty) element);
         else
             this.element = element instanceof DetachedEdge ? (DetachedElement) element : DetachedEdge.detach((Edge) element);
-    }
-
-    DetachedProperty(final Property property, final DetachedEdge element) {
-        if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
-
-        this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
-        this.value = (V) property.value();
-        this.element = element;
-    }
-
-    DetachedProperty(final Property property, final DetachedVertexProperty element) {
-        if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
-
-        this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
-        this.value = (V) property.value();
-        this.element = element;
     }
 
     @Override
