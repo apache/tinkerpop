@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,7 @@ public abstract class AggregateTest extends AbstractGremlinTest {
     public void g_V_valueXnameX_aggregate() {
         Traversal<Vertex, List<String>> traversal = get_g_V_valueXnameX_aggregate();
         printTraversalForm(traversal);
-        final List<String> names = traversal.next();
+        final Collection<String> names = traversal.next();
         assertFalse(traversal.hasNext());
         checkListOfNames(names);
     }
@@ -44,12 +45,12 @@ public abstract class AggregateTest extends AbstractGremlinTest {
     public void g_V_aggregateXnameX() {
         Traversal<Vertex, List<String>> traversal = get_g_V_aggregateXnameX();
         printTraversalForm(traversal);
-        final List<String> names = traversal.next();
+        final Collection<String> names = traversal.next();
         assertFalse(traversal.hasNext());
         checkListOfNames(names);
     }
 
-    private void checkListOfNames(List<String> names) {
+    private void checkListOfNames(Collection<String> names) {
         assertEquals(6, names.size());
         assertTrue(names.contains("marko"));
         assertTrue(names.contains("josh"));

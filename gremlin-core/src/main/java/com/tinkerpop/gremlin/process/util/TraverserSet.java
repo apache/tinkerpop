@@ -13,8 +13,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Spliterator;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -30,7 +28,7 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
 
     @Override
     public int size() {
-        return this.map.size();
+        return this.map.size(); // TODO: should it be the bulk sum size?
     }
 
     @Override
@@ -93,11 +91,6 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
     @Override
     public Spliterator<Traverser.Admin<S>> spliterator() {
         return this.map.keySet().spliterator();
-    }
-
-    @Override
-    public Stream<Traverser.Admin<S>> stream() {
-        return StreamSupport.stream(this.spliterator(), false);
     }
 
     @Override

@@ -8,10 +8,10 @@ import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.AggregateMapReduce;
 import com.tinkerpop.gremlin.process.graph.step.util.BarrierStep;
+import com.tinkerpop.gremlin.process.util.BulkList;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
@@ -29,14 +29,9 @@ public final class AggregateStep<S> extends BarrierStep<S> implements SideEffect
         this.preAggregateFunction = preAggregateFunction;
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
-        this.setConsumer(traversers -> {
-            final Collection aggregate = this.getTraversal().sideEffects().getOrCreate(this.sideEffectKey, ArrayList::new);
-            traversers.forEach(traverser -> {
-                final Object aggregateObject = null == this.preAggregateFunction ? traverser.get() : this.preAggregateFunction.apply(traverser);
-                for (int i = 0; i < traverser.getBulk(); i++) {
-                    aggregate.add(aggregateObject);
-                }
-            });
+        this.setConsumer(traverserSet -> {
+            final Collection<Object> aggregate = this.getTraversal().sideEffects().getOrCreate(this.sideEffectKey, BulkList::new);
+            traverserSet.forEach(traverser -> SideEffectStep.addToCollection(aggregate, null == this.preAggregateFunction ? traverser.get() : this.preAggregateFunction.apply(traverser), traverser.getBulk()));
         });
     }
 

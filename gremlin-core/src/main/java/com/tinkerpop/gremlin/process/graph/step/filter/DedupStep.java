@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -17,7 +17,7 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible {
 
     public DedupStep(final Traversal traversal, final Function<Traverser<S>, ?> uniqueFunction) {
         super(traversal);
-        final Set<Object> set = new LinkedHashSet<>();
+        final Set<Object> set = new HashSet<>();
         if (null == uniqueFunction) {
             this.hasUniqueFunction = false;
             this.setPredicate(traverser -> {
