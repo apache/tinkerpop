@@ -33,7 +33,9 @@ public final class CountStep<S> extends MapStep<S, Long> {
         if (!this.done.get()) {
             this.done.set(true);
             try {
-                return super.processNextStart();
+                final Traverser<Long> traverser = super.processNextStart();
+                traverser.asAdmin().setBulk(1l);
+                return traverser;
             } catch (final NoSuchElementException e) {
                 return new SimpleTraverser<>(0l, this.getTraversal().sideEffects());
             }
