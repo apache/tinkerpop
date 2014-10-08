@@ -144,7 +144,7 @@ The Messenger object is similar to the Memory object in that a vertex can read a
 Implementing MapReduce Emitters
 +++++++++++++++++++++++++++++++
 
-The MapReduce framework in TinkerPop3 is similar to the model popularized by link:http://apache.hadoop.org[Hadoop]. The primary difference is that all Mappers process the vertices of the graph, not an arbitrary key/value pair. A Gremlin OLAP vendor needs to provide implementations for to particular classes: `MapReduce.MapEmitter` and `MapReduce.ReduceEmitter`. TinkerGraph's implementation is provided below which demonstrates the simplicity of the algorithm (especially when the data is all within the same JVM).
+image:hadoop-logo-notext.png[width=150,float=left] The MapReduce framework in TinkerPop3 is similar to the model popularized by link:http://apache.hadoop.org[Hadoop]. The primary difference is that all Mappers process the vertices of the graph, not an arbitrary key/value pair. A Gremlin OLAP vendor needs to provide implementations for to particular classes: `MapReduce.MapEmitter` and `MapReduce.ReduceEmitter`. TinkerGraph's implementation is provided below which demonstrates the simplicity of the algorithm (especially when the data is all within the same JVM).
 
 [source,java]
 ----
