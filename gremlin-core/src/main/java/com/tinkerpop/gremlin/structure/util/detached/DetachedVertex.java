@@ -39,7 +39,6 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     public DetachedVertex(final Object id, final String label, final Map<String, Object> properties, final Map<String, Object> hiddenProperties) {
         super(id, label);
 
-        // todo: wrong?
         if (null != properties) this.properties.putAll(convertToDetachedVertexProperties(properties, false));
         if (null != hiddenProperties) this.properties.putAll(convertToDetachedVertexProperties(hiddenProperties, true));
     }
