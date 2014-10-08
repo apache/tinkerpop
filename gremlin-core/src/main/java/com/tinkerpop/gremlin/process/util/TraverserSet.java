@@ -3,18 +3,25 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Traverser;
 
 import java.util.AbstractSet;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Spliterator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements Set<Traverser.Admin<S>>, Queue<Traverser.Admin<S>> {
 
-    private final LinkedHashMap<Traverser.Admin<S>, Traverser.Admin<S>> map = new LinkedHashMap<>();
+    private final Map<Traverser.Admin<S>, Traverser.Admin<S>> map = new LinkedHashMap<>();
 
     @Override
     public Iterator<Traverser.Admin<S>> iterator() {
@@ -54,22 +61,22 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
     }
 
     @Override
-    public Traverser.Admin<S> remove() {
+    public Traverser.Admin<S> remove() {  // pop, exception if empty
         return this.map.remove(this.iterator().next());
     }
 
     @Override
-    public Traverser.Admin<S> poll() {
+    public Traverser.Admin<S> poll() {  // pop, null if empty
         return this.map.isEmpty() ? null : this.remove();
     }
 
     @Override
-    public Traverser.Admin<S> element() {
+    public Traverser.Admin<S> element() { // peek, exception if empty
         return this.iterator().next();
     }
 
     @Override
-    public Traverser.Admin<S> peek() {
+    public Traverser.Admin<S> peek() { // peek, null if empty
         return this.map.isEmpty() ? null : this.iterator().next();
     }
 
@@ -86,6 +93,23 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
     @Override
     public Spliterator<Traverser.Admin<S>> spliterator() {
         return this.map.keySet().spliterator();
+    }
+
+    @Override
+    public Stream<Traverser.Admin<S>> stream() {
+        return StreamSupport.stream(this.spliterator(), false);
+    }
+
+    @Override
+    public String toString() {
+        return this.map.keySet().toString();
+    }
+
+    public void sort(final Comparator<Traverser<S>> comparator) {
+        final List<Traverser.Admin<S>> list = new ArrayList<>(this.map.keySet());
+        Collections.sort(list, comparator);
+        this.map.clear();
+        list.forEach(t -> this.map.put(t, t));
     }
 
 }

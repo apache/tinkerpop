@@ -51,7 +51,6 @@ public class UntilStrategy implements TraversalStrategy {
     @Override
     public int compareTo(final TraversalStrategy traversalStrategy) {
         return (traversalStrategy instanceof TraverserSourceStrategy) ||
-                (traversalStrategy instanceof UnrollJumpStrategy) ||
                 (traversalStrategy instanceof GraphComputerStrategy) ? -1 : 0;
     }
 

@@ -19,7 +19,7 @@ public final class OrderStep<S> extends BarrierStep<S> implements Reversible {
     public OrderStep(final Traversal traversal, final Comparator<Traverser<S>> comparator) {
         super(traversal);
         this.comparator = comparator;
-        this.setConsumer(traversers -> Collections.sort(traversers, this.comparator));
+        this.setConsumer(traverserSet -> traverserSet.sort(this.comparator));
     }
 
     public Comparator<Traverser<S>> getComparator() {

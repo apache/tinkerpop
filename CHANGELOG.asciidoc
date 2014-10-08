@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `UnrollJumpStrategy` is no longer a default strategy as it is less efficient with the inclusion of `TraverserSet`.
 * Introduced `TraverserSet` with bulk updating capabilities -- looping is now linear space/time complexity.
 * TinkerGraph's MapReduce framework is now thread safe with a parallel execution implementation.
 * Added a default `Traverser.asAdmin()` method as a typecast convenience to `Traverser.Admin`.

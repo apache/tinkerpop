@@ -3,12 +3,11 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
-import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GraphComputerStrategy implements TraversalStrategy {
+public class GraphComputerStrategy implements TraversalStrategy.NoDependencies {
 
     private static final GraphComputerStrategy INSTANCE = new GraphComputerStrategy();
 
@@ -17,15 +16,10 @@ public class GraphComputerStrategy implements TraversalStrategy {
 
 
     @Override
-    public void apply(final Traversal<?,?> traversal) {
+    public void apply(final Traversal<?, ?> traversal) {
         traversal.getSteps().stream()
                 .filter(step -> step instanceof EngineDependent)
                 .forEach(step -> ((EngineDependent) step).onEngine(EngineDependent.Engine.COMPUTER));
-    }
-
-    @Override
-    public int compareTo(final TraversalStrategy traversalStrategy) {
-        return traversalStrategy instanceof UnrollJumpStrategy ? -1 : 0;
     }
 
     public static GraphComputerStrategy instance() {

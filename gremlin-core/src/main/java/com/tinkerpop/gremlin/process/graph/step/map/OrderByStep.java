@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.process.graph.step.util.BarrierStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.function.Function;
 
@@ -24,7 +23,7 @@ public final class OrderByStep<S extends Element, C extends Comparable> extends 
         this.elementKey = elementKey;
         this.comparator = comparator;
         this.setConsumer(traversers -> {
-            Collections.sort(traversers, Comparator.comparing((Function<Traverser<S>, Comparable>) traverser -> traverser.get().value(this.elementKey), this.comparator));
+            traversers.sort(Comparator.comparing((Function<Traverser<S>, Comparable>) traverser -> traverser.get().value(this.elementKey), this.comparator));
         });
     }
 

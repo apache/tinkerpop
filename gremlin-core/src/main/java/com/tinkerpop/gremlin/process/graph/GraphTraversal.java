@@ -64,7 +64,6 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.strategy.CountCapStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.UnrollJumpStrategy;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.SideEffectHelper;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -102,7 +101,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     @Override
     public default void prepareForGraphComputer() {
         Traversal.super.prepareForGraphComputer();
-        this.strategies().unregister(UnrollJumpStrategy.class);
         this.strategies().register(CountCapStrategy.instance());
     }
 

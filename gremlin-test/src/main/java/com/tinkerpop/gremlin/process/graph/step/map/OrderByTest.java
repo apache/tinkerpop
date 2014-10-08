@@ -51,7 +51,7 @@ public abstract class OrderByTest extends AbstractGremlinTest {
         final Traversal<Vertex, Double> traversal = get_g_V_outE_orderByXweight_decrX_weight();
         printTraversalForm(traversal);
         final List<Double> weights = StreamFactory.stream(traversal).collect(Collectors.toList());
-        assertEquals(weights.size(), 6);
+        assertEquals(6, weights.size());
         assertEquals(Double.valueOf(1.0d), weights.get(0));
         assertEquals(Double.valueOf(1.0d), weights.get(1));
         assertEquals(Double.valueOf(0.5d), weights.get(2));
