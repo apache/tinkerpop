@@ -61,9 +61,7 @@ Note the two references to `MyGraphVertexIterator` and `MyGraphEdgeIterator` in 
 [source,java]
 ----
 public class MyGraph implements Graph {
-
     ...
-
     @Override
     public GraphTraversal<Vertex, Vertex> V() {
         final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this);
@@ -75,7 +73,6 @@ public class MyGraph implements Graph {
         final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this);
         return traversal.addStep(new MyGraphStep<>(traversal, Edge.class, this));
      }
-
      ...
 }
 ----
@@ -83,6 +80,22 @@ public class MyGraph implements Graph {
 The methods `Graph.v()` and `Graph.e()` are default methods in Graph and can be overridden as desired if a more optimal retrieval is possible.
 
 IMPORTANT: The MyGraph implementation of V() and E() are linear scans. In many situations, indices can be leveraged in situations such as `g.V().has('name','dan')`. In order to "fold" the has()-step into MyGraphStep, a <<traversalstrategy,`TraversalStrategy`>> is required. Please review TinkerGraph's `TinkerGraphStepStrategy` and `TinkerGraphStep` for the fundamentals.
+
+Finally, note that `Element` objects can be "traversed off of." That is, it is possible to `v.outE()` and `e.inV()`, etc. The method that implemented is `Vertex.start()` and a `MyVertex` implementation is demonstrated below.
+
+[source,java]
+public GraphTraversal<Vertex, Vertex> start() {
+    final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>(this.graph);
+    return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
+}
+
+`MyVertex.start()` is required by `ElementTraversal<A>` interface and a default implementation is defined in `VertexTraversal<Vertex>`. As such, the above `start()` declaration is not required, though ultimately extensions to the method will be desired especially when OLAP concepts are taken into account.
+
+[source,java]
+public default GraphTraversal<A, A> start() {
+    final GraphTraversal<A, A> traversal = GraphTraversal.of();
+    return traversal.addStep(new StartStep<>(traversal, this));
+}
 
 [[olap-implementations]]
 OLAP Implementations
