@@ -5,13 +5,14 @@ import com.tinkerpop.gremlin.process.Traverser;
 import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Spliterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements Set<Traverser.Admin<S>>, Iterator<Traverser.Admin<S>> {
+public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements Set<Traverser.Admin<S>>, Queue<Traverser.Admin<S>> {
 
     private final LinkedHashMap<Traverser.Admin<S>, Traverser.Admin<S>> map = new LinkedHashMap<>();
 
@@ -21,15 +22,6 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
     }
 
     @Override
-    public boolean hasNext() {
-        return !this.map.isEmpty();
-    }
-
-    @Override
-    public Traverser.Admin<S> next() {
-        return this.map.remove(this.iterator().next());
-    }
-
     public int size() {
         return this.map.size();
     }
@@ -54,6 +46,31 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
             existing.setBulk(existing.getBulk() + traverser.getBulk());
             return false;
         }
+    }
+
+    @Override
+    public boolean offer(final Traverser.Admin<S> traverser) {
+        return this.add(traverser);
+    }
+
+    @Override
+    public Traverser.Admin<S> remove() {
+        return this.map.remove(this.iterator().next());
+    }
+
+    @Override
+    public Traverser.Admin<S> poll() {
+        return this.map.isEmpty() ? null : this.remove();
+    }
+
+    @Override
+    public Traverser.Admin<S> element() {
+        return this.iterator().next();
+    }
+
+    @Override
+    public Traverser.Admin<S> peek() {
+        return this.map.isEmpty() ? null : this.iterator().next();
     }
 
     @Override
