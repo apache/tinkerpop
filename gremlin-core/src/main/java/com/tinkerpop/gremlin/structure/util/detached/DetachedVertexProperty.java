@@ -23,10 +23,9 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
     transient DetachedVertex vertex;
     private final transient VertexProperty.Iterators iterators = new Iterators();
 
-    private DetachedVertexProperty() {
-
-    }
-
+    /**
+     * Construct a {@code DetachedVertexProperty} during manual deserialization.
+     */
     public DetachedVertexProperty(final Object id, final String label, final String key, final V value,
                                   final Map<String, Object> properties, final Map<String, Object> hiddenProperties,
                                   final DetachedVertex vertex) {
@@ -45,24 +44,9 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
             hiddenProperties.entrySet().iterator().forEachRemaining(kv -> putToList(Graph.Key.hide(kv.getKey()), new DetachedProperty(kv.getKey(), kv.getValue(), this)));
     }
 
-    // todo: straighten out all these constructors and their scopes - what do we really need here?
-
-    private DetachedVertexProperty(final VertexProperty property) {
-        super(property);
-        if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
-
-        this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
-        this.value = (V) property.value();
-        this.vertex = property.getElement() instanceof DetachedVertex ? (DetachedVertex) property.getElement() : DetachedVertex.detach(property.getElement());
-
-        try {
-            property.iterators().properties().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
-            property.iterators().hiddens().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
-        } catch (UnsupportedOperationException uoe) {
-            // todo: is there a way to get the feature down here so we can just test it directly?
-        }
-    }
-
+    /**
+     * Construct a {@code DetachedVertexProperty} internally when a {@link DetachedVertex} is being constructed.
+     */
     DetachedVertexProperty(final VertexProperty property, final DetachedVertex detachedVertex) {
         super(property);
         if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
@@ -77,6 +61,14 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
         } catch (UnsupportedOperationException uoe) {
             // todo: is there a way to get the feature down here so we can just test it directly?
         }
+    }
+
+    private DetachedVertexProperty(final VertexProperty property) {
+        this(property, property.getElement() instanceof DetachedVertex ? (DetachedVertex) property.getElement() : DetachedVertex.detach(property.getElement()));
+    }
+
+    private DetachedVertexProperty() {
+        // no implementation
     }
 
     @Override
