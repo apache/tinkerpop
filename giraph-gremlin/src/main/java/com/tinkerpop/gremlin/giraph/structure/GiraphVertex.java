@@ -73,7 +73,7 @@ public class GiraphVertex extends GiraphElement implements Vertex, WrappedVertex
                 return super.submit(computer);
             }
         };
-        return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
+        return traversal.addStep(new StartStep<>(traversal, this));
     }
 
     @Override
