@@ -967,8 +967,6 @@ public class IoTest extends AbstractGremlinTest {
             final KryoReader reader = KryoReader.build()
                     .setWorkingDirectory(File.separator + "tmp").create();
 
-            // todo: add standard helper to always return Detached class
-
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, Direction.OUT, detachedVertex -> {
                             assertEquals(v1.id(), detachedVertex.id());
