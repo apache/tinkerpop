@@ -1,38 +1,20 @@
 package com.tinkerpop.gremlin.process.computer.traversal;
 
-import com.tinkerpop.gremlin.process.PathTraverser;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 
-import java.io.Serializable;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class TraversalMessage implements Serializable {
+public abstract class TraverserExecutor {
 
-    protected Traverser.Admin traverser;
-
-    protected TraversalMessage() {
-    }
-
-    protected TraversalMessage(final Traverser.Admin traverser) {
-        this.traverser = traverser;
-        this.traverser.deflate();
-    }
-
-    public Traverser getTraverser() {
-        return this.traverser;
-    }
-
-    public static <T extends TraversalMessage> T of(final Traverser.Admin traverser) {
-        if (traverser instanceof PathTraverser)
-            return (T) TraversalPathMessage.of(traverser);
-        else
-            return (T) TraversalCounterMessage.of(traverser);
+    public static boolean execute(final Vertex vertex, final Messenger<Traverser.Admin<?>> messenger, final Traversal traversal) {
+        throw new UnsupportedOperationException("The execute() method must be implemented by the inheriting class");
     }
 
     public static Vertex getHostingVertex(final Object object) {
@@ -44,7 +26,6 @@ public abstract class TraversalMessage implements Serializable {
             return getHostingVertex(((Property) object).getElement());
         else
             throw new IllegalStateException("The host of the object is unknown: " + object.toString());
-
     }
 
 }

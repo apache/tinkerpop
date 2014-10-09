@@ -16,6 +16,6 @@ public final class GiraphCombiner extends Combiner<LongWritable, KryoWritable> {
 
     @Override
     public KryoWritable createInitialMessage() {
-        return null;
+        return new KryoWritable<>(null);
     }
 }

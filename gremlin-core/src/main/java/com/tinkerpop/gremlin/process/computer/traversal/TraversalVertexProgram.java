@@ -35,7 +35,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalVertexProgram<M extends TraversalMessage> implements VertexProgram<M> {
+public class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>> {
 
     // TODO: if not an adjacent traversal, use Local message types
     // TODO: a dual messaging system
@@ -105,7 +105,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     @Override
-    public void execute(final Vertex vertex, final Messenger<M> messenger, Memory memory) {
+    public void execute(final Vertex vertex, final Messenger<Traverser.Admin<?>> messenger, Memory memory) {
         if (memory.isInitialIteration()) {
             executeFirstIteration(vertex, messenger, memory);
         } else {
@@ -113,30 +113,32 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         }
     }
 
-    private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final Memory memory) {
+    private void executeFirstIteration(final Vertex vertex, final Messenger<Traverser.Admin<?>> messenger, final Memory memory) {
         final Traversal traversal = this.getTraversal();
         traversal.sideEffects().setLocalVertex(vertex);
 
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
         final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.Admin.NO_FUTURE : startStep.getNextStep().getLabel();
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);               // TODO: SIDE-EFFECTS IN TRAVERSAL IN OLAP!
-        if (startStep.returnsVertices()) {
+        if (startStep.returnsVertices()) {   // PROCESS VERTICES
             final Traverser.Admin<Vertex> traverser = this.trackPaths ?
                     new PathTraverser<>(startStep.getLabel(), vertex, null) :
                     new SimpleTraverser<>(vertex, null);
             traverser.setFuture(future);
-            messenger.sendMessage(MessageType.Global.of(vertex), TraversalMessage.of(traverser));
+            traverser.deflate();
+            messenger.sendMessage(MessageType.Global.to(vertex), traverser);
             voteToHalt.set(false);
-        } else if (startStep.returnsEdges()) {
+        } else if (startStep.returnsEdges()) {  // PROCESS EDGES
             vertex.iterators().edges(Direction.OUT,Integer.MAX_VALUE).forEachRemaining(edge -> {
                 final Traverser.Admin<Edge> traverser = this.trackPaths ?
                         new PathTraverser<>(startStep.getLabel(), edge, null) :
                         new SimpleTraverser<>(edge, null);
                 traverser.setFuture(future);
-                messenger.sendMessage(MessageType.Global.of(vertex), TraversalMessage.of(traverser));
+                traverser.deflate();
+                messenger.sendMessage(MessageType.Global.to(vertex), traverser);
                 voteToHalt.set(false);
             });
-        } else {
+        } else {  // PROCESS ARBITRARY OBJECTS
             throw new UnsupportedOperationException("TraversalVertexProgram currently only supports vertex and edge starts");
         }
 
@@ -144,15 +146,15 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         memory.and(VOTE_TO_HALT, voteToHalt.get());
     }
 
-    private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, final Memory memory) {
+    private void executeOtherIterations(final Vertex vertex, final Messenger<Traverser.Admin<?>> messenger, final Memory memory) {
         final Traversal traversal = this.getTraversal();
         traversal.sideEffects().setLocalVertex(vertex);
 
         if (this.trackPaths) {
-            memory.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, messenger, traversal));
+            memory.and(VOTE_TO_HALT, PathTraverserExecutor.execute(vertex, messenger, traversal));
             vertex.<TraverserPathTracker>value(TRAVERSER_TRACKER).completeIteration();
         } else {
-            memory.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, messenger, traversal));
+            memory.and(VOTE_TO_HALT, SimpleTraverserExecutor.execute(vertex, messenger, traversal));
             vertex.<TraverserCountTracker>value(TRAVERSER_TRACKER).completeIteration();
         }
 

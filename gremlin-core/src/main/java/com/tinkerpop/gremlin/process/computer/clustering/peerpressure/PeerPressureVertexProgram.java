@@ -30,7 +30,7 @@ import java.util.function.Supplier;
  */
 public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializable, Double>> {
 
-    private MessageType.Local messageType = MessageType.Local.of(() -> GraphTraversal.<Vertex>of().outE());
+    private MessageType.Local messageType = MessageType.Local.to(() -> GraphTraversal.<Vertex>of().outE());
 
     public static final String CLUSTER = Graph.Key.hide("gremlin.cluster");
     public static final String VOTE_STRENGTH = Graph.Key.hide("gremlin.voteStrength");
@@ -57,7 +57,7 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
             if (configuration.containsKey(INCIDENT_TRAVERSAL)) {
                 final Supplier<Traversal> traversalSupplier = VertexProgramHelper.deserialize(configuration, INCIDENT_TRAVERSAL);
                 VertexProgramHelper.verifyReversibility(traversalSupplier.get());
-                this.messageType = MessageType.Local.of((Supplier) traversalSupplier);
+                this.messageType = MessageType.Local.to((Supplier) traversalSupplier);
             }
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
