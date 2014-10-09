@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure.util.detached;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -70,6 +71,8 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldNotBeEqualsPropertiesAsThereIsDifferentKey() {
         final Edge e = g.v(convertToVertexId("josh")).addEdge("created", g.v(convertToVertexId("lop")), Graph.Key.hide("weight"), 0.4d);
         assertFalse(DetachedProperty.detach(e.property(Graph.Key.hide("weight"))).equals(DetachedProperty.detach(g.e(convertToEdgeId("josh", "created", "lop")).property("weight"))));
@@ -77,6 +80,8 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldNotBeEqualsPropertiesAsThereIsDifferentValue() {
         final Edge e = g.v(4).addEdge("created", g.v(convertToVertexId("josh")), "weight", 123.0001d);
         assertFalse(DetachedProperty.detach(e.property("weight")).equals(DetachedProperty.detach(g.e(convertToEdgeId("josh", "created", "lop")).property("weight"))));
