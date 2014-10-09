@@ -8,13 +8,12 @@ import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupByMapReduce;
+import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -60,25 +59,14 @@ public final class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements 
         final V value = valueFunction.apply(traverser);
         Collection<V> values = groupMap.get(key);
         if (null == values) {
-            values = new ArrayList<>();
+            values = new BulkSet<>();
             groupMap.put(key, values);
         }
-        for (int i = 0; i < traverser.getBulk(); i++)
-            GroupByStep.addValue(value, values);
+        SideEffectStep.addToCollectionUnrollIterator(values, value, traverser.getBulk());
     }
 
     private static <K, V, R> void doReduce(final Map<K, Collection<V>> groupMap, final Map<K, R> reduceMap, final Function<Collection<V>, R> reduceFunction) {
         groupMap.forEach((k, vv) -> reduceMap.put(k, reduceFunction.apply(vv)));
-    }
-
-    public static void addValue(final Object value, final Collection values) {
-        if (value instanceof Iterator) {
-            while (((Iterator) value).hasNext()) {
-                values.add(((Iterator) value).next());
-            }
-        } else {
-            values.add(value);
-        }
     }
 
     @Override

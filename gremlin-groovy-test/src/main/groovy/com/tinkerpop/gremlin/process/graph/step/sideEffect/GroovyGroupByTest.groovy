@@ -12,12 +12,12 @@ public abstract class GroovyGroupByTest {
     public static class StandardTest extends GroupByTest {
 
         @Override
-        public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_groupByXnameX() {
+        public Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_groupByXnameX() {
             g.V.groupBy { it.name }
         }
 
         @Override
-        public Traversal<Vertex, Map<String, List<String>>> get_g_V_hasXlangX_groupByXa_lang_nameX_out_capXaX() {
+        public Traversal<Vertex, Map<String, Collection<String>>> get_g_V_hasXlangX_groupByXa_lang_nameX_out_capXaX() {
             g.V.has('lang').groupBy('a') { it.lang } { it.name }.out.cap('a')
         }
 
@@ -40,12 +40,12 @@ public abstract class GroovyGroupByTest {
     public static class ComputerTest extends GroupByTest {
 
         @Override
-        public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_groupByXnameX() {
+        public Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_groupByXnameX() {
             ComputerTestHelper.compute("g.V.groupBy { it.name }", g)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, List<String>>> get_g_V_hasXlangX_groupByXa_lang_nameX_out_capXaX() {
+        public Traversal<Vertex, Map<String, Collection<String>>> get_g_V_hasXlangX_groupByXa_lang_nameX_out_capXaX() {
             ComputerTestHelper.compute("g.V.has('lang').groupBy('a') { it.lang } { it.name }.out.cap('a')", g)
         }
 

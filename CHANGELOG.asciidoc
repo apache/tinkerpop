@@ -9,13 +9,15 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `GroupByStep` and `GroupByMapReduce` leverage `BulkSet` as the default group data structure.
+* `Element.Iterator` has renamed methods so implementers can do `MyElement implements Element, Element.Iterators`.
 * Renamed `MessageType.Global` and `MessageType.Local` creators from `of()` to `to()` as it makes more sense to send messages `to()`.
 * With `Traverser.get/setBulk()` there is no need for a `TraverserMessage`. The `Traverser` is now the message in `TraversalVertexProgram`.
 * Provided static `make()` methods for constructing `Path` implementations.
 * Provided a more space/time efficient algorithm for `Path.isSimple()`.
 * The `JumpStep` GraphComputer algorithm `Queue` is now a `TraverserSet`.
-* `AggregateStep` and `StoreStep` now use `BulkList` as their default backing `Collection` (much more space/time efficient).
-* Added `BulkList` which is like `TraverserSet` but for arbitrary objects (i.e. a weighted set).
+* `AggregateStep` and `StoreStep` now use `BulkSet` as their default backing `Collection` (much more space/time efficient).
+* Added `BulkSet` which is like `TraverserSet` but for arbitrary objects (i.e. a weighted set).
 * `UnrollJumpStrategy` is no longer a default strategy as it is less efficient with the inclusion of `TraverserSet`.
 * Introduced `TraverserSet` with bulk updating capabilities. Like OLAP, OLTP looping is now linear space/time complexity.
 * TinkerGraph's MapReduce framework is now thread safe with a parallel execution implementation.
@@ -30,7 +32,6 @@ TinkerPop 3.0.0.M4 (Release Date: NOT OFFICIALLY RELEASED YET)
 TinkerPop 3.0.0.M3 (Release Date: October 6, 2014)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* `Element.Iterator` has renamed methods so implementers can do `MyElement implements Element, Element.Iterators`.
 * All `Step` fields are now `private`/`protected` with respective getters as currently needed and will be added to as needed.
 * Gremlin Server no longer has the `traverse` operation as lambdas aren't really serialized.
 * `Path` is now an interface with `ImmutablePath` and `MutablePath` as implementations (2x speedup on path calculations).
