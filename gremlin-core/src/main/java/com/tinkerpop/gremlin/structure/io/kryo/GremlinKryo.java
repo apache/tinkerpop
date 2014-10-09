@@ -14,17 +14,18 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.computer.traversal.TraverserCountTracker;
 import com.tinkerpop.gremlin.process.computer.traversal.TraverserPathTracker;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
+import com.tinkerpop.gremlin.process.util.BulkList;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import com.tinkerpop.gremlin.structure.util.referenced.ReferencedPath;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
@@ -248,7 +249,8 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(AtomicLong.class, null, 62)); // this is all needed for serializing properties in TinkerGraph
             add(Triplet.<Class, Serializer, Integer>with(Tree.class, null, 63));
             add(Triplet.with(HashSet.class, null, 64));
-            add(Triplet.<Class, Serializer, Integer>with(ReferencedPath.class, null, 69));  // ***LAST ID***
+            add(Triplet.<Class, Serializer, Integer>with(ReferencedPath.class, null, 69));
+            add(Triplet.<Class, Serializer, Integer>with(BulkList.class, null, 70)); // ***LAST ID***
         }};
 
         private static final byte major = 1;

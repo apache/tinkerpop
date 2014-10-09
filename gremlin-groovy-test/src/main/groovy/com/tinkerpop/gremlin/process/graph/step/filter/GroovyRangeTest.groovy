@@ -40,6 +40,11 @@ public abstract class GroovyRangeTest {
         public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV(final Object v1Id) {
             g.v(v1Id).out('created').inE('created')[1..2].outV
         }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_asXaX_both_jumpXa_3X_rangeX5_10X() {
+            g.V().as('a').both().jump('a', 3)[5..10];
+        }
     }
 
     public static class ComputerTestImpl extends RangeTest {
@@ -72,6 +77,11 @@ public abstract class GroovyRangeTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV(final Object v1Id) {
             ComputerTestHelper.compute("g.v(${v1Id}).out('created').inE('created')[1..2].outV", g);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_asXaX_both_jumpXa_3X_rangeX5_10X() {
+            ComputerTestHelper.compute("g.V().as('a').both().jump('a', 3).range(5, 10)", g);
         }
     }
 }

@@ -28,6 +28,8 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV(final Object v1Id);
 
+    public abstract Traversal<Vertex, Vertex> get_g_V_asXaX_both_jumpXa_3X_rangeX5_10X();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_v1_out_rangeX0_1X() {
@@ -71,7 +73,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_v1_outXknowsX_outXcreatedX_rangeX0_0X() {
-        final Traversal<Vertex,Vertex> traversal = get_g_v1_outXknowsX_outXcreatedX_rangeX0_0X(convertToVertexId("marko"));
+        final Traversal<Vertex, Vertex> traversal = get_g_v1_outXknowsX_outXcreatedX_rangeX0_0X(convertToVertexId("marko"));
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -85,7 +87,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_v1_outXcreatedX_inXcreatedX_rangeX1_2X() {
-        final Traversal<Vertex,Vertex> traversal = get_g_v1_outXcreatedX_inXcreatedX_rangeX1_2X(convertToVertexId("marko"));
+        final Traversal<Vertex, Vertex> traversal = get_g_v1_outXcreatedX_inXcreatedX_rangeX1_2X(convertToVertexId("marko"));
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -99,7 +101,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV() {
-        final Traversal<Vertex,Vertex> traversal = get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV(convertToVertexId("marko"));
+        final Traversal<Vertex, Vertex> traversal = get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV(convertToVertexId("marko"));
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -108,6 +110,19 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
             assertTrue(name.equals("marko") || name.equals("josh") || name.equals("peter"));
         }
         assertEquals(2, counter);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_both_jumpXa_3X_rangeX5_10X() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_asXaX_both_jumpXa_3X_rangeX5_10X();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            traversal.next();
+            counter++;
+        }
+        assertEquals(6, counter);
     }
 
     public static class StandardTest extends RangeTest {
@@ -143,6 +158,11 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV(final Object v1Id) {
             return g.v(v1Id).out("created").inE("created").range(1, 2).outV();
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_asXaX_both_jumpXa_3X_rangeX5_10X() {
+            return g.V().as("a").both().jump("a", 3).range(5, 10);
         }
     }
 }

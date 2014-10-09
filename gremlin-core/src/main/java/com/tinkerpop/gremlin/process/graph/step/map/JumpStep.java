@@ -7,10 +7,10 @@ import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.TraverserSet;
 import com.tinkerpop.gremlin.structure.Compare;
 import org.javatuples.Pair;
 
-import java.util.LinkedList;
 import java.util.Queue;
 import java.util.function.Predicate;
 
@@ -31,7 +31,7 @@ public final class JumpStep<S> extends AbstractStep<S, S> implements EngineDepen
     /////////////////////
     private Boolean jumpBack;
     private boolean onGraphComputer = false;
-    private Queue<Traverser<S>> queue;
+    private Queue<Traverser.Admin<S>> queue;
     public boolean doWhile = true;
 
     public JumpStep(final Traversal traversal) {
@@ -42,7 +42,7 @@ public final class JumpStep<S> extends AbstractStep<S, S> implements EngineDepen
     public void onEngine(final Engine engine) {
         if (engine.equals(Engine.COMPUTER)) {
             this.onGraphComputer = true;
-            this.queue = new LinkedList<>();
+            this.queue = new TraverserSet<>();
         } else {
             this.onGraphComputer = false;
             this.queue = null;

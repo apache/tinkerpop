@@ -27,6 +27,10 @@ public final class RangeStep<S> extends FilterStep<S> {
         this.setPredicate(traverser -> {
             final long tempCounter = this.counter.get() + traverser.getBulk();
             if ((this.low == -1 || tempCounter >= this.low) && (this.high == -1 || tempCounter <= this.high)) {
+                final long differenceCounter = this.high - tempCounter;
+                if (traverser.getBulk() > differenceCounter) {
+                    traverser.asAdmin().setBulk(differenceCounter-1);
+                }
                 this.counter.set(tempCounter);
                 return true;
             } else if (this.high != -1 && tempCounter > this.high) {
