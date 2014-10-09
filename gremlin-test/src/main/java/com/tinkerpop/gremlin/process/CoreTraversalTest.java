@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.util.TraverserIterator;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -46,7 +45,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldTraversalResetProperly() {
-        final Traversal<Object, Vertex> traversal = g.of().as("a").out().out().<Vertex>has("name", Contains.in, Arrays.asList("ripple","lop")).as("b");
+        final Traversal<Object, Vertex> traversal = g.of().as("a").out().out().<Vertex>has("name", Contains.in, Arrays.asList("ripple", "lop")).as("b");
         if (new Random().nextBoolean()) traversal.reset();
         assertFalse(traversal.hasNext());
         traversal.addStarts(new TraverserIterator(traversal.getSteps().get(0), false, g.V()));

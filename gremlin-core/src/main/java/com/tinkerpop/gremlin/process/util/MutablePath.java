@@ -16,8 +16,12 @@ public class MutablePath implements Path, Serializable, Cloneable {
     protected List<Object> objects = new ArrayList<>();
     protected List<Set<String>> labels = new ArrayList<>();
 
-    public MutablePath() {
+    protected MutablePath() {
 
+    }
+
+    public static Path make() {
+        return new MutablePath();
     }
 
     public MutablePath clone() {

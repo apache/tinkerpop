@@ -21,17 +21,29 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
 
     }
 
+    public static Path make() {
+        return EmptyPath.instance();
+    }
+
     public ImmutablePath clone() {
         return this;
     }
 
-    public ImmutablePath(final Path previousPath, final String currentLabel, final Object currentObject) {
+    public ImmutablePath(final String currentLabel, final Object currentObject) {
+        this(EmptyPath.instance(), currentLabel, currentObject);
+    }
+
+    public ImmutablePath(final Set<String> currentLabels, final Object currentObject) {
+        this(EmptyPath.instance(), currentLabels, currentObject);
+    }
+
+    private ImmutablePath(final Path previousPath, final String currentLabel, final Object currentObject) {
         this.previousPath = previousPath;
         this.currentLabels.add(currentLabel);
         this.currentObject = currentObject;
     }
 
-    public ImmutablePath(final Path previousPath, final Set<String> currentLabels, final Object currentObject) {
+    private ImmutablePath(final Path previousPath, final Set<String> currentLabels, final Object currentObject) {
         this.previousPath = previousPath;
         this.currentLabels.addAll(currentLabels);
         this.currentObject = currentObject;

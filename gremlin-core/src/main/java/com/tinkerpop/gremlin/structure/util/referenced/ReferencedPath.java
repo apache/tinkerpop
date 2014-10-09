@@ -53,7 +53,7 @@ public class ReferencedPath extends MutablePath implements Attachable, Serializa
         }
         return path;*/
 
-        final Path path = new MutablePath();
+        final Path path = MutablePath.make();
         this.forEach((labels, object) -> {
             if (object instanceof Attachable) {
                 path.extend(labels, ((Attachable) object).attach(hostGraph));
@@ -76,7 +76,7 @@ public class ReferencedPath extends MutablePath implements Attachable, Serializa
             path = path.extend(this.labels.get(i), this.objects.get(i));
         }
         return path;*/
-        final Path path = new MutablePath();
+        final Path path = MutablePath.make();
         this.forEach((labels, object) -> {
             if (object instanceof Attachable) {
                 path.extend(labels, ((Attachable) object).attach(hostVertex));

@@ -22,7 +22,7 @@ public final class PathStep<S> extends MapStep<S, Path> implements PathConsumer 
             if (null == this.functionRing)
                 return traverser.getPath();
             else {
-                final Path path = new MutablePath();
+                final Path path = MutablePath.make();
                 traverser.getPath().forEach((labels, object) -> path.extend(labels, this.functionRing.next().apply(object)));
                 this.functionRing.reset();
                 return path;
