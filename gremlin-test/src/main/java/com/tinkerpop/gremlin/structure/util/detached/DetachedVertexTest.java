@@ -250,7 +250,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @Test(expected = IllegalStateException.class)
     @LoadGraphWith(LoadGraphWith.GraphData.CREW)
     public void shouldNotBeAbleToCallPropertyIfThereAreMultipleProperties() {
-        DetachedVertex.detach(g.v(1)).property("location");
+        DetachedVertex.detach(g.v(convertToVertexId("marko"))).property("location");
     }
 
     @Test
