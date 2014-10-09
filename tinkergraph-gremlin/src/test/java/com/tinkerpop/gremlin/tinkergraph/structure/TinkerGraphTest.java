@@ -16,6 +16,8 @@ import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoResourceAccess;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.commons.io.FileUtils;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -46,6 +48,15 @@ public class TinkerGraphTest {
             tempPath = temp + File.separator;
         else
             tempPath = temp;
+
+        tempPath = tempPath + "tinkerpop-io/";
+    }
+
+    @BeforeClass
+    public static void before() throws IOException {
+        final File tempDir = new File(tempPath);
+        FileUtils.deleteDirectory(tempDir);
+        if (!tempDir.mkdirs()) throw new IOException(String.format("Could not create %s", tempDir));
     }
 
     @Test

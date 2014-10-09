@@ -22,6 +22,13 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
     <build>
         <directory>${basedir}/target</directory>
@@ -37,4 +44,128 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>io</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>io</name>
+                </property>
+            </activation>
+
+            <properties>
+                <io.tmp.dir>${java.io.tmpdir}/tinkerpop-io</io.tmp.dir>
+            </properties>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>2.17</version>
+                        <configuration>
+                            <includes>
+                                <include>**/TinkerGraphTest.java</include>
+                            </includes>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>copy-all-from-tmp-to-data</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>../data</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${io.tmp.dir}</directory>
+                                            <filtering>false</filtering>
+                                            <excludes>
+                                                <exclude>**/*-normalized.json</exclude>
+                                            </excludes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-gio-from-tmp-to-resources</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>../gremlin-test/src/main/resources/com/tinkerpop/gremlin/structure/io/kryo</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${io.tmp.dir}</directory>
+                                            <filtering>false</filtering>
+                                            <includes>
+                                                <include>**/*.gio</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                    <nonFilteredFileExtensions>
+                                        <nonFilteredFileExtension>gio</nonFilteredFileExtension>
+                                    </nonFilteredFileExtensions>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-graphson-from-tmp-to-resources</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>../gremlin-test/src/main/resources/com/tinkerpop/gremlin/structure/io/graphson</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${io.tmp.dir}</directory>
+                                            <filtering>false</filtering>
+                                            <includes>
+                                                <include>**/*.json</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-graphml-from-tmp-to-resources</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>../gremlin-test/src/main/resources/com/tinkerpop/gremlin/structure/io/graphml</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${io.tmp.dir}</directory>
+                                            <filtering>false</filtering>
+                                            <includes>
+                                                <include>**/*.xml</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+    </profiles>
 </project>
