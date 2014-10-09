@@ -230,68 +230,6 @@ public class TinkerGraphTest {
         os.close();
     }
 
-    /**
-     * No assertions.  Just write out the graph for convenience.
-     */
-    @Test
-    public void shouldWriteGratefulGraphAsKryo() throws IOException {
-        final Graph g = TinkerGraph.open();
-        final GraphReader reader = GraphMLReader.build().create();
-        try (final InputStream stream = GraphMLResourceAccess.class.getResourceAsStream("grateful-dead.xml")) {
-            reader.readGraph(stream, g);
-        }
-
-        // todo: pass through "conversion" to get ids right
-        final OutputStream os = new FileOutputStream(tempPath + "grateful-dead-via-xml.gio");
-        KryoWriter.build().create().writeGraph(os, g);
-        os.close();
-    }
-
-    @Test
-    public void shouldWriteGratefulGraphAsGraphSON() throws IOException {
-        final Graph g = TinkerGraph.open();
-        final GraphReader reader = KryoReader.build().create();
-        try (final InputStream stream = KryoResourceAccess.class.getResourceAsStream("grateful-dead.gio")) {
-            reader.readGraph(stream, g);
-        }
-
-        final OutputStream os = new FileOutputStream(tempPath + "grateful-dead.json");
-        GraphSONWriter.build().embedTypes(true).create().writeGraph(os, g);
-        os.close();
-    }
-
-    /**
-     * No assertions.  Just write out the graph for convenience.
-     */
-    @Test
-    public void shouldWriteGratefulVerticesAsKryo() throws IOException {
-        final Graph g = TinkerGraph.open();
-        final GraphReader reader = KryoReader.build().create();
-        try (final InputStream stream = KryoResourceAccess.class.getResourceAsStream("grateful-dead.gio")) {
-            reader.readGraph(stream, g);
-        }
-
-        final OutputStream os = new FileOutputStream(tempPath + "grateful-dead-vertices.gio");
-        KryoWriter.build().create().writeVertices(os, g.V(), Direction.BOTH);
-        os.close();
-    }
-
-    /**
-     * No assertions.  Just write out the graph for convenience.
-     */
-    @Test
-    public void shouldWriteGratefulVerticesAsGraphSON() throws IOException {
-        final Graph g = TinkerGraph.open();
-        final GraphReader reader = KryoReader.build().create();
-        try (final InputStream stream = KryoResourceAccess.class.getResourceAsStream("grateful-dead.gio")) {
-            reader.readGraph(stream, g);
-        }
-
-        final OutputStream os = new FileOutputStream(tempPath + "grateful-dead-vertices.ldjson");
-        GraphSONWriter.build().create().writeVertices(os, g.V(), Direction.BOTH);
-        os.close();
-    }
-
     @Test
     public void shouldManageIndices() {
         final TinkerGraph g = TinkerGraph.open();
@@ -521,11 +459,11 @@ public class TinkerGraphTest {
     }
 
     /**
-     * This test helps with data conversions on Grateful Dead.  No Assertions...run as needed.
+     * This test helps with data conversions on Grateful Dead.  No Assertions...run as needed. Never read from the
+     * GraphML source as it will always use a String identifier.
      */
     @Test
-    @Ignore
-    public void shouldConvertGratefulDeadTypes() throws IOException {
+    public void shouldWriteGratefulDead() throws IOException {
         final Graph g = TinkerGraph.open();
         final GraphReader reader = KryoReader.build().create();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/io/kryo/grateful-dead.gio")) {
@@ -559,7 +497,7 @@ public class TinkerGraphTest {
 
         }).iterate();
 
-        final OutputStream os = new FileOutputStream(tempPath + "grateful-dead-convert.gio");
+        final OutputStream os = new FileOutputStream(tempPath + "grateful-dead.gio");
         KryoWriter.build().create().writeGraph(os, ng);
         os.close();
 
@@ -570,6 +508,14 @@ public class TinkerGraphTest {
         final OutputStream os3 = new FileOutputStream(tempPath + "grateful-dead.xml");
         GraphMLWriter.build().create().writeGraph(os3, g);
         os3.close();
+
+        final OutputStream os4 = new FileOutputStream(tempPath + "grateful-dead-vertices.gio");
+        KryoWriter.build().create().writeVertices(os4, g.V(), Direction.BOTH);
+        os.close();
+
+        final OutputStream os5 = new FileOutputStream(tempPath + "grateful-dead-vertices.ldjson");
+        GraphSONWriter.build().create().writeVertices(os5, g.V(), Direction.BOTH);
+        os.close();
     }
 
     protected void deleteFile(final String path) throws IOException {
