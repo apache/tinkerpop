@@ -9,10 +9,10 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.batch.cache.VertexCache;
 
@@ -332,7 +332,7 @@ public class BatchGraph<G extends Graph> implements Graph {
         }
     }
 
-    private class BatchVertex implements Vertex {
+    private class BatchVertex implements Vertex, Vertex.Iterators {
 
         private final Object externalID;
 
@@ -450,33 +450,31 @@ public class BatchGraph<G extends Graph> implements Graph {
 
         @Override
         public Vertex.Iterators iterators() {
-            return this.iterators;
+            return this;
         }
 
-        private final Vertex.Iterators iterators = new Vertex.Iterators() {
-            @Override
-            public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
-                throw retrievalNotSupported();
-            }
+        @Override
+        public Iterator<Edge> edgeIterator(final Direction direction, final int branchFactor, final String... labels) {
+            throw retrievalNotSupported();
+        }
 
-            @Override
-            public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
-                throw retrievalNotSupported();
-            }
+        @Override
+        public Iterator<Vertex> vertexIterator(final Direction direction, final int branchFactor, final String... labels) {
+            throw retrievalNotSupported();
+        }
 
-            @Override
-            public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
-                return getCachedVertex(externalID).iterators().properties(propertyKeys);
-            }
+        @Override
+        public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
+            return getCachedVertex(externalID).iterators().propertyIterator(propertyKeys);
+        }
 
-            @Override
-            public <V> Iterator<VertexProperty<V>> hiddens(final String... propertyKeys) {
-                return getCachedVertex(externalID).iterators().hiddens(propertyKeys);
-            }
-        };
+        @Override
+        public <V> Iterator<VertexProperty<V>> hiddenPropertyIterator(final String... propertyKeys) {
+            return getCachedVertex(externalID).iterators().hiddenPropertyIterator(propertyKeys);
+        }
     }
 
-    private class BatchEdge implements Edge {
+    private class BatchEdge implements Edge, Edge.Iterators {
 
 
         @Override
@@ -523,26 +521,23 @@ public class BatchGraph<G extends Graph> implements Graph {
 
         @Override
         public Edge.Iterators iterators() {
-            return this.iterators;
+            return this;
         }
 
-        private final Edge.Iterators iterators = new Edge.Iterators() {
+        @Override
+        public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
+            return getWrappedEdge().iterators().propertyIterator(propertyKeys);
+        }
 
-            @Override
-            public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-                return getWrappedEdge().iterators().properties(propertyKeys);
-            }
+        @Override
+        public <V> Iterator<Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
+            return getWrappedEdge().iterators().hiddenPropertyIterator(propertyKeys);
+        }
 
-            @Override
-            public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-                return getWrappedEdge().iterators().hiddens(propertyKeys);
-            }
-
-            @Override
-            public Iterator<Vertex> vertices(final Direction direction) {
-                return getWrappedEdge().iterators().vertices(direction);
-            }
-        };
+        @Override
+        public Iterator<Vertex> vertexIterator(final Direction direction) {
+            return getWrappedEdge().iterators().vertexIterator(direction);
+        }
     }
 
     private static UnsupportedOperationException retrievalNotSupported() {

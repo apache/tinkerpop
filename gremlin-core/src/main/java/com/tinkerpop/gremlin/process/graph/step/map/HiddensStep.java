@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 
 import java.util.Arrays;
@@ -20,7 +19,7 @@ public final class HiddensStep<E> extends FlatMapStep<Element, Property<E>> impl
     public HiddensStep(final Traversal traversal, final String... propertyKeys) {
         super(traversal);
         this.propertyKeys = propertyKeys;
-        this.setFunction(traverser -> (Iterator) traverser.get().iterators().hiddens(this.propertyKeys));
+        this.setFunction(traverser -> (Iterator) traverser.get().iterators().hiddenPropertyIterator(this.propertyKeys));
     }
 
     @Override

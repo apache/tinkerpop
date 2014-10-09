@@ -56,8 +56,8 @@ public class StringFactory {
      * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Edge}.
      */
     public static String edgeString(final Edge edge) {
-        final Vertex inV = edge.iterators().vertices(Direction.IN).next();
-        final Vertex outV = edge.iterators().vertices(Direction.OUT).next();
+        final Vertex inV = edge.iterators().vertexIterator(Direction.IN).next();
+        final Vertex outV = edge.iterators().vertexIterator(Direction.OUT).next();
         return E + L_BRACKET + edge.id() + R_BRACKET + L_BRACKET + outV.id() + DASH + edge.label() + ARROW + inV.id() + R_BRACKET;
     }
 

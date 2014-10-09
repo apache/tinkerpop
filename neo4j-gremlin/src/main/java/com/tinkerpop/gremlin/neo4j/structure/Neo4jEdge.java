@@ -15,7 +15,7 @@ import java.util.Iterator;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relationship>, Neo4jEdgeTraversal {
+public class Neo4jEdge extends Neo4jElement implements Edge, Edge.Iterators, WrappedEdge<Relationship>, Neo4jEdgeTraversal {
 
     public Neo4jEdge(final Relationship relationship, final Neo4jGraph graph) {
         super(graph);
@@ -51,28 +51,22 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
 
     @Override
     public Edge.Iterators iterators() {
-        return this.iterators;
+        return this;
     }
 
-    private final Edge.Iterators iterators = new Iterators();
+    @Override
+    public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
+        return (Iterator) super.propertyIterator(propertyKeys);
+    }
 
-    protected class Iterators extends Neo4jElement.Iterators implements Edge.Iterators {
+    @Override
+    public <V> Iterator<Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
+        return (Iterator) super.hiddenPropertyIterator(propertyKeys);
+    }
 
-        @Override
-        public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-            return (Iterator) super.properties(propertyKeys);
-        }
-
-        @Override
-        public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-            return (Iterator) super.hiddens(propertyKeys);
-        }
-
-        @Override
-        public Iterator<Vertex> vertices(final Direction direction) {
-            graph.tx().readWrite();
-            return (Iterator) Neo4jHelper.getVertices(Neo4jEdge.this, direction);
-        }
-
+    @Override
+    public Iterator<Vertex> vertexIterator(final Direction direction) {
+        graph.tx().readWrite();
+        return (Iterator) Neo4jHelper.getVertices(Neo4jEdge.this, direction);
     }
 }

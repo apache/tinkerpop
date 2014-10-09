@@ -22,13 +22,12 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
-import java.io.Serializable;
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphVertex extends GiraphElement implements Vertex, WrappedVertex<TinkerVertex> {
+public class GiraphVertex extends GiraphElement implements Vertex, Vertex.Iterators, WrappedVertex<TinkerVertex> {
 
     protected GiraphVertex() {
     }
@@ -83,33 +82,28 @@ public class GiraphVertex extends GiraphElement implements Vertex, WrappedVertex
 
     @Override
     public Vertex.Iterators iterators() {
-        return this.iterators;
+        return this;
     }
 
-    private final Vertex.Iterators iterators = new Iterators();
+    @Override
+    public Iterator<Vertex> vertexIterator(final Direction direction, final int branchFactor, final String... labels) {
+        return StreamFactory.stream(getBaseVertex().iterators().vertexIterator(direction, branchFactor, labels)).map(v -> graph.v(v.id())).iterator();
+    }
 
-    protected class Iterators implements Vertex.Iterators, Serializable {
+    @Override
+    public Iterator<Edge> edgeIterator(final Direction direction, final int branchFactor, final String... labels) {
+        return StreamFactory.stream(getBaseVertex().iterators().edgeIterator(direction, branchFactor, labels)).map(e -> graph.e(e.id())).iterator();
+    }
 
-        @Override
-        public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
-            return StreamFactory.stream(getBaseVertex().iterators().vertices(direction, branchFactor, labels)).map(v -> graph.v(v.id())).iterator();
-        }
+    @Override
+    public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
+        return (Iterator) StreamFactory.stream(getBaseVertex().iterators().propertyIterator(propertyKeys))
+                .map(property -> new GiraphVertexProperty<>((TinkerVertexProperty<V>) property, GiraphVertex.this)).iterator();
+    }
 
-        @Override
-        public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
-            return StreamFactory.stream(getBaseVertex().iterators().edges(direction, branchFactor, labels)).map(e -> graph.e(e.id())).iterator();
-        }
-
-        @Override
-        public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
-            return (Iterator) StreamFactory.stream(getBaseVertex().iterators().properties(propertyKeys))
-                    .map(property -> new GiraphVertexProperty<>((TinkerVertexProperty<V>) property, GiraphVertex.this)).iterator();
-        }
-
-        @Override
-        public <V> Iterator<VertexProperty<V>> hiddens(final String... propertyKeys) {
-            return (Iterator) StreamFactory.stream(getBaseVertex().iterators().hiddens(propertyKeys))
-                    .map(property -> new GiraphVertexProperty<>((TinkerVertexProperty<V>) property, GiraphVertex.this)).iterator();
-        }
+    @Override
+    public <V> Iterator<VertexProperty<V>> hiddenPropertyIterator(final String... propertyKeys) {
+        return (Iterator) StreamFactory.stream(getBaseVertex().iterators().hiddenPropertyIterator(propertyKeys))
+                .map(property -> new GiraphVertexProperty<>((TinkerVertexProperty<V>) property, GiraphVertex.this)).iterator();
     }
 }

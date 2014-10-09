@@ -3,16 +3,11 @@ package com.tinkerpop.gremlin.structure.util.detached;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -95,23 +90,23 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.CREW)
     public void shouldDetachMultiPropertiesAndMetaProperties() {
         final Vertex v1 = convertToVertex(g, "marko");
-        v1.iterators().properties("location").forEachRemaining(vp -> {
+        v1.iterators().propertyIterator("location").forEachRemaining(vp -> {
             final DetachedVertexProperty detached = DetachedVertexProperty.detach(vp);
             if (detached.value().equals("san diego")) {
                 assertEquals(1997, (int) detached.value("startTime"));
                 assertEquals(2001, (int) detached.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(detached.iterators().properties()).count());
+                assertEquals(2, (int) StreamFactory.stream(detached.iterators().propertyIterator()).count());
             } else if (vp.value().equals("santa cruz")) {
                 assertEquals(2001, (int) detached.value("startTime"));
                 assertEquals(2004, (int) detached.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(detached.iterators().properties()).count());
+                assertEquals(2, (int) StreamFactory.stream(detached.iterators().propertyIterator()).count());
             } else if (detached.value().equals("brussels")) {
                 assertEquals(2004, (int) vp.value("startTime"));
                 assertEquals(2005, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(detached.iterators().properties()).count());
+                assertEquals(2, (int) StreamFactory.stream(detached.iterators().propertyIterator()).count());
             } else if (detached.value().equals("santa fe")) {
                 assertEquals(2005, (int) detached.value("startTime"));
-                assertEquals(1, (int) StreamFactory.stream(detached.iterators().properties()).count());
+                assertEquals(1, (int) StreamFactory.stream(detached.iterators().propertyIterator()).count());
             } else {
                 fail("Found a value that should be there");
             }

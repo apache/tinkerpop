@@ -424,7 +424,7 @@ public class FeatureSupportTest {
         public void shouldSupportMultiPropertyIfTheSameKeyCanBeAssignedMoreThanOnce() throws Exception {
             try {
                 final Vertex v = g.addVertex("name", "stephen", "name", "steve");
-                if (StreamFactory.stream(v.iterators().properties()).count() == 2)
+                if (StreamFactory.stream(v.iterators().propertyIterator()).count() == 2)
                     fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_MULTI_PROPERTIES));
             } catch (Exception ex) {
                 assertEquals(VertexProperty.Exceptions.multiPropertiesNotSupported().getMessage(), ex.getMessage());

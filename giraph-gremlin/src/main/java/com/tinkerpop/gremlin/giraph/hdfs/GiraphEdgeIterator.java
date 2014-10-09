@@ -38,7 +38,7 @@ public class GiraphEdgeIterator extends GiraphElementIterator<GiraphEdge> {
                 if (this.readers.isEmpty())
                     throw FastNoSuchElementException.instance();
                 if (this.readers.peek().nextVertex()) {
-                    this.edgeIterator = ((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getTinkerVertex().iterators().edges(Direction.OUT, Integer.MAX_VALUE);
+                    this.edgeIterator = ((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getTinkerVertex().iterators().edgeIterator(Direction.OUT, Integer.MAX_VALUE);
                 } else {
                     this.readers.remove();
                 }
@@ -57,7 +57,7 @@ public class GiraphEdgeIterator extends GiraphElementIterator<GiraphEdge> {
                 if (this.readers.isEmpty())
                     return false;
                 if (this.readers.peek().nextVertex()) {
-                    this.edgeIterator = ((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getTinkerVertex().iterators().edges(Direction.OUT, Integer.MAX_VALUE);
+                    this.edgeIterator = ((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getTinkerVertex().iterators().edgeIterator(Direction.OUT, Integer.MAX_VALUE);
                 } else {
                     this.readers.remove();
                 }

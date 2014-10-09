@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<Node>, Neo4jVertexTraversal {
+public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterators, WrappedVertex<Node>, Neo4jVertexTraversal {
 
     public Neo4jVertex(final Node node, final Neo4jGraph graph) {
         super(graph);
@@ -186,53 +186,48 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
 
     @Override
     public Vertex.Iterators iterators() {
-        return this.iterators;
+        return this;
     }
 
-    private final Vertex.Iterators iterators = new Iterators();
+    @Override
+    public Iterator<Vertex> vertexIterator(final Direction direction, final int branchFactor, final String... labels) {
+        graph.tx().readWrite();
+        return (Iterator) StreamFactory.stream(Neo4jHelper.getVertices(Neo4jVertex.this, direction, labels)).limit(branchFactor).iterator();
+    }
 
-    protected class Iterators extends Neo4jElement.Iterators implements Vertex.Iterators {
+    @Override
+    public Iterator<Edge> edgeIterator(final Direction direction, final int branchFactor, final String... labels) {
+        graph.tx().readWrite();
+        return (Iterator) StreamFactory.stream(Neo4jHelper.getEdges(Neo4jVertex.this, direction, labels)).limit(branchFactor).iterator();
+    }
 
-        @Override
-        public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
-            graph.tx().readWrite();
-            return (Iterator) StreamFactory.stream(Neo4jHelper.getVertices(Neo4jVertex.this, direction, labels)).limit(branchFactor).iterator();
-        }
+    @Override
+    public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
+        graph.tx().readWrite();
+        return (Iterator) StreamFactory.stream(getBaseVertex().getPropertyKeys())
+                .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, key) >= 0)
+                .filter(key -> !Graph.Key.isHidden(key))
+                .flatMap(key -> {
+                    if (getBaseVertex().getProperty(key).equals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN))
+                        return StreamFactory.stream(getBaseVertex().getRelationships(org.neo4j.graphdb.Direction.OUTGOING, DynamicRelationshipType.withName(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat(key))))
+                                .map(relationship -> new Neo4jVertexProperty(Neo4jVertex.this, relationship.getEndNode()));
+                    else
+                        return Stream.of(new Neo4jVertexProperty<>(Neo4jVertex.this, key, (V) getBaseVertex().getProperty(key)));
+                }).iterator();
+    }
 
-        @Override
-        public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
-            graph.tx().readWrite();
-            return (Iterator) StreamFactory.stream(Neo4jHelper.getEdges(Neo4jVertex.this, direction, labels)).limit(branchFactor).iterator();
-        }
-
-        @Override
-        public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
-            graph.tx().readWrite();
-            return (Iterator) StreamFactory.stream(getBaseVertex().getPropertyKeys())
-                    .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, key) >= 0)
-                    .filter(key -> !Graph.Key.isHidden(key))
-                    .flatMap(key -> {
-                        if (getBaseVertex().getProperty(key).equals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN))
-                            return StreamFactory.stream(getBaseVertex().getRelationships(org.neo4j.graphdb.Direction.OUTGOING, DynamicRelationshipType.withName(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat(key))))
-                                    .map(relationship -> new Neo4jVertexProperty(Neo4jVertex.this, relationship.getEndNode()));
-                        else
-                            return Stream.of(new Neo4jVertexProperty<>(Neo4jVertex.this, key, (V) getBaseVertex().getProperty(key)));
-                    }).iterator();
-        }
-
-        @Override
-        public <V> Iterator<VertexProperty<V>> hiddens(final String... propertyKeys) {
-            graph.tx().readWrite();
-            return (Iterator) StreamFactory.stream(getBaseVertex().getPropertyKeys())
-                    .filter(key -> Graph.Key.isHidden(key))
-                    .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, Graph.Key.unHide(key)) >= 0)
-                    .flatMap(key -> {
-                        if (getBaseVertex().getProperty(key).equals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN))
-                            return StreamFactory.stream(getBaseVertex().getRelationships(org.neo4j.graphdb.Direction.OUTGOING, DynamicRelationshipType.withName(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat(key))))
-                                    .map(relationship -> new Neo4jVertexProperty(Neo4jVertex.this, relationship.getEndNode()));
-                        else
-                            return Stream.of(new Neo4jVertexProperty<>(Neo4jVertex.this, key, (V) getBaseVertex().getProperty(key)));
-                    }).iterator();
-        }
+    @Override
+    public <V> Iterator<VertexProperty<V>> hiddenPropertyIterator(final String... propertyKeys) {
+        graph.tx().readWrite();
+        return (Iterator) StreamFactory.stream(getBaseVertex().getPropertyKeys())
+                .filter(key -> Graph.Key.isHidden(key))
+                .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, Graph.Key.unHide(key)) >= 0)
+                .flatMap(key -> {
+                    if (getBaseVertex().getProperty(key).equals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN))
+                        return StreamFactory.stream(getBaseVertex().getRelationships(org.neo4j.graphdb.Direction.OUTGOING, DynamicRelationshipType.withName(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat(key))))
+                                .map(relationship -> new Neo4jVertexProperty(Neo4jVertex.this, relationship.getEndNode()));
+                    else
+                        return Stream.of(new Neo4jVertexProperty<>(Neo4jVertex.this, key, (V) getBaseVertex().getProperty(key)));
+                }).iterator();
     }
 }

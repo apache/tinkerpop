@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerVertexProperty<V> extends TinkerElement implements VertexProperty<V> {
+public class TinkerVertexProperty<V> extends TinkerElement implements VertexProperty<V>, VertexProperty.Iterators {
 
     private final TinkerVertex vertex;
     private final String key;
@@ -99,7 +99,7 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
                 this.graph.vertexIndex.remove(this.key, this.value, this.vertex);
             }
             final AtomicBoolean delete = new AtomicBoolean(true);
-            this.vertex.properties(this.key).forEachRemaining(property -> {
+            this.vertex.propertyIterator(this.key).forEachRemaining(property -> {
                 if (property.value().equals(this.value))
                     delete.set(false);
             });
@@ -107,22 +107,20 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
         }
     }
 
+    //////////////////////////////////////////////
+
     public VertexProperty.Iterators iterators() {
-        return this.iterators;
+        return this;
     }
 
-    private final VertexProperty.Iterators iterators = new Iterators();
-
-    protected class Iterators extends TinkerElement.Iterators implements VertexProperty.Iterators {
-
-        @Override
-        public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
-            return (Iterator) super.properties(propertyKeys);
-        }
-
-        @Override
-        public <U> Iterator<Property<U>> hiddens(final String... propertyKeys) {
-            return (Iterator) super.hiddens(propertyKeys);
-        }
+    @Override
+    public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
+        return (Iterator) super.propertyIterator(propertyKeys);
     }
+
+    @Override
+    public <U> Iterator<Property<U>> hiddenPropertyIterator(final String... propertyKeys) {
+        return (Iterator) super.hiddenPropertyIterator(propertyKeys);
+    }
+
 }

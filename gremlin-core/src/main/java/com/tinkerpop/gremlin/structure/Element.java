@@ -40,7 +40,7 @@ public abstract interface Element {
      */
     public default Set<String> keys() {
         final Set<String> keys = new HashSet<>();
-        this.iterators().properties().forEachRemaining(property -> keys.add(property.key()));
+        this.iterators().propertyIterator().forEachRemaining(property -> keys.add(property.key()));
         return keys;
     }
 
@@ -51,7 +51,7 @@ public abstract interface Element {
      */
     public default Set<String> hiddenKeys() {
         final Set<String> hiddenKeys = new HashSet<>();
-        this.iterators().hiddens().forEachRemaining(property -> hiddenKeys.add(Graph.Key.unHide(property.key())));
+        this.iterators().hiddenPropertyIterator().forEachRemaining(property -> hiddenKeys.add(Graph.Key.unHide(property.key())));
         return hiddenKeys;
     }
 
@@ -61,8 +61,8 @@ public abstract interface Element {
      */
     public default <V> Property<V> property(final String key) {
         final Iterator<? extends Property<V>> iterator = Graph.Key.isHidden(key) ?
-                this.iterators().hiddens(Graph.Key.unHide(key)) :
-                this.iterators().properties(key);
+                this.iterators().hiddenPropertyIterator(Graph.Key.unHide(key)) :
+                this.iterators().propertyIterator(key);
         return iterator.hasNext() ? iterator.next() : Property.<V>empty();
     }
 
@@ -99,26 +99,26 @@ public abstract interface Element {
         /**
          * Get the values of non-hidden properties as a {@link Map} of keys and values.
          */
-        public default <V> Iterator<V> values(final String... propertyKeys) {
-            return StreamFactory.stream(this.properties(propertyKeys)).map(property -> (V) property.value()).iterator();
+        public default <V> Iterator<V> valueIterator(final String... propertyKeys) {
+            return StreamFactory.stream(this.propertyIterator(propertyKeys)).map(property -> (V) property.value()).iterator();
         }
 
         /**
          * Get the values of hidden properties as a {@link Map} of keys and values.
          */
-        public default <V> Iterator<V> hiddenValues(final String... propertyKeys) {
-            return StreamFactory.stream(this.hiddens(propertyKeys)).map(property -> (V) property.value()).iterator();
+        public default <V> Iterator<V> hiddenValueIterator(final String... propertyKeys) {
+            return StreamFactory.stream(this.hiddenPropertyIterator(propertyKeys)).map(property -> (V) property.value()).iterator();
         }
 
         /**
          * Get an {@link Iterator} of non-hidden properties.
          */
-        public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys);
+        public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys);
 
         /**
          * Get an {@link Iterator} of hidden properties.
          */
-        public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys);
+        public <V> Iterator<? extends Property<V>> hiddenPropertyIterator(final String... propertyKeys);
     }
 
     /**

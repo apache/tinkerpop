@@ -55,7 +55,7 @@ public class HasContainer {
                 return this.predicate.test(((VertexProperty) element).key(), this.value);
             else {
                 if (element instanceof Vertex) {
-                    final Iterator<? extends Property> itty = element.iterators().properties(this.key);
+                    final Iterator<? extends Property> itty = element.iterators().propertyIterator(this.key);
                     while (itty.hasNext()) {
                         if (this.predicate.test(itty.next().value(), this.value))
                             return true;

@@ -40,10 +40,10 @@ public interface VertexProperty<V> extends Property<V>, Element, VertexPropertyT
     public interface Iterators extends Element.Iterators {
 
         @Override
-        public <U> Iterator<Property<U>> properties(final String... propertyKeys);
+        public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys);
 
         @Override
-        public <U> Iterator<Property<U>> hiddens(final String... propertyKeys);
+        public <U> Iterator<Property<U>> hiddenPropertyIterator(final String... propertyKeys);
     }
 
     /**

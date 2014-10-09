@@ -16,7 +16,7 @@ public final class ValuesStep<E> extends FlatMapStep<Element, E> {
     public ValuesStep(final Traversal traversal, final String... propertyKeys) {
         super(traversal);
         this.propertyKeys = propertyKeys;
-        this.setFunction(traverser -> traverser.get().iterators().values(propertyKeys));
+        this.setFunction(traverser -> traverser.get().iterators().valueIterator(propertyKeys));
     }
 
     public String toString() {

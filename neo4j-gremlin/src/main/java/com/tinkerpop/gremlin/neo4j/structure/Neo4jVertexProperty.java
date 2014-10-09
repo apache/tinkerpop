@@ -27,7 +27,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Neo4jVertexProperty<V> implements VertexProperty<V>, WrappedVertex<Node>, Neo4jVertexPropertyTraversal {
+public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty.Iterators, WrappedVertex<Node>, Neo4jVertexPropertyTraversal {
 
     public static final Label VERTEX_PROPERTY_LABEL = DynamicLabel.label("vertexProperty");
     public static final String VERTEX_PROPERTY_PREFIX = Graph.System.system("");
@@ -201,7 +201,7 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, WrappedVertex<
         if (!this.vertex.graph.supportsMetaProperties)
             throw VertexProperty.Exceptions.metaPropertiesNotSupported();
         else
-            return this.iterators;
+            return this;
     }
 
     @Override
@@ -209,33 +209,28 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, WrappedVertex<
         return StringFactory.propertyString(this);
     }
 
-    private final VertexProperty.Iterators iterators = new Iterators();
-
-    protected class Iterators implements VertexProperty.Iterators {
-
-        @Override
-        public <U> Iterator<Property<U>> properties(String... propertyKeys) {
-            if (!isNode()) return Collections.emptyIterator();
-            else {
-                vertex.graph.tx().readWrite();
-                return (Iterator) StreamFactory.stream(node.getPropertyKeys())
-                        .filter(key -> !key.equals(T.key.getAccessor()) && !key.equals(T.value.getAccessor()))
-                        .filter(key -> !Graph.Key.isHidden(key))
-                        .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, key) >= 0)
-                        .map(key -> new Neo4jProperty<>(Neo4jVertexProperty.this, key, (V) node.getProperty(key))).iterator();
-            }
+    @Override
+    public <U> Iterator<Property<U>> propertyIterator(String... propertyKeys) {
+        if (!isNode()) return Collections.emptyIterator();
+        else {
+            vertex.graph.tx().readWrite();
+            return (Iterator) StreamFactory.stream(node.getPropertyKeys())
+                    .filter(key -> !key.equals(T.key.getAccessor()) && !key.equals(T.value.getAccessor()))
+                    .filter(key -> !Graph.Key.isHidden(key))
+                    .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, key) >= 0)
+                    .map(key -> new Neo4jProperty<>(Neo4jVertexProperty.this, key, (V) node.getProperty(key))).iterator();
         }
+    }
 
-        @Override
-        public <U> Iterator<Property<U>> hiddens(String... propertyKeys) {
-            if (!isNode()) return Collections.emptyIterator();
-            else {
-                vertex.graph.tx().readWrite();
-                return (Iterator) StreamFactory.stream(node.getPropertyKeys())
-                        .filter(key -> Graph.Key.isHidden(key))
-                        .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, Graph.Key.unHide(key)) >= 0)
-                        .map(key -> new Neo4jProperty<>(Neo4jVertexProperty.this, key, (V) node.getProperty(key))).iterator();
-            }
+    @Override
+    public <U> Iterator<Property<U>> hiddenPropertyIterator(String... propertyKeys) {
+        if (!isNode()) return Collections.emptyIterator();
+        else {
+            vertex.graph.tx().readWrite();
+            return (Iterator) StreamFactory.stream(node.getPropertyKeys())
+                    .filter(key -> Graph.Key.isHidden(key))
+                    .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, Graph.Key.unHide(key)) >= 0)
+                    .map(key -> new Neo4jProperty<>(Neo4jVertexProperty.this, key, (V) node.getProperty(key))).iterator();
         }
     }
 }

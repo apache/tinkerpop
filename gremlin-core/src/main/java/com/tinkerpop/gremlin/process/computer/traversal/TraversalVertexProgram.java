@@ -129,7 +129,7 @@ public class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>>
             messenger.sendMessage(MessageType.Global.to(vertex), traverser);
             voteToHalt.set(false);
         } else if (startStep.returnsEdges()) {  // PROCESS EDGES
-            vertex.iterators().edges(Direction.OUT,Integer.MAX_VALUE).forEachRemaining(edge -> {
+            vertex.iterators().edgeIterator(Direction.OUT, Integer.MAX_VALUE).forEachRemaining(edge -> {
                 final Traverser.Admin<Edge> traverser = this.trackPaths ?
                         new PathTraverser<>(startStep.getLabel(), edge, null) :
                         new SimpleTraverser<>(edge, null);

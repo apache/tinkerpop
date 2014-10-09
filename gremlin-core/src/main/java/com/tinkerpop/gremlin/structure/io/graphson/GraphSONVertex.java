@@ -61,11 +61,11 @@ class GraphSONVertex {
             m.put(GraphSONTokens.HIDDENS, vertex.hiddenMap().next());
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.OUT) {
-                m.put(GraphSONTokens.OUT_E, StreamFactory.stream(vertex.iterators().edges(Direction.OUT, Integer.MAX_VALUE)).collect(Collectors.toList()));
+                m.put(GraphSONTokens.OUT_E, StreamFactory.stream(vertex.iterators().edgeIterator(Direction.OUT, Integer.MAX_VALUE)).collect(Collectors.toList()));
             }
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.IN) {
-                m.put(GraphSONTokens.IN_E, StreamFactory.stream(vertex.iterators().edges(Direction.IN, Integer.MAX_VALUE)).collect(Collectors.toList()));
+                m.put(GraphSONTokens.IN_E, StreamFactory.stream(vertex.iterators().edgeIterator(Direction.IN, Integer.MAX_VALUE)).collect(Collectors.toList()));
             }
 
             jsonGenerator.writeObject(m);

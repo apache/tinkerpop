@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Pair;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -34,12 +33,10 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DetachedEdge extends DetachedElement<Edge> implements Edge {
+public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.Iterators {
 
     DetachedVertex outVertex;
     DetachedVertex inVertex;
-
-    private final transient Edge.Iterators iterators = new Iterators();
 
     public DetachedEdge(final Object id, final String label,
                         final Map<String, Object> properties,
@@ -60,16 +57,16 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
     private DetachedEdge(final Edge edge) {
         super(edge);
 
-        final Vertex outV = edge.iterators().vertices(Direction.OUT).next();
-        final Vertex inV = edge.iterators().vertices(Direction.IN).next();
+        final Vertex outV = edge.iterators().vertexIterator(Direction.OUT).next();
+        final Vertex inV = edge.iterators().vertexIterator(Direction.IN).next();
 
         // construct a detached vertex here since we don't need properties for DetachedEdge, just the
         // reference to the id and label
         this.outVertex = new DetachedVertex(outV.id(), outV.label());
         this.inVertex = new DetachedVertex(inV.id(), inV.label());
 
-        edge.iterators().properties().forEachRemaining(p -> this.properties.put(p.key(), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : new DetachedProperty(p, this)))));
-        edge.iterators().hiddens().forEachRemaining(p -> this.properties.put(Graph.Key.hide(p.key()), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : new DetachedProperty(p, this)))));
+        edge.iterators().propertyIterator().forEachRemaining(p -> this.properties.put(p.key(), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : new DetachedProperty(p, this)))));
+        edge.iterators().hiddenPropertyIterator().forEachRemaining(p -> this.properties.put(Graph.Key.hide(p.key()), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : new DetachedProperty(p, this)))));
     }
 
     @Override
@@ -79,7 +76,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
 
     @Override
     public Edge attach(final Vertex hostVertex) {
-        return StreamFactory.stream(hostVertex.iterators().edges(Direction.OUT, Integer.MAX_VALUE, this.label))
+        return StreamFactory.stream(hostVertex.iterators().edgeIterator(Direction.OUT, Integer.MAX_VALUE, this.label))
                 .filter(edge -> edge.equals(this))
                 .findAny().orElseThrow(() -> new IllegalStateException("The detached edge could not be be found incident to the provided vertex: " + this));
     }
@@ -126,7 +123,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
 
     @Override
     public Edge.Iterators iterators() {
-        return this.iterators;
+        return this;
     }
 
     @Override
@@ -140,27 +137,23 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
                 .collect(Collectors.toMap(p -> p.getValue0(), p -> Arrays.asList(p.getValue1())));
     }
 
-    protected class Iterators extends DetachedElement<Edge>.Iterators implements Edge.Iterators, Serializable {
+    @Override
+    public Iterator<Vertex> vertexIterator(final Direction direction) {
+        final List<Vertex> vertices = new ArrayList<>(2);
+        if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
+            vertices.add(outVertex);
+        if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH))
+            vertices.add(inVertex);
+        return vertices.iterator();
+    }
 
-        @Override
-        public Iterator<Vertex> vertices(final Direction direction) {
-            final List<Vertex> vertices = new ArrayList<>(2);
-            if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
-                vertices.add(outVertex);
-            if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH))
-                vertices.add(inVertex);
-            return vertices.iterator();
-        }
+    @Override
+    public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
+        return (Iterator) super.propertyIterator(propertyKeys);
+    }
 
-        @Override
-        public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-            return (Iterator) super.properties(propertyKeys);
-        }
-
-        @Override
-        public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-            return (Iterator) super.hiddens(propertyKeys);
-        }
-
+    @Override
+    public <V> Iterator<Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
+        return (Iterator) super.hiddenPropertyIterator(propertyKeys);
     }
 }

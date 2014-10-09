@@ -30,6 +30,7 @@ TinkerPop 3.0.0.M4 (Release Date: NOT OFFICIALLY RELEASED YET)
 TinkerPop 3.0.0.M3 (Release Date: October 6, 2014)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `Element.Iterator` has renamed methods so implementers can do `MyElement implements Element, Element.Iterators`.
 * All `Step` fields are now `private`/`protected` with respective getters as currently needed and will be added to as needed.
 * Gremlin Server no longer has the `traverse` operation as lambdas aren't really serialized.
 * `Path` is now an interface with `ImmutablePath` and `MutablePath` as implementations (2x speedup on path calculations).

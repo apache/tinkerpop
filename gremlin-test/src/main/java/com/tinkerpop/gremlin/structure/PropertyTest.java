@@ -94,8 +94,8 @@ public class PropertyTest {
             assertEquals(2, v1.hiddenKeys().size());
             assertTrue(v1.hiddenKeys().stream().allMatch(key -> !Graph.Key.isHidden(key)));
             assertTrue(v1.hiddenKeys().stream().allMatch(k -> k.equals("acl") || k.equals("other")));
-            assertEquals("rw", v1.iterators().hiddens("acl").next().value());
-            assertEquals("r", v1.iterators().properties("acl").next().value());
+            assertEquals("rw", v1.iterators().hiddenPropertyIterator("acl").next().value());
+            assertEquals("r", v1.iterators().propertyIterator("acl").next().value());
             assertEquals("acl", v1.property(Graph.Key.hide("acl")).key());
             assertEquals("other", v1.property(Graph.Key.hide("other")).key());
         }
@@ -117,8 +117,8 @@ public class PropertyTest {
             e1.hiddenKeys().stream().forEach(hiddenKey -> assertTrue(e1.hiddenValue(hiddenKey).hasNext()));
             assertFalse(e1.hiddenValue(Graph.Key.hide("acl")).hasNext());
             assertTrue(e1.hiddenValue("acl").hasNext());
-            assertEquals("private", e1.iterators().hiddens("acl").next().value());
-            assertEquals("public", e1.iterators().properties("acl").next().value());
+            assertEquals("private", e1.iterators().hiddenPropertyIterator("acl").next().value());
+            assertEquals("public", e1.iterators().propertyIterator("acl").next().value());
         }
     }
 

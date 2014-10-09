@@ -10,7 +10,6 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Pair;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -49,17 +48,17 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         final DetachedEdge detachedEdge = DetachedEdge.detach(g.e(convertToEdgeId("marko", "knows", "vadas")));
         assertEquals(convertToEdgeId("marko", "knows", "vadas"), detachedEdge.id());
         assertEquals("knows", detachedEdge.label());
-        assertEquals(DetachedVertex.class, detachedEdge.iterators().vertices(Direction.OUT).next().getClass());
-        assertEquals(convertToVertexId("marko"), detachedEdge.iterators().vertices(Direction.OUT).next().id());
-        assertEquals("person", detachedEdge.iterators().vertices(Direction.IN).next().label());
-        assertEquals(DetachedVertex.class, detachedEdge.iterators().vertices(Direction.IN).next().getClass());
-        assertEquals(convertToVertexId("vadas"), detachedEdge.iterators().vertices(Direction.IN).next().id());
-        assertEquals("person", detachedEdge.iterators().vertices(Direction.IN).next().label());
+        assertEquals(DetachedVertex.class, detachedEdge.iterators().vertexIterator(Direction.OUT).next().getClass());
+        assertEquals(convertToVertexId("marko"), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
+        assertEquals("person", detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+        assertEquals(DetachedVertex.class, detachedEdge.iterators().vertexIterator(Direction.IN).next().getClass());
+        assertEquals(convertToVertexId("vadas"), detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
+        assertEquals("person", detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
 
-        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().properties()).count());
-        assertEquals(0.5d, detachedEdge.iterators().properties("weight").next().value());
-        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().hiddens()).count());
-        assertEquals(2002, detachedEdge.iterators().hiddens("year").next().value());
+        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+        assertEquals(0.5d, detachedEdge.iterators().propertyIterator("weight").next().value());
+        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().hiddenPropertyIterator()).count());
+        assertEquals(2002, detachedEdge.iterators().hiddenPropertyIterator("year").next().value());
     }
 
     @Test
@@ -97,16 +96,16 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
 
         assertEquals(10, de.id());
         assertEquals("bought", de.label());
-        assertEquals("person", de.iterators().vertices(Direction.OUT).next().label());
-        assertEquals(1, de.iterators().vertices(Direction.OUT).next().id());
-        assertEquals("product", de.iterators().vertices(Direction.IN).next().label());
-        assertEquals(2, de.iterators().vertices(Direction.IN).next().id());
+        assertEquals("person", de.iterators().vertexIterator(Direction.OUT).next().label());
+        assertEquals(1, de.iterators().vertexIterator(Direction.OUT).next().id());
+        assertEquals("product", de.iterators().vertexIterator(Direction.IN).next().label());
+        assertEquals(2, de.iterators().vertexIterator(Direction.IN).next().id());
 
         assertEquals(1, StreamFactory.stream(de.iterators()).count());
-        assertEquals("a", de.iterators().properties("x").next().value());
-        assertEquals(1, StreamFactory.stream(de.iterators().properties("x")).count());
-        assertEquals("b", de.iterators().hiddens("y").next().value());
-        assertEquals(1, StreamFactory.stream(de.iterators().hiddens("y")).count());
+        assertEquals("a", de.iterators().propertyIterator("x").next().value());
+        assertEquals(1, StreamFactory.stream(de.iterators().propertyIterator("x")).count());
+        assertEquals("b", de.iterators().hiddenPropertyIterator("y").next().value());
+        assertEquals(1, StreamFactory.stream(de.iterators().hiddenPropertyIterator("y")).count());
 
         assertEquals("a", de.property("x").value());
         assertEquals("x", de.property("x").key());

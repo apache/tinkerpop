@@ -21,7 +21,7 @@ public abstract class TraverserExecutor {
         if (object instanceof Vertex)
             return (Vertex) object;
         else if (object instanceof Edge) {
-            return ((Edge) object).iterators().vertices(Direction.OUT).next();
+            return ((Edge) object).iterators().vertexIterator(Direction.OUT).next();
         } else if (object instanceof Property)
             return getHostingVertex(((Property) object).getElement());
         else

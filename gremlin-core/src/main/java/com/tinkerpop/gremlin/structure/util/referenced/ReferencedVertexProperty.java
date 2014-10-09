@@ -15,7 +15,7 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReferencedVertexProperty<V> extends ReferencedElement implements VertexProperty<V>, Attachable<VertexProperty> {
+public class ReferencedVertexProperty<V> extends ReferencedElement implements VertexProperty<V>, VertexProperty.Iterators, Attachable<VertexProperty> {
 
     protected String key;
     protected V value;
@@ -61,7 +61,7 @@ public class ReferencedVertexProperty<V> extends ReferencedElement implements Ve
 
     @Override
     public VertexProperty.Iterators iterators() {
-        return Iterators.ITERATORS;
+        return this;
     }
 
     @Override
@@ -71,7 +71,7 @@ public class ReferencedVertexProperty<V> extends ReferencedElement implements Ve
 
     @Override
     public VertexProperty attach(final Vertex hostVertex) {
-        return StreamFactory.stream(hostVertex.iterators().properties(this.key))
+        return StreamFactory.stream(hostVertex.iterators().propertyIterator(this.key))
                 .filter(vertexProperty -> vertexProperty.equals(this))
                 .findAny().orElseThrow(() -> new IllegalStateException("The referenced meta-property does not reference a meta-property on the host vertex"));
     }
@@ -81,18 +81,13 @@ public class ReferencedVertexProperty<V> extends ReferencedElement implements Ve
         throw new UnsupportedOperationException("Referenced vertex properties cannot be traversed: " + this);
     }
 
-    private static final class Iterators implements VertexProperty.Iterators {
+    @Override
+    public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
+        return Collections.emptyIterator();
+    }
 
-        protected static final Iterators ITERATORS = new Iterators();
-
-        @Override
-        public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-            return Collections.emptyIterator();
-        }
-
-        @Override
-        public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-            return Collections.emptyIterator();
-        }
+    @Override
+    public <V> Iterator<Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
+        return Collections.emptyIterator();
     }
 }

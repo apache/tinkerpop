@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.PropertyFilterIterator;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -17,7 +16,7 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class TinkerElement implements Element {
+public abstract class TinkerElement implements Element, Element.Iterators {
 
     protected Map<String, List<Property>> properties = new HashMap<>();
     protected final Object id;
@@ -74,20 +73,19 @@ public abstract class TinkerElement implements Element {
         return ElementHelper.areEqual(this, object);
     }
 
-    protected class Iterators implements Element.Iterators, Serializable {
+    //////////////////////////////////////////////
 
-        @Override
-        public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys) {
-            return TinkerHelper.inComputerMode(graph) ?
-                    new PropertyFilterIterator<>(graph.graphView.getProperties(TinkerElement.this).iterator(), true, propertyKeys) :
-                    new PropertyFilterIterator<>(properties.values().stream().flatMap(list -> list.stream()).collect(Collectors.toList()).iterator(), true, propertyKeys);
-        }
+    @Override
+    public <V> Iterator<? extends Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
+        return TinkerHelper.inComputerMode(graph) ?
+                new PropertyFilterIterator<>(graph.graphView.getProperties(TinkerElement.this).iterator(), true, propertyKeys) :
+                new PropertyFilterIterator<>(properties.values().stream().flatMap(list -> list.stream()).collect(Collectors.toList()).iterator(), true, propertyKeys);
+    }
 
-        @Override
-        public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
-            return TinkerHelper.inComputerMode(graph) ?
-                    new PropertyFilterIterator<>(graph.graphView.getProperties(TinkerElement.this).iterator(), false, propertyKeys) :
-                    new PropertyFilterIterator<>(properties.values().stream().flatMap(list -> list.stream()).collect(Collectors.toList()).iterator(), false, propertyKeys);
-        }
+    @Override
+    public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys) {
+        return TinkerHelper.inComputerMode(graph) ?
+                new PropertyFilterIterator<>(graph.graphView.getProperties(TinkerElement.this).iterator(), false, propertyKeys) :
+                new PropertyFilterIterator<>(properties.values().stream().flatMap(list -> list.stream()).collect(Collectors.toList()).iterator(), false, propertyKeys);
     }
 }

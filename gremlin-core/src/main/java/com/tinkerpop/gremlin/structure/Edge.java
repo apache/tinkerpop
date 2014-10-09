@@ -37,14 +37,14 @@ public interface Edge extends Element, EdgeTraversal {
          * @param direction Get the incoming vertex, outgoing vertex, or both vertices
          * @return An iterator with 1 or 2 vertices
          */
-        public Iterator<Vertex> vertices(final Direction direction);
+        public Iterator<Vertex> vertexIterator(final Direction direction);
 
-        public <V> Iterator<Property<V>> properties(final String... propertyKeys);
+        public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys);
 
-        public <V> Iterator<Property<V>> hiddens(final String... propertyKeys);
+        public <V> Iterator<Property<V>> hiddenPropertyIterator(final String... propertyKeys);
 
-        public default <V> Iterator<V> values(final String... propertyKeys) {
-            return Element.Iterators.super.values(propertyKeys);
+        public default <V> Iterator<V> valueIterator(final String... propertyKeys) {
+            return Element.Iterators.super.valueIterator(propertyKeys);
         }
     }
 

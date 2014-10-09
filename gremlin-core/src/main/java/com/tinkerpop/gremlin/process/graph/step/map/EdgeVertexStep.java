@@ -17,7 +17,7 @@ public final class EdgeVertexStep extends FlatMapStep<Edge, Vertex> implements R
     public EdgeVertexStep(final Traversal traversal, final Direction direction) {
         super(traversal);
         this.direction = direction;
-        this.setFunction(traverser -> traverser.get().iterators().vertices(this.direction));
+        this.setFunction(traverser -> traverser.get().iterators().vertexIterator(this.direction));
     }
 
     public String toString() {

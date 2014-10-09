@@ -1,22 +1,21 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertexProperty;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
-import java.io.Serializable;
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphVertexProperty<V> implements VertexProperty<V>, WrappedVertexProperty<TinkerVertexProperty<V>> {
+public class GiraphVertexProperty<V> implements VertexProperty<V>, VertexProperty.Iterators, WrappedVertexProperty<TinkerVertexProperty<V>> {
 
     private final TinkerVertexProperty<V> tinkerVertexProperty;
     private final GiraphVertex giraphVertex;
@@ -82,11 +81,6 @@ public class GiraphVertexProperty<V> implements VertexProperty<V>, WrappedVertex
     }
 
     @Override
-    public VertexProperty.Iterators iterators() {
-        return this.iterators;
-    }
-
-    @Override
     public Vertex getElement() {
         return this.giraphVertex;
     }
@@ -96,20 +90,20 @@ public class GiraphVertexProperty<V> implements VertexProperty<V>, WrappedVertex
         return this.tinkerVertexProperty;
     }
 
-    private final VertexProperty.Iterators iterators = new Iterators();
+    @Override
+    public VertexProperty.Iterators iterators() {
+        return this;
+    }
 
-    protected class Iterators implements VertexProperty.Iterators, Serializable {
+    @Override
+    public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
+        return (Iterator) StreamFactory.stream(getBaseVertexProperty().iterators().propertyIterator(propertyKeys))
+                .map(property -> new GiraphProperty<>((TinkerProperty<V>) property, GiraphVertexProperty.this)).iterator();
+    }
 
-        @Override
-        public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-            return (Iterator) StreamFactory.stream(getBaseVertexProperty().iterators().properties(propertyKeys))
-                    .map(property -> new GiraphProperty<>((TinkerProperty<V>) property, GiraphVertexProperty.this)).iterator();
-        }
-
-        @Override
-        public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-            return (Iterator) StreamFactory.stream(getBaseVertexProperty().iterators().hiddens(propertyKeys))
-                    .map(property -> new GiraphProperty<>((TinkerProperty<V>) property, GiraphVertexProperty.this)).iterator();
-        }
+    @Override
+    public <U> Iterator<Property<U>> hiddenPropertyIterator(final String... propertyKeys) {
+        return (Iterator) StreamFactory.stream(getBaseVertexProperty().iterators().hiddenPropertyIterator(propertyKeys))
+                .map(property -> new GiraphProperty<>((TinkerProperty<V>) property, GiraphVertexProperty.this)).iterator();
     }
 }

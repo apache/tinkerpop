@@ -206,8 +206,8 @@ public class GraphTest extends AbstractGremlinTest {
     public void shouldOverwriteEarlierKeyValuesWithLaterKeyValuesOnAddVertexIfNoMultiProperty() {
         final Vertex v = g.addVertex("test", "A", "test", "B", "test", "C");
         tryCommit(g, graph -> {
-            assertEquals(1, StreamFactory.stream(v.iterators().properties("test")).count());
-            assertTrue(StreamFactory.stream(v.iterators().values("test")).anyMatch(t -> t.equals("C")));
+            assertEquals(1, StreamFactory.stream(v.iterators().propertyIterator("test")).count());
+            assertTrue(StreamFactory.stream(v.iterators().valueIterator("test")).anyMatch(t -> t.equals("C")));
         });
     }
 
@@ -217,10 +217,10 @@ public class GraphTest extends AbstractGremlinTest {
     public void shouldOverwriteEarlierKeyValuesWithLaterKeyValuesOnAddVertexIfMultiProperty() {
         final Vertex v = g.addVertex("test", "A", "test", "B", "test", "C");
         tryCommit(g, graph -> {
-            assertEquals(3, StreamFactory.stream(v.iterators().properties("test")).count());
-            assertTrue(StreamFactory.stream(v.iterators().values("test")).anyMatch(t -> t.equals("A")));
-            assertTrue(StreamFactory.stream(v.iterators().values("test")).anyMatch(t -> t.equals("B")));
-            assertTrue(StreamFactory.stream(v.iterators().values("test")).anyMatch(t -> t.equals("C")));
+            assertEquals(3, StreamFactory.stream(v.iterators().propertyIterator("test")).count());
+            assertTrue(StreamFactory.stream(v.iterators().valueIterator("test")).anyMatch(t -> t.equals("A")));
+            assertTrue(StreamFactory.stream(v.iterators().valueIterator("test")).anyMatch(t -> t.equals("B")));
+            assertTrue(StreamFactory.stream(v.iterators().valueIterator("test")).anyMatch(t -> t.equals("C")));
         });
     }
 
