@@ -201,6 +201,13 @@ public abstract class AbstractGremlinTest {
         if (!muted) System.out.println("         " + traversal);
     }
 
+    public static Consumer<Graph> assertVertexEdgeCounts(final int expectedVertexCount, final int expectedEdgeCount) {
+        return (g) -> {
+            assertEquals(new Long(expectedVertexCount), g.V().count().next());
+            assertEquals(new Long(expectedEdgeCount), g.E().count().next());
+        };
+    }
+
     public static void validateException(final Throwable expected, final Throwable actual) {
         assertEquals(expected.getMessage(), actual.getMessage());
         assertEquals(expected.getClass(), actual.getClass());

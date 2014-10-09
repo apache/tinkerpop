@@ -143,7 +143,7 @@ public class VertexTest extends AbstractGremlinTest {
         assertTrue(v.keys().contains("name"));
         assertTrue(v.keys().contains("age"));
         assertFalse(v.keys().contains("location"));
-        StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
+        assertVertexEdgeCounts(1, 0).accept(g);
 
         v.properties("name").remove();
         v.property("name", "marko rodriguez");
@@ -156,7 +156,7 @@ public class VertexTest extends AbstractGremlinTest {
         assertTrue(v.keys().contains("name"));
         assertTrue(v.keys().contains("age"));
         assertFalse(v.keys().contains("location"));
-        StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
+        assertVertexEdgeCounts(1, 0).accept(g);
 
         v.property("location", "santa fe");
         assertEquals(3, v.properties().count().next().intValue());
@@ -168,11 +168,11 @@ public class VertexTest extends AbstractGremlinTest {
         assertTrue(v.keys().contains("age"));
         assertTrue(v.keys().contains("location"));
         v.property("location").remove();
-        StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
+        assertVertexEdgeCounts(1, 0).accept(g);
         assertEquals(2, v.properties().count().next().intValue());
         v.properties().remove();
         assertEquals(0, v.properties().count().next().intValue());
-        StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
+        assertVertexEdgeCounts(1, 0).accept(g);
     }
 
     @Test
@@ -331,14 +331,14 @@ public class VertexTest extends AbstractGremlinTest {
         }
         g.V().forEach(v -> g.V().forEach(u -> v.addEdge("knows", u, "myEdgeId", 12)));
 
-        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(25, 625));
+        tryCommit(g, assertVertexEdgeCounts(25, 625));
 
         for (Vertex v : g.V().toList()) {
             v.remove();
             tryCommit(g);
         }
 
-        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(0, 0));
+        tryCommit(g, assertVertexEdgeCounts(0, 0));
     }
 
     @Test
@@ -352,13 +352,13 @@ public class VertexTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldSupportIdempotentRemoval() {
         final Vertex v1 = g.addVertex();
-        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(1, 0));
+        tryCommit(g, assertVertexEdgeCounts(1, 0));
 
         v1.remove();
         v1.remove();
         v1.remove();
 
-        StructureStandardSuite.assertVertexEdgeCounts(0, 0);
+        assertVertexEdgeCounts(0, 0);
 
         // some graphs may crap out on commit (i.e. doesn't really support the idempotency). that may be bad for
         // users as they won't get a good reason for why their transaction failed.  for purposes of enforcing the
@@ -370,7 +370,7 @@ public class VertexTest extends AbstractGremlinTest {
             v1.remove();
             tryCommit(g);
         } finally {
-            StructureStandardSuite.assertVertexEdgeCounts(0, 0);
+            assertVertexEdgeCounts(0, 0);
         }
     }
 }

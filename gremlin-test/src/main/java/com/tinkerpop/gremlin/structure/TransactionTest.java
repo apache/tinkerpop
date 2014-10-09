@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
@@ -129,23 +128,23 @@ public class TransactionTest extends AbstractGremlinTest {
     public void shouldCommitElementAutoTransactionByDefault() {
         final Vertex v1 = g.addVertex();
         final Edge e1 = v1.addEdge("l", v1);
-        AbstractGremlinSuite.assertVertexEdgeCounts(1, 1);
+        assertVertexEdgeCounts(1, 1);
         assertEquals(v1.id(), g.v(v1.id()).id());
         assertEquals(e1.id(), g.e(e1.id()).id());
         g.tx().commit();
-        AbstractGremlinSuite.assertVertexEdgeCounts(1, 1);
+        assertVertexEdgeCounts(1, 1);
         assertEquals(v1.id(), g.v(v1.id()).id());
         assertEquals(e1.id(), g.e(e1.id()).id());
 
         g.v(v1.id()).remove();
-        AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
+        assertVertexEdgeCounts(0, 0);
         g.tx().rollback();
-        AbstractGremlinSuite.assertVertexEdgeCounts(1, 1);
+        assertVertexEdgeCounts(1, 1);
 
         g.v(v1.id()).remove();
-        AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
+        assertVertexEdgeCounts(0, 0);
         g.tx().commit();
-        AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
+        assertVertexEdgeCounts(0, 0);
     }
 
     @Test
@@ -155,11 +154,11 @@ public class TransactionTest extends AbstractGremlinTest {
     public void shouldRollbackElementAutoTransactionByDefault() {
         final Vertex v1 = g.addVertex();
         final Edge e1 = v1.addEdge("l", v1);
-        AbstractGremlinSuite.assertVertexEdgeCounts(1, 1);
+        assertVertexEdgeCounts(1, 1);
         assertEquals(v1.id(), g.v(v1.id()).id());
         assertEquals(e1.id(), g.e(e1.id()).id());
         g.tx().rollback();
-        AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
+        assertVertexEdgeCounts(0, 0);
     }
 
     @Test
@@ -169,7 +168,7 @@ public class TransactionTest extends AbstractGremlinTest {
         final Vertex v1 = g.addVertex();
         final Edge e1 = v1.addEdge("l", v1);
         g.tx().commit();
-        AbstractGremlinSuite.assertVertexEdgeCounts(1, 1);
+        assertVertexEdgeCounts(1, 1);
         assertEquals(v1.id(), g.v(v1.id()).id());
         assertEquals(e1.id(), g.e(e1.id()).id());
 
@@ -201,7 +200,7 @@ public class TransactionTest extends AbstractGremlinTest {
         assertEquals("xxx", e1.<String>value("name"));
         assertEquals("xxx", g.e(e1.id()).<String>value("name"));
 
-        AbstractGremlinSuite.assertVertexEdgeCounts(1, 1);
+        assertVertexEdgeCounts(1, 1);
         assertEquals(v1.id(), g.v(v1.id()).id());
         assertEquals(e1.id(), g.e(e1.id()).id());
     }
@@ -212,7 +211,7 @@ public class TransactionTest extends AbstractGremlinTest {
     public void shouldRollbackPropertyAutoTransactionByDefault() {
         final Vertex v1 = g.addVertex("name", "marko");
         final Edge e1 = v1.addEdge("l", v1, "name", "xxx");
-        AbstractGremlinSuite.assertVertexEdgeCounts(1, 1);
+        assertVertexEdgeCounts(1, 1);
         assertEquals(v1.id(), g.v(v1.id()).id());
         assertEquals(e1.id(), g.e(e1.id()).id());
         assertEquals("marko", v1.<String>value("name"));
@@ -242,7 +241,7 @@ public class TransactionTest extends AbstractGremlinTest {
         assertEquals("xxx", e1.<String>value("name"));
         assertEquals("xxx", g.e(e1.id()).<String>value("name"));
 
-        AbstractGremlinSuite.assertVertexEdgeCounts(1, 1);
+        assertVertexEdgeCounts(1, 1);
     }
 
     @Test
@@ -333,7 +332,7 @@ public class TransactionTest extends AbstractGremlinTest {
         }
 
         assertEquals(completedThreads.get(), 250);
-        AbstractGremlinSuite.assertVertexEdgeCounts(vertices.get(), edges.get());
+        assertVertexEdgeCounts(vertices.get(), edges.get());
     }
 
     @Test
@@ -434,7 +433,7 @@ public class TransactionTest extends AbstractGremlinTest {
         threadTryCommitTx.join();
 
         assertTrue(noVerticesInFirstThread.get());
-        AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
+        assertVertexEdgeCounts(0, 0);
     }
 
     @Test
@@ -448,15 +447,15 @@ public class TransactionTest extends AbstractGremlinTest {
             grx.addVertex();
             throw new Exception("fail");
         })).fireAndForget();
-        AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
+        assertVertexEdgeCounts(0, 0);
 
         // this tx will work
         g.tx().submit(grx -> graph.addVertex()).fireAndForget();
-        AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+        assertVertexEdgeCounts(1, 0);
 
         // make sure a commit happened and a new tx started
         g.tx().rollback();
-        AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+        assertVertexEdgeCounts(1, 0);
     }
 
     @Test
@@ -475,15 +474,15 @@ public class TransactionTest extends AbstractGremlinTest {
             assertEquals("fail", ex.getCause().getCause().getMessage());
         }
 
-        AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
+        assertVertexEdgeCounts(0, 0);
 
         // this tx will work
         g.tx().submit(grx -> graph.addVertex()).oneAndDone();
-        AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+        assertVertexEdgeCounts(1, 0);
 
         // make sure a commit happened and a new tx started
         g.tx().rollback();
-        AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+        assertVertexEdgeCounts(1, 0);
     }
 
     @Test
@@ -505,7 +504,7 @@ public class TransactionTest extends AbstractGremlinTest {
         }
 
         assertEquals(Transaction.Workload.DEFAULT_TRIES, attempts.get());
-        AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
+        assertVertexEdgeCounts(0, 0);
 
         // this tx will work after several tries
         final AtomicInteger tries = new AtomicInteger(0);
@@ -518,11 +517,11 @@ public class TransactionTest extends AbstractGremlinTest {
         })).exponentialBackoff();
 
         assertEquals(Transaction.Workload.DEFAULT_TRIES - 2, tries.get());
-        AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+        assertVertexEdgeCounts(1, 0);
 
         // make sure a commit happened and a new tx started
         g.tx().rollback();
-        AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+        assertVertexEdgeCounts(1, 0);
     }
 
     @Test
@@ -547,7 +546,7 @@ public class TransactionTest extends AbstractGremlinTest {
         }
 
         assertEquals(1, attempts.get());
-        AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
+        assertVertexEdgeCounts(0, 0);
 
         // this tx will retry for specific tx and then fail after several tries
         final AtomicInteger setOfTries = new AtomicInteger(0);
@@ -564,7 +563,7 @@ public class TransactionTest extends AbstractGremlinTest {
         }
 
         assertEquals(Transaction.Workload.DEFAULT_TRIES - 2, setOfTries.get());
-        AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
+        assertVertexEdgeCounts(0, 0);
 
         // this tx will work after several tries
         final AtomicInteger tries = new AtomicInteger(0);
@@ -577,11 +576,11 @@ public class TransactionTest extends AbstractGremlinTest {
         })).exponentialBackoff(Transaction.Workload.DEFAULT_TRIES, 20, exceptions);
 
         assertEquals(Transaction.Workload.DEFAULT_TRIES - 2, tries.get());
-        AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+        assertVertexEdgeCounts(1, 0);
 
         // make sure a commit happened and a new tx started
         g.tx().rollback();
-        AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+        assertVertexEdgeCounts(1, 0);
     }
 
     @Test
@@ -603,7 +602,7 @@ public class TransactionTest extends AbstractGremlinTest {
         }
 
         assertEquals(Transaction.Workload.DEFAULT_TRIES, attempts.get());
-        AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
+        assertVertexEdgeCounts(0, 0);
 
         // this tx will work after several tries
         final AtomicInteger tries = new AtomicInteger(0);
@@ -616,11 +615,11 @@ public class TransactionTest extends AbstractGremlinTest {
         })).retry();
 
         assertEquals(Transaction.Workload.DEFAULT_TRIES - 2, tries.get());
-        AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+        assertVertexEdgeCounts(1, 0);
 
         // make sure a commit happened and a new tx started
         g.tx().rollback();
-        AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+        assertVertexEdgeCounts(1, 0);
     }
 
     @Test
@@ -633,17 +632,17 @@ public class TransactionTest extends AbstractGremlinTest {
         Vertex v1 = graph.addVertex();
         graph.tx().commit();
 
-        AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+        assertVertexEdgeCounts(1, 0);
 
         final Vertex v2 = graph.addVertex();
         v1 = graph.v(v1.id());
         v1.addEdge("friend", v2);
 
-        AbstractGremlinSuite.assertVertexEdgeCounts(2, 1);
+        assertVertexEdgeCounts(2, 1);
 
         graph.tx().commit();
 
-        AbstractGremlinSuite.assertVertexEdgeCounts(2, 1);
+        assertVertexEdgeCounts(2, 1);
     }
 
     @Test

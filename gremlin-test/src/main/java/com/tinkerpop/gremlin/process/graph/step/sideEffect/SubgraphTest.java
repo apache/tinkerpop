@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
-import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.LoadGraphWith;
@@ -34,7 +33,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
         Traversal<Vertex, Graph> traversal = get_g_v1_outE_subgraphXknowsX_name_capXsgX(convertToVertexId("marko"), subgraph);
         printTraversalForm(traversal);
         subgraph = traversal.next();
-        AbstractGremlinSuite.assertVertexEdgeCounts(3, 2).accept(subgraph);
+        assertVertexEdgeCounts(3, 2).accept(subgraph);
         subgraph.E().forEach(e -> {
             assertEquals("knows", e.label());
             assertEquals("marko", e.outV().value("name").next());
@@ -64,7 +63,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
         printTraversalForm(traversal);
         traversal.iterate();
 
-        AbstractGremlinSuite.assertVertexEdgeCounts(5, 4).accept(subgraph);
+        assertVertexEdgeCounts(5, 4).accept(subgraph);
 
         graphProvider.clear(subgraph, config);
     }

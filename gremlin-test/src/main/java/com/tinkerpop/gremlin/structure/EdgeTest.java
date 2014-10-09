@@ -197,14 +197,14 @@ public class EdgeTest extends AbstractGremlinTest {
             v.addEdge("friend", v);
         }
 
-        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(25, 25));
+        tryCommit(g, assertVertexEdgeCounts(25, 25));
 
         for (Edge e : g.E().toList()) {
             e.remove();
             tryCommit(g);
         }
 
-        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(25, 0));
+        tryCommit(g, assertVertexEdgeCounts(25, 0));
     }
 
     @Test
@@ -223,7 +223,7 @@ public class EdgeTest extends AbstractGremlinTest {
         final Vertex v1 = g.addVertex();
         final Vertex v2 = g.addVertex();
         final Edge e = v1.addEdge("test", v2);
-        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(2, 1));
+        tryCommit(g, assertVertexEdgeCounts(2, 1));
 
         e.remove();
         e.remove();
@@ -239,7 +239,7 @@ public class EdgeTest extends AbstractGremlinTest {
             e.remove();
             tryCommit(g);
         } finally {
-            StructureStandardSuite.assertVertexEdgeCounts(0, 0);
+            assertVertexEdgeCounts(0, 0);
         }
     }
 }

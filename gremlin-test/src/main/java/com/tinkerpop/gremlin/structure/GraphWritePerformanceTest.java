@@ -6,7 +6,6 @@ import com.carrotsearch.junitbenchmarks.annotation.AxisRange;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkHistoryChart;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 import com.carrotsearch.junitbenchmarks.annotation.LabelType;
-import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
@@ -46,7 +45,7 @@ public class GraphWritePerformanceTest {
                 tryBatchCommit(g, ix);
             }
 
-            AbstractGremlinSuite.assertVertexEdgeCounts(verticesToGenerate, 0).accept(g);
+            assertVertexEdgeCounts(verticesToGenerate, 0).accept(g);
         }
 
         @Test
@@ -63,7 +62,7 @@ public class GraphWritePerformanceTest {
                 tryBatchCommit(g, ix);
             }
 
-            AbstractGremlinSuite.assertVertexEdgeCounts(verticesToGenerate, verticesToGenerate - 1).accept(g);
+            assertVertexEdgeCounts(verticesToGenerate, verticesToGenerate - 1).accept(g);
         }
     }
 

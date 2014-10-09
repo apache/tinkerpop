@@ -133,14 +133,6 @@ public abstract class AbstractGremlinSuite extends Suite {
         return Pair.with(annotation.provider(), annotation.graph());
     }
 
-    // todo: is this the standard way to assert counts?
-    public static Consumer<Graph> assertVertexEdgeCounts(final int expectedVertexCount, final int expectedEdgeCount) {
-        return (g) -> {
-            assertEquals(new Long(expectedVertexCount), g.V().count().next());
-            assertEquals(new Long(expectedEdgeCount), g.E().count().next());
-        };
-    }
-
     @Override
     protected void runChild(final Runner runner, final RunNotifier notifier) {
         if (beforeTestExecution((Class<? extends AbstractGremlinTest>) runner.getDescription().getTestClass())) super.runChild(runner, notifier);
