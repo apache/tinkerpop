@@ -49,8 +49,6 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
         assertFalse(p.isHidden());
     }
 
-    // todo: test hidden with "the crew"
-
     @Test(expected = UnsupportedOperationException.class)
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldNotSupportRemove() {
