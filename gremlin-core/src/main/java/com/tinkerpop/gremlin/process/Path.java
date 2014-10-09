@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process;
 
 import org.javatuples.Pair;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -48,7 +47,13 @@ public interface Path extends Cloneable {
      */
     public default boolean isSimple() {
         final List<Object> objects = this.getObjects();
-        return new HashSet<>(objects).size() == objects.size();
+        for (int i = 0; i < objects.size() - 1; i++) {
+            for (int j = i + 1; j < objects.size(); j++) {
+                if (objects.get(i).equals(objects.get(j)))
+                    return false;
+            }
+        }
+        return true;
     }
 
     public default void forEach(final Consumer<Object> consumer) {

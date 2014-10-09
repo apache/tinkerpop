@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Provided a more space/time efficient algorithm for `Path.isSimple()`.
 * The `JumpStep` GraphComputer algorithm `Queue` is now a `TraverserSet`.
 * `AggregateStep` and `StoreStep` now use `BulkList` as their default backing `Collection` (much more space/time efficient).
 * Added `BulkList` which is like `TraverserSet` but for arbitrary objects (i.e. a weighted set).
