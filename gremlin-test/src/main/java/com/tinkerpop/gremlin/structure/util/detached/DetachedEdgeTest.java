@@ -50,10 +50,10 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         assertEquals(convertToEdgeId("marko", "knows", "vadas"), detachedEdge.id());
         assertEquals("knows", detachedEdge.label());
         assertEquals(DetachedVertex.class, detachedEdge.iterators().vertices(Direction.OUT).next().getClass());
-        assertEquals(1, detachedEdge.iterators().vertices(Direction.OUT).next().id());
+        assertEquals(convertToVertexId("marko"), detachedEdge.iterators().vertices(Direction.OUT).next().id());
         assertEquals("person", detachedEdge.iterators().vertices(Direction.IN).next().label());
         assertEquals(DetachedVertex.class, detachedEdge.iterators().vertices(Direction.IN).next().getClass());
-        assertEquals(2, detachedEdge.iterators().vertices(Direction.IN).next().id());
+        assertEquals(convertToVertexId("vadas"), detachedEdge.iterators().vertices(Direction.IN).next().id());
         assertEquals("person", detachedEdge.iterators().vertices(Direction.IN).next().label());
 
         assertEquals(1, StreamFactory.stream(detachedEdge.iterators().properties()).count());
