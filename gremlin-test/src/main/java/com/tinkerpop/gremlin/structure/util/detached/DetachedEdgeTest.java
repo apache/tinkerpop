@@ -47,7 +47,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     public void shouldConstructDetachedEdge() {
         g.e(convertToEdgeId("marko", "knows", "vadas")).property(Graph.Key.hide("year"), 2002);
         final DetachedEdge detachedEdge = DetachedEdge.detach(g.e(convertToEdgeId("marko", "knows", "vadas")));
-        assertEquals(7, detachedEdge.id());
+        assertEquals(convertToEdgeId("marko", "knows", "vadas"), detachedEdge.id());
         assertEquals("knows", detachedEdge.label());
         assertEquals(DetachedVertex.class, detachedEdge.iterators().vertices(Direction.OUT).next().getClass());
         assertEquals(1, detachedEdge.iterators().vertices(Direction.OUT).next().id());
