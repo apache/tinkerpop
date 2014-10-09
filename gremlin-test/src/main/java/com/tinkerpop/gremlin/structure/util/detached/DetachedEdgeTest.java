@@ -45,8 +45,8 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldConstructDetachedEdge() {
-        g.e(7).property(Graph.Key.hide("year"), 2002);
-        final DetachedEdge detachedEdge = DetachedEdge.detach(g.e(7));
+        g.e(convertToEdgeId("marko", "knows", "vadas")).property(Graph.Key.hide("year"), 2002);
+        final DetachedEdge detachedEdge = DetachedEdge.detach(g.e(convertToEdgeId("marko", "knows", "vadas")));
         assertEquals(7, detachedEdge.id());
         assertEquals("knows", detachedEdge.label());
         assertEquals(DetachedVertex.class, detachedEdge.iterators().vertices(Direction.OUT).next().getClass());
