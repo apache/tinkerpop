@@ -247,27 +247,10 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         detachedVertex.start();
     }
 
-    // todo: need the crew
-
     @Test(expected = IllegalStateException.class)
-    @org.junit.Ignore
+    @LoadGraphWith(LoadGraphWith.GraphData.CREW)
     public void shouldNotBeAbleToCallPropertyIfThereAreMultipleProperties() {
-        /*
-        final Map<String,Object> properties = new HashMap<>();
-        final IoVertexProperty propX1 = new IoVertexProperty();
-        propX1.value = "a";
-        propX1.id = 123;
-        propX1.label = VertexProperty.DEFAULT_LABEL;
-        final IoVertexProperty propX2 = new IoVertexProperty();
-        propX2.value = "c";
-        propX2.id = 124;
-        propX2.label = VertexProperty.DEFAULT_LABEL;
-        properties.put("x", Arrays.asList(propX1, propX2));
-
-        final Map<String,Object> hiddens = new HashMap<>();
-        final DetachedVertex dv = new DetachedVertex(1, "test", properties, hiddens);
-        dv.property("x");
-        */
+        DetachedVertex.detach(g.v(1)).property("location");
     }
 
     @Test
