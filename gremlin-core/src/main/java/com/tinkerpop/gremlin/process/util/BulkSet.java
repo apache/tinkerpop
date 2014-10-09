@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.stream.Collectors;
@@ -19,12 +20,16 @@ import java.util.stream.Collectors;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class BulkSet<S> extends AbstractSet<S> implements Set<S>, Serializable {
-
     private final Map<S, Long> map = new LinkedHashMap<>();
 
     @Override
     public int size() {
         return this.map.values().stream().collect(Collectors.summingLong(Long::longValue)).intValue();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return this.map.isEmpty();
     }
 
     public long longSize() {
@@ -84,6 +89,27 @@ public class BulkSet<S> extends AbstractSet<S> implements Set<S>, Serializable {
     @Override
     public Spliterator<S> spliterator() {
         return this.toList().spliterator();
+    }
+
+    @Override
+    public boolean removeAll(final Collection<?> collection) {
+        Objects.requireNonNull(collection);
+        boolean modified = false;
+        for (final Object object : collection) {
+            if (null != this.map.remove(object))
+                modified = true;
+        }
+        return modified;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.map.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return this.map.equals(object);
     }
 
     @Override

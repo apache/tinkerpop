@@ -201,7 +201,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         return this;
     }
 
-    public default List<E> next(final int amount) {
+    public default List<E> next(final int amount) {   // TODO: Use bulk (same theory as range)
         final List<E> result = new ArrayList<>();
         int counter = 0;
         while (counter++ < amount && this.hasNext()) {
@@ -220,8 +220,12 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
     public default Collection<E> fill(final Collection<E> collection) {
         try {
-            while (this.hasNext()) {
-                collection.add(this.next());
+            this.strategies().apply();
+            // use the end step so the results are bulked
+            final Step<?, E> endStep = TraversalHelper.getEnd(this);
+            while (true) {
+                final Traverser<E> traverser = endStep.next();
+                TraversalHelper.addToCollection(collection, traverser.get(), traverser.getBulk());
             }
         } catch (final NoSuchElementException ignored) {
         }
@@ -230,8 +234,11 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
     public default Traversal iterate() {
         try {
+            this.strategies().apply();
+            // use the end step so the results are bulked
+            final Step<?, E> endStep = TraversalHelper.getEnd(this);
             while (true) {
-                this.next();
+                endStep.next();
             }
         } catch (final NoSuchElementException ignored) {
         }

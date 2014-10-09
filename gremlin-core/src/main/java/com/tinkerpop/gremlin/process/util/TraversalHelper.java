@@ -7,10 +7,12 @@ import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -238,5 +240,27 @@ public class TraversalHelper {
     public static void verifyStepLabelIsNotAlreadyAStepLabel(final String label, final Traversal<?, ?> traversal) {
         if (TraversalHelper.hasLabel(label, traversal))
             throw new IllegalArgumentException("The provided step label is already being used as a step label: " + label);
+    }
+
+    public static <S> void addToCollection(final Collection<S> collection, final S s, final long bulk) {
+        if (collection instanceof BulkSet) {
+            ((BulkSet<S>) collection).add(s, bulk);
+        } else if (collection instanceof Set) {
+            collection.add(s);
+        } else {
+            for (long i = 0; i < bulk; i++) {
+                collection.add(s);
+            }
+        }
+    }
+
+    public static <S> void addToCollectionUnrollIterator(final Collection<S> collection, final S s, final long bulk) {
+        if (s instanceof Iterator) {
+            ((Iterator<S>) s).forEachRemaining(r -> addToCollection(collection, r, bulk));
+        } else if (s instanceof Iterable) {
+            ((Iterable<S>) s).forEach(r -> addToCollection(collection, r, bulk));
+        } else {
+            addToCollection(collection, s, bulk);
+        }
     }
 }

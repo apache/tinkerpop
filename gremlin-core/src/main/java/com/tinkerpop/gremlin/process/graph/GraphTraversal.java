@@ -630,27 +630,22 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> jump(final String jumpLabel, final Predicate<Traverser<E>> jumpPredicate, final Predicate<Traverser<E>> emitPredicate) {
         return this.addStep(JumpStep.<E>build(this).jumpLabel(jumpLabel).jumpPredicate(jumpPredicate).emitPredicate(emitPredicate).create());
-        //return this.addStep(new JumpStep<>(this, jumpLabel, ifPredicate, emitPredicate));
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel, final Predicate<Traverser<E>> jumpPredicate) {
         return this.addStep(JumpStep.<E>build(this).jumpLabel(jumpLabel).jumpPredicate(jumpPredicate).emitChoice(false).create());
-        //return this.addStep(new JumpStep<>(this, jumpLabel, ifPredicate));
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel, final int loops, final Predicate<Traverser<E>> emitPredicate) {
         return this.addStep(JumpStep.<E>build(this).jumpLabel(jumpLabel).jumpLoops(loops, Compare.lt).emitPredicate(emitPredicate).create());
-        //return this.addStep(new JumpStep<>(this, jumpLabel, Compare.lt, loops, emitPredicate));
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel, final int loops) {
         return this.addStep(JumpStep.<E>build(this).jumpLabel(jumpLabel).jumpLoops(loops, Compare.lt).emitChoice(false).create());
-        //return this.addStep(new JumpStep<>(this, jumpLabel, Compare.lt, loops));
     }
 
     public default GraphTraversal<S, E> jump(final String jumpLabel) {
         return this.addStep(JumpStep.<E>build(this).jumpLabel(jumpLabel).jumpChoice(true).emitChoice(false).create());
-        //return this.addStep(new JumpStep<>(this, jumpLabel));
     }
 
     public default GraphTraversal<S, E> until(final String breakLabel, final Predicate<Traverser<E>> breakPredicate, final Predicate<Traverser<E>> emitPredicate) {
@@ -682,8 +677,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     @Override
     public default void remove() {
         try {
+            this.strategies().apply();
+            final Step<?, E> endStep = TraversalHelper.getEnd(this);
             while (true) {
-                final Object object = this.next();
+                final Object object = endStep.next().get();
                 if (object instanceof Element)
                     ((Element) object).remove();
                 else if (object instanceof Property)

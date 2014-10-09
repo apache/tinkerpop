@@ -10,7 +10,6 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.StoreMapRed
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
@@ -27,10 +26,11 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
         this.preStoreFunction = preStoreFunction;
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
-        this.setConsumer(traverser -> {
-            final Collection<Object> store = traverser.getSideEffects().getOrCreate(this.sideEffectKey, BulkSet::new);
-            SideEffectStep.addToCollection(store, null == this.preStoreFunction ? traverser.get() : this.preStoreFunction.apply(traverser), traverser.getBulk());
-        });
+        this.setConsumer(traverser ->
+                TraversalHelper.addToCollection(
+                        traverser.getSideEffects().getOrCreate(this.sideEffectKey, BulkSet::new),
+                        null == this.preStoreFunction ? traverser.get() : this.preStoreFunction.apply(traverser),
+                        traverser.getBulk()));
     }
 
     @Override
