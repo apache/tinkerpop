@@ -40,25 +40,26 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         DetachedEdge.detach(DetachedEdge.detach(e));
     }
 
-    // todo: need "the crew"
     @Test
-    @Ignore
+    @LoadGraphWith(GraphData.MODERN)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldConstructDetachedEdge() {
-        final Vertex v = g.addVertex();
-        final Edge e = v.addEdge("knows", v);
-        final DetachedEdge detachedEdge = DetachedEdge.detach(e);
-        assertEquals("3", detachedEdge.id());
+        g.e(7).property(Graph.Key.hide("year"), 2002);
+        final DetachedEdge detachedEdge = DetachedEdge.detach(g.e(7));
+        assertEquals(7, detachedEdge.id());
         assertEquals("knows", detachedEdge.label());
         assertEquals(DetachedVertex.class, detachedEdge.iterators().vertices(Direction.OUT).next().getClass());
-        assertEquals("1", detachedEdge.iterators().vertices(Direction.OUT).next().id());
+        assertEquals(1, detachedEdge.iterators().vertices(Direction.OUT).next().id());
+        assertEquals("person", detachedEdge.iterators().vertices(Direction.IN).next().label());
         assertEquals(DetachedVertex.class, detachedEdge.iterators().vertices(Direction.IN).next().getClass());
-        assertEquals("2", detachedEdge.iterators().vertices(Direction.IN).next().id());
+        assertEquals(2, detachedEdge.iterators().vertices(Direction.IN).next().id());
+        assertEquals("person", detachedEdge.iterators().vertices(Direction.IN).next().label());
 
-        assertEquals(1, StreamFactory.stream(detachedEdge.iterators()).count());
-        assertEquals("a", detachedEdge.iterators().properties("x").next().value());
-        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().properties("x")).count());
-        assertEquals("b", detachedEdge.iterators().hiddens("y").next().value());
-        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().hiddens("y")).count());
+        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().properties()).count());
+        assertEquals(0.5d, detachedEdge.iterators().properties("weight").next().value());
+        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().hiddens()).count());
+        assertEquals(2002, detachedEdge.iterators().hiddens("year").next().value());
     }
 
     @Test
