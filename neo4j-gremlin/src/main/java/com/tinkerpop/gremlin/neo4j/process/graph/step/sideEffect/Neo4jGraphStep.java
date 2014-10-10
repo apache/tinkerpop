@@ -158,7 +158,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         for (final HasContainer hasContainer : this.hasContainers) {
             if (hasContainer.key.equals(T.label.getAccessor()) && hasContainer.predicate.equals(Compare.eq))
                 return Arrays.asList(((String) hasContainer.value));
-            else if (hasContainer.key.equals(T.label.getAccessor()) && hasContainer.predicate.equals(Contains.in))
+            else if (hasContainer.key.equals(T.label.getAccessor()) && hasContainer.predicate.equals(Contains.within))
                 return new ArrayList<>((Collection<String>) hasContainer.value);
         }
         return null;

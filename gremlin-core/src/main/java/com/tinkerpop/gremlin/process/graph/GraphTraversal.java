@@ -427,7 +427,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final String key) {
-        return this.addStep(new HasStep<>(this, new HasContainer(key, Contains.in)));
+        return this.addStep(new HasStep<>(this, new HasContainer(key, Contains.within)));
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> has(final String key, final Object value) {
@@ -455,7 +455,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> hasNot(final String key) {
-        return this.addStep(new HasStep<>(this, new HasContainer(key, Contains.nin)));
+        return this.addStep(new HasStep<>(this, new HasContainer(key, Contains.without)));
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> interval(final String key, final Comparable startValue, final Comparable endValue) {

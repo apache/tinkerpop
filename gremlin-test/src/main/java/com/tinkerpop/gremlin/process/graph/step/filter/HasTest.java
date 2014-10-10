@@ -268,12 +268,12 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Edge, Edge> get_g_E_hasXlabelXuses_traversesX() {
-            return g.E().has(T.label, Contains.in, Arrays.asList("uses", "traverses"));
+            return g.E().has(T.label, Contains.within, Arrays.asList("uses", "traverses"));
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_software_blahX() {
-            return g.V().has(T.label, Contains.in, Arrays.asList("person", "software", "blah"));
+            return g.V().has(T.label, Contains.within, Arrays.asList("person", "software", "blah"));
         }
 
         @Override
@@ -344,12 +344,12 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Edge, Edge> get_g_E_hasXlabelXuses_traversesX() {
-            return g.E().<Edge>has(T.label, Contains.in, Arrays.asList("uses", "traverses")).submit(g.compute());
+            return g.E().<Edge>has(T.label, Contains.within, Arrays.asList("uses", "traverses")).submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_software_blahX() {
-            return g.V().has(T.label, Contains.in, Arrays.asList("person", "software", "blah"));
+            return g.V().has(T.label, Contains.within, Arrays.asList("person", "software", "blah"));
         }
 
         @Override
