@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.process.util.EmptyPath;
+
 import java.util.Iterator;
 
 /**

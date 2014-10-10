@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process.util;
 
-import java.io.Serializable;
 import java.util.function.Function;
 
 /**
@@ -30,5 +29,9 @@ public class FunctionRing<A, B> {
 
     public void reset() {
         this.currentFunction = -1;
+    }
+
+    public boolean roundComplete() {
+        return this.currentFunction == this.functions.length -1;
     }
 }

@@ -77,5 +77,15 @@ public class EmptyPath implements Path, Serializable {
         return INSTANCE;
     }
 
+    @Override
+    public int hashCode() {
+        return -1424379551;
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof EmptyPath;
+    }
+
 
 }

@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
-import com.tinkerpop.gremlin.groovy.function.*
+import com.tinkerpop.gremlin.groovy.function.GFunction
 import com.tinkerpop.gremlin.process.graph.GraphTraversal
 
 import java.util.function.Function
@@ -22,6 +22,10 @@ class StepLoader {
         }
 
         // THE CODE BELOW IS REQUIRED UNTIL GROOVY 2.3+ FIXES VAR ARG CONVERSION OF CLOSURES TO LAMBDAS
+
+        GraphTraversal.metaClass.branch = { final Closure... labelClosures ->
+            return ((GraphTraversal) delegate).branch(GFunction.make(labelClosures));
+        }
 
         GraphTraversal.metaClass.path = { final Closure... pathClosures ->
             return ((GraphTraversal) delegate).path(GFunction.make(pathClosures));
@@ -49,11 +53,6 @@ class StepLoader {
 
         GraphTraversal.metaClass.tree = { final String memoryKey, final Closure... branchClosures ->
             return ((GraphTraversal) delegate).tree(memoryKey, GFunction.make(branchClosures));
-        }
-
-        GraphTraversal.metaClass.pageRank { final Closure closure ->
-            final Closure newClosure = closure.dehydrate();
-            return ((GraphTraversal) delegate).pageRank(new GSupplier(newClosure));
         }
     }
 }
