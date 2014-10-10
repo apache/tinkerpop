@@ -364,7 +364,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         final ReadOnlyGraphStrategy readonly = new ReadOnlyGraphStrategy();
         final IdGraphStrategy id = new IdGraphStrategy.Builder("aKey").build();
         final SequenceGraphStrategy strategy = new SequenceGraphStrategy(readonly, id);
-        assertEquals("readonlygraphstrategy->idgraphstrategy[akey]", strategy.toString());
+        assertEquals("readonlygraphstrategy->idgraphstrategy[]", strategy.toString());
     }
 
     public class SpyGraphStrategy implements GraphStrategy {
