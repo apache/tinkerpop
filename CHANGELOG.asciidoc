@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Vendors should now get a clear error when mis-spelling something in an @OptOut (or more likely if a test name changes) and it now works all the test suites.
 * All plugins now have a default prefix of "tinkerpop." as a namespace.
 * `GraphComputer` now executes a `Set<MapReduce>` and `hashCode()`/`equals()` were implemented for existing `MapReduce` implementations.
 * Changed `Contains.in/notin` to `Contains.within/without` as `in` is a reserved term in most languages (including Java and Groovy).

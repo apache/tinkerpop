@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
+import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
@@ -579,22 +580,5 @@ public class GraphTest extends AbstractGremlinTest {
         }
 
         graphProvider.clear(reopenedGraph, graphProvider.standardGraphConfiguration(this.getClass(), name.getMethodName()));
-    }
-
-    @Test
-    public void shouldValidateOptInOutAnnotationsOnGraph() {
-        // sometimes test names change and since they are String representations they can easily break if a test
-        // is renamed. this test will validate such things.  it is not possible to @OptOut of this test.
-        final Class<? extends Graph> graphClass = g.getClass();
-        final Graph.OptOut[] optOuts = graphClass.getAnnotationsByType(Graph.OptOut.class);
-        Arrays.stream(optOuts).forEach(optOut -> {
-            try {
-                // todo: seems to be missing a case here because when tests were renamed for Impl GiraphGraph didn't error properly
-                final Class testClass = Class.forName(optOut.test());
-                assertTrue(Arrays.stream(testClass.getMethods()).anyMatch(m -> m.getName().equals(optOut.method())));
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-        });
     }
 }

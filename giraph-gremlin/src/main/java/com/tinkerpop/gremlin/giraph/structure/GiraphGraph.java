@@ -74,10 +74,6 @@ import java.util.Optional;
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
         test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
-        method = "shouldRequireRegisteringMemoryKeys",
-        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
-@Graph.OptOut(
-        test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
         method = "shouldNotAllowSettingUndeclaredMemoryKeys",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 public class GiraphGraph implements Graph {
