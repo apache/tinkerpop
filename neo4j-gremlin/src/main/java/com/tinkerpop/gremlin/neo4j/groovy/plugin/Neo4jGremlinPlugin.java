@@ -21,7 +21,7 @@ public class Neo4jGremlinPlugin implements GremlinPlugin {
 
     @Override
     public String getName() {
-        return "neo4j";
+        return "tinkerpop.neo4j";
     }
 
     @Override

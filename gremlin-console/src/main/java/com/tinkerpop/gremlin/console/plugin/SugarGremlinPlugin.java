@@ -12,7 +12,7 @@ public class SugarGremlinPlugin extends AbstractGremlinPlugin {
 
     @Override
     public String getName() {
-        return "sugar";
+        return "tinkerpop.sugar";
     }
 
     @Override
@@ -23,7 +23,7 @@ public class SugarGremlinPlugin extends AbstractGremlinPlugin {
             pluginAcceptor.eval(SugarLoader.class.getSimpleName() + ".load()");
         } catch (Exception ex) {
             final IO io = (IO) pluginAcceptor.environment().get(ConsolePluginAcceptor.ENVIRONMENT_IO);
-            io.out.println("Error loading the 'sugar' plugin - " + ex.getMessage());
+            io.out.println("Error loading the 'tinkerpop.sugar' plugin - " + ex.getMessage());
         }
     }
 }

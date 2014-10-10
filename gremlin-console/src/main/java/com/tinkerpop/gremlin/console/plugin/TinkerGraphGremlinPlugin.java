@@ -23,7 +23,7 @@ public class TinkerGraphGremlinPlugin implements GremlinPlugin {
 
     @Override
     public String getName() {
-        return "tinkergraph";
+        return "tinkerpop.tinkergraph";
     }
 
     @Override

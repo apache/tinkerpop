@@ -27,7 +27,7 @@ public class UtilitiesGremlinPlugin extends AbstractGremlinPlugin {
 
     @Override
     public String getName() {
-        return "utilities";
+        return "tinkerpop.utilities";
     }
 
     @Override
