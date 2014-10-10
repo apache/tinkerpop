@@ -11,6 +11,7 @@ import java.util.Iterator;
 public class ExpandableStepIterator<E> implements Iterator<Traverser.Admin<E>> {
 
     private final TraverserSet<E> traverserSet = new TraverserSet<>();
+    private final MultiIterator<Traverser.Admin<E>> traverserIterators = new MultiIterator<>();
     private final Step<?, E> hostStep;
 
     public ExpandableStepIterator(final Step<?, E> hostStep) {
@@ -26,15 +27,26 @@ public class ExpandableStepIterator<E> implements Iterator<Traverser.Admin<E>> {
     public Traverser.Admin<E> next() {
         if (!this.traverserSet.isEmpty())
             return this.traverserSet.remove();
+        else if (this.traverserIterators.hasNext()) {
+            return this.traverserIterators.next();
+        }
 
         if (this.hostStep.getPreviousStep().hasNext())
             return (Traverser.Admin<E>) this.hostStep.getPreviousStep().next();
-        else
-            return this.traverserSet.remove();
+        else {
+            if (this.traverserIterators.hasNext())
+                return this.traverserIterators.next();
+            else
+                return this.traverserSet.remove();
+        }
     }
 
     public void add(final Iterator<Traverser.Admin<E>> iterator) {
-        iterator.forEachRemaining(this.traverserSet::add);
+        if (iterator instanceof SingleIterator) {
+            iterator.forEachRemaining(this.traverserSet::add);
+        } else {
+            this.traverserIterators.addIterator(iterator);
+        }
     }
 
     @Override
@@ -43,6 +55,7 @@ public class ExpandableStepIterator<E> implements Iterator<Traverser.Admin<E>> {
     }
 
     public void clear() {
+        this.traverserIterators.clear();
         this.traverserSet.clear();
     }
 }
