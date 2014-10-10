@@ -65,7 +65,7 @@ public final class JumpStep<S> extends AbstractStep<S, S> implements EngineDepen
             if (this.jumpBack) traverser.incrLoops();
             if (doJump(traverser)) {
                 traverser.setFuture(this.jumpLabel);
-                this.jumpToStep.addStarts(new SingleIterator(traverser));
+                this.jumpToStep.addStart(traverser);
                 if (doEmit(traverser)) {
                     final Traverser.Admin<S> emitTraverser = traverser.makeSibling();
                     if (this.jumpBack) emitTraverser.resetLoops();

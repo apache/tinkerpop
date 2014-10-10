@@ -230,6 +230,12 @@ public class FeatureSupportTest {
     @ExceptionCoverage(exceptionClass = Vertex.Exceptions.class, methods = {
             "edgeAdditionsNotSupported"
     })
+    @ExceptionCoverage(exceptionClass = Edge.Exceptions.class, methods = {
+            "edgeRemovalNotSupported"
+    })
+    @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
+            "propertyAdditionNotSupported"
+    })
     public static class EdgeFunctionalityTest extends AbstractGremlinTest {
 
         @Test
@@ -309,6 +315,23 @@ public class FeatureSupportTest {
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgePropertyFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_ADD_PROPERTY));
             } catch (Exception ex) {
                 final Exception expectedException = Element.Exceptions.propertyAdditionNotSupported();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_REMOVE_EDGES, supported = false)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        public void shouldSupportRemoveEdgesIfEdgeCanBeRemoved() throws Exception {
+            try {
+                final Vertex v = g.addVertex();
+                v.addEdge("friend", v);
+                v.remove();
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_REMOVE_EDGES));
+            } catch (Exception ex) {
+                final Exception expectedException = Edge.Exceptions.edgeRemovalNotSupported();
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }
@@ -424,7 +447,7 @@ public class FeatureSupportTest {
         public void shouldSupportMultiPropertyIfTheSameKeyCanBeAssignedMoreThanOnce() throws Exception {
             try {
                 final Vertex v = g.addVertex("name", "stephen", "name", "steve");
-                if (StreamFactory.stream(v.iterators().properties()).count() == 2)
+                if (StreamFactory.stream(v.iterators().propertyIterator()).count() == 2)
                     fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_MULTI_PROPERTIES));
             } catch (Exception ex) {
                 assertEquals(VertexProperty.Exceptions.multiPropertiesNotSupported().getMessage(), ex.getMessage());

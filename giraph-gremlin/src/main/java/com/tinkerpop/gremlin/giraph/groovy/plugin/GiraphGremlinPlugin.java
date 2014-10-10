@@ -51,7 +51,7 @@ public class GiraphGremlinPlugin extends AbstractGremlinPlugin {
 
     @Override
     public String getName() {
-        return "giraph";
+        return "tinkerpop.giraph";
     }
 
     @Override

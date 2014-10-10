@@ -40,8 +40,8 @@ public interface Vertex extends Element, VertexTraversal {
 
     public default <V> VertexProperty<V> property(final String key) {
         final Iterator<VertexProperty<V>> iterator = Graph.Key.isHidden(key) ?
-                this.iterators().hiddens(Graph.Key.unHide(key)) :
-                this.iterators().properties(key);
+                this.iterators().hiddenPropertyIterator(Graph.Key.unHide(key)) :
+                this.iterators().propertyIterator(key);
         if (iterator.hasNext()) {
             final VertexProperty<V> property = iterator.next();
             if (iterator.hasNext())
@@ -64,9 +64,9 @@ public interface Vertex extends Element, VertexTraversal {
 
     public default <V> VertexProperty<V> singleProperty(final String key, final V value, final Object... keyValues) {
         if (Graph.Key.isHidden(key))
-            this.iterators().hiddens(Graph.Key.unHide(key)).forEachRemaining(VertexProperty::remove);
+            this.iterators().hiddenPropertyIterator(Graph.Key.unHide(key)).forEachRemaining(VertexProperty::remove);
         else
-            this.iterators().properties(key).forEachRemaining(VertexProperty::remove);
+            this.iterators().propertyIterator(key).forEachRemaining(VertexProperty::remove);
         return this.property(key, value, keyValues);
     }
 
@@ -79,7 +79,7 @@ public interface Vertex extends Element, VertexTraversal {
          * @param labels       The labels of the edges to retrieve
          * @return An iterator of edges meeting the provided specification
          */
-        public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels);
+        public Iterator<Edge> edgeIterator(final Direction direction, final int branchFactor, final String... labels);
 
         /**
          * @param direction    The adjacency direction of the vertices to retrieve off this vertex
@@ -87,11 +87,11 @@ public interface Vertex extends Element, VertexTraversal {
          * @param labels       The labels of the edges associated with the vertices to retrieve
          * @return An iterator of vertices meeting the provided specification
          */
-        public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels);
+        public Iterator<Vertex> vertexIterator(final Direction direction, final int branchFactor, final String... labels);
 
-        public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys);
+        public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys);
 
-        public <V> Iterator<VertexProperty<V>> hiddens(final String... propertyKeys);
+        public <V> Iterator<VertexProperty<V>> hiddenPropertyIterator(final String... propertyKeys);
     }
 
     /**

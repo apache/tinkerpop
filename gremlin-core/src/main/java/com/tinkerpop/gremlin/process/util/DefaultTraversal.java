@@ -57,6 +57,11 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     }
 
     @Override
+    public void addStart(final Traverser<S> start) {
+        TraversalHelper.getStart(this).addStart(start);
+    }
+
+    @Override
     public boolean hasNext() {
         this.applyStrategies();
         return this.lastEndCount > 0l || TraversalHelper.getEnd(this).hasNext();

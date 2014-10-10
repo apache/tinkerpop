@@ -252,3 +252,5 @@ marko.as('a').out().jump('a',2).value('name')
 ==>lop
 
 IMPORTANT: In TinkerPop2, the `jump()`-step was called `loop()`. Jump has been generalized to support both do-while and while-do semantics which is explained in <<jump-step,Jump Step>>.
+
+CAUTION: A Traversal's result are never ordered unless explicitly by means of <<order-step,`order()`>> or <<orderby-step,`orderBy()`>>. Thus, never rely on the iteration sequence between TinkerPop3 releases and even within a release (as compiler optimizations may alter the flow).

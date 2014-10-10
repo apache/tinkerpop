@@ -5,13 +5,12 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.javatuples.Pair;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -30,11 +29,10 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
+public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, Vertex.Iterators {
 
-    private final transient Vertex.Iterators iterators = new Iterators();
-
-    private DetachedVertex() { }
+    private DetachedVertex() {
+    }
 
     public DetachedVertex(final Object id, final String label, final Map<String, Object> properties, final Map<String, Object> hiddenProperties) {
         super(id, label);
@@ -50,8 +48,8 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     private DetachedVertex(final Vertex vertex) {
         super(vertex);
 
-        vertex.iterators().properties().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedVertexProperty ? p : new DetachedVertexProperty(p, this)));
-        vertex.iterators().hiddens().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedVertexProperty ? p : new DetachedVertexProperty(p, this)));
+        vertex.iterators().propertyIterator().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedVertexProperty ? p : new DetachedVertexProperty(p, this)));
+        vertex.iterators().hiddenPropertyIterator().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedVertexProperty ? p : new DetachedVertexProperty(p, this)));
     }
 
     @Override
@@ -109,23 +107,23 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     public static Vertex addTo(final Graph graph, final DetachedVertex detachedVertex) {
         final Vertex vertex = graph.addVertex(T.id, detachedVertex.id(), T.label, detachedVertex.label());
         detachedVertex.properties.entrySet().forEach(kv ->
-            kv.getValue().forEach(property -> {
-                final VertexProperty vertexProperty = (VertexProperty) property;
-                final List<Object> propsOnProps = new ArrayList<>();
-                vertexProperty.iterators().hiddens().forEachRemaining(h -> {
-                    propsOnProps.add(Graph.Key.hide(h.key()));
-                    propsOnProps.add(h.value());
-                });
+                        kv.getValue().forEach(property -> {
+                            final VertexProperty vertexProperty = (VertexProperty) property;
+                            final List<Object> propsOnProps = new ArrayList<>();
+                            vertexProperty.iterators().hiddenPropertyIterator().forEachRemaining(h -> {
+                                propsOnProps.add(Graph.Key.hide(h.key()));
+                                propsOnProps.add(h.value());
+                            });
 
-                vertexProperty.iterators().properties().forEachRemaining(h -> {
-                    propsOnProps.add(h.key());
-                    propsOnProps.add(h.value());
-                });
+                            vertexProperty.iterators().propertyIterator().forEachRemaining(h -> {
+                                propsOnProps.add(h.key());
+                                propsOnProps.add(h.value());
+                            });
 
-                propsOnProps.add(T.id);
-                propsOnProps.add(vertexProperty.id());
-                vertex.property(kv.getKey(), property.value(), propsOnProps.toArray());
-            })
+                            propsOnProps.add(T.id);
+                            propsOnProps.add(vertexProperty.id());
+                            vertex.property(kv.getKey(), property.value(), propsOnProps.toArray());
+                        })
         );
 
         return vertex;
@@ -133,7 +131,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
     @Override
     public Vertex.Iterators iterators() {
-        return this.iterators;
+        return this;
     }
 
     private Map<String, List<Property>> convertToDetachedVertexProperties(final Map<String, Object> properties, final boolean hide) {
@@ -145,27 +143,24 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
                 ).collect(Collectors.toMap(Pair::getValue0, Pair::getValue1));
     }
 
-    protected class Iterators extends DetachedElement<Vertex>.Iterators implements Vertex.Iterators, Serializable {
+    @Override
+    public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
+        return (Iterator) super.propertyIterator(propertyKeys);
+    }
 
-        @Override
-        public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
-            return (Iterator) super.properties(propertyKeys);
-        }
+    @Override
+    public <V> Iterator<VertexProperty<V>> hiddenPropertyIterator(final String... propertyKeys) {
+        return (Iterator) super.hiddenPropertyIterator(propertyKeys);
+    }
 
-        @Override
-        public <V> Iterator<VertexProperty<V>> hiddens(final String... propertyKeys) {
-            return (Iterator) super.hiddens(propertyKeys);
-        }
+    @Override
+    public GraphTraversal<Vertex, Edge> edgeIterator(final Direction direction, final int branchFactor, final String... labels) {
+        throw new UnsupportedOperationException();
+    }
 
-        @Override
-        public GraphTraversal<Vertex, Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public GraphTraversal<Vertex, Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
-            throw new UnsupportedOperationException();
-        }
+    @Override
+    public GraphTraversal<Vertex, Vertex> vertexIterator(final Direction direction, final int branchFactor, final String... labels) {
+        throw new UnsupportedOperationException();
     }
 
     private void putToList(final String key, final Property p) {

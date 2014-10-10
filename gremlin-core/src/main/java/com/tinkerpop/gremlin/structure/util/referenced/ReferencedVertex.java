@@ -4,8 +4,8 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.detached.Attachable;
 
 import java.util.Collections;
@@ -14,7 +14,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReferencedVertex extends ReferencedElement implements Vertex, Attachable<Vertex> {
+public class ReferencedVertex extends ReferencedElement implements Vertex, Vertex.Iterators, Attachable<Vertex> {
 
     protected ReferencedVertex() {
 
@@ -41,7 +41,7 @@ public class ReferencedVertex extends ReferencedElement implements Vertex, Attac
 
     @Override
     public Vertex.Iterators iterators() {
-        return Iterators.ITERATORS;
+        return this;
     }
 
     @Override
@@ -62,28 +62,24 @@ public class ReferencedVertex extends ReferencedElement implements Vertex, Attac
         throw new UnsupportedOperationException("Referenced vertices cannot be traversed: " + this);
     }
 
-    private static final class Iterators implements Vertex.Iterators {
 
-        protected static final Iterators ITERATORS = new Iterators();
+    @Override
+    public Iterator<Edge> edgeIterator(final Direction direction, final int branchFactor, final String... labels) {
+        return Collections.emptyIterator();
+    }
 
-        @Override
-        public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
-            return Collections.emptyIterator();
-        }
+    @Override
+    public Iterator<Vertex> vertexIterator(final Direction direction, final int branchFactor, final String... labels) {
+        return Collections.emptyIterator();
+    }
 
-        @Override
-        public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
-            return Collections.emptyIterator();
-        }
+    @Override
+    public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
+        return Collections.emptyIterator();
+    }
 
-        @Override
-        public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
-            return Collections.emptyIterator();
-        }
-
-        @Override
-        public <V> Iterator<VertexProperty<V>> hiddens(final String... propertyKeys) {
-            return Collections.emptyIterator();
-        }
+    @Override
+    public <V> Iterator<VertexProperty<V>> hiddenPropertyIterator(final String... propertyKeys) {
+        return Collections.emptyIterator();
     }
 }

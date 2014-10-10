@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 import com.tinkerpop.gremlin.process.PathTraverser;
 import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
@@ -43,7 +44,7 @@ public class StartStep<S> extends SideEffectStep<S> implements TraverserSource, 
             if (this.start instanceof Iterator)
                 this.starts.add(new TraverserIterator(this, trackPaths, (Iterator) this.start));
             else
-                this.starts.add(new SingleIterator(trackPaths ? new PathTraverser<>(this.getLabel(), this.start, this.traversal.sideEffects()) : new SimpleTraverser<>(this.start,this.traversal.sideEffects())));
+                this.starts.add((Traverser.Admin) (trackPaths ? new PathTraverser<>(this.getLabel(), this.start, this.traversal.sideEffects()) : new SimpleTraverser<>(this.start,this.traversal.sideEffects())));
         }
     }
 }

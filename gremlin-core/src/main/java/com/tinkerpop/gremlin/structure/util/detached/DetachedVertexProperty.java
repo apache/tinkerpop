@@ -16,12 +16,11 @@ import java.util.Map;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> implements VertexProperty<V> {
+public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> implements VertexProperty<V>, VertexProperty.Iterators {
 
     String key;
     V value;
     transient DetachedVertex vertex;
-    private final transient VertexProperty.Iterators iterators = new Iterators();
 
     /**
      * Construct a {@code DetachedVertexProperty} during manual deserialization.
@@ -56,8 +55,8 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
         this.vertex = detachedVertex;
 
         try {
-            property.iterators().properties().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
-            property.iterators().hiddens().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
+            property.iterators().propertyIterator().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
+            property.iterators().hiddenPropertyIterator().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
         } catch (UnsupportedOperationException uoe) {
             // todo: is there a way to get the feature down here so we can just test it directly?
         }
@@ -135,20 +134,17 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
 
     @Override
     public VertexProperty.Iterators iterators() {
-        return this.iterators;
+        return this;
     }
 
-    protected class Iterators extends DetachedElement<V>.Iterators implements VertexProperty.Iterators {
+    @Override
+    public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
+        return (Iterator) super.propertyIterator(propertyKeys);
+    }
 
-        @Override
-        public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
-            return (Iterator) super.properties(propertyKeys);
-        }
-
-        @Override
-        public <U> Iterator<Property<U>> hiddens(final String... propertyKeys) {
-            return (Iterator) super.hiddens(propertyKeys);
-        }
+    @Override
+    public <U> Iterator<Property<U>> hiddenPropertyIterator(final String... propertyKeys) {
+        return (Iterator) super.hiddenPropertyIterator(propertyKeys);
     }
 
     private void putToList(final String key, final Property p) {

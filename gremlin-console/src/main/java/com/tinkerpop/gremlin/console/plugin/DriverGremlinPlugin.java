@@ -26,7 +26,7 @@ public class DriverGremlinPlugin extends AbstractGremlinPlugin {
 
     @Override
     public String getName() {
-        return "server";
+        return "tinkerpop.server";
     }
 
     @Override

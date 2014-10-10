@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.giraph.process.computer.util;
 import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.Memory;
+import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
@@ -87,6 +88,16 @@ public final class MemoryMapReduce implements MapReduce<String, Object, String, 
             final Pair<String, Object> keyValue = keyValues.next();
             memory.set(keyValue.getValue0(), keyValue.getValue1());
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return (this.getClass().getCanonicalName() + Constants.HIDDEN_MEMORY).hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return GraphComputerHelper.areEqual(this, object);
     }
 
 }

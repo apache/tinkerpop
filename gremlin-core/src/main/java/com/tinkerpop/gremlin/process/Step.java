@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process;
 
-import java.io.Serializable;
 import java.util.Iterator;
 
 /**
@@ -19,11 +18,18 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Cloneable {
     public static final NoObject NO_OBJECT = new NoObject();
 
     /**
-     * Add a collection of {@link Traverser} objects of type S to the head of the step.
+     * Add a iterator of {@link Traverser} objects of type S to the step.
      *
-     * @param iterator The iterator of objects to add
+     * @param starts The iterator of objects to add
      */
-    public void addStarts(final Iterator<Traverser<S>> iterator);
+    public void addStarts(final Iterator<Traverser<S>> starts);
+
+    /**
+     * Add a single {@link Traverser} to the step.
+     *
+     * @param start The traverser to add
+     */
+    public void addStart(final Traverser<S> start);
 
     /**
      * Set the step that is previous to the current step.
@@ -83,7 +89,7 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Cloneable {
      * @return The cloned step
      * @throws CloneNotSupportedException
      */
-    public Step<S,E> clone() throws CloneNotSupportedException;
+    public Step<S, E> clone() throws CloneNotSupportedException;
 
     /**
      * Get the label of this step.

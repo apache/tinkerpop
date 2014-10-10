@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -18,7 +17,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerEdge extends TinkerElement implements Edge {
+public class TinkerEdge extends TinkerElement implements Edge, Edge.Iterators {
 
     protected final Vertex inVertex;
     protected final Vertex outVertex;
@@ -77,28 +76,25 @@ public class TinkerEdge extends TinkerElement implements Edge {
 
     }
 
+    //////////////////////////////////////////////
+
     @Override
     public Edge.Iterators iterators() {
-        return this.iterators;
+        return this;
     }
 
-    private final Edge.Iterators iterators = new Iterators();
+    @Override
+    public Iterator<Vertex> vertexIterator(final Direction direction) {
+        return (Iterator) TinkerHelper.getVertices(TinkerEdge.this, direction);
+    }
 
-    protected class Iterators extends TinkerElement.Iterators implements Edge.Iterators {
+    @Override
+    public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
+        return (Iterator) super.propertyIterator(propertyKeys);
+    }
 
-        @Override
-        public Iterator<Vertex> vertices(final Direction direction) {
-            return (Iterator) TinkerHelper.getVertices(TinkerEdge.this, direction);
-        }
-
-        @Override
-        public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-            return (Iterator) super.properties(propertyKeys);
-        }
-
-        @Override
-        public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-            return (Iterator) super.hiddens(propertyKeys);
-        }
+    @Override
+    public <V> Iterator<Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
+        return (Iterator) super.hiddenPropertyIterator(propertyKeys);
     }
 }

@@ -6,13 +6,9 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedElement;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
-import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -112,10 +108,10 @@ public class KryoWriter implements GraphWriter {
                 final Vertex v = (Vertex) e;
                 kryo.writeObject(output, direction);
                 if (direction == Direction.BOTH || direction == Direction.OUT)
-                    writeDirectionalEdges(output, Direction.OUT, v.iterators().edges(Direction.OUT, Integer.MAX_VALUE));
+                    writeDirectionalEdges(output, Direction.OUT, v.iterators().edgeIterator(Direction.OUT, Integer.MAX_VALUE));
 
                 if (direction == Direction.BOTH || direction == Direction.IN)
-                    writeDirectionalEdges(output, Direction.IN, v.iterators().edges(Direction.IN, Integer.MAX_VALUE));
+                    writeDirectionalEdges(output, Direction.IN, v.iterators().edgeIterator(Direction.IN, Integer.MAX_VALUE));
             }
 
             kryo.writeClassAndObject(output, VertexTerminator.INSTANCE);

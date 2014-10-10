@@ -21,7 +21,6 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -29,7 +28,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphEdge extends GiraphElement implements Edge, WrappedEdge<TinkerEdge> {
+public class GiraphEdge extends GiraphElement implements Edge, Edge.Iterators, WrappedEdge<TinkerEdge> {
 
     protected GiraphEdge() {
     }
@@ -66,33 +65,29 @@ public class GiraphEdge extends GiraphElement implements Edge, WrappedEdge<Tinke
 
     @Override
     public Edge.Iterators iterators() {
-        return this.iterators;
+        return this;
     }
 
-    private final Edge.Iterators iterators = new Iterators();
-
-    protected class Iterators implements Edge.Iterators, Serializable {
-
-        @Override
-        public Iterator<Vertex> vertices(final Direction direction) {
-            final List<Vertex> vertices = new ArrayList<>();
-            if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
-                vertices.add(graph.v(getBaseEdge().iterators().vertices(Direction.OUT).next().id()));
-            if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH))
-                vertices.add(graph.v(getBaseEdge().iterators().vertices(Direction.IN).next().id()));
-            return vertices.iterator();
-        }
-
-        @Override
-        public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-            return (Iterator) StreamFactory.stream(getBaseEdge().iterators().properties(propertyKeys))
-                    .map(property -> new GiraphProperty<>((TinkerProperty<V>) property, GiraphEdge.this)).iterator();
-        }
-
-        @Override
-        public <V> Iterator<Property<V>> hiddens(final String... propertyKeys) {
-            return (Iterator) StreamFactory.stream(getBaseEdge().iterators().hiddens(propertyKeys))
-                    .map(property -> new GiraphProperty<>((TinkerProperty<V>) property, GiraphEdge.this)).iterator();
-        }
+    @Override
+    public Iterator<Vertex> vertexIterator(final Direction direction) {
+        final List<Vertex> vertices = new ArrayList<>();
+        if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
+            vertices.add(graph.v(getBaseEdge().iterators().vertexIterator(Direction.OUT).next().id()));
+        if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH))
+            vertices.add(graph.v(getBaseEdge().iterators().vertexIterator(Direction.IN).next().id()));
+        return vertices.iterator();
     }
+
+    @Override
+    public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
+        return (Iterator) StreamFactory.stream(getBaseEdge().iterators().propertyIterator(propertyKeys))
+                .map(property -> new GiraphProperty<>((TinkerProperty<V>) property, GiraphEdge.this)).iterator();
+    }
+
+    @Override
+    public <V> Iterator<Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
+        return (Iterator) StreamFactory.stream(getBaseEdge().iterators().hiddenPropertyIterator(propertyKeys))
+                .map(property -> new GiraphProperty<>((TinkerProperty<V>) property, GiraphEdge.this)).iterator();
+    }
+
 }

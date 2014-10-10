@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.PropertyFilterIterator;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -18,13 +17,11 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class DetachedElement<E> implements Element, Serializable, Attachable<E> {
+public abstract class DetachedElement<E> implements Element, Element.Iterators, Serializable, Attachable<E> {
 
     Object id;
     String label;
     Map<String, List<? extends Property>> properties = new HashMap<>();
-
-    private final transient Element.Iterators iterators = new Iterators();
 
     protected DetachedElement() {
 
@@ -80,18 +77,16 @@ public abstract class DetachedElement<E> implements Element, Serializable, Attac
 
     @Override
     public Element.Iterators iterators() {
-        return this.iterators;
+        return this;
     }
 
-    protected class Iterators implements Element.Iterators, Serializable {
-        @Override
-        public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys) {
-            return new PropertyFilterIterator<>(properties.values().stream().flatMap(list -> list.stream()).collect(Collectors.toList()).iterator(), false, propertyKeys);
-        }
+    @Override
+    public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys) {
+        return new PropertyFilterIterator<>(properties.values().stream().flatMap(list -> list.stream()).collect(Collectors.toList()).iterator(), false, propertyKeys);
+    }
 
-        @Override
-        public <V> Iterator<? extends Property<V>> hiddens(final String... propertyKeys) {
-            return new PropertyFilterIterator<>(properties.values().stream().flatMap(list -> list.stream()).collect(Collectors.toList()).iterator(), true, propertyKeys);
-        }
+    @Override
+    public <V> Iterator<? extends Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
+        return new PropertyFilterIterator<>(properties.values().stream().flatMap(list -> list.stream()).collect(Collectors.toList()).iterator(), true, propertyKeys);
     }
 }

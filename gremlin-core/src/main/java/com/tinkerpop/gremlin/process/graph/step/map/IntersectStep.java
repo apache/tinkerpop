@@ -37,7 +37,7 @@ public final class IntersectStep<S, E> extends AbstractStep<S, E> {
                 this.traversalRing.reset();
             } else {
                 final Traverser.Admin<S> start = this.starts.next();
-                this.traversalRing.forEach(p -> p.addStarts(new SingleIterator<>(start.makeSibling())));
+                this.traversalRing.forEach(p -> p.addStart(start.makeSibling()));
                 if (this.traversalRing.stream().map(p -> p.hasNext()).reduce(true, (a, b) -> a && b))
                     this.drainState = true;
                 else

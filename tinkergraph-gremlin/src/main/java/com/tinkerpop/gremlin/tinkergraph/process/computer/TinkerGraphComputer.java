@@ -9,8 +9,8 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -25,7 +25,7 @@ public class TinkerGraphComputer implements GraphComputer {
     private TinkerMemory memory;
     private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
-    private final List<MapReduce> mapReduces = new ArrayList<>();
+    private final Set<MapReduce> mapReduces = new HashSet<>();
 
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;

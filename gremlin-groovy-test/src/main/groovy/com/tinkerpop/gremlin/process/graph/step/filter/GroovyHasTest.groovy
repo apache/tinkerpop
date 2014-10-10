@@ -67,12 +67,12 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Edge, Edge> get_g_E_hasXlabelXuses_traversesX() {
-            g.E.has(T.label, Contains.in, ['uses', 'traverses'])
+            g.E.has(T.label, Contains.within, ['uses', 'traverses'])
         }
 
         @Override
         Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_software_blahX() {
-            g.V.has(T.label, Contains.in, ["person", "software", 'blah']);
+            g.V.has(T.label, Contains.within, ["person", "software", 'blah']);
         }
 
         @Override
@@ -140,12 +140,12 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Edge, Edge> get_g_E_hasXlabelXuses_traversesX() {
-            ComputerTestHelper.compute("g.E.has(T.label, Contains.in, ['uses', 'traverses'])", g);
+            ComputerTestHelper.compute("g.E.has(T.label, Contains.within, ['uses', 'traverses'])", g);
         }
 
         @Override
         Traversal<Vertex, Vertex> get_g_V_hasXlabelXperson_software_blahX() {
-            ComputerTestHelper.compute("g.V.has(T.label, Contains.in, ['person', 'software', 'blah'])", g);
+            ComputerTestHelper.compute("g.V.has(T.label, Contains.within, ['person', 'software', 'blah'])", g);
         }
 
         @Override

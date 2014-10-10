@@ -73,12 +73,12 @@ public class EmptyVertexProperty<V> implements VertexProperty<V> {
     public VertexProperty.Iterators iterators() {
         return new Iterators() {
             @Override
-            public <U> Iterator<Property<U>> properties(String... propertyKeys) {
+            public <U> Iterator<Property<U>> propertyIterator(String... propertyKeys) {
                 return Collections.emptyIterator();
             }
 
             @Override
-            public <U> Iterator<Property<U>> hiddens(String... propertyKeys) {
+            public <U> Iterator<Property<U>> hiddenPropertyIterator(String... propertyKeys) {
                 return Collections.emptyIterator();
             }
         };

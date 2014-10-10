@@ -355,8 +355,8 @@ No such property: Neo4jGraph for class: groovysh_evaluate
 Display stack trace? [yN]
 gremlin> :install com.tinkerpop neo4j-gremlin x.y.z
 ==>loaded: [com.tinkerpop, neo4j-gremlin, …]
-gremlin> :plugin use neo4j
-==>neo4j activated
+gremlin> :plugin use tinkerpop.neo4j
+==>tinkerpop.neo4j activated
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
 
@@ -452,8 +452,8 @@ CAUTION: Unless under a commercial agreement with Neo Technology, Neo4j is licen
 ----
 gremlin> :install com.tinkerpop neo4j-gremlin x.y.z
 ==>loaded: [com.tinkerpop, neo4j-gremlin, x.y.z]
-gremlin> :plugin use neo4j
-==>neo4j activated
+gremlin> :plugin use tinkerpop.neo4j
+==>tinkerpop.neo4j activated
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
 ----
@@ -616,9 +616,9 @@ $ bin/gremlin.sh
          \,,,/
          (o o)
 -----oOOo-(3)-oOOo-----
-plugin activated: server
-plugin activated: utilities
-plugin activated: tinkergraph
+plugin activated: tinkerpop.server
+plugin activated: tinkerpop.utilities
+plugin activated: tinkerpop.tinkergraph
 gremlin> :install com.tinkerpop giraph-gremlin x.y.z
 ==>loaded: [com.tinkerpop, giraph-gremlin, x.y.z] - restart the console to use [giraph]
 gremlin> :q
@@ -627,11 +627,11 @@ $ bin/gremlin.sh
          \,,,/
          (o o)
 -----oOOo-(3)-oOOo-----
-plugin activated: server
-plugin activated: utilities
-plugin activated: tinkergraph
-gremlin> :plugin use giraph
-==>giraph activated
+plugin activated: tinkerpop.server
+plugin activated: tinkerpop.utilities
+plugin activated: tinkerpop.tinkergraph
+gremlin> :plugin use tinkerpop.giraph
+==>tinkerpop.giraph activated
 gremlin> 
 ----
 

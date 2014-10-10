@@ -8,9 +8,9 @@ import java.util.function.BiPredicate;
  * within) the second collection object. For example:
  * <p/>
  * <pre>
- * gremlin Contains.in [gremlin, blueprints, furnace] == true
- * gremlin Contains.nin [gremlin, rexster] == false
- * rexster Contains.nin [gremlin, blueprints, furnace] == true
+ * gremlin Contains.within [gremlin, blueprints, furnace] == true
+ * gremlin Contains.without [gremlin, rexster] == false
+ * rexster Contains.without [gremlin, blueprints, furnace] == true
  * </pre>
  *
  * @author Pierre De Wilde
@@ -18,12 +18,12 @@ import java.util.function.BiPredicate;
  */
 public enum Contains implements BiPredicate<Object, Collection> {
 
-    in {
+    within {
         @Override
         public boolean test(final Object first, final Collection second) {
             return second.contains(first);
         }
-    }, nin {
+    }, without {
         @Override
         public boolean test(final Object first, final Collection second) {
             return !second.contains(first);
@@ -40,6 +40,6 @@ public enum Contains implements BiPredicate<Object, Collection> {
      * Produce the opposite representation of the current {@code Contains} enum.
      */
     public Contains opposite() {
-        return this.equals(in) ? nin : in;
+        return this.equals(within) ? without : within;
     }
 }

@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Base Gremlin test suite from which different classes of tests can be exposed to implementers.
@@ -77,6 +78,7 @@ public abstract class AbstractGremlinSuite extends Suite {
 
         // validate public acknowledgement of the test suite and filter out tests ignored by the implementation
         validateOptInToSuite(pair.getValue1());
+        validateOptInAndOutAnnotationsOnGraph(pair.getValue1());
         registerOptOuts(pair.getValue1());
 
         try {
@@ -99,10 +101,6 @@ public abstract class AbstractGremlinSuite extends Suite {
             // validate annotation - test class and reason must be set
             if (!Arrays.stream(optOuts).allMatch(ignore -> ignore.test() != null && ignore.reason() != null && !ignore.reason().isEmpty()))
                 throw new InitializationError("Check @IgnoreTest annotations - all must have a 'test' and 'reason' set");
-
-            // do not allow use of @OptOut on @OptOut validation
-            if (Arrays.stream(optOuts).anyMatch(optOut -> optOut.test().equals(GraphTest.class.getCanonicalName()) && optOut.method().equals("shouldValidateOptInAnnotationsOnGraph")))
-                throw new InitializationError(String.format("A Graph cannot use @OptOut for %s - shouldValidateOptInAnnotationsOnGraph", GraphTest.class));
 
             try {
                 filter(new OptOutTestFilter(optOuts));
@@ -131,6 +129,23 @@ public abstract class AbstractGremlinSuite extends Suite {
         if (null == annotation)
             throw new InitializationError(String.format("class '%s' must have a GraphProviderClass annotation", klass.getName()));
         return Pair.with(annotation.provider(), annotation.graph());
+    }
+
+    public static void validateOptInAndOutAnnotationsOnGraph(final Class<? extends Graph> klass) throws InitializationError {
+        // sometimes test names change and since they are String representations they can easily break if a test
+        // is renamed. this test will validate such things.  it is not possible to @OptOut of this test.
+        final Graph.OptOut[] optOuts = klass.getAnnotationsByType(Graph.OptOut.class);
+        for(Graph.OptOut optOut : optOuts) {
+            final Class testClass;
+            try {
+                testClass = Class.forName(optOut.test());
+            } catch (Exception ex) {
+                throw new InitializationError(String.format("Invalid @OptOut on Graph instance.  Could not instantiate test class (it may have been renamed): %s", optOut.test()));
+            }
+
+            if (!Arrays.stream(testClass.getMethods()).anyMatch(m -> m.getName().equals(optOut.method())))
+                throw new InitializationError(String.format("Invalid @OptOut on Graph instance.  Could not match @OptOut test name %s on test class %s (it may have been renamed)", optOut.method(), optOut.test()));
+        }
     }
 
     @Override

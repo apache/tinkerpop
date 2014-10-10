@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
@@ -14,7 +15,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroupCountMapReduce implements MapReduce<Object, Long, Object, Long, Map<Object, Long>> {
+public final class GroupCountMapReduce implements MapReduce<Object, Long, Object, Long, Map<Object, Long>> {
 
     public static final String GROUP_COUNT_STEP_SIDE_EFFECT_KEY = "gremlin.groupCountStep.sideEffectKey";
 
@@ -72,5 +73,15 @@ public class GroupCountMapReduce implements MapReduce<Object, Long, Object, Long
     @Override
     public String getSideEffectKey() {
         return this.sideEffectKey;
+    }
+
+    @Override
+    public int hashCode() {
+        return (this.getClass().getCanonicalName() + this.sideEffectKey).hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return GraphComputerHelper.areEqual(this, object);
     }
 }

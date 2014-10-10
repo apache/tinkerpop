@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
+import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
@@ -206,8 +207,8 @@ public class GraphTest extends AbstractGremlinTest {
     public void shouldOverwriteEarlierKeyValuesWithLaterKeyValuesOnAddVertexIfNoMultiProperty() {
         final Vertex v = g.addVertex("test", "A", "test", "B", "test", "C");
         tryCommit(g, graph -> {
-            assertEquals(1, StreamFactory.stream(v.iterators().properties("test")).count());
-            assertTrue(StreamFactory.stream(v.iterators().values("test")).anyMatch(t -> t.equals("C")));
+            assertEquals(1, StreamFactory.stream(v.iterators().propertyIterator("test")).count());
+            assertTrue(StreamFactory.stream(v.iterators().valueIterator("test")).anyMatch(t -> t.equals("C")));
         });
     }
 
@@ -217,10 +218,10 @@ public class GraphTest extends AbstractGremlinTest {
     public void shouldOverwriteEarlierKeyValuesWithLaterKeyValuesOnAddVertexIfMultiProperty() {
         final Vertex v = g.addVertex("test", "A", "test", "B", "test", "C");
         tryCommit(g, graph -> {
-            assertEquals(3, StreamFactory.stream(v.iterators().properties("test")).count());
-            assertTrue(StreamFactory.stream(v.iterators().values("test")).anyMatch(t -> t.equals("A")));
-            assertTrue(StreamFactory.stream(v.iterators().values("test")).anyMatch(t -> t.equals("B")));
-            assertTrue(StreamFactory.stream(v.iterators().values("test")).anyMatch(t -> t.equals("C")));
+            assertEquals(3, StreamFactory.stream(v.iterators().propertyIterator("test")).count());
+            assertTrue(StreamFactory.stream(v.iterators().valueIterator("test")).anyMatch(t -> t.equals("A")));
+            assertTrue(StreamFactory.stream(v.iterators().valueIterator("test")).anyMatch(t -> t.equals("B")));
+            assertTrue(StreamFactory.stream(v.iterators().valueIterator("test")).anyMatch(t -> t.equals("C")));
         });
     }
 
@@ -240,6 +241,7 @@ public class GraphTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_REMOVE_EDGES)
     public void shouldRemoveEdges() {
         final int vertexCount = 100;
         final int edgeCount = 200;
@@ -579,22 +581,5 @@ public class GraphTest extends AbstractGremlinTest {
         }
 
         graphProvider.clear(reopenedGraph, graphProvider.standardGraphConfiguration(this.getClass(), name.getMethodName()));
-    }
-
-    @Test
-    public void shouldValidateOptInOutAnnotationsOnGraph() {
-        // sometimes test names change and since they are String representations they can easily break if a test
-        // is renamed. this test will validate such things.  it is not possible to @OptOut of this test.
-        final Class<? extends Graph> graphClass = g.getClass();
-        final Graph.OptOut[] optOuts = graphClass.getAnnotationsByType(Graph.OptOut.class);
-        Arrays.stream(optOuts).forEach(optOut -> {
-            try {
-                // todo: seems to be missing a case here because when tests were renamed for Impl GiraphGraph didn't error properly
-                final Class testClass = Class.forName(optOut.test());
-                assertTrue(Arrays.stream(testClass.getMethods()).anyMatch(m -> m.getName().equals(optOut.method())));
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-        });
     }
 }

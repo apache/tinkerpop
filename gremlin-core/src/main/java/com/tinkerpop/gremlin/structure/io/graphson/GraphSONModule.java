@@ -57,7 +57,7 @@ public class GraphSONModule extends SimpleModule {
 
             Map<String,Object> properties;
             try {
-                properties = StreamFactory.<Property<Object>>stream(property.iterators().properties()).collect(Collectors.toMap(Property::key, Property::value));
+                properties = StreamFactory.<Property<Object>>stream(property.iterators().propertyIterator()).collect(Collectors.toMap(Property::key, Property::value));
             } catch (UnsupportedOperationException uoe) {
                 // todo: is there a way to get the feature down here so we can just test it directly?
                 properties = new HashMap<>();
@@ -65,7 +65,7 @@ public class GraphSONModule extends SimpleModule {
 
             Map<String,Object> hiddens;
             try {
-                hiddens = StreamFactory.<Property<Object>>stream(property.iterators().hiddens()).collect(Collectors.toMap(Property::key, Property::value));
+                hiddens = StreamFactory.<Property<Object>>stream(property.iterators().hiddenPropertyIterator()).collect(Collectors.toMap(Property::key, Property::value));
             } catch (UnsupportedOperationException uoe) {
                 // todo: is there a way to get the feature down here so we can just test it directly?
                 hiddens = new HashMap<>();

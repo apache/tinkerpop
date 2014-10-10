@@ -21,7 +21,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerVertex extends TinkerElement implements Vertex {
+public class TinkerVertex extends TinkerElement implements Vertex, Vertex.Iterators {
 
     protected Map<String, Set<Edge>> outEdges = new HashMap<>();
     protected Map<String, Set<Edge>> inEdges = new HashMap<>();
@@ -78,13 +78,6 @@ public class TinkerVertex extends TinkerElement implements Vertex {
             ElementHelper.attachProperties(vertexProperty, keyValues);
             return vertexProperty;
         }
-
-
-    }
-
-    @Override
-    public String toString() {
-        return StringFactory.vertexString(this);
     }
 
     @Override
@@ -95,7 +88,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     @Override
     public void remove() {
         final List<Edge> edges = new ArrayList<>();
-        this.iterators().edges(Direction.BOTH, Integer.MAX_VALUE).forEachRemaining(edges::add);
+        this.iterators().edgeIterator(Direction.BOTH, Integer.MAX_VALUE).forEachRemaining(edges::add);
         edges.forEach(Edge::remove);
         this.properties.clear();
         this.graph.vertexIndex.removeElement(this);
@@ -103,36 +96,39 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     @Override
-    public Vertex.Iterators iterators() {
-        return this.iterators;
-    }
-
-    private final Vertex.Iterators iterators = new Iterators();
-
-    protected class Iterators extends TinkerElement.Iterators implements Vertex.Iterators {
-
-        @Override
-        public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
-            return (Iterator) super.properties(propertyKeys);
-        }
-
-        @Override
-        public <V> Iterator<VertexProperty<V>> hiddens(final String... propertyKeys) {
-            return (Iterator) super.hiddens(propertyKeys);
-        }
-
-        @Override
-        public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
-            return (Iterator) TinkerHelper.getEdges(TinkerVertex.this, direction, branchFactor, labels);
-        }
-
-        @Override
-        public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
-            return (Iterator) TinkerHelper.getVertices(TinkerVertex.this, direction, branchFactor, labels);
-        }
-    }
-
     public GraphTraversal<Vertex, Vertex> start() {
         return new TinkerElementTraversal<>(this, this.graph);
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.vertexString(this);
+    }
+
+    //////////////////////////////////////////////
+
+    @Override
+    public Vertex.Iterators iterators() {
+        return this;
+    }
+
+    @Override
+    public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
+        return (Iterator) super.propertyIterator(propertyKeys);
+    }
+
+    @Override
+    public <V> Iterator<VertexProperty<V>> hiddenPropertyIterator(final String... propertyKeys) {
+        return (Iterator) super.hiddenPropertyIterator(propertyKeys);
+    }
+
+    @Override
+    public Iterator<Edge> edgeIterator(final Direction direction, final int branchFactor, final String... labels) {
+        return (Iterator) TinkerHelper.getEdges(TinkerVertex.this, direction, branchFactor, labels);
+    }
+
+    @Override
+    public Iterator<Vertex> vertexIterator(final Direction direction, final int branchFactor, final String... labels) {
+        return (Iterator) TinkerHelper.getVertices(TinkerVertex.this, direction, branchFactor, labels);
     }
 }

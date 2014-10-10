@@ -146,17 +146,17 @@ public class KryoReader implements GraphReader {
 
                     final Vertex v = graph.addVertex(vertexArgs.toArray());
 
-                    current.iterators().properties().forEachRemaining(p -> {
+                    current.iterators().propertyIterator().forEachRemaining(p -> {
                         final List<Object> propertyArgs = new ArrayList<>();
-                        p.iterators().properties().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
-                        p.iterators().hiddens().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
+                        p.iterators().propertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
+                        p.iterators().hiddenPropertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
                         v.property(p.key(), p.value(), propertyArgs.toArray());
                     });
 
-                    current.iterators().hiddens().forEachRemaining(p -> {
+                    current.iterators().hiddenPropertyIterator().forEachRemaining(p -> {
                         final List<Object> propertyArgs = new ArrayList<>();
-                        p.iterators().properties().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
-                        p.iterators().hiddens().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
+                        p.iterators().propertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
+                        p.iterators().hiddenPropertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
                         v.property(Graph.Key.hide(p.key()), p.value(), propertyArgs.toArray());
                     });
 
@@ -291,11 +291,11 @@ public class KryoReader implements GraphReader {
             while (!next.equals(EdgeTerminator.INSTANCE)) {
                 final List<Object> edgeArgs = new ArrayList<>();
                 final DetachedEdge detachedEdge = (DetachedEdge) next;
-                final Vertex vOut = graphToWriteTo.v(detachedEdge.iterators().vertices(Direction.OUT).next().id());
-                final Vertex inV = graphToWriteTo.v(detachedEdge.iterators().vertices(Direction.IN).next().id());
+                final Vertex vOut = graphToWriteTo.v(detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
+                final Vertex inV = graphToWriteTo.v(detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
 
-                detachedEdge.iterators().properties().forEachRemaining(p -> edgeArgs.addAll(Arrays.asList(p.key(), p.value())));
-                detachedEdge.iterators().hiddens().forEachRemaining(p -> edgeArgs.addAll(Arrays.asList(Graph.Key.hide(p.key()), p.value())));
+                detachedEdge.iterators().propertyIterator().forEachRemaining(p -> edgeArgs.addAll(Arrays.asList(p.key(), p.value())));
+                detachedEdge.iterators().hiddenPropertyIterator().forEachRemaining(p -> edgeArgs.addAll(Arrays.asList(Graph.Key.hide(p.key()), p.value())));
 
                 edgeArgs.addAll(Arrays.asList(T.id, detachedEdge.id()));
 

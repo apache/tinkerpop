@@ -16,7 +16,9 @@ public interface GremlinPlugin {
 
     /**
      * The name of the plugin.  This name should be unique (use a namespaced approach) as naming clashes will
-     * prevent proper plugin operations. Plugins developed by TinkerPop will not have any namespace.
+     * prevent proper plugin operations. Plugins developed by TinkerPop will be prefixed with "tinkerpop."
+     * For example, TinkerPop's implementation of Giraph would be named "tinkerpop.giraph".  If Facebook were
+     * to do their own implementation the implementation might be called "facebook.giraph".
      */
     public String getName();
 

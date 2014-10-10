@@ -20,7 +20,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ComputerResultStep<S> extends AbstractStep<S, S> {
+public final class ComputerResultStep<S> extends AbstractStep<S, S> {
 
     private final Iterator<Traverser.Admin<S>> traversers;
     private final Graph graph;

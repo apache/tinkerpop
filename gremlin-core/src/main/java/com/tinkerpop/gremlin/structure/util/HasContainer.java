@@ -55,7 +55,7 @@ public class HasContainer {
                 return this.predicate.test(((VertexProperty) element).key(), this.value);
             else {
                 if (element instanceof Vertex) {
-                    final Iterator<? extends Property> itty = element.iterators().properties(this.key);
+                    final Iterator<? extends Property> itty = element.iterators().propertyIterator(this.key);
                     while (itty.hasNext()) {
                         if (this.predicate.test(itty.next().value(), this.value))
                             return true;
@@ -67,7 +67,7 @@ public class HasContainer {
                 }
             }
         } else {
-            return Contains.in.equals(this.predicate) ?
+            return Contains.within.equals(this.predicate) ?
                     element.property(this.key).isPresent() :
                     !element.property(this.key).isPresent();
         }
@@ -88,7 +88,7 @@ public class HasContainer {
     // note that if the user is looking for a label property key (e.g.), then it will look the same as looking for the label of the element.
     public String toString() {
         return this.value == null ?
-                (this.predicate == Contains.in ?
+                (this.predicate == Contains.within ?
                         "[" + Graph.System.unSystem(this.key) + "]" :
                         "[!" + Graph.System.unSystem(this.key) + "]") :
                 "[" + Graph.System.unSystem(this.key) + "," + this.predicate + "," + this.value + "]";

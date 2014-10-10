@@ -17,8 +17,8 @@ $ bin/gremlin.sh
          \,,,/
          (o o)
 -----oOOo-(3)-oOOo-----
-plugin loaded: server
-plugin loaded: utilities
+plugin loaded: tinkerpop.server
+plugin loaded: tinkerpop.utilities
 gremlin>
 ----
 
@@ -91,42 +91,42 @@ The following Gremlin Console session demonstrates the basics of these features:
 [source,groovy]
 ----
 gremlin> :plugin list  <1>
-==>server[active]
-==>gephi
-==>sugar
-==>utilities[active]
-gremlin> :plugin use sugar  <2>
-==>sugar activated
+==>tinkerpop.server[active]
+==>tinkerpop.gephi
+==>tinkerpop.sugar
+==>tinkerpop.utilities[active]
+gremlin> :plugin use tinkerpop.sugar  <2>
+==>tinkerpop.sugar activated
 gremlin> :install com.tinkerpop neo4j-gremlin x.y.z  <3>
 ==>loaded: [com.tinkerpop, neo4j-gremlin, x.y.z]
 gremlin> :plugin list <4>
-==>server[active]
-==>gephi
-==>sugar[active]
-==>utilities[active]
-==>neo4j
-gremlin> :plugin use neo4j <5>
-==>neo4j activated
+==>tinkerpop.server[active]
+==>tinkerpop.gephi
+==>tinkerpop.sugar[active]
+==>tinkerpop.utilities[active]
+==>tinkerpop.neo4j
+gremlin> :plugin use tinkerpop.neo4j <5>
+==>tinkerpop.neo4j activated
 gremlin> :plugin list <6>
-==>server[active]
-==>gephi
-==>sugar[active]
-==>utilities[active]
-==>neo4j[active]
+==>tinkerpop.server[active]
+==>tinkerpop.gephi
+==>tinkerpop.sugar[active]
+==>tinkerpop.utilities[active]
+==>tinkerpop.neo4j[active]
 ----
 
 <1> Show a list of "available" plugins.  The list of "available" plugins is determined by the classes available on the Console classpath.  Plugins need to be "active" for their features to be available.
 <2> To make a plugin "active" execute the `:plugin use` command and specify the name of the plugin to enable.
 <3> Sometimes there are external dependencies that would be useful within the Console.  To bring those in, execute `:install` and specify the Maven coordinates for the dependency.  
-<4> Note that there is a "neo4j" plugin available, but it is not yet "active".
-<5> Again, to use the "neo4j" plugin, it must be made "active" with `:plugin use`.
-<6> Now when the plugin list is displayed, the "neo4j" plugin is displayed as "active".
+<4> Note that there is a "tinkerpop.neo4j" plugin available, but it is not yet "active".
+<5> Again, to use the "tinkerpop.neo4j" plugin, it must be made "active" with `:plugin use`.
+<6> Now when the plugin list is displayed, the "tinkerpop.neo4j" plugin is displayed as "active".
 
-NOTE: The Gremlin Console comes configured with the "server" and "utilities" plugins configured as "active" by default.  These plugins and other pre-packaged plugins cannot be removed from the Console as they are a part of the `gremlin-console.jar` itself.  These plugins can only be deactivated.
+NOTE: The Gremlin Console comes configured with a number of plugins configured as "active" by default (such as "tinkerpop.server").  These plugins and other pre-packaged plugins cannot be removed from the Console as they are a part of the `gremlin-console.jar` itself.  These plugins can only be deactivated.
 
 CAUTION: Plugins must be compatible with the version of the Gremlin Console (or Gremlin Server) being used.  Attempts to use incompatible versions cannot be guaranteed to work.  Moreover, be prepared for dependency conflicts in third-party plugins, that may only be resolved via manual jar removal from the `ext/{plugin}` directory.
 
-TIP: It is possible to manage plugin activation and deactivation by manually editing the `ext/plugins.txt` file which contains the classnames of the "active" plugins.  It is also possible to clear dependencies added by `:install` by deleting them from the `ext` directory.
+TIP: It is possible to manage plugin activation and deactivation by manually editing the `ext/plugins.txt` file which contains the class names of the "active" plugins.  It is also possible to clear dependencies added by `:install` by deleting them from the `ext` directory.
 
 [[gremlin-server]]
 Gremlin Server
@@ -545,7 +545,7 @@ The most simple plugin and the one most commonly implemented will likely be one 
 include::{basedir}/neo4j-gremlin/src/main/java/com/tinkerpop/gremlin/neo4j/groovy/plugin/Neo4jGremlinPlugin.java[]
 ----
 
-Note that the plugin provides a unique name for the plugin. No other plugin in the default TinkerPop namespace (i.e. the TinkerPop namespace is top-level and thus not prefixed) can be named "neo4j".  To make Neo4j classes available to the Console, the `PluginAcceptor` is given a `Set` of imports to provide to the plugin host.  The `PluginAcceptor` essentially behaves as an abstraction to the "host" that is handling the `GremlinPlugin`.  `GremlinPlugin` implementations maybe hosted by the Console as well as the `ScriptEngine` in Gremlin Server.  Obviously, registering new commands and other operations that are specific to the Groovy Shell don't make sense there.  Write the code for the plugin defensively by checking the `GremlinPlugin.env` key in the `PluginAcceptor.environment()` to understand which environment the plugin is being used in.
+Note that the plugin provides a unique name for the plugin which follows a namespaced pattern as _namespace_._plugin-name_ (e.g. "tinkerpop.giraph" - "tinkerpop" is the reserved namespace for TinkerPop maintained plugins). To make Neo4j classes available to the Console, the `PluginAcceptor` is given a `Set` of imports to provide to the plugin host.  The `PluginAcceptor` essentially behaves as an abstraction to the "host" that is handling the `GremlinPlugin`.  `GremlinPlugin` implementations maybe hosted by the Console as well as the `ScriptEngine` in Gremlin Server.  Obviously, registering new commands and other operations that are specific to the Groovy Shell don't make sense there.  Write the code for the plugin defensively by checking the `GremlinPlugin.env` key in the `PluginAcceptor.environment()` to understand which environment the plugin is being used in.
 
 There is one other step to follow to ensure that the `GremlinPlugin` is visible to its hosts.  `GremlinPlugin` implementations are loaded via link:http://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html[ServiceLoader] and therefore need a resource file added to the jar file where the plugin exists.  Add a file called `com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin` to `META-INF.services`.  In the case of the Neo4j plugin above, that file will have this line in it:
 
@@ -597,11 +597,11 @@ image::gephi-start-server.png[width=800]
 Start the xref:gremlin-console[Gremlin Console] and activate the Gephi plugin:
 
 [source,groovy]
-gremlin> :plugin use gephi
+gremlin> :plugin use tinkerpop.gephi
 ==>gephi activated
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> :remote connect gephi
+gremlin> :remote connect tinkerpop.gephi
 ==>connection to Gephi - http://localhost:8080/workspace0 with stepDelay:1000, startRGBColor:[0.0, 1.0, 0.5], colorToFade:g, colorFadeRate:0.7
 gremlin> :> g
 ==>tinkergraph[vertices:6 edges:6]
@@ -701,8 +701,8 @@ image:gremlin-sugar.png[width=120,float=left] In previous versions of Gremlin-Gr
 IMPORTANT: It is important that the sugar plugin is loaded in a Gremlin Console session prior to any manipulations of the respective TinkerPop3 objects as Groovy will cache unavailable methods and properties.
 
 [source,groovy]
-gremlin> :plugin use sugar
-==>sugar activated
+gremlin> :plugin use tinkerpop.sugar
+==>tinkerpop.sugar activated
 gremlin> g.v(1).value('name')  // conventional 
 ==>marko
 gremlin> g.v(1).name  // sugar
@@ -745,8 +745,8 @@ The `clock` function provides a simple way to time how long it takes to execute 
 
 [source,groovy]
 ----
-gremlin> :plugin use utilities 
-==>sugar activated
+gremlin> :plugin use tinkerpop.utilities
+==>tinkerpop.utilities activated
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> clock{g.V().both().both().both().iterate()}
@@ -765,8 +765,8 @@ Benchmarking allows execution time comparisons of different pieces of code. Whil
 
 [source,groovy]
 ----
-gremlin> :plugin use sugar // activate sugar plugin for use in benchmark
-==>sugar activated
+gremlin> :plugin use tinkerpop.sugar // activate sugar plugin for use in benchmark
+==>tinkerpop.sugar activated
 gremlin> benchmark{ 
 gremlin>   'sugar' {g.v(1).name.next()}
 gremlin>   'nosugar' {g.v(1).value('name').next()}}.prettyPrint()
@@ -843,12 +843,9 @@ TINKERPOP TEST SUITE
 - Opts out of 4 individual tests
 > com.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest#g_V_matchXa_hasXname_GarciaX__a_inXwrittenByX_b__a_inXsungByX_bX
 	"Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute."
+...
 > com.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest#g_V_matchXa_inXsungByX_b__a_inXsungByX_c__b_outXwrittenByX_d__c_outXwrittenByX_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX
 	"Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute."
-> com.tinkerpop.gremlin.process.computer.GraphComputerTest#shouldNotAllowBadMemoryKeys
-	"Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though."
-> com.tinkerpop.gremlin.process.computer.GraphComputerTest#shouldRequireRegisteringMemoryKeys
-	"Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though."
 
 - NOTE -
 The describeGraph() function shows information about a Graph implementation.

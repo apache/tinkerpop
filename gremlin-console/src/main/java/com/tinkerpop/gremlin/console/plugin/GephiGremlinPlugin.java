@@ -15,7 +15,7 @@ public class GephiGremlinPlugin extends AbstractGremlinPlugin {
 
     @Override
     public String getName() {
-        return "gephi";
+        return "tinkerpop.gephi";
     }
 
     @Override

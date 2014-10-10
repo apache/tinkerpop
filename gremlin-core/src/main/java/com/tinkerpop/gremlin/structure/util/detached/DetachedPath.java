@@ -42,7 +42,7 @@ public class DetachedPath extends MutablePath {
     }
 
     public Path attach(final Graph graph) {
-        final Path path = new MutablePath();
+        final Path path = MutablePath.make();
         this.forEach((as, object) -> {
             if (object instanceof DetachedVertex) {
                 path.extend(as, ((DetachedVertex) object).attach(graph));

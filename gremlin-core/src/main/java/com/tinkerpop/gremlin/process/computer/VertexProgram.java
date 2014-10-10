@@ -53,10 +53,22 @@ public interface VertexProgram<M> {
      */
     public boolean terminate(final Memory memory);
 
+    /**
+     * The {@link com.tinkerpop.gremlin.structure.Element} properties that will be mutated during the computation.
+     * All properties in the graph are readable, but only the keys specified here are writable.
+     *
+     * @return the set of element keys that will be mutated during the vertex program's execution
+     */
     public default Set<String> getElementComputeKeys() {
         return Collections.emptySet();
     }
 
+    /**
+     * The {@link Memory} keys that will be used during the computation.
+     * These are the only keys that can be read or written throughout the life of the {@link GraphComputer}.
+     *
+     * @return the set of memory keys that will be read/written
+     */
     public default Set<String> getMemoryComputeKeys() {
         return Collections.emptySet();
     }
@@ -65,10 +77,24 @@ public interface VertexProgram<M> {
         return Optional.empty();
     }
 
-    public default List<MapReduce> getMapReducers() {
-        return Collections.emptyList();
+    /**
+     * The set of {@link MapReduce} jobs that are associated with the {@link VertexProgram}.
+     * This is not necessarily the exhaustive list over the life of the {@link GraphComputer}.
+     * If MapReduce jobs are declared by GraphComputer.mapReduce(), they are not contained in this set.
+     *
+     * @return the set of {@link MapReduce} jobs associated with this {@link VertexProgram}
+     */
+    public default Set<MapReduce> getMapReducers() {
+        return Collections.emptySet();
     }
 
+    /**
+     * A help method to construct a {@link VertexProgram} given the content of the supplied configuration.
+     *
+     * @param configuration A configuration with requisite information to build a vertex program
+     * @param <V>           The vertex program type
+     * @return the newly constructed vertex program
+     */
     public static <V extends VertexProgram> V createVertexProgram(final Configuration configuration) {
         try {
             final Class<V> vertexProgramClass = (Class) Class.forName(configuration.getString(GraphComputer.VERTEX_PROGRAM));

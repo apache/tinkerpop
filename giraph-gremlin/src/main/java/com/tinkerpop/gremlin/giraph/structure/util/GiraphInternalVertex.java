@@ -49,21 +49,21 @@ public final class GiraphInternalVertex extends Vertex<LongWritable, Text, NullW
         this.tinkerVertex = tinkerVertex;
         this.tinkerGraph.variables().set(VERTEX_ID, this.tinkerVertex.id());
         final TinkerVertex vertex = (TinkerVertex) this.tinkerGraph.addVertex(T.id, this.tinkerVertex.id(), T.label, this.tinkerVertex.label());
-        this.tinkerVertex.iterators().properties().forEachRemaining(property -> vertex.<Object>property(property.key(), property.value(), T.id, property.id()));
-        this.tinkerVertex.iterators().hiddens().forEachRemaining(property -> vertex.<Object>property(Graph.Key.hide(property.key()), property.value(), T.id, property.id()));
-        this.tinkerVertex.iterators().edges(Direction.OUT, Integer.MAX_VALUE).forEachRemaining(edge -> {
-            final com.tinkerpop.gremlin.structure.Vertex tempOtherVertex = edge.iterators().vertices(Direction.IN).next();
+        this.tinkerVertex.iterators().propertyIterator().forEachRemaining(property -> vertex.<Object>property(property.key(), property.value(), T.id, property.id()));
+        this.tinkerVertex.iterators().hiddenPropertyIterator().forEachRemaining(property -> vertex.<Object>property(Graph.Key.hide(property.key()), property.value(), T.id, property.id()));
+        this.tinkerVertex.iterators().edgeIterator(Direction.OUT, Integer.MAX_VALUE).forEachRemaining(edge -> {
+            final com.tinkerpop.gremlin.structure.Vertex tempOtherVertex = edge.iterators().vertexIterator(Direction.IN).next();
             final TinkerVertex otherVertex = (TinkerVertex) ElementHelper.getOrAddVertex(this.tinkerGraph, tempOtherVertex.id(), tempOtherVertex.label());
             final TinkerEdge tinkerEdge = (TinkerEdge) vertex.addEdge(edge.label(), otherVertex, T.id, edge.id());
-            edge.iterators().properties().forEachRemaining(property -> tinkerEdge.<Object>property(property.key(), property.value()));
-            edge.iterators().hiddens().forEachRemaining(property -> tinkerEdge.<Object>property(Graph.Key.hide(property.key()), property.value()));
+            edge.iterators().propertyIterator().forEachRemaining(property -> tinkerEdge.<Object>property(property.key(), property.value()));
+            edge.iterators().hiddenPropertyIterator().forEachRemaining(property -> tinkerEdge.<Object>property(Graph.Key.hide(property.key()), property.value()));
         });
-        this.tinkerVertex.iterators().edges(Direction.IN, Integer.MAX_VALUE).forEachRemaining(edge -> {
-            final com.tinkerpop.gremlin.structure.Vertex tempOtherVertex = edge.iterators().vertices(Direction.OUT).next();
+        this.tinkerVertex.iterators().edgeIterator(Direction.IN, Integer.MAX_VALUE).forEachRemaining(edge -> {
+            final com.tinkerpop.gremlin.structure.Vertex tempOtherVertex = edge.iterators().vertexIterator(Direction.OUT).next();
             final TinkerVertex otherVertex = (TinkerVertex) ElementHelper.getOrAddVertex(this.tinkerGraph, tempOtherVertex.id(), tempOtherVertex.label());
             final TinkerEdge tinkerEdge = (TinkerEdge) otherVertex.addEdge(edge.label(), vertex, T.id, edge.id());
-            edge.iterators().properties().forEachRemaining(property -> tinkerEdge.<Object>property(property.key(), property.value()));
-            edge.iterators().hiddens().forEachRemaining(property -> tinkerEdge.<Object>property(Graph.Key.hide(property.key()), property.value()));
+            edge.iterators().propertyIterator().forEachRemaining(property -> tinkerEdge.<Object>property(property.key(), property.value()));
+            edge.iterators().hiddenPropertyIterator().forEachRemaining(property -> tinkerEdge.<Object>property(Graph.Key.hide(property.key()), property.value()));
         });
         this.initialize(new LongWritable(Long.valueOf(this.tinkerVertex.id().toString())), this.deflateTinkerVertex(), EmptyOutEdges.instance());
         // TODO? this.tinkerVertex = vertex;

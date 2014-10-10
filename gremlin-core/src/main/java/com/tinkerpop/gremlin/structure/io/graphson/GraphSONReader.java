@@ -90,8 +90,8 @@ public class GraphSONReader implements GraphReader {
                         readVertexData(vertexData, detachedVertex -> {
                             final Vertex v = Optional.ofNullable(graph.v(detachedVertex.id())).orElse(
                                     graph.addVertex(T.label, detachedVertex.label(), T.id, detachedVertex.id()));
-                            detachedVertex.iterators().properties().forEachRemaining(p -> v.<Object>property(p.key(), p.value()));
-                            detachedVertex.iterators().hiddens().forEachRemaining(p -> v.<Object>property(Graph.Key.hide(p.key()), p.value()));
+                            detachedVertex.iterators().propertyIterator().forEachRemaining(p -> v.<Object>property(p.key(), p.value()));
+                            detachedVertex.iterators().hiddenPropertyIterator().forEachRemaining(p -> v.<Object>property(Graph.Key.hide(p.key()), p.value()));
                             return v;
                         });
                     }
@@ -99,12 +99,12 @@ public class GraphSONReader implements GraphReader {
                     while (parser.nextToken() != JsonToken.END_ARRAY) {
                         final Map<String, Object> edgeData = parser.readValueAs(mapTypeReference);
                         readEdgeData(edgeData, detachedEdge -> {
-                            final Vertex vOut = graph.v(detachedEdge.iterators().vertices(Direction.OUT).next().id());
-                            final Vertex vIn = graph.v(detachedEdge.iterators().vertices(Direction.IN).next().id());
+                            final Vertex vOut = graph.v(detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
+                            final Vertex vIn = graph.v(detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
                             // batchgraph checks for edge id support and uses it if possible.
                             final Edge e = vOut.addEdge(edgeData.get(GraphSONTokens.LABEL).toString(), vIn, T.id, detachedEdge.id());
-                            detachedEdge.iterators().properties().forEachRemaining(p -> e.<Object>property(p.key(), p.value()));
-                            detachedEdge.iterators().hiddens().forEachRemaining(p -> e.<Object>property(Graph.Key.hide(p.key()), p.value()));
+                            detachedEdge.iterators().propertyIterator().forEachRemaining(p -> e.<Object>property(p.key(), p.value()));
+                            detachedEdge.iterators().hiddenPropertyIterator().forEachRemaining(p -> e.<Object>property(Graph.Key.hide(p.key()), p.value()));
                             return e;
                         });
                     }

@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.computer.util;
 
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -40,6 +41,16 @@ public class GraphComputerHelper {
     public static void validateComputeArguments(Class... graphComputerClass) {
         if (graphComputerClass.length > 1)
             throw Graph.Exceptions.onlyOneOrNoGraphComputerClass();
+    }
+
+    public static boolean areEqual(final MapReduce a, final Object b) {
+        if (null == a)
+            throw Graph.Exceptions.argumentCanNotBeNull("a");
+        if (null == b)
+            throw Graph.Exceptions.argumentCanNotBeNull("b");
+
+        if (!(b instanceof MapReduce)) return false;
+        return a.getClass().equals(b.getClass()) && a.getSideEffectKey().equals(((MapReduce) b).getSideEffectKey());
     }
 
 }

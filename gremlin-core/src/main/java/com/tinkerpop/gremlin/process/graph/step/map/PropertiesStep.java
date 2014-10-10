@@ -19,7 +19,7 @@ public final class PropertiesStep<E> extends FlatMapStep<Element, Property<E>> i
     public PropertiesStep(final Traversal traversal, final String... propertyKeys) {
         super(traversal);
         this.propertyKeys = propertyKeys;
-        this.setFunction(traverser -> (Iterator) traverser.get().iterators().properties(this.propertyKeys));
+        this.setFunction(traverser -> (Iterator) traverser.get().iterators().propertyIterator(this.propertyKeys));
     }
 
     @Override

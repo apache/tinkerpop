@@ -20,14 +20,12 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
 
     public PathTraverser(final T t, final Traversal.SideEffects sideEffects) {
         super(t, sideEffects);
-        this.path = new ImmutablePath(EmptyPath.instance(), Collections.emptySet(), t);
-        this.path.extend(Collections.emptySet(), t);
+        this.path = new ImmutablePath(Collections.emptySet(), t);
     }
 
     public PathTraverser(final String label, final T t, final Traversal.SideEffects sideEffects) {
         super(t, sideEffects);
-        this.path = new ImmutablePath(EmptyPath.instance(), label, t);
-        this.path.extend(label, t);
+        this.path = new ImmutablePath(label, t);
     }
 
     @Override

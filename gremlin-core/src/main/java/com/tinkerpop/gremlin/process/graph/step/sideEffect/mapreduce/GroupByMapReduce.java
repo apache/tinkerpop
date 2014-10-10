@@ -3,26 +3,28 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
+import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroupByMapReduce implements MapReduce<Object, Collection, Object, Object, Map> {
+public final class GroupByMapReduce implements MapReduce<Object, Collection, Object, Object, Map> {
 
     public static final String GROUP_BY_STEP_SIDE_EFFECT_KEY = "gremlin.groupByStep.sideEffectKey";
     public static final String GROUP_BY_STEP_STEP_LABEL = "gremlin.groupByStep.stepLabel";
@@ -71,9 +73,9 @@ public class GroupByMapReduce implements MapReduce<Object, Collection, Object, O
 
     @Override
     public void reduce(final Object key, final Iterator<Collection> values, final ReduceEmitter<Object, Object> emitter) {
-        final List list = new ArrayList();
-        values.forEachRemaining(list::addAll);
-        emitter.emit(key, (null == this.reduceFunction) ? list : this.reduceFunction.apply(list));
+        final Set set = new BulkSet<>();
+        values.forEachRemaining(set::addAll);
+        emitter.emit(key, (null == this.reduceFunction) ? set : this.reduceFunction.apply(set));
     }
 
     @Override
@@ -86,5 +88,15 @@ public class GroupByMapReduce implements MapReduce<Object, Collection, Object, O
     @Override
     public String getSideEffectKey() {
         return this.sideEffectKey;
+    }
+
+    @Override
+    public int hashCode() {
+        return (this.getClass().getCanonicalName() + this.sideEffectKey).hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return GraphComputerHelper.areEqual(this, object);
     }
 }

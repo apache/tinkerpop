@@ -103,33 +103,33 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
 
     public class StrategyWrappedVertexPropertyIterators implements VertexProperty.Iterators {
         @Override
-        public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
+        public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
             return StreamFactory.stream(strategyWrappedGraph.strategy().compose(
                     s -> s.<U,V>getVertexPropertyIteratorsPropertiesStrategy(strategyContext),
-                    (String[] pks) -> baseVertexProperty.iterators().properties(pks)).apply(propertyKeys))
+                    (String[] pks) -> baseVertexProperty.iterators().propertyIterator(pks)).apply(propertyKeys))
                     .map(property -> (Property<U>) new StrategyWrappedProperty<>(property, strategyWrappedGraph)).iterator();
         }
 
         @Override
-        public <U> Iterator<Property<U>> hiddens(final String... propertyKeys) {
+        public <U> Iterator<Property<U>> hiddenPropertyIterator(final String... propertyKeys) {
             return StreamFactory.stream(strategyWrappedGraph.strategy().compose(
                     s -> s.<U,V>getVertexPropertyIteratorsHiddensStrategy(strategyContext),
-                    (String[] pks) -> baseVertexProperty.iterators().hiddens(pks)).apply(propertyKeys))
+                    (String[] pks) -> baseVertexProperty.iterators().hiddenPropertyIterator(pks)).apply(propertyKeys))
                     .map(property -> (Property<U>) new StrategyWrappedProperty<>(property, strategyWrappedGraph)).iterator();
         }
 
         @Override
-        public <U> Iterator<U> values(final String... propertyKeys) {
+        public <U> Iterator<U> valueIterator(final String... propertyKeys) {
             return strategyWrappedGraph.strategy().compose(
                     s -> s.<U,V>getVertexPropertyIteratorsValuesStrategy(strategyContext),
-                    (String[] pks) -> baseVertexProperty.iterators().values(pks)).apply(propertyKeys);
+                    (String[] pks) -> baseVertexProperty.iterators().valueIterator(pks)).apply(propertyKeys);
         }
 
         @Override
-        public <U> Iterator<U> hiddenValues(final String... propertyKeys) {
+        public <U> Iterator<U> hiddenValueIterator(final String... propertyKeys) {
             return strategyWrappedGraph.strategy().compose(
                     s -> s.<U,V>getVertexPropertyIteratorsHiddenValuesStrategy(strategyContext),
-                    (String[] pks) -> baseVertexProperty.iterators().hiddenValues(pks)).apply(propertyKeys);
+                    (String[] pks) -> baseVertexProperty.iterators().hiddenValueIterator(pks)).apply(propertyKeys);
         }
     }
 }

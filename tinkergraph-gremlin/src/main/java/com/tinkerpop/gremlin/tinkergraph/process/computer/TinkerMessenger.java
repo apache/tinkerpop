@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Queue;
@@ -59,7 +58,7 @@ public class TinkerMessenger<M> implements Messenger<M> {
             ((MessageType.Global) messageType).vertices().forEach(v -> {
                 final Queue<M> queue = getMessageList(v);
                 if (this.combiner.isPresent() && !queue.isEmpty()) {
-                    queue.add(this.combiner.get().combine(queue.remove(), message));
+                    this.combiner.get().combine(queue.remove(), message).forEachRemaining(queue::add);
                 } else
                     queue.add(message);
             });

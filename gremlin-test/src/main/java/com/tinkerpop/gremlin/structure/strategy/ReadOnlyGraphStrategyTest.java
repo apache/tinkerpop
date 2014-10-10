@@ -114,7 +114,7 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
         assertEquals("test", p.value());
 
         assertException(g -> {
-            final VertexProperty<Object> prop = g.V().next().iterators().properties("test").next();
+            final VertexProperty<Object> prop = g.V().next().iterators().propertyIterator("test").next();
             prop.remove();
         });
     }

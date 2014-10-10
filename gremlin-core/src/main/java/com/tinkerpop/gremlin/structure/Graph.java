@@ -389,12 +389,21 @@ public interface Graph extends AutoCloseable {
          */
         public interface EdgeFeatures extends ElementFeatures {
             public static final String FEATURE_ADD_EDGES = "AddEdges";
+            public static final String FEATURE_REMOVE_EDGES = "RemoveEdges";
 
             /**
-             * Determines if an {@link Edge} can be added to the {@code Graph}.
+             * Determines if an {@link Edge} can be added to a {@code Vertex}.
              */
             @FeatureDescriptor(name = FEATURE_ADD_EDGES)
             public default boolean supportsAddEdges() {
+                return true;
+            }
+
+            /**
+             * Determines if an {@link Edge} can be removed from a {@code Vertex}.
+             */
+            @FeatureDescriptor(name = FEATURE_REMOVE_EDGES)
+            public default boolean supportsRemoveEdges() {
                 return true;
             }
 
