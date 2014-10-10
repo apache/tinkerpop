@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
+ * @author Robert Briody
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class RangeStep<S> extends FilterStep<S> {
@@ -29,15 +30,10 @@ public final class RangeStep<S> extends FilterStep<S> {
                 throw FastNoSuchElementException.instance();
             }
 
-            if (traverser.getBulk() == 0) {
-                throw FastNoSuchElementException.instance();
-            }
-
             long avail = traverser.getBulk();
             if (this.counter.get() + avail <= this.low) {
                 // Will not surpass the low w/ this traverser. Skip and filter the whole thing.
                 this.counter.getAndAdd(avail);
-                traverser.asAdmin().setBulk(0);
                 return false;
             }
 
@@ -64,7 +60,7 @@ public final class RangeStep<S> extends FilterStep<S> {
     @Override
     public void reset() {
         super.reset();
-        this.counter.set(-1l);
+        this.counter.set(0l);
     }
 
     @Override

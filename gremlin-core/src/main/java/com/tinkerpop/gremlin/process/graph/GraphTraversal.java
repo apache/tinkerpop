@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
+import com.tinkerpop.gremlin.process.graph.step.branch.BranchStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.ExceptStep;
@@ -133,6 +134,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, Long> count() {
         return this.addStep(new CountStep<>(this));
     }
+
+    /////////////////////// BRANCH STEPS ///////////////////////
+
+    /*public default GraphTraversal<S, E> branch(final Function<Traverser<E>, String>... labelFunctions) {
+        final BranchStep<E> branchStep = new BranchStep<>(this);
+        branchStep.setFunctions(labelFunctions);
+        return this.addStep(branchStep);
+    }*/
 
     ///////////////////// TRANSFORM STEPS /////////////////////
 

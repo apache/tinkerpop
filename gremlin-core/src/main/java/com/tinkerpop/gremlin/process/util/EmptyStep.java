@@ -13,6 +13,10 @@ public class EmptyStep<S, E> implements Step<S, E> {
 
     private static final EmptyStep INSTANCE = new EmptyStep<>();
 
+    public static <S, E> Step<S, E> instance() {
+        return INSTANCE;
+    }
+
     private EmptyStep() {
     }
 
@@ -38,7 +42,7 @@ public class EmptyStep<S, E> implements Step<S, E> {
 
     @Override
     public Step<?, S> getPreviousStep() {
-        return instance();
+        return INSTANCE;
     }
 
     @Override
@@ -48,7 +52,7 @@ public class EmptyStep<S, E> implements Step<S, E> {
 
     @Override
     public Step<E, ?> getNextStep() {
-        return instance();
+        return INSTANCE;
     }
 
     @Override
@@ -63,7 +67,7 @@ public class EmptyStep<S, E> implements Step<S, E> {
 
     @Override
     public EmptyStep<S, E> clone() throws CloneNotSupportedException {
-        return (EmptyStep<S, E>) instance();
+        return INSTANCE;
     }
 
     @Override
@@ -81,19 +85,17 @@ public class EmptyStep<S, E> implements Step<S, E> {
         return false;
     }
 
-    public E getLast() {
-        return (E) NO_OBJECT;
-    }
-
     @Override
     public Traverser<E> next() {
         throw FastNoSuchElementException.instance();
     }
 
-    public static <S, E> Step<S, E> instance() {
-        return INSTANCE;
+    @Override
+    public int hashCode() {
+        return -1691648095;
     }
 
+    @Override
     public boolean equals(final Object object) {
         return object instanceof EmptyStep;
     }

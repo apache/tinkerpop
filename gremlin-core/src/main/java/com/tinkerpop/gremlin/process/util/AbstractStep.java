@@ -84,9 +84,13 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
             prepareTraversalForNextStep(this.nextEnd);
             return this.nextEnd;
         } else {
-            final Traverser<E> traverser = this.processNextStart();
-            prepareTraversalForNextStep(traverser);
-            return traverser;
+            while (true) {
+                final Traverser<E> traverser = this.processNextStart();
+                if (traverser.getBulk() != 0) {
+                    prepareTraversalForNextStep(traverser);
+                    return traverser;
+                }
+            }
         }
     }
 
@@ -96,9 +100,13 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
             return true;
         else {
             try {
-                this.nextEnd = this.processNextStart();
-                this.available = true;
-                return true;
+                while (true) {
+                    this.nextEnd = this.processNextStart();
+                    if (this.nextEnd.getBulk() != 0) {
+                        this.available = true;
+                        return true;
+                    }
+                }
             } catch (final NoSuchElementException e) {
                 this.available = false;
                 return false;
@@ -123,7 +131,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     @Override
-    public AbstractStep<S,E> clone() throws CloneNotSupportedException {
+    public AbstractStep<S, E> clone() throws CloneNotSupportedException {
         final AbstractStep step = (AbstractStep) super.clone();
         step.starts = new ExpandableStepIterator<S>(step);
         step.previousStep = EmptyStep.instance();
