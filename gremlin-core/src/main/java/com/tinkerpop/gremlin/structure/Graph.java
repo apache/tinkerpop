@@ -348,12 +348,21 @@ public interface Graph extends AutoCloseable {
             public static final String FEATURE_ADD_VERTICES = "AddVertices";
             public static final String FEATURE_MULTI_PROPERTIES = "MultiProperties";
             public static final String FEATURE_META_PROPERTIES = "MetaProperties";
+            public static final String FEATURE_REMOVE_VERTICES = "RemoveVertices";
 
             /**
              * Determines if a {@link Vertex} can be added to the {@code Graph}.
              */
             @FeatureDescriptor(name = FEATURE_ADD_VERTICES)
             public default boolean supportsAddVertices() {
+                return true;
+            }
+
+            /**
+             * Determines if a {@link Vertex} can be removed from the {@code Graph}.
+             */
+            @FeatureDescriptor(name = FEATURE_REMOVE_VERTICES)
+            public default boolean supportsRemoveVertices() {
                 return true;
             }
 

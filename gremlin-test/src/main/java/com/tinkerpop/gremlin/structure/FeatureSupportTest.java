@@ -142,6 +142,9 @@ public class FeatureSupportTest {
     @ExceptionCoverage(exceptionClass = Vertex.Exceptions.class, methods = {
             "userSuppliedIdsNotSupported"
     })
+    @ExceptionCoverage(exceptionClass = Vertex.Exceptions.class, methods = {
+            "vertexRemovalNotSupported"
+    })
     @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
             "vertexAdditionsNotSupported"
     })
@@ -217,6 +220,20 @@ public class FeatureSupportTest {
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_ADD_PROPERTY));
             } catch (Exception ex) {
                 final Exception expectedException = Element.Exceptions.propertyAdditionNotSupported();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_VERTICES, supported = false)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        public void shouldSupportRemoveVerticesIfAVertexCanBeRemoved() throws Exception {
+            try {
+                g.addVertex().remove();
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_REMOVE_VERTICES));
+            } catch (Exception ex) {
+                final Exception expectedException = Vertex.Exceptions.vertexRemovalNotSupported();
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }
