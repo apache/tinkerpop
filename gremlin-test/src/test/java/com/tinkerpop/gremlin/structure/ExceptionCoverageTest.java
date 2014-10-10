@@ -56,8 +56,6 @@ public class ExceptionCoverageTest {
 
             add("com.tinkerpop.gremlin.structure.Element$Exceptions#propertyRemovalNotSupported");
             add("com.tinkerpop.gremlin.structure.Vertex$Exceptions#vertexRemovalNotSupported");
-            add("com.tinkerpop.gremlin.structure.Edge$Exceptions#edgeRemovalNotSupported");
-
         }};
 
         // register test classes here that contain @ExceptionCoverage annotations
