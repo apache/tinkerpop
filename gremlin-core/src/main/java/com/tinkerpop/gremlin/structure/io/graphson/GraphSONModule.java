@@ -59,7 +59,8 @@ public class GraphSONModule extends SimpleModule {
             try {
                 properties = StreamFactory.<Property<Object>>stream(property.iterators().propertyIterator()).collect(Collectors.toMap(Property::key, Property::value));
             } catch (UnsupportedOperationException uoe) {
-                // todo: is there a way to get the feature down here so we can just test it directly?
+                // throws if meta-properties are no supported - no way at this time to check the feature
+                // directly as Graph is not available here.
                 properties = new HashMap<>();
             }
 
@@ -67,7 +68,8 @@ public class GraphSONModule extends SimpleModule {
             try {
                 hiddens = StreamFactory.<Property<Object>>stream(property.iterators().hiddenPropertyIterator()).collect(Collectors.toMap(Property::key, Property::value));
             } catch (UnsupportedOperationException uoe) {
-                // todo: is there a way to get the feature down here so we can just test it directly?
+                // throws if meta-properties are no supported - no way at this time to check the feature
+                // directly as Graph is not available here.
                 hiddens = new HashMap<>();
             }
 
@@ -171,79 +173,4 @@ public class GraphSONModule extends SimpleModule {
                 super.serialize(o, jsonGenerator, serializerProvider);
         }
     }
-
-    /*
-    static class EdgeJacksonDeserializer extends StdDeserializer<CachedEdge> {
-
-        public EdgeJacksonDeserializer() {
-            super(CachedEdge.class);
-        }
-
-        @Override
-        public CachedEdge deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            final ObjectCodec oc = jsonParser.getCodec();
-
-            Object id = null;
-            String label = null;
-            Map properties = null;
-            String inLabel = null;
-            String outLabel = null;
-            Object in = null;
-            Object out = null;
-            while (!jsonParser.nextToken().equals(JsonToken.END_OBJECT)) {
-                final String name = jsonParser.getCurrentName();
-                if (name != null && name.equals(GraphSONTokens.ID))
-                    id = oc.readValue(jsonParser, Object.class);
-                else if (name != null && name.equals(GraphSONTokens.LABEL))
-                    label = jsonParser.getValueAsString();
-                else if (name != null && name.equals(GraphSONTokens.PROPERTIES)) {
-                    jsonParser.nextToken();
-                    properties = (Map) oc.readValue(jsonParser, Object.class);
-                } else if (name != null && name.equals(GraphSONTokens.IN)) {
-                    jsonParser.nextToken();
-                    in = oc.readValue(jsonParser, Object.class);
-                } else if (name != null && name.equals(GraphSONTokens.OUT)) {
-                    jsonParser.nextToken();
-                    out = oc.readValue(jsonParser, Object.class);
-                } else if (name != null && name.equals(GraphSONTokens.IN_LABEL))
-                    inLabel = jsonParser.getValueAsString();
-                else if (name != null && name.equals(GraphSONTokens.OUT_LABEL))
-                    outLabel = jsonParser.getValueAsString();
-            }
-
-            return new CachedEdge(id, label, properties,
-                    Pair.with(out, outLabel), Pair.with(in, inLabel));
-
-        }
-    }
-
-    static class VertexJacksonDeserializer extends StdDeserializer<CachedVertex> {
-
-        public VertexJacksonDeserializer() {
-            super(CachedVertex.class);
-        }
-
-        @Override
-        public CachedVertex deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            final ObjectCodec oc = jsonParser.getCodec();
-
-            Object id = null;
-            String label = null;
-            Map properties = null;
-            while (!jsonParser.nextToken().equals(JsonToken.END_OBJECT)) {
-                final String name = jsonParser.getCurrentName();
-                if (name != null && name.equals(GraphSONTokens.ID))
-                    id = oc.readValue(jsonParser, Object.class);
-                else if (name != null && name.equals(GraphSONTokens.LABEL))
-                    label = jsonParser.getValueAsString();
-                else if (name != null && name.equals(GraphSONTokens.PROPERTIES)) {
-                    jsonParser.nextToken();
-                    properties = (Map) oc.readValue(jsonParser, Object.class);
-                }
-            }
-
-            return new CachedVertex(id, label, properties);
-        }
-    }
-     */
 }

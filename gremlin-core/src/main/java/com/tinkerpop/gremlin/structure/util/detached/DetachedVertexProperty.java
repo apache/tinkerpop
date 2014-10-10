@@ -58,7 +58,8 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
             property.iterators().propertyIterator().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
             property.iterators().hiddenPropertyIterator().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
         } catch (UnsupportedOperationException uoe) {
-            // todo: is there a way to get the feature down here so we can just test it directly?
+            // throws if meta-properties are no supported - no way at this time to check the feature
+            // directly as Graph is not available here.
         }
     }
 
