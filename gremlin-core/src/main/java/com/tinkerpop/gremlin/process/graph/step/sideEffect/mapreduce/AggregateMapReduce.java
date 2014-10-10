@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
@@ -15,7 +16,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AggregateMapReduce implements MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
+public final class AggregateMapReduce implements MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
 
     public static final String AGGREGATE_STEP_SIDE_EFFECT_KEY = "gremlin.aggregateStep.sideEffectKey";
 
@@ -59,5 +60,15 @@ public class AggregateMapReduce implements MapReduce<MapReduce.NullObject, Objec
     @Override
     public String getSideEffectKey() {
         return this.sideEffectKey;
+    }
+
+    @Override
+    public int hashCode() {
+        return (this.getClass().getCanonicalName() + this.sideEffectKey).hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return GraphComputerHelper.areEqual(this, object);
     }
 }

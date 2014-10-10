@@ -3,10 +3,10 @@ package com.tinkerpop.gremlin.process.computer;
 import java.util.concurrent.Future;
 
 /**
- * The {@link GraphComputer} is responsible for the execution of a {@link VertexProgram} against the vertices in the
- * Graph. It is up to the {@link GraphComputer} implementation to determine the
+ * The {@link GraphComputer} is responsible for the execution of a {@link VertexProgram} and then a set of {@link MapReduce} jobs
+ * over the vertices in the {@link com.tinkerpop.gremlin.structure.Graph}. It is up to the {@link GraphComputer} implementation to determine the
  * appropriate memory structures given the computing substrate. {@link GraphComputer} implementations also
- * maintains levels of memory isolation: Bulk Synchronous and Dirty Bulk Synchronous.
+ * maintains levels of memory {@link Isolation}: Bulk Synchronous and Dirty Bulk Synchronous.
  *
  * @author Matthias Broecheler (me@matthiasb.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -28,12 +28,36 @@ public interface GraphComputer {
         DIRTY_BSP
     }
 
+    /**
+     * Set the {@link Isolation} of the computation.
+     *
+     * @param isolation the isolation of the computation
+     * @return the updated GraphComputer with newly set isolation
+     */
     public GraphComputer isolation(final Isolation isolation);
 
+    /**
+     * Set the {@link VertexProgram} to be executed by the {@link GraphComputer}.
+     * There can only be one VertexProgram for the GraphComputer.
+     *
+     * @param vertexProgram the VertexProgram to be executed
+     * @return the updated GraphComputer with newly set VertexProgram
+     */
     public GraphComputer program(final VertexProgram vertexProgram);
 
+    /**
+     * Add a {@link MapReduce} job to the set of MapReduce jobs to be executed by the {@link GraphComputer}.
+     *
+     * @param mapReduce the MapReduce job to add to the computation
+     * @return the updated GraphComputer with newly added MapReduce job
+     */
     public GraphComputer mapReduce(final MapReduce mapReduce);
 
+    /**
+     * Submit the {@link VertexProgram} and the set of {@link MapReduce} jobs for execution by the {@link GraphComputer}.
+     *
+     * @return a {@link Future} denoting a reference to the asynchronous computation and where to get the {@link ComputerResult} when its is complete.
+     */
     public Future<ComputerResult> submit();
 
     public default Features features() {

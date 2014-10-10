@@ -28,7 +28,7 @@ public class TinkerMemory implements Memory.Admin {
     private final AtomicLong runtime = new AtomicLong(0l);
     private boolean complete = false;
 
-    public TinkerMemory(final VertexProgram<?> vertexProgram, final List<MapReduce> mapReducers) {
+    public TinkerMemory(final VertexProgram<?> vertexProgram, final Set<MapReduce> mapReducers) {
         this.currentMap = new ConcurrentHashMap<>();
         this.previousMap = new ConcurrentHashMap<>();
         if (null != vertexProgram) {

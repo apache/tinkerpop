@@ -84,8 +84,8 @@ public interface VertexProgram<M> {
      *
      * @return the set of {@link MapReduce} jobs associated with this {@link VertexProgram}
      */
-    public default List<MapReduce> getMapReducers() {
-        return Collections.emptyList();
+    public default Set<MapReduce> getMapReducers() {
+        return Collections.emptySet();
     }
 
     /**

@@ -54,7 +54,7 @@ public final class GiraphGraphComputer extends Configured implements GraphComput
     protected GiraphConfiguration giraphConfiguration = new GiraphConfiguration();
     private boolean executed = false;
 
-    private final List<MapReduce> mapReduces = new ArrayList<>();
+    private final Set<MapReduce> mapReduces = new HashSet<>();
     private VertexProgram vertexProgram;
     final GiraphImmutableMemory memory = new GiraphImmutableMemory();
 

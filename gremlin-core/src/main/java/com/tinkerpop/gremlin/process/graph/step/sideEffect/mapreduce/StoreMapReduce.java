@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
@@ -12,12 +12,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StoreMapReduce implements MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
+public final class StoreMapReduce implements MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
 
     public static final String STORE_STEP_SIDE_EFFECT_KEY = "gremlin.storeStep.sideEffectKey";
 
@@ -61,5 +60,15 @@ public class StoreMapReduce implements MapReduce<MapReduce.NullObject, Object, M
     @Override
     public String getSideEffectKey() {
         return this.sideEffectKey;
+    }
+
+    @Override
+    public int hashCode() {
+        return (this.getClass().getCanonicalName() + this.sideEffectKey).hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return GraphComputerHelper.areEqual(this, object);
     }
 }

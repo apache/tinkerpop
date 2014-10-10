@@ -49,7 +49,7 @@ public class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>>
     private ThreadLocal<Traversal> traversal = new ThreadLocal<>();
 
     private boolean trackPaths = false;
-    public List<MapReduce> mapReducers = new ArrayList<>();
+    public Set<MapReduce> mapReducers = new HashSet<>();
     private Set<String> elementComputeKeys = new HashSet<String>() {{
         add(TRAVERSER_TRACKER);
         add(Traversal.SideEffects.DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY);
@@ -177,7 +177,7 @@ public class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>>
     }
 
     @Override
-    public List<MapReduce> getMapReducers() {
+    public Set<MapReduce> getMapReducers() {
         return this.mapReducers;
     }
 

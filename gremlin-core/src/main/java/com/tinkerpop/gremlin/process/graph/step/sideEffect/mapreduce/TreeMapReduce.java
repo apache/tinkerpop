@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -13,7 +14,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TreeMapReduce implements MapReduce<Object, Tree, Object, Tree, Tree> {
+public final class TreeMapReduce implements MapReduce<Object, Tree, Object, Tree, Tree> {
 
     public static final String TREE_STEP_SIDE_EFFECT_KEY = "gremlin.treeStep.sideEffectKey";
 
@@ -60,5 +61,15 @@ public class TreeMapReduce implements MapReduce<Object, Tree, Object, Tree, Tree
     @Override
     public String getSideEffectKey() {
         return this.sideEffectKey;
+    }
+
+    @Override
+    public int hashCode() {
+        return (this.getClass().getCanonicalName() + this.sideEffectKey).hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return GraphComputerHelper.areEqual(this, object);
     }
 }
