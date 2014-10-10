@@ -43,6 +43,11 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     @Override
+    public void addStart(final Traverser<S> start) {
+        this.starts.add((Traverser.Admin<S>) start);
+    }
+
+    @Override
     public void setPreviousStep(final Step<?, S> step) {
         this.previousStep = step;
     }
@@ -107,7 +112,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     @Override
-    public void setTraversal(final Traversal<?,?> traversal) {
+    public void setTraversal(final Traversal<?, ?> traversal) {
         this.traversal = traversal;
     }
 
@@ -118,7 +123,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     @Override
-    public AbstractStep clone() throws CloneNotSupportedException {
+    public AbstractStep<S,E> clone() throws CloneNotSupportedException {
         final AbstractStep step = (AbstractStep) super.clone();
         step.starts = new ExpandableStepIterator<S>(step);
         step.previousStep = EmptyStep.instance();

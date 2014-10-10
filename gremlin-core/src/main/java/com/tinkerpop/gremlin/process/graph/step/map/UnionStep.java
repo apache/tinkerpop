@@ -30,7 +30,7 @@ public final class UnionStep<S, E> extends AbstractStep<S, E> {
                 if (branch.hasNext()) return TraversalHelper.getEnd(branch).next();
             }
             final Traverser.Admin<S> start = this.starts.next();
-            this.traversalRing.forEach(branch -> branch.addStarts(new SingleIterator<>(start.makeSibling())));
+            this.traversalRing.forEach(branch -> branch.addStart(start.makeSibling()));
         }
     }
 

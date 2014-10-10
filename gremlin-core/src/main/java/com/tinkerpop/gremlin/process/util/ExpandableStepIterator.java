@@ -42,11 +42,11 @@ public class ExpandableStepIterator<E> implements Iterator<Traverser.Admin<E>> {
     }
 
     public void add(final Iterator<Traverser.Admin<E>> iterator) {
-        if (iterator instanceof SingleIterator) {
-            iterator.forEachRemaining(this.traverserSet::add);
-        } else {
-            this.traverserIterators.addIterator(iterator);
-        }
+        this.traverserIterators.addIterator(iterator);
+    }
+
+    public void add(final Traverser.Admin<E> traverser) {
+        this.traverserSet.add(traverser);
     }
 
     @Override

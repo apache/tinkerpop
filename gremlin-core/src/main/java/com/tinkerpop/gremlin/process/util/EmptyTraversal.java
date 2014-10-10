@@ -52,6 +52,11 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
     }
 
     @Override
+    public void addStart(final Traverser<S> start) {
+
+    }
+
+    @Override
     public <E2> Traversal<S, E2> addStep(final Step<?, E2> step) {
         return instance();
     }
@@ -67,7 +72,7 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
     }
 
     @Override
-    public EmptyTraversal<S,E> clone() {
+    public EmptyTraversal<S, E> clone() {
         return instance();
     }
 }

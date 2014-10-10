@@ -11,28 +11,28 @@ import java.util.Map;
  */
 public class TraverserCountTracker implements Serializable {
 
-    protected Map<Traverser.Admin, Long> previousObjectTracks = new HashMap<>();
-    protected final Map<Traverser.Admin, Long> objectTracks = new HashMap<>();
+    protected Map<Traverser.Admin<?>, Long> previousObjectTracks = new HashMap<>();
+    protected final Map<Traverser.Admin<?>, Long> objectTracks = new HashMap<>();
 
-    protected final Map<Traverser.Admin, Long> doneGraphTracks = new HashMap<>();
-    protected final Map<Traverser.Admin, Long> doneObjectTracks = new HashMap<>();
+    protected final Map<Traverser.Admin<?>, Long> doneGraphTracks = new HashMap<>();
+    protected final Map<Traverser.Admin<?>, Long> doneObjectTracks = new HashMap<>();
 
     public TraverserCountTracker() {
     }
 
-    public Map<Traverser.Admin, Long> getDoneGraphTracks() {
+    public Map<Traverser.Admin<?>, Long> getDoneGraphTracks() {
         return this.doneGraphTracks;
     }
 
-    public Map<Traverser.Admin, Long> getDoneObjectTracks() {
+    public Map<Traverser.Admin<?>, Long> getDoneObjectTracks() {
         return this.doneObjectTracks;
     }
 
-    public Map<Traverser.Admin, Long> getObjectTracks() {
+    public Map<Traverser.Admin<?>, Long> getObjectTracks() {
         return this.objectTracks;
     }
 
-    public Map<Traverser.Admin, Long> getPreviousObjectTracks() {
+    public Map<Traverser.Admin<?>, Long> getPreviousObjectTracks() {
         return this.previousObjectTracks;
     }
 

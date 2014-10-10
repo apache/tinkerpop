@@ -40,6 +40,8 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
     public void addStarts(final Iterator<Traverser<S>> starts);
 
+    public void addStart(final Traverser<S> start);
+
     public default <E2> Traversal<S, E2> addStep(final Step<?, E2> step) {
         TraversalHelper.insertStep(step, this.getSteps().size(), this);
         return (Traversal) this;

@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.util.SingleIterator;
 
 import java.util.Collections;
 import java.util.Map;
@@ -21,7 +20,7 @@ public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> {
         super(traversal);
         this.setFunction(traverser -> {
             final Traversal<S, E> branch = ifPredicate.test(traverser) ? trueBranch : falseBranch;
-            branch.addStarts(new SingleIterator<>(traverser));
+            branch.addStart(traverser);
             return branch;
         });
     }
@@ -33,7 +32,7 @@ public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> {
             if (null == branch) {
                 return Collections.emptyIterator();
             } else {
-                branch.addStarts(new SingleIterator<>(traverser));
+                branch.addStart(traverser);
                 return branch;
             }
         });

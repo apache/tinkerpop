@@ -25,7 +25,7 @@ public final class SimpleTraverserExecutor extends TraverserExecutor {
 
         final TraverserCountTracker tracker = vertex.value(TraversalVertexProgram.TRAVERSER_TRACKER);
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
-        final Map<Traverser.Admin, Long> localCounts = new HashMap<>();
+        final Map<Traverser.Admin<?>, Long> localCounts = new HashMap<>();
 
         // process incoming traversers
         messenger.receiveMessages(MessageType.Global.to()).forEach(traverser -> {
@@ -35,7 +35,7 @@ public final class SimpleTraverserExecutor extends TraverserExecutor {
             } else {
                 traverser.inflate(vertex, traversal);
                 final Step<?, ?> step = TraversalHelper.getStep(traverser.getFuture(), traversal);
-                step.addStarts(new SingleIterator(traverser));
+                step.addStart((Traverser)traverser);
                 if (processStep(step, localCounts))
                     voteToHalt.set(false);
             }
@@ -49,7 +49,7 @@ public final class SimpleTraverserExecutor extends TraverserExecutor {
             } else {
                 traverser.inflate(vertex, traversal);
                 final Step<?, ?> step = TraversalHelper.getStep(traverser.getFuture(), traversal);
-                step.addStarts(new SingleIterator(traverser));
+                step.addStart((Traverser)traverser);
                 if (processStep(step, localCounts))
                     voteToHalt.set(false);
             }
@@ -68,7 +68,7 @@ public final class SimpleTraverserExecutor extends TraverserExecutor {
         return voteToHalt.get();
     }
 
-    private final static boolean processStep(final Step<?, ?> step, final Map<Traverser.Admin, Long> localCounts) {
+    private final static boolean processStep(final Step<?, ?> step, final Map<Traverser.Admin<?>, Long> localCounts) {
         final boolean messageSent = step.hasNext();
         step.forEachRemaining(traverser -> MapHelper.incr(localCounts, traverser.asAdmin(), traverser.getBulk()));
         return messageSent;
