@@ -816,14 +816,6 @@ public interface Graph extends AutoCloseable {
             return new IllegalArgumentException("Graph does not support the provided graph computer: " + graphComputerClass.getSimpleName());
         }
 
-        public static UnsupportedOperationException vertexLookupsNotSupported() {
-            return new UnsupportedOperationException("Graph does not support vertex lookups by id");
-        }
-
-        public static UnsupportedOperationException edgeLookupsNotSupported() {
-            return new UnsupportedOperationException("Graph does not support edge lookups by id");
-        }
-
         public static UnsupportedOperationException vertexAdditionsNotSupported() {
             return new UnsupportedOperationException("Graph does not support adding vertices");
         }
