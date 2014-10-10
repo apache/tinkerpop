@@ -27,26 +27,25 @@ public class ExpandableStepIterator<E> implements Iterator<Traverser.Admin<E>> {
     public Traverser.Admin<E> next() {
         if (!this.traverserSet.isEmpty())
             return this.traverserSet.remove();
-        else if (this.traverserIterators.hasNext()) {
+        if (this.traverserIterators.hasNext())
             return this.traverserIterators.next();
-        }
 
         if (this.hostStep.getPreviousStep().hasNext())
             return (Traverser.Admin<E>) this.hostStep.getPreviousStep().next();
-        else {
-            if (this.traverserIterators.hasNext())
-                return this.traverserIterators.next();
-            else
-                return this.traverserSet.remove();
-        }
+
+        if (this.traverserIterators.hasNext())
+            return this.traverserIterators.next();
+
+        return this.traverserSet.remove();
+
     }
 
     public void add(final Iterator<Traverser.Admin<E>> iterator) {
-        if (iterator instanceof SingleIterator) {
-            iterator.forEachRemaining(this.traverserSet::add);
-        } else {
-            this.traverserIterators.addIterator(iterator);
-        }
+        this.traverserIterators.addIterator(iterator);
+    }
+
+    public void add(final Traverser.Admin<E> traverser) {
+        this.traverserSet.add(traverser);
     }
 
     @Override

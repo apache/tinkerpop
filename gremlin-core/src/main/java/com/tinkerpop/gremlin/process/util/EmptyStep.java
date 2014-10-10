@@ -17,7 +17,12 @@ public class EmptyStep<S, E> implements Step<S, E> {
     }
 
     @Override
-    public void addStarts(final Iterator<Traverser<S>> iterator) {
+    public void addStarts(final Iterator<Traverser<S>> starts) {
+
+    }
+
+    @Override
+    public void addStart(final Traverser<S> start) {
 
     }
 

@@ -13,7 +13,7 @@ public final class RangeStep<S> extends FilterStep<S> {
 
     private final long low;
     private final long high;
-    private final AtomicLong counter = new AtomicLong(-1l);
+    private final AtomicLong counter = new AtomicLong(0l);
 
     public RangeStep(final Traversal traversal, final long low, final long high) {
         super(traversal);
@@ -25,26 +25,39 @@ public final class RangeStep<S> extends FilterStep<S> {
 
 
         this.setPredicate(traverser -> {
-            final long tempCounter = this.counter.get() + traverser.getBulk();
-            if ((this.low == -1 || tempCounter >= this.low) && (this.high == -1 || tempCounter <= this.high)) {
-                final long differenceCounter = this.high - tempCounter;
-                if (traverser.getBulk() > differenceCounter) {
-                    traverser.asAdmin().setBulk(differenceCounter-1);
-                }
-                this.counter.set(tempCounter);
-                return true;
-            } else if (this.high != -1 && tempCounter > this.high) {
-                final long differenceCounter = tempCounter - this.high;
-                if (traverser.getBulk() > differenceCounter) {
-                    traverser.asAdmin().setBulk(differenceCounter);
-                    this.counter.set(this.counter.get() + differenceCounter);
-                    return true;
-                } else
-                    throw FastNoSuchElementException.instance();
-            } else {
-                this.counter.set(tempCounter);
+            if (this.high != -1 && this.counter.get() > this.high) {
+                throw FastNoSuchElementException.instance();
+            }
+
+            if (traverser.getBulk() == 0) {
+                throw FastNoSuchElementException.instance();
+            }
+
+            long avail = traverser.getBulk();
+            if (this.counter.get() + avail <= this.low) {
+                // Will not surpass the low w/ this traverser. Skip and filter the whole thing.
+                this.counter.getAndAdd(avail);
+                traverser.asAdmin().setBulk(0);
                 return false;
             }
+
+            // Skip for the low and trim for the high. Both can happen at once.
+
+            long toSkip = 0;
+            if (this.counter.get() < this.low) {
+                toSkip = this.low - this.counter.get();
+            }
+
+            long toTrim = 0;
+            if (this.high != -1 && this.counter.get() + avail > this.high) {
+                toTrim = this.counter.get() + avail - this.high - 1;
+            }
+
+            long toEmit = avail - toSkip - toTrim;
+            this.counter.getAndAdd(toSkip + toEmit);
+            traverser.asAdmin().setBulk(toEmit);
+
+            return true;
         });
     }
 

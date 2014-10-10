@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.util.MapHelper;
-import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
@@ -31,7 +30,7 @@ public final class PathTraverserExecutor extends TraverserExecutor {
             } else {
                 traverser.inflate(vertex, traversal);
                 final Step<?, ?> step = TraversalHelper.getStep(traverser.getFuture(), traversal);
-                step.addStarts(new SingleIterator(traverser));
+                step.addStart((Traverser) traverser);
                 if (processStep(step, messenger, tracker))
                     voteToHalt.set(false);
             }
@@ -44,7 +43,7 @@ public final class PathTraverserExecutor extends TraverserExecutor {
                 } else {
                     traverser.inflate(vertex, traversal);
                     final Step<?, ?> step = TraversalHelper.getStep(traverser.getFuture(), traversal);
-                    step.addStarts(new SingleIterator(traverser));
+                    step.addStart((Traverser) traverser);
                     if (processStep(step, messenger, tracker))
                         voteToHalt.set(false);
                 }

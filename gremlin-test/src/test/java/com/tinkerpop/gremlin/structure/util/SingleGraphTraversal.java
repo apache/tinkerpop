@@ -37,6 +37,11 @@ public class SingleGraphTraversal<S> implements GraphTraversal<S, S> {
     }
 
     @Override
+    public void addStart(Traverser<S> start) {
+
+    }
+
+    @Override
     public <E2> GraphTraversal<S, E2> addStep(Step<?, E2> step) {
         return null;
     }
