@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
+import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures;
@@ -151,6 +152,9 @@ public class FeatureSupportTest {
     @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
             "propertyAdditionNotSupported"
     })
+    @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
+            "propertyRemovalNotSupported"
+    })
     public static class VertexFunctionalityTest extends AbstractGremlinTest {
 
         @Test
@@ -238,6 +242,21 @@ public class FeatureSupportTest {
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }
         }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = VertexFeatures.FEATURE_REMOVE_PROPERTY, supported = false)
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        public void shouldSupportRemovePropertyIfAPropertyCanBeRemoved() throws Exception {
+            try {
+                final Vertex v = g.addVertex("name", "me");
+                v.property("name").remove();
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_REMOVE_PROPERTY));
+            } catch (Exception ex) {
+                final Exception expectedException = Element.Exceptions.propertyRemovalNotSupported();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
     }
 
     /**
@@ -252,6 +271,9 @@ public class FeatureSupportTest {
     })
     @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
             "propertyAdditionNotSupported"
+    })
+    @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
+            "propertyRemovalNotSupported"
     })
     public static class EdgeFunctionalityTest extends AbstractGremlinTest {
 
@@ -349,6 +371,22 @@ public class FeatureSupportTest {
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_REMOVE_EDGES));
             } catch (Exception ex) {
                 final Exception expectedException = Edge.Exceptions.edgeRemovalNotSupported();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = EdgeFeatures.FEATURE_REMOVE_PROPERTY, supported = false)
+        @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+        public void shouldSupportRemovePropertyIfAPropertyCanBeRemoved() throws Exception {
+            try {
+                final Vertex v = g.addVertex();
+                final Edge e = v.addEdge("label", v);
+                e.property("name").remove();
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_REMOVE_PROPERTY));
+            } catch (Exception ex) {
+                final Exception expectedException = Element.Exceptions.propertyRemovalNotSupported();
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }
@@ -455,7 +493,27 @@ public class FeatureSupportTest {
             "multiPropertiesNotSupported",
             "metaPropertiesNotSupported"
     })
+    @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
+            "propertyRemovalNotSupported"
+    })
     public static class VertexPropertyFunctionalityTest extends AbstractGremlinTest {
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = VertexPropertyFeatures.FEATURE_REMOVE_PROPERTY, supported = false)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = VertexFeatures.FEATURE_META_PROPERTIES)
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        public void shouldSupportRemovePropertyIfAPropertyCanBeRemoved() throws Exception {
+            try {
+                final Vertex v = g.addVertex();
+                final VertexProperty p = v.property("name", "me", "test", "this");
+                p.property("test").remove();
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), VertexPropertyFeatures.FEATURE_REMOVE_PROPERTY));
+            } catch (Exception ex) {
+                final Exception expectedException = Element.Exceptions.propertyRemovalNotSupported();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)

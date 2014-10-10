@@ -436,6 +436,7 @@ public interface Graph extends AutoCloseable {
             public static final String FEATURE_CUSTOM_IDS = "CustomIds";
             public static final String FEATURE_ANY_IDS = "AnyIds";
             public static final String FEATURE_ADD_PROPERTY = "AddProperty";
+            public static final String FEATURE_REMOVE_PROPERTY = "RemoveProperty";
 
             /**
              * Determines if an {@link Element} allows properties to be added.  This feature is set independently from
@@ -443,6 +444,14 @@ public interface Graph extends AutoCloseable {
              */
             @FeatureDescriptor(name = FEATURE_ADD_PROPERTY)
             public default boolean supportsAddProperty() {
+                return true;
+            }
+
+            /**
+             * Determines if an {@link Element} allows properties to be removed.
+             */
+            @FeatureDescriptor(name = FEATURE_REMOVE_PROPERTY)
+            public default boolean supportsRemoveProperty() {
                 return true;
             }
 
@@ -502,15 +511,21 @@ public interface Graph extends AutoCloseable {
          */
         public interface VertexPropertyFeatures extends PropertyFeatures {
             public static final String FEATURE_ADD_PROPERTY = "AddProperty";
+            public static final String FEATURE_REMOVE_PROPERTY = "RemoveProperty";
 
             /**
-             * Determines if an {@link Element} allows properties to be added.  This feature is set independently from
-             * supporting "data types" and refers to support of calls to {@link Element#property(String, Object)} as
-             * well as calls to {@link Graph#addVertex(Object...)} and {@link Vertex#addEdge(String, Vertex, Object...)}
-             * where properties are included.
+             * Determines if an {@link VertexProperty} allows properties to be added.
              */
             @FeatureDescriptor(name = FEATURE_ADD_PROPERTY)
             public default boolean supportsAddProperty() {
+                return true;
+            }
+
+            /**
+             * Determines if an {@link VertexProperty} allows properties to be removed.
+             */
+            @FeatureDescriptor(name = FEATURE_REMOVE_PROPERTY)
+            public default boolean supportsRemoveProperty() {
                 return true;
             }
         }

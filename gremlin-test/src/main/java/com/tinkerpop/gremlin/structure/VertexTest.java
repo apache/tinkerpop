@@ -131,6 +131,7 @@ public class VertexTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_PROPERTY)
     public void shouldSupportBasicVertexManipulation() {
         // test property mutation behaviors
         final Vertex v = g.addVertex("name", "marko", "age", 34);
@@ -287,8 +288,8 @@ public class VertexTest extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_PROPERTY)
     public void shouldGetPropertyKeysOnVertex() {
         final Vertex v = g.addVertex("name", "marko", "location", "desert", "status", "dope");
         Set<String> keys = v.keys();

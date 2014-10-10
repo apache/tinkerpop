@@ -59,7 +59,8 @@ public class PropertyTest {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-        public void shouldAllowRemovalWhenAlreadyRemoved() {
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_PROPERTY)
+        public void shouldAllowRemovalFromVertexWhenAlreadyRemoved() {
             final Vertex v = g.addVertex("name", "marko");
             tryCommit(g);
             final Vertex v1 = g.v(v.id());
@@ -72,6 +73,16 @@ public class PropertyTest {
             } catch (Exception ex) {
                 fail("Removing a vertex property that was already removed should not throw an exception");
             }
+        }
+
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_REMOVE_PROPERTY)
+        public void shouldAllowRemovalFromEdgeWhenAlreadyRemoved() {
+            final Vertex v = g.addVertex("name", "marko");
+            tryCommit(g);
+            final Vertex v1 = g.v(v.id());
 
             try {
                 final Edge edge = v1.addEdge("knows", g.addVertex());

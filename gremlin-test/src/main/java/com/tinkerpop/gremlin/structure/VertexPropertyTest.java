@@ -173,6 +173,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_PROPERTY)
         public void shouldSupportIdempotentVertexPropertyRemoval() {
             final Vertex a = g.addVertex("name", "marko");
             final Vertex b = g.addVertex("name", "daniel", "name", "kuppitz");
@@ -192,6 +193,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_PROPERTY)
         public void shouldRemoveMultiProperties() {
             final Vertex v = g.addVertex("name", "marko", "age", 34);
             v.property("name", "marko a. rodriguez");
