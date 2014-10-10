@@ -113,7 +113,7 @@ public class IdGraphStrategy implements GraphStrategy {
 
     @Override
     public String toString() {
-        return String.format("%s[%s]", IdGraphStrategy.class.getSimpleName(), idKey).toLowerCase();
+        return this.getClass().getSimpleName().toLowerCase();
     }
 
     private void throwIfIdKeyIsSet(final Class<? extends Element> element, final String k) {

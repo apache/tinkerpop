@@ -90,6 +90,6 @@ public class PartitionGraphStrategy extends SubgraphStrategy {
 
     @Override
     public String toString() {
-        return PartitionGraphStrategy.class.getSimpleName();
+        return PartitionGraphStrategy.class.getSimpleName().toLowerCase();
     }
 }

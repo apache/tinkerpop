@@ -667,7 +667,7 @@ gremlin> conf = new BaseConfiguration()
 gremlin> conf.setProperty("gremlin.graph","com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph")
 ==>null
 gremlin> g = GraphFactory.open(conf, new ReadOnlyGraphStrategy())
-==>[readonlygraphstrategy[tinkergraph[vertices:0 edges:0]]]
+==>readonlygraphstrategy[tinkergraph[vertices:0 edges:0]]
 ----
 
 The above code specifies the creation of a `TinkerGraph` with the use of `ReadOnlyGraphStrategy`.  Note that the `GraphFactory` does not return a `TinkerGraph` instance.  It returns a `StrategyWrappedGraph` which is a traverser for the underlying `TinkerGraph` and the `ReadOnlyGraphStrategy`.  Since `StrategyWrappedGraph` implements the `Graph` interface, it can be used in the same manner as `TinkerGraph` or any other implementation.
@@ -704,7 +704,7 @@ gremlin> g = TinkerGraph.open()
 gremlin> strategy = new PartitionGraphStrategy(Graph.Key.hide("partition"), "A")
 ==>PartitionGraphStrategy
 gremlin> sg = new StrategyWrappedGraph(g)
-==>[passthru[tinkergraph[vertices:0 edges:0]]]
+==>strategywrappedgraph[tinkergraph[vertices:0 edges:0]]
 gremlin> sg.strategy().setGraphStrategy(strategy)
 ==>null
 ----
@@ -714,17 +714,17 @@ Add vertices and edges first in one partition, then another:
 [source,groovy]
 ----
 gremlin> v1 = sg.addVertex("name", "one")
-==>[PartitionGraphStrategy[v[0]]]
+==>partitiongraphstrategy[v[0]]
 gremlin> v2 = sg.addVertex("name", "two")
-==>[PartitionGraphStrategy[v[1]]]
+==>partitiongraphstrategy[v[1]]
 gremlin> v1.addEdge("knows", v2)
-==>[PartitionGraphStrategy[e[2][0-knows->1]]]
+==>partitiongraphstrategy[e[2][0-knows->1]]
 gremlin> strategy.setWritePartition("B")
 ==>null
 gremlin> v3 = sg.addVertex("name", "three")
-==>[PartitionGraphStrategy[v[3]]]
+==>partitiongraphstrategy[v[3]]
 gremlin> v1.addEdge("knows", v3)
-==>[PartitionGraphStrategy[e[4][0-knows->3]]]
+==>partitiongraphstrategy[e[4][0-knows->3]]
 gremlin> 
 ----
 

@@ -646,7 +646,7 @@ public interface GraphStrategy {
 
         @Override
         public String toString() {
-            return "passthru";
+            return StrategyWrappedGraph.class.getSimpleName().toLowerCase();
         }
     }
 }

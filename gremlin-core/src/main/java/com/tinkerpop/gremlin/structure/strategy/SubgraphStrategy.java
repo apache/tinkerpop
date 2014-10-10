@@ -100,7 +100,7 @@ public class SubgraphStrategy implements GraphStrategy {
 
     @Override
     public String toString() {
-        return SubgraphStrategy.class.getSimpleName();
+        return SubgraphStrategy.class.getSimpleName().toLowerCase();
     }
 
     private class SubgraphTraversalStrategy implements TraversalStrategy.NoDependencies {
