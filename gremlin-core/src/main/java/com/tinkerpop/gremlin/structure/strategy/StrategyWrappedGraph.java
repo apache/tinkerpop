@@ -125,7 +125,7 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
     @Override
     public String toString() {
         final GraphStrategy strategy = this.strategy.getGraphStrategy().orElse(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-        return StringFactory.graphString(strategy, this.baseGraph);
+        return StringFactory.graphStrategyString(strategy, this.baseGraph);
     }
 
     private <S, E> GraphTraversal<S, E> applyStrategy(final GraphTraversal<S, E> traversal) {

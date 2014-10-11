@@ -29,8 +29,8 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_INTEGER_VALUES;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests that ensure proper wrapping of {@link com.tinkerpop.gremlin.structure.Graph} classes.
@@ -43,24 +43,47 @@ public class StrategyWrappedGraphTest  {
     public static class ToStringConsistencyTest extends AbstractGremlinTest {
 
         @Test
-        @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
-        public void shouldReturnWrappedElementToString() {
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        public void shouldReturnWrappedVertexToString() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            final Vertex v1 = swg.addVertex(T.label, "Person", "age", 1);
-            final Vertex v2 = swg.addVertex(T.label, "Person", "age", 1);
-            final VertexProperty age = v2.property("age");
+            final Vertex v1 = swg.addVertex(T.label, "Person");
+            final Vertex originalVertex = ((StrategyWrappedVertex) v1).getBaseVertex();
+            assertEquals(StringFactory.graphStrategyVertexString(GraphStrategy.DoNothingGraphStrategy.INSTANCE, originalVertex), v1.toString());
+        }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+        public void shouldReturnWrappedEdgeToString() {
+            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+            final Vertex v1 = swg.addVertex(T.label, "Person");
+            final Vertex v2 = swg.addVertex(T.label, "Person");
+            final Edge e1 = v1.addEdge("friend", v2);
+            final Edge originalEdge = ((StrategyWrappedEdge) e1).getBaseEdge();
+            assertEquals(StringFactory.graphStrategyEdgeString(GraphStrategy.DoNothingGraphStrategy.INSTANCE, originalEdge), e1.toString());
+        }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        public void shouldReturnWrappedVertexPropertyToString() {
+            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+            final Vertex v1 = swg.addVertex(T.label, "Person", "age", "one");
+            final VertexProperty age = v1.property("age");
+            final Vertex originalVertex = ((StrategyWrappedVertex) v1).getBaseVertex();
+            final VertexProperty originalVertexProperty = originalVertex.property("age");
+            assertEquals(StringFactory.graphStrategyPropertyString(GraphStrategy.DoNothingGraphStrategy.INSTANCE, originalVertexProperty), age.toString());
+        }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+        public void shouldReturnWrappedPropertyToString() {
+            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+            final Vertex v1 = swg.addVertex(T.label, "Person");
+            final Vertex v2 = swg.addVertex(T.label, "Person");
             final Edge e1 = v1.addEdge("friend", v2, "weight", "fifty");
             final Property weight = e1.property("weight");
-            final Vertex originalVertex = ((StrategyWrappedVertex) v1).getBaseVertex();
             final Edge originalEdge = ((StrategyWrappedEdge) e1).getBaseEdge();
-            final VertexProperty originalProperty = originalVertex.property("age");
-            final Property originalVertexProperty = originalEdge.property("weight");
-            final String prefix = "strategywrappedgraph";
-            assertEquals(prefix + "[" + originalVertex.toString() + "]", v1.toString());
-            assertEquals(prefix + "[" + originalEdge.toString() + "]", e1.toString());
-            assertEquals(prefix + "[" + originalProperty.toString() + "]", age.toString());
-            assertEquals(prefix + "[" + originalVertexProperty.toString() + "]", weight.toString());
+            final Property originalProperty = originalEdge.property("weight");
+            assertEquals(StringFactory.graphStrategyPropertyString(GraphStrategy.DoNothingGraphStrategy.INSTANCE, originalProperty), weight.toString());
         }
 
         @Test
@@ -68,7 +91,7 @@ public class StrategyWrappedGraphTest  {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
             final GraphStrategy strategy = swg.strategy().getGraphStrategy().orElse(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
             assertNotEquals(g.toString(), swg.toString());
-            assertEquals(StringFactory.graphString(strategy, g), swg.toString());
+            assertEquals(StringFactory.graphStrategyString(strategy, g), swg.toString());
         }
     }
 

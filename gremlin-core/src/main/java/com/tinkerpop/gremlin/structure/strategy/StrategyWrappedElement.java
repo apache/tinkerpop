@@ -2,12 +2,8 @@ package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
-
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -27,12 +23,6 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
 
     public Element getBaseElement() {
         return this.baseElement;
-    }
-
-    @Override
-    public String toString() {
-        final GraphStrategy strategy = strategyWrappedGraph.strategy().getGraphStrategy().orElse(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-        return strategy + "[" + baseElement.toString() + "]";
     }
 
     @Override

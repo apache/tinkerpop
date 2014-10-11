@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
@@ -108,6 +109,12 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     @Override
     public GraphTraversal<Vertex, Vertex> start() {
         return applyStrategy(this.baseVertex.start());
+    }
+
+    @Override
+    public String toString() {
+        final GraphStrategy strategy = strategyWrappedGraph.strategy().getGraphStrategy().orElse(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
+        return StringFactory.graphStrategyVertexString(strategy, this.baseVertex);
     }
 
     public class StrategyWrappedVertexIterators implements Vertex.Iterators {

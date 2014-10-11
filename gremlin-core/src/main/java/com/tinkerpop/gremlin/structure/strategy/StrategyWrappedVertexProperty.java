@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure.strategy;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Iterator;
@@ -99,6 +100,12 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
                     this.baseVertexProperty.remove();
                     return null;
                 }).get();
+    }
+
+    @Override
+    public String toString() {
+        final GraphStrategy strategy = strategyWrappedGraph.strategy().getGraphStrategy().orElse(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
+        return StringFactory.graphStrategyPropertyString(strategy, this.baseVertexProperty);
     }
 
     public class StrategyWrappedVertexPropertyIterators implements VertexProperty.Iterators {

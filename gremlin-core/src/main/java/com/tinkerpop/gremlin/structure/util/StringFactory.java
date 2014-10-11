@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -86,8 +87,20 @@ public class StringFactory {
     /**
      * Construct the representation for a {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy}.
      */
-    public static String graphString(final GraphStrategy graphStrategy, final Graph graph) {
+    public static String graphStrategyString(final GraphStrategy graphStrategy, final Graph graph) {
         return graphStrategy.getClass().getSimpleName().toLowerCase() + L_BRACKET + graph.toString() + R_BRACKET;
+    }
+
+    public static String graphStrategyVertexString(final GraphStrategy graphStrategy, final Vertex vertex) {
+        return graphStrategy + L_BRACKET + vertex.toString() + R_BRACKET;
+    }
+
+    public static String graphStrategyEdgeString(final GraphStrategy graphStrategy, final Edge edge) {
+        return graphStrategy + L_BRACKET + edge.toString() + R_BRACKET;
+    }
+
+    public static String graphStrategyPropertyString(final GraphStrategy graphStrategy, final Property property) {
+        return graphStrategy + L_BRACKET + property.toString() + R_BRACKET;
     }
 
     public static String graphVariablesString(final Graph.Variables variables) {
