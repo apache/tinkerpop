@@ -368,7 +368,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         final ReadOnlyGraphStrategy readonly = new ReadOnlyGraphStrategy();
         final IdGraphStrategy id = new IdGraphStrategy.Builder("aKey").build();
         final SequenceGraphStrategy strategy = new SequenceGraphStrategy(readonly, id);
-        assertEquals("readonlygraphstrategy->idgraphstrategy[]", strategy.toString());
+        assertEquals("readonlygraphstrategy->idgraphstrategy", strategy.toString());
     }
 
     public class SpyGraphStrategy implements GraphStrategy {
@@ -596,7 +596,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         }
 
         @Override
-        public <V>UnaryOperator<Supplier<Set<String>>> getVertexPropertyKeysStrategy(final Strategy.Context<StrategyWrappedVertexProperty<V>> ctx) {
+        public <V> UnaryOperator<Supplier<Set<String>>> getVertexPropertyKeysStrategy(final Strategy.Context<StrategyWrappedVertexProperty<V>> ctx) {
             return spy();
         }
 
