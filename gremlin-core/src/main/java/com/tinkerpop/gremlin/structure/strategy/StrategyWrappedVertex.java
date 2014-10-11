@@ -113,7 +113,7 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
 
     @Override
     public String toString() {
-        final GraphStrategy strategy = strategyWrappedGraph.strategy().getGraphStrategy().orElse(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
+        final GraphStrategy strategy = strategyWrappedGraph.strategy().getGraphStrategy().orElse(GraphStrategy.DefaultGraphStrategy.INSTANCE);
         return StringFactory.graphStrategyVertexString(strategy, this.baseVertex);
     }
 

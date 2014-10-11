@@ -104,7 +104,7 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
 
     @Override
     public String toString() {
-        final GraphStrategy strategy = strategyWrappedGraph.strategy().getGraphStrategy().orElse(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
+        final GraphStrategy strategy = strategyWrappedGraph.strategy().getGraphStrategy().orElse(GraphStrategy.DefaultGraphStrategy.INSTANCE);
         return StringFactory.graphStrategyEdgeString(strategy, this.baseEdge);
     }
 

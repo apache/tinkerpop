@@ -638,15 +638,15 @@ public interface GraphStrategy {
         return UnaryOperator.identity();
     }
 
-    public static class DoNothingGraphStrategy implements GraphStrategy {
-        public static final DoNothingGraphStrategy INSTANCE = new DoNothingGraphStrategy();
+    public static class DefaultGraphStrategy implements GraphStrategy {
+        public static final DefaultGraphStrategy INSTANCE = new DefaultGraphStrategy();
 
-        private DoNothingGraphStrategy() {
+        private DefaultGraphStrategy() {
         }
 
         @Override
         public String toString() {
-            return StrategyWrappedGraph.class.getSimpleName().toLowerCase();
+            return this.getClass().getSimpleName().toLowerCase();
         }
     }
 }
