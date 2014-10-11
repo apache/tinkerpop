@@ -55,7 +55,7 @@ public class StrategyWrappedGraphTest  {
         public static Iterable<Object[]> data() {
             return new ArrayList<Object[]>() {{
                 add(new Object[] {GraphStrategy.DoNothingGraphStrategy.INSTANCE} );
-                add(new Object[] {new IdGraphStrategy.Builder("key").build()} );
+                add(new Object[] {IdGraphStrategy.build("key").create()} );
                 add(new Object[] {new PartitionGraphStrategy("partition", "A")} );
                 add(new Object[] {new ReadOnlyGraphStrategy()} );
                 add(new Object[] {new SequenceGraphStrategy(new ReadOnlyGraphStrategy(), new PartitionGraphStrategy("partition", "A"))} );

@@ -12,7 +12,6 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.util.function.TriFunction;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
@@ -358,14 +357,6 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
 
         // check the spy to see that all methods were executed
         assertEquals(methods.length, spy.getCount());
-    }
-
-    @Test
-    public void shouldGenerateToStringProperty() throws Exception {
-        final ReadOnlyGraphStrategy readonly = new ReadOnlyGraphStrategy();
-        final IdGraphStrategy id = new IdGraphStrategy.Builder("aKey").build();
-        final SequenceGraphStrategy strategy = new SequenceGraphStrategy(readonly, id);
-        assertEquals("readonlygraphstrategy->idgraphstrategy", strategy.toString());
     }
 
     public class SpyGraphStrategy implements GraphStrategy {

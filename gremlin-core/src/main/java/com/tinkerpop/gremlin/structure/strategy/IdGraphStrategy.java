@@ -162,6 +162,15 @@ public class IdGraphStrategy implements GraphStrategy {
         return o;
     }
 
+    /**
+     * Create the {@link Builder} to create a {@link IdGraphStrategy}.
+     *
+     * @param idKey The key to use for the index to lookup graph elements.
+     */
+    public static Builder build(final String idKey) {
+        return new Builder(idKey);
+    }
+
     public static final class Builder {
         private final String idKey;
         private Supplier<?> vertexIdSupplier;
@@ -170,12 +179,7 @@ public class IdGraphStrategy implements GraphStrategy {
         private boolean supportsEdgeId;
         private boolean hiddenIdKey;
 
-        /**
-         * Create the {@link Builder} to create a {@link IdGraphStrategy}.
-         *
-         * @param idKey The key to use for the index to lookup graph elements.
-         */
-        public Builder(final String idKey) {
+        private Builder(final String idKey) {
             this.idKey = idKey;
             this.edgeIdSupplier = this::supplyStringId;
             this.vertexIdSupplier = this::supplyStringId;
@@ -184,7 +188,7 @@ public class IdGraphStrategy implements GraphStrategy {
             this.hiddenIdKey = false;
         }
 
-        public IdGraphStrategy build() {
+        public IdGraphStrategy create() {
             if (!this.supportsEdgeId && !this.supportsVertexId)
                 throw new IllegalStateException("Since supportsEdgeId and supportsVertexId are false, there is no need to use IdGraphStrategy");
 
