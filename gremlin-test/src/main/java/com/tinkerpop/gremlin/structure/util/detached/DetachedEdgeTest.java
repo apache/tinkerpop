@@ -78,10 +78,11 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldNotEvaluateToEqualDifferentId() {
+        final Object joshCreatedLopEdgeId = convertToEdgeId("josh", "created", "lop");
         final Vertex vOut = g.v(convertToVertexId("josh"));
         final Vertex vIn = g.v(convertToVertexId("lop"));
         final Edge e = vOut.addEdge("created", vIn, "weight", 0.4d);
-        assertFalse(DetachedEdge.detach(g.e(convertToEdgeId("josh", "created", "lop"))).equals(DetachedEdge.detach(e)));
+        assertFalse(DetachedEdge.detach(g.e(joshCreatedLopEdgeId)).equals(DetachedEdge.detach(e)));
     }
 
     @Test
