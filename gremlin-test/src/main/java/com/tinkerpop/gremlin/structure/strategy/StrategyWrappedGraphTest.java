@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -27,6 +28,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_INTEGER_VALUES;
 import static org.junit.Assert.*;
 
 /**
@@ -36,6 +38,36 @@ import static org.junit.Assert.*;
  */
 @RunWith(Enclosed.class)
 public class StrategyWrappedGraphTest  {
+
+    public static class ToStringConsistencyTest extends AbstractGremlinTest {
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+        public void shouldReturnWrappedElementToString() {
+            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+            final Vertex v1 = swg.addVertex(T.label, "Person", "age", 1);
+            final Vertex v2 = swg.addVertex(T.label, "Person", "age", 1);
+            final VertexProperty age = v2.property("age");
+            final Edge e1 = v1.addEdge("friend", v2, "weight", "fifty");
+            final Property weight = e1.property("weight");
+            final Vertex originalVertex = ((StrategyWrappedVertex) v1).getBaseVertex();
+            final Edge originalEdge = ((StrategyWrappedEdge) e1).getBaseEdge();
+            final VertexProperty originalProperty = originalVertex.property("age");
+            final Property originalVertexProperty = originalEdge.property("weight");
+            final String prefix = "strategywrappedgraph";
+            assertEquals(prefix + "[" + originalVertex.toString() + "]", v1.toString());
+            assertEquals(prefix + "[" + originalEdge.toString() + "]", e1.toString());
+            assertEquals(prefix + "[" + originalProperty.toString() + "]", age.toString());
+            assertEquals(prefix + "[" + originalVertexProperty.toString() + "]", weight.toString());
+        }
+
+        @Test
+        public void shouldReturnWrappedToString() {
+            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+            assertNotEquals(g.toString(), swg.toString());
+        }
+    }
 
     public static class BlockBaseFunctionTest extends AbstractGremlinTest {
         @Test

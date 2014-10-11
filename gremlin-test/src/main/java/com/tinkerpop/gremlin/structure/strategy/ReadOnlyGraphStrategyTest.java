@@ -151,33 +151,6 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
         swg.variables().asMap().put("will", "not work");
     }
 
-    @Test
-    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
-    public void shouldReturnWrappedElementToString() {
-        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-        final Vertex v1 = swg.addVertex(T.label, "Person", "age", 1);
-        final Vertex v2 = swg.addVertex(T.label, "Person", "age", 1);
-        final VertexProperty age = v2.property("age");
-        final Edge e1 = v1.addEdge("friend", v2, "weight", "fifty");
-        final Property weight = e1.property("weight");
-        final Vertex originalVertex = ((StrategyWrappedVertex) v1).getBaseVertex();
-        final Edge originalEdge = ((StrategyWrappedEdge) e1).getBaseEdge();
-        final VertexProperty originalProperty = originalVertex.property("age");
-        final Property originalVertexProperty = originalEdge.property("weight");
-        final String prefix = "strategywrappedgraph";
-        assertEquals(prefix + "[" + originalVertex.toString() + "]", v1.toString());
-        assertEquals(prefix + "[" + originalEdge.toString() + "]", e1.toString());
-        assertEquals(prefix + "[" + originalProperty.toString() + "]", age.toString());
-        assertEquals(prefix + "[" + originalVertexProperty.toString() + "]", weight.toString());
-    }
-
-    @Test
-    public void shouldReturnWrappedToString() {
-        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-        assertNotEquals(g.toString(), swg.toString());
-    }
-
     private void assertException(final ConsumerThatThrows stt) {
         try {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
@@ -190,7 +163,6 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
             assertEquals(expectedException.getMessage(), ex.getMessage());
 
         }
-
     }
 
     @FunctionalInterface
