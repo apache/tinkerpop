@@ -244,6 +244,6 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         final StrategyWrappedGraph swg = (StrategyWrappedGraph) g;
         final GraphStrategy strategy = swg.strategy().getGraphStrategy().get();
         assertNotEquals(swg.getBaseGraph().toString(), swg.toString());
-        assertEquals(StringFactory.graphStrategyString(strategy, g), swg.toString());
+        assertEquals(StringFactory.graphStrategyString(strategy, ((StrategyWrappedGraph) g).getBaseGraph()), swg.toString());
     }
 }
