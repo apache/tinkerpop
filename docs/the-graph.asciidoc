@@ -804,6 +804,21 @@ gremlin> g = GraphFactory.open(conf, new ReadOnlyGraphStrategy())
 gremlin> g.addVertex('name','stephen')
 Graph uses class com.tinkerpop.gremlin.structure.strategy.ReadOnlyGraphStrategy and is therefore unmodifiable
 
+SequenceGraphStrategy
+~~~~~~~~~~~~~~~~~~~~~
+
+`SequenceGraphStrategy` provides a way to string together a set of `GraphStrategy` implementations, such that they are executed in order from first to last.  The `GraphFactory` provides a straightforward way to invisibly use `SequenceGraphStrategy`:
+
+[source,groovy]
+gremlin> conf = new BaseConfiguration()
+==>org.apache.commons.configuration.BaseConfiguration@6048e26a
+gremlin> conf.setProperty("gremlin.graph",TinkerGraph.class.getName())
+==>null
+gremlin> g = GraphFactory.open(conf, new ReadOnlyGraphStrategy(), new PartitionGraphStrategy("partition","A"))
+==>sequencegraphstrategy[tinkergraph[vertices:0 edges:0]]
+
+The above code demonstrates a `Graph` that uses a `SequenceGraphStrategy` composed of `ReadOnlyGraphStrategy` and `PartitionGraphStrategy`.  When the `SequenceGraphStrategy` is invoked, it will first apply the `ReadOnlyGraphStrategy` and then apply the `PartitionGraphStrategy`.  It is important to consider the ordering of the `GraphStrategy` objects when choosing to use `SequenceGraphStrategy` as it makes no attempts to determine if strategies will be in conflict with one another.  Be aware of the nature of the strategies and ensure that applying them in the order assigned will produce the desirable outcome.
+
 SubgraphStrategy
 ~~~~~~~~~~~~~~~~
 
