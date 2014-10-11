@@ -28,6 +28,7 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
     private Strategy.Context<StrategyWrappedGraph> graphContext;
 
     public StrategyWrappedGraph(final Graph baseGraph) {
+
         this.baseGraph = baseGraph;
         this.graphContext = new Strategy.Context<>(baseGraph, this);
     }
