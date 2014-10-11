@@ -48,7 +48,23 @@ public class StrategyWrappedGraphTest  {
         }
     }
 
+    @RunWith(Parameterized.class)
     public static class ToStringConsistencyTest extends AbstractGremlinTest {
+
+        @Parameterized.Parameters(name = "{index}: {0}")
+        public static Iterable<Object[]> data() {
+            return new ArrayList<Object[]>() {{
+                add(new Object[] {GraphStrategy.DoNothingGraphStrategy.INSTANCE} );
+                add(new Object[] {new IdGraphStrategy.Builder("key").build()} );
+                add(new Object[] {new PartitionGraphStrategy("partition", "A")} );
+                add(new Object[] {new ReadOnlyGraphStrategy()} );
+                add(new Object[] {new SequenceGraphStrategy(new ReadOnlyGraphStrategy(), new PartitionGraphStrategy("partition", "A"))} );
+                add(new Object[] {new SubgraphStrategy(v -> true, e -> true)} );
+            }};
+        }
+
+        @Parameterized.Parameter(value = 0)
+        public GraphStrategy strategy;
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
@@ -56,7 +72,8 @@ public class StrategyWrappedGraphTest  {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
             final Vertex v1 = swg.addVertex(T.label, "Person");
             final Vertex originalVertex = ((StrategyWrappedVertex) v1).getBaseVertex();
-            assertEquals(StringFactory.graphStrategyVertexString(GraphStrategy.DoNothingGraphStrategy.INSTANCE, originalVertex), v1.toString());
+            swg.strategy().setGraphStrategy(strategy);
+            assertEquals(StringFactory.graphStrategyVertexString(strategy, originalVertex), v1.toString());
         }
 
         @Test
@@ -67,7 +84,8 @@ public class StrategyWrappedGraphTest  {
             final Vertex v2 = swg.addVertex(T.label, "Person");
             final Edge e1 = v1.addEdge("friend", v2);
             final Edge originalEdge = ((StrategyWrappedEdge) e1).getBaseEdge();
-            assertEquals(StringFactory.graphStrategyEdgeString(GraphStrategy.DoNothingGraphStrategy.INSTANCE, originalEdge), e1.toString());
+            swg.strategy().setGraphStrategy(strategy);
+            assertEquals(StringFactory.graphStrategyEdgeString(strategy, originalEdge), e1.toString());
         }
 
         @Test
@@ -78,7 +96,8 @@ public class StrategyWrappedGraphTest  {
             final VertexProperty age = v1.property("age");
             final Vertex originalVertex = ((StrategyWrappedVertex) v1).getBaseVertex();
             final VertexProperty originalVertexProperty = originalVertex.property("age");
-            assertEquals(StringFactory.graphStrategyPropertyString(GraphStrategy.DoNothingGraphStrategy.INSTANCE, originalVertexProperty), age.toString());
+            swg.strategy().setGraphStrategy(strategy);
+            assertEquals(StringFactory.graphStrategyPropertyString(strategy, originalVertexProperty), age.toString());
         }
 
         @Test
@@ -91,7 +110,8 @@ public class StrategyWrappedGraphTest  {
             final Property weight = e1.property("weight");
             final Edge originalEdge = ((StrategyWrappedEdge) e1).getBaseEdge();
             final Property originalProperty = originalEdge.property("weight");
-            assertEquals(StringFactory.graphStrategyPropertyString(GraphStrategy.DoNothingGraphStrategy.INSTANCE, originalProperty), weight.toString());
+            swg.strategy().setGraphStrategy(strategy);
+            assertEquals(StringFactory.graphStrategyPropertyString(strategy, originalProperty), weight.toString());
         }
 
         @Test
@@ -99,6 +119,7 @@ public class StrategyWrappedGraphTest  {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
             final GraphStrategy strategy = swg.strategy().getGraphStrategy().orElse(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
             assertNotEquals(g.toString(), swg.toString());
+            swg.strategy().setGraphStrategy(strategy);
             assertEquals(StringFactory.graphStrategyString(strategy, g), swg.toString());
         }
     }
