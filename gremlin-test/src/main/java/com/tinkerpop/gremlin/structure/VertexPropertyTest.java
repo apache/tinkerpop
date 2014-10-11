@@ -291,6 +291,18 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                 assertEquals(0, g.E().count().next().intValue());
             });
         }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_REMOVE_PROPERTY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+        public void shouldReturnEmptyPropertyIfEdgeWasRemoved() {
+            final Vertex v1 = g.addVertex();
+            final VertexProperty p = v1.property("name", "stephen", "year", "2012");
+            p.remove();
+            final Property ip  = p.property("year");
+            tryCommit(g, g -> assertEquals(Property.empty(), ip));
+        }
     }
 
     public static class VertexPropertyProperties extends AbstractGremlinTest {

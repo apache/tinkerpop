@@ -15,6 +15,7 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import org.neo4j.cypher.EntityNotFoundException;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.Node;
@@ -41,7 +42,16 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
         if (!this.graph.supportsMultiProperties) {
             return this.getBaseVertex().hasProperty(key) ? new Neo4jVertexProperty<V>(this, key, (V) this.getBaseVertex().getProperty(key)) : VertexProperty.<V>empty();
         } else {
-            if (this.getBaseVertex().hasProperty(key)) {
+            final boolean existsInNeo4j;
+            try {
+                existsInNeo4j = this.getBaseVertex().hasProperty(key);
+            } catch (IllegalStateException ise) {
+                return VertexProperty.<V>empty();
+            } catch (NotFoundException nfe) {
+                return VertexProperty.<V>empty();
+            }
+
+            if (existsInNeo4j) {
                 if (this.getBaseVertex().getProperty(key).equals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN)) {
                     if (this.getBaseVertex().getDegree(DynamicRelationshipType.withName(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat(key)), org.neo4j.graphdb.Direction.OUTGOING) > 1)
                         throw Vertex.Exceptions.multiplePropertiesExistForProvidedKey(key);

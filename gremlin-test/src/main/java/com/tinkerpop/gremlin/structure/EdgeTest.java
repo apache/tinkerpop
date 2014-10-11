@@ -244,4 +244,14 @@ public class EdgeTest extends AbstractGremlinTest {
             assertVertexEdgeCounts(0, 0);
         }
     }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_VERTICES)
+    public void shouldReturnEmptyPropertyIfEdgeWasRemoved() {
+        final Vertex v1 = g.addVertex("name", "stephen");
+        final Edge e = v1.addEdge("knows", v1, "x", "y");
+        e.remove();
+        tryCommit(g, g -> assertEquals(Property.empty(), e.property("x")));
+    }
 }

@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.neo4j.structure;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -62,10 +63,14 @@ public abstract class Neo4jElement implements Element, Element.Iterators, Wrappe
     @Override
     public <V> Property<V> property(final String key) {
         this.graph.tx().readWrite();
-        if (this.baseElement.hasProperty(key))
-            return new Neo4jProperty<>(this, key, (V) this.baseElement.getProperty(key));
-        else
-            return Property.empty();
+        try {
+            if (this.baseElement.hasProperty(key))
+                return new Neo4jProperty<>(this, key, (V) this.baseElement.getProperty(key));
+            else
+                return Property.empty();
+        } catch (IllegalStateException ise) {
+            return Property.<V>empty();
+        }
     }
 
     @Override

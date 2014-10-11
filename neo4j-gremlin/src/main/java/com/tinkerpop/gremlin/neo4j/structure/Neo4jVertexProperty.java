@@ -107,10 +107,14 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty
             throw VertexProperty.Exceptions.metaPropertiesNotSupported();
 
         this.vertex.graph.tx().readWrite();
-        if (this.node.hasProperty(key))
-            return new Neo4jProperty<>(this, key, (U) this.node.getProperty(key));
-        else
-            return Property.empty();
+        try {
+            if (this.node.hasProperty(key))
+                return new Neo4jProperty<>(this, key, (U) this.node.getProperty(key));
+            else
+                return Property.empty();
+        } catch (IllegalStateException ise) {
+            return Property.<U>empty();
+        }
     }
 
     @Override
