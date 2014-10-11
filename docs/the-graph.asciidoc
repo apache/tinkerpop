@@ -692,6 +692,46 @@ gremlin> g.v(0l).value('name')
 
 By getting the "base graph" (i.e. the underlying `TinkerGraph`) it is possible to mutate the graph.  The above code demonstrates that and also shows that it then possible to read back that added vertex. The following sections explain details of the specific `GraphStrategy` implementations.
 
+IdGraphStrategy
+~~~~~~~~~~~~~~~
+
+`IdGraphStrategy` which affords complete control over element identifiers. Some `Graph` implementations, such as `TinkerGraph`, allow specification of custom identifiers when creating elements:
+
+[source,groovy]
+gremlin> g = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> v = g.addVertex(id, "42a")
+==>v[42a]
+gremlin> g.v("42a")
+==>v[42a]
+
+Other `Graph` implementations, however, generate element identifiers automatically and cannot be assigned:
+
+[source,groovy]
+gremlin> g = Neo4jGraph.open('/tmp/neo4j')
+==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
+gremlin> v = g.addVertex(id, "42a")
+Vertex does not support user supplied identifiers
+Display stack trace? [yN]
+
+Given the nature of identifier assignment, this means that identifiers are generally not conserved when moving data between graph instances and implementations, to XML and back again, etc. So for applications which need it, there is `IdGraphStrategy`. Using vertex and edge indices under the hood, `IdGraphStrategy` enables custom identifiers irrespective of whether or not the underlying `Graph` implementation allows them.
+
+[source,groovy]
+gremlin> g = Neo4jGraph.open('/tmp/neo4j')
+==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
+gremlin> swg = new StrategyWrappedGraph(g)
+==>defaultgraphstrategy[neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]]
+gremlin> swg.strategy().setGraphStrategy(IdGraphStrategy.build("idKey").create())
+==>null
+gremlin> swg.addVertex(id,"42a").id()
+==>42a
+gremlin> swg.addVertex().id()
+==>ef74e843-4c6e-40d2-929f-2552e2f96bf2
+
+When a non-null identifier is passed to `IdGraph.addVertex` or `IdGraph.addEdge`, that value will be used to uniquely identify the element. When the `id` is not provided, `IdGraph` will generate an identifier on its own.
+
+IMPORTANT: The key that is used to store the assigned identifier should be indexed in the underlying graph database.  If it is not indexed, then lookups for the elements that use these identifiers will perform a linear scan.
+
 PartitionGraphStrategy
 ~~~~~~~~~~~~~~~~~~~~~~
 
