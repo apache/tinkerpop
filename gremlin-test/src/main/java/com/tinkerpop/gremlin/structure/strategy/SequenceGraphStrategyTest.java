@@ -360,10 +360,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         assertEquals(methods.length, spy.getCount());
     }
 
-    // todo: fix up busted tostring.
-
     @Test
-    @Ignore
     public void shouldGenerateToStringProperty() throws Exception {
         final ReadOnlyGraphStrategy readonly = new ReadOnlyGraphStrategy();
         final IdGraphStrategy id = new IdGraphStrategy.Builder("aKey").build();
