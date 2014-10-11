@@ -1,9 +1,14 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.junit.Test;
 
 import java.util.NoSuchElementException;
@@ -12,6 +17,7 @@ import java.util.function.Predicate;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -24,11 +30,11 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(MODERN)
     public void testVertexCriterion() throws Exception {
-        Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
-        Predicate<Edge> edgeCriterion = edge -> true;
+        final Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
+        final Predicate<Edge> edgeCriterion = edge -> true;
 
-        GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
-        StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+        final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
+        final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
 
         // three vertices are included in the subgraph
@@ -111,9 +117,8 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldFilterEdgeCriterion() throws Exception {
-
-        Predicate<Vertex> vertexCriterion = vertex -> true;
-        Predicate<Edge> edgeCriterion = edge -> {
+        final Predicate<Vertex> vertexCriterion = vertex -> true;
+        final Predicate<Edge> edgeCriterion = edge -> {
             // 8
             if (edge.<Double>value("weight") == 1.0d && edge.label().equals("knows"))
                 return true;
@@ -126,8 +131,8 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
             else return false;
         };
 
-        GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
-        StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+        final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
+        final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
 
         // all vertices are here
@@ -207,8 +212,8 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldFilterMixedCriteria() throws Exception {
-        Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
-        Predicate<Edge> edgeCriterion = edge -> {
+        final Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
+        final Predicate<Edge> edgeCriterion = edge -> {
             // 9 isn't present because marko is not in the vertex list
             // 11
             if (edge.<Double>value("weight") == 0.4d && edge.label().equals("created"))
@@ -219,8 +224,8 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
             else return false;
         };
 
-        GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
-        StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+        final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
+        final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
 
         // three vertices are included in the subgraph
@@ -293,12 +298,11 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
     @Test(expected = NoSuchElementException.class)
     @LoadGraphWith(MODERN)
     public void shouldGetExcludedVertex() throws Exception {
+        final Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
+        final Predicate<Edge> edgeCriterion = edge -> true;
 
-        Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
-        Predicate<Edge> edgeCriterion = edge -> true;
-
-        GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
-        StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+        final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
+        final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
 
         sg.v(convertToVertexId("marko"));
@@ -307,9 +311,8 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
     @Test(expected = NoSuchElementException.class)
     @LoadGraphWith(MODERN)
     public void shouldGetExcludedEdge() throws Exception {
-
-        Predicate<Vertex> vertexCriterion = vertex -> true;
-        Predicate<Edge> edgeCriterion = edge -> {
+        final Predicate<Vertex> vertexCriterion = vertex -> true;
+        final Predicate<Edge> edgeCriterion = edge -> {
             // 8
             if (edge.<Double>value("weight") == 1.0d && edge.label().equals("knows"))
                 return true;
@@ -322,10 +325,91 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
             else return false;
         };
 
-        GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
-        StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+        final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
+        final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
 
         sg.e(sg.e(convertToEdgeId("marko", "knows", "vadas")));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldReturnWrappedVertexToString() {
+        final Predicate<Vertex> vertexCriterion = vertex -> true;
+        final Predicate<Edge> edgeCriterion = edge -> true;
+
+        final GraphStrategy strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion);
+
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy().setGraphStrategy(strategy);
+        final Vertex v1 = swg.addVertex(T.label, "Person");
+        final Vertex originalVertex = ((StrategyWrappedVertex) v1).getBaseVertex();
+        assertEquals(StringFactory.graphStrategyVertexString(swg.strategy().getGraphStrategy().get(), originalVertex), v1.toString());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldReturnWrappedEdgeToString() {
+        final Predicate<Vertex> vertexCriterion = vertex -> true;
+        final Predicate<Edge> edgeCriterion = edge -> true;
+
+        final GraphStrategy strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion);
+
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy().setGraphStrategy(strategy);
+        final Vertex v1 = swg.addVertex(T.label, "Person");
+        final Vertex v2 = swg.addVertex(T.label, "Person");
+        final Edge e1 = v1.addEdge("friend", v2);
+        final Edge originalEdge = ((StrategyWrappedEdge) e1).getBaseEdge();
+        assertEquals(StringFactory.graphStrategyEdgeString(swg.strategy().getGraphStrategy().get(), originalEdge), e1.toString());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldReturnWrappedVertexPropertyToString() {
+        final Predicate<Vertex> vertexCriterion = vertex -> true;
+        final Predicate<Edge> edgeCriterion = edge -> true;
+
+        final GraphStrategy strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion);
+
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy().setGraphStrategy(strategy);
+        final Vertex v1 = swg.addVertex(T.label, "Person", "age", "one");
+        final VertexProperty age = v1.property("age");
+        final Vertex originalVertex = ((StrategyWrappedVertex) v1).getBaseVertex();
+        final VertexProperty originalVertexProperty = originalVertex.property("age");
+        assertEquals(StringFactory.graphStrategyPropertyString(swg.strategy().getGraphStrategy().get(), originalVertexProperty), age.toString());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldReturnWrappedPropertyToString() {
+        final Predicate<Vertex> vertexCriterion = vertex -> true;
+        final Predicate<Edge> edgeCriterion = edge -> true;
+
+        final GraphStrategy strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion);
+
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy().setGraphStrategy(strategy);
+        final Vertex v1 = swg.addVertex(T.label, "Person");
+        final Vertex v2 = swg.addVertex(T.label, "Person");
+        final Edge e1 = v1.addEdge("friend", v2, "weight", "fifty");
+        final Property weight = e1.property("weight");
+        final Edge originalEdge = ((StrategyWrappedEdge) e1).getBaseEdge();
+        final Property originalProperty = originalEdge.property("weight");
+        assertEquals(StringFactory.graphStrategyPropertyString(swg.strategy().getGraphStrategy().get(), originalProperty), weight.toString());
+    }
+
+    @Test
+    public void shouldReturnWrappedToString() {
+        final Predicate<Vertex> vertexCriterion = vertex -> true;
+        final Predicate<Edge> edgeCriterion = edge -> true;
+
+        final GraphStrategy strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion);
+
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy().setGraphStrategy(strategy);
+        assertNotEquals(g.toString(), swg.toString());
+        assertEquals(StringFactory.graphStrategyString(strategy, g), swg.toString());
     }
 }
