@@ -788,6 +788,22 @@ gremlin> "in B: " + sg.V().count().next() + ", " + sg.E().count().next()
 
 Note that there are no edges in the set B, as the only edge added to partition B is incident on a vertex of A.
 
+ReadOnlyGraphStrategy
+~~~~~~~~~~~~~~~~~~~~~
+
+`ReadOnlyGraphStrategy` was demonstrated at the start of the `GraphStrategy` section.  It simply prevents write operations that would otherwise mutate the `Graph`.
+
+[source,groovy]
+----
+gremlin> conf = new BaseConfiguration()
+==>org.apache.commons.configuration.BaseConfiguration@5b40ceb
+gremlin> conf.setProperty("gremlin.graph","com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph")
+==>null
+gremlin> g = GraphFactory.open(conf, new ReadOnlyGraphStrategy())
+==>readonlygraphstrategy[tinkergraph[vertices:0 edges:0]]
+gremlin> g.addVertex('name','stephen')
+Graph uses class com.tinkerpop.gremlin.structure.strategy.ReadOnlyGraphStrategy and is therefore unmodifiable
+
 SubgraphStrategy
 ~~~~~~~~~~~~~~~~
 
