@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Pair;
 import org.junit.Test;
@@ -65,7 +66,9 @@ public class StrategyWrappedGraphTest  {
         @Test
         public void shouldReturnWrappedToString() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+            final GraphStrategy strategy = swg.strategy().getGraphStrategy().orElse(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
             assertNotEquals(g.toString(), swg.toString());
+            assertEquals(StringFactory.graphString(strategy, g), swg.toString());
         }
     }
 
