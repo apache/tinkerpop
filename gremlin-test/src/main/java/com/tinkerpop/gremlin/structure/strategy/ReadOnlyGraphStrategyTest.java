@@ -9,6 +9,8 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.junit.Test;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_INTEGER_VALUES;
@@ -151,7 +153,63 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
         swg.variables().asMap().put("will", "not work");
     }
 
-    private void assertException(final ConsumerThatThrows stt) {
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldReturnWrappedVertexToString() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        final Vertex v1 = swg.addVertex(T.label, "Person");
+        final Vertex originalVertex = ((StrategyWrappedVertex) v1).getBaseVertex();
+        swg.strategy().setGraphStrategy(readOnlyGraphStrategy);
+        assertEquals(StringFactory.graphStrategyVertexString(swg.strategy().getGraphStrategy().get(), originalVertex), v1.toString());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldReturnWrappedEdgeToString() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        final Vertex v1 = swg.addVertex(T.label, "Person");
+        final Vertex v2 = swg.addVertex(T.label, "Person");
+        final Edge e1 = v1.addEdge("friend", v2);
+        final Edge originalEdge = ((StrategyWrappedEdge) e1).getBaseEdge();
+        swg.strategy().setGraphStrategy(readOnlyGraphStrategy);
+        assertEquals(StringFactory.graphStrategyEdgeString(swg.strategy().getGraphStrategy().get(), originalEdge), e1.toString());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldReturnWrappedVertexPropertyToString() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        final Vertex v1 = swg.addVertex(T.label, "Person", "age", "one");
+        final VertexProperty age = v1.property("age");
+        final Vertex originalVertex = ((StrategyWrappedVertex) v1).getBaseVertex();
+        final VertexProperty originalVertexProperty = originalVertex.property("age");
+        swg.strategy().setGraphStrategy(readOnlyGraphStrategy);
+        assertEquals(StringFactory.graphStrategyPropertyString(swg.strategy().getGraphStrategy().get(), originalVertexProperty), age.toString());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldReturnWrappedPropertyToString() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        final Vertex v1 = swg.addVertex(T.label, "Person");
+        final Vertex v2 = swg.addVertex(T.label, "Person");
+        final Edge e1 = v1.addEdge("friend", v2, "weight", "fifty");
+        final Property weight = e1.property("weight");
+        final Edge originalEdge = ((StrategyWrappedEdge) e1).getBaseEdge();
+        final Property originalProperty = originalEdge.property("weight");
+        swg.strategy().setGraphStrategy(readOnlyGraphStrategy);
+        assertEquals(StringFactory.graphStrategyPropertyString(swg.strategy().getGraphStrategy().get(), originalProperty), weight.toString());
+    }
+
+    @Test
+    public void shouldReturnWrappedToString() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy().setGraphStrategy(readOnlyGraphStrategy);
+        assertNotEquals(swg.getBaseGraph().toString(), swg.toString());
+        assertEquals(StringFactory.graphStrategyString(readOnlyGraphStrategy, swg.getBaseGraph()), swg.toString());
+    }
+
+    private void assertException(final ThrowingConsumer<Graph> stt) {
         try {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
             swg.strategy().setGraphStrategy(readOnlyGraphStrategy);
@@ -163,10 +221,5 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
             assertEquals(expectedException.getMessage(), ex.getMessage());
 
         }
-    }
-
-    @FunctionalInterface
-    public interface ConsumerThatThrows {
-        public void accept(final StrategyWrappedGraph graph) throws Exception;
     }
 }
