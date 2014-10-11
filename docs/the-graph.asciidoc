@@ -803,6 +803,7 @@ gremlin> g = GraphFactory.open(conf, new ReadOnlyGraphStrategy())
 ==>readonlygraphstrategy[tinkergraph[vertices:0 edges:0]]
 gremlin> g.addVertex('name','stephen')
 Graph uses class com.tinkerpop.gremlin.structure.strategy.ReadOnlyGraphStrategy and is therefore unmodifiable
+----
 
 SequenceGraphStrategy
 ~~~~~~~~~~~~~~~~~~~~~
