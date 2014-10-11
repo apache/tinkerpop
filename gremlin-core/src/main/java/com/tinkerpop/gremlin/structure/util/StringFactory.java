@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
+import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.javatuples.Pair;
 
@@ -80,6 +81,13 @@ public class StringFactory {
      */
     public static String graphString(final Graph graph, final String internalString) {
         return graph.getClass().getSimpleName().toLowerCase() + L_BRACKET + internalString + R_BRACKET;
+    }
+
+    /**
+     * Construct the representation for a {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy}.
+     */
+    public static String graphString(final GraphStrategy graphStrategy, final Graph graph) {
+        return graphStrategy.getClass().getSimpleName().toLowerCase() + L_BRACKET + graph.toString() + R_BRACKET;
     }
 
     public static String graphVariablesString(final Graph.Variables variables) {

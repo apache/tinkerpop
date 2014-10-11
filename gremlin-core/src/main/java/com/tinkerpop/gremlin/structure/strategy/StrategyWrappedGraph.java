@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 
@@ -124,7 +125,7 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
     @Override
     public String toString() {
         final GraphStrategy strategy = this.strategy.getGraphStrategy().orElse(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-        return String.format("%s[%s]", strategy.toString(), baseGraph.toString());
+        return StringFactory.graphString(strategy, this.baseGraph);
     }
 
     private <S, E> GraphTraversal<S, E> applyStrategy(final GraphTraversal<S, E> traversal) {
