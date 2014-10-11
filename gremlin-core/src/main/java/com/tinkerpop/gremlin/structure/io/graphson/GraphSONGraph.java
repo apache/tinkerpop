@@ -50,7 +50,7 @@ class GraphSONGraph {
             jsonGenerator.writeStartObject();
 
             if (g.features().graph().variables().supportsVariables())
-                jsonGenerator.writeObjectField(GraphSONTokens.PROPERTIES, new HashMap<>(g.variables().asMap()));
+                jsonGenerator.writeObjectField(GraphSONTokens.VARIABLES, new HashMap<>(g.variables().asMap()));
 
             jsonGenerator.writeArrayFieldStart(GraphSONTokens.VERTICES);
             if (normalize)

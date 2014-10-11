@@ -80,10 +80,10 @@ public class GraphSONReader implements GraphReader {
                 final String fieldName = parser.getCurrentName();
                 parser.nextToken();
 
-                if (fieldName.equals(GraphSONTokens.PROPERTIES)) {
-                    final Map<String, Object> graphProperties = parser.readValueAs(mapTypeReference);
+                if (fieldName.equals(GraphSONTokens.VARIABLES)) {
+                    final Map<String, Object> graphVariables = parser.readValueAs(mapTypeReference);
                     if (graphToWriteTo.features().graph().variables().supportsVariables())
-                        graphProperties.entrySet().forEach(entry -> graphToWriteTo.variables().set(entry.getKey(), entry.getValue()));
+                        graphVariables.entrySet().forEach(entry -> graphToWriteTo.variables().set(entry.getKey(), entry.getValue()));
                 } else if (fieldName.equals(GraphSONTokens.VERTICES)) {
                     while (parser.nextToken() != JsonToken.END_ARRAY) {
                         final Map<String, Object> vertexData = parser.readValueAs(mapTypeReference);

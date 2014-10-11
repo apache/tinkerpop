@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* GraphSON format change for full `Graph` serialization - Graph variables are now serialized with the key "variables" as opposed to "properties".
+* Relaxed `Graph.toString()` test requirements for implementers.
 * Make the `toString` operations in `GraphStrategy` consistent.
 * Add `VertexFeatures.supportsRemoveProperty`.
 * Add `VertexPropertyFeatures.supportsRemoveProperty`.
