@@ -7,7 +7,10 @@ import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -16,6 +19,7 @@ import java.util.UUID;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -274,6 +278,66 @@ public class IdGraphStrategyTest {
             } catch (IllegalArgumentException iae) {
                 assertNotNull(iae);
             }
+        }
+    }
+
+    public static class ToStringConsistencyTest extends AbstractGremlinTest {
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        public void shouldReturnWrappedVertexToString() {
+            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+            swg.strategy().setGraphStrategy(new IdGraphStrategy.Builder(idKey).supportsEdgeId(false).build());
+            final Vertex v1 = swg.addVertex(T.label, "Person");
+            final Vertex originalVertex = ((StrategyWrappedVertex) v1).getBaseVertex();
+            assertEquals(StringFactory.graphStrategyVertexString(swg.strategy().getGraphStrategy().get(), originalVertex), v1.toString());
+        }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+        public void shouldReturnWrappedEdgeToString() {
+            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+            swg.strategy().setGraphStrategy(new IdGraphStrategy.Builder(idKey).supportsEdgeId(false).build());
+            final Vertex v1 = swg.addVertex(T.label, "Person");
+            final Vertex v2 = swg.addVertex(T.label, "Person");
+            final Edge e1 = v1.addEdge("friend", v2);
+            final Edge originalEdge = ((StrategyWrappedEdge) e1).getBaseEdge();
+            assertEquals(StringFactory.graphStrategyEdgeString(swg.strategy().getGraphStrategy().get(), originalEdge), e1.toString());
+        }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+        public void shouldReturnWrappedVertexPropertyToString() {
+            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+            swg.strategy().setGraphStrategy(new IdGraphStrategy.Builder(idKey).supportsEdgeId(false).build());
+            final Vertex v1 = swg.addVertex(T.label, "Person", "age", "one");
+            final VertexProperty age = v1.property("age");
+            final Vertex originalVertex = ((StrategyWrappedVertex) v1).getBaseVertex();
+            final VertexProperty originalVertexProperty = originalVertex.property("age");
+            assertEquals(StringFactory.graphStrategyPropertyString(swg.strategy().getGraphStrategy().get(), originalVertexProperty), age.toString());
+        }
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+        public void shouldReturnWrappedPropertyToString() {
+            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+            swg.strategy().setGraphStrategy(new IdGraphStrategy.Builder(idKey).supportsEdgeId(false).build());
+            final Vertex v1 = swg.addVertex(T.label, "Person");
+            final Vertex v2 = swg.addVertex(T.label, "Person");
+            final Edge e1 = v1.addEdge("friend", v2, "weight", "fifty");
+            final Property weight = e1.property("weight");
+            final Edge originalEdge = ((StrategyWrappedEdge) e1).getBaseEdge();
+            final Property originalProperty = originalEdge.property("weight");
+            assertEquals(StringFactory.graphStrategyPropertyString(swg.strategy().getGraphStrategy().get(), originalProperty), weight.toString());
+        }
+
+        @Test
+        public void shouldReturnWrappedToString() {
+            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+            swg.strategy().setGraphStrategy(new IdGraphStrategy.Builder(idKey).supportsEdgeId(false).build());
+            final GraphStrategy strategy = swg.strategy().getGraphStrategy().get();
+            assertNotEquals(g.toString(), swg.toString());
+            assertEquals(StringFactory.graphStrategyString(strategy, g), swg.toString());
         }
     }
 }
