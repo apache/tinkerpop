@@ -28,6 +28,8 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
     private Strategy.Context<StrategyWrappedGraph> graphContext;
 
     public StrategyWrappedGraph(final Graph baseGraph) {
+        if (baseGraph instanceof StrategyWrapped) throw new IllegalArgumentException(
+                String.format("The graph %s is already StrategyWrapped and must be a base Graph", baseGraph));
 
         this.baseGraph = baseGraph;
         this.graphContext = new Strategy.Context<>(baseGraph, this);

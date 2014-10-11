@@ -40,6 +40,14 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Enclosed.class)
 public class StrategyWrappedGraphTest  {
 
+    public static class CoreTest extends AbstractGremlinTest {
+        @Test(expected = IllegalArgumentException.class)
+        public void shouldNotAllowAStrategyWrappedGraphToBeReWrapped() {
+            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+            new StrategyWrappedGraph(swg);
+        }
+    }
+
     public static class ToStringConsistencyTest extends AbstractGremlinTest {
 
         @Test
