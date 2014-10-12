@@ -169,6 +169,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     public Map<String, Set<String>> imports() {
         final Map<String, Set<String>> m = new HashMap<>();
         m.put("imports", importCustomizerProvider.getImports());
+        m.put("staticImports", importCustomizerProvider.getStaticImports());
         m.put("extraImports", importCustomizerProvider.getExtraImports());
         m.put("extraStaticImports", importCustomizerProvider.getExtraStaticImports());
         return m;
