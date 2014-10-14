@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `ChooseStep` broken apart into `ChooseMapStep` and `ChooseBooleanStep` as the overloading was not clean.
 * Added `TraversalStrategyRegistry` and `GraphTraversalStrategyRegistry` which has respective global strategies.
 * Added a generic `BranchStep` to be used for "meta-step" re-writing for GraphComputer traversals.
 * Moved `JumpStep`, `UntilStep`, and `ChooseStep` to a new `branch/` package.

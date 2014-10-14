@@ -7,6 +7,10 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
+import com.tinkerpop.gremlin.process.graph.step.branch.ChooseBooleanStep;
+import com.tinkerpop.gremlin.process.graph.step.branch.ChooseMapStep;
+import com.tinkerpop.gremlin.process.graph.step.branch.JumpStep;
+import com.tinkerpop.gremlin.process.graph.step.branch.UntilStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.ExceptStep;
@@ -19,7 +23,6 @@ import com.tinkerpop.gremlin.process.graph.step.filter.RetainStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.WhereStep;
 import com.tinkerpop.gremlin.process.graph.step.map.BackStep;
-import com.tinkerpop.gremlin.process.graph.step.branch.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeOtherVertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
@@ -29,7 +32,6 @@ import com.tinkerpop.gremlin.process.graph.step.map.HiddenValueMapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.HiddenValueStep;
 import com.tinkerpop.gremlin.process.graph.step.map.HiddensStep;
 import com.tinkerpop.gremlin.process.graph.step.map.IdStep;
-import com.tinkerpop.gremlin.process.graph.step.branch.JumpStep;
 import com.tinkerpop.gremlin.process.graph.step.map.KeyStep;
 import com.tinkerpop.gremlin.process.graph.step.map.LabelStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
@@ -43,7 +45,6 @@ import com.tinkerpop.gremlin.process.graph.step.map.SelectOneStep;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ShuffleStep;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldStep;
-import com.tinkerpop.gremlin.process.graph.step.branch.UntilStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ValueMapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ValueStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ValuesStep;
@@ -380,16 +381,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.addStep(new FoldStep<>(this, seed, foldFunction));
     }
 
-    ///////////////////// EXPERIMENTAL STEPS /////////////////////
-
-    public default <E2> GraphTraversal<S, E2> choose(final Predicate<Traverser<S>> choosePredicate, final Traversal trueChoice, final Traversal falseChoice) {
-        return this.addStep(new ChooseStep(this, choosePredicate, trueChoice, falseChoice));
-    }
-
-    public default <E2, M> GraphTraversal<S, E2> choose(final Function<Traverser<S>, M> mapFunction, final Map<M, Traversal<S, E2>> choices) {
-        return this.addStep(new ChooseStep<>(this, mapFunction, choices));
-    }
-
     ///////////////////// FILTER STEPS /////////////////////
 
     public default GraphTraversal<S, E> filter(final Predicate<Traverser<E>> predicate) {
@@ -670,6 +661,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> until(final String breakLabel, final int loops) {
         return this.addStep(new UntilStep<>(this, breakLabel, loops, null));
+    }
+
+    public default <E2> GraphTraversal<S, E2> choose(final Predicate<Traverser<E>> choosePredicate, final Traversal trueChoice, final Traversal falseChoice) {
+        return this.addStep(new ChooseBooleanStep<E,E2>(this, choosePredicate, trueChoice, falseChoice));
+    }
+
+    public default <E2, M> GraphTraversal<S, E2> choose(final Function<Traverser<E>, M> mapFunction, final Map<M, Traversal<E, E2>> choices) {
+        return this.addStep(new ChooseMapStep<>(this, mapFunction, choices));
     }
 
     ///////////////////// UTILITY STEPS /////////////////////
