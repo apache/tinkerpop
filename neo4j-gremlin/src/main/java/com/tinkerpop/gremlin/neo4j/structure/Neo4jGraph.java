@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.neo4j.structure;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.step.sideEffect.Neo4jGraphStep;
 import com.tinkerpop.gremlin.neo4j.process.graph.step.util.Neo4jCypherIterator;
-import com.tinkerpop.gremlin.neo4j.process.graph.util.DefaultNeo4jTraversal;
+import com.tinkerpop.gremlin.neo4j.process.graph.util.Neo4jGraphTraversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -172,7 +172,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     @Override
     public Neo4jTraversal<Vertex, Vertex> V() {
         this.tx().readWrite();
-        final Neo4jTraversal<Vertex, Vertex> traversal = new DefaultNeo4jTraversal<>(this);
+        final Neo4jTraversal<Vertex, Vertex> traversal = new Neo4jGraphTraversal<>(this);
         traversal.addStep(new Neo4jGraphStep(traversal, Vertex.class, this));
         return traversal;
     }
@@ -180,7 +180,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     @Override
     public Neo4jTraversal<Edge, Edge> E() {
         this.tx().readWrite();
-        final Neo4jTraversal<Edge, Edge> traversal = new DefaultNeo4jTraversal<>(this);
+        final Neo4jTraversal<Edge, Edge> traversal = new Neo4jGraphTraversal<>(this);
         traversal.addStep(new Neo4jGraphStep(traversal, Edge.class, this));
         return traversal;
     }

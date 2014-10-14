@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.neo4j.process.graph;
 
 import com.tinkerpop.gremlin.neo4j.process.graph.step.map.Neo4jCypherStep;
-import com.tinkerpop.gremlin.neo4j.process.graph.util.DefaultNeo4jTraversal;
+import com.tinkerpop.gremlin.neo4j.process.graph.util.Neo4jGraphTraversal;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
@@ -23,11 +23,11 @@ public interface Neo4jTraversalStub<S, E> extends GraphTraversal<S, E> {
     public static <S> Neo4jTraversal<S, S> of(final Graph graph) {
         if (!(graph instanceof Neo4jGraph))
             throw new IllegalArgumentException(String.format("graph must be of type %s", Neo4jGraph.class));
-        return new DefaultNeo4jTraversal<>((Neo4jGraph) graph);
+        return new Neo4jGraphTraversal<>((Neo4jGraph) graph);
     }
 
     public static <S> Neo4jTraversal<S, S> of() {
-        return new DefaultNeo4jTraversal<>();
+        return new Neo4jGraphTraversal<>();
     }
 
     @Override

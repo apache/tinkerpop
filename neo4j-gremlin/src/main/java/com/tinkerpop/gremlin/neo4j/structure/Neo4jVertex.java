@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.neo4j.structure;
 
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jVertexTraversal;
-import com.tinkerpop.gremlin.neo4j.process.graph.util.DefaultNeo4jTraversal;
+import com.tinkerpop.gremlin.neo4j.process.graph.util.Neo4jGraphTraversal;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -15,7 +15,6 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
-import org.neo4j.cypher.EntityNotFoundException;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.Node;
@@ -174,7 +173,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
 
     @Override
     public Neo4jTraversal<Vertex, Vertex> start() {
-        final Neo4jTraversal<Vertex, Vertex> traversal = new DefaultNeo4jTraversal<>(this.graph);
+        final Neo4jTraversal<Vertex, Vertex> traversal = new Neo4jGraphTraversal<>(this.graph);
         return (Neo4jTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 
