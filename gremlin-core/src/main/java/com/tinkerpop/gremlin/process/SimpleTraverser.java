@@ -16,7 +16,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     private static final String PATH_ERROR_MESSAGE = "Path tracking is not supported by this Traverser: " + SimpleTraverser.class;
 
     protected T t;
-    protected String future = NO_FUTURE;
+    protected String future = DONE;
     protected short loops = 0;
     protected transient Traversal.SideEffects sideEffects;
     protected long bulk = 1l;

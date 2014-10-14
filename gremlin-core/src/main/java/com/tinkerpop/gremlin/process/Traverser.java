@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.Serializable;
@@ -66,12 +67,19 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
         return this.getSideEffects().get(sideEffectKey);
     }
 
-    public default int compareTo(final Traverser<T> other) {
+    /**
+     * If the underlying object of the traverser is comparable, compare it with the other traverser.
+     *
+     * @param other the other traverser that presumably has a comparable internal object
+     * @return the comparison of the two objects of the traversers
+     * @throws ClassCastException if the object of the traverser is not comparable
+     */
+    public default int compareTo(final Traverser<T> other) throws ClassCastException {
         final T a = this.get();
         if (a instanceof Comparable)
             return ((Comparable) a).compareTo(other.get());
         else
-            throw new IllegalArgumentException("The traverser does not contain a comparable object: " + a.getClass());
+            throw new ClassCastException("The traverser does not contain a comparable object: " + a.getClass());
     }
 
     /**
@@ -90,7 +98,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
      */
     public interface Admin<T> extends Traverser<T> {
 
-        public static final String NO_FUTURE = "noFuture";
+        public static final String DONE = Graph.System.system("done");
 
         /**
          * Set the current object location of the traverser.
@@ -147,7 +155,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
          * @return Whether the traverser is done executing or not
          */
         public default boolean isDone() {
-            return getFuture().equals(NO_FUTURE);
+            return getFuture().equals(DONE);
         }
 
         /**
@@ -184,6 +192,12 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
          */
         public Admin<T> inflate(final Vertex hostVertex, final Traversal traversal);
 
+        /**
+         * Set the sideEffects of the {@link Traversal}. Given that traversers can move between machines,
+         * it may be important to re-set this when the traverser cross machine boundaries and typically during inflate().
+         *
+         * @param sideEffects the sideEffects of the traversal.
+         */
         public void setSideEffects(final Traversal.SideEffects sideEffects);
     }
 }

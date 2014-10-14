@@ -28,7 +28,7 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
 
     @Override
     public int size() {
-        return this.map.size(); // TODO: should it be the bulk sum size?
+        return this.map.size();
     }
 
     @Override
@@ -102,7 +102,7 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
         final List<Traverser.Admin<S>> list = new ArrayList<>(this.map.keySet());
         Collections.sort(list, comparator);
         this.map.clear();
-        list.forEach(t -> this.map.put(t, t));
+        list.forEach(traverser -> this.map.put(traverser, traverser));
     }
 
 }

@@ -24,9 +24,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -118,7 +116,7 @@ public class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>>
         traversal.sideEffects().setLocalVertex(vertex);
 
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
-        final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.Admin.NO_FUTURE : startStep.getNextStep().getLabel();
+        final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.Admin.DONE : startStep.getNextStep().getLabel();
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);               // TODO: SIDE-EFFECTS IN TRAVERSAL IN OLAP!
         if (startStep.returnsVertices()) {   // PROCESS VERTICES
             final Traverser.Admin<Vertex> traverser = this.trackPaths ?

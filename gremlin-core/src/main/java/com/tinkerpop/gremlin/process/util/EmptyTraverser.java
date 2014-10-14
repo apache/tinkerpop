@@ -42,7 +42,7 @@ public class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
 
     @Override
     public String getFuture() {
-        return NO_FUTURE;
+        return DONE;
     }
 
     @Override

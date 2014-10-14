@@ -23,6 +23,7 @@ public class UnrollJumpStrategy implements TraversalStrategy {
 
         TraversalHelper.getStepsOfClass(JumpStep.class, traversal).stream()
                 .filter(JumpStep::unRollable)
+                // TODO: filter() when do unroll and when not to depending on the depth of looping?
                 .forEach(toStep -> {
                     if (toStep.isDoWhile()) {
                         // DO WHILE SEMANTICS
