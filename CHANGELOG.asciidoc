@@ -9,7 +9,9 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Add test cases to the Structure Suite to enforce consistent operations of reading properties after removal of their owning `Element`.
+* Added a generic `BranchStep` to be used for "meta-step" re-writing for GraphComputer traversals.
+* Moved `JumpStep`, `UntilStep`, and `ChooseStep` to a new `branch/` package.
+* Added test cases to the Structure Suite to enforce consistent operations of reading properties after removal of their owning `Element`.
 * GraphSON format change for full `Graph` serialization - Graph variables are now serialized with the key "variables" as opposed to "properties".
 * Relaxed `Graph.toString()` test requirements for implementers.
 * Made the `toString` operations in `GraphStrategy` consistent.

@@ -1,7 +1,8 @@
-package com.tinkerpop.gremlin.process.graph.step.map;
+package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
 
 import java.util.Collections;
 import java.util.Map;
