@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +36,18 @@ public abstract class AbstractGremlinTest {
     protected Configuration config;
     protected GraphStrategy strategyToTest;
     protected GraphProvider graphProvider;
+
+    protected static String tempPath;
+
+    static {
+        final String temp = System.getProperty("java.io.tmpdir", File.separator + "tmp").trim();
+        if (!temp.endsWith(File.separator))
+            tempPath = temp + File.separator;
+        else
+            tempPath = temp;
+
+        tempPath = tempPath + "tinkerpop-test/";
+    }
 
     @Rule
     public TestName name = new TestName();

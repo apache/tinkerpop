@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
-import com.tinkerpop.gremlin.structure.Element
 import com.tinkerpop.gremlin.structure.Graph
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter
