@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.AbstractGremlinTest
 import com.tinkerpop.gremlin.FeatureRequirement
 import com.tinkerpop.gremlin.FeatureRequirements
 import com.tinkerpop.gremlin.LoadGraphWith
+import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.structure.Graph
 import com.tinkerpop.gremlin.structure.IoTest
 import org.junit.Test
@@ -95,5 +96,10 @@ class GremlinLoaderTest extends AbstractGremlinTest {
         IoTest.assertCrewGraph(gcopy, true)
 
         graphProvider.clear(gcopy, conf)
+    }
+
+    @Test
+    public void shouldCalculateMean() {
+        assertEquals(25.0d, [10, 20, 30, 40].mean(), 0.00001d)
     }
 }
