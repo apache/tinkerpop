@@ -109,6 +109,10 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
             return this.exists(key) ? this.get(key) : otherValue;
         }
 
+        public default <V> void ifPresent(final String key, final Consumer<V> consumer) {
+            if (this.exists(key)) consumer.accept(this.get(key));
+        }
+
         public void remove(final String key);
 
         public Set<String> keys();

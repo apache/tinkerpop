@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.ElementTraversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -533,6 +534,10 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
 
     public default Neo4jTraversal<A, A> as(final String label) {
         return this.start().as(label);
+    }
+
+    public default Neo4jTraversal<A, A> profile() {
+        return this.start().profile();
     }
 
     public default Neo4jTraversal<A, A> with(final Object... sideEffectKeyValues) {

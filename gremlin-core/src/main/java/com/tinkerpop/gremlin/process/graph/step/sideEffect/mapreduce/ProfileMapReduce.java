@@ -30,9 +30,7 @@ public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, G
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<NullObject, GlobalMetrics> emitter) {
-        if (MapReduce.getLocalSideEffects(vertex).exists(ProfileStep.METRICS_KEY)) {
-            emitter.emit(NullObject.instance(), MapReduce.getLocalSideEffects(vertex).<GlobalMetrics>get(ProfileStep.METRICS_KEY));
-        }
+        MapReduce.getLocalSideEffects(vertex).<GlobalMetrics>ifPresent(ProfileStep.METRICS_KEY, metrics -> emitter.emit(NullObject.instance(), metrics));
     }
 
     @Override
