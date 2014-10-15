@@ -56,6 +56,11 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
+            // branch
+            GroovyChooseTest.StandardTest.class,
+            GroovyJumpTest.StandardTest.class,
+            GroovyUntilTest.StandardTest.class,
+
             // filter
             GroovyCyclicPathTest.StandardTest.class,
             GroovyDedupTest.StandardTest.class,
@@ -71,10 +76,8 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyWhereTest.StandardTest.class,
             // map
             GroovyBackTest.StandardTest.class,
-            GroovyChooseTest.StandardTest.class,
             GroovyFoldTest.StandardTest.class,
             GroovyHiddenValueMapTest.StandardTest.class,
-            GroovyJumpTest.StandardTest.class,
             GroovyMapTest.StandardTest.class,
             GroovyMatchTest.StandardTest.class,
             GroovyOrderByTest.StandardTest.class,
@@ -83,7 +86,6 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovySelectTest.StandardTest.class,
             GroovyShuffleTest.StandardTest.class,
             GroovyUnfoldTest.StandardTest.class,
-            GroovyUntilTest.StandardTest.class,
             GroovyValueMapTest.StandardTest.class,
             GroovyVertexTest.StandardTest.class,
             // sideEffect

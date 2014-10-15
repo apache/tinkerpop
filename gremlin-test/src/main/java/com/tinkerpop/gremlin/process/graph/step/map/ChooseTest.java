@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -71,7 +72,7 @@ public abstract class ChooseTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_hasXageX_chooseXname_lengthX5_in_4_outX_name() {
+    public void g_V_hasXageX_chooseXname_lengthX5_in_4_out_3_bothX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_hasXageX_chooseXname_lengthX5_in_4_out_3_bothX_name();
         printTraversalForm(traversal);
         Map<String, Long> counts = new HashMap<>();
@@ -90,7 +91,7 @@ public abstract class ChooseTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_chooseXout_count_nextX2L_valueXnameX_3L_valuesX() {
+    public void g_V_chooseXout_count_nextX2L_valueXnameX_3L_valueMapX() {
         final Traversal<Vertex, Object> traversal = get_g_V_chooseXout_count_nextX2L_valueXnameX_3L_valueMapX();
         printTraversalForm(traversal);
         Map<String, Long> counts = new HashMap<>();
@@ -137,6 +138,40 @@ public abstract class ChooseTest extends AbstractGremlinTest {
                 put(2L, g.of().value("name"));
                 put(3L, g.of().valueMap());
             }});
+        }
+    }
+
+    public static class ComputerTest extends ChooseTest {
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name() {
+            return g.V().choose(t -> t.get().<String>value("name").length() == 5,
+                    g.of().out(),
+                    g.of().in()).<String>value("name").submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_v1_chooseX0XoutX_name(Object v1Id) {
+            return g.v(v1Id).choose(t -> 0, new HashMap() {{
+                put(0, g.of().out().value("name"));
+            }}).submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_hasXageX_chooseXname_lengthX5_in_4_out_3_bothX_name() {
+            return g.V().has("age").choose(t -> t.get().<String>value("name").length(), new HashMap() {{
+                put(5, g.of().in());
+                put(4, g.of().out());
+                put(3, g.of().both());
+            }}).value("name").submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_valueXnameX_3L_valueMapX() {
+            return g.V().choose(t -> t.get().out().count().next(), new HashMap() {{
+                put(2L, g.of().value("name"));
+                put(3L, g.of().valueMap());
+            }}).submit(g.compute());
         }
     }
 }

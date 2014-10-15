@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.RandomTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.WhereTest;
 import com.tinkerpop.gremlin.process.graph.step.map.BackTest;
+import com.tinkerpop.gremlin.process.graph.step.map.ChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.map.JumpTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PathTest;
@@ -68,6 +69,11 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // basic api semantics testing
             GraphComputerTest.ComputerTest.class,   // todo: not sure this should be here as it forces retest of GraphComputer without an "implementation"
 
+            // branch
+            ChooseTest.ComputerTest.class,
+            JumpTest.ComputerTest.class,
+            UntilTest.ComputerTest.class,
+
             // filter
             CyclicPathTest.ComputerTest.class,
             // TODO: REMOVE? DedupTest.JavaComputerDedupTest.class
@@ -86,7 +92,6 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // map
             BackTest.ComputerTest.class,
             // TODO: REMOVE? FoldTest.JavaComputerFoldTest.class,
-            JumpTest.ComputerTest.class,
             MapTest.ComputerTest.class,
             // TODO: MatchTest.JavaComputerMatchTest.class,
             // TODO: REMOVE? OrderTest.JavaOrderTest.class
@@ -96,7 +101,6 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             VertexTest.ComputerTest.class,
             UnfoldTest.ComputerTest.class,
             // UnionTest.JavaComputerUnionTest.class,
-            UntilTest.ComputerTest.class,
             ValueMapTest.ComputerTest.class,
 
             // sideEffect

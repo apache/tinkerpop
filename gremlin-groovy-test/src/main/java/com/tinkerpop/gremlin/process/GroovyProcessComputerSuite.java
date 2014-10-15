@@ -14,6 +14,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRandomTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovySimplePathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyWhereTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyBackTest;
+import com.tinkerpop.gremlin.process.graph.step.map.GroovyChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyHiddenValueMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyJumpTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyMapTest;
@@ -45,7 +46,14 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
+
             GroovyGraphComputerTest.ComputerTest.class,
+
+            //branch
+            GroovyChooseTest.ComputerTest.class,
+            GroovyJumpTest.ComputerTest.class,
+            GroovyUntilTest.ComputerTest.class,
+
             // filter
             GroovyCyclicPathTest.ComputerTest.class,
             // TODO: GroovyDedupTest.ComputerTest.class
@@ -65,7 +73,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             // TODO: GroovyChooseTest.ComputerTest.class,
             // TODO: GroovyFoldTest.ComputerTest.class,
             GroovyHiddenValueMapTest.ComputerTest.class,
-            GroovyJumpTest.ComputerTest.class,
+
             GroovyMapTest.ComputerTest.class,
             // TODO: GroovyMatchTest.ComputerTest.class,
             // TODO: GroovyOrderByTest.ComputerTest.class,
@@ -75,7 +83,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyShuffleTest.ComputerTest.class,
             GroovyUnfoldTest.ComputerTest.class,
             // TODO: GroovyUnionTest.ComputerTest.class,
-            GroovyUntilTest.ComputerTest.class,
+
             GroovyValueMapTest.ComputerTest.class,
             GroovyVertexTest.ComputerTest.class,
 

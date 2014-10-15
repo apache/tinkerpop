@@ -64,6 +64,8 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
+import com.tinkerpop.gremlin.process.graph.strategy.ChooseBooleanLinearStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.ChooseMapLinearStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.CountCapStrategy;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.SideEffectHelper;
@@ -102,6 +104,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     @Override
     public default void prepareForGraphComputer() {
         Traversal.super.prepareForGraphComputer();
+        this.strategies().register(ChooseBooleanLinearStrategy.instance());
+        this.strategies().register(ChooseMapLinearStrategy.instance());
         this.strategies().register(CountCapStrategy.instance());
     }
 
@@ -664,7 +668,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, E2> choose(final Predicate<Traverser<E>> choosePredicate, final Traversal trueChoice, final Traversal falseChoice) {
-        return this.addStep(new ChooseBooleanStep<E,E2>(this, choosePredicate, trueChoice, falseChoice));
+        return this.addStep(new ChooseBooleanStep<E, E2>(this, choosePredicate, trueChoice, falseChoice));
     }
 
     public default <E2, M> GraphTraversal<S, E2> choose(final Function<Traverser<E>, M> mapFunction, final Map<M, Traversal<E, E2>> choices) {

@@ -78,6 +78,11 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] allTests = new Class<?>[]{
+            // branch
+            ChooseTest.StandardTest.class,
+            JumpTest.StandardTest.class,
+            UntilTest.StandardTest.class,
+
             // filter
             CyclicPathTest.StandardTest.class,
             DedupTest.StandardTest.class,
@@ -95,10 +100,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
 
             // map
             BackTest.StandardTest.class,
-            ChooseTest.StandardTest.class,
             FoldTest.StandardTest.class,
             HiddenValueMapTest.StandardTest.class,
-            JumpTest.StandardTest.class,
             MapTest.StandardTest.class,
             MatchTest.StandardTest.class,
             OrderTest.StandardTest.class,
@@ -109,7 +112,6 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             VertexTest.StandardTest.class,
             UnfoldTest.StandardTest.class,
             // UnionTest.JavaUnionTest.class,
-            UntilTest.StandardTest.class,
             ValueMapTest.StandardTest.class,
 
             // sideEffect

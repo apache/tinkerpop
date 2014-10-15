@@ -245,14 +245,6 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().fold(seed, foldFunction);
     }
 
-    public default <E2> GraphTraversal<A, E2> choose(final Predicate<Traverser<A>> choosePredicate, final Traversal trueChoice, final Traversal falseChoice) {
-        return this.start().choose(choosePredicate, trueChoice, falseChoice);
-    }
-
-    public default <E2, M> GraphTraversal<A, E2> choose(final Function<Traverser<A>, M> mapFunction, final Map<M, Traversal<A, E2>> choices) {
-        return this.start().choose(mapFunction, choices);
-    }
-
     ///////////////////// FILTER STEPS /////////////////////
 
     public default GraphTraversal<A, A> filter(final Predicate<Traverser<A>> predicate) {
@@ -526,6 +518,14 @@ public abstract interface ElementTraversal<A extends Element> {
 
     public default GraphTraversal<A, A> until(final String breakLabel, final int loops) {
         return this.start().until(breakLabel, loops);
+    }
+
+    public default <E2> GraphTraversal<A, E2> choose(final Predicate<Traverser<A>> choosePredicate, final Traversal trueChoice, final Traversal falseChoice) {
+        return this.start().choose(choosePredicate, trueChoice, falseChoice);
+    }
+
+    public default <E2, M> GraphTraversal<A, E2> choose(final Function<Traverser<A>, M> mapFunction, final Map<M, Traversal<A, E2>> choices) {
+        return this.start().choose(mapFunction, choices);
     }
 
     ///////////////////// UTILITY STEPS /////////////////////

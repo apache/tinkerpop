@@ -1,84 +1,41 @@
 package com.tinkerpop.gremlin.process.graph.step.branch;
 
-import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
-import com.tinkerpop.gremlin.process.graph.marker.StrategyProvider;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ChooseBooleanStep<S, E> extends FlatMapStep<S, E> implements StrategyProvider {
+public final class ChooseBooleanStep<S, E> extends FlatMapStep<S, E> {
 
     private final Predicate<Traverser<S>> choosePredicate;
-    private final Traversal<S, E> trueBranch;
-    private final Traversal<S, E> falseBranch;
+    private final Traversal<S, E> trueChoice;
+    private final Traversal<S, E> falseChoice;
 
-    public ChooseBooleanStep(final Traversal traversal, final Predicate<Traverser<S>> choosePredicate, final Traversal<S, E> trueBranch, final Traversal<S, E> falseBranch) {
+    public ChooseBooleanStep(final Traversal traversal, final Predicate<Traverser<S>> choosePredicate, final Traversal<S, E> trueChoice, final Traversal<S, E> falseChoice) {
         super(traversal);
         this.choosePredicate = choosePredicate;
-        this.trueBranch = trueBranch;
-        this.falseBranch = falseBranch;
+        this.trueChoice = trueChoice;
+        this.falseChoice = falseChoice;
         this.setFunction(traverser -> {
-            final Traversal<S, E> branch = this.choosePredicate.test(traverser) ? this.trueBranch : this.falseBranch;
+            final Traversal<S, E> branch = this.choosePredicate.test(traverser) ? this.trueChoice : this.falseChoice;
             branch.addStart(traverser);
             return branch;
         });
     }
 
-    public List<TraversalStrategy> getStrategies(final EngineDependent.Engine engine) {
-        return engine.equals(EngineDependent.Engine.COMPUTER) ? Arrays.asList(ChooseBooleanStrategy.instance()) : Collections.emptyList();
+    public Predicate<Traverser<S>> getChoosePredicate() {
+        return this.choosePredicate;
     }
 
-    public static class ChooseBooleanStrategy implements TraversalStrategy.NoDependencies {
+    public Traversal<S, E> getTrueChoice() {
+        return this.trueChoice;
+    }
 
-        private static final ChooseBooleanStrategy INSTANCE = new ChooseBooleanStrategy();
-
-        private ChooseBooleanStrategy() {
-        }
-
-        // x.choose(p){a}{b}.y
-        // x.branch(p ? this : z).a.branch(end).as(z).b.as(end).y
-        public void apply(final Traversal<?, ?> traversal) {
-            TraversalHelper.getStepsOfClass(ChooseBooleanStep.class, traversal).forEach(step -> {
-                final BranchStep<?> branchStep = new BranchStep<>(traversal);
-                branchStep.setFunctions(traverser -> step.choosePredicate.test(traverser) ? BranchStep.THIS_LABEL : "b");
-                TraversalHelper.replaceStep(step, branchStep, traversal);
-
-                Step currentStep = branchStep;
-                for (final Step trueStep : (List<Step>) step.trueBranch.getSteps()) {
-                    TraversalHelper.insertAfterStep(trueStep, currentStep, traversal);
-                    currentStep = trueStep;
-                }
-                final BranchStep breakStep = new BranchStep(traversal);
-                breakStep.setFunctions(new BranchStep.GoToLabel("end"));
-                breakStep.setLabel("b");
-                TraversalHelper.insertAfterStep(breakStep, currentStep, traversal);
-
-                currentStep = breakStep;
-                for (final Step falseStep : (List<Step>) step.falseBranch.getSteps()) {
-                    TraversalHelper.insertAfterStep(falseStep, currentStep, traversal);
-                    currentStep = falseStep;
-                }
-                final IdentityStep finalStep = new IdentityStep(traversal);
-                finalStep.setLabel("end");
-                TraversalHelper.insertAfterStep(finalStep, currentStep, traversal);
-
-            });
-        }
-
-        public static ChooseBooleanStrategy instance() {
-            return INSTANCE;
-        }
+    public Traversal<S, E> getFalseChoice() {
+        return this.falseChoice;
     }
 }
