@@ -38,7 +38,7 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
             final Traverser.Admin<S> traverser = this.starts.next();
             if (this.isProfilingEnabled) GlobalMetrics.start(this, traverser);
             this.iterator = new FlatMapTraverserIterator<>(traverser, this, this.function.apply(traverser));
-            if (this.isProfilingEnabled) GlobalMetrics.stop(this, traverser);
+            if (this.isProfilingEnabled) GlobalMetrics.finish(this, traverser);
             return null;
         } else {
             if (this.iterator.hasNext()) {

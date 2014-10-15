@@ -31,6 +31,7 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
 
     @Override
     public void generateTraverserIterator(final boolean trackPaths) {
+        // TODO profile - need to startp stop timer here but we don't have a traverser.
         this.start = Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges();
         super.generateTraverserIterator(trackPaths);
     }

@@ -10,6 +10,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public final class GlobalMetrics implements Serializable {
+    private static final String[] headers = {"Step", "Count", "Time (ms)", "Time (ns)", "% Duration"};
+
+    private long totalStepDuration;
 
     private final Map<String, StepMetrics> stepMetrics = new LinkedHashMap<>();
 
@@ -42,12 +45,35 @@ public final class GlobalMetrics implements Serializable {
         this.stepMetrics.get(step.getLabel()).finish(traverser);
     }
 
+
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("Global Metrics: \n");
-        stepMetrics.forEach((label, timer) -> sb.append(timer).append("\n"));
-        sb.append("\n");
+        // TODO profile
+        //        if (totalStepDuration == 0) {
+        //            return "Metrics not enabled.";
+        //        }
+
+        // Build a pretty table of metrics data.
+
+        // Append headers
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%30s%15s%15s%15s%15s", headers));
+
+        // Append each StepMetric's row
+        for (StepMetrics s : this.stepMetrics.values()) {
+            sb.append(String.format("%n%30s%15d%15f%15d%15f",
+                    s.getName(), s.getCounts(), s.getTimeMs(), s.getTimeNs(), s.getPercentageDuration()));
+        }
+
+        // Append total duration
+        sb.append(String.format("%n%30s%15s%15f%15s%15s",
+                "TOTAL", "-", getTotalStepDurationMs(), "-", "-"));
+
         return sb.toString();
+    }
+
+    public double getTotalStepDurationMs() {
+        return totalStepDuration / 1000000.0d;
     }
 
     public static GlobalMetrics merge(final Iterator<GlobalMetrics> metrics) {

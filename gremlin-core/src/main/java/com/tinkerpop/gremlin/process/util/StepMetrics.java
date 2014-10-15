@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.Traverser;
 
 import java.io.Serializable;
 
-public class StepMetrics implements Serializable{
+public class StepMetrics implements Serializable {
     private long timeNs = 0l;
     private long counts = 0l;
     private long tempTime = -1l;
@@ -55,8 +55,13 @@ public class StepMetrics implements Serializable{
         return this.timeNs / 1000000.0d;
     }
 
+
+    public long getBulk() {
+        return bulk;
+    }
+
     public String toString() {
-        return "Timer [" + label + ":" + name + " time(ns):" + this.getTimeNs() + " time(ms):" + this.getTimeMs() + " counts:" + this.getCounts() + "]";
+        return "Timer [" + label + ":" + name + " time(ns):" + this.getTimeNs() + " time(ms):" + this.getTimeMs() + " counts:" + this.getCounts() + " bulk:" + this.getBulk() + "]";
     }
 
     public void finish(Traverser.Admin<?> traverser) {
@@ -77,5 +82,14 @@ public class StepMetrics implements Serializable{
         this.bulk += timer.bulk;
         this.counts += timer.counts;
         this.timeNs += timer.timeNs;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Double getPercentageDuration() {
+        // TODO profile
+        return 0d;
     }
 }
