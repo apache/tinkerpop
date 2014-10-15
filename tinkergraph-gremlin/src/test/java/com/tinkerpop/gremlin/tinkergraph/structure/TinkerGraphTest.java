@@ -58,6 +58,13 @@ public class TinkerGraphTest {
         g.of(TinkerFactory.SocialTraversal.class).people("marko").created().name().forEach(name -> assertEquals("lop", name));
     }
 
+    /*@Test
+    public void test() {
+        Graph g = TinkerFactory.createClassic();
+        System.out.println(g.V().out().out().profile().next());
+        System.out.println(g.V().out().out().profile().submit(g.compute()).next());
+    }*/
+
     /**
      * No assertions.  Just write out the graph for convenience.
      */

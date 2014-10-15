@@ -9,61 +9,59 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class GlobalMetrics implements Serializable {
-    Map<String, StepMetrics> timers = new LinkedHashMap<String, StepMetrics>();
+public final class GlobalMetrics implements Serializable {
 
-    private void startInternal(Step<?, ?> step) {
-        StepMetrics stepMetrics = timers.get(step.getLabel());
+    private final Map<String, StepMetrics> stepMetrics = new LinkedHashMap<>();
+
+    public static final void start(final Step<?, ?> step, final Traverser.Admin<?> traverser) {
+        traverser.getSideEffects().getOrCreate(ProfileStep.METRICS_KEY, GlobalMetrics::new).startInternal(step);
+    }
+
+    public static final void stop(final Step<?, ?> step, Traverser.Admin<?> traverser) {
+        traverser.getSideEffects().<GlobalMetrics>get(ProfileStep.METRICS_KEY).stopInternal(step);
+    }
+
+    public static final void finish(final Step<?, ?> step, Traverser.Admin<?> traverser) {
+        traverser.getSideEffects().<GlobalMetrics>get(ProfileStep.METRICS_KEY).finishInternal(step, traverser);
+    }
+
+    private void startInternal(final Step<?, ?> step) {
+        StepMetrics stepMetrics = this.stepMetrics.get(step.getLabel());
         if (null == stepMetrics) {
             stepMetrics = new StepMetrics(step);
-            timers.put(step.getLabel(), stepMetrics);
+            this.stepMetrics.put(step.getLabel(), stepMetrics);
         }
         stepMetrics.startTimer();
     }
 
-    public static final void stop(Step<?, ?> step, Traverser.Admin<?> traverser) {
-        traverser.getSideEffects().<GlobalMetrics>get(ProfileStep.METRICS_KEY).stopInternal(step);
+    private void stopInternal(final Step<?, ?> step) {
+        this.stepMetrics.get(step.getLabel()).stop();
     }
 
-    public static final void finish(Step<?, ?> step, Traverser.Admin<?> traverser) {
-        traverser.getSideEffects().<GlobalMetrics>get(ProfileStep.METRICS_KEY).finishInternal(step, traverser);
-    }
-
-    private void stopInternal(Step<?, ?> step) {
-        timers.get(step.getLabel()).stop();
-    }
-
-
-    private void finishInternal(Step<?, ?> step, Traverser.Admin<?> traverser) {
-        timers.get(step.getLabel()).finish(traverser);
-    }
-
-    public static final void start(Step<?, ?> step, Traverser.Admin<?> traverser) {
-        traverser.getSideEffects().<GlobalMetrics>get(ProfileStep.METRICS_KEY).startInternal(step);
+    private void finishInternal(final Step<?, ?> step, final Traverser.Admin<?> traverser) {
+        this.stepMetrics.get(step.getLabel()).finish(traverser);
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("Global Metrics: \n");
-        timers.forEach((label, timer) -> sb.append(timer).append("\n"));
+        final StringBuilder sb = new StringBuilder("Global Metrics: \n");
+        stepMetrics.forEach((label, timer) -> sb.append(timer).append("\n"));
         sb.append("\n");
         return sb.toString();
     }
 
-    public static GlobalMetrics merge(Iterator<GlobalMetrics> metrics) {
-        GlobalMetrics total = new GlobalMetrics();
-        metrics.forEachRemaining(m -> total.aggregate(m));
-        return total;
-    }
-
-    private void aggregate(GlobalMetrics m) {
-        m.timers.forEach((label, timer) -> {
-            StepMetrics stepMetrics = this.timers.get(label);
-            if (null == stepMetrics) {
-                stepMetrics = new StepMetrics(timer);
-                this.timers.put(label, stepMetrics);
-            }
-            stepMetrics.aggregate(timer);
+    public static GlobalMetrics merge(final Iterator<GlobalMetrics> metrics) {
+        final GlobalMetrics totalMetrics = new GlobalMetrics();
+        metrics.forEachRemaining(globalMetrics -> {
+            globalMetrics.stepMetrics.forEach((label, timer) -> {
+                StepMetrics stepMetrics = totalMetrics.stepMetrics.get(label);
+                if (null == stepMetrics) {
+                    stepMetrics = new StepMetrics(timer);
+                    totalMetrics.stepMetrics.put(label, stepMetrics);
+                }
+                stepMetrics.aggregate(timer);
+            });
         });
+        return totalMetrics;
     }
 }

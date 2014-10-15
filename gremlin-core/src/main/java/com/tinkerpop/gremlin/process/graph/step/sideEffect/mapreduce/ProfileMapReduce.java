@@ -8,17 +8,18 @@ import org.javatuples.Pair;
 
 import java.util.Iterator;
 
-public class ProfileMapReduce implements MapReduce<MapReduce.NullObject, GlobalMetrics, MapReduce.NullObject, GlobalMetrics, GlobalMetrics> {
+public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, GlobalMetrics, MapReduce.NullObject, GlobalMetrics, GlobalMetrics> {
+
     public ProfileMapReduce() {
     }
 
     @Override
-    public boolean doStage(Stage stage) {
+    public boolean doStage(final Stage stage) {
         return true;
     }
 
     @Override
-    public GlobalMetrics generateSideEffect(Iterator<Pair<NullObject, GlobalMetrics>> keyValues) {
+    public GlobalMetrics generateSideEffect(final Iterator<Pair<NullObject, GlobalMetrics>> keyValues) {
         return keyValues.next().getValue1();
     }
 
@@ -27,19 +28,20 @@ public class ProfileMapReduce implements MapReduce<MapReduce.NullObject, GlobalM
         return ProfileStep.METRICS_KEY;
     }
 
+    @Override
     public void map(final Vertex vertex, final MapEmitter<NullObject, GlobalMetrics> emitter) {
         if (MapReduce.getLocalSideEffects(vertex).exists(ProfileStep.METRICS_KEY)) {
             emitter.emit(NullObject.instance(), MapReduce.getLocalSideEffects(vertex).<GlobalMetrics>get(ProfileStep.METRICS_KEY));
         }
     }
 
+    @Override
     public void combine(final NullObject key, final Iterator<GlobalMetrics> values, final ReduceEmitter<NullObject, GlobalMetrics> emitter) {
         reduce(key, values, emitter);
     }
 
+    @Override
     public void reduce(final NullObject key, final Iterator<GlobalMetrics> values, final ReduceEmitter<NullObject, GlobalMetrics> emitter) {
-        GlobalMetrics globalMetrics = new GlobalMetrics();
-        globalMetrics.merge(values);
-        emitter.emit(NullObject.instance(), globalMetrics);
+        emitter.emit(NullObject.instance(), GlobalMetrics.merge(values));
     }
 }
