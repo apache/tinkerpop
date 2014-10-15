@@ -1000,6 +1000,8 @@ gremlin> t.toString()
 Domain Specific Languages
 -------------------------
 
+CAUTION: As of TinkerPop x.y.z, the presented domain specific language framework has not been fully flushed out. Expect changes to the API until this "caution"-note is removed.
+
 image:gremlin-quill.png[width=200,float=right] The super interface of GraphTraversal is `Traversal`. It is possible for developers to create domain specific traversals by extending Traversal. For example, a `SocialTraversal` example is provided below.
 
 [source,java]

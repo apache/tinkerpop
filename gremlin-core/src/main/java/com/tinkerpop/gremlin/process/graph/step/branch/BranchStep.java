@@ -98,6 +98,11 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
         }
     }
 
+    /*@Override
+    public String toString() {
+      // TODO
+    }*/
+
     public static class GoToLabel<S> implements Function<Traverser<S>, String> {
 
         private final String goToLabel;
