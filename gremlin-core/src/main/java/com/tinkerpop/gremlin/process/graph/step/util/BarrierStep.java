@@ -25,13 +25,19 @@ public abstract class BarrierStep<S> extends AbstractStep<S, S> implements Barri
 
     @Override
     public Traverser<S> processNextStart() {
+        // TODO: profile
         if (this.starts.hasNext()) {
+//            GlobalMetrics.start(this, null);
             this.starts.forEachRemaining(this.traverserSet::add);
             this.barrierConsumer.accept(this.traverserSet);
-            return this.traverserSet.remove().makeSibling();
-        } else {
-            return this.traverserSet.remove().makeSibling();
+        } else{
+//            GlobalMetrics.start(this, null);
         }
+
+        Traverser.Admin<S> ret = this.traverserSet.remove().makeSibling();
+//        GlobalMetrics.stop(this, ret);
+        return ret;
+
     }
 
     @Override

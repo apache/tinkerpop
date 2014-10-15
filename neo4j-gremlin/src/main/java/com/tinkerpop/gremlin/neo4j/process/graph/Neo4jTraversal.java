@@ -382,6 +382,10 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.path(arg0);
 	}
 
+	public default Neo4jTraversal<S, E> profile() {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.profile();
+	}
+
 	public default <E2> Neo4jTraversal<S, ? extends com.tinkerpop.gremlin.structure.Property<E2>> properties(java.lang.String... arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.properties(arg0);
 	}

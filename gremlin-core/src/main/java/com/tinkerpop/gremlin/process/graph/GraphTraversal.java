@@ -50,19 +50,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.ValueStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ValuesStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.*;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.strategy.ChooseBooleanLinearStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.ChooseMapLinearStrategy;
@@ -685,6 +673,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this;
     }
 
+    public default GraphTraversal<S, E> profile() {
+        return this.addStep(new ProfileStep<>(this));
+    }
+
     @Override
     public default void remove() {
         try {
@@ -712,6 +704,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         }
         return this;
     }
+
 
     /////////////////////////////////////
 

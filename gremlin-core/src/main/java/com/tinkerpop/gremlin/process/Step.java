@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.process.util.EmptyPath;
-
 import java.util.Iterator;
 
 /**
@@ -106,6 +104,8 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Cloneable {
      * @param label the label for this step
      */
     public void setLabel(final String label);
+
+    public void setProfilingEnabled(final boolean enabled);
 
     static final class NoObject {
 

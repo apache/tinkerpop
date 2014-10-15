@@ -37,6 +37,7 @@ public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements
             try {
                 while (true) {
                     traverser = (Traverser.Admin<E>) this.starts.next();
+
                 }
             } catch (final NoSuchElementException ignored) {
             }

@@ -81,6 +81,10 @@ public class EmptyStep<S, E> implements Step<S, E> {
     }
 
     @Override
+    public void setProfilingEnabled(boolean enabled) {
+    }
+
+    @Override
     public boolean hasNext() {
         return false;
     }

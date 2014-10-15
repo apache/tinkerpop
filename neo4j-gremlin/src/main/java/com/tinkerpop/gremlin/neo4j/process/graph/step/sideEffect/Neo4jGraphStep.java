@@ -1,19 +1,10 @@
 package com.tinkerpop.gremlin.neo4j.process.graph.step.sideEffect;
 
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jHelper;
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
+import com.tinkerpop.gremlin.neo4j.structure.*;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
-import com.tinkerpop.gremlin.structure.Compare;
-import com.tinkerpop.gremlin.structure.Contains;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.*;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Pair;
@@ -25,12 +16,7 @@ import org.neo4j.graphdb.index.AutoIndexer;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.tooling.GlobalGraphOperations;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -50,6 +36,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
     @Override
     public void generateTraverserIterator(final boolean trackPaths) {
+        // TODO profile
         this.start = Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges();
         super.generateTraverserIterator(trackPaths);
     }

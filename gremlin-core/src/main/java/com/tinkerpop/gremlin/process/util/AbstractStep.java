@@ -23,6 +23,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     protected Step<?, S> previousStep = EmptyStep.instance();
     protected Step<E, ?> nextStep = EmptyStep.instance();
+    protected boolean isProfilingEnabled = false;
 
     public AbstractStep(final Traversal traversal) {
         this.traversal = traversal;
@@ -147,5 +148,10 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         if (traverser instanceof PathTraverser) traverser.getPath().addLabel(this.getLabel());
         if (TraversalHelper.isLabeled(this.label))
             this.traversal.sideEffects().set(this.label, traverser.get());
+    }
+
+    @Override
+    public void setProfilingEnabled(final boolean enabled) {
+        this.isProfilingEnabled = enabled;
     }
 }

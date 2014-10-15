@@ -15,17 +15,10 @@ import com.tinkerpop.gremlin.process.computer.traversal.TraverserCountTracker;
 import com.tinkerpop.gremlin.process.computer.traversal.TraverserPathTracker;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.process.util.BulkSet;
-import com.tinkerpop.gremlin.structure.Contains;
-import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
+import com.tinkerpop.gremlin.process.util.GlobalMetrics;
+import com.tinkerpop.gremlin.process.util.StepMetrics;
+import com.tinkerpop.gremlin.structure.*;
+import com.tinkerpop.gremlin.structure.util.detached.*;
 import com.tinkerpop.gremlin.structure.util.referenced.ReferencedPath;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
@@ -33,25 +26,7 @@ import org.javatuples.Triplet;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Currency;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TimeZone;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiPredicate;
@@ -133,20 +108,20 @@ public final class GremlinKryo {
 
         /**
          * If using custom classes it might be useful to tag the version stamped to the serialization with a custom
-         * value, such that Kryo serialization at 1.0.0 would have a fourth byte for an extended version.  The
-         * user supplied fourth byte can then be used to ensure the right deserializer is used to read the data.
-         * If this value is not supplied then it is written as {@link Byte#MIN_VALUE}. The value supplied here
-         * should be greater than or equal to zero.
+         * value, such that Kryo serialization at 1.0.0 would have a fourth byte for an extended version.  The user
+         * supplied fourth byte can then be used to ensure the right deserializer is used to read the data. If this
+         * value is not supplied then it is written as {@link Byte#MIN_VALUE}. The value supplied here should be greater
+         * than or equal to zero.
          */
         public Builder extendedVersion(final byte extendedVersion);
 
         /**
-         * By default the {@link #extendedVersion(byte)} is checked against what is read from an input source and
-         * if those values are equal the version being read is considered "compliant".  To alter this behavior,
-         * supply a custom compliance {@link Predicate} to evaluate the value read from the input source (i.e. first
-         * argument) and the value marked in the {@code GremlinKryo} instance {i.e. second argument}.  Supplying
-         * this function is useful when versions require backward compatibility or other more complex checks.  This
-         * function is only used if the {@link #extendedVersion(byte)} is set to something other than its default.
+         * By default the {@link #extendedVersion(byte)} is checked against what is read from an input source and if
+         * those values are equal the version being read is considered "compliant".  To alter this behavior, supply a
+         * custom compliance {@link Predicate} to evaluate the value read from the input source (i.e. first argument)
+         * and the value marked in the {@code GremlinKryo} instance {i.e. second argument}.  Supplying this function is
+         * useful when versions require backward compatibility or other more complex checks.  This function is only used
+         * if the {@link #extendedVersion(byte)} is set to something other than its default.
          */
         public Builder compliant(final BiPredicate<Byte, Byte> compliant);
 
@@ -250,7 +225,9 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(Tree.class, null, 63));
             add(Triplet.with(HashSet.class, null, 64));
             add(Triplet.<Class, Serializer, Integer>with(ReferencedPath.class, null, 69));
-            add(Triplet.<Class, Serializer, Integer>with(BulkSet.class, null, 70)); // ***LAST ID***
+            add(Triplet.<Class, Serializer, Integer>with(BulkSet.class, null, 70));
+            add(Triplet.<Class, Serializer, Integer>with(StepMetrics.class, null, 71));
+            add(Triplet.<Class, Serializer, Integer>with(GlobalMetrics.class, null, 72)); // ***LAST ID***
         }};
 
         private static final byte major = 1;
