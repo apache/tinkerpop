@@ -14,13 +14,17 @@ public class StepMetrics implements Serializable {
 
     private long bulk;
 
+    private StepMetrics() {
+
+    }
+
     public StepMetrics(final Step step) {
         this.label = step.getLabel();
         this.name = step.toString();
 
     }
 
-    public StepMetrics(StepMetrics timer) {
+    public StepMetrics(final StepMetrics timer) {
         this.label = timer.label;
         this.name = timer.name;
     }
