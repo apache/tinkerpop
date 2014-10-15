@@ -255,10 +255,7 @@ public class GremlinExecutorTest {
         assertTrue(failures.intValue() >= 500);
     }
 
-    // todo: fix the below tests
-
     @Test
-    @Ignore
     public void shouldInitializeWithScript() throws Exception {
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .addEngineSettings("gremlin-groovy",
