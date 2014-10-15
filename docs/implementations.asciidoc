@@ -720,7 +720,7 @@ image:giraph-furnace.png[width=110,float=left] Giraph-Gremlin was designed to ex
 IMPORTANT: When using Giraph-Gremlin OLAP from the Gremlin Console, the only Gremlin language subset supported is Gremlin-Groovy.
 
 [source,text]
-gremlin> :remote connect giraph ../../../giraph-gremlin/conf/giraph-kryo.properties
+gremlin> :remote connect tinkerpop.giraph ../../../giraph-gremlin/conf/giraph-kryo.properties
 ==>giraphgraph[kryovertexinputformat->kryovertexoutputformat]
 gremlin> :> g.V().count()
 INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, CountStep]

@@ -3,7 +3,10 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Predicate;
 
 /**
@@ -37,5 +40,13 @@ public final class ChooseBooleanStep<S, E> extends FlatMapStep<S, E> {
 
     public Traversal<S, E> getFalseChoice() {
         return this.falseChoice;
+    }
+
+    @Override
+    public String toString() {
+        final Map<Boolean, Traversal> choiceMap = new HashMap<>();
+        choiceMap.put(Boolean.TRUE, this.trueChoice);
+        choiceMap.put(Boolean.FALSE, this.falseChoice);
+        return TraversalHelper.makeStepString(this, choiceMap);
     }
 }

@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Collections;
 import java.util.Map;
@@ -41,6 +42,11 @@ public final class ChooseMapStep<S, E, M> extends FlatMapStep<S, E> {
 
     public Map<M, Traversal<S, E>> getChoices() {
         return this.choices;
+    }
+
+    @Override
+    public String toString() {
+        return TraversalHelper.makeStepString(this, this.choices.toString());
     }
 
 }

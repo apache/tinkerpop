@@ -46,7 +46,7 @@ public abstract class GroovyChooseTest {
         public Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name() {
             ComputerTestHelper.compute("""g.V.choose({ it.name.length() == 5 },
                     g.of().out(),
-                    g.of().in()).name""", g);
+                    g.of().in).name""", g);
         }
 
         @Override
@@ -56,17 +56,17 @@ public abstract class GroovyChooseTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_hasXageX_chooseXname_lengthX5_in_4_out_3_bothX_name() {
-            ComputerTestHelper.compute("""g.V().has('age').choose({ it.name.length() },
-                    [5: g.of().in(),
-                     4: g.of().out(),
-                     3: g.of().both()]).name""", g);
+            ComputerTestHelper.compute("""g.V.has('age').choose({ it.name.length() },
+                    [5: g.of().in,
+                     4: g.of().out,
+                     3: g.of().both]).name""", g);
         }
 
         @Override
         public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_valueXnameX_3L_valueMapX() {
-            ComputerTestHelper.compute("""g.V().choose({ it.out().count().next(); }, [
+            ComputerTestHelper.compute("""g.V.choose({ it.out().count().next(); }, [
                     2L: g.of().name,
-                    3L: g.of().valueMap()])""", g);
+                    3L: g.of().valueMap])""", g);
         }
     }
 }
