@@ -492,17 +492,14 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
         }
     }
 
-    // todo: unignore the below somehow
-
     @Test
-    @Ignore
     public void shouldSecureAll() throws Exception {
         GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
         final SecurityCustomizerProvider provider = new SecurityCustomizerProvider(new DenyAll());
         final GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(
                 new DefaultImportCustomizerProvider(), provider);
         try {
-            scriptEngine.eval("g = new TinkerGraph()");
+            scriptEngine.eval("g = new java.awt.Color(255, 255, 255)");
             fail("Should have failed security");
         } catch (ScriptException se) {
             assertEquals(SecurityException.class, se.getCause().getCause().getClass());
@@ -512,25 +509,23 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
     }
 
     @Test
-    @Ignore
     public void shouldSecureSome() throws Exception {
         GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
         final SecurityCustomizerProvider provider = new SecurityCustomizerProvider(new AllowSome());
         final GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(
                 new DefaultImportCustomizerProvider(), provider);
         try {
-            scriptEngine.eval("g = 'new TinkerGraph()'");
+            scriptEngine.eval("g = 'new java.awt.Color(255, 255, 255)'");
             fail("Should have failed security");
         } catch (ScriptException se) {
             assertEquals(SecurityException.class, se.getCause().getCause().getClass());
         }
 
         try {
-            final Graph g = (Graph) scriptEngine.eval("g = new TinkerGraph()");
             assertNotNull(g);
-            // assertEquals(TinkerGraph.class, g.getClass()); todo: // need a new security test
+            final java.awt.Color c = (java.awt.Color) scriptEngine.eval("c = new java.awt.Color(255, 255, 255)");
+            assertEquals(java.awt.Color.class, c.getClass());
         } catch (Exception ex) {
-            ex.printStackTrace();
             fail("Should not have tossed an exception");
         } finally {
             provider.unregisterInterceptors();
@@ -546,10 +541,10 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldProcessUTF8Query() throws Exception {
-        Vertex nonUtf8 = g.addVertex(T.id, "1", "name", "marko", "age", 29);
-        Vertex utf8Name = g.addVertex(T.id, "2", "name", "轉注", "age", 32);
+        final Vertex nonUtf8 = g.addVertex(T.id, "1", "name", "marko", "age", 29);
+        final Vertex utf8Name = g.addVertex(T.id, "2", "name", "轉注", "age", 32);
 
-        ScriptEngine engine = new GremlinGroovyScriptEngine();
+        final ScriptEngine engine = new GremlinGroovyScriptEngine();
 
         engine.put("g", g);
         Traversal eval = (Traversal) engine.eval("g.V().has('name', 'marko')");
@@ -564,9 +559,9 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
 
     public static class AllowSome extends GroovyValueFilter {
 
-        // todo: need a new security test
         public static final Set<Class> ALLOWED_TYPES = new HashSet<Class>() {{
-            // add(TinkerGraph.class);
+            add(java.awt.Color.class);
+            add(Integer.class);
             add(Class.class);
         }};
 

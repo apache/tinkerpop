@@ -2,6 +2,8 @@ package com.tinkerpop.gremlin.groovy.engine;
 
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTest;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoResourceAccess;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.kohsuke.groovy.sandbox.GroovyInterceptor;
@@ -9,10 +11,14 @@ import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
@@ -32,6 +38,19 @@ import static org.junit.Assert.fail;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinExecutorTest {
+    public static Map<String, String> PATHS = new HashMap<>();
+
+    static {
+        try {
+            final List<String> groovyScriptResources = Arrays.asList("GremlinExecutorInit.groovy");
+            for (final String fileName : groovyScriptResources) {
+                PATHS.put(fileName, generateTempFile(GremlinExecutorTest.class, fileName));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @Test
     public void shouldEvalScript() throws Exception {
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
@@ -261,17 +280,14 @@ public class GremlinExecutorTest {
                 .addEngineSettings("gremlin-groovy",
                         Collections.emptyList(),
                         Collections.emptyList(),
-                        Arrays.asList(new File(GremlinExecutorTest.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()),
+                        Arrays.asList(PATHS.get("GremlinExecutorInit.groovy")),
                         Collections.emptyMap())
                 .create();
 
         assertEquals(2, gremlinExecutor.eval("sum(1,1)").get());
     }
 
-    // todo: unignore the below test
-
     @Test
-    @Ignore
     public void shouldSecureAll() throws Exception {
         GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
         final Map<String,Object> config = new HashMap<>();
@@ -280,11 +296,11 @@ public class GremlinExecutorTest {
                 .addEngineSettings("gremlin-groovy",
                         Collections.emptyList(),
                         Collections.emptyList(),
-                        Arrays.asList(new File(GremlinExecutorTest.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()),
+                        Arrays.asList(PATHS.get("GremlinExecutorInit.groovy")),
                         config)
                 .create();
         try {
-            gremlinExecutor.eval("g = new TinkerGraph()").get();
+            gremlinExecutor.eval("c = new java.awt.Color(255, 255, 255)").get();
             fail("Should have failed security");
         } catch (Exception se) {
             assertEquals(SecurityException.class, se.getCause().getCause().getCause().getCause().getClass());
@@ -293,10 +309,7 @@ public class GremlinExecutorTest {
         }
     }
 
-    // todo: get the below turned on
-
     @Test
-    @Ignore
     public void shouldSecureSome() throws Exception {
         GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
         final Map<String,Object> config = new HashMap<>();
@@ -305,20 +318,19 @@ public class GremlinExecutorTest {
                 .addEngineSettings("gremlin-groovy",
                         Collections.emptyList(),
                         Collections.emptyList(),
-                        Arrays.asList(new File(GremlinExecutorTest.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()),
+                        Arrays.asList(PATHS.get("GremlinExecutorInit.groovy")),
                         config)
                 .create();
         try {
-            gremlinExecutor.eval("g = 'new TinkerGraph()'").get();
+            gremlinExecutor.eval("c = 'new java.awt.Color(255, 255, 255)'").get();
             fail("Should have failed security");
         } catch (Exception se) {
             assertEquals(SecurityException.class, se.getCause().getCause().getCause().getCause().getClass());
         }
 
         try {
-            final Graph g = (Graph) gremlinExecutor.eval("g = new TinkerGraph()").get();
-            assertNotNull(g);
-            // assertEquals(TinkerGraph.class, g.getClass()); // todo: how do we deal with this generically
+            final java.awt.Color c = (java.awt.Color) gremlinExecutor.eval("g = new java.awt.Color(255, 255, 255)").get();
+            assertEquals(java.awt.Color.class, c.getClass());
         } catch (Exception ignored) {
             fail("Should not have tossed an exception");
         } finally {
@@ -326,16 +338,13 @@ public class GremlinExecutorTest {
         }
     }
 
-    // todo: fix the below tests
-
     @Test
-    @Ignore
-    public void shouldInitializeWithScriptAndWorkAfterRest() throws Exception {
+    public void shouldInitializeWithScriptAndWorkAfterReset() throws Exception {
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .addEngineSettings("gremlin-groovy",
                         Collections.emptyList(),
                         Collections.emptyList(),
-                        Arrays.asList(new File(GremlinExecutorTest.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()),
+                        Arrays.asList(PATHS.get("GremlinExecutorInit.groovy")),
                         Collections.emptyMap())
                 .create();
 
@@ -344,5 +353,18 @@ public class GremlinExecutorTest {
         gremlinExecutor.getScriptEngines().reset();
 
         assertEquals(2, gremlinExecutor.eval("sum(1,1)").get());
+    }
+
+    public static String generateTempFile(final Class resourceClass, final String fileName) throws IOException {
+        final File temp = File.createTempFile(fileName, ".groovy");
+        final FileOutputStream outputStream = new FileOutputStream(temp);
+        int data;
+        final InputStream inputStream = resourceClass.getResourceAsStream(fileName);
+        while ((data = inputStream.read()) != -1) {
+            outputStream.write(data);
+        }
+        outputStream.close();
+        inputStream.close();
+        return temp.getPath();
     }
 }
