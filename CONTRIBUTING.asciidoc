@@ -1,0 +1,6 @@
+TinkerPop3 Contributors
+-----------------------
+
+image:https://raw.githubusercontent.com/tinkerpop/tinkerpop3/master/docs/static/images/tinkerpop-character.png[width=100,float=left]
+
+In order to contribute issues and pull requests, please sign TinkerPop's link:https://www.clahub.com/agreements/tinkerpop/tinkerpop3[Contributor License Agreement]. The purpose of this agreement is to protect users of this codebase by ensuring that all code is free to use under the stipulations of the link:http://www.apache.org/licenses/LICENSE-2.0.html[Apache2 license].
