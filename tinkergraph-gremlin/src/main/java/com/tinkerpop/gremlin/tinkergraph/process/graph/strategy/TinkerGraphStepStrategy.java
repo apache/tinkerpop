@@ -22,14 +22,13 @@ public class TinkerGraphStepStrategy extends AbstractTraversalStrategy implement
     }
 
     @Override
-    public void apply(final Traversal traversal) {
+    public void apply(final Traversal<?,?> traversal) {
 
         if (TraversalHelper.getStart(traversal) instanceof TinkerGraphStep) {
-            final TinkerGraphStep tinkerGraphStep = (TinkerGraphStep) traversal.getSteps().get(0);
-            Step currentStep = tinkerGraphStep.getNextStep();
+            final TinkerGraphStep<?> tinkerGraphStep = (TinkerGraphStep) traversal.getSteps().get(0);
+            Step<?,?> currentStep = tinkerGraphStep.getNextStep();
             while (true) {
                 if (currentStep == EmptyStep.instance() || TraversalHelper.isLabeled(currentStep)) break;
-
                 if (currentStep instanceof HasStep) {
                     tinkerGraphStep.hasContainers.addAll(((HasStep) currentStep).getHasContainers());
                     TraversalHelper.removeStep(currentStep, traversal);
