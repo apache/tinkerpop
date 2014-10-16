@@ -122,8 +122,14 @@ public class TraversalHelper {
         TraversalHelper.removeStep(traversal.getSteps().get(index), traversal);
     }
 
-    public static void insertStep(final Step step, final int index, final Traversal traversal) {
+    public static void insertStep(final Step step, final int index, final Traversal<?,?> traversal) {
         traversal.getSteps().add(index, step);
+        reLabelSteps(traversal);
+        reLinkSteps(traversal);
+    }
+
+    public static void insertStep(final Step step, final Traversal<?,?> traversal) {
+        traversal.getSteps().add(step);
         reLabelSteps(traversal);
         reLinkSteps(traversal);
     }

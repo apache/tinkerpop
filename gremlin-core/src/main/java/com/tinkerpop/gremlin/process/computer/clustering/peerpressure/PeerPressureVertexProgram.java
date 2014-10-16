@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.marker.CountTraversal;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -30,7 +31,7 @@ import java.util.function.Supplier;
  */
 public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializable, Double>> {
 
-    private MessageType.Local messageType = MessageType.Local.to(() -> GraphTraversal.<Vertex>of().outE());
+    private MessageType.Local<?,?> messageType = MessageType.Local.to(() -> GraphTraversal.<Vertex>of().outE());
 
     public static final String CLUSTER = Graph.Key.hide("gremlin.cluster");
     public static final String VOTE_STRENGTH = Graph.Key.hide("gremlin.voteStrength");
@@ -94,7 +95,7 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
     @Override
     public void execute(final Vertex vertex, Messenger<Pair<Serializable, Double>> messenger, final Memory memory) {
         if (memory.isInitialIteration()) {
-            double voteStrength = this.distributeVote ? (1.0d / Double.valueOf((Long) this.messageType.edges(vertex).count().next())) : 1.0d;
+            double voteStrength = this.distributeVote ? (1.0d / Double.valueOf(this.messageType.<CountTraversal<Vertex,Edge>>edges(vertex).count().next())) : 1.0d;
             vertex.singleProperty(CLUSTER, vertex.id());
             vertex.singleProperty(VOTE_STRENGTH, voteStrength);
             messenger.sendMessage(this.messageType, new Pair<>((Serializable) vertex.id(), voteStrength));

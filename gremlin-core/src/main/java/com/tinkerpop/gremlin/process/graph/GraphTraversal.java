@@ -7,8 +7,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
-import com.tinkerpop.gremlin.process.graph.step.branch.ChooseBooleanStep;
-import com.tinkerpop.gremlin.process.graph.step.branch.ChooseMapStep;
+import com.tinkerpop.gremlin.process.graph.step.branch.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.JumpStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.UntilStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathStep;
@@ -64,10 +63,10 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
-import com.tinkerpop.gremlin.process.graph.strategy.ChooseBooleanLinearStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.ChooseMapLinearStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.ChooseLinearStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.CountCapStrategy;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.process.marker.CountTraversal;
 import com.tinkerpop.gremlin.process.util.SideEffectHelper;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
@@ -99,19 +98,18 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface GraphTraversal<S, E> extends Traversal<S, E> {
+public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S, E> {
 
     @Override
     public default void prepareForGraphComputer() {
-        Traversal.super.prepareForGraphComputer();
-        this.strategies().register(ChooseBooleanLinearStrategy.instance());
-        this.strategies().register(ChooseMapLinearStrategy.instance());
+        CountTraversal.super.prepareForGraphComputer();
+        this.strategies().register(ChooseLinearStrategy.instance());
         this.strategies().register(CountCapStrategy.instance());
     }
 
     @Override
     public default GraphTraversal<S, E> submit(final GraphComputer computer) {
-        return (GraphTraversal) Traversal.super.submit(computer);
+        return (GraphTraversal) CountTraversal.super.<S,E>submit(computer);
     }
 
     public static <S> GraphTraversal<S, S> of(final Graph graph) {
@@ -126,28 +124,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     @Override
     public default <E2> GraphTraversal<S, E2> addStep(final Step<?, E2> step) {
-        return (GraphTraversal) Traversal.super.addStep((Step) step);
+        return (GraphTraversal) CountTraversal.super.addStep((Step) step);
     }
 
-    @Override
-    public default GraphTraversal<S, E> trackPaths() {
-        return this.addStep(new PathIdentityStep<>(this));
-    }
-
-    @Override
-    public default GraphTraversal<S, Long> count() {
-        return this.addStep(new CountStep<>(this));
-    }
-
-    /////////////////////// BRANCH STEPS ///////////////////////
-
-    /*public default GraphTraversal<S, E> branch(final Function<Traverser<E>, String>... labelFunctions) {
-        final BranchStep<E> branchStep = new BranchStep<>(this);
-        branchStep.setFunctions(labelFunctions);
-        return this.addStep(branchStep);
-    }*/
-
-    ///////////////////// TRANSFORM STEPS /////////////////////
+    ///////////////////// MAP STEPS /////////////////////
 
     public default <E2> GraphTraversal<S, E2> map(final Function<Traverser<E>, E2> function) {
         final MapStep<E, E2> mapStep = new MapStep<>(this);
@@ -258,7 +238,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> order() {
-        return this.order((a, b) -> ((Comparable) a.get()).compareTo(((Comparable) b.get())));
+        return this.order((a, b) -> a.compareTo(b));
     }
 
     public default GraphTraversal<S, E> order(final Comparator<Traverser<E>> comparator) {
@@ -418,7 +398,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> where(final String firstKey, final String secondKey, final BiPredicate predicate) {
-        return this.addStep(new WhereStep<>(this, firstKey, secondKey, predicate));
+        return this.addStep(new WhereStep(this, firstKey, secondKey, predicate));
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> where(final String firstKey, final BiPredicate predicate, final String secondKey) {
@@ -503,14 +483,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.addStep(sideEffectStep);
     }
 
-    @Override
     public default <E2> GraphTraversal<S, E2> cap(final String sideEffecyKey) {
         return this.addStep(new SideEffectCapStep<>(this, sideEffecyKey));
     }
 
-    @Override
     public default <E2> GraphTraversal<S, E2> cap() {
         return this.cap(((SideEffectCapable) TraversalHelper.getEnd(this)).getSideEffectKey());
+    }
+
+    public default GraphTraversal<S, Long> count() {
+        return this.addStep(new CountStep<>(this));
     }
 
     public default GraphTraversal<S, E> subgraph(final String sideEffectKey, final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final Predicate<Edge> includeEdge) {
@@ -631,6 +613,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ///////////////////// BRANCH STEPS /////////////////////
 
+    /*public default GraphTraversal<S, E> branch(final Function<Traverser<E>, String>... labelFunctions) {
+        final BranchStep<E> branchStep = new BranchStep<>(this);
+        branchStep.setFunctions(labelFunctions);
+        return this.addStep(branchStep);
+    }*/
+
     public default GraphTraversal<S, E> jump(final String jumpLabel, final Predicate<Traverser<E>> jumpPredicate, final Predicate<Traverser<E>> emitPredicate) {
         return this.addStep(JumpStep.<E>build(this).jumpLabel(jumpLabel).jumpPredicate(jumpPredicate).emitPredicate(emitPredicate).create());
     }
@@ -667,15 +655,19 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.addStep(new UntilStep<>(this, breakLabel, loops, null));
     }
 
-    public default <E2> GraphTraversal<S, E2> choose(final Predicate<Traverser<E>> choosePredicate, final Traversal trueChoice, final Traversal falseChoice) {
-        return this.addStep(new ChooseBooleanStep<E, E2>(this, choosePredicate, trueChoice, falseChoice));
+    public default <E2> GraphTraversal<S, E2> choose(final Predicate<Traverser<E>> choosePredicate, final Traversal<E, E2> trueChoice, final Traversal<E, E2> falseChoice) {
+        return this.addStep(new ChooseStep<E, E2, Boolean>(this, choosePredicate, trueChoice, falseChoice));
     }
 
-    public default <E2, M> GraphTraversal<S, E2> choose(final Function<Traverser<E>, M> mapFunction, final Map<M, Traversal<E, E2>> choices) {
-        return this.addStep(new ChooseMapStep<>(this, mapFunction, choices));
+    public default <M, E2> GraphTraversal<S, E2> choose(final Function<Traverser<E>, M> mapFunction, final Map<M, Traversal<E, E2>> choices) {
+        return this.addStep(new ChooseStep<>(this, mapFunction, choices));
     }
 
     ///////////////////// UTILITY STEPS /////////////////////
+
+    public default GraphTraversal<S, E> trackPaths() {
+        return this.addStep(new PathIdentityStep<>(this));
+    }
 
     public default GraphTraversal<S, E> as(final String label) {
         TraversalHelper.verifyStepLabelIsNotAlreadyAStepLabel(label, this);

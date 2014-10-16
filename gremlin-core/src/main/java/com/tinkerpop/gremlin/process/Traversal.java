@@ -6,9 +6,6 @@ import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
-import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.strategy.GraphComputerStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.GraphStandardStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
@@ -43,7 +40,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
     public void addStart(final Traverser<S> start);
 
     public default <E2> Traversal<S, E2> addStep(final Step<?, E2> step) {
-        TraversalHelper.insertStep(step, this.getSteps().size(), this);
+        TraversalHelper.insertStep(step, this);
         return (Traversal) this;
     }
 
@@ -181,22 +178,6 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
     }
 
     /////////
-
-    public default Traversal<S, E> trackPaths() {
-        return (Traversal) this.addStep(new PathIdentityStep<>(this));
-    }
-
-    public default <E2> Traversal<S, E2> cap(final String sideEffecyKey) {
-        return (Traversal) this.addStep(new SideEffectCapStep<>(this, sideEffecyKey));
-    }
-
-    public default <E2> Traversal<S, E2> cap() {
-        return this.cap(TraversalHelper.getEnd(this).getLabel());
-    }
-
-    public default Traversal<S, Long> count() {
-        return (Traversal) this.addStep(new CountStep<>(this));
-    }
 
     public default Traversal<S, E> reverse() {
         this.getSteps().stream().filter(step -> step instanceof Reversible).forEach(step -> ((Reversible) step).reverse());

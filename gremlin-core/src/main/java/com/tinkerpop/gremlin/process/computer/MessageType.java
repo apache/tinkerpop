@@ -43,39 +43,39 @@ public abstract class MessageType {
     }
 
     public final static class Local<M1, M2> extends MessageType {
-        public final Supplier<Traversal<Vertex, Edge>> incidentTraversal;
+        public final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal;
         public final BiFunction<M1, Edge, M2> edgeFunction;
 
-        private Local(final Supplier<Traversal<Vertex, Edge>> incidentTraversal) {
+        private Local(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal) {
             this.incidentTraversal = incidentTraversal;
             this.edgeFunction = (final M1 m, final Edge e) -> (M2) m;
         }
 
-        private Local(final Supplier<Traversal<Vertex, Edge>> incidentTraversal, final BiFunction<M1, Edge, M2> edgeFunction) {
+        private Local(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal, final BiFunction<M1, Edge, M2> edgeFunction) {
             this.incidentTraversal = incidentTraversal;
             this.edgeFunction = edgeFunction;
         }
 
-        public static Local to(final Supplier<Traversal<Vertex, Edge>> incidentTraversal) {
+        public static Local to(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal) {
             return new Local(incidentTraversal);
         }
 
-        public static <M1, M2> Local to(final Supplier<Traversal<Vertex, Edge>> incidentTraversal, final BiFunction<M1, Edge, M2> edgeFunction) {
+        public static <M1, M2> Local to(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal, final BiFunction<M1, Edge, M2> edgeFunction) {
             return new Local<>(incidentTraversal, edgeFunction);
         }
 
-        public Traversal<Vertex, Edge> edges(final Vertex vertex) {
+        public <T extends Traversal<Vertex, Edge>> T edges(final Vertex vertex) {
             final Traversal<Vertex, Edge> traversal = this.incidentTraversal.get();
             TraversalHelper.insertStep(new StartStep<>(traversal, vertex), 0, traversal);
-            return traversal;
+            return (T) traversal;
         }
 
-        public Traversal<Vertex, Vertex> vertices(final Vertex vertex) {
+        public <T extends Traversal<Vertex, Vertex>> T vertices(final Vertex vertex) {
             final Traversal traversal = this.incidentTraversal.get();
             final VertexStep step = TraversalHelper.getLastStep(traversal, VertexStep.class).get();
             TraversalHelper.insertStep(new EdgeVertexStep(traversal, step.getDirection().opposite()), traversal.getSteps().size(), traversal);
             TraversalHelper.insertStep(new StartStep<>(traversal, vertex), 0, traversal);
-            return traversal;
+            return (T) traversal;
         }
 
         public Direction getDirection() {
@@ -88,7 +88,7 @@ public abstract class MessageType {
             return this.edgeFunction;
         }
 
-        public Supplier<Traversal<Vertex, Edge>> getIncidentTraversal() {
+        public Supplier<? extends Traversal<Vertex, Edge>> getIncidentTraversal() {
             return this.incidentTraversal;
         }
     }
