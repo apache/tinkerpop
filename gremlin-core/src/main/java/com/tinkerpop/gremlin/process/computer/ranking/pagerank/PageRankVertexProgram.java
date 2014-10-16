@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.marker.CountTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -26,7 +27,7 @@ import java.util.function.Supplier;
  */
 public class PageRankVertexProgram implements VertexProgram<Double> {
 
-    private MessageType.Local messageType = MessageType.Local.to(new OutETraversalSupplier());
+    private MessageType.Local<?,?> messageType = MessageType.Local.to(new OutETraversalSupplier());
 
     public static final String PAGE_RANK = Graph.Key.hide("gremlin.pageRank");
     public static final String EDGE_COUNT = Graph.Key.hide("gremlin.edgeCount");
@@ -36,7 +37,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     private static final String TOTAL_ITERATIONS = "gremlin.pageRankVertexProgram.totalIterations";
     private static final String INCIDENT_TRAVERSAL_SUPPLIER = "gremlin.pageRankVertexProgram.incidentTraversalSupplier";
 
-    private LambdaHolder<Supplier<Traversal<Vertex, Edge>>> traversalSupplier;
+    private LambdaHolder<Supplier<CountTraversal<Vertex, Edge>>> traversalSupplier;
     private double vertexCountAsDouble = 1;
     private double alpha = 0.85d;
     private int totalIterations = 30;
@@ -86,7 +87,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     public void execute(final Vertex vertex, Messenger<Double> messenger, final Memory memory) {
         if (memory.isInitialIteration()) {
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
-            double edgeCount = Double.valueOf((Long) this.messageType.edges(vertex).count().next());
+            double edgeCount = Double.valueOf(this.messageType.<CountTraversal<Vertex,Edge>>edges(vertex).count().next());
             vertex.singleProperty(PAGE_RANK, initialPageRank);
             vertex.singleProperty(EDGE_COUNT, edgeCount);
             messenger.sendMessage(this.messageType, initialPageRank / edgeCount);
@@ -130,12 +131,12 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
             return this;
         }
 
-        public Builder incident(final Supplier<Traversal<Vertex, Edge>> traversal) {
+        public Builder incident(final Supplier<CountTraversal<Vertex, Edge>> traversal) {
             LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, INCIDENT_TRAVERSAL_SUPPLIER, traversal);
             return this;
         }
 
-        public Builder incident(final Class<Supplier<Traversal<Vertex, Edge>>> traversalClass) {
+        public Builder incident(final Class<Supplier<CountTraversal<Vertex, Edge>>> traversalClass) {
             LambdaHolder.storeState(this.configuration, LambdaHolder.Type.CLASS, INCIDENT_TRAVERSAL_SUPPLIER, traversalClass);
             return this;
         }
@@ -166,8 +167,8 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
     ////////////////////////////
 
-    public static class OutETraversalSupplier implements Supplier<Traversal<Vertex, Edge>> {
-        public Traversal<Vertex, Edge> get() {
+    public static class OutETraversalSupplier implements Supplier<CountTraversal<Vertex, Edge>> {
+        public CountTraversal<Vertex, Edge> get() {
             return GraphTraversal.<Vertex>of().outE();
         }
     }

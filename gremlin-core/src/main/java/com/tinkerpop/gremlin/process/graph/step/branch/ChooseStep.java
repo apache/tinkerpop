@@ -6,8 +6,10 @@ import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * A step which offers a choice of two or more Traversals to take
@@ -15,13 +17,21 @@ import java.util.function.Function;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ChooseMapStep<S, E, M> extends FlatMapStep<S, E> {
+public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> {
 
     private final Function<Traverser<S>, M> mapFunction;
     private final Map<M, Traversal<S, E>> choices;
 
+    public ChooseStep(final Traversal traversal, final Predicate<Traverser<S>> predicate, final Traversal<S, E> trueChoice, final Traversal<S, E> falseChoice) {
+        this(traversal,
+                (Function) traverser -> predicate.test((Traverser) traverser),
+                new HashMap() {{
+                    put(Boolean.TRUE, trueChoice);
+                    put(Boolean.FALSE, falseChoice);
+                }});
+    }
 
-    public ChooseMapStep(final Traversal traversal, final Function<Traverser<S>, M> mapFunction, final Map<M, Traversal<S, E>> choices) {
+    public ChooseStep(final Traversal traversal, final Function<Traverser<S>, M> mapFunction, final Map<M, Traversal<S, E>> choices) {
         super(traversal);
         this.mapFunction = mapFunction;
         this.choices = choices;

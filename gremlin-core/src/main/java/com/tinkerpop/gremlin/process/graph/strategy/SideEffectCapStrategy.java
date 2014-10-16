@@ -3,8 +3,8 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 /**
@@ -18,10 +18,10 @@ public class SideEffectCapStrategy implements TraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal<?,?> traversal) {
+    public void apply(final Traversal<?, ?> traversal) {
         final Step endStep = TraversalHelper.getEnd(traversal);
-        if (endStep instanceof SideEffectCapable && !(endStep instanceof SideEffectCapStep)) {
-            traversal.cap();
+        if (endStep instanceof SideEffectCapable) {
+            ((GraphTraversal) traversal).cap();
         }
     }
 
