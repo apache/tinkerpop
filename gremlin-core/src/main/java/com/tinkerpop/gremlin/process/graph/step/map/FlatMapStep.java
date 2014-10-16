@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
-import com.tinkerpop.gremlin.process.util.GlobalMetrics;
+import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 
 import java.util.Iterator;
 import java.util.function.Function;
@@ -36,9 +36,9 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
     protected Traverser<E> getNext() {
         if (null == this.iterator) {
             final Traverser.Admin<S> traverser = this.starts.next();
-            if (this.isProfilingEnabled) GlobalMetrics.start(this, traverser);
+            if (this.isProfilingEnabled) TraversalMetrics.start(this, traverser);
             this.iterator = new FlatMapTraverserIterator<>(traverser, this, this.function.apply(traverser));
-            if (this.isProfilingEnabled) GlobalMetrics.finish(this, traverser);
+            if (this.isProfilingEnabled) TraversalMetrics.finish(this, traverser);
             return null;
         } else {
             if (this.iterator.hasNext()) {
@@ -69,9 +69,9 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
 
         @Override
         public Traverser<B> next() {
-            if (FlatMapStep.this.isProfilingEnabled) GlobalMetrics.start(FlatMapStep.this, this.head);
+            if (FlatMapStep.this.isProfilingEnabled) TraversalMetrics.start(FlatMapStep.this, this.head);
             Traverser.Admin<B> ret = this.head.makeChild(this.step.getLabel(), this.iterator.next());
-            if (FlatMapStep.this.isProfilingEnabled) GlobalMetrics.stop(FlatMapStep.this, this.head);
+            if (FlatMapStep.this.isProfilingEnabled) TraversalMetrics.stop(FlatMapStep.this, this.head);
             return ret;
         }
     }

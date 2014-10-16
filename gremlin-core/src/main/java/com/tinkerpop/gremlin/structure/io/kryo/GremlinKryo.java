@@ -15,7 +15,7 @@ import com.tinkerpop.gremlin.process.computer.traversal.TraverserCountTracker;
 import com.tinkerpop.gremlin.process.computer.traversal.TraverserPathTracker;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.process.util.BulkSet;
-import com.tinkerpop.gremlin.process.util.GlobalMetrics;
+import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.process.util.StepMetrics;
 import com.tinkerpop.gremlin.structure.*;
 import com.tinkerpop.gremlin.structure.util.detached.*;
@@ -227,7 +227,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(ReferencedPath.class, null, 69));
             add(Triplet.<Class, Serializer, Integer>with(BulkSet.class, null, 70));
             add(Triplet.<Class, Serializer, Integer>with(StepMetrics.class, null, 71));
-            add(Triplet.<Class, Serializer, Integer>with(GlobalMetrics.class, null, 72)); // ***LAST ID***
+            add(Triplet.<Class, Serializer, Integer>with(TraversalMetrics.class, null, 72)); // ***LAST ID***
         }};
 
         private static final byte major = 1;

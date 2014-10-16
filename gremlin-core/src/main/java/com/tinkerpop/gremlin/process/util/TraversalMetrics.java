@@ -9,7 +9,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public final class GlobalMetrics implements Serializable {
+public final class TraversalMetrics implements Serializable {
     private static final String[] headers = {"Step", "Count", "Time (ms)", "Time (ns)", "% Duration"};
 
     private long totalStepDuration;
@@ -17,15 +17,15 @@ public final class GlobalMetrics implements Serializable {
     private final Map<String, StepMetrics> stepMetrics = new LinkedHashMap<>();
 
     public static final void start(final Step<?, ?> step, final Traverser.Admin<?> traverser) {
-        traverser.getSideEffects().getOrCreate(ProfileStep.METRICS_KEY, GlobalMetrics::new).startInternal(step);
+        traverser.getSideEffects().getOrCreate(ProfileStep.METRICS_KEY, TraversalMetrics::new).startInternal(step);
     }
 
     public static final void stop(final Step<?, ?> step, Traverser.Admin<?> traverser) {
-        traverser.getSideEffects().<GlobalMetrics>get(ProfileStep.METRICS_KEY).stopInternal(step);
+        traverser.getSideEffects().<TraversalMetrics>get(ProfileStep.METRICS_KEY).stopInternal(step);
     }
 
     public static final void finish(final Step<?, ?> step, Traverser.Admin<?> traverser) {
-        traverser.getSideEffects().<GlobalMetrics>get(ProfileStep.METRICS_KEY).finishInternal(step, traverser);
+        traverser.getSideEffects().<TraversalMetrics>get(ProfileStep.METRICS_KEY).finishInternal(step, traverser);
     }
 
     private void startInternal(final Step<?, ?> step) {
@@ -76,8 +76,8 @@ public final class GlobalMetrics implements Serializable {
         return totalStepDuration / 1000000.0d;
     }
 
-    public static GlobalMetrics merge(final Iterator<GlobalMetrics> metrics) {
-        final GlobalMetrics totalMetrics = new GlobalMetrics();
+    public static TraversalMetrics merge(final Iterator<TraversalMetrics> metrics) {
+        final TraversalMetrics totalMetrics = new TraversalMetrics();
         metrics.forEachRemaining(globalMetrics -> {
             globalMetrics.stepMetrics.forEach((label, timer) -> {
                 StepMetrics stepMetrics = totalMetrics.stepMetrics.get(label);

@@ -2,13 +2,13 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileStep;
-import com.tinkerpop.gremlin.process.util.GlobalMetrics;
+import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.javatuples.Pair;
 
 import java.util.Iterator;
 
-public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, GlobalMetrics, MapReduce.NullObject, GlobalMetrics, GlobalMetrics> {
+public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, TraversalMetrics, MapReduce.NullObject, TraversalMetrics, TraversalMetrics> {
 
     public ProfileMapReduce() {
     }
@@ -19,7 +19,7 @@ public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, G
     }
 
     @Override
-    public GlobalMetrics generateSideEffect(final Iterator<Pair<NullObject, GlobalMetrics>> keyValues) {
+    public TraversalMetrics generateSideEffect(final Iterator<Pair<NullObject, TraversalMetrics>> keyValues) {
         return keyValues.next().getValue1();
     }
 
@@ -29,17 +29,17 @@ public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, G
     }
 
     @Override
-    public void map(final Vertex vertex, final MapEmitter<NullObject, GlobalMetrics> emitter) {
-        MapReduce.getLocalSideEffects(vertex).<GlobalMetrics>ifPresent(ProfileStep.METRICS_KEY, metrics -> emitter.emit(NullObject.instance(), metrics));
+    public void map(final Vertex vertex, final MapEmitter<NullObject, TraversalMetrics> emitter) {
+        MapReduce.getLocalSideEffects(vertex).<TraversalMetrics>ifPresent(ProfileStep.METRICS_KEY, metrics -> emitter.emit(NullObject.instance(), metrics));
     }
 
     @Override
-    public void combine(final NullObject key, final Iterator<GlobalMetrics> values, final ReduceEmitter<NullObject, GlobalMetrics> emitter) {
+    public void combine(final NullObject key, final Iterator<TraversalMetrics> values, final ReduceEmitter<NullObject, TraversalMetrics> emitter) {
         reduce(key, values, emitter);
     }
 
     @Override
-    public void reduce(final NullObject key, final Iterator<GlobalMetrics> values, final ReduceEmitter<NullObject, GlobalMetrics> emitter) {
-        emitter.emit(NullObject.instance(), GlobalMetrics.merge(values));
+    public void reduce(final NullObject key, final Iterator<TraversalMetrics> values, final ReduceEmitter<NullObject, TraversalMetrics> emitter) {
+        emitter.emit(NullObject.instance(), TraversalMetrics.merge(values));
     }
 }

@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCap;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
-import com.tinkerpop.gremlin.process.util.GlobalMetrics;
+import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 
@@ -42,12 +42,12 @@ public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements
             } catch (final NoSuchElementException ignored) {
             }
 
-            if (this.isProfilingEnabled) GlobalMetrics.start(this, traverser);
+            if (this.isProfilingEnabled) TraversalMetrics.start(this, traverser);
             this.done = true;
             traverser.setBulk(1l);
             Traverser.Admin<E> ret = traverser.makeChild(this.getLabel(), traverser.getSideEffects().<E>get(this.sideEffectKey));
 
-            if (this.isProfilingEnabled) GlobalMetrics.finish(this, traverser);
+            if (this.isProfilingEnabled) TraversalMetrics.finish(this, traverser);
             return ret;
         } else {
             throw FastNoSuchElementException.instance();

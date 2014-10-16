@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileStep;
-import com.tinkerpop.gremlin.process.util.GlobalMetrics;
+import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 public class ProfileStrategy implements TraversalStrategy {
@@ -17,7 +17,7 @@ public class ProfileStrategy implements TraversalStrategy {
         if (!TraversalHelper.hasStepOfClass(ProfileStep.class, traversal)) {
             return;
         }
-        traversal.sideEffects().set(ProfileStep.METRICS_KEY, new GlobalMetrics()); // TODO: is this needed? No probably.
+        traversal.sideEffects().set(ProfileStep.METRICS_KEY, new TraversalMetrics()); // TODO: is this needed? No probably.
         traversal.getSteps().forEach(step -> step.setProfilingEnabled(true));
     }
 
