@@ -126,6 +126,16 @@ public interface Graph extends AutoCloseable {
     public Vertex addVertex(final Object... keyValues);
 
     /**
+     * Add a {@link Vertex} to the graph with provided vertex label.
+     *
+     * @param label the label of the vertex
+     * @return The newly created labeled vertex
+     */
+    public default Vertex addVertex(final String label) {
+        return this.addVertex(T.label, label);
+    }
+
+    /**
      * Get a {@link Vertex} given its unique identifier.
      *
      * @param id The unique identifier of the vertex to locate
@@ -134,7 +144,7 @@ public interface Graph extends AutoCloseable {
     public default Vertex v(final Object id) throws NoSuchElementException {
         if (null == id) throw Graph.Exceptions.elementNotFound(Vertex.class, null);
         return (Vertex) this.V().has(T.id, id).next();
-    }
+}
 
     /**
      * Get a {@link Edge} given its unique identifier.
