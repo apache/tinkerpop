@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GraphStandardStrategy implements TraversalStrategy.NoDependencies {
+public class GraphStandardStrategy extends AbstractTraversalStrategy implements TraversalStrategy.NoDependencies {
 
     private static final GraphStandardStrategy INSTANCE = new GraphStandardStrategy();
 
@@ -24,5 +24,4 @@ public class GraphStandardStrategy implements TraversalStrategy.NoDependencies {
     public static GraphStandardStrategy instance() {
         return INSTANCE;
     }
-
 }

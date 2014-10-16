@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraverserSourceStrategy implements TraversalStrategy {
+public class TraverserSourceStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
 
     private static final TraverserSourceStrategy INSTANCE = new TraverserSourceStrategy();
 

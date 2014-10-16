@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.util;
 
+import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -134,6 +135,10 @@ public class StringFactory {
         });
 
         return sb.toString();
+    }
+
+    public static String traversalStrategyString(final TraversalStrategy traversalStrategy) {
+        return traversalStrategy.getClass().getSimpleName();
     }
 
     private static Function<Method, String> createTransform(final Graph.Features.FeatureSet features) {

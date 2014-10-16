@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class UnrollJumpStrategy implements TraversalStrategy {
+public class UnrollJumpStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
 
     private static final UnrollJumpStrategy INSTANCE = new UnrollJumpStrategy();
 

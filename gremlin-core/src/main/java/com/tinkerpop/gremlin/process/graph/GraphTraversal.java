@@ -52,7 +52,6 @@ import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.*;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.strategy.ChooseLinearStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.CountCapStrategy;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.marker.CountTraversal;
 import com.tinkerpop.gremlin.process.util.SideEffectHelper;
@@ -92,12 +91,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
     public default void prepareForGraphComputer() {
         CountTraversal.super.prepareForGraphComputer();
         this.strategies().register(ChooseLinearStrategy.instance());
-        this.strategies().register(CountCapStrategy.instance());
     }
 
     @Override
     public default GraphTraversal<S, E> submit(final GraphComputer computer) {
-        return (GraphTraversal) CountTraversal.super.<S,E>submit(computer);
+        return (GraphTraversal) CountTraversal.super.<S, E>submit(computer);
     }
 
     public static <S> GraphTraversal<S, S> of(final Graph graph) {

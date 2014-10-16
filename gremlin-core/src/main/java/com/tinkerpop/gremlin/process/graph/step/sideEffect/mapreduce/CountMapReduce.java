@@ -2,41 +2,20 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountCapStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
 import com.tinkerpop.gremlin.structure.Vertex;
-import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
 import java.util.Iterator;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class CountCapMapReduce implements MapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
+public final class CountMapReduce implements MapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
 
-    public static final String COUNT_CAP_STEP_SIDE_EFFECT_KEY = "gremlin.countCapStep.sideEffectKey";
-
-    private String sideEffectKey;
-
-    public CountCapMapReduce() {
+    public CountMapReduce() {
 
     }
-
-    public CountCapMapReduce(final CountCapStep step) {
-        this.sideEffectKey = step.getSideEffectKey();
-    }
-
-    @Override
-    public void storeState(final Configuration configuration) {
-        configuration.setProperty(COUNT_CAP_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
-    }
-
-    @Override
-    public void loadState(final Configuration configuration) {
-        this.sideEffectKey = configuration.getString(COUNT_CAP_STEP_SIDE_EFFECT_KEY);
-    }
-
 
     @Override
     public boolean doStage(final Stage stage) {
@@ -45,7 +24,7 @@ public final class CountCapMapReduce implements MapReduce<MapReduce.NullObject, 
 
     @Override
     public void map(Vertex vertex, MapEmitter<MapReduce.NullObject, Long> emitter) {
-        emitter.emit(NullObject.instance(), MapReduce.getLocalSideEffects(vertex).orElse(this.sideEffectKey, new AtomicLong(0)).get());
+        emitter.emit(NullObject.instance(), MapReduce.getLocalSideEffects(vertex).orElse(CountStep.COUNT_KEY, 0l));
     }
 
     @Override
@@ -69,12 +48,12 @@ public final class CountCapMapReduce implements MapReduce<MapReduce.NullObject, 
 
     @Override
     public String getSideEffectKey() {
-        return this.sideEffectKey;
+        return CountStep.COUNT_KEY;
     }
 
     @Override
     public int hashCode() {
-        return (this.getClass().getCanonicalName() + this.sideEffectKey).hashCode();
+        return (this.getClass().getCanonicalName() + CountStep.COUNT_KEY).hashCode();
     }
 
     @Override

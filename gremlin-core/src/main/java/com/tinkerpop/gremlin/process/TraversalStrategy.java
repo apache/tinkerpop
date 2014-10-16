@@ -23,5 +23,4 @@ public interface TraversalStrategy extends Comparable<TraversalStrategy> {
             return traversalStrategy instanceof NoDependencies ? -1 : -1 * traversalStrategy.compareTo(this);
         }
     }
-
 }

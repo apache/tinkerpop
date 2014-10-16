@@ -1,53 +1,54 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
-import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
+import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
+import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.CountMapReduce;
+import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
+import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.NoSuchElementException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class CountStep<S> extends MapStep<S, Long> {
+public final class CountStep<S> extends AbstractStep<S, Long> implements SideEffectCapable, MapReducer<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
 
-    private final AtomicBoolean done = new AtomicBoolean(false);
-    private final AtomicLong counter = new AtomicLong(0l);
+    public static final String COUNT_KEY = Graph.Key.hide("count");
 
     public CountStep(final Traversal traversal) {
         super(traversal);
-        this.setFunction(traverser -> {
-            final long bulk = traverser.getBulk();
-            this.counter.getAndAdd(bulk);
-            this.starts.forEachRemaining(previousTraverser -> this.counter.getAndAdd(previousTraverser.getBulk()));
-            return this.counter.get();
-        });
     }
 
     @Override
-    protected Traverser<Long> processNextStart() {
-        if (!this.done.get()) {
-            this.done.set(true);
-            try {
-                final Traverser<Long> traverser = super.processNextStart();
-                traverser.asAdmin().setBulk(1l);
-                return traverser;
-            } catch (final NoSuchElementException e) {
-                return new SimpleTraverser<>(0l, this.getTraversal().sideEffects());
+    public Traverser<Long> processNextStart() {
+        long counter = this.getTraversal().sideEffects().getOrCreate(COUNT_KEY, () -> 0l);
+        try {
+            while (true) {
+                counter = counter + this.starts.next().getBulk();
             }
-        } else {
-            throw FastNoSuchElementException.instance();
+        } catch (final NoSuchElementException e) {
+            this.getTraversal().sideEffects().set(COUNT_KEY, counter);
         }
+        throw FastNoSuchElementException.instance();
     }
 
     @Override
     public void reset() {
         super.reset();
-        this.done.set(false);
-        this.counter.set(0l);
+        this.getTraversal().sideEffects().set(COUNT_KEY, 0l);
+    }
+
+    @Override
+    public String getSideEffectKey() {
+        return COUNT_KEY;
+    }
+
+    @Override
+    public MapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> getMapReduce() {
+        return new CountMapReduce();
     }
 }

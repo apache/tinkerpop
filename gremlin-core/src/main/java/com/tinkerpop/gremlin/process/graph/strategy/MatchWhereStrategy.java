@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MatchWhereStrategy implements TraversalStrategy {
+public class MatchWhereStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
 
     private static final MatchWhereStrategy INSTANCE = new MatchWhereStrategy();
 
