@@ -1019,7 +1019,7 @@ gremlin> t.toString()
 GraphTraversalStrategyRegistry
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-There are various provided strategies that are required of `GraphTraversal` in order for it to function properly. However, not all such strategies are required and in fact, depending on _a priori_ knowledge of the statistics of the graph being traversed, turning off default strategies and/or activating custom strategies may prove fruitful. `GraphTraversalStrategyRegistry` is a global static class that supports the registering (and un-registering) traversal strategies that will be applied every time a `GraphTraversal` is constructed (e.g. `DefaultGraphTraversal`).
+There are various default strategies that are applied to a `GraphTraversal` when it is created. However, not all these strategies are required and in fact, depending on _a priori_ knowledge of the statistics of the graph being traversed, turning off default strategies and/or activating custom strategies may prove fruitful. `GraphTraversalStrategyRegistry` is a global static class that supports the registering (and un-registering) of traversal strategies that will be applied every time a `GraphTraversal` is constructed (e.g. `DefaultGraphTraversal`).
 
 WARNING: It is possible to create faulty traversals by modifying the `GraphTraversalStrategyRegistry`. This functionality is reserved for experts with a solid understanding of Gremlin's traversal strategy framework.
 
