@@ -15,7 +15,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ChooseLinearStrategy implements TraversalStrategy.NoDependencies {
+public class ChooseLinearStrategy extends AbstractTraversalStrategy implements TraversalStrategy.NoDependencies {
 
     // TODO: recursively linearlize as a branch could have a choose() step (so forth and so on)
 

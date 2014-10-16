@@ -9,10 +9,11 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Created a `AbstractTraversalStrategy` with good `toString()`, `hasCode()`, and `equals()` implementations.
 * Added `CountTraversal` as a marker-interface stating that the `Traversal` has a `count() -> Long` method.
-* `Traversal` not longer has any step methods as its not required for DSL implementers to have "core steps."
+* `Traversal` no longer has any step methods as its not required for DSL implementers to have "core steps."
 * Added "linearization" strategy for `ChooseStep` so it is executed correctly on GraphComputer.
-* Added `TraversalStrategyRegistry` and `GraphTraversalStrategyRegistry` which has respective global strategies.
+* Added ``GraphTraversalStrategyRegistry` which has respective global strategies to make turning on/off strategies easier.
 * Added a generic `BranchStep` to be used for re-writing "meta-steps" for execution on GraphComputer.
 * Moved `JumpStep`, `UntilStep`, and `ChooseStep` to a new `branch/` package.
 * Added test cases to the Structure Suite to enforce consistent operations of reading properties after removal of their owning `Element`.

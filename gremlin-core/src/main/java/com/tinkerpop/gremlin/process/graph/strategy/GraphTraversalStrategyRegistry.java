@@ -16,6 +16,9 @@ public class GraphTraversalStrategyRegistry implements Traversal.Strategies {
     private static final GraphTraversalStrategyRegistry INSTANCE = new GraphTraversalStrategyRegistry();
 
     static {
+        TRAVERSAL_STRATEGIES.add(TraverserSourceStrategy.instance());
+        TRAVERSAL_STRATEGIES.add(LabeledEndStepStrategy.instance());
+        TRAVERSAL_STRATEGIES.add(GraphStandardStrategy.instance());
         TRAVERSAL_STRATEGIES.add(UntilStrategy.instance());
         TRAVERSAL_STRATEGIES.add(DedupOptimizerStrategy.instance());
         TRAVERSAL_STRATEGIES.add(IdentityReductionStrategy.instance());

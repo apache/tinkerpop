@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CountCapStrategy implements TraversalStrategy.NoDependencies {
+public class CountCapStrategy extends AbstractTraversalStrategy implements TraversalStrategy.NoDependencies {
 
     private static final CountCapStrategy INSTANCE = new CountCapStrategy();
 
@@ -27,4 +27,5 @@ public class CountCapStrategy implements TraversalStrategy.NoDependencies {
     public static CountCapStrategy instance() {
         return INSTANCE;
     }
+
 }

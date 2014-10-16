@@ -103,7 +103,7 @@ AddEdge Step
 
 image::addedge-step.png[width=450]
 
-link:http://en.wikipedia.org/wiki/Automated_reasoning[Reasoning] is the process of making explicit in the data was is implicit in the data. What is explicit in a graph are the objects of the graph -- i.e. vertices and edges. What is implicit in the graph is the traversal. In other words, traversals expose meaning where the meaning is defined by the traversal description. For example, take the concept of a "co-developer." Two people are co-developers if they have worked on the same project together. This concept can be represented as a traversal and thus, the concept of "co-developers" can be derived. This is made possible with `addE()`-step.
+link:http://en.wikipedia.org/wiki/Automated_reasoning[Reasoning] is the process of making explicit in the data was is implicit in the data. What is explicit in a graph are the objects of the graph -- i.e. vertices and edges. What is implicit in the graph is the traversal. In other words, traversals expose meaning where the meaning is defined by the traversal description. For example, take the concept of a "co-developer." Two people are co-developers if they have worked on the same project together. This concept can be represented as a traversal and thus, the concept of "co-developers" can be derived. This is made possible with `addE()`-step (*sideEffect*).
 
 [source,groovy]
 gremlin> g.v(1).as('a').out('created')
@@ -162,7 +162,7 @@ In link:http://en.wikipedia.org/wiki/Recommender_system[recommendation systems],
 Back Step
 ~~~~~~~~~
 
-link:http://en.wikipedia.org/wiki/Functional_programming[Functional languages] make use of function composition and lazy evaluation to create complex computations from primitive operations. This is exactly what Gremlin `GraphTraversal` does. One of the differentiating aspects of Gremlin's data flow approach to graph processing is that the flow need not always go "forward," but in fact, can go back to a previously seen area of computation. Examples include <<jump-step,`jump()`>> as well as the `back()`-step (*branch*).
+link:http://en.wikipedia.org/wiki/Functional_programming[Functional languages] make use of function composition and lazy evaluation to create complex computations from primitive operations. This is exactly what Gremlin `GraphTraversal` does. One of the differentiating aspects of Gremlin's data flow approach to graph processing is that the flow need not always go "forward," but in fact, can go back to a previously seen area of computation. Examples include <<jump-step,`jump()`>> as well as the `back()`-step (*map*).
 
 [source,groovy]
 gremlin> g.V().out().out()
@@ -277,7 +277,7 @@ Has Step
 
 image::has-step.png[width=670]
 
-It is possible to filter vertices, edges, and vertex properties based on their properties.
+It is possible to filter vertices, edges, and vertex properties based on their properties using `has()`-step (*filter*).
 
 [source,groovy]
 gremlin> g.V().has('age')
@@ -300,7 +300,7 @@ Inject Step
 
 image::inject-step.png[width=800]
 
-One of the major features of TinkerPop3 is "injectable steps." This makes it possible to insert objects arbitrarily into a traversal stream. This is how <<jump-step,jump()>> is implemented. In general, `inject()`-step exists and a few examples are provided below.
+One of the major features of TinkerPop3 is "injectable steps." This makes it possible to insert objects arbitrarily into a traversal stream. This is how <<jump-step,jump()>> is implemented. In general, `inject()`-step (*sideEffect*) exists and a few examples are provided below.
 
 [source,groovy]
 gremlin> g.v(4).out().value('name').inject('daniel')
@@ -511,7 +511,7 @@ gremlin> traversal <5>
 Order Step
 ~~~~~~~~~~
 
-When the objects of the traversal stream need to be sorted, `order()`-step can be leveraged.
+When the objects of the traversal stream need to be sorted, `order()`-step (*map*) can be leveraged.
 
 [source,groovy]
 gremlin> g.V().value('name').order()
@@ -563,7 +563,7 @@ gremlin> g.V().value('name').
 OrderBy Step
 ~~~~~~~~~~~~
 
-One of the most traversed objects in a traversal is an `Element`. An element can have properties associated with it (i.e. key/value pairs). In many situations, it is desirable to sort an element traversal stream according to a comparison of their properties. The `orderBy()`-step exists to support this. (*map*)
+One of the most traversed objects in a traversal is an `Element`. An element can have properties associated with it (i.e. key/value pairs). In many situations, it is desirable to sort an element traversal stream according to a comparison of their properties. The `orderBy()`-step (*map*) exists to support this.
 
 [source,groovy]
 gremlin> g.V().map{it.get().value('name') + ' is ' + it.get()}
@@ -661,6 +661,25 @@ gremlin> path.c
 ==>v[5]
 gremlin> path.d == path.e
 ==>true
+
+[[profile-step]]
+Profile Step
+~~~~~~~~~~~~
+
+The `profile()`-step (*sideEffect*) exists to allow developers to profile their traversals to determine statistical information like step runtime, counts, etc.
+
+[source,groovy]
+gremlin> TraversalMetrics.isEnabled()
+==>false
+gremlin> TraversalMetrics.enable()
+==>null
+gremlin> g.V().out().out().profile()
+==>
+...
+gremlin> TraversalMetrics.disable()
+==>null
+gremlin> g.V().out().out().profile()
+// IllegalStateException
 
 [[range-step]]
 Range Step
@@ -789,7 +808,7 @@ It is interesting to note that there are three results in the `store()` side-eff
 Subgraph Step
 ~~~~~~~~~~~~~
 
-Extracting a portion of a graph from a larger one for analysis, visualization or other purposes is a fairly common use case for graph analysts and developers. The `subgraph()`-step (*map*) provides a way to produce an edge-induced subgraph from virtually any traversal.  The following code shows how to produce the "knows" subgraph:
+Extracting a portion of a graph from a larger one for analysis, visualization or other purposes is a fairly common use case for graph analysts and developers. The `subgraph()`-step (*sideEffect*) provides a way to produce an edge-induced subgraph from virtually any traversal.  The following code shows how to produce the "knows" subgraph:
 
 [source,groovy]
 ----
@@ -996,6 +1015,31 @@ gremlin> t.strategies().apply()
 ==>null
 gremlin> t.toString()
 ==>[TinkerGraphStep([[name,EQUAL,marko]])]
+
+GraphTraversalStrategyRegistry
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There are various provided strategies that are required of `GraphTraversal` in order for it to function properly. However, not all such strategies are required and in fact, depending on _a priori_ knowledge of the statistics of the graph being traversed, turning off default strategies and/or activating custom strategies may prove fruitful. `GraphTraversalStrategyRegistry` is a global static class that supports the registering (and un-registering) traversal strategies that will be applied every time a `GraphTraversal` is constructed (e.g. `DefaultGraphTraversal`).
+
+WARNING: It is possible to create faulty traversals by modifying the `GraphTraversalStrategyRegistry`. This functionality is reserved for experts with a solid understanding of Gremlin's traversal strategy framework.
+
+[source,groovy]
+gremlin> import com.tinkerpop.gremlin.process.graph.strategy.*
+...
+gremlin> GraphTraversalStrategyRegistry.instance()
+==>[TraverserSourceStrategy, LabeledEndStepStrategy, GraphStandardStrategy, UntilStrategy, DedupOptimizerStrategy, IdentityReductionStrategy, SideEffectCapStrategy, MatchWhereStrategy]
+gremlin> t = g.V().identity().identity().identity().range(0,1)
+==>v[1]
+==>v[2]
+gremlin> t.toString()
+==>[TinkerGraphStep(vertex), RangeStep(0,1)] // the identity reduction strategy removes unlabeled identity steps
+gremlin> GraphTraversalStrategyRegistry.instance().unregister(IdentityReductionStrategy)
+==>null
+gremlin> t = g.V().identity().identity().identity().range(0,1)
+==>v[1]
+==>v[2]
+gremlin> t.toString()
+==>[TinkerGraphStep(vertex), IdentityStep, IdentityStep, IdentityStep, RangeStep(0,1)]
 
 Domain Specific Languages
 -------------------------

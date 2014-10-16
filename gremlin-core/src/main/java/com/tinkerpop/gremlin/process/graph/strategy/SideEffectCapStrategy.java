@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SideEffectCapStrategy implements TraversalStrategy {
+public class SideEffectCapStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
 
     private static final SideEffectCapStrategy INSTANCE = new SideEffectCapStrategy();
 
@@ -33,5 +33,4 @@ public class SideEffectCapStrategy implements TraversalStrategy {
     public static SideEffectCapStrategy instance() {
         return INSTANCE;
     }
-
 }

@@ -23,11 +23,10 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     protected DefaultSideEffects sideEffects = new DefaultSideEffects();
 
     public DefaultTraversal() {
-        TraversalStrategyRegistry.populate(this.strategies);
+
     }
 
     public DefaultTraversal(final Graph graph) {
-        this();
         this.sideEffects().setGraph(graph);
     }
 

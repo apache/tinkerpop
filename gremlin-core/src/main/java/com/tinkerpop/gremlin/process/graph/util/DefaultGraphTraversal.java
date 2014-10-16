@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.structure.Graph;
 public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implements GraphTraversal<S, E> {
 
     public DefaultGraphTraversal() {
-        super();
         GraphTraversalStrategyRegistry.populate(this.strategies);
     }
 

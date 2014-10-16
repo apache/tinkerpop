@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IdentityReductionStrategy implements TraversalStrategy.NoDependencies {
+public class IdentityReductionStrategy extends AbstractTraversalStrategy implements TraversalStrategy.NoDependencies {
 
     private static final IdentityReductionStrategy INSTANCE = new IdentityReductionStrategy();
 
