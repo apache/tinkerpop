@@ -10,11 +10,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public final class TraversalMetrics implements Serializable {
-    private static final String[] headers = {"Step", "Count", "Traversers", "Time (ms)", "Time (ns)", "% Duration"};
+    private static final String[] headers = {"Step", "Count", "Traversers", "Time (ms)", "% Dur"};
 
     private long totalStepDuration;
 
-    private final Map<String, StepTimer> stepTimers = new LinkedHashMap<>();
+    private final Map<String, StepTimer> stepTimers = new LinkedHashMap<String,StepTimer>();
 
     public static final void start(final Step<?, ?> step, final Traverser.Admin<?> traverser) {
         traverser.getSideEffects().getOrCreate(ProfileStep.METRICS_KEY, TraversalMetrics::new).startInternal(step);
@@ -53,17 +53,17 @@ public final class TraversalMetrics implements Serializable {
 
         // Append headers
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%30s%15s%15s%15s%15s%15s", headers));
+        sb.append("Traversal Metrics\n").append(String.format("%30s%12s%11s%16s%8s", headers));
 
         // Append each StepMetric's row
         for (StepTimer s : this.stepTimers.values()) {
-            sb.append(String.format("%n%30s%15d%15d%15f%15d%15f",
-                    s.getName(), s.getCount(), s.getTraversers(), s.getTimeMs(), s.getTimeNs(), s.getPercentageDuration()));
+            sb.append(String.format("%n%30s%12d%11d%16.3f%8.2f",
+                    s.getName(), s.getCount(), s.getTraversers(), s.getTimeMs(), s.getPercentageDuration()));
         }
 
         // Append total duration
-        sb.append(String.format("%n%30s%15s%15s%15f%15s%15s",
-                "TOTAL", "-", "-", getTotalStepDurationMs(), "-", "-"));
+        sb.append(String.format("%n%30s%12s%11s%16.3f%8s",
+                "TOTAL", "-", "-", getTotalStepDurationMs(),  "-"));
 
         return sb.toString();
     }
