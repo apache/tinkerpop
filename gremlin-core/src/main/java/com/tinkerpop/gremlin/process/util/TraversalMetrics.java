@@ -9,6 +9,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * @author Bob Briody (http://bobbriody.com)
+ */
 public final class TraversalMetrics implements Serializable {
     private static final String[] headers = {"Step", "Count", "Traversers", "Time (ms)", "% Dur"};
 
@@ -53,16 +56,16 @@ public final class TraversalMetrics implements Serializable {
 
         // Append headers
         StringBuilder sb = new StringBuilder();
-        sb.append("Traversal Metrics\n").append(String.format("%30s%12s%11s%16s%8s", headers));
+        sb.append("Traversal Metrics\n").append(String.format("%32s%12s%11s%16s%8s", headers));
 
         // Append each StepMetric's row
         for (StepTimer s : this.stepTimers.values()) {
-            sb.append(String.format("%n%30s%12d%11d%16.3f%8.2f",
+            sb.append(String.format("%n%32s%12d%11d%16.3f%8.2f",
                     s.getName(), s.getCount(), s.getTraversers(), s.getTimeMs(), s.getPercentageDuration()));
         }
 
         // Append total duration
-        sb.append(String.format("%n%30s%12s%11s%16.3f%8s",
+        sb.append(String.format("%n%32s%12s%11s%16.3f%8s",
                 "TOTAL", "-", "-", getTotalStepDurationMs(),  "-"));
 
         return sb.toString();
