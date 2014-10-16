@@ -10,11 +10,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public final class TraversalMetrics implements Serializable {
-    private static final String[] headers = {"Step", "Count", "Time (ms)", "Time (ns)", "% Duration"};
+    private static final String[] headers = {"Step", "Count", "Traversers", "Time (ms)", "Time (ns)", "% Duration"};
 
     private long totalStepDuration;
 
-    private final Map<String, StepMetrics> stepMetrics = new LinkedHashMap<>();
+    private final Map<String, StepTimer> stepTimers = new LinkedHashMap<>();
 
     public static final void start(final Step<?, ?> step, final Traverser.Admin<?> traverser) {
         traverser.getSideEffects().getOrCreate(ProfileStep.METRICS_KEY, TraversalMetrics::new).startInternal(step);
@@ -29,47 +29,56 @@ public final class TraversalMetrics implements Serializable {
     }
 
     private void startInternal(final Step<?, ?> step) {
-        StepMetrics stepMetrics = this.stepMetrics.get(step.getLabel());
+        StepTimer stepMetrics = this.stepTimers.get(step.getLabel());
         if (null == stepMetrics) {
-            stepMetrics = new StepMetrics(step);
-            this.stepMetrics.put(step.getLabel(), stepMetrics);
+            stepMetrics = new StepTimer(step);
+            this.stepTimers.put(step.getLabel(), stepMetrics);
         }
-        stepMetrics.startTimer();
+        stepMetrics.start();
     }
 
     private void stopInternal(final Step<?, ?> step) {
-        this.stepMetrics.get(step.getLabel()).stop();
+        this.stepTimers.get(step.getLabel()).stop();
     }
 
     private void finishInternal(final Step<?, ?> step, final Traverser.Admin<?> traverser) {
-        this.stepMetrics.get(step.getLabel()).finish(traverser);
+        this.stepTimers.get(step.getLabel()).finish(traverser);
     }
-
 
     @Override
     public String toString() {
-        // TODO profile
-        //        if (totalStepDuration == 0) {
-        //            return "Metrics not enabled.";
-        //        }
+        computeTotals();
 
         // Build a pretty table of metrics data.
 
         // Append headers
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%30s%15s%15s%15s%15s", headers));
+        sb.append(String.format("%30s%15s%15s%15s%15s%15s", headers));
 
         // Append each StepMetric's row
-        for (StepMetrics s : this.stepMetrics.values()) {
-            sb.append(String.format("%n%30s%15d%15f%15d%15f",
-                    s.getName(), s.getCounts(), s.getTimeMs(), s.getTimeNs(), s.getPercentageDuration()));
+        for (StepTimer s : this.stepTimers.values()) {
+            sb.append(String.format("%n%30s%15d%15d%15f%15d%15f",
+                    s.getName(), s.getCount(), s.getTraversers(), s.getTimeMs(), s.getTimeNs(), s.getPercentageDuration()));
         }
 
         // Append total duration
-        sb.append(String.format("%n%30s%15s%15f%15s%15s",
-                "TOTAL", "-", getTotalStepDurationMs(), "-", "-"));
+        sb.append(String.format("%n%30s%15s%15s%15f%15s%15s",
+                "TOTAL", "-", "-", getTotalStepDurationMs(), "-", "-"));
 
         return sb.toString();
+    }
+
+    private void computeTotals() {
+        // Calculate total duration of all steps (note that this does not include non-step Traversal framework time
+        totalStepDuration = 0;
+        this.stepTimers.values().forEach(step -> {
+            totalStepDuration += step.getTimeNs();
+        });
+
+        // Assign step %'s
+        this.stepTimers.values().forEach(step -> {
+            step.setPercentageDuration(step.getTimeNs() * 100.d / totalStepDuration);
+        });
     }
 
     public double getTotalStepDurationMs() {
@@ -79,11 +88,11 @@ public final class TraversalMetrics implements Serializable {
     public static TraversalMetrics merge(final Iterator<TraversalMetrics> metrics) {
         final TraversalMetrics totalMetrics = new TraversalMetrics();
         metrics.forEachRemaining(globalMetrics -> {
-            globalMetrics.stepMetrics.forEach((label, timer) -> {
-                StepMetrics stepMetrics = totalMetrics.stepMetrics.get(label);
+            globalMetrics.stepTimers.forEach((label, timer) -> {
+                StepTimer stepMetrics = totalMetrics.stepTimers.get(label);
                 if (null == stepMetrics) {
-                    stepMetrics = new StepMetrics(timer);
-                    totalMetrics.stepMetrics.put(label, stepMetrics);
+                    stepMetrics = new StepTimer(timer.getName(), timer.getLabel());
+                    totalMetrics.stepTimers.put(label, stepMetrics);
                 }
                 stepMetrics.aggregate(timer);
             });

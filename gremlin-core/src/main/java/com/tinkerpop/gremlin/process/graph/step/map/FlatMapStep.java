@@ -38,11 +38,11 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
             final Traverser.Admin<S> traverser = this.starts.next();
             if (this.isProfilingEnabled) TraversalMetrics.start(this, traverser);
             this.iterator = new FlatMapTraverserIterator<>(traverser, this, this.function.apply(traverser));
-            if (this.isProfilingEnabled) TraversalMetrics.finish(this, traverser);
+            if (this.isProfilingEnabled) TraversalMetrics.stop(this, traverser);
             return null;
         } else {
             if (this.iterator.hasNext()) {
-                return this.iterator.next();
+                return this.iterator.next(); // timer start/finish in next() call
             } else {
                 this.iterator = null;
                 return null;
@@ -71,7 +71,7 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
         public Traverser<B> next() {
             if (FlatMapStep.this.isProfilingEnabled) TraversalMetrics.start(FlatMapStep.this, this.head);
             Traverser.Admin<B> ret = this.head.makeChild(this.step.getLabel(), this.iterator.next());
-            if (FlatMapStep.this.isProfilingEnabled) TraversalMetrics.stop(FlatMapStep.this, this.head);
+            if (FlatMapStep.this.isProfilingEnabled) TraversalMetrics.finish(FlatMapStep.this, this.head);
             return ret;
         }
     }
