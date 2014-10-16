@@ -17,7 +17,7 @@ public class ProfileStrategy implements TraversalStrategy {
         if (!TraversalHelper.hasStepOfClass(ProfileStep.class, traversal)) {
             return;
         }
-        traversal.sideEffects().set(ProfileStep.METRICS_KEY, new GlobalMetrics());
+        traversal.sideEffects().set(ProfileStep.METRICS_KEY, new GlobalMetrics()); // TODO: is this needed? No probably.
         traversal.getSteps().forEach(step -> step.setProfilingEnabled(true));
     }
 
