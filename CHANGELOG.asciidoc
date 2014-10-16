@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* No more `CountCapStep` and `CountStep`, there is only `CountStep` and it is elegant.
 * Created a `AbstractTraversalStrategy` with good `toString()`, `hasCode()`, and `equals()` implementations.
 * Added `CountTraversal` as a marker-interface stating that the `Traversal` has a `count() -> Long` method.
 * `Traversal` no longer has any step methods as its not required for DSL implementers to have "core steps."
