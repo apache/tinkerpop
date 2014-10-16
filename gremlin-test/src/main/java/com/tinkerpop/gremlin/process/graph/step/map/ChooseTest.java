@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Ignore;
@@ -112,31 +113,31 @@ public abstract class ChooseTest extends AbstractGremlinTest {
         @Override
         public Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name() {
             return g.V().choose(t -> t.get().<String>value("name").length() == 5,
-                    g.of().out(),
-                    g.of().in()).value("name");
+                    g.<Vertex>of().out(),
+                    g.<Vertex>of().in()).value("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_v1_chooseX0XoutX_name(Object v1Id) {
-            return g.v(v1Id).choose(t -> 0, new HashMap() {{
-                put(0, g.of().out().value("name"));
+            return g.v(v1Id).choose(t -> 0, new HashMap<Integer,Traversal<Vertex,String>>() {{
+                put(0, g.<Vertex>of().out().<String>value("name"));
             }});
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_hasXageX_chooseXname_lengthX5_in_4_out_3_bothX_name() {
             return g.V().has("age").choose(t -> t.get().<String>value("name").length(), new HashMap() {{
-                put(5, g.of().in());
-                put(4, g.of().out());
-                put(3, g.of().both());
+                put(5, g.<Vertex>of().in());
+                put(4, g.<Vertex>of().out());
+                put(3, g.<Vertex>of().both());
             }}).value("name");
         }
 
         @Override
         public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_valueXnameX_3L_valueMapX() {
             return g.V().choose(t -> t.get().out().count().next(), new HashMap() {{
-                put(2L, g.of().value("name"));
-                put(3L, g.of().valueMap());
+                put(2L, g.<Vertex>of().value("name"));
+                put(3L, g.<Vertex>of().valueMap());
             }});
         }
     }
@@ -146,8 +147,8 @@ public abstract class ChooseTest extends AbstractGremlinTest {
         @Override
         public Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name() {
             return g.V().choose(t -> t.get().<String>value("name").length() == 5,
-                    g.of().out(),
-                    g.of().in()).<String>value("name").submit(g.compute());
+                    g.<Vertex>of().out(),
+                    g.<Vertex>of().in()).<String>value("name").submit(g.compute());
         }
 
         @Override

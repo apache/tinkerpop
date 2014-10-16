@@ -2,6 +2,8 @@ package com.tinkerpop.gremlin.process.computer.ranking.pagerank;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.marker.CountTraversal;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -19,7 +21,7 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
     private boolean firstNext = true;
     private Graph resultantGraph;
     public double alpha;
-    public Supplier<Traversal<Vertex, Edge>> incidentTraversal = new PageRankVertexProgram.OutETraversalSupplier();
+    public Supplier<CountTraversal<Vertex, Edge>> incidentTraversal = new PageRankVertexProgram.OutETraversalSupplier();
 
     public PageRankStep(final Traversal traversal, final double alpha) {
         super(traversal);
@@ -31,7 +33,7 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
         this(traversal, 0.85d);
     }
 
-    public PageRankStep(final Traversal traversal, final Supplier<Traversal<Vertex, Edge>> incidentTraversal) {
+    public PageRankStep(final Traversal traversal, final Supplier<CountTraversal<Vertex, Edge>> incidentTraversal) {
         this(traversal, 0.85);
         this.incidentTraversal = incidentTraversal;
     }
