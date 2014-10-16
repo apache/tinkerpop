@@ -2,6 +2,10 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileStep;
+import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -17,12 +21,9 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -56,13 +57,6 @@ public class TinkerGraphTest {
         Graph g = TinkerFactory.createClassic();
         g.of(TinkerFactory.SocialTraversal.class).people("marko").knows().name().forEach(name -> assertTrue(name.equals("josh") || name.equals("vadas")));
         g.of(TinkerFactory.SocialTraversal.class).people("marko").created().name().forEach(name -> assertEquals("lop", name));
-    }
-
-    @Test
-    public void playTest() throws IOException {
-        Graph g = TinkerFactory.createClassic();
-        //        System.out.println(g.V().out().out().profile().submit(g.compute()).next());
-        System.out.println(g.V().out().out().profile().next());
     }
 
     /**

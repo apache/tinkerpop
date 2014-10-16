@@ -105,8 +105,6 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Cloneable {
      */
     public void setLabel(final String label);
 
-    public void setProfilingEnabled(final boolean enabled);
-
     static final class NoObject {
 
         private NoObject() {

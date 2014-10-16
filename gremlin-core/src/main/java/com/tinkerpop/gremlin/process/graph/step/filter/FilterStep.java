@@ -27,14 +27,14 @@ public class FilterStep<S> extends AbstractStep<S, S> {
         while (true) {
             final Traverser.Admin<S> traverser = this.starts.next();
             
-            if (this.isProfilingEnabled) TraversalMetrics.start(this, traverser);
+            if (this.profilingEnabled) TraversalMetrics.start(this, traverser);
 
             if (this.predicate.test(traverser)) {
-                if (this.isProfilingEnabled) TraversalMetrics.finish(this, traverser);
+                if (this.profilingEnabled) TraversalMetrics.finish(this, traverser);
                 return traverser;
             }
 
-            if (this.isProfilingEnabled) TraversalMetrics.stop(this, traverser);
+            if (this.profilingEnabled) TraversalMetrics.stop(this, traverser);
         }
     }
 }

@@ -23,7 +23,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     protected Step<?, S> previousStep = EmptyStep.instance();
     protected Step<E, ?> nextStep = EmptyStep.instance();
-    protected boolean isProfilingEnabled = false;
+    protected final static boolean profilingEnabled = "true".equals(System.getProperty(TraversalMetrics.PROFILING_ENABLED));
 
     public AbstractStep(final Traversal traversal) {
         this.traversal = traversal;
@@ -150,8 +150,4 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
             this.traversal.sideEffects().set(this.label, traverser.get());
     }
 
-    @Override
-    public void setProfilingEnabled(final boolean enabled) {
-        this.isProfilingEnabled = enabled;
-    }
 }

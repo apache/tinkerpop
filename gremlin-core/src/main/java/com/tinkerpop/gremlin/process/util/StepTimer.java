@@ -5,6 +5,9 @@ import com.tinkerpop.gremlin.process.Traverser;
 
 import java.io.Serializable;
 
+/**
+ * @author Bob Briody (http://bobbriody.com)
+ */
 public class StepTimer implements StepMetrics, Serializable {
     private long timeNs = 0l;
     private long traversers = 0l;
@@ -60,7 +63,7 @@ public class StepTimer implements StepMetrics, Serializable {
     }
 
     public String toString() {
-        return "Timer [" + label + ":" + name + " time(ns):" + this.getTimeNs() + " time(ms):" + this.getTimeMs() + " traversers:" + this.getTraversers() + " count:" + this.getCount() + "]";
+        return label + ":" + name + " time(ns):" + this.getTimeNs() + " time(ms):" + this.getTimeMs() + " traversers:" + this.getTraversers() + " count:" + this.getCount();
     }
 
     public void finish(Traverser.Admin<?> traverser) {

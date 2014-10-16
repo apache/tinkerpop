@@ -21,7 +21,6 @@ public class GraphTraversalStrategyRegistry implements Traversal.Strategies {
         TRAVERSAL_STRATEGIES.add(IdentityReductionStrategy.instance());
         TRAVERSAL_STRATEGIES.add(SideEffectCapStrategy.instance());
         TRAVERSAL_STRATEGIES.add(MatchWhereStrategy.instance());
-        TRAVERSAL_STRATEGIES.add(ProfileStrategy.instance());
     }
 
     private GraphTraversalStrategyRegistry() {

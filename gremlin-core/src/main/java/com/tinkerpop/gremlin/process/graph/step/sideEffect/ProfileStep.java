@@ -16,6 +16,11 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements SideEffec
 
     public ProfileStep(final Traversal traversal) {
         super(traversal);
+        if (!profilingEnabled) {
+            throw new IllegalStateException("The .profile() step can only be used when profiling is enabled on the " +
+                    "command line via -Dtinkerpop.profiling=true");
+        }
+
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(METRICS_KEY, this.traversal);
     }
 

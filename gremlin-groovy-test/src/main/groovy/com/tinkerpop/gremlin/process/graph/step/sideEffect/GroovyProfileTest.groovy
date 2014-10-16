@@ -13,9 +13,10 @@ public abstract class GroovyProfileTest {
     public static class StandardTest extends ProfileTest {
 
         @Override
-        public Traversal<Vertex, TraversalMetrics> get_g_V_out_out_profile() {
+        Traversal<Vertex, TraversalMetrics> get_g_V_out_out_profile() {
             g.V.out.out.profile();
         }
+
     }
 
     public static class ComputerTest extends ProfileTest {
@@ -24,5 +25,7 @@ public abstract class GroovyProfileTest {
         public Traversal<Vertex, TraversalMetrics> get_g_V_out_out_profile() {
             ComputerTestHelper.compute("g.V.out.out.profile()", g);
         }
+
     }
 }
+
