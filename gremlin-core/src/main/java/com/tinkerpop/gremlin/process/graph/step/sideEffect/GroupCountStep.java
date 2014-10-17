@@ -30,7 +30,7 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
         this.getTraversal().sideEffects().getOrCreate(this.sideEffectKey, HashMap::new); // TODO: for standard
         this.setConsumer(traverser -> {
-            final Map<Object, Long> groupCountMap = traverser.getSideEffects().getOrCreate(this.sideEffectKey, HashMap::new);
+            final Map<Object, Long> groupCountMap = traverser.sideEffects().getOrCreate(this.sideEffectKey, HashMap::new);
             MapHelper.incr(groupCountMap,
                     null == this.preGroupFunction ? traverser.get() : this.preGroupFunction.apply(traverser),
                     traverser.getBulk());
@@ -49,7 +49,7 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
 
     @Override
     public String toString() {
-        return Graph.Key.isHidden(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
+        return Graph.System.isSystem(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
     }
 
 }

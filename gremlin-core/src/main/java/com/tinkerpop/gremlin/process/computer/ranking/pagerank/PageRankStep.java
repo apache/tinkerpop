@@ -25,7 +25,7 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
 
     public PageRankStep(final Traversal traversal, final double alpha) {
         super(traversal);
-        this.graph = traversal.sideEffects().<Graph>get(Graph.Key.hide("g"));
+        this.graph = traversal.sideEffects().getGraph();
         this.alpha = alpha;
     }
 

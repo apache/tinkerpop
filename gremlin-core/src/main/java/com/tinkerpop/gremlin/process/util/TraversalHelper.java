@@ -15,11 +15,11 @@ import java.util.stream.Collectors;
 public class TraversalHelper {
 
     public static boolean isLabeled(final Step<?, ?> step) {
-        return !Graph.Key.isHidden(step.getLabel());
+        return !Graph.System.isSystem(step.getLabel());
     }
 
     public static boolean isLabeled(final String label) {
-        return !Graph.Key.isHidden(label);
+        return !Graph.System.isSystem(label);
     }
 
     public static boolean isReversible(final Traversal<?, ?> traversal) {
@@ -145,7 +145,7 @@ public class TraversalHelper {
         final List<Step> steps = traversal.getSteps();
         for (int i = 0; i < steps.size(); i++) {
             if (!TraversalHelper.isLabeled(steps.get(i)))
-                steps.get(i).setLabel(Graph.Key.hide(Integer.toString(i)));
+                steps.get(i).setLabel(Graph.System.system(Integer.toString(i)));
         }
     }
 

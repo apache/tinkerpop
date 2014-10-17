@@ -26,7 +26,7 @@ public final class MemoryMapReduce implements MapReduce<String, Object, String, 
 
     @Override
     public String getSideEffectKey() {
-        return Constants.HIDDEN_MEMORY;
+        return Constants.SYSTEM_MEMORY;
     }
 
     public MemoryMapReduce() {
@@ -92,7 +92,7 @@ public final class MemoryMapReduce implements MapReduce<String, Object, String, 
 
     @Override
     public int hashCode() {
-        return (this.getClass().getCanonicalName() + Constants.HIDDEN_MEMORY).hashCode();
+        return (this.getClass().getCanonicalName() + Constants.SYSTEM_MEMORY).hashCode();
     }
 
     @Override

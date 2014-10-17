@@ -43,7 +43,7 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
                 });
             } else {
                 this.selectLabels.forEach(label -> { ////// PROCESS SIDE-EFFECTS
-                    if (traverser.getSideEffects().exists(label))
+                    if (traverser.sideEffects().exists(label))
                         bindings.put(label, (E) this.functionRing.next().apply(traverser.get(label)));
                 });
             }

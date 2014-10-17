@@ -48,7 +48,7 @@ class SugarLoader {
             else if (key.equals(PATH))
                 return traverser.getPath();
             else
-                return traverser.getSideEffects().exists(key) ? traverser.getSideEffects().get(key) : traverser.get()."$key";
+                return traverser.sideEffects().exists(key) ? traverser.sideEffects().get(key) : traverser.get()."$key";
         }
     }
 

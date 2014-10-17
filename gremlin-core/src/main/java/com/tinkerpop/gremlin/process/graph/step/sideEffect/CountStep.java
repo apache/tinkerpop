@@ -17,7 +17,7 @@ import java.util.NoSuchElementException;
  */
 public final class CountStep<S> extends AbstractStep<S, Long> implements SideEffectCapable, MapReducer<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
 
-    public static final String COUNT_KEY = Graph.Key.hide("count");
+    public static final String COUNT_KEY = Graph.System.system("count");
 
     public CountStep(final Traversal traversal) {
         super(traversal);

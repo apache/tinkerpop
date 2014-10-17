@@ -765,7 +765,7 @@ gremlin> result.memory.a
 ==>i=[ripple]
 ==>o=[lop, josh]
 
-NOTE: Distributed graph computations on cluster-sized graphs can yield an enormous number of results. To be safe, Giraph-Gremlin only returns up to 20 results to the console (with, of course, all the results being available in HDFS). If more traversal results are desired, access `result.memory.get('~traversers')`.
+NOTE: Distributed graph computations on cluster-sized graphs can yield an enormous number of results. To be safe, Giraph-Gremlin only returns up to 20 results to the console (with, of course, all the results being available in HDFS). If more traversal results are desired, access `result.memory.get(Graph.System.system('traversers'))`.
 
 TIP: image:gremlin-sugar.png[width=50,float=left] For those wanting to use the <<sugar-plugin,SugarPlugin>> with their submitted traversal, do `:remote config useSugar true` as well as `:plugin use sugar` at the start of the Gremlin Console session if it is not already activated.
 
@@ -777,7 +777,7 @@ gremlin> hdfs.ls()
 ==>rw-r--r-- marko supergroup 891 tinkerpop-classic-vertices.gio
 gremlin> hdfs.ls('output')
 ==>rwxr-xr-x marko supergroup 0 (D) a
-==>rwxr-xr-x marko supergroup 0 (D) ~g
+==>rwxr-xr-x marko supergroup 0 (D) ^g
 gremlin> hdfs.ls('output/a')
 ==>rw-r--r-- marko supergroup 0 _SUCCESS
 ==>rwxr-xr-x marko supergroup 0 (D) _logs
@@ -908,7 +908,7 @@ $ hadoop jar target/giraph-gremlin-x.y.z-job.jar com.tinkerpop.gremlin.giraph.pr
 14/07/29 12:08:54 INFO mapred.JobClient:     Total time spent by all maps waiting after reserving slots (ms)=0
 14/07/29 12:08:54 INFO mapred.JobClient:   File Output Format Counters
 14/07/29 12:08:54 INFO mapred.JobClient:     Bytes Written=0
-$ hadoop fs -cat output/~g/*
+$ hadoop fs -cat output/^g/*
 {"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.5}},{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}],"id":1,"label":"vertex","type":"vertex","hiddens":{"gremlin.pageRank":0.15000000000000002,"gremlin.edgeCount":3.0},"properties":{"name":"marko","age":29}}
 {"inE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}}],"outE":[],"id":5,"label":"vertex","type":"vertex","hiddens":{"gremlin.pageRank":0.23181250000000003,"gremlin.edgeCount":0.0},"properties":{"name":"ripple","lang":"java"}}
 {"inE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}],"outE":[],"id":3,"label":"vertex","type":"vertex","hiddens":{"gremlin.pageRank":0.4018125,"gremlin.edgeCount":0.0},"properties":{"name":"lop","lang":"java"}}

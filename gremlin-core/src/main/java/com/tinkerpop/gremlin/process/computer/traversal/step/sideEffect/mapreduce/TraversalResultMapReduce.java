@@ -18,7 +18,7 @@ import java.util.Iterator;
  */
 public final class TraversalResultMapReduce implements MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Iterator<Object>> {
 
-    public static final String TRAVERSERS = Graph.Key.hide("traversers");
+    public static final String TRAVERSERS = Graph.System.system("traversers");
 
     @Override
     public boolean doStage(final Stage stage) {

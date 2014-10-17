@@ -13,7 +13,6 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.OutputFormat;
@@ -63,7 +62,7 @@ public class MapReduceHelper {
             job.setOutputFormatClass(newConfiguration.getClass(Constants.GREMLIN_MEMORY_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class, OutputFormat.class)); // TODO: Make this configurable
             // if there is no vertex program, then grab the graph from the input location
             final Path graphPath = configuration.get(GraphComputer.VERTEX_PROGRAM, null) != null ?
-                    new Path(newConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + Constants.HIDDEN_G) :
+                    new Path(newConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + Constants.SYSTEM_G) :
                     new Path(newConfiguration.get(Constants.GREMLIN_INPUT_LOCATION));
             final Path memoryPath = new Path(newConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + mapReduce.getSideEffectKey());
             // necessary if store('a').out.out.store('a') exists twice -- TODO: only need to call the MapReduce once. May want to have a uniqueness critieria on MapReduce.

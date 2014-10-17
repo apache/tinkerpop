@@ -716,7 +716,7 @@ plugin activated: tinkerpop.tinkergraph
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> g.V().out().out().profile()
-The .profile() step can only be used when profiling is enabled on the command line via -Dtinkerpop.profiling=true
+The profile()-step can only be used when profiling is enabled via -Dtinkerpop.profiling=true
 Display stack trace? [yN]
 gremlin>
 ----

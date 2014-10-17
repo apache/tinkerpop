@@ -51,8 +51,8 @@ public final class GiraphImmutableMemory implements Memory {
     protected void complete(final long runtime) {
         this.complete = true;
         this.runtime = runtime;
-        if (this.memoryMap.containsKey(Constants.ITERATION))
-            this.iteration = (int) this.memoryMap.remove(Constants.ITERATION);
+        if (this.memoryMap.containsKey(Constants.SYSTEM_ITERATION))
+            this.iteration = (int) this.memoryMap.remove(Constants.SYSTEM_ITERATION);
     }
 
     @Override

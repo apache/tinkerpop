@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Made a solid effort to ensure that all TinkerPop keys are `Graph.System` to leave `Graph.Key` for users.
+* The `Graph.System` prefix is now `^` instead of `%&%`. Simpler and easier on the `toString()` eyes.
 * Added `Traversal.SideEffects.ifPresent(Consumer)` as a default helper method.
 * Added `profile()`-step which provides detailed information about the performance of each step in a traversal.
 * No more `CountCapStep` and `CountStep`, there is only `CountStep` and it is elegant.

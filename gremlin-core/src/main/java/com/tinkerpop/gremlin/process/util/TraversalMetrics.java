@@ -25,7 +25,7 @@ public final class TraversalMetrics implements Serializable {
             return;
         }
 
-        traverser.getSideEffects().getOrCreate(ProfileStep.METRICS_KEY, TraversalMetrics::new).startInternal(step);
+        traverser.sideEffects().getOrCreate(ProfileStep.METRICS_KEY, TraversalMetrics::new).startInternal(step);
     }
 
     public static final void stop(final Step<?, ?> step, Traverser.Admin<?> traverser) {
@@ -33,7 +33,7 @@ public final class TraversalMetrics implements Serializable {
             return;
         }
 
-        traverser.getSideEffects().<TraversalMetrics>get(ProfileStep.METRICS_KEY).stopInternal(step);
+        traverser.sideEffects().<TraversalMetrics>get(ProfileStep.METRICS_KEY).stopInternal(step);
     }
 
     public static final void finish(final Step<?, ?> step, Traverser.Admin<?> traverser) {
@@ -41,7 +41,7 @@ public final class TraversalMetrics implements Serializable {
             return;
         }
 
-        traverser.getSideEffects().<TraversalMetrics>get(ProfileStep.METRICS_KEY).finishInternal(step, traverser);
+        traverser.sideEffects().<TraversalMetrics>get(ProfileStep.METRICS_KEY).finishInternal(step, traverser);
     }
 
 

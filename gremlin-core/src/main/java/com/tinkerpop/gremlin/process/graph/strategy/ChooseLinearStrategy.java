@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.process.graph.step.branch.BranchStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +20,9 @@ public class ChooseLinearStrategy extends AbstractTraversalStrategy implements T
 
     private static final ChooseLinearStrategy INSTANCE = new ChooseLinearStrategy();
 
+    private static final String CHOOSE_PREFIX = "gremlin.choose.";
+    private static final String CHOOSE_PREFIX_END = "gremlin.choose.end";
+
     private ChooseLinearStrategy() {
     }
 
@@ -30,7 +32,7 @@ public class ChooseLinearStrategy extends AbstractTraversalStrategy implements T
         int chooseStepCounter = 0;
         for (final ChooseStep chooseStep : TraversalHelper.getStepsOfClass(ChooseStep.class, traversal)) {
             final int currentStepCount = chooseStepCounter;
-            final String endLabel = Graph.System.system("cEnd" + currentStepCount);
+            final String endLabel = CHOOSE_PREFIX_END + currentStepCount;
 
             final BranchStep<?> branchStep = new BranchStep<>(traversal);
             branchStep.setFunctions(traverser -> {
@@ -61,7 +63,7 @@ public class ChooseLinearStrategy extends AbstractTraversalStrategy implements T
     }
 
     private static final String objectToString(final Object object, final int currentStepCount) {
-        return Graph.System.system(object.toString() + ":" + object.getClass().getCanonicalName() + ":" + currentStepCount);
+        return CHOOSE_PREFIX + object.toString() + ":" + object.getClass().getCanonicalName() + ":" + currentStepCount;
     }
 
     public static ChooseLinearStrategy instance() {

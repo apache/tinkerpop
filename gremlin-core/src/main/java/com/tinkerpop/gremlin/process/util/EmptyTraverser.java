@@ -106,7 +106,7 @@ public class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     }
 
     @Override
-    public Traversal.SideEffects getSideEffects() {
+    public Traversal.SideEffects sideEffects() {
         return null;
     }
 

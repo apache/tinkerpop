@@ -17,7 +17,7 @@ import java.util.UUID;
 public class UntilStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
 
     private static final UntilStrategy INSTANCE = new UntilStrategy();
-    private static final String U = "u";
+    private static final String UNTIL_PREFIX = "gremlin.until.";
 
     private UntilStrategy() {
     }
@@ -29,7 +29,7 @@ public class UntilStrategy extends AbstractTraversalStrategy implements Traversa
         int counter = 0;
         for (final UntilStep untilStep : TraversalHelper.getStepsOfClass(UntilStep.class, traversal)) {
             final IdentityStep leftEndStep = new IdentityStep(traversal);
-            leftEndStep.setLabel(Graph.System.system(U + counter++));
+            leftEndStep.setLabel(UNTIL_PREFIX + counter++);
             TraversalHelper.insertBeforeStep(leftEndStep, untilStep, traversal);
             final Step rightEndStep = TraversalHelper.getStep(untilStep.getBreakLabel(), traversal);
             final String rightEndLabel = rightEndStep.getLabel();
@@ -43,7 +43,7 @@ public class UntilStrategy extends AbstractTraversalStrategy implements Traversa
             final JumpStep rightEndJumpStep = untilStep.createRightJumpStep(traversal, leftEndStep.getLabel());
             //new JumpStep(traversal, leftEndStep.getLabel());
             rightEndJumpStep.setLabel(rightEndLabel);
-            rightEndStep.setLabel(Graph.Key.hide(UUID.randomUUID().toString()));
+            rightEndStep.setLabel(Graph.System.system(UUID.randomUUID().toString()));
             TraversalHelper.insertAfterStep(rightEndJumpStep, rightEndStep, traversal);
         }
     }

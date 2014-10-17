@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -35,10 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -136,7 +133,7 @@ public final class GiraphGraphComputer extends Configured implements GraphComput
                 if (!FileSystem.get(this.giraphConfiguration).exists(inputPath))
                     throw new IllegalArgumentException("The provided input path does not exist: " + inputPath);
                 FileInputFormat.setInputPaths(job.getInternalJob(), inputPath);
-                FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + Constants.HIDDEN_G));
+                FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + Constants.SYSTEM_G));
                 // job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
                 LOGGER.info(Constants.GIRAPH_GREMLIN_JOB_PREFIX + this.vertexProgram);
                 if (!job.run(true)) {
@@ -146,7 +143,7 @@ public final class GiraphGraphComputer extends Configured implements GraphComput
                 // calculate main vertex program memory if desired (costs one mapreduce job)
                 if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_DERIVE_MEMORY, false)) {
                     final Set<String> memoryKeys = new HashSet<String>(this.vertexProgram.getMemoryComputeKeys());
-                    memoryKeys.add(Constants.ITERATION);
+                    memoryKeys.add(Constants.SYSTEM_ITERATION);
                     this.giraphConfiguration.setStrings(Constants.GREMLIN_MEMORY_KEYS, (String[]) memoryKeys.toArray(new String[memoryKeys.size()]));
                     this.mapReduces.add(new MemoryMapReduce(memoryKeys));
                 }

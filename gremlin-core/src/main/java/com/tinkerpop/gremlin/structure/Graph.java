@@ -38,7 +38,7 @@ public interface Graph extends AutoCloseable {
         /**
          * The prefix to denote that a key is a system key.
          */
-        private static final String SYSTEM_PREFIX = "%&%";
+        private static final String SYSTEM_PREFIX = "^";
         private static final int SYSTEM_PREFIX_LENGTH = SYSTEM_PREFIX.length();
 
         /**

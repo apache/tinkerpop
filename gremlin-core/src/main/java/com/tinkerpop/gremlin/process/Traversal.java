@@ -93,6 +93,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
     public interface SideEffects {
 
         public static final String DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY = Graph.Key.hide("gremlin.traversalVertexProgram.sideEffects");
+        public static final String GRAPH_KEY = Graph.System.system("g");
 
         public default boolean exists(final String key) {
             return this.keys().contains(key);
@@ -115,22 +116,22 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         public Set<String> keys();
 
         public default boolean graphExists() {
-            return this.exists(Graph.Key.hide("g"));
+            return this.exists(GRAPH_KEY);
         }
 
         public default void setGraph(final Graph graph) {
-            this.set(Graph.Key.hide("g"), graph);
+            this.set(GRAPH_KEY, graph);
         }
 
         public default Graph getGraph() {
-            if (this.exists(Graph.Key.hide("g")))
-                return this.<Graph>get(Graph.Key.hide("g"));
+            if (this.exists(GRAPH_KEY))
+                return this.<Graph>get(GRAPH_KEY);
             else
                 throw new IllegalStateException("There is no graph stored in these side effects");
         }
 
         public default void removeGraph() {
-            this.remove(Graph.Key.hide("g"));
+            this.remove(GRAPH_KEY);
         }
 
         public default <V> V getOrCreate(final String key, final Supplier<V> orCreate) {

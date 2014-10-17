@@ -23,12 +23,12 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     protected Step<?, S> previousStep = EmptyStep.instance();
     protected Step<E, ?> nextStep = EmptyStep.instance();
-    protected final static boolean profilingEnabled = "true".equals(System.getProperty(TraversalMetrics.PROFILING_ENABLED));
+    protected final static boolean PROFILING_ENABLED = "true".equals(System.getProperty(TraversalMetrics.PROFILING_ENABLED));
 
     public AbstractStep(final Traversal traversal) {
         this.traversal = traversal;
         this.starts = new ExpandableStepIterator<S>((Step) this);
-        this.label = Graph.Key.hide(Integer.toString(this.traversal.getSteps().size()));
+        this.label = Graph.System.system(Integer.toString(this.traversal.getSteps().size()));
     }
 
     @Override

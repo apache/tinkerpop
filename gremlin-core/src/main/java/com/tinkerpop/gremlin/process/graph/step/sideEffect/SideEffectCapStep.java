@@ -42,13 +42,12 @@ public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements
             } catch (final NoSuchElementException ignored) {
             }
 
-            if (this.profilingEnabled) TraversalMetrics.start(this, traverser);
+            if (PROFILING_ENABLED) TraversalMetrics.start(this, traverser);
             this.done = true;
             traverser.setBulk(1l);
-            Traverser.Admin<E> ret = traverser.makeChild(this.getLabel(), traverser.getSideEffects().<E>get(this.sideEffectKey));
-
-            if (this.profilingEnabled) TraversalMetrics.finish(this, traverser);
-            return ret;
+            final Traverser.Admin<E> returnTraverser = traverser.makeChild(this.getLabel(), traverser.sideEffects().<E>get(this.sideEffectKey));
+            if (PROFILING_ENABLED) TraversalMetrics.finish(this, traverser);
+            return returnTraverser;
         } else {
             throw FastNoSuchElementException.instance();
         }
@@ -64,10 +63,9 @@ public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements
         this.onGraphComputer = engine.equals(Engine.COMPUTER);
     }
 
+    @Override
     public String toString() {
-        return Graph.Key.isHidden(this.sideEffectKey) ?
-                super.toString() :
-                TraversalHelper.makeStepString(this, this.sideEffectKey);
+        return Graph.System.isSystem(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
     }
 
     @Override

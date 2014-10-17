@@ -67,7 +67,6 @@ public class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>>
         traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
             final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
             this.mapReducers.add(mapReduce);
-            this.elementComputeKeys.add(Graph.Key.hide(mapReduce.getSideEffectKey()));
         });
 
         if (!(TraversalHelper.getEnd(traversal) instanceof SideEffectCapStep))

@@ -54,7 +54,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
      *
      * @return the traversal sideEffects of the traverser
      */
-    public Traversal.SideEffects getSideEffects();
+    public Traversal.SideEffects sideEffects();
 
     /**
      * Get a particular value from the sideEffects of the traverser.
@@ -64,7 +64,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
      * @return the object in the sideEffects of the respective key
      */
     public default <A> A get(final String sideEffectKey) {
-        return this.getSideEffects().get(sideEffectKey);
+        return this.sideEffects().get(sideEffectKey);
     }
 
     /**

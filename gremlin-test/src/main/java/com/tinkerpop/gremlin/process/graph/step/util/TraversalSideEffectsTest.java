@@ -24,7 +24,7 @@ public abstract class TraversalSideEffectsTest extends AbstractGremlinProcessTes
         } catch (IllegalArgumentException e) {
             assertEquals(Traversal.SideEffects.Exceptions.sideEffectDoesNotExist("a").getMessage(), e.getMessage());
         }
-        assertEquals(sideEffects.get(Graph.Key.hide("g")), sideEffects.getGraph());
+        assertEquals(sideEffects.get(Graph.System.system("g")), sideEffects.getGraph());
         assertTrue(Graph.class.isAssignableFrom(sideEffects.getGraph().getClass()));
     }
 

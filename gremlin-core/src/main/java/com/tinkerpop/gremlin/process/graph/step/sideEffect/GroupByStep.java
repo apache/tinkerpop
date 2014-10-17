@@ -37,8 +37,9 @@ public final class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements 
         this.keyFunction = keyFunction;
         this.valueFunction = null == valueFunction ? s -> (V) s.get() : valueFunction;
         this.reduceFunction = reduceFunction;
+        this.getTraversal().sideEffects().getOrCreate(this.sideEffectKey, HashMap::new);
         this.setConsumer(traverser -> {
-            Map<K, Collection<V>> groupByMap = this.traversal.sideEffects().getOrCreate(this.sideEffectKey, HashMap<K, Collection<V>>::new);
+            Map<K, Collection<V>> groupByMap = traverser.sideEffects().getOrCreate(this.sideEffectKey, HashMap<K, Collection<V>>::new);
             doGroup(traverser, groupByMap, this.keyFunction, this.valueFunction);
             if (!this.vertexCentric) {
                 if (null != reduceFunction && !this.starts.hasNext()) {
@@ -81,7 +82,7 @@ public final class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements 
 
     @Override
     public String toString() {
-        return Graph.Key.isHidden(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
+        return Graph.System.isSystem(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
     }
 
     public Function<Collection<V>, R> getReduceFunction() {
