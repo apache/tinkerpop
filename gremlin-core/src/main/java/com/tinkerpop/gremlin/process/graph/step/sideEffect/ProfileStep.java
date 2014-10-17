@@ -10,14 +10,19 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.Graph;
 
+/**
+ * @author Bob Briody (http://bobbriody.com)
+ */
 public final class ProfileStep<S> extends SideEffectStep<S> implements SideEffectCapable, Reversible, MapReducer<MapReduce.NullObject, TraversalMetrics, MapReduce.NullObject, TraversalMetrics, TraversalMetrics> {
 
     public static final String METRICS_KEY = Graph.System.system("metrics");
 
     public ProfileStep(final Traversal traversal) {
         super(traversal);
-        if (!PROFILING_ENABLED)
-            throw new IllegalStateException("The profile()-step can only be used when profiling is enabled via -Dtinkerpop.profiling=true");
+        if (!PROFILING_ENABLED) {
+            throw new IllegalStateException("The profile()-step can only be used when profiling is enabled via " +
+                    "'gremlin.sh -p' or directly via -Dtinkerpop.profiling=true");
+        }
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(METRICS_KEY, this.traversal);
     }
 

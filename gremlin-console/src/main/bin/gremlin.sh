@@ -43,16 +43,18 @@ if [ -z "${SCRIPT_DEBUG:-}" ]; then
     SCRIPT_DEBUG=
 fi
 
+# Initialize the profiling switch
+PROFILING_ENABLED=false
+
 # Process options
 MAIN_CLASS=com.tinkerpop.gremlin.console.Console
-while getopts "elv" opt; do
+while getopts "elpv" opt; do
     case "$opt" in
     e) MAIN_CLASS=com.tinkerpop.gremlin.groovy.jsr223.ScriptExecutor
        # For compatibility with behavior pre-Titan-0.5.0, stop
        # processing gremlin.sh arguments as soon as the -e switch is
        # seen; everything following -e becomes arguments to the
        # ScriptExecutor main class
-       shift $(( $OPTIND - 1 ))
        break;;
     l) eval GREMLIN_LOG_LEVEL=\$$OPTIND
        OPTIND="$(( $OPTIND + 1 ))"
@@ -61,12 +63,21 @@ while getopts "elv" opt; do
 	   SCRIPT_DEBUG=y
        fi
        ;;
+    p) PROFILING_ENABLED=true
+       ;;
     v) MAIN_CLASS=com.tinkerpop.gremlin.Version
     esac
 done
 
+# Remove processed options from $@. Anything after -e is preserved by the break;; in the case
+shift $(( $OPTIND - 1 ))
+
 if [ -z "${JAVA_OPTIONS:-}" ]; then
     JAVA_OPTIONS="-Dlog4j.configuration=conf/log4j-repl.properties -Dgremlin.log4j.level=$GREMLIN_LOG_LEVEL"
+fi
+
+if [ "$PROFILING_ENABLED" = true ]; then
+    JAVA_OPTIONS="$JAVA_OPTIONS -Dtinkerpop.profiling=true"
 fi
 
 if [ -n "$SCRIPT_DEBUG" ]; then
