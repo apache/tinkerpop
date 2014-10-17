@@ -54,14 +54,14 @@ public final class TreeMapReduce implements MapReduce<Object, Tree, Object, Tree
     }
 
     @Override
-    public Tree generateSideEffect(final Iterator<Pair<Object, Tree>> keyValues) {
+    public Tree generateFinalResult(final Iterator<Pair<Object, Tree>> keyValues) {
         final Tree result = new Tree();
         keyValues.forEachRemaining(pair -> result.addTree(pair.getValue1()));
         return result;
     }
 
     @Override
-    public String getSideEffectKey() {
+    public String getMemoryKey() {
         return this.sideEffectKey;
     }
 

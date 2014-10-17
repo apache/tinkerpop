@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
+import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.marker.CountTraversal;
@@ -34,8 +34,8 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
 
     private MessageType.Local<?, ?> messageType = MessageType.Local.to(() -> GraphTraversal.<Vertex>of().outE());
 
-    public static final String CLUSTER = Graph.System.system("gremlin.cluster");
-    public static final String VOTE_STRENGTH = Graph.System.system("gremlin.voteStrength");
+    public static final String CLUSTER = Graph.Key.hide("gremlin.peerPressureVertexProgram.cluster");
+    public static final String VOTE_STRENGTH = Graph.Key.hide("gremlin.peerPressureVertexProgram.voteStrength");
 
     private static final String MAX_ITERATIONS = "gremlin.peerPressureVertexProgram.maxIterations";
     private static final String DISTRIBUTE_VOTE = "gremlin.peerPressureVertexProgram.distributeVote";
@@ -45,7 +45,8 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
     private int maxIterations = 30;
     private boolean distributeVote = false;
 
-    private static final Set<String> COMPUTE_KEYS = new HashSet<>(Arrays.asList(CLUSTER, VOTE_STRENGTH));
+    private static final Set<String> ELEMENT_COMPUTE_KEYS = new HashSet<>(Arrays.asList(CLUSTER, VOTE_STRENGTH));
+    private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<>(Arrays.asList(VOTE_TO_HALT));
 
     private PeerPressureVertexProgram() {
 
@@ -80,12 +81,12 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
 
     @Override
     public Set<String> getElementComputeKeys() {
-        return COMPUTE_KEYS;
+        return ELEMENT_COMPUTE_KEYS;
     }
 
     @Override
     public Set<String> getMemoryComputeKeys() {
-        return new HashSet<>(Arrays.asList(VOTE_TO_HALT));
+        return MEMORY_COMPUTE_KEYS;
     }
 
     @Override
@@ -152,7 +153,7 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
         return new Builder();
     }
 
-    public static class Builder extends AbstractBuilder<Builder> {
+    public static class Builder extends AbstractVertexProgramBuilder<Builder> {
 
 
         private Builder() {

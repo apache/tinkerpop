@@ -100,9 +100,9 @@ public class TinkerGraphComputer implements GraphComputer {
                     if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
                         final TinkerReduceEmitter<?, ?> reduceEmitter = new TinkerReduceEmitter<>();
                         mapEmitter.reduceMap.entrySet().parallelStream().forEach(entry -> mapReduce.reduce(entry.getKey(), entry.getValue().iterator(), reduceEmitter));
-                        mapReduce.addSideEffectToMemory(this.memory, reduceEmitter.resultList.iterator());
+                        mapReduce.addResultToMemory(this.memory, reduceEmitter.resultList.iterator());
                     } else {
-                        mapReduce.addSideEffectToMemory(this.memory, mapEmitter.mapQueue.iterator());
+                        mapReduce.addResultToMemory(this.memory, mapEmitter.mapQueue.iterator());
                     }
                 }
             }

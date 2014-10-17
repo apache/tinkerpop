@@ -44,12 +44,12 @@ public final class CountMapReduce implements MapReduce<MapReduce.NullObject, Lon
     }
 
     @Override
-    public Long generateSideEffect(Iterator<Pair<NullObject, Long>> keyValues) {
+    public Long generateFinalResult(Iterator<Pair<NullObject, Long>> keyValues) {
         return keyValues.next().getValue1();
     }
 
     @Override
-    public String getSideEffectKey() {
+    public String getMemoryKey() {
         return CountStep.COUNT_KEY;
     }
 
