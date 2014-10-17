@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph;
 
-import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.List;
 import java.util.Map;

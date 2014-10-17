@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.structure.Graph;
 
-import java.io.Serializable;
 import java.util.concurrent.Future;
 
 /**

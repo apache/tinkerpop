@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.structure.strategy;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
-import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

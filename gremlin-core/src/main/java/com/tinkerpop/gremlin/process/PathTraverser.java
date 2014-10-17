@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.process.util.EmptyPath;
 import com.tinkerpop.gremlin.process.util.ImmutablePath;
 import com.tinkerpop.gremlin.process.util.PathAwareSideEffects;
 import com.tinkerpop.gremlin.structure.util.referenced.ReferencedFactory;

@@ -6,7 +6,11 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileStep;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 /**
  * @author Bob Briody (http://bobbriody.com)

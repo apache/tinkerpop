@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.step.branch.JumpStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;

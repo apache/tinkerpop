@@ -8,9 +8,9 @@ import com.fasterxml.jackson.databind.ser.std.StdKeySerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.io.IOException;
