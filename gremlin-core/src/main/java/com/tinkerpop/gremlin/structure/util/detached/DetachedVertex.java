@@ -100,8 +100,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
 
     public static DetachedVertex detach(final Vertex vertex) {
         if (null == vertex) throw Graph.Exceptions.argumentCanNotBeNull("vertex");
-        if (vertex instanceof DetachedVertex) throw new IllegalArgumentException("Vertex is already detached");
-        return new DetachedVertex(vertex);
+        return (vertex instanceof DetachedVertex) ? (DetachedVertex) vertex : new DetachedVertex(vertex);
     }
 
     public static Vertex addTo(final Graph graph, final DetachedVertex detachedVertex) {

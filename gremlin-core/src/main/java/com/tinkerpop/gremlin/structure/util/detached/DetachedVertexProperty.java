@@ -128,9 +128,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
 
     public static DetachedVertexProperty detach(final VertexProperty vertexProperty) {
         if (null == vertexProperty) throw Graph.Exceptions.argumentCanNotBeNull("vertexProperty");
-        if (vertexProperty instanceof DetachedVertexProperty)
-            throw new IllegalArgumentException("Vertex property is already detached");
-        return new DetachedVertexProperty(vertexProperty);
+        return (vertexProperty instanceof DetachedVertexProperty) ? (DetachedVertexProperty) vertexProperty : new DetachedVertexProperty(vertexProperty);
     }
 
     @Override

@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -32,11 +33,12 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         DetachedVertex.detach(null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-    public void shouldNotConstructWithSomethingAlreadyDetached() {
+    public void shouldNotConstructNewWithSomethingAlreadyDetached() {
         final Vertex v = g.addVertex();
-        DetachedVertex.detach(DetachedVertex.detach(v));
+        final DetachedVertex dv = DetachedVertex.detach(v);
+        assertSame(dv, DetachedVertex.detach(dv));
     }
 
     @Test

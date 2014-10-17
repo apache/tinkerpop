@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -25,12 +26,13 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
         DetachedVertexProperty.detach(null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-    public void shouldNotConstructWithSomethingAlreadyDetached() {
+    public void shouldNotConstructNewWithSomethingAlreadyDetached() {
         final Vertex v = g.addVertex();
         final VertexProperty vp = v.property("test", "this");
-        DetachedVertexProperty.detach(DetachedVertexProperty.detach(vp));
+        final DetachedVertexProperty dvp = DetachedVertexProperty.detach(vp);
+        assertSame(dvp, DetachedVertexProperty.detach(dvp));
     }
 
     @Test

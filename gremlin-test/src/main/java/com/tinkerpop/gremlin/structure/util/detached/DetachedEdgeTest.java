@@ -17,6 +17,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData;
@@ -31,12 +32,13 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         DetachedEdge.detach(null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-    public void shouldNotConstructWithSomethingAlreadyDetached() {
+    public void shouldNotConstructNewWithSomethingAlreadyDetached() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("test", v);
-        DetachedEdge.detach(DetachedEdge.detach(e));
+        final DetachedEdge de = DetachedEdge.detach(e);
+        assertSame(de, DetachedEdge.detach(de));
     }
 
     @Test

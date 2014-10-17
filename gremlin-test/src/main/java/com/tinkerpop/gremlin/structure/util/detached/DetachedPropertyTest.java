@@ -17,6 +17,7 @@ import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -31,12 +32,13 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
         DetachedProperty.detach(null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-    public void shouldNotConstructWithSomethingAlreadyDetached() {
+    public void shouldNotConstructNewWithSomethingAlreadyDetached() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("test", v, "xxx", "yyy");
-        DetachedProperty.detach(DetachedProperty.detach(e.property("xxx")));
+        final DetachedProperty dp = DetachedProperty.detach(e.property("xxx"));
+        assertSame(dp, DetachedProperty.detach(dp));
     }
 
     @Test

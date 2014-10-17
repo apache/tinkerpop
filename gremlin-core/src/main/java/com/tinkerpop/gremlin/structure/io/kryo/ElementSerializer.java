@@ -27,7 +27,7 @@ class ElementSerializer {
     static class EdgeSerializer extends Serializer<Edge> {
         @Override
         public void write(final Kryo kryo, final Output output, final Edge edge) {
-            kryo.writeClassAndObject(output, edge instanceof DetachedEdge ? (DetachedEdge) edge : DetachedEdge.detach(edge));
+            kryo.writeClassAndObject(output, DetachedEdge.detach(edge));
         }
 
         @Override

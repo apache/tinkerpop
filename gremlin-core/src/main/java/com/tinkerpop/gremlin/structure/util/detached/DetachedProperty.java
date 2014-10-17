@@ -69,11 +69,11 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
         final Element element = property.getElement();
 
         if (element instanceof Vertex)
-            this.element = element instanceof DetachedVertex ? (DetachedElement) element : DetachedVertex.detach((Vertex) element);
+            this.element = DetachedVertex.detach((Vertex) element);
         else if (element instanceof VertexProperty)
-            this.element = element instanceof DetachedVertexProperty ? (DetachedElement) element : DetachedVertexProperty.detach((VertexProperty) element);
+            this.element = DetachedVertexProperty.detach((VertexProperty) element);
         else
-            this.element = element instanceof DetachedEdge ? (DetachedElement) element : DetachedEdge.detach((Edge) element);
+            this.element = DetachedEdge.detach((Edge) element);
     }
 
     @Override
@@ -146,7 +146,6 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
 
     public static DetachedProperty detach(final Property property) {
         if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
-        if (property instanceof DetachedProperty) throw new IllegalArgumentException("Property is already detached");
-        return new DetachedProperty(property);
+        return (property instanceof DetachedProperty) ? (DetachedProperty) property : new DetachedProperty(property);
     }
 }
