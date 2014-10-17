@@ -650,24 +650,48 @@
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>aggregate-in-default-lifecycle</id>
+                                <id>aggregate-full-in-default-lifecycle</id>
                                 <goals>
                                     <goal>javadoc</goal>
                                 </goals>
                                 <phase>generate-sources</phase>
                                 <inherited>false</inherited>
                                 <configuration>
+                                    <destDir>full</destDir>
                                     <additionalparam>-Xdoclint:none</additionalparam>
                                     <sourcepath>
-                                        giraph-gremlin/src/main/java:gremlin-algorithm/src/main/java:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-server/src/main/java:neo4j-gremlin/src/main/java:tinkergraph-gremlin/src/main/java
+                                        giraph-gremlin/src/main/java:gremlin-algorithm/src/main/java:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:neo4j-gremlin/src/main/java:tinkergraph-gremlin/src/main/java
                                     </sourcepath>
                                     <quiet>true</quiet>
-                                    <sourceFileExcludes>
-                                        <sourceFileExclude>com/tinkerpop/gremlin/server/channel/*.java</sourceFileExclude>
-                                        <sourceFileExclude>com/tinkerpop/gremlin/server/handler/*.java</sourceFileExclude>
-                                        <sourceFileExclude>com/tinkerpop/gremlin/server/op/*.java</sourceFileExclude>
-                                        <sourceFileExclude>com/tinkerpop/gremlin/server/util/*.java</sourceFileExclude>
-                                    </sourceFileExcludes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>aggregate-core-in-default-lifecycle</id>
+                                <goals>
+                                    <goal>javadoc</goal>
+                                </goals>
+                                <phase>generate-sources</phase>
+                                <inherited>false</inherited>
+                                <configuration>
+                                    <destDir>core</destDir>
+                                    <additionalparam>-Xdoclint:none</additionalparam>
+                                    <sourcepath>
+                                        gremlin-core/src/main/java:gremlin-driver/src/main/java
+                                    </sourcepath>
+                                    <quiet>true</quiet>
+                                    <sourceFileIncludes>
+                                        <sourceFileInclude>com/tinkerpop/gremlin/structure/*.java</sourceFileInclude>
+                                        <sourceFileInclude>com/tinkerpop/gremlin/structure/io/*.java</sourceFileInclude>
+                                        <sourceFileInclude>com/tinkerpop/gremlin/structure/io/graphml/*.java</sourceFileInclude>
+                                        <sourceFileInclude>com/tinkerpop/gremlin/structure/io/graphson/*.java</sourceFileInclude>
+                                        <sourceFileInclude>com/tinkerpop/gremlin/structure/io/kryo/*.java</sourceFileInclude>
+                                        <sourceFileInclude>com/tinkerpop/gremlin/structure/strategy/*.java</sourceFileInclude>
+                                        <sourceFileInclude>com/tinkerpop/gremlin/process/*.java</sourceFileInclude>
+                                        <sourceFileInclude>com/tinkerpop/gremlin/process/computer/*.java</sourceFileInclude>
+                                        <sourceFileInclude>com/tinkerpop/gremlin/process/graph/*.java</sourceFileInclude>
+                                        <sourceFileInclude>com/tinkerpop/gremlin/process/util/*.java</sourceFileInclude>
+                                        <sourceFileInclude>com/tinkerpop/gremlin/driver/*.java</sourceFileInclude>
+                                    </sourceFileIncludes>
                                 </configuration>
                             </execution>
                         </executions>
