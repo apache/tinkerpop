@@ -138,9 +138,9 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
             if (this.exists(key))
                 return this.<V>get(key);
             else {
-                V t = orCreate.get();
-                this.set(key, t);
-                return t;
+                final V v = orCreate.get();
+                this.set(key, v);
+                return v;
             }
         }
 
@@ -148,6 +148,13 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
             this.keys().forEach(key -> biConsumer.accept(key, this.get(key)));
         }
 
+        /**
+         * In a distributed {@link GraphComputer} traversal, the sideEffects of the traversal are not a single object within a single JVM.
+         * Instead, the sideEffects are distributed across the graph and the pieces are stored on the computing vertices.
+         * This method is necessary to call when the {@link Traversal} is processing the {@link Traverser}s at a particular {@link Vertex}.
+         *
+         * @param vertex the vertex where the traversal is currently executing.
+         */
         public void setLocalVertex(final Vertex vertex);
 
         public static class Exceptions {

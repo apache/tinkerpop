@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -40,6 +41,17 @@ public class DefaultSideEffects implements Traversal.SideEffects {
         if (null == value)
             throw Traversal.SideEffects.Exceptions.sideEffectDoesNotExist(key);
         return value;
+    }
+
+    @Override
+    public <V> V getOrCreate(final String key, final Supplier<V> orCreate) {
+        if (this.sideEffectMap.containsKey(key))
+            return (V) this.sideEffectMap.get(key);
+        else {
+            final V v = orCreate.get();
+            this.sideEffectMap.put(key, v);
+            return v;
+        }
     }
 
     @Override
