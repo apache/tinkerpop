@@ -12,9 +12,9 @@ import com.esotericsoftware.kryo.util.ObjectMap;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 
 import static com.esotericsoftware.kryo.util.Util.getWrapperClass;
 

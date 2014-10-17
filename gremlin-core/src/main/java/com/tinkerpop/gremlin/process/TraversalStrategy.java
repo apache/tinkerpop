@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin.process;
 
-import java.io.Serializable;
-
 /**
  * A {@link TraversalStrategy} defines a particular atomic operation for mutating a {@link Traversal} prior to its evaluation.
  * Traversal strategies are typically used for optimizing a traversal for the particular underlying graph engine.
