@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* If no script engine name is provided to a `LambdaHolder` it is assumed to be Gremlin-Groovy.
+* `MapEmitter` and `ReduceEmitter` have an `emit(value)` default method where the key is the `MapReduce.NullObject` singleton.
 * `Traverser.Admin` now implements `Attachable` as the `Traversal.SideEffects` can be generated from the `Vertex`.
 * Made a solid effort to ensure that all TinkerPop keys are `Graph.System` to leave `Graph.Key` for users.
 * The `Graph.System` prefix is now `^` instead of `%&%`. Simpler and easier on the `toString()` eyes.
