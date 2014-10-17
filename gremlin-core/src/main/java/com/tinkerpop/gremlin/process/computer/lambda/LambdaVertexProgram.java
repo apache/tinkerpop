@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
+import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -110,7 +110,7 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
 
     @Override
     public String toString() {
-        return StringFactory.vertexProgramString(this,""); // TODO: make a better toString();
+        return StringFactory.vertexProgramString(this, ""); // TODO: make a better toString();
     }
 
     //////////////////////////////
@@ -119,7 +119,7 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
         return new Builder();
     }
 
-    public static class Builder extends AbstractBuilder<Builder> {
+    public static class Builder extends AbstractVertexProgramBuilder<Builder> {
 
 
         private Builder() {
@@ -141,6 +141,10 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
             return this;
         }
 
+        public Builder setup(final String setupScript) {
+            return setup(GREMLIN_GROOVY, setupScript);
+        }
+
         ///////
 
         public Builder execute(final TriConsumer<Vertex, Messenger, Memory> executeLambda) {
@@ -158,6 +162,10 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
             return this;
         }
 
+        public Builder execute(final String setupScript) {
+            return execute(GREMLIN_GROOVY, setupScript);
+        }
+
         ///////
 
         public Builder terminate(final Predicate<Memory> terminateLambda) {
@@ -173,6 +181,10 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
         public Builder terminate(final String scriptEngine, final String terminateScript) {
             LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SCRIPT, TERMINATE_LAMBDA, new String[]{scriptEngine, terminateScript});
             return this;
+        }
+
+        public Builder terminate(final String setupScript) {
+            return terminate(GREMLIN_GROOVY, setupScript);
         }
 
         ///////

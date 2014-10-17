@@ -7,12 +7,16 @@ import org.apache.commons.configuration.BaseConfiguration;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class AbstractBuilder<B extends VertexProgram.Builder> implements VertexProgram.Builder {
+public abstract class AbstractVertexProgramBuilder<B extends VertexProgram.Builder> implements VertexProgram.Builder {
+
+    public static final String GREMLIN_GROOVY = "gremlin-groovy";
 
     protected final BaseConfiguration configuration = new BaseConfiguration();
 
-    public AbstractBuilder(final Class<? extends VertexProgram> vertexProgramClass) {
-        // this.configuration.setDelimiterParsingDisabled(true);
+    public AbstractVertexProgramBuilder() {
+    }
+
+    public AbstractVertexProgramBuilder(final Class<? extends VertexProgram> vertexProgramClass) {
         this.configuration.setProperty(GraphComputer.VERTEX_PROGRAM, vertexProgramClass.getName());
     }
 

@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
+import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
@@ -29,8 +29,8 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
     private MessageType.Local<?, ?> messageType = MessageType.Local.to(new OutETraversalSupplier());
 
-    public static final String PAGE_RANK = Graph.Key.hide("gremlin.pageRank");
-    public static final String EDGE_COUNT = Graph.Key.hide("gremlin.edgeCount");
+    public static final String PAGE_RANK = Graph.Key.hide("gremlin.pageRankVertexProgram.pageRank");
+    public static final String EDGE_COUNT = Graph.Key.hide("gremlin.pageRankVertexProgram.edgeCount");
 
     private static final String VERTEX_COUNT = "gremlin.pageRankVertexProgram.vertexCount";
     private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";
@@ -115,7 +115,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         return new Builder();
     }
 
-    public static class Builder extends AbstractBuilder<Builder> {
+    public static class Builder extends AbstractVertexProgramBuilder<Builder> {
 
         private Builder() {
             super(PageRankVertexProgram.class);
@@ -134,6 +134,10 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         public Builder incident(final String scriptEngine, final String traversalScript) {
             LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SCRIPT, INCIDENT_TRAVERSAL_SUPPLIER, new String[]{scriptEngine, traversalScript});
             return this;
+        }
+
+        public Builder incident(final String traversalScript) {
+            return incident(GREMLIN_GROOVY, traversalScript);
         }
 
         public Builder incident(final Supplier<CountTraversal<Vertex, Edge>> traversal) {

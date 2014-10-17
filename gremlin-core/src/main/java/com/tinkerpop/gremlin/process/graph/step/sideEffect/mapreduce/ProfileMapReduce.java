@@ -21,12 +21,12 @@ public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, T
     }
 
     @Override
-    public TraversalMetrics generateSideEffect(final Iterator<Pair<NullObject, TraversalMetrics>> keyValues) {
+    public TraversalMetrics generateFinalResult(final Iterator<Pair<NullObject, TraversalMetrics>> keyValues) {
         return keyValues.next().getValue1();
     }
 
     @Override
-    public String getSideEffectKey() {
+    public String getMemoryKey() {
         return ProfileStep.METRICS_KEY;
     }
 

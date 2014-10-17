@@ -50,7 +50,7 @@ public class GraphComputerHelper {
             throw Graph.Exceptions.argumentCanNotBeNull("b");
 
         if (!(b instanceof MapReduce)) return false;
-        return a.getClass().equals(b.getClass()) && a.getSideEffectKey().equals(((MapReduce) b).getSideEffectKey());
+        return a.getClass().equals(b.getClass()) && a.getMemoryKey().equals(((MapReduce) b).getMemoryKey());
     }
 
 }

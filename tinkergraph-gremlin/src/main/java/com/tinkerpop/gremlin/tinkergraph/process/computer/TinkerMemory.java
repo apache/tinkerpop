@@ -8,7 +8,6 @@ import com.tinkerpop.gremlin.process.computer.util.MemoryHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,7 +37,7 @@ public class TinkerMemory implements Memory.Admin {
             }
         }
         for (final MapReduce mapReduce : mapReducers) {
-            this.memoryKeys.add(mapReduce.getSideEffectKey());
+            this.memoryKeys.add(mapReduce.getMemoryKey());
         }
     }
 

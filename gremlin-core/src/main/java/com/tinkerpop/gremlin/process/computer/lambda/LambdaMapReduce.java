@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.computer.lambda;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -82,12 +83,12 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
     }
 
     @Override
-    public R generateSideEffect(final Iterator<Pair<RK, RV>> keyValues) {
+    public R generateFinalResult(final Iterator<Pair<RK, RV>> keyValues) {
         return null == this.memoryLambdaHolder ? (R) keyValues : this.memoryLambdaHolder.get().apply(keyValues);
     }
 
     @Override
-    public String getSideEffectKey() {
+    public String getMemoryKey() {
         return this.sideEffectKey;
     }
 
@@ -102,9 +103,9 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
         return new Builder<>();
     }
 
-    public static class Builder<MK, MV, RK, RV, R> {
+    public static class Builder<MK, MV, RK, RV, R>  {
 
-        private BaseConfiguration configuration = new BaseConfiguration();
+        private final Configuration configuration = new BaseConfiguration();
 
         public Builder<MK, MV, RK, RV, R> map(final BiConsumer<Vertex, MapReduce.MapEmitter<MK, MV>> mapLambda) {
             LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, MAP_LAMBDA, mapLambda);
@@ -119,6 +120,10 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
         public Builder<MK, MV, RK, RV, R> map(final String scriptEngine, final String mapScript) {
             LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SCRIPT, MAP_LAMBDA, new String[]{scriptEngine, mapScript});
             return this;
+        }
+
+        public Builder<MK, MV, RK, RV, R> map(final String setupScript) {
+            return map(AbstractVertexProgramBuilder.GREMLIN_GROOVY, setupScript);
         }
 
         ////////////
@@ -138,6 +143,10 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
             return this;
         }
 
+        public Builder<MK, MV, RK, RV, R> combine(final String setupScript) {
+            return combine(AbstractVertexProgramBuilder.GREMLIN_GROOVY, setupScript);
+        }
+
         ////////////
 
         public Builder<MK, MV, RK, RV, R> reduce(TriConsumer<MK, Iterator<MV>, MapReduce.ReduceEmitter<RK, RV>> reduceLambda) {
@@ -155,6 +164,10 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
             return this;
         }
 
+        public Builder<MK, MV, RK, RV, R> reduce(final String setupScript) {
+            return reduce(AbstractVertexProgramBuilder.GREMLIN_GROOVY, setupScript);
+        }
+
         ////////////
 
         public Builder<MK, MV, RK, RV, R> memory(Function<Iterator<Pair<RK, RV>>, R> memoryLambda) {
@@ -170,6 +183,10 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
         public Builder<MK, MV, RK, RV, R> memory(final String scriptEngine, final String memoryScript) {
             LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SCRIPT, MEMORY_LAMBDA, new String[]{scriptEngine, memoryScript});
             return this;
+        }
+
+        public Builder<MK, MV, RK, RV, R> memory(final String setupScript) {
+            return memory(AbstractVertexProgramBuilder.GREMLIN_GROOVY, setupScript);
         }
 
         ////////////

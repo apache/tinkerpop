@@ -25,7 +25,7 @@ public final class MemoryMapReduce implements MapReduce<String, Object, String, 
     public Set<String> memoryKeys = new HashSet<>();
 
     @Override
-    public String getSideEffectKey() {
+    public String getMemoryKey() {
         return Constants.SYSTEM_MEMORY;
     }
 
@@ -73,7 +73,7 @@ public final class MemoryMapReduce implements MapReduce<String, Object, String, 
     }
 
     @Override
-    public Map<String, Object> generateSideEffect(final Iterator<Pair<String, Object>> keyValues) {
+    public Map<String, Object> generateFinalResult(final Iterator<Pair<String, Object>> keyValues) {
         final Map<String, Object> map = new HashMap<>();
         while (keyValues.hasNext()) {
             final Pair<String, Object> pair = keyValues.next();
@@ -83,7 +83,7 @@ public final class MemoryMapReduce implements MapReduce<String, Object, String, 
     }
 
     @Override
-    public void addSideEffectToMemory(final Memory memory, final Iterator<Pair<String, Object>> keyValues) {
+    public void addResultToMemory(final Memory memory, final Iterator<Pair<String, Object>> keyValues) {
         while (keyValues.hasNext()) {
             final Pair<String, Object> keyValue = keyValues.next();
             memory.set(keyValue.getValue0(), keyValue.getValue1());

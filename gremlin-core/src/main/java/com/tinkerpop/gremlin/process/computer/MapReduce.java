@@ -93,29 +93,29 @@ public interface MapReduce<MK, MV, RK, RV, R> {
     }
 
     /**
-     * The key/value pairs emitted by reduce() (or map() in a map-only job) can be iterated to generated a local JVM Java object.
+     * The key/value pairs emitted by reduce() (or map() in a map-only job) can be iterated to generate a local JVM Java object.
      *
      * @param keyValues the key/value pairs that were emitted from reduce() (or map() in a map-only job)
-     * @return the sideEffect object formed from the emitted key/values.
+     * @return the resultant object formed from the emitted key/values.
      */
-    public R generateSideEffect(final Iterator<Pair<RK, RV>> keyValues);
+    public R generateFinalResult(final Iterator<Pair<RK, RV>> keyValues);
 
     /**
-     * The results of the MapReduce job are associated with a sideEffect-key to ultimately be stored in {@link Memory}.
+     * The results of the MapReduce job are associated with a memory-key to ultimately be stored in {@link Memory}.
      *
-     * @return the sideEffect key of the generated sideEffect object.
+     * @return the memory key of the generated result object.
      */
-    public String getSideEffectKey();
+    public String getMemoryKey();
 
     /**
-     * The sideEffect can be generated and added to {@link Memory} and accessible via {@link ComputerResult}.
-     * The default simply takes the object from generateSideEffect() and adds it to the Memory given getSideEffectKey().
+     * The final result can be generated and added to {@link Memory} and accessible via {@link ComputerResult}.
+     * The default simply takes the object from generateFinalResult() and adds it to the Memory given getMemoryKey().
      *
      * @param memory    the memory of the {@link GraphComputer}
      * @param keyValues the key/value pairs emitted from reduce() (or map() in a map only job).
      */
-    public default void addSideEffectToMemory(final Memory memory, final Iterator<Pair<RK, RV>> keyValues) {
-        memory.set(this.getSideEffectKey(), this.generateSideEffect(keyValues));
+    public default void addResultToMemory(final Memory memory, final Iterator<Pair<RK, RV>> keyValues) {
+        memory.set(this.getMemoryKey(), this.generateFinalResult(keyValues));
     }
 
     //////////////////
@@ -129,6 +129,15 @@ public interface MapReduce<MK, MV, RK, RV, R> {
      */
     public interface MapEmitter<K, V> {
         public void emit(final K key, final V value);
+
+        /**
+         * A default method that assumes the key is {@link com.tinkerpop.gremlin.process.computer.MapReduce.NullObject}.
+         *
+         * @param value the value to emit.
+         */
+        public default void emit(final V value) {
+            this.emit((K) MapReduce.NullObject.instance(), value);
+        }
     }
 
     /**
@@ -140,6 +149,15 @@ public interface MapReduce<MK, MV, RK, RV, R> {
      */
     public interface ReduceEmitter<OK, OV> {
         public void emit(final OK key, OV value);
+
+        /**
+         * A default method that assumes the key is {@link com.tinkerpop.gremlin.process.computer.MapReduce.NullObject}.
+         *
+         * @param value the value to emit.
+         */
+        public default void emit(final OV value) {
+            this.emit((OK) MapReduce.NullObject.instance(), value);
+        }
     }
 
     //////////////////
