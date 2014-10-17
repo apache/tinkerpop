@@ -126,18 +126,12 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = new WebSocketClient()) {
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]").create();
-            final AtomicInteger counter = new AtomicInteger(0);
-            final AtomicInteger tries = new AtomicInteger(3);
-            client.submit(request, r -> counter.incrementAndGet());
 
-            // this should not take longer than 300ms - so fail if it does
-            while (tries.get() > 0) {
-                Thread.sleep(100);
-                tries.decrementAndGet();
-            }
+            // set the latch to six as there should be six responses when you include the terminator
+            final CountDownLatch latch = new CountDownLatch(6);
+            client.submit(request, r -> latch.countDown());
 
-            // will return 6 because of the terminator
-            assertEquals(6, counter.get());
+            assertTrue(latch.await(300, TimeUnit.MILLISECONDS));
         }
     }
 
@@ -147,18 +141,12 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]")
                     .addArg(Tokens.ARGS_BATCH_SIZE, 1).create();
-            final AtomicInteger counter = new AtomicInteger(0);
-            final AtomicInteger tries = new AtomicInteger(3);
-            client.submit(request, r -> counter.incrementAndGet());
 
-            // this should not take longer than 300ms - so fail if it does
-            while (tries.get() > 0) {
-                Thread.sleep(100);
-                tries.decrementAndGet();
-            }
+            // should be 11 responses when you include the terminator
+            final CountDownLatch latch = new CountDownLatch(11);
+            client.submit(request, r -> latch.countDown());
 
-            // will return 11 because of the terminator
-            assertEquals(11, counter.get());
+            assertTrue(latch.await(300, TimeUnit.MILLISECONDS));
         }
     }
 
@@ -167,18 +155,12 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = new NioClient()) {
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]").create();
-            final AtomicInteger counter = new AtomicInteger(0);
-            final AtomicInteger tries = new AtomicInteger(3);
-            client.submit(request, r -> counter.incrementAndGet());
 
-            // this should not take longer than 300ms - so fail if it does
-            while (tries.get() > 0) {
-                Thread.sleep(100);
-                tries.decrementAndGet();
-            }
+            // should be 11 responses when you include the terminator
+            final CountDownLatch latch = new CountDownLatch(2);
+            client.submit(request, r -> latch.countDown());
 
-            // will return 2 because of the terminator
-            assertEquals(2, counter.get());
+            assertTrue(latch.await(300, TimeUnit.MILLISECONDS));
         }
     }
 
