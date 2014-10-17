@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.driver.simple.NioClient;
 import com.tinkerpop.gremlin.driver.simple.SimpleClient;
 import com.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.server.channel.NioChannelizer;
 import com.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import org.junit.Rule;
@@ -22,7 +23,11 @@ import java.nio.channels.ClosedChannelException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -74,6 +79,46 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldReturnInvalidRequestArgsWhenGremlinArgIsNotSupplied() throws Exception {
+        try (SimpleClient client = new WebSocketClient()) {
+            final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL).create();
+            final CountDownLatch latch = new CountDownLatch(1);
+            final AtomicBoolean pass = new AtomicBoolean(false);
+            client.submit(request, result -> {
+                if (result.getStatus().getCode() != ResponseStatusCode.SUCCESS_TERMINATOR) {
+                    pass.set(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS == result.getStatus().getCode());
+                    latch.countDown();
+                }
+            });
+
+            if (!latch.await(300, TimeUnit.MILLISECONDS)) fail("Request should have returned error, but instead timed out");
+            assertTrue(pass.get());
+        }
+    }
+
+    @Test
+    public void shouldReturnInvalidRequestArgsWhenInvalidBindingKeyIsUsed() throws Exception {
+        try (SimpleClient client = new WebSocketClient()) {
+            final Map<String,Object> bindings = new HashMap<>();
+            bindings.put(T.id.getAccessor(), "123");
+            final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]")
+                    .addArg(Tokens.ARGS_BINDINGS, bindings).create();
+            final CountDownLatch latch = new CountDownLatch(1);
+            final AtomicBoolean pass = new AtomicBoolean(false);
+            client.submit(request, result -> {
+                if (result.getStatus().getCode() != ResponseStatusCode.SUCCESS_TERMINATOR) {
+                    pass.set(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS == result.getStatus().getCode());
+                    latch.countDown();
+                }
+            });
+
+            if (!latch.await(300, TimeUnit.MILLISECONDS)) fail("Request should have returned error, but instead timed out");
+            assertTrue(pass.get());
+        }
     }
 
     @Test
