@@ -2,10 +2,11 @@ package com.tinkerpop.gremlin.structure.util;
 
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.Memory;
+import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -139,6 +140,14 @@ public class StringFactory {
 
     public static String traversalStrategyString(final TraversalStrategy traversalStrategy) {
         return traversalStrategy.getClass().getSimpleName();
+    }
+
+    public static String vertexProgramString(final VertexProgram vertexProgram, final String internalString) {
+        return vertexProgram.getClass().getSimpleName() + L_BRACKET + internalString + R_BRACKET;
+    }
+
+    public static String mapReduceString(final MapReduce mapReduce, final String internalString) {
+        return mapReduce.getClass().getSimpleName() + L_BRACKET + internalString + R_BRACKET;
     }
 
     private static Function<Method, String> createTransform(final Graph.Features.FeatureSet features) {

@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.javatuples.Pair;
 
 import java.util.Iterator;
@@ -59,5 +60,10 @@ public final class CountMapReduce implements MapReduce<MapReduce.NullObject, Lon
     @Override
     public boolean equals(final Object object) {
         return GraphComputerHelper.areEqual(this, object);
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.mapReduceString(this,"");
     }
 }

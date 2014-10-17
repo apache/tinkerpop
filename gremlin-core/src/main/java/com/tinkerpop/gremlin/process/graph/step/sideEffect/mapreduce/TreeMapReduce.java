@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
@@ -71,5 +72,10 @@ public final class TreeMapReduce implements MapReduce<Object, Tree, Object, Tree
     @Override
     public boolean equals(final Object object) {
         return GraphComputerHelper.areEqual(this, object);
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.mapReduceString(this, this.sideEffectKey);
     }
 }

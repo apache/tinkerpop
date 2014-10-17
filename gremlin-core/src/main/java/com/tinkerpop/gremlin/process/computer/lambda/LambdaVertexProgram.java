@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.process.computer.util.AbstractBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.function.TriConsumer;
 import org.apache.commons.configuration.Configuration;
 
@@ -105,6 +106,11 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
     @Override
     public Set<String> getMemoryComputeKeys() {
         return this.memoryComputeKeys;
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.vertexProgramString(this,""); // TODO: make a better toString();
     }
 
     //////////////////////////////

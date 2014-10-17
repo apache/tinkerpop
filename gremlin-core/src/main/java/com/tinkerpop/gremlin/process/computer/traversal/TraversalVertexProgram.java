@@ -22,6 +22,7 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
 
 import java.util.HashSet;
@@ -189,7 +190,7 @@ public class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>>
     public String toString() {
         final Traversal traversal = this.getTraversal();
         traversal.strategies().apply();
-        return this.getClass().getSimpleName() + traversal.toString();
+        return StringFactory.vertexProgramString(this, traversal.toString());
     }
 
     @Override

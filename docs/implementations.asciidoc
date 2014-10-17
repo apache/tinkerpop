@@ -837,7 +837,7 @@ Found 2 items
 -rw-r--r--   1 marko supergroup        891 2014-07-28 13:00 /user/marko/tinkerpop-classic-vertices.gio
 -rw-r--r--   1 marko supergroup       2356 2014-07-28 13:00 /user/marko/tinkerpop-classic-vertices.ldjson
 $ hadoop jar target/giraph-gremlin-x.y.z-job.jar com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer conf/giraph-graphson.properties
-14/07/29 12:08:27 INFO computer.GiraphGraphComputer: GiraphGremlin: com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram
+14/07/29 12:08:27 INFO computer.GiraphGraphComputer: GiraphGremlin: PageRankVertexProgram[alpha=0.85,iterations=30]
 14/07/29 12:08:28 INFO mapred.JobClient: Running job: job_201407281259_0041
 14/07/29 12:08:29 INFO mapred.JobClient:  map 0% reduce 0%
 14/07/29 12:08:51 INFO mapred.JobClient:  map 66% reduce 0%

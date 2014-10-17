@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileStep;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.javatuples.Pair;
 
 import java.util.Iterator;
@@ -41,5 +42,10 @@ public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, T
     @Override
     public void reduce(final NullObject key, final Iterator<TraversalMetrics> values, final ReduceEmitter<NullObject, TraversalMetrics> emitter) {
         emitter.emit(NullObject.instance(), TraversalMetrics.merge(values));
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.mapReduceString(this, "");
     }
 }
