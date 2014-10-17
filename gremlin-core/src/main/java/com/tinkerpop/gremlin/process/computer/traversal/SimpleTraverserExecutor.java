@@ -33,7 +33,7 @@ public final class SimpleTraverserExecutor extends TraverserExecutor {
                 // no need to deflate as they are already deflated
                 MapHelper.incr(tracker.getDoneGraphTracks(), traverser, traverser.getBulk());
             } else {
-                traverser.inflate(vertex, traversal);
+                traverser.attach(vertex);
                 final Step<?, ?> step = TraversalHelper.getStep(traverser.getFuture(), traversal);
                 step.addStart((Traverser)traverser);
                 if (processStep(step, localCounts))
@@ -47,7 +47,7 @@ public final class SimpleTraverserExecutor extends TraverserExecutor {
                 // no need to deflate as they are already deflated
                 MapHelper.incr(tracker.getDoneObjectTracks(), traverser, traverser.getBulk());
             } else {
-                traverser.inflate(vertex, traversal);
+                traverser.attach(vertex);
                 final Step<?, ?> step = TraversalHelper.getStep(traverser.getFuture(), traversal);
                 step.addStart((Traverser)traverser);
                 if (processStep(step, localCounts))
@@ -58,7 +58,7 @@ public final class SimpleTraverserExecutor extends TraverserExecutor {
         // process all the local object and send messages or store locally accordingly
         localCounts.forEach((traverser, count) -> {
             traverser.setBulk(count);
-            traverser.deflate();
+            traverser.detach();
             if (traverser.get() instanceof Element || traverser.get() instanceof Property)
                 messenger.sendMessage(MessageType.Global.to(TraverserExecutor.getHostingVertex(traverser.get())), traverser);
             else

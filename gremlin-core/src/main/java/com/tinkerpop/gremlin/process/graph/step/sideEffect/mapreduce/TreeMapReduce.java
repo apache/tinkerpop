@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
@@ -46,7 +47,7 @@ public final class TreeMapReduce implements MapReduce<Object, Tree, Object, Tree
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<Object, Tree> emitter) {
-        final Traversal.SideEffects sideEffects = MapReduce.getLocalSideEffects(vertex);
+        final Traversal.SideEffects sideEffects = TraversalVertexProgram.getLocalSideEffects(vertex);
         if (sideEffects.exists(this.sideEffectKey)) {
             sideEffects.<Tree<?>>get(this.sideEffectKey).splitParents().forEach(t -> emitter.emit(t.keySet().iterator().next(), t));
         }

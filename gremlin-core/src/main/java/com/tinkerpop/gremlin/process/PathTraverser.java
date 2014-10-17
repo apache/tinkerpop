@@ -75,8 +75,8 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
     }
 
     @Override
-    public PathTraverser<T> deflate() {
-        super.deflate();
+    public PathTraverser<T> detach() {
+        super.detach();
         this.path = ReferencedFactory.detach(this.path.clone());
         return this;
     }

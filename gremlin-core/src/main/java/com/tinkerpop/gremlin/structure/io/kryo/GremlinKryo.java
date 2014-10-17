@@ -15,10 +15,19 @@ import com.tinkerpop.gremlin.process.computer.traversal.TraverserCountTracker;
 import com.tinkerpop.gremlin.process.computer.traversal.TraverserPathTracker;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.process.util.BulkSet;
-import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.process.util.StepTimer;
-import com.tinkerpop.gremlin.structure.*;
-import com.tinkerpop.gremlin.structure.util.detached.*;
+import com.tinkerpop.gremlin.process.util.TraversalMetrics;
+import com.tinkerpop.gremlin.structure.Contains;
+import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import com.tinkerpop.gremlin.structure.util.referenced.ReferencedPath;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
@@ -26,9 +35,26 @@ import org.javatuples.Triplet;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Currency;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.TimeZone;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -155,7 +181,7 @@ public final class GremlinKryo {
             put("junk", "dummy");
         }};
 
-        private static final Class linkedHashMapEntryClass = m.entrySet().iterator().next().getClass();
+        private static final Class LINKED_HASH_MAP_ENTRY_CLASS = m.entrySet().iterator().next().getClass();
 
         /**
          * Note that the following are pre-registered boolean, Boolean, byte, Byte, char, Character, double, Double,
@@ -197,7 +223,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(HashMap.Entry.class, null, 16));
             add(Triplet.<Class, Serializer, Integer>with(KryoSerializable.class, null, 36));
             add(Triplet.<Class, Serializer, Integer>with(LinkedHashMap.class, null, 47));
-            add(Triplet.<Class, Serializer, Integer>with(linkedHashMapEntryClass, null, 15));
+            add(Triplet.<Class, Serializer, Integer>with(LINKED_HASH_MAP_ENTRY_CLASS, null, 15));
             add(Triplet.<Class, Serializer, Integer>with(Locale.class, null, 22));
             add(Triplet.<Class, Serializer, Integer>with(StringBuffer.class, null, 43));
             add(Triplet.<Class, Serializer, Integer>with(StringBuilder.class, null, 44));
@@ -213,21 +239,18 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(Property.class, new ElementSerializer.PropertySerializer(), 67));
             add(Triplet.<Class, Serializer, Integer>with(VertexProperty.class, new ElementSerializer.VertexPropertySerializer(), 68));
 
-            // GraphTraversal in OLAP
             add(Triplet.<Class, Serializer, Integer>with(SimpleTraverser.class, null, 55));
             add(Triplet.<Class, Serializer, Integer>with(PathTraverser.class, null, 56));
             add(Triplet.<Class, Serializer, Integer>with(TraverserCountTracker.class, null, 57));
             add(Triplet.<Class, Serializer, Integer>with(TraverserPathTracker.class, null, 58));
             add(Triplet.<Class, Serializer, Integer>with(Path.class, null, 59));
             add(Triplet.<Class, Serializer, Integer>with(DetachedPath.class, null, 60));
-            add(Triplet.<Class, Serializer, Integer>with(Optional.class, null, 61));
-            add(Triplet.<Class, Serializer, Integer>with(AtomicLong.class, null, 62)); // this is all needed for serializing properties in TinkerGraph
-            add(Triplet.<Class, Serializer, Integer>with(Tree.class, null, 63));
-            add(Triplet.with(HashSet.class, null, 64));
-            add(Triplet.<Class, Serializer, Integer>with(ReferencedPath.class, null, 69));
-            add(Triplet.<Class, Serializer, Integer>with(BulkSet.class, null, 70));
-            add(Triplet.<Class, Serializer, Integer>with(StepTimer.class, null, 71));
-            add(Triplet.<Class, Serializer, Integer>with(TraversalMetrics.class, null, 72)); // ***LAST ID***
+            add(Triplet.<Class, Serializer, Integer>with(Tree.class, null, 61));
+            add(Triplet.with(HashSet.class, null, 62));
+            add(Triplet.<Class, Serializer, Integer>with(ReferencedPath.class, null, 63));
+            add(Triplet.<Class, Serializer, Integer>with(BulkSet.class, null, 64));
+            add(Triplet.<Class, Serializer, Integer>with(StepTimer.class, null, 69));
+            add(Triplet.<Class, Serializer, Integer>with(TraversalMetrics.class, null, 70)); // ***LAST ID***
         }};
 
         private static final byte major = 1;

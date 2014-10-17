@@ -13,7 +13,7 @@ import java.util.Iterator;
 public interface Step<S, E> extends Iterator<Traverser<E>>, Cloneable {
 
     /**
-     * A token object that denotes "nothing" and is used to declare an empty spot in a {@link Traversal}
+     * A token object that denotes "nothing" and is used to declare an empty "spot" in a {@link Traversal}
      */
     public static final NoObject NO_OBJECT = new NoObject();
 
@@ -105,6 +105,9 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Cloneable {
      */
     public void setLabel(final String label);
 
+    /**
+     * A static singleton denoting that the current "spot" in the Step contains no object.
+     */
     static final class NoObject {
 
         private NoObject() {

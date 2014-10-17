@@ -16,6 +16,7 @@ import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
+import com.tinkerpop.gremlin.process.util.DefaultSideEffects;
 import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -55,6 +56,16 @@ public class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>>
     }};
 
     private TraversalVertexProgram() {
+    }
+
+    /**
+     * A helper method that yields a {@link com.tinkerpop.gremlin.process.Traversal.SideEffects} view of the distributed sideEffects within the currently processed {@link com.tinkerpop.gremlin.structure.Vertex}.
+     *
+     * @param localVertex the currently executing vertex
+     * @return a sideEffect API to get and put sideEffect data onto the vertex
+     */
+    public static Traversal.SideEffects getLocalSideEffects(final Vertex localVertex) {
+        return new DefaultSideEffects(localVertex);
     }
 
     @Override
@@ -123,7 +134,7 @@ public class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>>
                     new PathTraverser<>(startStep.getLabel(), vertex, null) :
                     new SimpleTraverser<>(vertex, null);
             traverser.setFuture(future);
-            traverser.deflate();
+            traverser.detach();
             messenger.sendMessage(MessageType.Global.to(vertex), traverser);
             voteToHalt.set(false);
         } else if (startStep.returnsEdges()) {  // PROCESS EDGES
@@ -132,7 +143,7 @@ public class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>>
                         new PathTraverser<>(startStep.getLabel(), edge, null) :
                         new SimpleTraverser<>(edge, null);
                 traverser.setFuture(future);
-                traverser.deflate();
+                traverser.detach();
                 messenger.sendMessage(MessageType.Global.to(vertex), traverser);
                 voteToHalt.set(false);
             });
@@ -190,7 +201,8 @@ public class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>>
     public String toString() {
         final Traversal traversal = this.getTraversal();
         traversal.strategies().apply();
-        return StringFactory.vertexProgramString(this, traversal.toString());
+        final String traversalString = traversal.toString().substring(1);
+        return StringFactory.vertexProgramString(this, traversalString.substring(0, traversalString.length() - 1));
     }
 
     @Override

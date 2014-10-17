@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EmptyPath implements Path, Serializable {
+public final class EmptyPath implements Path, Serializable {
 
     private static final EmptyPath INSTANCE = new EmptyPath();
 

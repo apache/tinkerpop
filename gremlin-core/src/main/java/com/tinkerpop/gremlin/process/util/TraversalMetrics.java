@@ -13,12 +13,16 @@ import java.util.*;
  */
 public final class TraversalMetrics implements Serializable {
     private static final String[] headers = {"Step", "Count", "Traversers", "Time (ms)", "% Dur"};
-    private static final WeakHashMap<Traversal, Boolean> traversalProfilingCache = new WeakHashMap<Traversal, Boolean>();
+    private static final WeakHashMap<Traversal, Boolean> PROFILING_CACHE = new WeakHashMap<Traversal, Boolean>();
     public static final String PROFILING_ENABLED = "tinkerpop.profiling";
 
     private long totalStepDuration;
 
     private final Map<String, StepTimer> stepTimers = new LinkedHashMap<String, StepTimer>();
+
+    private TraversalMetrics() {
+
+    }
 
     public static final void start(final Step<?, ?> step, final Traverser.Admin<?> traverser) {
         if (!profiling(step.getTraversal())) {
@@ -47,10 +51,10 @@ public final class TraversalMetrics implements Serializable {
 
     private static boolean profiling(final Traversal<?, ?> traversal) {
         Boolean profiling;
-        if ((profiling = traversalProfilingCache.get(traversal)) != null)
+        if ((profiling = PROFILING_CACHE.get(traversal)) != null)
             return profiling;
         profiling = TraversalHelper.hasStepOfClass(ProfileStep.class, traversal);
-        traversalProfilingCache.put(traversal, profiling);
+        PROFILING_CACHE.put(traversal, profiling);
         return profiling;
     }
 
@@ -126,11 +130,11 @@ public final class TraversalMetrics implements Serializable {
         return totalMetrics;
     }
 
-    public StepMetrics getStepMetrics(String stepLabel) {
-        return stepTimers.get(stepLabel);
+    public StepMetrics getStepMetrics(final String stepLabel) {
+        return this.stepTimers.get(stepLabel);
     }
 
     public Set<String> getStepLabels() {
-        return stepTimers.keySet();
+        return this.stepTimers.keySet();
     }
 }

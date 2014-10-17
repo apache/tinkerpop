@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin.process.computer;
 
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.util.DefaultSideEffects;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
@@ -10,6 +8,12 @@ import java.io.Serializable;
 import java.util.Iterator;
 
 /**
+ * A MapReduce is composed of map(), combine(), and reduce() stages.
+ * The map() stage processes the vertices of the {@link com.tinkerpop.gremlin.structure.Graph} in a logically parallel manner.
+ * The combine() stage aggregates the values of a particular map emitted key prior to sending across the cluster.
+ * The reduce() stage aggregates the values of the combine/map emitted keys for the keys that hash to the current machine in the cluster.
+ * The interface presented here is nearly identical to the interface popularized by Hadoop save the the map() is over the vertices of the graph.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface MapReduce<MK, MV, RK, RV, R> {
@@ -105,22 +109,13 @@ public interface MapReduce<MK, MV, RK, RV, R> {
 
     /**
      * The sideEffect can be generated and added to {@link Memory} and accessible via {@link ComputerResult}.
+     * The default simply takes the object from generateSideEffect() and adds it to the Memory given getSideEffectKey().
      *
      * @param memory    the memory of the {@link GraphComputer}
      * @param keyValues the key/value pairs emitted from reduce() (or map() in a map only job).
      */
     public default void addSideEffectToMemory(final Memory memory, final Iterator<Pair<RK, RV>> keyValues) {
         memory.set(this.getSideEffectKey(), this.generateSideEffect(keyValues));
-    }
-
-    /**
-     * A helper method that yields a {@link Traversal.SideEffects} view of the distributed sideEffects within the currently processed {@link Vertex}.
-     *
-     * @param localVertex the currently executing vertex
-     * @return a sideEffect API to get and put sideEffect data onto the vertex
-     */
-    public static Traversal.SideEffects getLocalSideEffects(final Vertex localVertex) {
-        return new DefaultSideEffects(localVertex);
     }
 
     //////////////////

@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process;
 
 
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -135,7 +136,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     }
 
     @Override
-    public SimpleTraverser<T> deflate() {
+    public SimpleTraverser<T> detach() {
         if (this.t instanceof Element) {
             this.t = (T) ReferencedFactory.detach((Element) this.t);
         } else if (this.t instanceof Property) {
@@ -147,14 +148,14 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     }
 
     @Override
-    public SimpleTraverser<T> inflate(final Vertex vertex, final Traversal traversal) {
+    public SimpleTraverser<T> attach(final Vertex vertex) {
         if (this.t instanceof ReferencedElement) {
             this.t = (T) ReferencedFactory.attach((ReferencedElement) this.t, vertex);
         } else if (this.t instanceof ReferencedProperty) {
             this.t = (T) ReferencedFactory.attach((ReferencedProperty) this.t, vertex);
         }
         // you do not want to attach a path because it will reference graph objects not at the current vertex
-        this.sideEffects = traversal.sideEffects();
+        this.sideEffects = TraversalVertexProgram.getLocalSideEffects(vertex);
         return this;
     }
 

@@ -68,7 +68,7 @@ public final class GroupByMapReduce implements MapReduce<Object, Collection, Obj
 
     @Override
     public void map(Vertex vertex, MapEmitter<Object, Collection> emitter) {
-        MapReduce.getLocalSideEffects(vertex).<Map<Object, Collection>>orElse(this.sideEffectKey, Collections.emptyMap()).forEach(emitter::emit);
+        TraversalVertexProgram.getLocalSideEffects(vertex).<Map<Object, Collection>>orElse(this.sideEffectKey, Collections.emptyMap()).forEach(emitter::emit);
     }
 
     @Override

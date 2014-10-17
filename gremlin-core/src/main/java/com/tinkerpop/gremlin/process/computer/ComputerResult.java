@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.structure.Graph;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ComputerResult {
+public final class ComputerResult {
 
     private final Graph graph;
     private final Memory memory;

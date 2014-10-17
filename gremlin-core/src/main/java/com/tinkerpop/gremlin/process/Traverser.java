@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.detached.Attachable;
 
 import java.io.Serializable;
 
@@ -96,7 +97,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
      * The methods in System.Traverser are useful to underlying Step and Traversal implementations.
      * They should not be accessed by the user during lambda-based manipulations.
      */
-    public interface Admin<T> extends Traverser<T> {
+    public interface Admin<T> extends Traverser<T>, Attachable<Admin<T>> {
 
         public static final String DONE = Graph.System.system("done");
 
@@ -182,15 +183,27 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
          *
          * @return The deflated traverser
          */
-        public Admin<T> deflate();
+        public Admin<T> detach();
 
         /**
-         * Regenerate the deflated traverser given its location at a particular vertex.
+         * Regenerate the detached traverser given its location at a particular vertex.
          *
          * @param hostVertex The vertex that is hosting the traverser
          * @return The inflated traverser
          */
-        public Admin<T> inflate(final Vertex hostVertex, final Traversal traversal);
+        public Admin<T> attach(final Vertex hostVertex);
+
+        /**
+         * Traversers can not attach to graphs and thus, an {@link UnsupportedOperationException} is thrown.
+         *
+         * @param graph the graph to attach the traverser to, which it can't.
+         * @return nothing as an exception is thrown
+         * @throws UnsupportedOperationException is always thrown as it makes no sense to attach a traverser to a graph
+         */
+        @Override
+        public default Admin<T> attach(final Graph graph) throws UnsupportedOperationException {
+            throw new UnsupportedOperationException("A traverser can only exist a vertices, not the graph");
+        }
 
         /**
          * Set the sideEffects of the {@link Traversal}. Given that traversers can move between machines,

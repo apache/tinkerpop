@@ -8,8 +8,8 @@ import java.util.concurrent.Future;
  * appropriate memory structures given the computing substrate. {@link GraphComputer} implementations also
  * maintains levels of memory {@link Isolation}: Bulk Synchronous and Dirty Bulk Synchronous.
  *
- * @author Matthias Broecheler (me@matthiasb.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Matthias Broecheler (me@matthiasb.com)
  */
 public interface GraphComputer {
 

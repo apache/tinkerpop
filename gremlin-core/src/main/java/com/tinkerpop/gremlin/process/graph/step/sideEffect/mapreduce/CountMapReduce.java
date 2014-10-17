@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -25,7 +26,7 @@ public final class CountMapReduce implements MapReduce<MapReduce.NullObject, Lon
 
     @Override
     public void map(Vertex vertex, MapEmitter<MapReduce.NullObject, Long> emitter) {
-        emitter.emit(NullObject.instance(), MapReduce.getLocalSideEffects(vertex).orElse(CountStep.COUNT_KEY, 0l));
+        emitter.emit(NullObject.instance(), TraversalVertexProgram.getLocalSideEffects(vertex).orElse(CountStep.COUNT_KEY, 0l));
     }
 
     @Override

@@ -5,7 +5,7 @@ import java.util.NoSuchElementException;
 /**
  * Retrieve a singleton, fast {@link java.util.NoSuchElementException} without a stack trace.
  */
-public class FastNoSuchElementException extends NoSuchElementException {
+public final class FastNoSuchElementException extends NoSuchElementException {
 
     private static final long serialVersionUID = 2303108654138257697L;
     private static final FastNoSuchElementException instance = new FastNoSuchElementException();

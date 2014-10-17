@@ -28,7 +28,7 @@ public final class PathTraverserExecutor extends TraverserExecutor {
                 // no need to deflate as they are already deflated
                 MapHelper.incr(tracker.getDoneGraphTracks(), traverser.get(), traverser);
             } else {
-                traverser.inflate(vertex, traversal);
+                traverser.attach(vertex);
                 final Step<?, ?> step = TraversalHelper.getStep(traverser.getFuture(), traversal);
                 step.addStart((Traverser) traverser);
                 if (processStep(step, messenger, tracker))
@@ -41,7 +41,7 @@ public final class PathTraverserExecutor extends TraverserExecutor {
                     // no need to deflate as they are already deflated
                     MapHelper.incr(tracker.getDoneObjectTracks(), object, traverser);
                 } else {
-                    traverser.inflate(vertex, traversal);
+                    traverser.attach(vertex);
                     final Step<?, ?> step = TraversalHelper.getStep(traverser.getFuture(), traversal);
                     step.addStart((Traverser) traverser);
                     if (processStep(step, messenger, tracker))
@@ -57,7 +57,7 @@ public final class PathTraverserExecutor extends TraverserExecutor {
         final boolean messageSent = step.hasNext();
         step.forEachRemaining(traverser -> {
             final Object end = traverser.get();
-            traverser.asAdmin().deflate();
+            traverser.asAdmin().detach();
             if (end instanceof Element || end instanceof Property)
                 messenger.sendMessage(MessageType.Global.to(getHostingVertex(end)), traverser.asAdmin());
             else

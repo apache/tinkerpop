@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
+public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
 
     private static final EmptyTraverser INSTANCE = new EmptyTraverser();
 
@@ -66,12 +66,12 @@ public class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     }
 
     @Override
-    public Admin<T> deflate() {
+    public Admin<T> detach() {
         return this;
     }
 
     @Override
-    public Admin<T> inflate(final Vertex hostVertex, final Traversal traversal) {
+       public Admin<T> attach(final Vertex hostVertex) {
         return this;
     }
 

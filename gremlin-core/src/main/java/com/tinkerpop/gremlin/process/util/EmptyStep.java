@@ -9,7 +9,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EmptyStep<S, E> implements Step<S, E> {
+public final class EmptyStep<S, E> implements Step<S, E> {
 
     private static final EmptyStep INSTANCE = new EmptyStep<>();
 
