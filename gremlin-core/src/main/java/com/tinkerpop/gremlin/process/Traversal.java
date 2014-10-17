@@ -92,7 +92,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
     public interface SideEffects {
 
-        public static final String DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY = Graph.Key.hide("gremlin.traversalVertexProgram.sideEffects");
+        public static final String DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY = Graph.Key.hide("gremlin.sideEffects");
         public static final String GRAPH_KEY = Graph.System.system("g");
 
         public default boolean exists(final String key) {
