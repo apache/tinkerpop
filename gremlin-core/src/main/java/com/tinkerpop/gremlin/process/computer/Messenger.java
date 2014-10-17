@@ -11,8 +11,20 @@ package com.tinkerpop.gremlin.process.computer;
  */
 public interface Messenger<M> {
 
+    /**
+     * The currently executing vertex can receive the messages of the provided {@link MessageType}.
+     *
+     * @param messageType the message type of the messages to receive
+     * @return the messages for that vertex
+     */
     public Iterable<M> receiveMessages(final MessageType messageType);
 
+    /**
+     * The currently executing vertex can send a message with provided {@link MessageType}.
+     *
+     * @param messageType the message type of the message being sent
+     * @param message     the message to send
+     */
     public void sendMessage(final MessageType messageType, final M message);
 
 }
