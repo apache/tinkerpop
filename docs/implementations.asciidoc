@@ -8,7 +8,7 @@ image::gremlin-racecar.png[width=325]
 Vendor Requirements
 -------------------
 
-image:tinkerpop-enabled.png[width=140,float=left] At the core of TinkerPop3 is a Java8 API. The implementation of this core API and its validation via the `gremlin-test` suite is all that is required of a vendor wishing to provide a TinkerPop3-enabled graph engine. Once a vendor has a valid implementation, then all the applications provided by TinkerPop (e.g. Gremlin Console, Gremlin Server, etc.) and 3rd-party developers (e.g. Gremlin-Scale, Gremlin-JS, etc.) will integrate properly with their graph engine. Finally, please feel free to use the logo on the left to promote your TinkerPop3 implementation.
+image:tinkerpop-enabled.png[width=140,float=left] At the core of TinkerPop3 is a Java8 API. The implementation of this core API and its validation via the `gremlin-test` suite is all that is required of a vendor wishing to provide a TinkerPop3-enabled graph engine. Once a vendor has a valid implementation, then all the applications provided by TinkerPop (e.g. Gremlin Console, Gremlin Server, etc.) and 3rd-party developers (e.g. Gremlin-Scala, Gremlin-JS, etc.) will integrate properly with their graph engine. Finally, please feel free to use the logo on the left to promote your TinkerPop3 implementation.
 
 Implementing Gremlin-Core
 ~~~~~~~~~~~~~~~~~~~~~~~~~
