@@ -59,6 +59,6 @@ Release Process
 . Log into link:https://oss.sonatype.org/[SonaType], close and then release the release.
 . `mvn deploy -Darchives`
 . `bin/publish-docs.sh`
-. Update S3 redirects for docs and download links on home page.
+. Update download links on home page.
 .. `s3cmd --acl-public put index.html s3://www.tinkerpop.com/`
 . Email gremlin-users mailing list and tweet.
