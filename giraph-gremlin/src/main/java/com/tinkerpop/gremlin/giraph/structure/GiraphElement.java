@@ -2,12 +2,11 @@ package com.tinkerpop.gremlin.giraph.structure;
 
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
-
-import java.io.Serializable;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -23,6 +22,11 @@ public abstract class GiraphElement implements Element {
     protected GiraphElement(final TinkerElement tinkerElement, final GiraphGraph graph) {
         this.tinkerElement = tinkerElement;
         this.graph = graph;
+    }
+
+    @Override
+    public Graph graph() {
+        return this.graph;
     }
 
     @Override

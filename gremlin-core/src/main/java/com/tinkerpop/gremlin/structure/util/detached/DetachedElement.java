@@ -40,6 +40,11 @@ public abstract class DetachedElement<E> implements Element, Element.Iterators, 
     }
 
     @Override
+    public Graph graph() {
+        throw new UnsupportedOperationException("The element is no longer attached to a graph");
+    }
+
+    @Override
     public Object id() {
         return this.id;
     }

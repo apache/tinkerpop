@@ -7,14 +7,11 @@ import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.computer.util.KryoWritable;
 import com.tinkerpop.gremlin.giraph.process.computer.util.RuleWritable;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
-import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
-import com.tinkerpop.gremlin.structure.util.ElementHelper;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
+import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.apache.giraph.graph.Vertex;
@@ -31,13 +28,12 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritable, KryoWritable> {
+public final class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritable, KryoWritable> implements WrappedVertex<TinkerVertex> {
 
     //TODO: Dangerous that the underlying TinkerGraph Vertex can have edges written to it.
 
-    private static final String VERTEX_ID = Graph.Key.hide("vertexId");
+    private static final String VERTEX_ID = Graph.Key.hide("gremlin.giraph.vertexId");
     private VertexProgram vertexProgram;
-    private TinkerGraph tinkerGraph;
     private TinkerVertex tinkerVertex;
     private GiraphMemory memory;
 
@@ -45,31 +41,12 @@ public final class GiraphInternalVertex extends Vertex<LongWritable, Text, NullW
     }
 
     public GiraphInternalVertex(final TinkerVertex tinkerVertex) {
-        this.tinkerGraph = TinkerGraph.open();
         this.tinkerVertex = tinkerVertex;
-        this.tinkerGraph.variables().set(VERTEX_ID, this.tinkerVertex.id());
-        final TinkerVertex vertex = (TinkerVertex) this.tinkerGraph.addVertex(T.id, this.tinkerVertex.id(), T.label, this.tinkerVertex.label());
-        this.tinkerVertex.iterators().propertyIterator().forEachRemaining(property -> vertex.<Object>property(property.key(), property.value(), T.id, property.id()));
-        this.tinkerVertex.iterators().hiddenPropertyIterator().forEachRemaining(property -> vertex.<Object>property(Graph.Key.hide(property.key()), property.value(), T.id, property.id()));
-        this.tinkerVertex.iterators().edgeIterator(Direction.OUT, Integer.MAX_VALUE).forEachRemaining(edge -> {
-            final com.tinkerpop.gremlin.structure.Vertex tempOtherVertex = edge.iterators().vertexIterator(Direction.IN).next();
-            final TinkerVertex otherVertex = (TinkerVertex) ElementHelper.getOrAddVertex(this.tinkerGraph, tempOtherVertex.id(), tempOtherVertex.label());
-            final TinkerEdge tinkerEdge = (TinkerEdge) vertex.addEdge(edge.label(), otherVertex, T.id, edge.id());
-            edge.iterators().propertyIterator().forEachRemaining(property -> tinkerEdge.<Object>property(property.key(), property.value()));
-            edge.iterators().hiddenPropertyIterator().forEachRemaining(property -> tinkerEdge.<Object>property(Graph.Key.hide(property.key()), property.value()));
-        });
-        this.tinkerVertex.iterators().edgeIterator(Direction.IN, Integer.MAX_VALUE).forEachRemaining(edge -> {
-            final com.tinkerpop.gremlin.structure.Vertex tempOtherVertex = edge.iterators().vertexIterator(Direction.OUT).next();
-            final TinkerVertex otherVertex = (TinkerVertex) ElementHelper.getOrAddVertex(this.tinkerGraph, tempOtherVertex.id(), tempOtherVertex.label());
-            final TinkerEdge tinkerEdge = (TinkerEdge) otherVertex.addEdge(edge.label(), vertex, T.id, edge.id());
-            edge.iterators().propertyIterator().forEachRemaining(property -> tinkerEdge.<Object>property(property.key(), property.value()));
-            edge.iterators().hiddenPropertyIterator().forEachRemaining(property -> tinkerEdge.<Object>property(Graph.Key.hide(property.key()), property.value()));
-        });
+        this.tinkerVertex.graph().variables().set(VERTEX_ID, this.tinkerVertex.id());
         this.initialize(new LongWritable(Long.valueOf(this.tinkerVertex.id().toString())), this.deflateTinkerVertex(), EmptyOutEdges.instance());
-        // TODO? this.tinkerVertex = vertex;
     }
 
-    public TinkerVertex getTinkerVertex() {
+    public TinkerVertex getBaseVertex() {
         return this.tinkerVertex;
     }
 
@@ -97,7 +74,7 @@ public final class GiraphInternalVertex extends Vertex<LongWritable, Text, NullW
         try {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
             final KryoWriter writer = KryoWriter.build().create();
-            writer.writeGraph(bos, this.tinkerGraph);
+            writer.writeGraph(bos, this.tinkerVertex.graph());
             bos.flush();
             bos.close();
             return new Text(bos.toByteArray());
@@ -110,10 +87,10 @@ public final class GiraphInternalVertex extends Vertex<LongWritable, Text, NullW
         try {
             final ByteArrayInputStream bis = new ByteArrayInputStream(this.getValue().getBytes());
             final KryoReader reader = KryoReader.build().create();
-            this.tinkerGraph = TinkerGraph.open();
-            reader.readGraph(bis, this.tinkerGraph);
+            final TinkerGraph tinkerGraph = TinkerGraph.open();
+            reader.readGraph(bis, tinkerGraph);
             bis.close();
-            this.tinkerVertex = (TinkerVertex) this.tinkerGraph.v(this.tinkerGraph.variables().get(VERTEX_ID).get());
+            this.tinkerVertex = (TinkerVertex) tinkerGraph.v(tinkerGraph.variables().get(VERTEX_ID).get());
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

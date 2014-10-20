@@ -32,6 +32,12 @@ public abstract interface Element {
      */
     public String label();
 
+    /**
+     * Get the graph that this element is within.
+     *
+     * @return the graph of this element
+     */
+    public Graph graph();
 
     /**
      * Get the keys from non-hidden properties.

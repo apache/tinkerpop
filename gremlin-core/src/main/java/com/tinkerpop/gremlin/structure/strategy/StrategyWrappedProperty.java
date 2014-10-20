@@ -42,8 +42,8 @@ public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped 
     }
 
     @Override
-    public <E extends Element> E getElement() {
-        final Element baseElement = this.baseProperty.getElement();
+    public <E extends Element> E element() {
+        final Element baseElement = this.baseProperty.element();
         return (E) (baseElement instanceof Vertex ? new StrategyWrappedVertex((Vertex) baseElement, strategyWrappedGraph) :
                 new StrategyWrappedEdge((Edge) baseElement, strategyWrappedGraph));
     }

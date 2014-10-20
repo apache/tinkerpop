@@ -23,7 +23,7 @@ public abstract class TraverserExecutor {
         else if (object instanceof Edge) {
             return ((Edge) object).iterators().vertexIterator(Direction.OUT).next();
         } else if (object instanceof Property)
-            return getHostingVertex(((Property) object).getElement());
+            return getHostingVertex(((Property) object).element());
         else
             throw new IllegalStateException("The host of the object is unknown: " + object.toString());
     }

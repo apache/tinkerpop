@@ -52,7 +52,7 @@ public class GiraphProperty<V> implements Property<V>, WrappedProperty<TinkerPro
     }
 
     @Override
-    public <E extends Element> E getElement() {
+    public <E extends Element> E element() {
         return (E) this.giraphElement;
     }
 

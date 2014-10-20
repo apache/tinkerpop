@@ -31,11 +31,11 @@ public class ReferencedVertexProperty<V> extends ReferencedElement implements Ve
         this.key = vertexProperty.key();
         this.value = vertexProperty.value();
         this.hidden = vertexProperty.isHidden();
-        this.vertex = ReferencedFactory.detach(vertexProperty.getElement());
+        this.vertex = ReferencedFactory.detach(vertexProperty.element());
     }
 
     @Override
-    public Vertex getElement() {
+    public Vertex element() {
         return this.vertex;
     }
 

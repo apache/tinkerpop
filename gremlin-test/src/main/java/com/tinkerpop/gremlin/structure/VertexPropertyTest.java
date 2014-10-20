@@ -15,7 +15,6 @@ import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -53,7 +52,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             });
 
             final VertexProperty<String> property = v.property("name", "marko a. rodriguez");
-            tryCommit(g, g -> assertEquals(v, property.getElement()));
+            tryCommit(g, g -> assertEquals(v, property.element()));
 
             try {
                 v.property("name");
@@ -70,7 +69,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             assertEquals(1, g.V().count().next().intValue());
             assertEquals(0, g.E().count().next().intValue());
 
-            assertEquals(v, v.property("name", "mrodriguez").getElement());
+            assertEquals(v, v.property("name", "mrodriguez").element());
             tryCommit(g, g -> {
                 assertEquals(3, v.properties("name").count().next().intValue());
                 assertEquals(4, v.properties().count().next().intValue());
@@ -87,7 +86,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                     assertEquals(meta.key(), meta.label());
                     assertTrue(meta.isPresent());
                     assertFalse(meta.isHidden());
-                    assertEquals(v, meta.getElement());
+                    assertEquals(v, meta.element());
                     if (meta.key().equals("age")) {
                         assertEquals(meta.value(), 34);
                         assertEquals(0, meta.properties().count().next().intValue());
@@ -320,8 +319,8 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                 assertEquals(1, g.V().count().next().intValue());
                 assertEquals(0, g.E().count().next().intValue());
                 // TODO: Neo4j needs a better ID system for VertexProperties
-                assertEquals(v.property("name"), v.property("name").property("acl", "public").getElement());
-                assertEquals(v.property("age"), v.property("age").property("acl", "private").getElement());
+                assertEquals(v.property("name"), v.property("name").property("acl", "public").element());
+                assertEquals(v.property("age"), v.property("age").property("acl", "private").element());
             });
 
             v.property("name").property("acl", "public");

@@ -86,7 +86,7 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
     }
 
     @Override
-    public Vertex getElement() {
+    public Vertex element() {
         return this.vertex;
     }
 

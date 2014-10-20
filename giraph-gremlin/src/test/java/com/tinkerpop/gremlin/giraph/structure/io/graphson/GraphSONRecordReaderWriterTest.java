@@ -61,7 +61,7 @@ public class GraphSONRecordReaderWriterTest {
                 GiraphInternalVertex v = (GiraphInternalVertex) reader.getCurrentValue();
                 writer.write(NullWritable.get(), v);
 
-                Vertex vertex = v.getTinkerVertex();
+                Vertex vertex = v.getBaseVertex();
                 assertEquals(Integer.class, vertex.id().getClass());
 
                 Object value = vertex.property("name");

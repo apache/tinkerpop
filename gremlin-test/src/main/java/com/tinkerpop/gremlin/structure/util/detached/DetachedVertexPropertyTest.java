@@ -44,7 +44,7 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
         assertEquals("test", mp.key());
         assertEquals("this", mp.value());
         assertFalse(mp.isHidden());
-        assertEquals(DetachedVertex.class, mp.getElement().getClass());
+        assertEquals(DetachedVertex.class, mp.element().getClass());
     }
 
     @Test
@@ -56,7 +56,7 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
         assertEquals("test", mp.key());
         assertEquals("this", mp.value());
         assertTrue(mp.isHidden());
-        assertEquals(DetachedVertex.class, mp.getElement().getClass());
+        assertEquals(DetachedVertex.class, mp.element().getClass());
     }
 
     @Test(expected = UnsupportedOperationException.class)

@@ -2,11 +2,9 @@ package com.tinkerpop.gremlin.giraph;
 
 import com.tinkerpop.gremlin.AbstractGraphProvider;
 import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect.GiraphGraphStep;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexInputFormat;
 import com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexOutputFormat;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoResourceAccess;

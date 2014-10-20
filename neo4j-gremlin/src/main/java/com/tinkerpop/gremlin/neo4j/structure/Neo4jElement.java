@@ -13,7 +13,6 @@ import org.neo4j.graphdb.Relationship;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -25,6 +24,11 @@ public abstract class Neo4jElement implements Element, Element.Iterators, Wrappe
 
     public Neo4jElement(final Neo4jGraph graph) {
         this.graph = graph;
+    }
+
+    @Override
+    public Graph graph() {
+        return this.graph;
     }
 
     @Override

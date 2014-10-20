@@ -353,7 +353,7 @@ public class ElementHelper {
             return true;
         if (!a.isPresent() && ((Property) b).isPresent() || a.isPresent() && !((Property) b).isPresent())
             return false;
-        return a.key().equals(((Property) b).key()) && a.value().equals(((Property) b).value()) && areEqual(a.getElement(), ((Property) b).getElement());
+        return a.key().equals(((Property) b).key()) && a.value().equals(((Property) b).value()) && areEqual(a.element(), ((Property) b).element());
 
     }
 

@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
@@ -23,6 +24,13 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
         this.strategyContext = new Strategy.Context<>(strategyWrappedGraph.getBaseGraph(), this);
         this.baseVertexProperty = baseVertexProperty;
         this.iterators = new StrategyWrappedVertexPropertyIterators();
+    }
+
+    @Override
+    public Graph graph() {
+        return this.strategyWrappedGraph.strategy().compose(
+                s -> s.getVertexPropertyGraphStrategy(strategyContext),
+                this.baseVertexProperty::graph).get();
     }
 
     @Override
@@ -54,10 +62,10 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
     }
 
     @Override
-    public Vertex getElement() {
+    public Vertex element() {
         return new StrategyWrappedVertex(this.strategyWrappedGraph.strategy().compose(
                 s -> s.getVertexPropertyGetElementStrategy(strategyContext),
-                this.baseVertexProperty::getElement).get(), strategyWrappedGraph);
+                this.baseVertexProperty::element).get(), strategyWrappedGraph);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.util;
 
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
@@ -20,12 +21,17 @@ public class EmptyVertexProperty<V> implements VertexProperty<V> {
     }
 
     @Override
-    public Vertex getElement() {
+    public Vertex element() {
         throw Property.Exceptions.propertyDoesNotExist();
     }
 
     @Override
     public Object id() {
+        throw Property.Exceptions.propertyDoesNotExist();
+    }
+
+    @Override
+    public Graph graph() {
         throw Property.Exceptions.propertyDoesNotExist();
     }
 

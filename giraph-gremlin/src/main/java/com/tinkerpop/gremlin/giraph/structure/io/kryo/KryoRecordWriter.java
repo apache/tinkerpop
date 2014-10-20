@@ -27,7 +27,7 @@ public class KryoRecordWriter extends RecordWriter<NullWritable, GiraphInternalV
     @Override
     public void write(final NullWritable key, final GiraphInternalVertex vertex) throws IOException {
         if (null != vertex) {
-            kryoWriter.writeVertex(out, vertex.getTinkerVertex(), Direction.BOTH);
+            kryoWriter.writeVertex(out, vertex.getBaseVertex(), Direction.BOTH);
         }
     }
 

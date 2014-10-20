@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure.strategy;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -26,6 +27,13 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
         this.strategyContext = new Strategy.Context<>(strategyWrappedGraph.getBaseGraph(), this);
         this.baseVertex = baseVertex;
         this.iterators = new StrategyWrappedVertexIterators();
+    }
+
+    @Override
+    public Graph graph() {
+        return this.strategyWrappedGraph.strategy().compose(
+                s -> s.getVertexGraphStrategy(strategyContext),
+                this.baseVertex::graph).get();
     }
 
     @Override

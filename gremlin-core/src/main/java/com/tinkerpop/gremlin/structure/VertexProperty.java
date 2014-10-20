@@ -23,7 +23,12 @@ public interface VertexProperty<V> extends Property<V>, Element, VertexPropertyT
     public static final String DEFAULT_LABEL = "vertexProperty";
 
     @Override
-    public Vertex getElement();
+    public Vertex element();
+
+    @Override
+    public default Graph graph() {
+        return this.element().graph();
+    }
 
     @Override
     public default String label() {

@@ -66,7 +66,7 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
 
         this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
         this.value = (V) property.value();
-        final Element element = property.getElement();
+        final Element element = property.element();
 
         if (element instanceof Vertex)
             this.element = DetachedVertex.detach((Vertex) element);
@@ -97,7 +97,7 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
     }
 
     @Override
-    public Element getElement() {
+    public Element element() {
         return this.element;
     }
 
@@ -124,7 +124,7 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
 
     @Override
     public Property<V> attach(final Vertex hostVertex) {
-        final Element hostElement = (Element) ((DetachedElement) this.getElement()).attach(hostVertex);
+        final Element hostElement = (Element) ((DetachedElement) this.element()).attach(hostVertex);
         final Property<V> property = hostElement.property(this.isHidden() ? Graph.Key.hide(this.key) : this.key);
         if (property.isPresent()) // && property.value().equals(this.value))
             return property;
@@ -134,9 +134,9 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
 
     @Override
     public Property<V> attach(final Graph hostGraph) {
-        final Element hostElement = (this.getElement() instanceof Vertex) ?
-                hostGraph.v(this.getElement().id()) :
-                hostGraph.e(this.getElement().id());
+        final Element hostElement = (this.element() instanceof Vertex) ?
+                hostGraph.v(this.element().id()) :
+                hostGraph.e(this.element().id());
         final Property<V> property = hostElement.property(this.isHidden() ? Graph.Key.hide(this.key) : this.key);
         if (property.isPresent()) // && property.value().equals(this.value))
             return property;

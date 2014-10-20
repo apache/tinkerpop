@@ -307,8 +307,8 @@ public class ElementHelperTest {
         final Element mockElement = mock(Element.class);
         when(mockPropertyA.isPresent()).thenReturn(true);
         when(mockPropertyB.isPresent()).thenReturn(true);
-        when(mockPropertyA.getElement()).thenReturn(mockElement);
-        when(mockPropertyB.getElement()).thenReturn(mockElement);
+        when(mockPropertyA.element()).thenReturn(mockElement);
+        when(mockPropertyB.element()).thenReturn(mockElement);
         when(mockPropertyA.key()).thenReturn("k");
         when(mockPropertyB.key()).thenReturn("k");
         when(mockPropertyA.value()).thenReturn("v");
@@ -325,8 +325,8 @@ public class ElementHelperTest {
         final Element mockElementDifferent = mock(Element.class);
         when(mockPropertyA.isPresent()).thenReturn(true);
         when(mockPropertyB.isPresent()).thenReturn(true);
-        when(mockPropertyA.getElement()).thenReturn(mockElement);
-        when(mockPropertyB.getElement()).thenReturn(mockElementDifferent);
+        when(mockPropertyA.element()).thenReturn(mockElement);
+        when(mockPropertyB.element()).thenReturn(mockElementDifferent);
         when(mockPropertyA.key()).thenReturn("k");
         when(mockPropertyB.key()).thenReturn("k");
         when(mockPropertyA.value()).thenReturn("v");
@@ -342,8 +342,8 @@ public class ElementHelperTest {
         final Element mockElement = mock(Element.class);
         when(mockPropertyA.isPresent()).thenReturn(true);
         when(mockPropertyB.isPresent()).thenReturn(true);
-        when(mockPropertyA.getElement()).thenReturn(mockElement);
-        when(mockPropertyB.getElement()).thenReturn(mockElement);
+        when(mockPropertyA.element()).thenReturn(mockElement);
+        when(mockPropertyB.element()).thenReturn(mockElement);
         when(mockPropertyA.key()).thenReturn("k");
         when(mockPropertyB.key()).thenReturn("k1");
         when(mockPropertyA.value()).thenReturn("v");
@@ -359,8 +359,8 @@ public class ElementHelperTest {
         final Element mockElement = mock(Element.class);
         when(mockPropertyA.isPresent()).thenReturn(true);
         when(mockPropertyB.isPresent()).thenReturn(true);
-        when(mockPropertyA.getElement()).thenReturn(mockElement);
-        when(mockPropertyB.getElement()).thenReturn(mockElement);
+        when(mockPropertyA.element()).thenReturn(mockElement);
+        when(mockPropertyB.element()).thenReturn(mockElement);
         when(mockPropertyA.key()).thenReturn("k");
         when(mockPropertyB.key()).thenReturn("k");
         when(mockPropertyA.value()).thenReturn("v");

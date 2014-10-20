@@ -64,7 +64,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
     }
 
     private DetachedVertexProperty(final VertexProperty property) {
-        this(property, property.getElement() instanceof DetachedVertex ? (DetachedVertex) property.getElement() : DetachedVertex.detach(property.getElement()));
+        this(property, property.element() instanceof DetachedVertex ? (DetachedVertex) property.element() : DetachedVertex.detach(property.element()));
     }
 
     private DetachedVertexProperty() {
@@ -92,7 +92,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
     }
 
     @Override
-    public Vertex getElement() {
+    public Vertex element() {
         return this.vertex;
     }
 

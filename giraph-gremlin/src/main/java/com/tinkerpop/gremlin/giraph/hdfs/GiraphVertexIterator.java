@@ -34,7 +34,7 @@ public class GiraphVertexIterator extends GiraphElementIterator<GiraphVertex> {
             } else {
                 while (!this.readers.isEmpty()) {
                     if (this.readers.peek().nextVertex())
-                        return new GiraphVertex(((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getTinkerVertex(), this.graph);
+                        return new GiraphVertex(((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getBaseVertex(), this.graph);
                     else
                         this.readers.remove();
                 }
@@ -52,7 +52,7 @@ public class GiraphVertexIterator extends GiraphElementIterator<GiraphVertex> {
             else {
                 while (!this.readers.isEmpty()) {
                     if (this.readers.peek().nextVertex()) {
-                        this.nextVertex = new GiraphVertex(((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getTinkerVertex(), this.graph);
+                        this.nextVertex = new GiraphVertex(((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getBaseVertex(), this.graph);
                         return true;
                     } else
                         this.readers.remove();

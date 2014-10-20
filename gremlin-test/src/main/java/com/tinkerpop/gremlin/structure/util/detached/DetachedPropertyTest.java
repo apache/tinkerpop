@@ -4,23 +4,16 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
 import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -47,7 +40,7 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
         final DetachedProperty p = DetachedProperty.detach(g.e(convertToEdgeId("josh", "created", "lop")).property("weight"));
         assertEquals("weight", p.key());
         assertEquals(0.4d, (double) p.value(), 0.000001d);
-        assertEquals(DetachedEdge.class, p.getElement().getClass());
+        assertEquals(DetachedEdge.class, p.element().getClass());
         assertFalse(p.isHidden());
     }
 

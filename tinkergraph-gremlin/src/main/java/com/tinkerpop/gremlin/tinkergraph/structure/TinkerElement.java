@@ -45,6 +45,11 @@ public abstract class TinkerElement implements Element, Element.Iterators {
     }
 
     @Override
+    public Graph graph() {
+        return this.graph;
+    }
+
+    @Override
     public Set<String> keys() {
         return TinkerHelper.inComputerMode(this.graph) ?
                 Element.super.keys() :

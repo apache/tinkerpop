@@ -27,7 +27,7 @@ public class TinkerProperty<V> implements Property<V> {
     }
 
     @Override
-    public <E extends Element> E getElement() {
+    public <E extends Element> E element() {
         return (E) this.element;
     }
 

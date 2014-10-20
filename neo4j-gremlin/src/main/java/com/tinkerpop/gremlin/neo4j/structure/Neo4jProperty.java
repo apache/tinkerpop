@@ -24,12 +24,12 @@ public class Neo4jProperty<V> implements Property<V> {
         this.key = key;
         this.value = value;
         this.graph = element instanceof Neo4jVertexProperty ?
-                ((Neo4jVertex) (((Neo4jVertexProperty) element).getElement())).graph :
+                ((Neo4jVertex) (((Neo4jVertexProperty) element).element())).graph :
                 ((Neo4jElement) element).graph;
     }
 
     @Override
-    public <E extends Element> E getElement() {
+    public <E extends Element> E element() {
         return (E) this.element;
     }
 

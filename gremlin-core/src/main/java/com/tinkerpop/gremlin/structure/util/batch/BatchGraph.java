@@ -394,6 +394,11 @@ public class BatchGraph<G extends Graph> implements Graph {
         }
 
         @Override
+        public Graph graph() {
+            return getCachedVertex(externalID).graph();
+        }
+
+        @Override
         public String label() {
             return getCachedVertex(externalID).label();
         }
@@ -476,6 +481,10 @@ public class BatchGraph<G extends Graph> implements Graph {
 
     private class BatchEdge implements Edge, Edge.Iterators {
 
+        @Override
+        public Graph graph() {
+            return getWrappedEdge().graph();
+        }
 
         @Override
         public Object id() {

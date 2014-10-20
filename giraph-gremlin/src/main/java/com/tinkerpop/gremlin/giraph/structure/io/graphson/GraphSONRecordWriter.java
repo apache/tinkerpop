@@ -37,7 +37,7 @@ public class GraphSONRecordWriter extends RecordWriter<NullWritable, GiraphInter
     @Override
     public void write(final NullWritable key, final GiraphInternalVertex vertex) throws IOException {
         if (null != vertex) {
-            Vertex gremlinVertex = vertex.getTinkerVertex();
+            Vertex gremlinVertex = vertex.getBaseVertex();
             graphSONWriter.writeVertex(out, gremlinVertex, Direction.BOTH);
             out.write(NEWLINE);
         }

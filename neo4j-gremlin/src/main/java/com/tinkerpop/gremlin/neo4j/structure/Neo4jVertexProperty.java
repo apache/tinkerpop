@@ -55,7 +55,7 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty
     }
 
     @Override
-    public Vertex getElement() {
+    public Vertex element() {
         return this.vertex;
     }
 

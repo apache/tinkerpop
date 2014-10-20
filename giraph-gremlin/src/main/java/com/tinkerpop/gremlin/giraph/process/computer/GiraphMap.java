@@ -37,7 +37,7 @@ public final class GiraphMap extends Mapper<NullWritable, GiraphInternalVertex, 
 
     @Override
     public void map(final NullWritable key, final GiraphInternalVertex value, final Mapper<NullWritable, GiraphInternalVertex, KryoWritable, KryoWritable>.Context context) throws IOException, InterruptedException {
-        this.mapReduce.map(value.getTinkerVertex(), new GiraphMapEmitter<>(context));
+        this.mapReduce.map(value.getBaseVertex(), new GiraphMapEmitter<>(context));
     }
 
     public static class GiraphMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {

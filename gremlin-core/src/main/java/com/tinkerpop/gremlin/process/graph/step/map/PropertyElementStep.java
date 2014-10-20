@@ -11,7 +11,7 @@ public final class PropertyElementStep<E> extends MapStep<Property<E>, Element> 
 
     public PropertyElementStep(final Traversal traversal) {
         super(traversal);
-        this.setFunction(traverser -> traverser.get().getElement());
+        this.setFunction(traverser -> traverser.get().element());
     }
 
     // TODO: reverse()

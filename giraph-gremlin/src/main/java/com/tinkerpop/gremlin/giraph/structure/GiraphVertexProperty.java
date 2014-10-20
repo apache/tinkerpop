@@ -81,7 +81,7 @@ public class GiraphVertexProperty<V> implements VertexProperty<V>, VertexPropert
     }
 
     @Override
-    public Vertex getElement() {
+    public Vertex element() {
         return this.giraphVertex;
     }
 

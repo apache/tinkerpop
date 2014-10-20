@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure.util.referenced;
 
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
@@ -21,6 +22,11 @@ public abstract class ReferencedElement implements Element, Serializable {
     public ReferencedElement(final Element element) {
         this.id = element.id();
         this.label = element.label();
+    }
+
+    @Override
+    public Graph graph() {
+        throw new UnsupportedOperationException("The element is no longer attached to a graph");
     }
 
     @Override
