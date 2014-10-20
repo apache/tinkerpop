@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.util.function.TriFunction;
 import org.javatuples.Pair;
 import org.junit.Test;
@@ -336,6 +337,13 @@ public class PropertyTest {
             tests.add(Pair.with("e.keys().contains(\"name\")", (Graph g, Edge e) -> e.keys().contains("name")));
             tests.add(Pair.with("e.hiddenKeys().contains(\"age\")", (Graph g, Edge e) -> e.hiddenKeys().contains("age")));
             tests.add(Pair.with("e.property(Graph.Key.hide(\"color\")).key().equals(\"color\")", (Graph g, Edge e) -> e.property(Graph.Key.hide("color")).key().equals("color")));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().propertyIterator(Graph.Key.hide(\"color\"))).count() == 0", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().propertyIterator(Graph.Key.hide("color"))).count() == 0));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().propertyIterator(Graph.Key.hide(\"age\"))).count() == 0", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().propertyIterator(Graph.Key.hide("age"))).count() == 0));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().propertyIterator(\"age\")).count() == 1", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().propertyIterator("age")).count() == 1));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide(\"color\"))).count() == 0", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().hiddenPropertyIterator(Graph.Key.hide("color"))).count() == 0));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide(\"age\"))).count() == 0", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().hiddenPropertyIterator(Graph.Key.hide("age"))).count() == 0));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(\"color\")).count() == 1", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().hiddenPropertyIterator("color")).count() == 1));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(\"age\")).count() == 1", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().hiddenPropertyIterator("age")).count() == 1));
 
             return tests.stream().map(d -> {
                 final Object[] o = new Object[2];

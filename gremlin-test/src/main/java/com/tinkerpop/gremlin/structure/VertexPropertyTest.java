@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.util.function.TriFunction;
 import org.javatuples.Pair;
 import org.junit.Test;
@@ -411,6 +412,13 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             tests.add(Pair.with("v.keys().contains(\"name\")", (Graph g, Vertex v, Boolean multi) -> v.keys().contains("name")));
             tests.add(Pair.with("v.hiddenKeys().contains(\"age\")", (Graph g, Vertex v, Boolean multi) -> v.hiddenKeys().contains("age")));
             tests.add(Pair.with("v.property(Graph.Key.hide(\"color\")).key().equals(\"color\")", (Graph g, Vertex v, Boolean multi) -> v.property(Graph.Key.hide("color")).key().equals("color")));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().propertyIterator(Graph.Key.hide(\"color\"))).count() == 0", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().propertyIterator(Graph.Key.hide("color"))).count() == 0));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().propertyIterator(Graph.Key.hide(\"age\"))).count() == 0", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().propertyIterator(Graph.Key.hide("age"))).count() == 0));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().propertyIterator(\"age\")).count() == 1", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().propertyIterator("age")).count() == 1));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide(\"color\"))).count() == 0", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide("color"))).count() == 0));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide(\"age\"))).count() == 0", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide("age"))).count() == 0));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(\"color\")).count() == 1", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator("color")).count() == 1));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(\"age\")).count() == 2", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator("age")).count() == (multi ? 2 : 1)));
 
             return tests.stream().map(d -> {
                 final Object[] o = new Object[2];
