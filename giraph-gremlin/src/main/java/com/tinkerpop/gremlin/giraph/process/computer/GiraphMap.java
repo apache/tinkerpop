@@ -56,7 +56,7 @@ public final class GiraphMap extends Mapper<NullWritable, GiraphInternalVertex, 
             this.valueWritable.set(value);
             try {
                 this.context.write(this.keyWritable, this.valueWritable);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
         }
