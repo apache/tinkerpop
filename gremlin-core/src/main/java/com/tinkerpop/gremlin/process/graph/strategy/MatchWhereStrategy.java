@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
+import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.WhereStep;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectStep;
 import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStep;
@@ -23,6 +24,9 @@ public class MatchWhereStrategy extends AbstractTraversalStrategy implements Tra
 
     @Override
     public void apply(final Traversal<?, ?> traversal) {
+        if (!TraversalHelper.hasStepOfClass(MatchStep.class, traversal))
+            return;
+
         final List<MatchStep> matchSteps = TraversalHelper.getStepsOfClass(MatchStep.class, traversal);
         for (final MatchStep matchStep : matchSteps) {
             boolean foundWhereWithNoTraversal = false;

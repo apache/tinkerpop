@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.JumpStep;
+import com.tinkerpop.gremlin.process.graph.step.branch.UnionStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.UntilStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
@@ -20,6 +21,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.RandomStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RangeStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.WhereStep;
 import com.tinkerpop.gremlin.process.graph.step.map.BackStep;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeOtherVertexStep;
@@ -61,11 +63,12 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
-import com.tinkerpop.gremlin.process.graph.step.filter.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.strategy.ChooseLinearStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.UnionLinearStrategy;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.process.marker.CapTraversal;
 import com.tinkerpop.gremlin.process.marker.CountTraversal;
 import com.tinkerpop.gremlin.process.util.SideEffectHelper;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -98,12 +101,13 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S, E> {
+public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S, E>, CapTraversal<S,E> {
 
     @Override
     public default void prepareForGraphComputer() {
         CountTraversal.super.prepareForGraphComputer();
         this.strategies().register(ChooseLinearStrategy.instance());
+        this.strategies().register(UnionLinearStrategy.instance());
     }
 
     @Override
@@ -343,14 +347,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
     public default <E2> GraphTraversal<S, E2> select(final String label) {
         return this.select(label, Function.identity());
     }
-
-    /*public default <E2> GraphTraversal<S, E2> union(final Traversal... traversals) {
-        return (GraphTraversal) this.addStep(new UnionStep(this, traversals));
-    }*/
-
-    /*public default <E2> GraphTraversal<S, E2> intersect(final Traversal... traversals) {
-        return (GraphTraversal) this.addStep(new IntersectStep(this, traversals));
-    }*/
 
     public default <E2> GraphTraversal<S, E2> unfold() {
         return this.addStep(new UnfoldStep<>(this));
@@ -660,6 +656,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
 
     public default <M, E2> GraphTraversal<S, E2> choose(final Function<Traverser<E>, M> mapFunction, final Map<M, Traversal<E, E2>> choices) {
         return this.addStep(new ChooseStep<>(this, mapFunction, choices));
+    }
+
+    public default <E2> GraphTraversal<S, E2> union(final Traversal<E, E2>... traversals) {
+        return this.addStep(new UnionStep<>(this, traversals));
     }
 
     ///////////////////// UTILITY STEPS /////////////////////

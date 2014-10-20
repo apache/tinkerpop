@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process.graph.strategy;
 
-import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
@@ -19,8 +18,7 @@ public class SideEffectCapStrategy extends AbstractTraversalStrategy implements 
 
     @Override
     public void apply(final Traversal<?, ?> traversal) {
-        final Step endStep = TraversalHelper.getEnd(traversal);
-        if (endStep instanceof SideEffectCapable) {
+        if (TraversalHelper.getEnd(traversal) instanceof SideEffectCapable) {
             ((GraphTraversal) traversal).cap();
         }
     }

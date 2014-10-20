@@ -29,6 +29,9 @@ public class ChooseLinearStrategy extends AbstractTraversalStrategy implements T
     // x.choose(t -> M){a}{b}.y
     // x.branch(mapFunction.next().toString()).a.branch(end).as(z).b.as(end).y
     public void apply(final Traversal<?, ?> traversal) {
+        if(!TraversalHelper.hasStepOfClass(ChooseStep.class,traversal))
+            return;
+
         int chooseStepCounter = 0;
         for (final ChooseStep chooseStep : TraversalHelper.getStepsOfClass(ChooseStep.class, traversal)) {
             final int currentStepCount = chooseStepCounter;

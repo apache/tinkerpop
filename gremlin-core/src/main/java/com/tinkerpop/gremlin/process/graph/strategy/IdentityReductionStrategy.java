@@ -17,7 +17,10 @@ public class IdentityReductionStrategy extends AbstractTraversalStrategy impleme
     }
 
     @Override
-    public void apply(final Traversal<?,?> traversal) {
+    public void apply(final Traversal<?, ?> traversal) {
+        if (!TraversalHelper.hasStepOfClass(IdentityStep.class, traversal))
+            return;
+
         TraversalHelper.getStepsOfClass(IdentityStep.class, traversal)
                 .stream()
                 .filter(step -> !TraversalHelper.isLabeled(step))

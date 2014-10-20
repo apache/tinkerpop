@@ -225,14 +225,6 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().select(label, null);
     }
 
-    /*public default <E2> GraphTraversal<S, E2> union(final Traversal... traversals) {
-        return (GraphTraversal) this.addStep(new UnionStep(this, traversals));
-    }*/
-
-    /*public default <E2> GraphTraversal<S, E2> intersect(final Traversal... traversals) {
-        return (GraphTraversal) this.addStep(new IntersectStep(this, traversals));
-    }*/
-
     public default GraphTraversal<A, A> unfold() {
         return this.start().unfold();
     }
@@ -520,12 +512,16 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().until(breakLabel, loops);
     }
 
-    public default <E2> GraphTraversal<A, E2> choose(final Predicate<Traverser<A>> choosePredicate, final Traversal trueChoice, final Traversal falseChoice) {
+    public default <E2> GraphTraversal<A, E2> choose(final Predicate<Traverser<A>> choosePredicate, final Traversal<A, E2> trueChoice, final Traversal<A, E2> falseChoice) {
         return this.start().choose(choosePredicate, trueChoice, falseChoice);
     }
 
     public default <E2, M> GraphTraversal<A, E2> choose(final Function<Traverser<A>, M> mapFunction, final Map<M, Traversal<A, E2>> choices) {
         return this.start().choose(mapFunction, choices);
+    }
+
+    public default <E2> GraphTraversal<A, E2> union(final Traversal<A, E2>... traversals) {
+        return this.start().union(traversals);
     }
 
     ///////////////////// UTILITY STEPS /////////////////////

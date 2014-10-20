@@ -32,6 +32,9 @@ public class DedupOptimizerStrategy extends AbstractTraversalStrategy implements
 
     @Override
     public void apply(final Traversal<?, ?> traversal) {
+        if (!TraversalHelper.hasStepOfClass(DedupStep.class, traversal))
+            return;
+
         boolean done = false;
         while (!done) {
             done = true;

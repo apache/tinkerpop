@@ -1,8 +1,9 @@
-package com.tinkerpop.gremlin.process.graph.step.map
+package com.tinkerpop.gremlin.process.graph.step.branch
 
 import com.tinkerpop.gremlin.process.Path
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
+import com.tinkerpop.gremlin.process.graph.step.branch.JumpTest
 import com.tinkerpop.gremlin.structure.Vertex
 
 /**

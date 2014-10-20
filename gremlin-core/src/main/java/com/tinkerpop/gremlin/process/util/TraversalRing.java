@@ -10,28 +10,28 @@ import java.util.stream.Stream;
  */
 public class TraversalRing<S, E> {
 
-    public Traversal<S, E>[] traversals;
-    private int currentPipeline = -1;
+    private Traversal<S, E>[] traversals;
+    private int currentTraversal = -1;
 
     public TraversalRing(final Traversal<S, E>... traversals) {
         this.traversals = traversals;
     }
 
     public Traversal<S, E> next() {
-        this.currentPipeline = (this.currentPipeline + 1) % this.traversals.length;
-        return this.traversals[this.currentPipeline];
+        this.currentTraversal = (this.currentTraversal + 1) % this.traversals.length;
+        return this.traversals[this.currentTraversal];
     }
 
     public void reset() {
-        this.currentPipeline = -1;
+        this.currentTraversal = -1;
     }
 
     public int size() {
         return this.traversals.length;
     }
 
-    public Stream<Traversal<S, E>> stream() {
-        return Stream.of(this.traversals);
+    public Traversal<S,E>[] getTraversals() {
+        return this.traversals;
     }
 
     public void forEach(final Consumer<Traversal<S, E>> consumer) {

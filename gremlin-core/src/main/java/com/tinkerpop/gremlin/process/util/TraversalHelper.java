@@ -122,13 +122,13 @@ public class TraversalHelper {
         TraversalHelper.removeStep(traversal.getSteps().get(index), traversal);
     }
 
-    public static void insertStep(final Step step, final int index, final Traversal<?,?> traversal) {
+    public static void insertStep(final Step step, final int index, final Traversal<?, ?> traversal) {
         traversal.getSteps().add(index, step);
         reLabelSteps(traversal);
         reLinkSteps(traversal);
     }
 
-    public static void insertStep(final Step step, final Traversal<?,?> traversal) {
+    public static void insertStep(final Step step, final Traversal<?, ?> traversal) {
         traversal.getSteps().add(step);
         reLabelSteps(traversal);
         reLinkSteps(traversal);
@@ -215,7 +215,12 @@ public class TraversalHelper {
     }
 
     public static boolean hasStepOfClass(final Class<? extends Step> stepClass, final Traversal<?, ?> traversal) {
-        return traversal.getSteps().stream().filter(step -> step.getClass().equals(stepClass)).findAny().isPresent();
+        for (final Step<?, ?> step : traversal.getSteps()) {
+            if (step.getClass().equals(stepClass)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /*public static void printTraversalChain(final Traversal<?,?> traversal) {

@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process;
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
+import com.tinkerpop.gremlin.process.graph.step.branch.UnionTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasNotTest;
@@ -12,8 +13,8 @@ import com.tinkerpop.gremlin.process.graph.step.filter.RandomTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.WhereTest;
 import com.tinkerpop.gremlin.process.graph.step.map.BackTest;
-import com.tinkerpop.gremlin.process.graph.step.map.ChooseTest;
-import com.tinkerpop.gremlin.process.graph.step.map.JumpTest;
+import com.tinkerpop.gremlin.process.graph.step.branch.ChooseTest;
+import com.tinkerpop.gremlin.process.graph.step.branch.JumpTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
@@ -74,6 +75,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             ChooseTest.ComputerTest.class,
             JumpTest.ComputerTest.class,
             UntilTest.ComputerTest.class,
+            UnionTest.ComputerTest.class,
 
             // filter
             CyclicPathTest.ComputerTest.class,
@@ -100,7 +102,6 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             ShuffleTest.ComputerTest.class,
             VertexTest.ComputerTest.class,
             UnfoldTest.ComputerTest.class,
-            // UnionTest.JavaComputerUnionTest.class,
             ValueMapTest.ComputerTest.class,
 
             // sideEffect

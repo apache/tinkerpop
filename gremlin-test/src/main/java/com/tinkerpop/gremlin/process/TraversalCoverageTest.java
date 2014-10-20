@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.marker.CapTraversal;
 import com.tinkerpop.gremlin.process.marker.CountTraversal;
 import org.javatuples.Pair;
 import org.junit.Test;
@@ -66,6 +67,7 @@ public class TraversalCoverageTest extends AbstractGremlinProcessTest {
                 .filter(m -> !GraphTraversal.class.equals(m.getReturnType()))
                 .filter(m -> !Traversal.class.equals(m.getReturnType()))
                 .filter(m -> !CountTraversal.class.equals(m.getReturnType()))
+                .filter(m -> !CapTraversal.class.equals(m.getReturnType()))
                 //.filter(m -> !Traversal.class.isAssignableFrom(m.getReturnType()))
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
                 .filter(m -> m.getName().equals(method.getName()))

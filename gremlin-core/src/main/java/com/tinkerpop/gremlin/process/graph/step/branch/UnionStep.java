@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.graph.step.map;
+package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
@@ -9,7 +9,6 @@ import com.tinkerpop.gremlin.process.util.TraversalRing;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-// TODO: Not connected to GraphTraversal, don't rush it. We can wait post TP3 GA.
 public final class UnionStep<S, E> extends AbstractStep<S, E> {
 
     private final TraversalRing<S, E> traversalRing;
@@ -31,6 +30,10 @@ public final class UnionStep<S, E> extends AbstractStep<S, E> {
             final Traverser.Admin<S> start = this.starts.next();
             this.traversalRing.forEach(branch -> branch.addStart(start.makeSibling()));
         }
+    }
+
+    public Traversal<S, E>[] getTraversals() {
+        return this.traversalRing.getTraversals();
     }
 
     @Override

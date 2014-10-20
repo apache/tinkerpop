@@ -5,6 +5,9 @@ import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import com.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest;
+import com.tinkerpop.gremlin.process.graph.step.branch.GroovyChooseTest;
+import com.tinkerpop.gremlin.process.graph.step.branch.GroovyJumpTest;
+import com.tinkerpop.gremlin.process.graph.step.branch.GroovyUnionTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyCyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyFilterTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyHasNotTest;
@@ -14,9 +17,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRandomTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovySimplePathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyWhereTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyBackTest;
-import com.tinkerpop.gremlin.process.graph.step.map.GroovyChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyHiddenValueMapTest;
-import com.tinkerpop.gremlin.process.graph.step.map.GroovyJumpTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyPathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovySelectTest;
@@ -54,6 +55,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyChooseTest.ComputerTest.class,
             GroovyJumpTest.ComputerTest.class,
             GroovyUntilTest.ComputerTest.class,
+            GroovyUnionTest.ComputerTest.class,
 
             // filter
             GroovyCyclicPathTest.ComputerTest.class,
@@ -83,7 +85,6 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovySelectTest.ComputerTest.class,
             GroovyShuffleTest.ComputerTest.class,
             GroovyUnfoldTest.ComputerTest.class,
-            // TODO: GroovyUnionTest.ComputerTest.class,
 
             GroovyValueMapTest.ComputerTest.class,
             GroovyVertexTest.ComputerTest.class,

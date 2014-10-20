@@ -22,10 +22,13 @@ public class UntilStrategy extends AbstractTraversalStrategy implements Traversa
     private UntilStrategy() {
     }
 
+    // g.V.until('a'){it.object == blah}.out.out.as('a').name
+    // g.V.as('a').jump('b'){it.object == blah}.out.out.jump('a').as('b').name
     @Override
     public void apply(final Traversal<?, ?> traversal) {
-        // g.V.until('a'){it.object == blah}.out.out.as('a').name
-        // g.V.as('a').jump('b'){it.object == blah}.out.out.jump('a').as('b').name
+        if (!TraversalHelper.hasStepOfClass(UntilStep.class, traversal))
+            return;
+
         int counter = 0;
         for (final UntilStep untilStep : TraversalHelper.getStepsOfClass(UntilStep.class, traversal)) {
             final IdentityStep leftEndStep = new IdentityStep(traversal);

@@ -227,14 +227,6 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().select(label, null);
     }
 
-    /*public default <E2> Neo4jTraversal<S, E2> union(final Traversal... traversals) {
-        return (Neo4jTraversal) this.addStep(new UnionStep(this, traversals));
-    }*/
-
-    /*public default <E2> Neo4jTraversal<S, E2> intersect(final Traversal... traversals) {
-        return (Neo4jTraversal) this.addStep(new IntersectStep(this, traversals));
-    }*/
-
     public default Neo4jTraversal<A, A> unfold() {
         return this.start().unfold();
     }
@@ -522,12 +514,16 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().until(breakLabel, loops);
     }
 
-    public default <E2> Neo4jTraversal<A, E2> choose(final Predicate<Traverser<A>> choosePredicate, final Traversal trueChoice, final Traversal falseChoice) {
+    public default <E2> Neo4jTraversal<A, E2> choose(final Predicate<Traverser<A>> choosePredicate, final Traversal<A, E2> trueChoice, final Traversal<A, E2> falseChoice) {
         return this.start().choose(choosePredicate, trueChoice, falseChoice);
     }
 
     public default <E2, M> Neo4jTraversal<A, E2> choose(final Function<Traverser<A>, M> mapFunction, final Map<M, Traversal<A, E2>> choices) {
         return this.start().choose(mapFunction, choices);
+    }
+
+    public default <E2> Neo4jTraversal<A, E2> union(final Traversal<A, E2>... traversals) {
+        return this.start().union(traversals);
     }
 
     ///////////////////// UTILITY STEPS /////////////////////
