@@ -32,7 +32,7 @@ public final class GiraphInternalVertex extends Vertex<LongWritable, Text, NullW
 
     //TODO: Dangerous that the underlying TinkerGraph Vertex can have edges written to it.
 
-    private static final String VERTEX_ID = Graph.System.system("gremlin.giraph.vertexId");
+    private static final String VERTEX_ID = Graph.System.system("giraph.gremlin.vertexId");
     private VertexProgram vertexProgram;
     private TinkerVertex tinkerVertex;
     private GiraphMemory memory;
