@@ -33,9 +33,9 @@ public interface Path extends Cloneable {
 
     public void addLabel(final String label);
 
-    public List<Object> getObjects();
+    public List<Object> objects();
 
-    public List<Set<String>> getLabels();
+    public List<Set<String>> labels();
 
     public Path clone();
 
@@ -46,7 +46,7 @@ public interface Path extends Cloneable {
      * @return Whether the path is simple or not
      */
     public default boolean isSimple() {
-        final List<Object> objects = this.getObjects();
+        final List<Object> objects = this.objects();
         for (int i = 0; i < objects.size() - 1; i++) {
             for (int j = i + 1; j < objects.size(); j++) {
                 if (objects.get(i).equals(objects.get(j)))
@@ -57,20 +57,20 @@ public interface Path extends Cloneable {
     }
 
     public default void forEach(final Consumer<Object> consumer) {
-        this.getObjects().forEach(consumer);
+        this.objects().forEach(consumer);
     }
 
     public default void forEach(final BiConsumer<Set<String>, Object> consumer) {
-        final List<Set<String>> labels = this.getLabels();
-        final List<Object> objects = this.getObjects();
+        final List<Set<String>> labels = this.labels();
+        final List<Object> objects = this.objects();
         for (int i = 0; i < objects.size(); i++) {
             consumer.accept(labels.get(i), objects.get(i));
         }
     }
 
     public default Stream<Pair<Set<String>, Object>> stream() {
-        final List<Set<String>> labels = this.getLabels();
-        final List<Object> objects = this.getObjects();
+        final List<Set<String>> labels = this.labels();
+        final List<Object> objects = this.objects();
         return IntStream.range(0, this.size()).mapToObj(i -> Pair.with(labels.get(i), objects.get(i)));
     }
 

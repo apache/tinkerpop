@@ -169,7 +169,7 @@ The return type of `V()` and `E()` is `GraphTraversal`. A GraphTraversal maintai
  . `flatMap`: transform the incoming object to an iterator of other objects (S &rarr; E^*^).
  . `filter`: allow or disallow the object from proceeding to the next step (S &rarr; S &cup; &empty;).
 
-In fact, all steps in GraphTraversal either extend `MapStep`, `FlatMapStep`, or `FilterStep`.
+In fact, nearly all steps in GraphTraversal either extend `MapStep`, `FlatMapStep`, or `FilterStep`. Note that there is also `BranchStep` and `SideEffectStep` though their discussion will be left for later in the documentation.
 
 TIP: `GraphTraversal` is a link:http://en.wikipedia.org/wiki/Monoid[monoid] in that it is an algebraic structure that has a single binary operation that is associative. The binary operation is function composition (i.e. method chaining) and its identity is the step `identity()`. This is related to a link:http://en.wikipedia.org/wiki/Monad_(functional_programming)[monad] as popularized by the functional programming community. 
 

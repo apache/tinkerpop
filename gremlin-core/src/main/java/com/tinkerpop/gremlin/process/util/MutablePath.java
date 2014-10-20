@@ -81,12 +81,12 @@ public class MutablePath implements Path, Serializable, Cloneable {
     }
 
     @Override
-    public List<Object> getObjects() {
+    public List<Object> objects() {
         return this.objects;
     }
 
     @Override
-    public List<Set<String>> getLabels() {
+    public List<Set<String>> labels() {
         return this.labels;
     }
 

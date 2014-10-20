@@ -78,21 +78,21 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
             this.currentLabels.add(label);
     }
 
-    public List<Object> getObjects() {
+    public List<Object> objects() {
         final List<Object> objectPath = new ArrayList<>();
-        objectPath.addAll(this.previousPath.getObjects());
+        objectPath.addAll(this.previousPath.objects());
         objectPath.add(this.currentObject);
         return objectPath;
     }
 
-    public List<Set<String>> getLabels() {
+    public List<Set<String>> labels() {
         final List<Set<String>> labelPath = new ArrayList<>();
-        labelPath.addAll(this.previousPath.getLabels());
+        labelPath.addAll(this.previousPath.labels());
         labelPath.add(this.currentLabels);
         return labelPath;
     }
 
     public String toString() {
-        return this.getObjects().toString();
+        return this.objects().toString();
     }
 }

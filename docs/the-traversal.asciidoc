@@ -39,9 +39,9 @@ There are four generic steps by which all other specific steps described later e
 The `Traverser<S>` object provides access to:
 
 . The current traversed `S` object -- `Traverser.get()`.
-. The current path traversed by the traverser -- `Traverser.getPath()`.
-. The number of times the traverser has gone through a loop -- `Traverser.getLoops()`.
-. The number of objects represented by this traverser -- `Traverser.getBulk()`.
+. The current path traversed by the traverser -- `Traverser.path()`.
+. The number of times the traverser has gone through a loop -- `Traverser.loops()`.
+. The number of objects represented by this traverser -- `Traverser.bulk()`.
 . The side-effects associated with the traversal -- `Traverser.sideEffects()`.
 . A helper shorthand to get a particular side-effect -- `Traverser.get(String) == Traverser.sideEffects().get(String)`.
 
@@ -670,12 +670,12 @@ gremlin> path = g.v(1).as('a').has('name').as('b').out('knows').out('created').a
 ==>[v[1], v[4], v[5], ripple]
 gremlin> path.size()
 ==>4
-gremlin> path.objects
+gremlin> path.objects()
 ==>v[1]
 ==>v[4]
 ==>v[5]
 ==>ripple
-gremlin> path.labels
+gremlin> path.labels()
 ==>[a, b]
 ==>[]
 ==>[c]
@@ -728,7 +728,7 @@ The `profile()`-step generates a `TraversalMetrics` object that contains the fol
 * `Time (ms)`: The total time the step was actively executing its behavior.
 * `% Dur`: The percentage of total time spent in the step.
 
-image:gremlin-exercise.png[width=120,float=left] It is important to understand the difference between `Count` and `Traversers`. Traversers can be "bulked" and as such, when two traversers are "the same" they may be aggregated into a single traverser. That new traverser has a `Traverser.getBulk()` that is the sum of the two merged traverser bulks. On the other hand, the `Count` represents the sum of all `Traverser.getBulk()` results and thus, expresses the number of "represented" (not enumerated) traversers. `Traversers` will always be less than or equal to `Count`.
+image:gremlin-exercise.png[width=120,float=left] It is important to understand the difference between `Count` and `Traversers`. Traversers can be "bulked" and as such, when two traversers are "the same" they may be aggregated into a single traverser. That new traverser has a `Traverser.bulk()` that is the sum of the two merged traverser bulks. On the other hand, the `Count` represents the sum of all `Traverser.bulk()` results and thus, expresses the number of "represented" (not enumerated) traversers. `Traversers` will always be less than or equal to `Count`.
 
 If `-Dtinkerpop.profiling=true` is not set, then the following exception occurs.
 

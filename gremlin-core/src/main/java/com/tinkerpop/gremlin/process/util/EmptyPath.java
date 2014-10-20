@@ -54,12 +54,12 @@ public final class EmptyPath implements Path, Serializable {
     }
 
     @Override
-    public List<Object> getObjects() {
+    public List<Object> objects() {
         return Collections.emptyList();
     }
 
     @Override
-    public List<Set<String>> getLabels() {
+    public List<Set<String>> labels() {
         return Collections.emptyList();
     }
 
