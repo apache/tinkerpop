@@ -1005,6 +1005,28 @@ gremlin> tree.getObjectsAtDepth(3)
 ==>ripple
 ==>lop
 
+[[union-step]]
+Union Step
+~~~~~~~~~~
+
+image::union-step.png[width=650]
+
+The `union()`-step (*branch*) supports the merging of the results of an arbitrary number of traversals. When a traverser reaches a `union()`-step, it is copied to each of its internal steps. The traverses emitted from `union()` are the outputs of the respective internal traversals.
+
+[source,groovy]
+gremlin> g.v(4).union(
+            g.of().in().value('age'),
+            g.of().out().value('lang'))
+==>29
+==>java
+==>java
+gremlin> g.v(4).union(
+            g.of().in().value('age'),
+            g.of().out().value('lang')).path()
+==>[v[4], v[1], 29]
+==>[v[4], v[5], java]
+==>[v[4], v[3], java]
+
 [[until-step]]
 Until Step
 ~~~~~~~~~~
