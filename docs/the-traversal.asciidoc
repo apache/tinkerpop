@@ -19,7 +19,7 @@ Graph Traversal Steps
 
 image::step-types.png[width=650]
 
-A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, or an Edge. A graph traversal is composed of an ordered list of steps. Each step is of particular general form as diagrammed above. A list of all the steps (and their descriptions) are provided in the TinkerPop3 link:http://www.tinkerpop.com/javadocs/current/com/tinkerpop/gremlin/process/graph/GraphTraversal.html[GraphTraversal JavaDoc]. A few of the more interesting/complex steps are presented in the following subsections.
+A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, or an Edge. A graph traversal is composed of an ordered list of steps. Each step is of particular general form as diagrammed above. A list of all the steps (and their descriptions) are provided in the TinkerPop3 link:http://www.tinkerpop.com/javadocs/x.y.z/core/com/tinkerpop/gremlin/process/graph/GraphTraversal.html[GraphTraversal JavaDoc]. A few of the more interesting/complex steps are presented in the following subsections.
 
 [[lambda-steps]]
 Lambda Steps
@@ -41,8 +41,9 @@ The `Traverser<S>` object provides access to:
 . The current traversed `S` object -- `Traverser.get()`.
 . The current path traversed by the traverser -- `Traverser.getPath()`.
 . The number of times the traverser has gone through a loop -- `Traverser.getLoops()`.
-. The side-effects associated with the traversal -- `Traverser.getSideEffects()`.
-. A helper shorthand to get a particular side-effect -- `Traverser.get(String) == Traverser.getSideEffects().get(String)`.
+. The number of objects represented by this traverser -- `Traverser.getBulk()`.
+. The side-effects associated with the traversal -- `Traverser.sideEffects()`.
+. A helper shorthand to get a particular side-effect -- `Traverser.get(String) == Traverser.sideEffects().get(String)`.
 
 IMPORTANT: If a specific traversal step can do the necessary step-computation, use it. Lambda steps can not be optimized by the Gremlin <<traversalstrategy,traversal strategies>> and should only be used when the requisite computation does not have a corresponding standard Gremlin step. For example, instead of `filter{it.get().property('name').isPresent()}` use `has('name')`.
 
