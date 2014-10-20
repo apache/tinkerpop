@@ -225,6 +225,32 @@ g.V().has("age").choose(v -> v.get().value("name").length(), new HashMap() {{
   put(4,g.of().out());
 }}).value("name")
 
+[[cyclicpath-step]]
+CyclicPath Step
+~~~~~~~~~~~~~~~
+
+image::cyclicpath-step.png[width=400]
+
+Each traverser maintains its history through the traversal over the graph -- i.e. its <<path-data-structure,path>>. If it is important that the traverser repeat its course, then `cyclic()`-path should be used (*filter*). The step analyzes the path of the traverser thus far and if there are any repeats, the traverser is filtered out over the traversal computation. If non-cyclic behavior is desired, see <<simplepath-step,`simplePath()`>>.
+
+[source,groovy]
+gremlin> g.v(1).both().both()
+==>v[1]  // back to v[1]
+==>v[4]
+==>v[6]
+==>v[1]  // back to v[1]
+==>v[5]
+==>v[3]
+==>v[1]  // back to v[1]
+gremlin> g.v(1).both().both().cyclicPath()
+==>v[1]
+==>v[1]
+==>v[1]
+gremlin> g.v(1).both().both().cyclicPath().path()
+==>[v[1], v[3], v[1]]
+==>[v[1], v[2], v[1]]
+==>[v[1], v[4], v[1]]
+
 [[groupby-step]]
 GroupBy Step
 ~~~~~~~~~~~~
@@ -829,6 +855,34 @@ gremlin> g.V().as('a').out('created').in('created').as('b').select(). <3>
 <1> A standard `select()` that generates a `Map<String,Object>` of variables bindings in the path (i.e. `a` and `b`) for the sake of a running example.
 <2> The `select{it.value('name')}` projects each binding vertex to their name property value and `where()` operates to ensure respective `a` and `b` strings are not the same.
 <3> The first `select()` projects a vertex binding set. A binding is filtered if `a` vertex equals `b` vertex. A binding is filtered if `a` doesn't know `b`. The second and final `select()` projects the name of the vertices.
+
+[[simplepath-step]]
+SimplePath Step
+~~~~~~~~~~~~~~~
+
+image::simplepath-step.png[width=400]
+
+When it is important that a traverser not repeat its path through the graph, `simplePath()`-step should be used (*filter*). The <<path-data-structure,path>> information of the traverser is analyzed and if the path has repeated objects in it, the traverser is filtered. If cyclic behavior is desired, see <<cyclicpath-step,`cyclicPath()`>>.
+
+[source,groovy]
+gremlin> g.v(1).both().both()
+==>v[1]   // back to v[1]
+==>v[4]
+==>v[6]
+==>v[1]   // back to v[1]
+==>v[5]
+==>v[3]
+==>v[1]   // back to v[1]
+gremlin> g.v(1).both().both().simplePath()
+==>v[4]
+==>v[6]
+==>v[5]
+==>v[3]
+gremlin> g.v(1).both().both().simplePath().path()
+==>[v[1], v[3], v[4]]
+==>[v[1], v[3], v[6]]
+==>[v[1], v[4], v[5]]
+==>[v[1], v[4], v[3]]
 
 [[store-step]]
 Store Step
