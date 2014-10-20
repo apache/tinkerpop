@@ -21,7 +21,7 @@ public class UnionLinearStrategy extends AbstractTraversalStrategy implements Tr
     private static final UnionLinearStrategy INSTANCE = new UnionLinearStrategy();
 
     private static final String UNION = "gremlin.union.";
-    private static final String UNION_END = "gremlin.union.end";
+    private static final String UNION_END = "gremlin.union.end.";
 
     private UnionLinearStrategy() {
     }
@@ -63,7 +63,7 @@ public class UnionLinearStrategy extends AbstractTraversalStrategy implements Tr
             final IdentityStep finalStep = new IdentityStep(traversal);
             finalStep.setLabel(endLabel);
             TraversalHelper.insertAfterStep(finalStep, currentStep, traversal);
-
+            unionStepCounter++;
         }
     }
 

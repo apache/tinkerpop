@@ -21,7 +21,7 @@ public class ChooseLinearStrategy extends AbstractTraversalStrategy implements T
     private static final ChooseLinearStrategy INSTANCE = new ChooseLinearStrategy();
 
     private static final String CHOOSE_PREFIX = "gremlin.choose.";
-    private static final String CHOOSE_PREFIX_END = "gremlin.choose.end";
+    private static final String CHOOSE_PREFIX_END = "gremlin.choose.end.";
 
     private ChooseLinearStrategy() {
     }
@@ -29,17 +29,16 @@ public class ChooseLinearStrategy extends AbstractTraversalStrategy implements T
     // x.choose(t -> M){a}{b}.y
     // x.branch(mapFunction.next().toString()).a.branch(end).as(z).b.as(end).y
     public void apply(final Traversal<?, ?> traversal) {
-        if(!TraversalHelper.hasStepOfClass(ChooseStep.class,traversal))
+        if (!TraversalHelper.hasStepOfClass(ChooseStep.class, traversal))
             return;
 
         int chooseStepCounter = 0;
         for (final ChooseStep chooseStep : TraversalHelper.getStepsOfClass(ChooseStep.class, traversal)) {
-            final int currentStepCount = chooseStepCounter;
-            final String endLabel = CHOOSE_PREFIX_END + currentStepCount;
-
+            final int currentStepCounter = chooseStepCounter;
+            final String endLabel = CHOOSE_PREFIX_END + chooseStepCounter;
             final BranchStep<?> branchStep = new BranchStep<>(traversal);
             branchStep.setFunctions(traverser -> {
-                final String goTo = objectToString(chooseStep.getMapFunction().apply(traverser), currentStepCount);
+                final String goTo = objectToString(currentStepCounter, chooseStep.getMapFunction().apply(traverser));
                 return TraversalHelper.hasLabel(goTo, traversal) ? goTo : BranchStep.EMPTY_LABEL;
             });
             TraversalHelper.replaceStep(chooseStep, branchStep, traversal);
@@ -50,7 +49,7 @@ public class ChooseLinearStrategy extends AbstractTraversalStrategy implements T
                 for (final Step mapStep : entry.getValue().getSteps()) {
                     TraversalHelper.insertAfterStep(mapStep, currentStep, traversal);
                     currentStep = mapStep;
-                    if (c++ == 0) currentStep.setLabel(objectToString(entry.getKey(), currentStepCount));
+                    if (c++ == 0) currentStep.setLabel(objectToString(currentStepCounter, entry.getKey()));
                 }
                 final BranchStep breakStep = new BranchStep(traversal);
                 breakStep.setFunctions(new BranchStep.GoToLabel(endLabel));
@@ -61,12 +60,12 @@ public class ChooseLinearStrategy extends AbstractTraversalStrategy implements T
             final IdentityStep finalStep = new IdentityStep(traversal);
             finalStep.setLabel(endLabel);
             TraversalHelper.insertAfterStep(finalStep, currentStep, traversal);
-
+            chooseStepCounter++;
         }
     }
 
-    private static final String objectToString(final Object object, final int currentStepCount) {
-        return CHOOSE_PREFIX + object.toString() + ":" + object.getClass().getCanonicalName() + ":" + currentStepCount;
+    private static final String objectToString(final int chooseStepCounter, final Object object) {
+        return CHOOSE_PREFIX + chooseStepCounter + "." + object.toString() + ":" + object.getClass().getCanonicalName();
     }
 
     public static ChooseLinearStrategy instance() {
