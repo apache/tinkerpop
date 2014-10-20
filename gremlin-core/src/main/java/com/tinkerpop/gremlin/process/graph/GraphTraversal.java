@@ -61,7 +61,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.strategy.ChooseLinearStrategy;

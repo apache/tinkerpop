@@ -11,7 +11,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RandomStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ShuffleStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.TimeLimitStep;
 import org.junit.Test;
 
 import java.util.List;
