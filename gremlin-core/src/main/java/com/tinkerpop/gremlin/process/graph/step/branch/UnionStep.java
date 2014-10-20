@@ -6,6 +6,8 @@ import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraversalRing;
 
+import java.util.Arrays;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -34,6 +36,11 @@ public final class UnionStep<S, E> extends AbstractStep<S, E> {
 
     public Traversal<S, E>[] getTraversals() {
         return this.traversalRing.getTraversals();
+    }
+
+    @Override
+    public String toString() {
+        return TraversalHelper.makeStepString(this, Arrays.asList(this.traversalRing.getTraversals()));
     }
 
     @Override
