@@ -32,7 +32,7 @@ public final class AggregateStep<S> extends BarrierStep<S> implements SideEffect
                 traverserSet.forEach(traverser ->
                         TraversalHelper.addToCollection(this.getTraversal().sideEffects().getOrCreate(this.sideEffectKey, BulkSet::new),
                                 null == this.preAggregateFunction ? traverser.get() : this.preAggregateFunction.apply(traverser),
-                                traverser.getBulk())));
+                                traverser.bulk())));
     }
 
     @Override

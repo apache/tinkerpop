@@ -31,7 +31,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
                 TraversalHelper.addToCollection(
                         traverser.sideEffects().getOrCreate(this.sideEffectKey, BulkSet::new),
                         null == this.preStoreFunction ? traverser.get() : this.preStoreFunction.apply(traverser),
-                        traverser.getBulk()));
+                        traverser.bulk()));
     }
 
     @Override

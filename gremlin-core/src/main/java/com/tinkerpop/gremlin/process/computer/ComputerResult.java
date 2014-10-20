@@ -23,7 +23,7 @@ public final class ComputerResult {
      *
      * @return The computed graph
      */
-    public Graph getGraph() {
+    public Graph graph() {
         return this.graph;
     }
 
@@ -32,7 +32,7 @@ public final class ComputerResult {
      *
      * @return the computed memory
      */
-    public Memory getMemory() {
+    public Memory memory() {
         return this.memory;
     }
 

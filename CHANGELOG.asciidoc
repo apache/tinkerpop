@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Changed `ComputerResult.getXXX()` to `graph()` and `memory()` to be consistent with method naming convention.
+* `Traverser.getXXX()` changed to `loops()`, `bulk()`, `path()`, `sideEffects()` to be consistent with method naming convention.
 * Optimization to reduce the number of empty lists created due to no step class existing for respective `TraversalStrategy.apply()`.
 * Added `CapTraversal` as a marker interface for the `cap()` method.
 * Added `union()` with GraphComputer `UnionLinearStrategy`.

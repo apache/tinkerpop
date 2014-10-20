@@ -131,7 +131,7 @@ public final class JumpStep<S> extends AbstractStep<S, S> implements EngineDepen
         if (null != this.jumpChoice)
             return this.jumpChoice;
         else if (null != this.jumpLoops)
-            return this.jumpLoops.getValue1().test(traverser.getLoops(), this.jumpLoops.getValue0());
+            return this.jumpLoops.getValue1().test(traverser.loops(), this.jumpLoops.getValue0());
         else
             return this.jumpPredicate.test(traverser);
     }

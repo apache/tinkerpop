@@ -33,7 +33,7 @@ public abstract class GroovyGroupCountTest {
 
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_capXaX() {
-            g.V().as('x').out().groupCount('a') { it.name }.jump('x') { it.loops < 2 }.cap('a')
+            g.V().as('x').out().groupCount('a') { it.name }.jump('x') { it.loops() < 2 }.cap('a')
         }
 
         @Override
@@ -66,7 +66,7 @@ public abstract class GroovyGroupCountTest {
 
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_capXaX() {
-            ComputerTestHelper.compute("g.V().as('x').out().groupCount('a') { it.name }.jump('x') { it.loops < 2 }.cap('a')", g)
+            ComputerTestHelper.compute("g.V().as('x').out().groupCount('a') { it.name }.jump('x') { it.loops() < 2 }.cap('a')", g)
         }
 
         @Override

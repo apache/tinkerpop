@@ -28,7 +28,7 @@ public final class CountStep<S> extends AbstractStep<S, Long> implements SideEff
         long counter = this.getTraversal().sideEffects().getOrCreate(COUNT_KEY, () -> 0l);
         try {
             while (true) {
-                counter = counter + this.starts.next().getBulk();
+                counter = counter + this.starts.next().bulk();
             }
         } catch (final NoSuchElementException e) {
             this.getTraversal().sideEffects().set(COUNT_KEY, counter);

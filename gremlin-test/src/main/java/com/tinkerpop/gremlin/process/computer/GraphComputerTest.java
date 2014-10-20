@@ -8,7 +8,6 @@ import com.tinkerpop.gremlin.process.computer.lambda.LambdaVertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -112,25 +111,25 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
         final ComputerResult results = this.get_g_compute_setupXX_executeXX_terminateXtrueX_memoryKeysXset_incr_and_orX().submit().get();
 
         try {
-            results.getMemory().set("set", "test");
+            results.memory().set("set", "test");
         } catch (Exception ex) {
             validateException(Memory.Exceptions.memoryCompleteAndImmutable(), ex);
         }
 
         try {
-            results.getMemory().incr("incr", 1);
+            results.memory().incr("incr", 1);
         } catch (Exception ex) {
             validateException(Memory.Exceptions.memoryCompleteAndImmutable(), ex);
         }
 
         try {
-            results.getMemory().and("and", true);
+            results.memory().and("and", true);
         } catch (Exception ex) {
             validateException(Memory.Exceptions.memoryCompleteAndImmutable(), ex);
         }
 
         try {
-            results.getMemory().or("or", false);
+            results.memory().or("or", false);
         } catch (Exception ex) {
             validateException(Memory.Exceptions.memoryCompleteAndImmutable(), ex);
         }
@@ -213,24 +212,24 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void shouldHaveConsistentMemoryVertexPropertiesAndExceptions() throws Exception {
         ComputerResult results = get_g_compute_setupXX_executeXv_blah_m_incrX_terminateX1X_elementKeysXnameLengthCounterX_memoryKeysXa_bX().submit().get();
-        assertEquals(1, results.getMemory().getIteration());
-        assertEquals(2, results.getMemory().asMap().size());
-        assertEquals(2, results.getMemory().keys().size());
-        assertTrue(results.getMemory().keys().contains("a"));
-        assertTrue(results.getMemory().keys().contains("b"));
-        assertTrue(results.getMemory().getRuntime() >= 0);
+        assertEquals(1, results.memory().getIteration());
+        assertEquals(2, results.memory().asMap().size());
+        assertEquals(2, results.memory().keys().size());
+        assertTrue(results.memory().keys().contains("a"));
+        assertTrue(results.memory().keys().contains("b"));
+        assertTrue(results.memory().getRuntime() >= 0);
 
-        assertEquals(Long.valueOf(12), results.getMemory().<Long>get("a"));   // 2 iterations
-        assertEquals(Long.valueOf(28), results.getMemory().<Long>get("b"));
+        assertEquals(Long.valueOf(12), results.memory().<Long>get("a"));   // 2 iterations
+        assertEquals(Long.valueOf(28), results.memory().<Long>get("b"));
         try {
-            results.getMemory().get("BAD");
+            results.memory().get("BAD");
             fail("Should throw an IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             assertEquals(Memory.Exceptions.memoryDoesNotExist("BAD").getMessage(), e.getMessage());
         }
-        assertEquals(Long.valueOf(6), results.getGraph().V().count().next());
+        assertEquals(Long.valueOf(6), results.graph().V().count().next());
 
-        results.getGraph().V().forEach(v -> {
+        results.graph().V().forEach(v -> {
             assertTrue(v.property("nameLengthCounter").isPresent());
             assertEquals(Integer.valueOf(v.<String>value("name").length() * 2), Integer.valueOf(v.<Integer>value("nameLengthCounter")));
         });
@@ -240,20 +239,20 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void shouldAndOrIncrCorrectlyThroughSubStages() throws Exception {
         ComputerResult results = get_g_compute_setupXabcdeX_executeXtestMemoryX_terminateXtestMemoryXmemoryKeysXabcdeX().submit().get();
-        assertEquals(2, results.getMemory().getIteration());
-        assertEquals(5, results.getMemory().asMap().size());
-        assertEquals(5, results.getMemory().keys().size());
-        assertTrue(results.getMemory().keys().contains("a"));
-        assertTrue(results.getMemory().keys().contains("b"));
-        assertTrue(results.getMemory().keys().contains("c"));
-        assertTrue(results.getMemory().keys().contains("d"));
-        assertTrue(results.getMemory().keys().contains("e"));
+        assertEquals(2, results.memory().getIteration());
+        assertEquals(5, results.memory().asMap().size());
+        assertEquals(5, results.memory().keys().size());
+        assertTrue(results.memory().keys().contains("a"));
+        assertTrue(results.memory().keys().contains("b"));
+        assertTrue(results.memory().keys().contains("c"));
+        assertTrue(results.memory().keys().contains("d"));
+        assertTrue(results.memory().keys().contains("e"));
 
-        assertEquals(Long.valueOf(18), results.getMemory().get("a"));
-        assertEquals(Long.valueOf(0), results.getMemory().get("b"));
-        assertFalse(results.getMemory().get("c"));
-        assertTrue(results.getMemory().get("d"));
-        assertTrue(results.getMemory().get("e"));
+        assertEquals(Long.valueOf(18), results.memory().get("a"));
+        assertEquals(Long.valueOf(0), results.memory().get("b"));
+        assertFalse(results.memory().get("c"));
+        assertTrue(results.memory().get("d"));
+        assertTrue(results.memory().get("e"));
     }
 
 
@@ -261,15 +260,15 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void shouldAllowMapReduceWithNoVertexProgram() throws Exception {
         final ComputerResult results = get_g_compute_mapXageXreduceXsumX_memoryXnextX_memoryKeyXageSumX().submit().get();
-        assertEquals(123, results.getMemory().<Integer>get("ageSum").intValue());
+        assertEquals(123, results.memory().<Integer>get("ageSum").intValue());
     }
 
     @Test
     @LoadGraphWith(MODERN)
     public void shouldSupportMultipleMapReduceJobs() throws Exception {
         final ComputerResult results = get_g_compute_executeXcounterX_terminateX8X_mapreduceXcounter_aX_mapreduceXcounter_bX().submit().get();
-        assertEquals(60, results.getMemory().<Integer>get("a").intValue());
-        assertEquals(1, results.getMemory().<Integer>get("b").intValue());
+        assertEquals(60, results.memory().<Integer>get("a").intValue());
+        assertEquals(1, results.memory().<Integer>get("b").intValue());
     }
 
 

@@ -35,6 +35,8 @@ IMPORTANT: TinkerPop3 is licensed under the popular link:http://www.apache.org/l
 
 image:tinkerpop-enabled.png[width=135,float=left] When a graph vendor implements the TinkerPop3 structure and process link:http://en.wikipedia.org/wiki/Application_programming_interface[APIs], their technology is considered _TinkerPop3-enabled_ and becomes nearly indistinguishable from any other TinkerPop-enabled graph system save for their respective time and space complexity. The purpose of this documentation is to describe the structure/process dichotomy at length and in doing so, explain how to leverage TinkerPop3 for the sole purpose of vendor-agnostic graph computing. Before deep-diving into the various structure/process APIs, a short introductory review of both APIs is provided.
 
+NOTE: The TinkerPop3 API rides a fine line between providing concise "query language" method names and respecting Java method naming standards. The general convention used throughout TinkerPop3 is that if a method is "user exposed," then a concise name is provided (e.g. `out()`, `path()`, `value()`). If the method is primarily for vendors, then the standard Java naming convention is followed (e.g. `getNextStep()`, `getSteps()`, `getElementComputeKeys()`).
+
 The Graph Structure
 -------------------
 
@@ -61,7 +63,7 @@ peter.addEdge("created", lop, T.id, 12, "weight", 0.2f);
 
 In the above code all the vertices are created first and then their respective edges. There are two "accessor tokens": `T.id` and `T.label`. When any of these, along with a set of other key value pairs is provided to `Graph.addVertex(Object...)` or `Vertex.addEdge(String,Vertex,Object...)`, the respective element is created along with the provided key/value pair properties appended to it.
 
-CAUTION: Many graph vendors do not allow the user to specify an element ID and in such cases, an `IllegalArgumentException` is thrown.
+CAUTION: Many graph vendors do not allow the user to specify an element ID and in such cases, an exception is thrown.
 
 NOTE: In TinkerPop3, vertices are allowed a single immutable string label (similar to an edge label). This functionality did not exist in TinkerPop2. Likewise, element id's are immutable as they were in TinkerPop2.
 

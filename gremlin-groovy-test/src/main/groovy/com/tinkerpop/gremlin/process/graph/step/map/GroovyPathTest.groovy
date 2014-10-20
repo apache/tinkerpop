@@ -24,7 +24,7 @@ public abstract class GroovyPathTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX() {
-            g.V().as('x').out.jump('x') { it.loops < 2 }.path { it } { it.name } { it.lang }
+            g.V().as('x').out.jump('x') { it.loops() < 2 }.path { it } { it.name } { it.lang }
         }
 
         @Override
@@ -53,7 +53,7 @@ public abstract class GroovyPathTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX() {
-            g.V().as('x').out.jump('x') { it.loops < 2 }.path { it } { it.name } { it.lang }
+            g.V().as('x').out.jump('x') { it.loops() < 2 }.path { it } { it.name } { it.lang }
             // TODO: ComputerTestHelper.compute("g.V().as('x').out.jump('x') { it.loops < 2 }.path { it } { it.name } { it.lang }", g);
         }
 

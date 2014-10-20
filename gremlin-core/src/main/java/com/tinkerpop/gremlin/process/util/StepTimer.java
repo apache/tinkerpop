@@ -69,7 +69,7 @@ public class StepTimer implements StepMetrics, Serializable {
     public void finish(Traverser.Admin<?> traverser) {
         stop();
         this.traversers++;
-        this.count += traverser.getBulk();
+        this.count += traverser.bulk();
     }
 
     public void aggregate(StepTimer timer) {

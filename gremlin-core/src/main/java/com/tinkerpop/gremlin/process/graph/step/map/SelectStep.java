@@ -36,7 +36,7 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
             final Map<String, E> bindings = new LinkedHashMap<>();
 
             if (this.requiresPaths && this.onGraphComputer) {   ////// PROCESS STEP BINDINGS
-                final Path path = traverser.getPath();
+                final Path path = traverser.path();
                 this.selectLabels.forEach(label -> {
                     if (path.hasLabel(label))
                         bindings.put(label, (E) this.functionRing.next().apply(path.get(label)));

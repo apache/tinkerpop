@@ -62,7 +62,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     }
 
     @Override
-    public Path getPath() {
+    public Path path() {
         throw new IllegalStateException(PATH_ERROR_MESSAGE);
     }
 
@@ -72,7 +72,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     }
 
     @Override
-    public short getLoops() {
+    public short loops() {
         return this.loops;
     }
 
@@ -90,7 +90,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
         this.bulk = count;
     }
 
-    public long getBulk() {
+    public long bulk() {
         return this.bulk;
     }
 
@@ -132,7 +132,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
         return object instanceof SimpleTraverser
                 && ((SimpleTraverser) object).get().equals(this.t)
                 && ((SimpleTraverser) object).getFuture().equals(this.getFuture())
-                && ((SimpleTraverser) object).getLoops() == this.getLoops();
+                && ((SimpleTraverser) object).loops() == this.loops();
     }
 
     @Override

@@ -33,7 +33,7 @@ public abstract class GroovyGroupByTest {
 
         @Override
         public Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_loops_lt_2X_capXaX() {
-            g.V.as("x").out().groupBy('a') { it.name } { it } { it.size() }.jump("x") { it.loops < 2 }.cap("a");
+            g.V.as("x").out().groupBy('a') { it.name } { it } { it.size() }.jump("x") { it.loops() < 2 }.cap("a");
         }
     }
 
@@ -61,7 +61,7 @@ public abstract class GroovyGroupByTest {
 
         @Override
         public Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_loops_lt_2X_capXaX() {
-            ComputerTestHelper.compute("g.V.as('x').out().groupBy('a') { it.name } { it } { it.size() }.jump('x') { it.loops < 2 }.cap('a')", g)
+            ComputerTestHelper.compute("g.V.as('x').out().groupBy('a') { it.name } { it } { it.size() }.jump('x') { it.loops() < 2 }.cap('a')", g)
         }
     }
 }

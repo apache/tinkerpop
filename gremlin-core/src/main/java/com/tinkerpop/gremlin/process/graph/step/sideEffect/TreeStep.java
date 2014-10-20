@@ -30,7 +30,7 @@ public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, 
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
         this.setConsumer(traverser -> {
             Tree depth = traversal.sideEffects().getOrCreate(this.sideEffectKey, Tree::new);
-            final Path path = traverser.getPath();
+            final Path path = traverser.path();
             for (int i = 0; i < path.size(); i++) {
                 final Object object = functionRing.next().apply(path.get(i));
                 if (!depth.containsKey(object))

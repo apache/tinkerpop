@@ -12,6 +12,6 @@ public final class SimplePathStep<S> extends FilterStep<S> implements PathConsum
 
     public SimplePathStep(final Traversal traversal) {
         super(traversal);
-        this.setPredicate(traverser -> traverser.getPath().isSimple());
+        this.setPredicate(traverser -> traverser.path().isSimple());
     }
 }

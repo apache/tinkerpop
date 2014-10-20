@@ -26,14 +26,14 @@ gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> result = g.compute().program(PageRankVertexProgram.build().create()).submit().get()
 ==>result[tinkergraph[vertices:6 edges:6],memory[size:0]]
-gremlin> result.graph.V().map{[it.get().value('name'), it.get().value(PageRankVertexProgram.PAGE_RANK)]}
+gremlin> result.graph().V().map{[it.get().value('name'), it.get().value(PageRankVertexProgram.PAGE_RANK)]}
 ==>[marko, 0.15000000000000002]
 ==>[vadas, 0.19250000000000003]
 ==>[lop, 0.4018125]
 ==>[josh, 0.19250000000000003]
 ==>[ripple, 0.23181250000000003]
 ==>[peter, 0.15000000000000002]
-gremlin> result.memory.runtime
+gremlin> result.memory().runtime
 ==>35
 
 NOTE: This model of "vertex-centric graph computing" was made popular by Google's link:http://googleresearch.blogspot.com/2009/06/large-scale-graph-computing-at-google.html[Pregel] graph engine. In the open source world, this model is found in OLAP graph computing systems such as link:https://giraph.apache.org/[Giraph], link:https://hama.apache.org/[Hama], and link:http://faunus.thinkaurelius.com[Faunus]. TinkerPop3 extends the popularized model with integrated post-processing <<mapreduce,MapReduce>> jobs over the vertex set.
@@ -67,10 +67,10 @@ gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> result = g.compute().program(PeerPressureVertexProgram.build().create()).mapReduce(new ClusterPopulationMapReduce()).submit().get()
 ==>result[tinkergraph[vertices:6 edges:6],memory[size:2]]
-gremlin> result.memory.get('clusterPopulation')
+gremlin> result.memory().get('clusterPopulation')
 ==>1=5
 ==>6=1
-gremlin> result.graph.V().value(PeerPressureVertexProgram.CLUSTER).groupCount().next()
+gremlin> result.graph().V().value(PeerPressureVertexProgram.CLUSTER).groupCount().next()
 ==>1=5
 ==>6=1
 
@@ -83,10 +83,10 @@ gremlin> result = g.compute().program(PeerPressureVertexProgram.build().create()
  mapReduce(new ClusterPopulationMapReduce()).
  mapReduce(new ClusterCountMapReduce()).submit().get()
 ==>result[tinkergraph[vertices:6 edges:6],memory[size:3]]
-gremlin> result.memory.clusterPopulation
+gremlin> result.memory().clusterPopulation
 ==>1=5
 ==>6=1
-gremlin> result.memory.clusterCount
+gremlin> result.memory().clusterCount
 ==>2
 
 IMPORTANT: The MapReduce model of TinkerPop3 does not support MapReduce chaining. Thus, the order in which the MapReduce jobs are executed is irrelevant. This is made apparent when realizing that the `map()`-stage takes a `Vertex` as its input and the `reduce()`-stage yields key/value pairs. Thus, the results of reduce can not feed back into map.
@@ -112,7 +112,7 @@ gremlin> result = g.compute().program(LambdaVertexProgram.build().
                       terminate('a.iteration > 9').
                       elementComputeKeys('counter').create()).submit().get()
 ==>result[tinkergraph[vertices:6 edges:6],memory[size:0]]
-gremlin> result.graph.V().value('counter')
+gremlin> result.graph().V().value('counter')
 ==>10
 ==>10
 ==>10
@@ -129,7 +129,7 @@ ComputerResult results = g.compute().program(LambdaVertexProgram.build().
                         execute((vertex, messenger, memory) -> vertex.<Integer>singleProperty("counter", memory.isInitialIteration() ? 0 : vertex.<Integer>value("counter") + 1)).
                         terminate(memory -> memory.getIteration() > 9).
                         elementComputeKeys("counter").create()).submit().get();
-results.getGraph().V().value("counter").forEach(System.out::println);
+results.graph().V().value("counter").forEach(System.out::println);
 // 10
 // 10
 // 10
@@ -153,7 +153,7 @@ gremlin> result = g.compute().
                         memory('a.next().value1').
                         memoryKey('sum').create()).submit().get()
 ==>result[tinkergraph[vertices:6 edges:6],memory[size:1]]
-gremlin> result.memory.sum
+gremlin> result.memory().sum
 ==>60
 
 TIP: In the last example, the `map()` emits a single value with no key. `MapEmitter.emit(value)` is a default method that assumes the key is the `MapReduce.NullObject` singleton. This method is useful when all values need to be aggregated to a single key -- e.g., when a global sum is needed.
@@ -310,14 +310,14 @@ When the computation is complete a MapReduce job executes which aggregates all t
 [source,groovy]
 gremlin> result = g.compute().program(TraversalVertexProgram.build().traversal('gremlin-groovy',"TinkerGraph.open().V().both().has('age').value('age').groupCount('a')").create()).submit().get()
 ==>result[tinkergraph[vertices:6 edges:6],memory[size:3]]
-gremlin> result.memory.a
+gremlin> result.memory().a
 ==>32=3
 ==>35=1
 ==>27=1
 ==>29=3
-gremlin> result.memory.iteration
+gremlin> result.memory().iteration
 ==>6
-gremlin> result.memory.runtime
+gremlin> result.memory().runtime
 ==>11
 
 CAUTION: When evaluating traversals that rely on path information (i.e. the history of the traversal), practical computational limits can be easily reached due the link:http://en.wikipedia.org/wiki/Combinatorial_explosion[combinatoric explosion] of data. With path computing enabled, every traverser is unique and thus, must be enumerated as opposed to counted. The difference being a collection of paths vs. a single 64-bit long at a single vertex. For more information on this concept, please see link:http://thinkaurelius.com/2012/11/11/faunus-provides-big-graph-data-analytics/[Faunus Provides Big Graph Data].

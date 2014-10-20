@@ -129,7 +129,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX() {
             return g.V().as("x").out()
-                    .jump("x", o -> o.getLoops() < 2)
+                    .jump("x", o -> o.loops() < 2)
                     .path(v -> v, v -> ((Vertex) v).value("name"), v -> ((Vertex) v).value("lang"));
         }
 
@@ -166,7 +166,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX() {
             // TODO: Detached elements do not store properties (attach)
             return g.V().as("x").out()
-                    .jump("x", t -> t.getLoops() < 2)
+                    .jump("x", t -> t.loops() < 2)
                     .path(v -> v, v -> ((Vertex) v).value("name"), v -> ((Vertex) v).value("lang")); // .submit(g.compute());
         }
 

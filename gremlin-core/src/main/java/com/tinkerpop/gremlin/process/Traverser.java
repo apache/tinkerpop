@@ -27,7 +27,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
      *
      * @return The path of the traverser
      */
-    public Path getPath();
+    public Path path();
 
     /**
      * Determine whether the traverser has path information.
@@ -41,14 +41,14 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
      *
      * @return The number of times the traverser has gone through a loop
      */
-    public short getLoops();
+    public short loops();
 
     /**
      * A traverser may represent a grouping of traversers to allow for more efficient data propagation.
      *
      * @return the number of traversers represented in this traverser.
      */
-    public long getBulk();
+    public long bulk();
 
     /**
      * Get the sideEffects associated with the traversal of the traverser.
@@ -87,7 +87,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
      * Typecast the traverser to a "system traverser" so {@link com.tinkerpop.gremlin.process.Traverser.Admin} methods can be accessed.
      * Used as a helper method to avoid the awkwardness of <code>((Traverser.Administrative)traverser)</code>.
      *
-     * @return The typecasted traverser
+     * @return The type-casted traverser
      */
     public default Admin<T> asAdmin() {
         return (Admin<T>) this;

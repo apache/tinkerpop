@@ -27,7 +27,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.PathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
 import com.tinkerpop.gremlin.process.graph.step.map.ShuffleTest;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldTest;
-import com.tinkerpop.gremlin.process.graph.step.map.UntilTest;
+import com.tinkerpop.gremlin.process.graph.step.branch.UntilTest;
 import com.tinkerpop.gremlin.process.graph.step.map.ValueMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeTest;
@@ -83,8 +83,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             // branch
             ChooseTest.StandardTest.class,
             JumpTest.StandardTest.class,
-            UntilTest.StandardTest.class,
             UnionTest.StandardTest.class,
+            UntilTest.StandardTest.class,
 
             // filter
             CyclicPathTest.StandardTest.class,
@@ -113,7 +113,6 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             ShuffleTest.StandardTest.class,
             VertexTest.StandardTest.class,
             UnfoldTest.StandardTest.class,
-            // UnionTest.JavaUnionTest.class,
             ValueMapTest.StandardTest.class,
 
             // sideEffect
@@ -146,37 +145,39 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
      * Tests that will be enforced by the suite where instances of them should be in the list of testsToExecute.
      */
     protected static Class<?>[] testsToEnforce = new Class<?>[]{
+            // branch
+            ChooseTest.class,
+            JumpTest.class,
+            UnionTest.class,
+            UntilTest.class,
+
             // filter
             CyclicPathTest.class,
             DedupTest.class,
             ExceptTest.class,
             FilterTest.class,
-            WhereTest.class,
             HasNotTest.class,
             HasTest.class,
-            InjectTest.class,
             IntervalTest.class,
             RandomTest.class,
             RangeTest.class,
             RetainTest.class,
             SimplePathTest.class,
+            WhereTest.class,
 
             // map
             BackTest.class,
-            ChooseTest.class,
             FoldTest.class,
             HiddenValueMapTest.class,
-            JumpTest.class,
             MapTest.class,
             MatchTest.class,
             OrderTest.class,
             OrderByTest.class,
             PathTest.class,
             SelectTest.class,
+            ShuffleTest.class,
             VertexTest.class,
             UnfoldTest.class,
-            //UnionTest.class,
-            UntilTest.class,
             ValueMapTest.class,
 
             // sideEffect
@@ -185,21 +186,24 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             CountTest.class,
             GroupByTest.class,
             GroupCountTest.class,
+            InjectTest.class,
+            ProfileTest.class,
             SideEffectCapTest.class,
             SideEffectTest.class,
             StoreTest.class,
             SubgraphTest.class,
             TreeTest.class,
 
-            // algorithms
-            // PageRankVertexProgramTest.class,
-
             // util
             TraversalSideEffectsTest.class,
 
             // compliance
             TraversalCoverageTest.class,
-            CoreTraversalTest.class
+            CoreTraversalTest.class,
+            PathStructureTest.class,
+
+            // algorithms
+            // PageRankVertexProgramTest.class
     };
 
     /**

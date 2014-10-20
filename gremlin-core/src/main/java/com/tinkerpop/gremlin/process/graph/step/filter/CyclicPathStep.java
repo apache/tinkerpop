@@ -11,6 +11,6 @@ public final class CyclicPathStep<S> extends FilterStep<S> implements PathConsum
 
     public CyclicPathStep(final Traversal traversal) {
         super(traversal);
-        this.setPredicate(traverser -> !traverser.getPath().isSimple());
+        this.setPredicate(traverser -> !traverser.path().isSimple());
     }
 }

@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process.graph.step.map
 
-import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.structure.Compare
 import com.tinkerpop.gremlin.structure.Vertex
@@ -57,7 +56,7 @@ public abstract class GroovyMatchTest {
             g.V().match('a',
                     g.of().as('a').out('created').has('name', 'lop').as('b'),
                     g.of().as('b').in('created').has('age', 29).as('c'),
-                    g.of().as('c').out().jump('c') { it.loops < 2 }).select { it.name }
+                    g.of().as('c').out().jump('c') { it.loops() < 2 }).select { it.name }
         }
 
         @Override
@@ -134,7 +133,7 @@ public abstract class GroovyMatchTest {
             g.V().match("a",
                     g.of().as("a").out("created").has("name", "lop").as("b"),
                     g.of().as("b").in("created").has("age", 29).as("c"))
-                    .where(g.of().as("c").out().jump("c") { it.loops < 2 })
+                    .where(g.of().as("c").out().jump("c") { it.loops() < 2 })
                     .select { it.name };
         }
 

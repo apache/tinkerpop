@@ -146,7 +146,7 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
         }
 
         public String apply(final Traverser<S> traverser) {
-            return this.loopCompare.test(traverser.getLoops(), this.loops) ? this.goToLabel : this.breakLabel;
+            return this.loopCompare.test(traverser.loops(), this.loops) ? this.goToLabel : this.breakLabel;
         }
     }
 

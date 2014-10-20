@@ -30,7 +30,7 @@ public final class RangeStep<S> extends FilterStep<S> {
                 throw FastNoSuchElementException.instance();
             }
 
-            long avail = traverser.getBulk();
+            long avail = traverser.bulk();
             if (this.counter.get() + avail <= this.low) {
                 // Will not surpass the low w/ this traverser. Skip and filter the whole thing.
                 this.counter.getAndAdd(avail);

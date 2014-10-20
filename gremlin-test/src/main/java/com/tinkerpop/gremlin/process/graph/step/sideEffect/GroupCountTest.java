@@ -112,7 +112,7 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
         public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_capXaX() {
             return g.V().as("x").out()
                     .groupCount("a", v -> v.get().value("name"))
-                    .jump("x", h -> h.getLoops() < 2).cap("a");
+                    .jump("x", h -> h.loops() < 2).cap("a");
         }
 
         @Override
@@ -149,7 +149,7 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
         public Traversal<Vertex, Map<Object, Long>> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_capXaX() {
             return g.V().as("x").out()
                     .groupCount("a", v -> v.get().value("name"))
-                    .jump("x", t -> t.getLoops() < 2).<Map<Object, Long>>cap("a").submit(g.compute());
+                    .jump("x", t -> t.loops() < 2).<Map<Object, Long>>cap("a").submit(g.compute());
         }
 
         @Override

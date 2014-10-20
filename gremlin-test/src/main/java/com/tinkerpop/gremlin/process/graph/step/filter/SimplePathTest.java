@@ -73,7 +73,7 @@ public abstract class SimplePathTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_asXxX_both_simplePath_jumpXx_loops_lt_3X_path() {
-            return g.V().as("x").both().simplePath().jump("x", t -> t.getLoops() < 3).path();
+            return g.V().as("x").both().simplePath().jump("x", t -> t.loops() < 3).path();
         }
 
         @Override
@@ -91,7 +91,7 @@ public abstract class SimplePathTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_asXxX_both_simplePath_jumpXx_loops_lt_3X_path() {
-            return g.V().as("x").both().simplePath().jump("x", t -> t.getLoops() < 3).path().submit(g.compute());
+            return g.V().as("x").both().simplePath().jump("x", t -> t.loops() < 3).path().submit(g.compute());
         }
 
         @Override

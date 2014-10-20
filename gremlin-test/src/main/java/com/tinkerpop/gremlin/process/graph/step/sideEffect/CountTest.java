@@ -90,7 +90,7 @@ public abstract class CountTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Long> get_g_V_asXaX_out_jumpXa_loops_lt_3X_count() {
-            return g.V().as("a").out().jump("a", v -> v.getLoops() < 3).count();
+            return g.V().as("a").out().jump("a", v -> v.loops() < 3).count();
         }
 
         @Override
@@ -118,7 +118,7 @@ public abstract class CountTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Long> get_g_V_asXaX_out_jumpXa_loops_lt_3X_count() {
-            return g.V().as("a").out().jump("a", v -> v.getLoops() < 3).count().submit(g.compute());
+            return g.V().as("a").out().jump("a", v -> v.loops() < 3).count().submit(g.compute());
         }
 
         @Override

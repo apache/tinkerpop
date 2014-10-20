@@ -30,7 +30,7 @@ public final class SimpleTraverserExecutor extends TraverserExecutor {
         messenger.receiveMessages(MessageType.Global.to()).forEach(traverser -> {
             if (traverser.isDone()) {
                 // no need to deflate as they are already deflated
-                MapHelper.incr(tracker.getDoneGraphTracks(), traverser, traverser.getBulk());
+                MapHelper.incr(tracker.getDoneGraphTracks(), traverser, traverser.bulk());
             } else {
                 traverser.attach(vertex);
                 final Step<?, ?> step = TraversalHelper.getStep(traverser.getFuture(), traversal);
@@ -44,7 +44,7 @@ public final class SimpleTraverserExecutor extends TraverserExecutor {
         tracker.getPreviousObjectTracks().keySet().forEach(traverser -> {
             if (traverser.isDone()) {
                 // no need to deflate as they are already deflated
-                MapHelper.incr(tracker.getDoneObjectTracks(), traverser, traverser.getBulk());
+                MapHelper.incr(tracker.getDoneObjectTracks(), traverser, traverser.bulk());
             } else {
                 traverser.attach(vertex);
                 final Step<?, ?> step = TraversalHelper.getStep(traverser.getFuture(), traversal);
@@ -61,7 +61,7 @@ public final class SimpleTraverserExecutor extends TraverserExecutor {
             if (traverser.get() instanceof Element || traverser.get() instanceof Property)
                 messenger.sendMessage(MessageType.Global.to(TraverserExecutor.getHostingVertex(traverser.get())), traverser);
             else
-                MapHelper.incr(tracker.getObjectTracks(), traverser, traverser.getBulk());
+                MapHelper.incr(tracker.getObjectTracks(), traverser, traverser.bulk());
 
         });
         return voteToHalt.get();
@@ -69,7 +69,7 @@ public final class SimpleTraverserExecutor extends TraverserExecutor {
 
     private final static boolean processStep(final Step<?, ?> step, final Map<Traverser.Admin<?>, Long> localCounts) {
         final boolean messageSent = step.hasNext();
-        step.forEachRemaining(traverser -> MapHelper.incr(localCounts, traverser.asAdmin(), traverser.getBulk()));
+        step.forEachRemaining(traverser -> MapHelper.incr(localCounts, traverser.asAdmin(), traverser.bulk()));
         return messageSent;
     }
 }

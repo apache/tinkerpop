@@ -63,7 +63,7 @@ public final class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements 
             values = new BulkSet<>();
             groupMap.put(key, values);
         }
-        TraversalHelper.addToCollectionUnrollIterator(values, value, traverser.getBulk());
+        TraversalHelper.addToCollectionUnrollIterator(values, value, traverser.bulk());
     }
 
     private static <K, V, R> void doReduce(final Map<K, Collection<V>> groupMap, final Map<K, R> reduceMap, final Function<Collection<V>, R> reduceFunction) {

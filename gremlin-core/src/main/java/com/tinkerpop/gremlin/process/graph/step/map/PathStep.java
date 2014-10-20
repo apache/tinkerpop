@@ -20,10 +20,10 @@ public final class PathStep<S> extends MapStep<S, Path> implements PathConsumer 
         this.functionRing = (pathFunctions.length == 0) ? null : new FunctionRing(pathFunctions);
         this.setFunction(traverser -> {
             if (null == this.functionRing)
-                return traverser.getPath();
+                return traverser.path();
             else {
                 final Path path = MutablePath.make();
-                traverser.getPath().forEach((labels, object) -> path.extend(labels, this.functionRing.next().apply(object)));
+                traverser.path().forEach((labels, object) -> path.extend(labels, this.functionRing.next().apply(object)));
                 this.functionRing.reset();
                 return path;
             }

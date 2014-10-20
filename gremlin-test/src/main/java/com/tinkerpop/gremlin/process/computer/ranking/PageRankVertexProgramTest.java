@@ -20,7 +20,7 @@ public class PageRankVertexProgramTest extends AbstractGremlinTest {
     @LoadGraphWith(MODERN)
     public void shouldExecutePageRank() throws Exception {
         final ComputerResult result = g.compute().program(PageRankVertexProgram.build().create()).submit().get();
-        result.getGraph().V().forEach(v -> {
+        result.graph().V().forEach(v -> {
             assertTrue(v.keys().contains("name"));
             assertTrue(v.hiddenKeys().contains(Graph.Key.unHide(PageRankVertexProgram.PAGE_RANK)));
             final String name = v.value("name");
@@ -40,8 +40,8 @@ public class PageRankVertexProgramTest extends AbstractGremlinTest {
             else
                 throw new IllegalStateException("The following vertex should not exist in the graph: " + name);
         });
-        assertEquals(result.getMemory().getIteration(), 30);
-        assertEquals(result.getMemory().asMap().size(), 0);
+        assertEquals(result.memory().getIteration(), 30);
+        assertEquals(result.memory().asMap().size(), 0);
     }
 
 }

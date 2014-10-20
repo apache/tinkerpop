@@ -16,7 +16,7 @@ public final class EdgeOtherVertexStep extends MapStep<Edge, Vertex> implements 
     public EdgeOtherVertexStep(final Traversal traversal) {
         super(traversal);
         this.setFunction(traverser -> {
-            final Path path = traverser.getPath();
+            final Path path = traverser.path();
             final Vertex vertex = path.get(path.size() - 2);
             return ElementHelper.areEqual(vertex, traverser.get().iterators().vertexIterator(Direction.OUT).next()) ?
                     traverser.get().iterators().vertexIterator(Direction.IN).next() :

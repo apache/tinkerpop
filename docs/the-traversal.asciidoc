@@ -6,7 +6,7 @@ image::gremlin-running.png[width=125]
 
 At the most general level there is `Traversal<S,E>` which implements `Iterator<E>`, where the `S` stands for start and the `E` stands for end. A traversal is composed of four primary components:
   
- . `Step<S,E>`: a individual function applied to `S` to yield `E`.
+ . `Step<S,E>`: an individual function applied to `S` to yield `E`.
  . `TraversalStrategy`: interceptor methods to alter the execution of the traversal.
  . `Traversal.SideEffects`: key/value pairs that can be used to store global information about the traversal.
  . `Traverser<T>`: the object propagating through the `Traversal` currently representing an object of type `T`. 
@@ -363,10 +363,10 @@ Jump Step
 TinkerPop3 introduces the `jump()`-step (*branch*). This step allows the propagating traverser object to jump to any arbitrary section of the `Traversal`. Typically, this is determined by means of a predicate. In particular, with `jump`, the Gremlin is no longer constrained to *do-while* semantics, but can as well support *while-do* (see link:http://docs.oracle.com/javase/tutorial/java/nutsandbolts/while.html[Java Documentation on While]). Below are some examples of `jump` in action in Gremlin-Groovy.
 
 [source,groovy]
-gremlin> g.v(1).as('a').out().jump('a'){it.loops<2}.value('name') <1>
+gremlin> g.v(1).as('a').out().jump('a'){it.loops()<2}.value('name') <1>
 ==>ripple
 ==>lop
-gremlin> g.v(1).as('a').jump('b'){it.loops>1}.out().jump('a').as('b').value('name') <2>
+gremlin> g.v(1).as('a').jump('b'){it.loops()>1}.out().jump('a').as('b').value('name') <2>
 ==>ripple
 ==>lop
 gremlin> g.v(1).jump('a').out().out().out().as('a').value('name') <3>
@@ -386,7 +386,7 @@ gremlin> g.v(1).as('a').out().jump('a',2).value('name')
 The `jump()`-step also supports an "emit predicate." Whereby the traverser is split in two -- the traverser exits the code block as well as continues back within the code block.
 
 [source,groovy]
-gremlin> g.v(1).as('a').out().jump('a'){it.loops<2}{true}.value('name')
+gremlin> g.v(1).as('a').out().jump('a'){it.loops()<2}{true}.value('name')
 ==>lop
 ==>vadas
 ==>josh
@@ -930,7 +930,7 @@ A more common subgraphing use case is to get all of the graph structure surround
 ----
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> sg = g.v(3).as('a').inE().outV().jump('a'){it.loops<3}{true}.subgraph({true}).next()   <1>
+gremlin> sg = g.v(3).as('a').inE().outV().jump('a'){it.loops()<3}{true}.subgraph({true}).next()   <1>
 ==>tinkergraph[vertices:4 edges:4]
 gremlin> sg.E()
 ==>e[8][1-knows->4]
@@ -1034,10 +1034,10 @@ Until Step
 Gremlin provides *while-do* looping. This was demonstrated in the <<jump-step,Jump Step>> section of the documentation. However, when only using `jump()` for *while-do*, the representation can be confusing as there are numerous `jump` constructions. For the sake of simplicity, `until()`-step exists (*branch*).
 
 [source,groovy]
-gremlin> g.v(1).as('a').jump('b'){it.loops > 1}.out().jump('a').as('b').value('name') <1>
+gremlin> g.v(1).as('a').jump('b'){it.loops() > 1}.out().jump('a').as('b').value('name') <1>
 ==>ripple
 ==>lop
-gremlin> g.v(1).until('b'){it.loops > 1}.out().as('b').value('name') <2>
+gremlin> g.v(1).until('b'){it.loops() > 1}.out().as('b').value('name') <2>
 ==>ripple
 ==>lop
 

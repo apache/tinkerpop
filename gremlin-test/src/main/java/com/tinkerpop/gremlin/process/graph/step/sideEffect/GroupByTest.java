@@ -122,7 +122,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_loops_lt_2X_capXaX() {
-            return g.V().as("x").out().groupBy("a", v -> v.get().value("name"), Traverser::get, Collection::size).jump("x", t -> t.getLoops() < 2).cap("a");
+            return g.V().as("x").out().groupBy("a", v -> v.get().value("name"), Traverser::get, Collection::size).jump("x", t -> t.loops() < 2).cap("a");
         }
     }
 
@@ -155,7 +155,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_loops_lt_2X_capXaX() {
-            return g.V().as("x").out().groupBy("a", v -> v.get().value("name"), Traverser::get, Collection::size).jump("x", t -> t.getLoops() < 2).<Map<String, Integer>>cap("a").submit(g.compute());
+            return g.V().as("x").out().groupBy("a", v -> v.get().value("name"), Traverser::get, Collection::size).jump("x", t -> t.loops() < 2).<Map<String, Integer>>cap("a").submit(g.compute());
         }
     }
 

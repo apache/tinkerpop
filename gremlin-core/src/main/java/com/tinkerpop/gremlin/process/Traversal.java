@@ -59,7 +59,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
             this.strategies().apply();
             final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(this::clone).create();
             final ComputerResult result = computer.program(vertexProgram).submit().get();
-            final GraphTraversal<S, S> traversal = result.getGraph().of();
+            final GraphTraversal<S, S> traversal = result.graph().of();
             return traversal.addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -220,7 +220,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
             final Step<?, E> endStep = TraversalHelper.getEnd(this);
             while (true) {
                 final Traverser<E> traverser = endStep.next();
-                TraversalHelper.addToCollection(collection, traverser.get(), traverser.getBulk());
+                TraversalHelper.addToCollection(collection, traverser.get(), traverser.bulk());
             }
         } catch (final NoSuchElementException ignored) {
         }

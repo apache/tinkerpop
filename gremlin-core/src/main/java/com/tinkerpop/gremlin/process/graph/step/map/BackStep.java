@@ -17,7 +17,7 @@ public final class BackStep<S, E> extends MapStep<S, E> implements PathConsumer,
         super(traversal);
         this.stepLabel = stepLabel;
         TraversalHelper.getStep(this.stepLabel, this.traversal);
-        this.setFunction(traverser -> this.requiresPaths() ? traverser.getPath().get(this.stepLabel) : traverser.get(this.stepLabel));
+        this.setFunction(traverser -> this.requiresPaths() ? traverser.path().get(this.stepLabel) : traverser.get(this.stepLabel));
     }
 
     @Override

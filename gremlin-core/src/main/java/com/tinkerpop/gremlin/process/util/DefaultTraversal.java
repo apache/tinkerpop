@@ -69,10 +69,10 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
             return this.lastEnd;
         } else {
             final Traverser<E> next = TraversalHelper.getEnd(this).next();
-            if (next.getBulk() == 1) {
+            if (next.bulk() == 1) {
                 return next.get();
             } else {
-                this.lastEndCount = next.getBulk() - 1;
+                this.lastEndCount = next.bulk() - 1;
                 this.lastEnd = next.get();
                 return this.lastEnd;
             }

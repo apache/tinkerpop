@@ -39,16 +39,8 @@ class SugarLoader {
     }
 
     public static class TraverserCategory {
-        private static final String LOOPS = "loops";
-        private static final String PATH = "path";
-
         public static final get(final Traverser traverser, final String key) {
-            if (key.equals(LOOPS))
-                return traverser.getLoops();
-            else if (key.equals(PATH))
-                return traverser.getPath();
-            else
-                return traverser.sideEffects().exists(key) ? traverser.sideEffects().get(key) : traverser.get()."$key";
+            return traverser.sideEffects().exists(key) ? traverser.sideEffects().get(key) : traverser.get()."$key";
         }
     }
 

@@ -86,7 +86,7 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public Path getPath() {
+    public Path path() {
         return EmptyPath.instance();
     }
 
@@ -96,12 +96,12 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public short getLoops() {
+    public short loops() {
         return 0;
     }
 
     @Override
-    public long getBulk() {
+    public long bulk() {
         return 0l;
     }
 

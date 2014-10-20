@@ -31,6 +31,6 @@ public class GiraphGraphComputerIntegrateTest {
                 execute((vertex, messenger, memory) -> {
                 }).
                 terminate(memory -> memory.getIteration() > 2).create()).submit().get();
-        assertEquals(result.getMemory().getIteration(), -1);
+        assertEquals(result.memory().getIteration(), -1);
     }
 }

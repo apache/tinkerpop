@@ -40,7 +40,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
     }
 
     @Override
-    public Path getPath() {
+    public Path path() {
         return this.path;
     }
 
@@ -90,7 +90,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
         return (object instanceof PathTraverser)
                 && ((PathTraverser) object).get().equals(this.t)
                 && ((PathTraverser) object).getFuture().equals(this.getFuture())
-                && ((PathTraverser) object).getLoops() == this.getLoops()
-                && ((PathTraverser) object).getPath().equals(this.path);
+                && ((PathTraverser) object).loops() == this.loops()
+                && ((PathTraverser) object).path().equals(this.path);
     }
 }

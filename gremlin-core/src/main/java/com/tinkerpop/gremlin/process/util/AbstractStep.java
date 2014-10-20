@@ -87,7 +87,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         } else {
             while (true) {
                 final Traverser<E> traverser = this.processNextStart();
-                if (traverser.getBulk() != 0) {
+                if (traverser.bulk() != 0) {
                     prepareTraversalForNextStep(traverser);
                     return traverser;
                 }
@@ -103,7 +103,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
             try {
                 while (true) {
                     this.nextEnd = this.processNextStart();
-                    if (this.nextEnd.getBulk() != 0) {
+                    if (this.nextEnd.bulk() != 0) {
                         this.available = true;
                         return true;
                     }
@@ -145,7 +145,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     private void prepareTraversalForNextStep(final Traverser<E> traverser) {
         if (!this.futureSetByChild)
             ((Traverser.Admin<E>) traverser).setFuture(this.nextStep.getLabel());
-        if (traverser instanceof PathTraverser) traverser.getPath().addLabel(this.getLabel());
+        if (traverser instanceof PathTraverser) traverser.path().addLabel(this.getLabel());
         if (TraversalHelper.isLabeled(this.label))
             this.traversal.sideEffects().set(this.label, traverser.get());
     }

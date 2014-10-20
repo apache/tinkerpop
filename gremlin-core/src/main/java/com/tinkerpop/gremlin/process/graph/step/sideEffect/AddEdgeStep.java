@@ -25,7 +25,7 @@ public final class AddEdgeStep extends SideEffectStep<Vertex> implements PathCon
         this.stepLabel = stepLabel;
         super.setConsumer(traverser -> {
             final Vertex currentVertex = traverser.get();
-            final Vertex otherVertex = traverser.getPath().get(stepLabel);
+            final Vertex otherVertex = traverser.path().get(stepLabel);
             if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH)) {
                 otherVertex.addEdge(edgeLabel, currentVertex, propertyKeyValues);
             }

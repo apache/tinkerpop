@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.graph.step.map;
+package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -72,7 +71,7 @@ public abstract class UntilTest extends AbstractGremlinProcessTest {
         }
 
         public Traversal<Vertex, String> get_g_v1_untilXa_loops_gt_1X_out_asXaX_valueXnameX(final Object v1Id) {
-            return g.v(v1Id).until("a", v -> v.getLoops() > 1).out().as("a").value("name");
+            return g.v(v1Id).until("a", v -> v.loops() > 1).out().as("a").value("name");
         }
 
         public Traversal<Vertex, String> get_g_v1_untilXa_1X_out_asXaX_valueXnameX(final Object v1Id) {
@@ -80,7 +79,7 @@ public abstract class UntilTest extends AbstractGremlinProcessTest {
         }
 
         public Traversal<Vertex, Long> get_g_V_untilXa_loops_gt_1X_out_asXaX_count() {
-            return g.V().until("a", v -> v.getLoops() > 1).out().as("a").count();
+            return g.V().until("a", v -> v.loops() > 1).out().as("a").count();
         }
 
         public Traversal<Vertex, Long> get_g_V_untilXa_1X_out_asXaX_count() {
@@ -98,7 +97,7 @@ public abstract class UntilTest extends AbstractGremlinProcessTest {
         }
 
         public Traversal<Vertex, String> get_g_v1_untilXa_loops_gt_1X_out_asXaX_valueXnameX(final Object v1Id) {
-            return g.v(v1Id).until("a", v -> v.getLoops() > 1).out().as("a").<String>value("name").submit(g.compute());
+            return g.v(v1Id).until("a", v -> v.loops() > 1).out().as("a").<String>value("name").submit(g.compute());
         }
 
         public Traversal<Vertex, String> get_g_v1_untilXa_1X_out_asXaX_valueXnameX(final Object v1Id) {
@@ -106,7 +105,7 @@ public abstract class UntilTest extends AbstractGremlinProcessTest {
         }
 
         public Traversal<Vertex, Long> get_g_V_untilXa_loops_gt_1X_out_asXaX_count() {
-            return g.V().until("a", v -> v.getLoops() > 1).out().as("a").count().submit(g.compute());
+            return g.V().until("a", v -> v.loops() > 1).out().as("a").count().submit(g.compute());
         }
 
         public Traversal<Vertex, Long> get_g_V_untilXa_1X_out_asXaX_count() {
