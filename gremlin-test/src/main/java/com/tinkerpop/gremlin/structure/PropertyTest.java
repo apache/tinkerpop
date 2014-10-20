@@ -9,6 +9,8 @@ import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.util.function.TriFunction;
+import org.javatuples.Pair;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -20,6 +22,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
 import static org.hamcrest.CoreMatchers.is;
@@ -297,6 +301,65 @@ public class PropertyTest {
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }
+        }
+    }
+
+    /**
+     * This set of tests didn't fit well in VertexProperty as they do not relate to edges and they did not work
+     * well in Edge tests either as they don't use an "Enclosed" runner.  This seemed like the next best place.
+     */
+    @RunWith(Parameterized.class)
+    public static class EdgePropertiesShouldHideCorrectly extends AbstractGremlinTest {
+
+        @Parameterized.Parameters(name = "{index}: {0}")
+        public static Iterable<Object[]> data() {
+            final List<Pair<String, BiFunction<Graph, Edge, Boolean>>> tests = new ArrayList<>();
+            tests.add(Pair.with("e.property(\"age\").isPresent()", (Graph g, Edge e) -> e.property("age").isPresent()));
+            tests.add(Pair.with("e.value(\"age\").equals(16)", (Graph g, Edge e) -> e.value("age").equals(16)));
+            tests.add(Pair.with("e.properties(\"age\").count().next().intValue() == 1", (Graph g, Edge e) -> e.properties("age").count().next().intValue() == 1));
+            tests.add(Pair.with("e.properties(\"age\").value().next().equals(16)", (Graph g, Edge e) -> e.properties("age").value().next().equals(16)));
+            tests.add(Pair.with("e.hiddens(\"age\").count().next().intValue() == 1", (Graph g, Edge e) -> e.hiddens("age").count().next().intValue() == 1));
+            tests.add(Pair.with("e.hiddens(Graph.Key.hide(\"age\")).count().next().intValue() == 0", (Graph g, Edge e) -> e.hiddens(Graph.Key.hide("age")).count().next().intValue() == 0));
+            tests.add(Pair.with("e.properties(Graph.Key.hide(\"age\")).count().next() == 0", (Graph g, Edge e) -> e.properties(Graph.Key.hide("age")).count().next().intValue() == 0));
+            tests.add(Pair.with("e.propertyMap(Graph.Key.hide(\"age\")).next().size() == 0", (Graph g, Edge e) -> e.propertyMap(Graph.Key.hide("age")).next().size() == 0));
+            tests.add(Pair.with("e.valueMap(Graph.Key.hide(\"age\")).next().size() == 0", (Graph g, Edge e) -> e.valueMap(Graph.Key.hide("age")).next().size() == 0));
+            tests.add(Pair.with("e.propertyMap(\"age\").next().size() == 1", (Graph g, Edge e) -> e.propertyMap("age").next().size() == 1));
+            tests.add(Pair.with("e.valueMap(\"age\").next().size() == 1", (Graph g, Edge e) -> e.valueMap("age").next().size() == 1));
+            tests.add(Pair.with("e.hiddenMap(Graph.Key.hide(\"age\")).next().size() == 0", (Graph g, Edge e) -> e.hiddenMap(Graph.Key.hide("age")).next().size() == 0));
+            tests.add(Pair.with("e.hiddenMap(\"age\").next().size() == 1", (Graph g, Edge e) -> e.hiddenMap("age").next().size() == 1));
+            tests.add(Pair.with("e.hiddenValueMap(Graph.Key.hide(\"age\")).next().size() == 0", (Graph g, Edge e) -> e.hiddenValueMap(Graph.Key.hide("age")).next().size() == 0));
+            tests.add(Pair.with("e.hiddenValueMap(\"age\").next().size() == 1", (Graph g, Edge e) -> e.hiddenValueMap("age").next().size() == 1));
+            tests.add(Pair.with("e.hiddens(\"age\").value().toList().contains(29)", (Graph g, Edge e) -> e.hiddens("age").value().toList().contains(29)));
+            tests.add(Pair.with("e.hiddenKeys().size() == 2", (Graph g, Edge e) -> e.hiddenKeys().size() == 2));
+            tests.add(Pair.with("e.keys().size() == 3", (Graph g, Edge e) -> e.keys().size() == 3));
+            tests.add(Pair.with("e.keys().contains(\"age\")", (Graph g, Edge e) -> e.keys().contains("age")));
+            tests.add(Pair.with("e.keys().contains(\"name\")", (Graph g, Edge e) -> e.keys().contains("name")));
+            tests.add(Pair.with("e.hiddenKeys().contains(\"age\")", (Graph g, Edge e) -> e.hiddenKeys().contains("age")));
+            tests.add(Pair.with("e.property(Graph.Key.hide(\"color\")).key().equals(\"color\")", (Graph g, Edge e) -> e.property(Graph.Key.hide("color")).key().equals("color")));
+
+            return tests.stream().map(d -> {
+                final Object[] o = new Object[2];
+                o[0] = d.getValue0();
+                o[1] = d.getValue1();
+                return o;
+            }).collect(Collectors.toList());
+        }
+
+        @Parameterized.Parameter(value = 0)
+        public String name;
+
+        @Parameterized.Parameter(value = 1)
+        public BiFunction<Graph, Edge, Boolean> streamGetter;
+
+        @Test
+        @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
+        public void shouldHandleHiddenVertexProperties() {
+            final Vertex v = g.addVertex();
+            final Edge e = v.addEdge("self", v, Graph.Key.hide("age"), 29, "age", 16, "name", "marko", "food", "taco", Graph.Key.hide("color"), "purple");
+            tryCommit(g, g -> {
+                assertTrue(streamGetter.apply(g, e));
+            });
         }
     }
 

@@ -228,7 +228,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
     public <V> Iterator<VertexProperty<V>> hiddenPropertyIterator(final String... propertyKeys) {
         graph.tx().readWrite();
         return (Iterator) StreamFactory.stream(getBaseVertex().getPropertyKeys())
-                .filter(key -> Graph.Key.isHidden(key))
+                .filter(Graph.Key::isHidden)
                 .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(k -> k.equals(Graph.Key.unHide(key))).findAny().isPresent())
                 .flatMap(key -> {
                     if (getBaseVertex().getProperty(key).equals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN))
