@@ -21,7 +21,6 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Relationship;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
@@ -214,7 +213,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
     public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
         graph.tx().readWrite();
         return (Iterator) StreamFactory.stream(getBaseVertex().getPropertyKeys())
-                .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, key) >= 0)
+                .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(k -> k.equals(key)).findAny().isPresent())
                 .filter(key -> !Graph.Key.isHidden(key))
                 .flatMap(key -> {
                     if (getBaseVertex().getProperty(key).equals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN))
@@ -230,7 +229,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
         graph.tx().readWrite();
         return (Iterator) StreamFactory.stream(getBaseVertex().getPropertyKeys())
                 .filter(key -> Graph.Key.isHidden(key))
-                .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, Graph.Key.unHide(key)) >= 0)
+                .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(k -> k.equals(Graph.Key.unHide(key))).findAny().isPresent())
                 .flatMap(key -> {
                     if (getBaseVertex().getProperty(key).equals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN))
                         return StreamFactory.stream(getBaseVertex().getRelationships(org.neo4j.graphdb.Direction.OUTGOING, DynamicRelationshipType.withName(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat(key))))

@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.neo4j.structure;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -11,7 +10,6 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -105,7 +103,7 @@ public abstract class Neo4jElement implements Element, Element.Iterators, Wrappe
     public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys) {
         graph.tx().readWrite();
         return StreamFactory.stream(baseElement.getPropertyKeys())
-                .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, key) >= 0)
+                .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(k -> k.equals(key)).findAny().isPresent())
                 .filter(key -> !Graph.Key.isHidden(key))
                 .map(key -> new Neo4jProperty<>(Neo4jElement.this, key, (V) baseElement.getProperty(key))).iterator();
     }
@@ -119,7 +117,7 @@ public abstract class Neo4jElement implements Element, Element.Iterators, Wrappe
                 .collect(Collectors.toList()).toArray(new String[propertyKeys.length]);
 
         return StreamFactory.stream(baseElement.getPropertyKeys())
-                .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(hiddenKeys, key) >= 0)
+                .filter(key -> propertyKeys.length == 0 || Stream.of(hiddenKeys).filter(k -> k.equals(key)).findAny().isPresent())
                 .filter(Graph.Key::isHidden)
                 .map(key -> new Neo4jProperty<>(Neo4jElement.this, key, (V) baseElement.getProperty(key))).iterator();
     }

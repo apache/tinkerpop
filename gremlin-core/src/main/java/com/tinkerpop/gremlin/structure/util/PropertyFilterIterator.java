@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.structure.Property;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -58,10 +59,10 @@ public class PropertyFilterIterator<V> implements Iterator<Property<V>> {
                 }
             } else {
                 if (this.getHiddens) {
-                    if (property.isHidden() && Arrays.binarySearch(this.propertyKeys, property.key()) >= 0)
+                    if (property.isHidden() && Stream.of(this.propertyKeys).filter(key -> key.equals(property.key())).findAny().isPresent())
                         return property;
                 } else {
-                    if (!property.isHidden() && Arrays.binarySearch(this.propertyKeys, property.key()) >= 0)
+                    if (!property.isHidden() && Stream.of(this.propertyKeys).filter(key -> key.equals(property.key())).findAny().isPresent())
                         return property;
                 }
             }

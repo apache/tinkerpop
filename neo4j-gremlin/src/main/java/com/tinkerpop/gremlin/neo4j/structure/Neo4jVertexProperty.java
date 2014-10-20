@@ -17,12 +17,12 @@ import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -221,7 +221,7 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty
             return (Iterator) StreamFactory.stream(node.getPropertyKeys())
                     .filter(key -> !key.equals(T.key.getAccessor()) && !key.equals(T.value.getAccessor()))
                     .filter(key -> !Graph.Key.isHidden(key))
-                    .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, key) >= 0)
+                    .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(k -> k.equals(key)).findAny().isPresent())
                     .map(key -> new Neo4jProperty<>(Neo4jVertexProperty.this, key, (V) node.getProperty(key))).iterator();
         }
     }
@@ -233,7 +233,7 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty
             vertex.graph.tx().readWrite();
             return (Iterator) StreamFactory.stream(node.getPropertyKeys())
                     .filter(key -> Graph.Key.isHidden(key))
-                    .filter(key -> propertyKeys.length == 0 || Arrays.binarySearch(propertyKeys, Graph.Key.unHide(key)) >= 0)
+                    .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(k -> k.equals(Graph.Key.unHide(key))).findAny().isPresent())
                     .map(key -> new Neo4jProperty<>(Neo4jVertexProperty.this, key, (V) node.getProperty(key))).iterator();
         }
     }

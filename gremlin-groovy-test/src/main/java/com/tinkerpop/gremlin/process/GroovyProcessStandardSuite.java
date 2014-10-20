@@ -4,7 +4,10 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import com.tinkerpop.gremlin.groovy.util.SugarTestHelper;
+import com.tinkerpop.gremlin.process.graph.step.branch.GroovyChooseTest;
+import com.tinkerpop.gremlin.process.graph.step.branch.GroovyJumpTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyUnionTest;
+import com.tinkerpop.gremlin.process.graph.step.branch.GroovyUntilTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyCyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyDedupTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyExceptTest;
@@ -18,19 +21,17 @@ import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRetainTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovySimplePathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyWhereTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyBackTest;
-import com.tinkerpop.gremlin.process.graph.step.branch.GroovyChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyFoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyHiddenValueMapTest;
-import com.tinkerpop.gremlin.process.graph.step.branch.GroovyJumpTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyMatchTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyOrderByTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyOrderTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyPathTest;
+import com.tinkerpop.gremlin.process.graph.step.map.GroovyPropertiesTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovySelectTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyShuffleTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyUnfoldTest;
-import com.tinkerpop.gremlin.process.graph.step.branch.GroovyUntilTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyValueMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyVertexTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyAggregateTest;
@@ -85,6 +86,7 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyOrderByTest.StandardTest.class,
             GroovyOrderTest.StandardTest.class,
             GroovyPathTest.StandardTest.class,
+            GroovyPropertiesTest.StandardTest.class,
             GroovySelectTest.StandardTest.class,
             GroovyShuffleTest.StandardTest.class,
             GroovyUnfoldTest.StandardTest.class,

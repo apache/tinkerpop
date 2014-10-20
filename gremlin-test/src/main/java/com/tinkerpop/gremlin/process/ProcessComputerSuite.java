@@ -17,6 +17,7 @@ import com.tinkerpop.gremlin.process.graph.step.branch.ChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.JumpTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PathTest;
+import com.tinkerpop.gremlin.process.graph.step.map.PropertiesTest;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
 import com.tinkerpop.gremlin.process.graph.step.map.ShuffleTest;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldTest;
@@ -98,6 +99,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // TODO: MatchTest.JavaComputerMatchTest.class,
             // TODO: REMOVE? OrderTest.JavaOrderTest.class
             PathTest.ComputerTest.class,
+            PropertiesTest.ComputerTest.class,
             SelectTest.ComputerTest.class,
             ShuffleTest.ComputerTest.class,
             VertexTest.ComputerTest.class,
