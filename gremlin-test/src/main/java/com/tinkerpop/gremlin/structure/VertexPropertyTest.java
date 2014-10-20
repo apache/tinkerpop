@@ -394,7 +394,15 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             tests.add(Pair.with("v.properties(\"age\").value().next().equals(16)", (Graph g, Vertex v, Boolean multi) -> v.properties("age").value().next().equals(16)));
             tests.add(Pair.with("v.hiddens(\"age\").count().next().intValue() == 2", (Graph g, Vertex v, Boolean multi) -> v.hiddens("age").count().next().intValue() == (multi ? 2 : 1)));
             tests.add(Pair.with("v.hiddens(Graph.Key.hide(\"age\")).count().next().intValue() == 0", (Graph g, Vertex v, Boolean multi) -> v.hiddens(Graph.Key.hide("age")).count().next().intValue() == 0));
-            tests.add(Pair.with("v.properties(Graph.Key.hide(\"age\")).count().next().intValue() == 0", (Graph g, Vertex v, Boolean multi) -> v.properties(Graph.Key.hide("age")).count().next().intValue() == 0));
+            tests.add(Pair.with("v.properties(Graph.Key.hide(\"age\")).count().next() == 0", (Graph g, Vertex v, Boolean multi) -> v.properties(Graph.Key.hide("age")).count().next().intValue() == 0));
+            tests.add(Pair.with("v.propertyMap(Graph.Key.hide(\"age\")).next().size() == 0", (Graph g, Vertex v, Boolean multi) -> v.propertyMap(Graph.Key.hide("age")).next().size() == 0));
+            tests.add(Pair.with("v.valueMap(Graph.Key.hide(\"age\")).next().size() == 0", (Graph g, Vertex v, Boolean multi) -> v.valueMap(Graph.Key.hide("age")).next().size() == 0));
+            tests.add(Pair.with("v.propertyMap(\"age\").next().size() == 1", (Graph g, Vertex v, Boolean multi) -> v.propertyMap("age").next().size() == 1));
+            tests.add(Pair.with("v.valueMap(\"age\").next().size() == 1", (Graph g, Vertex v, Boolean multi) -> v.valueMap("age").next().size() == 1));
+            tests.add(Pair.with("v.hiddenMap(Graph.Key.hide(\"age\")).next().size() == 0", (Graph g, Vertex v, Boolean multi) -> v.hiddenMap(Graph.Key.hide("age")).next().size() == 0));
+            tests.add(Pair.with("v.hiddenMap(\"age\").next().size() == 1", (Graph g, Vertex v, Boolean multi) -> v.hiddenMap("age").next().size() == 1));
+            tests.add(Pair.with("v.hiddenValueMap(Graph.Key.hide(\"age\")).next().size() == 0", (Graph g, Vertex v, Boolean multi) -> v.hiddenValueMap(Graph.Key.hide("age")).next().size() == 0));
+            tests.add(Pair.with("v.hiddenValueMap(\"age\").next().size() == 1", (Graph g, Vertex v, Boolean multi) -> v.hiddenValueMap("age").next().size() == 1));
             tests.add(Pair.with("v.hiddens(\"age\").value().toList().contains(34)", (Graph g, Vertex v, Boolean multi) -> multi ? v.hiddens("age").value().toList().contains(34) : v.hiddens("age").value().toList().contains(29)));
             tests.add(Pair.with("v.hiddens(\"age\").value().toList().contains(29)", (Graph g, Vertex v, Boolean multi) -> v.hiddens("age").value().toList().contains(29)));
             tests.add(Pair.with("v.hiddenKeys().size() == 2", (Graph g, Vertex v, Boolean multi) -> v.hiddenKeys().size() == 2));
