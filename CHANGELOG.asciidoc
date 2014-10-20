@@ -16,8 +16,8 @@ TinkerPop 3.0.0.M4 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added tests for greater consistency around iterating hidden properties.
 * Simplified `TraversalVertexProgram` where only a single `TraverserTracker` exists for both path- and simple-traversers.
 * Fixed a major bug where `Arrays.binarySearch` was being used on an unsorted array in TinkerGraph and Neo4jGraph.
-* Changed `ComputerResult.getXXX()` to `graph()` and `memory()` to be consistent with method naming convention.
-* `Traverser.getXXX()` changed to `loops()`, `bulk()`, `path()`, `sideEffects()` to be consistent with method naming convention.
+* Changed `ComputerResult.getXXX()` to `graph()` and `memory()` to be consistent with "query language" naming convention.
+* `Traverser.getXXX()` changed to `loops()`, `bulk()`, `path()`, `sideEffects()` to be consistent with "query language" naming convention.
 * Optimization to reduce the number of empty lists created due to no step class existing for respective `TraversalStrategy.apply()`.
 * Added `CapTraversal` as a marker interface for the `cap()` method.
 * Added `union()` with GraphComputer `UnionLinearStrategy`.
