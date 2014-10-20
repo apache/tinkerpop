@@ -155,7 +155,7 @@ public class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>>
             throw new UnsupportedOperationException("TraversalVertexProgram currently only supports vertex and edge starts");
         }
 
-        vertex.property(TRAVERSER_TRACKER, this.trackPaths ? new TraverserPathTracker() : new TraverserCountTracker());
+        vertex.property(TRAVERSER_TRACKER, new TraverserTracker());
         memory.and(VOTE_TO_HALT, voteToHalt.get());
     }
 
@@ -163,14 +163,11 @@ public class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>>
         final Traversal traversal = this.getTraversal();
         traversal.sideEffects().setLocalVertex(vertex);
 
-        if (this.trackPaths) {
+        if (this.trackPaths)
             memory.and(VOTE_TO_HALT, PathTraverserExecutor.execute(vertex, messenger, traversal));
-            vertex.<TraverserPathTracker>value(TRAVERSER_TRACKER).completeIteration();
-        } else {
+        else
             memory.and(VOTE_TO_HALT, SimpleTraverserExecutor.execute(vertex, messenger, traversal));
-            vertex.<TraverserCountTracker>value(TRAVERSER_TRACKER).completeIteration();
-        }
-
+        vertex.<TraverserTracker>value(TRAVERSER_TRACKER).completeIteration();
     }
 
     @Override

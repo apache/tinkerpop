@@ -11,8 +11,7 @@ import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.PathTraverser;
 import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.process.computer.traversal.TraverserCountTracker;
-import com.tinkerpop.gremlin.process.computer.traversal.TraverserPathTracker;
+import com.tinkerpop.gremlin.process.computer.traversal.TraverserTracker;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.StepTimer;
@@ -241,8 +240,8 @@ public final class GremlinKryo {
 
             add(Triplet.<Class, Serializer, Integer>with(SimpleTraverser.class, null, 55));
             add(Triplet.<Class, Serializer, Integer>with(PathTraverser.class, null, 56));
-            add(Triplet.<Class, Serializer, Integer>with(TraverserCountTracker.class, null, 57));
-            add(Triplet.<Class, Serializer, Integer>with(TraverserPathTracker.class, null, 58));
+            add(Triplet.<Class, Serializer, Integer>with(TraverserTracker.class, null, 57));
+            //add(Triplet.<Class, Serializer, Integer>with(TraverserPathTracker.class, null, 58));
             add(Triplet.<Class, Serializer, Integer>with(Path.class, null, 59));
             add(Triplet.<Class, Serializer, Integer>with(DetachedPath.class, null, 60));
             add(Triplet.<Class, Serializer, Integer>with(Tree.class, null, 61));

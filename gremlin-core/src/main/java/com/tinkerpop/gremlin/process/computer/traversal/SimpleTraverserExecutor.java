@@ -22,7 +22,7 @@ public final class SimpleTraverserExecutor extends TraverserExecutor {
 
     public static boolean execute(final Vertex vertex, final Messenger<Traverser.Admin<?>> messenger, final Traversal traversal) {
 
-        final TraverserCountTracker tracker = vertex.value(TraversalVertexProgram.TRAVERSER_TRACKER);
+        final TraverserTracker tracker = vertex.value(TraversalVertexProgram.TRAVERSER_TRACKER);
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         final Map<Traverser.Admin<?>, Long> localCounts = new HashMap<>();
 
@@ -30,25 +30,25 @@ public final class SimpleTraverserExecutor extends TraverserExecutor {
         messenger.receiveMessages(MessageType.Global.to()).forEach(traverser -> {
             if (traverser.isDone()) {
                 // no need to deflate as they are already deflated
-                MapHelper.incr(tracker.getDoneGraphTracks(), traverser, traverser.bulk());
+                tracker.getDoneGraphTracks().add((Traverser.Admin) traverser);
             } else {
                 traverser.attach(vertex);
                 final Step<?, ?> step = TraversalHelper.getStep(traverser.getFuture(), traversal);
-                step.addStart((Traverser)traverser);
+                step.addStart((Traverser) traverser);
                 if (processStep(step, localCounts))
                     voteToHalt.set(false);
             }
         });
 
         // process existing traversers that reference local objects
-        tracker.getPreviousObjectTracks().keySet().forEach(traverser -> {
+        tracker.getPreviousObjectTracks().forEach(traverser -> {
             if (traverser.isDone()) {
                 // no need to deflate as they are already deflated
-                MapHelper.incr(tracker.getDoneObjectTracks(), traverser, traverser.bulk());
+                tracker.getDoneObjectTracks().add((Traverser.Admin) traverser);
             } else {
                 traverser.attach(vertex);
                 final Step<?, ?> step = TraversalHelper.getStep(traverser.getFuture(), traversal);
-                step.addStart((Traverser)traverser);
+                step.addStart((Traverser) traverser);
                 if (processStep(step, localCounts))
                     voteToHalt.set(false);
             }
@@ -61,7 +61,7 @@ public final class SimpleTraverserExecutor extends TraverserExecutor {
             if (traverser.get() instanceof Element || traverser.get() instanceof Property)
                 messenger.sendMessage(MessageType.Global.to(TraverserExecutor.getHostingVertex(traverser.get())), traverser);
             else
-                MapHelper.incr(tracker.getObjectTracks(), traverser, traverser.bulk());
+                tracker.getObjectTracks().add((Traverser.Admin) traverser);
 
         });
         return voteToHalt.get();
