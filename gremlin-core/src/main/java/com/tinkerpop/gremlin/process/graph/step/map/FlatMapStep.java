@@ -28,51 +28,17 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
     @Override
     protected Traverser<E> processNextStart() {
         while (true) {
-            final Traverser<E> traverser = this.getNext();
-            if (null != traverser) return traverser;
-        }
-    }
-
-    protected Traverser<E> getNext() {
-        if (null == this.iterator) {
-            final Traverser.Admin<S> traverser = this.starts.next();
-            if (PROFILING_ENABLED) TraversalMetrics.start(this);
-            this.iterator = new FlatMapTraverserIterator<>(traverser, this, this.function.apply(traverser));
-            if (PROFILING_ENABLED) TraversalMetrics.stop(this);
-            return null;
-        } else {
-            if (this.iterator.hasNext()) {
-                return this.iterator.next(); // timer start/finish in next() call
-            } else {
-                this.iterator = null;
-                return null;
+            if (null == this.iterator) {
+                final Traverser.Admin<S> traverser = this.starts.next();
+                if (PROFILING_ENABLED) TraversalMetrics.start(this);
+                this.iterator = new FlatMapTraverserIterator<>(traverser, this, this.function.apply(traverser));
+                if (PROFILING_ENABLED) TraversalMetrics.stop(this);
             }
-        }
-    }
 
-    private class FlatMapTraverserIterator<A, B> implements Iterator<Traverser<B>> {
-
-        private final Traverser.Admin<A> head;
-        private final Iterator<B> iterator;
-        private final Step step;
-
-        protected FlatMapTraverserIterator(final Traverser.Admin<A> head, final Step step, final Iterator<B> iterator) {
-            this.iterator = iterator;
-            this.head = head;
-            this.step = step;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return this.iterator.hasNext();
-        }
-
-        @Override
-        public Traverser<B> next() {
-            if (FlatMapStep.PROFILING_ENABLED) TraversalMetrics.start(FlatMapStep.this);
-            Traverser.Admin<B> ret = this.head.makeChild(this.step.getLabel(), this.iterator.next());
-            if (FlatMapStep.PROFILING_ENABLED) TraversalMetrics.finish(FlatMapStep.this, this.head);
-            return ret;
+            if (this.iterator.hasNext())
+                return this.iterator.next(); // timer start/finish in next() call
+            else
+                this.iterator = null;
         }
     }
 
@@ -82,4 +48,29 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
         this.iterator = null;
     }
 
+    private final class FlatMapTraverserIterator<A, B> implements Iterator<Traverser<B>> {
+
+        private final Traverser.Admin<A> head;
+        private final Iterator<B> iterator;
+        private final Step step;
+
+        private FlatMapTraverserIterator(final Traverser.Admin<A> head, final Step step, final Iterator<B> iterator) {
+            this.iterator = iterator;
+            this.head = head;
+            this.step = step;
+        }
+
+        @Override
+        public final boolean hasNext() {
+            return this.iterator.hasNext();
+        }
+
+        @Override
+        public final Traverser<B> next() {
+            if (FlatMapStep.PROFILING_ENABLED) TraversalMetrics.start(FlatMapStep.this);
+            final Traverser.Admin<B> traverser = this.head.makeChild(this.step.getLabel(), this.iterator.next());
+            if (FlatMapStep.PROFILING_ENABLED) TraversalMetrics.finish(FlatMapStep.this, this.head);
+            return traverser;
+        }
+    }
 }
