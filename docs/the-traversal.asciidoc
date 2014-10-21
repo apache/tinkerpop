@@ -252,6 +252,24 @@ gremlin> g.v(1).both().both().cyclicPath().path()
 ==>[v[1], v[2], v[1]]
 ==>[v[1], v[4], v[1]]
 
+[[fold-step]]
+Fold Step
+~~~~~~~~~
+
+There are situations when the traversal stream needs a "barrier" to aggregate all the objects and emit a computation that is a function of the aggregate. The `fold()`-step (*map*) is one particular instance of this. Please see <<unfold-step,`unfold()`-step>> for the inverse functionality.
+
+[source,groovy]
+gremlin> g.v(1).out('knows').value('name')
+==>vadas
+==>josh
+gremlin> g.v(1).out('knows').value('name').fold() <1>
+==>[vadas, josh]
+gremlin> g.v(1).out('knows').value('name').fold(0){a,b -> a + b.get().length()} <2>
+==>9
+
+<1> A parameterless `fold()` will aggregate all the objects into a list and then emit the list.
+<2> `fold()` can be provided two arguments --  a seed value and a reduce bi-function.
+
 [[groupby-step]]
 GroupBy Step
 ~~~~~~~~~~~~
@@ -360,7 +378,7 @@ gremlin> g.of().inject(1,2).map{it.get() + 1}.map{g.v(it.get())}.value('name')
 Jump Step
 ~~~~~~~~~
 
-TinkerPop3 introduces the `jump()`-step (*branch*). This step allows the propagating traverser object to jump to any arbitrary section of the `Traversal`. Typically, this is determined by means of a predicate. In particular, with `jump`, the Gremlin is no longer constrained to *do-while* semantics, but can as well support *while-do* (see link:http://docs.oracle.com/javase/tutorial/java/nutsandbolts/while.html[Java Documentation on While]). Below are some examples of `jump` in action in Gremlin-Groovy.
+TinkerPop3 introduces the `jump()`-step (*branch*). This step allows the propagating traverser object to jump to any arbitrary section of the `Traversal`. Typically, this is determined by means of a predicate. In particular, with `jump`, the Gremlin is no longer constrained to *do-while* semantics, but can as well support *while-do* (see link:http://docs.oracle.com/javase/tutorial/java/nutsandbolts/while.html[Java Documentation on While]). Below are some examples of `jump()` in action.
 
 [source,groovy]
 gremlin> g.v(1).as('a').out().jump('a'){it.loops()<2}.value('name') <1>
@@ -1004,6 +1022,44 @@ gremlin> tree['marko']['josh']
 gremlin> tree.getObjectsAtDepth(3)
 ==>ripple
 ==>lop
+
+[[unfold-step]]
+Unfold Step
+~~~~~~~~~~~
+
+If the object reaching `unfold()` (*flatMap*) is an iterator, iterable, or map, then it is unrolled into a linear form. If not, then the object is simply emitted. Please see <<fold-step,`fold()`-step>> for the inverse behavior.
+
+[source,groovy]
+gremlin> g.v(1).out().fold().inject('gremlin',[1.23,2.34])
+==>gremlin
+==>[1.23, 2.34]
+==>[v[3], v[2], v[4]]
+gremlin> g.v(1).out().fold().inject('gremlin',[1.23,2.34]).unfold()
+==>gremlin
+==>1.23
+==>2.34
+==>v[3]
+==>v[2]
+==>v[4]
+
+Note that `unfold()` does not recursively unroll iterators. Instead, `jump()` can be used to for recursive unrolling.
+
+[source,groovy]
+gremlin> g.of().inject(1,[2,3,[4,5,[6]]])
+==>1
+==>[2, 3, [4, 5, [6]]]
+gremlin> g.of().inject(1,[2,3,[4,5,[6]]]).unfold()
+==>1
+==>2
+==>3
+==>[4, 5, [6]]
+gremlin> g.of().inject(1,[2,3,[4,5,[6]]]).as('x').unfold().jump('x'){it.get() instanceof List}
+==>1
+==>2
+==>3
+==>4
+==>5
+==>6
 
 [[union-step]]
 Union Step
