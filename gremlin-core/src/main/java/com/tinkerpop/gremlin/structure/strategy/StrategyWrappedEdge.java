@@ -38,7 +38,7 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
     public Graph graph() {
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.getEdgeGraphStrategy(strategyContext),
-                this.baseEdge::graph).get();
+                () -> this.strategyWrappedGraph).get();
     }
 
     @Override

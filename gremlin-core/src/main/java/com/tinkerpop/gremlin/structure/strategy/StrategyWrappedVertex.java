@@ -33,7 +33,7 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     public Graph graph() {
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.getVertexGraphStrategy(strategyContext),
-                this.baseVertex::graph).get();
+                () -> this.strategyWrappedGraph).get();
     }
 
     @Override

@@ -29,6 +29,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 
@@ -45,6 +46,31 @@ public class StrategyWrappedGraphTest  {
         public void shouldNotAllowAStrategyWrappedGraphToBeReWrapped() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
             new StrategyWrappedGraph(swg);
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        public void shouldHaveGraphWrappedFromVertex() {
+            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+            assertTrue(swg.addVertex().graph() instanceof StrategyWrappedGraph);
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        public void shouldHaveGraphWrappedFromEdge() {
+            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+            final Vertex v = swg.addVertex();
+            assertTrue(v.addEdge("self", v).graph() instanceof StrategyWrappedGraph);
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_ADD_PROPERTY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
+        public void shouldHaveGraphWrappedFromVertexProperty() {
+            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+            assertTrue(swg.addVertex().property("name", "stephen").graph() instanceof StrategyWrappedGraph);
         }
     }
 

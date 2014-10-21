@@ -389,6 +389,8 @@ public interface GraphStrategy {
 
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Vertex#graph()}.
+     * Note that in this case, the {@link Graph} is {@link StrategyWrappedGraph} and this would be the expected
+     * type to pass back out.
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
@@ -413,6 +415,8 @@ public interface GraphStrategy {
 
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.VertexProperty#graph()}.
+     * Note that in this case, the {@link Graph} is {@link StrategyWrappedGraph} and this would be the expected
+     * type to pass back out.
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
@@ -437,6 +441,8 @@ public interface GraphStrategy {
 
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Edge#graph()}.
+     * Note that in this case, the {@link Graph} is {@link StrategyWrappedGraph} and this would be the expected
+     * type to pass back out.
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with

@@ -30,7 +30,7 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
     public Graph graph() {
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.getVertexPropertyGraphStrategy(strategyContext),
-                this.baseVertexProperty::graph).get();
+                () -> this.strategyWrappedGraph).get();
     }
 
     @Override
