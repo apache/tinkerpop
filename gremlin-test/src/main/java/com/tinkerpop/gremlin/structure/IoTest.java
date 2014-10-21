@@ -144,6 +144,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_USER_SUPPLIED_IDS)
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldWriteNormalizedGraphSON() throws Exception {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {

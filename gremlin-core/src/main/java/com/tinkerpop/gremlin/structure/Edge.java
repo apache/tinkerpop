@@ -57,6 +57,10 @@ public interface Edge extends Element, EdgeTraversal {
             return new UnsupportedOperationException("Edge does not support user supplied identifiers");
         }
 
+        public static UnsupportedOperationException userSuppliedIdsOfThisTypeNotSupported() {
+            return new UnsupportedOperationException("Edge does not support user supplied identifiers of this type");
+        }
+
         public static IllegalStateException edgeRemovalNotSupported() {
             return new IllegalStateException("Edge removal are not supported");
         }

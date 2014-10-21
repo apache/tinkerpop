@@ -495,6 +495,11 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
             public boolean supportsUniformListValues() {
                 return false;
             }
+
+            @Override
+            public boolean supportsUserSuppliedIds() {
+                return false;
+            }
         }
 
         public class Neo4jEdgePropertyFeatures implements EdgePropertyFeatures {

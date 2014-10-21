@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.graph.VertexTraversal;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * A {@link Vertex} maintains pointers to both a set of incoming and outgoing {@link Edge} objects. The outgoing edges
@@ -57,6 +58,10 @@ public interface Vertex extends Element, VertexTraversal {
 
     public default <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
+        final Optional<Object> optionalId = ElementHelper.getIdValue(keyValues);
+        if (optionalId.isPresent() && !graph().features().vertex().properties().supportsUserSuppliedIds())
+            throw VertexProperty.Exceptions.userSuppliedIdsNotSupported();
+
         final VertexProperty<V> vertexProperty = this.property(key, value);
         ElementHelper.attachProperties(vertexProperty, keyValues);
         return vertexProperty;
@@ -100,6 +105,10 @@ public interface Vertex extends Element, VertexTraversal {
     public static class Exceptions {
         public static UnsupportedOperationException userSuppliedIdsNotSupported() {
             return new UnsupportedOperationException("Vertex does not support user supplied identifiers");
+        }
+
+        public static UnsupportedOperationException userSuppliedIdsOfThisTypeNotSupported() {
+            return new UnsupportedOperationException("Vertex does not support user supplied identifiers of this type");
         }
 
         public static IllegalStateException vertexRemovalNotSupported() {

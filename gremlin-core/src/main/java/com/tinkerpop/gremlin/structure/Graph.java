@@ -522,9 +522,15 @@ public interface Graph extends AutoCloseable {
         public interface VertexPropertyFeatures extends PropertyFeatures {
             public static final String FEATURE_ADD_PROPERTY = "AddProperty";
             public static final String FEATURE_REMOVE_PROPERTY = "RemoveProperty";
+            public static final String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
+            public static final String FEATURE_NUMERIC_IDS = "NumericIds";
+            public static final String FEATURE_STRING_IDS = "StringIds";
+            public static final String FEATURE_UUID_IDS = "UuidIds";
+            public static final String FEATURE_CUSTOM_IDS = "CustomIds";
+            public static final String FEATURE_ANY_IDS = "AnyIds";
 
             /**
-             * Determines if an {@link VertexProperty} allows properties to be added.
+             * Determines if a {@link VertexProperty} allows properties to be added.
              */
             @FeatureDescriptor(name = FEATURE_ADD_PROPERTY)
             public default boolean supportsAddProperty() {
@@ -532,10 +538,59 @@ public interface Graph extends AutoCloseable {
             }
 
             /**
-             * Determines if an {@link VertexProperty} allows properties to be removed.
+             * Determines if a {@link VertexProperty} allows properties to be removed.
              */
             @FeatureDescriptor(name = FEATURE_REMOVE_PROPERTY)
             public default boolean supportsRemoveProperty() {
+                return true;
+            }
+
+            /**
+             * Determines if a {@link VertexProperty} allows an identifier to be assigned to it.
+             */
+            @FeatureDescriptor(name = FEATURE_USER_SUPPLIED_IDS)
+            public default boolean supportsUserSuppliedIds() {
+                return true;
+            }
+
+            /**
+             * Determines if an {@link VertexProperty} has numeric identifiers.
+             */
+            @FeatureDescriptor(name = FEATURE_NUMERIC_IDS)
+            public default boolean supportsNumericIds() {
+                return true;
+            }
+
+            /**
+             * Determines if an {@link VertexProperty} has string identifiers.
+             */
+            @FeatureDescriptor(name = FEATURE_STRING_IDS)
+            public default boolean supportsStringIds() {
+                return true;
+            }
+
+            /**
+             * Determines if an {@link VertexProperty} has UUID identifiers.
+             */
+            @FeatureDescriptor(name = FEATURE_UUID_IDS)
+            public default boolean supportsUuidIds() {
+                return true;
+            }
+
+            /**
+             * Determines if an {@link VertexProperty} has custom identifiers where "custom" refers to an implementation
+             * defined object.
+             */
+            @FeatureDescriptor(name = FEATURE_CUSTOM_IDS)
+            public default boolean supportsCustomIds() {
+                return true;
+            }
+
+            /**
+             * Determines if an {@link VertexProperty} any Java object is a suitable identifier.
+             */
+            @FeatureDescriptor(name = FEATURE_ANY_IDS)
+            public default boolean supportsAnyIds() {
                 return true;
             }
         }
