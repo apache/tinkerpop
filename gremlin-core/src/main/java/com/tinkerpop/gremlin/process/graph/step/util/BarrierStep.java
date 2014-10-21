@@ -34,7 +34,7 @@ public abstract class BarrierStep<S> extends AbstractStep<S, S> implements Barri
             if (PROFILING_ENABLED) TraversalMetrics.start(this);
         }
 
-        Traverser.Admin<S> traverser = this.traverserSet.remove().makeSibling();
+        final Traverser.Admin<S> traverser = this.traverserSet.remove().makeSibling();
         if (PROFILING_ENABLED) TraversalMetrics.finish(this, traverser);
         return traverser;
 
