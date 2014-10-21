@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.function.Function;
 
@@ -15,7 +16,7 @@ import java.util.function.Function;
 public class FlatMapStep<S, E> extends AbstractStep<S, E> {
 
     private Function<Traverser<S>, Iterator<E>> function = null;
-    private Iterator<Traverser<E>> iterator = null;
+    private Iterator<Traverser<E>> iterator = Collections.emptyIterator();
 
     public FlatMapStep(final Traversal traversal) {
         super(traversal);
@@ -28,24 +29,21 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
     @Override
     protected Traverser<E> processNextStart() {
         while (true) {
-            if (null == this.iterator) {
+            if (this.iterator.hasNext())
+                return this.iterator.next(); // timer start/finish in next() call
+            else {
                 final Traverser.Admin<S> traverser = this.starts.next();
                 if (PROFILING_ENABLED) TraversalMetrics.start(this);
                 this.iterator = new FlatMapTraverserIterator<>(traverser, this, this.function.apply(traverser));
                 if (PROFILING_ENABLED) TraversalMetrics.stop(this);
             }
-
-            if (this.iterator.hasNext())
-                return this.iterator.next(); // timer start/finish in next() call
-            else
-                this.iterator = null;
         }
     }
 
     @Override
     public void reset() {
         super.reset();
-        this.iterator = null;
+        this.iterator = Collections.emptyIterator();
     }
 
     private final class FlatMapTraverserIterator<A, B> implements Iterator<Traverser<B>> {

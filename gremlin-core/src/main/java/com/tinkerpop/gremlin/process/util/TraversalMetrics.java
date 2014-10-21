@@ -17,7 +17,7 @@ import java.util.WeakHashMap;
  */
 public final class TraversalMetrics implements Serializable {
     public static final String PROFILING_ENABLED = "tinkerpop.profiling";
-    private static final String[] headers = {"Step", "Count", "Traversers", "Time (ms)", "% Dur"};
+    private static final String[] HEADERS = {"Step", "Count", "Traversers", "Time (ms)", "% Dur"};
     private static final WeakHashMap<Traversal, Boolean> PROFILING_CACHE = new WeakHashMap<Traversal, Boolean>();
 
     private long totalStepDuration;
@@ -44,7 +44,7 @@ public final class TraversalMetrics implements Serializable {
         step.getTraversal().sideEffects().<TraversalMetrics>get(ProfileStep.METRICS_KEY).stopInternal(step);
     }
 
-    public static final void finish(final Step<?, ?> step, Traverser.Admin<?> traverser) {
+    public static final void finish(final Step<?, ?> step, final Traverser.Admin<?> traverser) {
         if (!profiling(step.getTraversal())) {
             return;
         }
@@ -86,7 +86,7 @@ public final class TraversalMetrics implements Serializable {
 
         // Append headers
         StringBuilder sb = new StringBuilder();
-        sb.append("Traversal Metrics\n").append(String.format("%32s%12s%11s%16s%8s", headers));
+        sb.append("Traversal Metrics\n").append(String.format("%32s%12s%11s%16s%8s", HEADERS));
 
         // Append each StepMetric's row
         for (StepTimer s : this.stepTimers.values()) {
@@ -103,19 +103,19 @@ public final class TraversalMetrics implements Serializable {
 
     private void computeTotals() {
         // Calculate total duration of all steps (note that this does not include non-step Traversal framework time
-        totalStepDuration = 0;
+        this.totalStepDuration = 0;
         this.stepTimers.values().forEach(step -> {
-            totalStepDuration += step.getTimeNs();
+            this.totalStepDuration += step.getTimeNs();
         });
 
         // Assign step %'s
         this.stepTimers.values().forEach(step -> {
-            step.setPercentageDuration(step.getTimeNs() * 100.d / totalStepDuration);
+            step.setPercentageDuration(step.getTimeNs() * 100.d / this.totalStepDuration);
         });
     }
 
     public double getTotalStepDurationMs() {
-        return totalStepDuration / 1000000.0d;
+        return this.totalStepDuration / 1000000.0d;
     }
 
     public static TraversalMetrics merge(final Iterator<TraversalMetrics> metrics) {
