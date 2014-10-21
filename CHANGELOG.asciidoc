@@ -6,6 +6,9 @@ TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 
 image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 
+TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 TinkerPop 3.0.0.M4 (Release Date: October 21, 2014)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

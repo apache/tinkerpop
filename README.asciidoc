@@ -6,9 +6,9 @@ image:https://raw.githubusercontent.com/tinkerpop/tinkerpop3/master/docs/static/
 Documentation
 ~~~~~~~~~~~~~
 
-* link:http://tinkerpop.com/docs/3.0.0.M4/[user documentation]
-* link:http://www.tinkerpop.com/javadocs/3.0.0.M4/core/[core javadoc]
-* link:http://www.tinkerpop.com/javadocs/3.0.0.M4/full/[full javadoc]
+* link:http://tinkerpop.com/docs/3.0.0-SNAPSHOT/[user documentation]
+* link:http://www.tinkerpop.com/javadocs/3.0.0-SNAPSHOT/core/[core javadoc]
+* link:http://www.tinkerpop.com/javadocs/3.0.0-SNAPSHOT/full/[full javadoc]
 
 Building and Testing
 ~~~~~~~~~~~~~~~~~~~~
@@ -56,10 +56,10 @@ Release Process
 . Update all `yaml` files to reference the non-SNAPSHOT version.
 . `git commit -a -m "TinkerPop x.y.z release"` and `git push`
 . `git tag -a -m "TinkerPop x.y.z release" x.y.z` and `git push --tags`
+. `bin/publish-docs.sh`
 . `mvn clean deploy -Psonatype-oss-release -Dmaven.test.skip=true`
 . Log into link:https://oss.sonatype.org/[SonaType], close and then release the release.
-. `mvn deploy -Darchives`
-. `bin/publish-docs.sh`
+. `mvn deploy -Darchives -Dmaven.test.skip=true`
 . Update download links on home page.
 .. `s3cmd --acl-public put index.html s3://www.tinkerpop.com/`
 . Email gremlin-users mailing list and tweet.

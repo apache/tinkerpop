@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.0.0.M4</version>
+        <version>3.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-groovy-test</artifactId>
     <name>Gremlin Groovy Test: Gremlin Structure and Process Test Suite</name>
