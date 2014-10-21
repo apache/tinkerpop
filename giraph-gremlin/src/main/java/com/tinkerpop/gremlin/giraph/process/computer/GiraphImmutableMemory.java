@@ -71,6 +71,6 @@ public final class GiraphImmutableMemory implements Memory {
     }
 
     public String toString() {
-        return StringFactory.computeMemoryString(this);
+        return StringFactory.memoryString(this);
     }
 }

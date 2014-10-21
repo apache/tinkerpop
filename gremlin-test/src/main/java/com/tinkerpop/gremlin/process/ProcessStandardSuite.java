@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.JumpTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.UnionTest;
+import com.tinkerpop.gremlin.process.graph.step.branch.UntilTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.ExceptTest;
@@ -28,7 +29,6 @@ import com.tinkerpop.gremlin.process.graph.step.map.PropertiesTest;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
 import com.tinkerpop.gremlin.process.graph.step.map.ShuffleTest;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldTest;
-import com.tinkerpop.gremlin.process.graph.step.branch.UntilTest;
 import com.tinkerpop.gremlin.process.graph.step.map.ValueMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeTest;
@@ -44,6 +44,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeTest;
 import com.tinkerpop.gremlin.process.graph.step.util.TraversalSideEffectsTest;
+import com.tinkerpop.gremlin.process.graph.step.util.TraversalStrategiesTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -133,6 +134,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
 
             // util
             TraversalSideEffectsTest.StandardTest.class,
+            TraversalStrategiesTest.StandardTest.class,
 
             // compliance
             TraversalCoverageTest.class,

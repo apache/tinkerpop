@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.junit.Test;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -17,7 +18,7 @@ public abstract class TraversalSideEffectsTest extends AbstractGremlinProcessTes
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_memory() {
+    public void g_V_sideEffects() {
         final Traversal.SideEffects sideEffects = get_g_V_sideEffects();
         try {
             assertFalse(sideEffects.get("a"));
@@ -26,6 +27,7 @@ public abstract class TraversalSideEffectsTest extends AbstractGremlinProcessTes
         }
         assertEquals(sideEffects.get(Graph.System.system("g")), sideEffects.getGraph());
         assertTrue(Graph.class.isAssignableFrom(sideEffects.getGraph().getClass()));
+        assertEquals(StringFactory.traversalSideEffectsString(sideEffects), sideEffects.toString());
     }
 
     public static class StandardTest extends TraversalSideEffectsTest {

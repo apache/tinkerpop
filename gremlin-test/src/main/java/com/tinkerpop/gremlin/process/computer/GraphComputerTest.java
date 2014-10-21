@@ -57,7 +57,7 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void shouldHaveStandardStringRepresentation() {
         final GraphComputer computer = get_g_compute();
-        assertEquals(StringFactory.computerString(computer), computer.toString());
+        assertEquals(StringFactory.graphComputerString(computer), computer.toString());
     }
 
     @Test
@@ -91,7 +91,7 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
                 validateException(GraphComputer.Exceptions.isolationNotSupported(GraphComputer.Isolation.DIRTY_BSP), ex);
             }
         }
-        assertEquals(StringFactory.computerString(computer), computer.toString());
+        assertEquals(StringFactory.graphComputerString(computer), computer.toString());
     }
 
     @Test

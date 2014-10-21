@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -64,6 +65,12 @@ public class DefaultSideEffects implements Traversal.SideEffects {
         return this.sideEffectMap.keySet();
     }
 
+    @Override
+    public String toString() {
+        return StringFactory.traversalSideEffectsString(this);
+    }
+
+    @Override
     public void setLocalVertex(final Vertex vertex) {
         final Property<Map<String, Object>> property = vertex.property(DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY);
         if (property.isPresent()) {
