@@ -41,7 +41,7 @@ public final class SideEffectCapStep<S, E> extends AbstractStep<S, E> implements
             } catch (final NoSuchElementException ignored) {
             }
 
-            if (PROFILING_ENABLED) TraversalMetrics.start(this, traverser);
+            if (PROFILING_ENABLED) TraversalMetrics.start(this);
             this.done = true;
             traverser.setBulk(1l);
             final Traverser.Admin<E> returnTraverser = traverser.makeChild(this.getLabel(), traverser.sideEffects().<E>get(this.sideEffectKey));

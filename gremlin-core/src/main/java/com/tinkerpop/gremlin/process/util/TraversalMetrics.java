@@ -16,9 +16,9 @@ import java.util.WeakHashMap;
  * @author Bob Briody (http://bobbriody.com)
  */
 public final class TraversalMetrics implements Serializable {
+    public static final String PROFILING_ENABLED = "tinkerpop.profiling";
     private static final String[] headers = {"Step", "Count", "Traversers", "Time (ms)", "% Dur"};
     private static final WeakHashMap<Traversal, Boolean> PROFILING_CACHE = new WeakHashMap<Traversal, Boolean>();
-    public static final String PROFILING_ENABLED = "tinkerpop.profiling";
 
     private long totalStepDuration;
 
@@ -28,20 +28,20 @@ public final class TraversalMetrics implements Serializable {
 
     }
 
-    public static final void start(final Step<?, ?> step, final Traverser.Admin<?> traverser) {
+    public static final void start(final Step<?, ?> step) {
         if (!profiling(step.getTraversal())) {
             return;
         }
 
-        traverser.sideEffects().getOrCreate(ProfileStep.METRICS_KEY, TraversalMetrics::new).startInternal(step);
+        step.getTraversal().sideEffects().getOrCreate(ProfileStep.METRICS_KEY, TraversalMetrics::new).startInternal(step);
     }
 
-    public static final void stop(final Step<?, ?> step, Traverser.Admin<?> traverser) {
+    public static final void stop(final Step<?, ?> step) {
         if (!profiling(step.getTraversal())) {
             return;
         }
 
-        traverser.sideEffects().<TraversalMetrics>get(ProfileStep.METRICS_KEY).stopInternal(step);
+        step.getTraversal().sideEffects().<TraversalMetrics>get(ProfileStep.METRICS_KEY).stopInternal(step);
     }
 
     public static final void finish(final Step<?, ?> step, Traverser.Admin<?> traverser) {
@@ -49,11 +49,10 @@ public final class TraversalMetrics implements Serializable {
             return;
         }
 
-        traverser.sideEffects().<TraversalMetrics>get(ProfileStep.METRICS_KEY).finishInternal(step, traverser);
+        step.getTraversal().sideEffects().<TraversalMetrics>get(ProfileStep.METRICS_KEY).finishInternal(step, traverser);
     }
 
-
-    private static boolean profiling(final Traversal<?, ?> traversal) {
+     private static boolean profiling(final Traversal<?, ?> traversal) {
         Boolean profiling;
         if ((profiling = PROFILING_CACHE.get(traversal)) != null)
             return profiling;

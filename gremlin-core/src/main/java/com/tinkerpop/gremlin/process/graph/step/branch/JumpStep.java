@@ -62,7 +62,7 @@ public final class JumpStep<S> extends AbstractStep<S, S> implements EngineDepen
         }
         while (true) {
             final Traverser.Admin<S> traverser = this.starts.next();
-            if (PROFILING_ENABLED) TraversalMetrics.start(this, traverser);
+            if (PROFILING_ENABLED) TraversalMetrics.start(this);
             if (this.jumpBack) traverser.incrLoops();
             if (doJump(traverser)) {
                 traverser.setFuture(this.jumpLabel);
@@ -81,7 +81,7 @@ public final class JumpStep<S> extends AbstractStep<S, S> implements EngineDepen
                 return traverser;
             }
 
-            if (PROFILING_ENABLED) TraversalMetrics.stop(this, traverser);
+            if (PROFILING_ENABLED) TraversalMetrics.stop(this);
         }
     }
 
@@ -96,7 +96,7 @@ public final class JumpStep<S> extends AbstractStep<S, S> implements EngineDepen
                 return ret;
             } else {
                 final Traverser.Admin<S> traverser = this.starts.next();
-                if (PROFILING_ENABLED) TraversalMetrics.start(this, traverser);
+                if (PROFILING_ENABLED) TraversalMetrics.start(this);
 
                 if (this.jumpBack) traverser.incrLoops();
                 if (doJump(traverser)) {
@@ -114,7 +114,7 @@ public final class JumpStep<S> extends AbstractStep<S, S> implements EngineDepen
                     this.queue.add(traverser);
                 }
 
-                if (PROFILING_ENABLED) TraversalMetrics.stop(this, traverser);
+                if (PROFILING_ENABLED) TraversalMetrics.stop(this);
             }
         }
     }

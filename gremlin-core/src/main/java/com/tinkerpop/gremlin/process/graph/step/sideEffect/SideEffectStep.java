@@ -26,7 +26,7 @@ public class SideEffectStep<S> extends AbstractStep<S, S> implements Reversible 
     @Override
     protected Traverser<S> processNextStart() {
         final Traverser.Admin<S> traverser = this.starts.next();
-        if (PROFILING_ENABLED) TraversalMetrics.start(this, traverser);
+        if (PROFILING_ENABLED) TraversalMetrics.start(this);
         if (null != this.consumer) this.consumer.accept(traverser);
         if (PROFILING_ENABLED) TraversalMetrics.finish(this, traverser);
         return traverser;

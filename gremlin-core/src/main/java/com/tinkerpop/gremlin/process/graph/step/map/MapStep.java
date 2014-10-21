@@ -22,16 +22,16 @@ public class MapStep<S, E> extends AbstractStep<S, E> {
     protected Traverser<E> processNextStart() {
         while (true) {
             final Traverser.Admin<S> traverser = this.starts.next();
-            if (PROFILING_ENABLED) TraversalMetrics.start(this, traverser);
+            if (PROFILING_ENABLED) TraversalMetrics.start(this);
 
             final E end = this.function.apply(traverser);
             if (NO_OBJECT != end) {
                 Traverser.Admin<E> ret = traverser.makeChild(this.getLabel(), end);
-                if (PROFILING_ENABLED) TraversalMetrics.stop(this, traverser);
+                if (PROFILING_ENABLED) TraversalMetrics.stop(this);
                 return ret;
             }
 
-            if (PROFILING_ENABLED) TraversalMetrics.stop(this, traverser);
+            if (PROFILING_ENABLED) TraversalMetrics.stop(this);
         }
     }
 
