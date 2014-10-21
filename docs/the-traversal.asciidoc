@@ -252,6 +252,57 @@ gremlin> g.v(1).both().both().cyclicPath().path()
 ==>[v[1], v[2], v[1]]
 ==>[v[1], v[4], v[1]]
 
+[[dedup-step]]
+Dedup Step
+~~~~~~~~~~
+
+With `dedup()`-step (*filter*), repeatedly seen objects are removed from the traversal stream. Note that if a traverser's bulk is greater than 1, then it is set to 1 before being emitted.
+
+[source,groovy]
+gremlin> g.V().value('lang')
+==>java
+==>java
+gremlin> g.V().value('lang').dedup()
+==>java
+
+If a lambda is provided to `dedup()`, then the object is processed by the lambda prior to determining if it has been seen or not.
+
+[source,groovy]
+gremlin> g.V().value('name').map{[it.get(), it.get().length()]}
+==>[marko, 5]
+==>[vadas, 5]
+==>[lop, 3]
+==>[josh, 4]
+==>[ripple, 6]
+==>[peter, 5]
+gremlin> g.V().value('name').dedup{it.get().length()}
+==>marko
+==>lop
+==>josh
+==>ripple
+
+[[except-step]]
+Except Step
+~~~~~~~~~~~
+
+The `except()`-step (*filter*) can be used to remove objects from the traversal stream. If `except()` is provided a string, then the excepting object is located at `traverser.sideEffects().get(label)`. If `except()` is provided a collection, then any object contained in that collection is filtered out. Please see the related <<retain-step,`retain()`-step>>.
+
+[source,groovy]
+gremlin> g.v(1).as('x').out('created').in('created')
+==>v[1]
+==>v[4]
+==>v[6]
+gremlin> g.v(1).as('x').out('created').in('created').except('x') // co-developers
+==>v[4]
+==>v[6]
+gremlin> g.v(1).as('x').out('created').in('created').value('name')
+==>marko
+==>josh
+==>peter
+gremlin> g.v(1).as('x').out('created').in('created').value('name').except(['marko','stephen'])
+==>josh
+==>peter
+
 [[fold-step]]
 Fold Step
 ~~~~~~~~~
@@ -373,6 +424,23 @@ gremlin> g.of().inject(1,2).map{it.get() + 1}
 gremlin> g.of().inject(1,2).map{it.get() + 1}.map{g.v(it.get())}.value('name')
 ==>vadas
 ==>lop
+
+[[interval-step]]
+Interval Step
+~~~~~~~~~~~~~
+
+The `interval()`-step (*filter*) is similar to <<has-step,`has()`-step>> in that it filters elements according to their properties.
+
+[source,groovy]
+gremlin> g.V().interval('age',20,30)
+==>v[1]
+==>v[2]
+gremlin> g.V().interval('age',20,30).value('age')
+==>29
+==>27
+gremlin> g.V().has('age',gt,20).has('age',lte,30).value('age') // the equivalent expression using only has()
+==>29
+==>27
 
 [[jump-step]]
 Jump Step
@@ -768,6 +836,25 @@ gremlin>
 
 TIP: It is possible to enabled profiling for a Gremlin Console session via `gremlin.sh -p`.
 
+[[random-step]]
+Random Step
+~~~~~~~~~~~
+
+To randomly filter out a traverser, use `random()`-step (*filter*). The provided double argument biases the "coin toss."
+
+[source,groovy]
+gremlin> g.V().random(0.5)
+==>v[2]
+==>v[3]
+gremlin> g.V().random(0.0)
+gremlin> g.V().random(1.0)
+==>v[1]
+==>v[2]
+==>v[3]
+==>v[4]
+==>v[5]
+==>v[6]
+
 [[range-step]]
 Range Step
 ~~~~~~~~~~
@@ -790,6 +877,26 @@ gremlin> g.V().as('a').both().jump('a',1000000).range(6,10)
 ==>v[1]
 ==>v[1]
 ==>v[1]
+
+[[retain-step]]
+Retain Step
+~~~~~~~~~~~
+
+The `retain()`-step (*filter*) can be used to filter objects from the traversal stream that don't match the provided criteria. If `retain()` is provided a string, the retaining object is retrieved via `traverser.sideEffects().get(label)`. If `retain()` is provided a collection, then any object not contained in that collection is filtered out. Please see the related <<except-step,`except()`-step>>.
+
+[source,groovy]
+gremlin> g.v(1).as('x').out('created').in('created')
+==>v[1]
+==>v[4]
+==>v[6]
+gremlin> g.v(1).as('x').out('created').in('created').retain('x')
+==>v[1]
+gremlin> g.v(1).as('x').out('created').in('created').value('name')
+==>marko
+==>josh
+==>peter
+gremlin> g.v(1).as('x').out('created').in('created').value('name').retain(['marko','stephen'])
+==>marko
 
 [[select-step]]
 Select Step
