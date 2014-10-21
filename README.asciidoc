@@ -56,7 +56,7 @@ Release Process
 . Update all `yaml` files to reference the non-SNAPSHOT version.
 . `git commit -a -m "TinkerPop x.y.z release"` and `git push`
 . `git tag -a -m "TinkerPop x.y.z release" x.y.z` and `git push --tags`
-. `mvn clean deploy -Psonatype-oss-release`
+. `mvn clean deploy -Psonatype-oss-release -Dmaven.test.skip=true`
 . Log into link:https://oss.sonatype.org/[SonaType], close and then release the release.
 . `mvn deploy -Darchives`
 . `bin/publish-docs.sh`
