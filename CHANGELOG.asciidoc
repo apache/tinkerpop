@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Removed `SideEffectCap` marker interface as there is only one `SideEffectCapStep` and thus, `instanceof` is sufficient.
 * `Path.getObjects()`/`Path.getLabels()` renamed to `Path.objects()`/`Path.labels()` to be in line with "query language" naming convention.
 * Greatly simplified `GiraphInternalVertex` due to `Element.graph()` -- 1/2 the memory footprint and reduced construction time.
 * Renamed `Property.getElement()` to `Property.element()` given the "query language" naming convention.

@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraversalResultMapReduce;
-import com.tinkerpop.gremlin.process.graph.marker.SideEffectCap;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -38,8 +38,8 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
         this.computerTraversal = traversalVertexProgram.getTraversal();
         this.computerTraversal.strategies().apply();
         final Step endStep = TraversalHelper.getEnd(this.computerTraversal);
-        this.traversers = endStep instanceof SideEffectCap ?
-                new SingleIterator<>(new SimpleTraverser<>((S) this.memory.get(((SideEffectCap) endStep).getSideEffectKey()), this.traversal.sideEffects())) :
+        this.traversers = endStep instanceof SideEffectCapStep ?
+                new SingleIterator<>(new SimpleTraverser<>((S) this.memory.get(((SideEffectCapStep) endStep).getSideEffectKey()), this.traversal.sideEffects())) :
                 (Iterator<Traverser.Admin<S>>) this.memory.get(TraversalResultMapReduce.TRAVERSERS);
 
     }
