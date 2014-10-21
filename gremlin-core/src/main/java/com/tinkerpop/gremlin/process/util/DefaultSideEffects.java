@@ -6,7 +6,9 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -16,6 +18,7 @@ import java.util.function.Supplier;
 public class DefaultSideEffects implements Traversal.SideEffects {
 
     private Map<String, Object> sideEffectMap = new HashMap<>();
+    private Map<String, Supplier> withMap = new HashMap<>();
 
     public DefaultSideEffects() {
 
@@ -26,12 +29,22 @@ public class DefaultSideEffects implements Traversal.SideEffects {
     }
 
     @Override
-    public boolean exists(final String key) {
-        return this.sideEffectMap.containsKey(key);
+    public void setWith(final String key, final Supplier supplier) {
+        this.withMap.put(key, supplier);
     }
 
     @Override
-    public <V> void set(final String key, final V value) {
+    public <V> Optional<Supplier<V>> getWith(final String key) {
+        return Optional.ofNullable(this.withMap.get(key));
+    }
+
+    @Override
+    public boolean exists(final String key) {
+        return this.sideEffectMap.containsKey(key) || this.withMap.containsKey(key);
+    }
+
+    @Override
+    public void set(final String key, final Object value) {
         SideEffectHelper.validateSideEffect(key, value);
         this.sideEffectMap.put(key, value);
     }
@@ -39,30 +52,46 @@ public class DefaultSideEffects implements Traversal.SideEffects {
     @Override
     public <V> V get(final String key) throws IllegalArgumentException {
         final V value = (V) this.sideEffectMap.get(key);
-        if (null == value)
-            throw Traversal.SideEffects.Exceptions.sideEffectDoesNotExist(key);
-        return value;
+        if (null != value)
+            return value;
+        else {
+            if (this.withMap.containsKey(key)) {
+                final V v = (V) this.withMap.get(key).get();
+                this.sideEffectMap.put(key, v);
+                return v;
+            } else {
+                throw Traversal.SideEffects.Exceptions.sideEffectDoesNotExist(key);
+            }
+        }
     }
 
     @Override
     public <V> V getOrCreate(final String key, final Supplier<V> orCreate) {
         if (this.sideEffectMap.containsKey(key))
             return (V) this.sideEffectMap.get(key);
-        else {
-            final V v = orCreate.get();
-            this.sideEffectMap.put(key, v);
-            return v;
+        else if (this.withMap.containsKey(key)) {
+            final V value = (V) this.withMap.get(key).get();
+            this.sideEffectMap.put(key, value);
+            return value;
+        } else {
+            final V value = orCreate.get();
+            this.sideEffectMap.put(key, value);
+            return value;
         }
     }
 
     @Override
     public void remove(final String key) {
         this.sideEffectMap.remove(key);
+        this.withMap.remove(key);
     }
 
     @Override
     public Set<String> keys() {
-        return this.sideEffectMap.keySet();
+        final Set<String> keys = new HashSet<>();
+        keys.addAll(this.sideEffectMap.keySet());
+        keys.addAll(this.withMap.keySet());
+        return keys;
     }
 
     @Override

@@ -1,8 +1,10 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
+import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -13,6 +15,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -22,13 +25,15 @@ public final class GroupCountMapReduce implements MapReduce<Object, Long, Object
     public static final String GROUP_COUNT_STEP_SIDE_EFFECT_KEY = "gremlin.groupCountStep.sideEffectKey";
 
     private String sideEffectKey;
+    private Supplier<Map<Object, Long>> mapSupplier;
 
-    public GroupCountMapReduce() {
+    private GroupCountMapReduce() {
 
     }
 
     public GroupCountMapReduce(final GroupCountStep step) {
         this.sideEffectKey = step.getSideEffectKey();
+        this.mapSupplier = step.getTraversal().sideEffects().<Map<Object, Long>>getWith(this.sideEffectKey).orElse(HashMap::new);
     }
 
     @Override
@@ -39,6 +44,8 @@ public final class GroupCountMapReduce implements MapReduce<Object, Long, Object
     @Override
     public void loadState(final Configuration configuration) {
         this.sideEffectKey = configuration.getString(GROUP_COUNT_STEP_SIDE_EFFECT_KEY);
+        this.mapSupplier = LambdaHolder.<Supplier<Traversal>>loadState(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER).get().get().sideEffects().<Map<Object, Long>>getWith(this.sideEffectKey).orElse(HashMap::new);
+
     }
 
     @Override
@@ -67,9 +74,9 @@ public final class GroupCountMapReduce implements MapReduce<Object, Long, Object
 
     @Override
     public Map<Object, Long> generateFinalResult(final Iterator<Pair<Object, Long>> keyValues) {
-        final Map<Object, Long> result = new HashMap<>();
-        keyValues.forEachRemaining(pair -> result.put(pair.getValue0(), pair.getValue1()));
-        return result;
+        final Map<Object, Long> map = this.mapSupplier.get();
+        keyValues.forEachRemaining(pair -> map.put(pair.getValue0(), pair.getValue1()));
+        return map;
     }
 
     @Override

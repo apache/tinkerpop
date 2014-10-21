@@ -36,6 +36,9 @@ public interface VertexProgram<M> {
      * This is typically required when the VertexProgram needs to be serialized to another machine.
      * Note that what is loaded is simply the instance state, not any processed data.
      *
+     * It is important that the state loaded from loadState() is identical to any state created from a constructor.
+     * For those GraphComputers that do not need to use Configurations to migrate state between JVMs, the constructor/builder will only be used.
+     *
      * @param configuration the configuration to load the state of the VertexProgram from.
      */
     public default void loadState(final Configuration configuration) {

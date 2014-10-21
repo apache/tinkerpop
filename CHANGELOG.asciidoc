@@ -9,6 +9,9 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `MapReduce` no-argument constructors are private and thus, only for reflection and `loadState()` usage.
+* MapReducers for `TraversalVertexProgram` are now smart about `with()` declared data structures.
+* Updated `Traversal.SideEffects` to use `with()` and it now works accordingly in both OLTP and OLAP environments.
 * Increased the speed of `FlatMapStep` by approximately 1.5x.
 
 TinkerPop 3.0.0.M4 (Release Date: October 21, 2014)

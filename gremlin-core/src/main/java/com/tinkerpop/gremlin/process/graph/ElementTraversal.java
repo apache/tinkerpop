@@ -534,7 +534,7 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().profile();
     }
 
-    public default GraphTraversal<A, A> with(final Object... sideEffectKeyValues) {
-        return this.start().with(sideEffectKeyValues);
+    public default GraphTraversal<A, A> with(final String key, final Supplier supplier) {
+        return this.start().with(key, supplier);
     }
 }

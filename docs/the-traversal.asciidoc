@@ -1264,6 +1264,20 @@ gremlin> g.v(4).inE().bothV()
 ==>v[1]
 ==>v[4]
 
+[[with-step]]
+With Step
+~~~~~~~~~
+
+Traversal side-effects can be declared using `with()`-step (*sideEffect*). This will ensure that the default data structures used by the various sideEffects are ignored in favor of user supplied structures.
+
+[source,groovy]
+gremlin> g.V.both.name.store('x')
+==>{lop=3, vadas=1, josh=3, marko=3, peter=1, ripple=1}   // the default is a BulkSet which is a weighted set
+gremlin> g.V.with('x'){[] as Set}.both.name.store('x')
+==>[lop, vadas, josh, marko, peter, ripple]
+gremlin> g.V.with('x'){['stephen'] as Set}.both.name.store('x')
+==>[stephen, lop, vadas, josh, marko, peter, ripple]
+
 [[traversalstrategy]]
 TraversalStrategy
 -----------------

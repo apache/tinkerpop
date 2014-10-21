@@ -26,8 +26,9 @@ import java.util.function.Predicate;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class SubgraphStep<S> extends SideEffectStep<S> implements SideEffectCapable, PathConsumer, Reversible {
-    private final Graph subgraph;
-    private final boolean subgraphSupportsUserIds;
+    private Graph subgraph;
+    private Boolean subgraphSupportsUserIds;
+
     private final Map<Object, Vertex> idVertexMap;
     private final Set<Object> edgeIdsAdded;
     private final String sideEffectKey;
@@ -45,11 +46,12 @@ public final class SubgraphStep<S> extends SideEffectStep<S> implements SideEffe
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         this.edgeIdsAdded = null == edgeIdHolder ? new HashSet<>() : edgeIdHolder;
         this.idVertexMap = null == idVertexMap ? new HashMap<>() : idVertexMap;
-        TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
-        this.subgraph = this.traversal.sideEffects().getOrCreate(this.sideEffectKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION));
-        this.subgraphSupportsUserIds = this.subgraph.features().vertex().supportsUserSuppliedIds();
 
         this.setConsumer(traverser -> {
+            if (null == this.subgraph) {
+                this.subgraph = this.getTraversal().sideEffects().getOrCreate(this.sideEffectKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION));
+                this.subgraphSupportsUserIds = this.subgraph.features().vertex().supportsUserSuppliedIds();
+            }
             traverser.path().stream().map(Pair::getValue1)
                     .filter(i -> i instanceof Edge)
                     .map(e -> (Edge) e)
@@ -58,7 +60,7 @@ public final class SubgraphStep<S> extends SideEffectStep<S> implements SideEffe
                     .forEach(e -> {
                         final Vertex newVOut = getOrCreateVertex(e.outV().next());
                         final Vertex newVIn = getOrCreateVertex(e.inV().next());
-                        newVOut.addEdge(e.label(), newVIn, ElementHelper.getProperties(e, this.subgraphSupportsUserIds, false, Collections.emptySet(), Collections.emptySet()));
+                        newVOut.addEdge(e.label(), newVIn, ElementHelper.getProperties(e, subgraphSupportsUserIds, false, Collections.emptySet(), Collections.emptySet()));
                         // TODO: If userSuppliedIds exist, don't do this to save sideEffects
                         this.edgeIdsAdded.add(e.id());
                     });

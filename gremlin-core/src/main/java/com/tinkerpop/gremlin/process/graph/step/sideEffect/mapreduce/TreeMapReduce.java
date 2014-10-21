@@ -22,7 +22,7 @@ public final class TreeMapReduce implements MapReduce<Object, Tree, Object, Tree
 
     private String sideEffectKey;
 
-    public TreeMapReduce() {
+    private TreeMapReduce() {
 
     }
 

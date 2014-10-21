@@ -4,7 +4,9 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.graph.ElementTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.VertexTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -332,7 +334,7 @@ public class BatchGraph<G extends Graph> implements Graph {
         }
     }
 
-    private class BatchVertex implements Vertex, Vertex.Iterators {
+    private class BatchVertex implements Vertex, Vertex.Iterators, VertexTraversal {
 
         private final Object externalID;
 
@@ -428,28 +430,9 @@ public class BatchGraph<G extends Graph> implements Graph {
             return getCachedVertex(externalID).value(key);
         }
 
-        @Override
-        public GraphTraversal<Vertex, Vertex> with(final Object... sideEffectKeyValues) {
-            throw retrievalNotSupported();
-        }
-
-        @Override
-        public GraphTraversal<Vertex, Vertex> sideEffect(final Consumer<Traverser<Vertex>> consumer) {
-            throw retrievalNotSupported();
-        }
 
         @Override
         public GraphTraversal<Vertex, Vertex> start() {
-            throw retrievalNotSupported();
-        }
-
-        @Override
-        public GraphTraversal<Vertex, Vertex> as(final String label) {
-            throw retrievalNotSupported();
-        }
-
-        @Override
-        public GraphTraversal<Vertex, Vertex> identity() {
             throw retrievalNotSupported();
         }
 

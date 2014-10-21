@@ -12,13 +12,13 @@ import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AggregateStep<S> extends BarrierStep<S> implements SideEffectCapable, Reversible, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
+public final class AggregateStep<S> extends BarrierStep<S> implements SideEffectCapable, Reversible, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
 
     private final Function<Traverser<S>, ?> preAggregateFunction;
     private final String sideEffectKey;
@@ -46,7 +46,7 @@ public final class AggregateStep<S> extends BarrierStep<S> implements SideEffect
     }
 
     @Override
-    public MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> getMapReduce() {
+    public MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> getMapReduce() {
         return new AggregateMapReduce(this);
     }
 }

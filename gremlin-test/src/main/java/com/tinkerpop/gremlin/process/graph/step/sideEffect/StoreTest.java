@@ -3,10 +3,13 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
@@ -20,6 +23,8 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Collection> get_g_v1_storeXa_nameX_out_storeXa_nameX_name_capXaX(final Object v1Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_asXaX_out_storeXaX();
+
+    public abstract Traversal<Vertex, Set<String>> get_g_V_withXa_setX_both_name_storeXaX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -66,6 +71,24 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         }
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_withXa_setX_both_name_storeXaX() {
+        final Traversal<Vertex, Set<String>> traversal = get_g_V_withXa_setX_both_name_storeXaX();
+        printTraversalForm(traversal);
+        final Set<String> names = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertFalse(names instanceof BulkSet);
+        assertEquals(6, names.size());
+        assertTrue(names.contains("marko"));
+        assertTrue(names.contains("vadas"));
+        assertTrue(names.contains("josh"));
+        assertTrue(names.contains("lop"));
+        assertTrue(names.contains("ripple"));
+        assertTrue(names.contains("peter"));
+    }
+
+
     public static class StandardTest extends StoreTest {
         public StandardTest() {
             requiresGraphComputer = false;
@@ -84,6 +107,11 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_asXaX_out_storeXaX() {
             return g.V().as("a").out().store("a");
+        }
+
+        @Override
+        public Traversal<Vertex, Set<String>> get_g_V_withXa_setX_both_name_storeXaX() {
+            return (Traversal) g.V().with("a", HashSet::new).both().<String>value("name").store("a");
         }
     }
 
@@ -105,6 +133,11 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_asXaX_out_storeXaX() {
             return g.V().as("a").out().store("a").submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Set<String>> get_g_V_withXa_setX_both_name_storeXaX() {
+            return (Traversal) g.V().with("a", HashSet::new).both().<String>value("name").store("a").submit(g.compute());
         }
     }
 

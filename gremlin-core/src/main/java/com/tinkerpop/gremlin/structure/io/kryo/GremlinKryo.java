@@ -46,6 +46,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -246,11 +247,12 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(Path.class, null, 59));
             add(Triplet.<Class, Serializer, Integer>with(DetachedPath.class, null, 60));
             add(Triplet.<Class, Serializer, Integer>with(Tree.class, null, 61));
-            add(Triplet.with(HashSet.class, null, 62));
+            add(Triplet.<Class, Serializer, Integer>with(HashSet.class, null, 62));
             add(Triplet.<Class, Serializer, Integer>with(ReferencedPath.class, null, 63));
             add(Triplet.<Class, Serializer, Integer>with(BulkSet.class, null, 64));
             add(Triplet.<Class, Serializer, Integer>with(StepTimer.class, null, 69));
-            add(Triplet.<Class, Serializer, Integer>with(TraversalMetrics.class, null, 70)); // ***LAST ID***
+            add(Triplet.<Class, Serializer, Integer>with(TraversalMetrics.class, null, 70));
+            add(Triplet.<Class, Serializer, Integer>with(LinkedHashSet.class, null, 71));  // ***LAST ID***
         }};
 
         private static final byte major = 1;

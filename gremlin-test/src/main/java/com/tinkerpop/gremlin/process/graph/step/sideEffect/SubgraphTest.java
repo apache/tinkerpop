@@ -9,6 +9,8 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
+import java.util.function.Supplier;
+
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES;
 import static org.junit.Assert.assertEquals;
@@ -63,7 +65,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
         printTraversalForm(traversal);
         traversal.iterate();
 
-        assertVertexEdgeCounts(5, 4).accept(subgraph);
+        assertVertexEdgeCounts(5, 4).accept(traversal.sideEffects().get("sg"));
 
         graphProvider.clear(subgraph, config);
     }
@@ -72,12 +74,12 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Graph> get_g_v1_outE_subgraphXknowsX_name_capXsgX(final Object v1Id, final Graph subgraph) {
-            return g.v(v1Id).with("sg", subgraph).outE().subgraph("sg", e -> e.label().equals("knows")).value("name").cap("sg");
+            return g.v(v1Id).with("sg", () -> subgraph).outE().subgraph("sg", e -> e.label().equals("knows")).value("name").cap("sg");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_inE_subgraphXcreatedX_name(final Graph subgraph) {
-            return g.V().with("sg", subgraph).inE().subgraph("sg", e -> e.label().equals("created")).value("name");
+            return g.V().with("sg", () -> subgraph).inE().subgraph("sg", e -> e.label().equals("created")).value("name");
         }
     }
 }

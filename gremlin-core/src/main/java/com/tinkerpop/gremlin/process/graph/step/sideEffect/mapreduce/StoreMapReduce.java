@@ -1,35 +1,39 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
+import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
+import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class StoreMapReduce implements MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, List<Object>> {
+public final class StoreMapReduce implements MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
 
     public static final String STORE_STEP_SIDE_EFFECT_KEY = "gremlin.storeStep.sideEffectKey";
 
     private String sideEffectKey;
+    private Supplier<Collection> collectionSupplier;
 
-    public StoreMapReduce() {
+    private StoreMapReduce() {
 
     }
 
     public StoreMapReduce(final StoreStep step) {
         this.sideEffectKey = step.getSideEffectKey();
+        this.collectionSupplier = step.getTraversal().sideEffects().<Collection>getWith(this.sideEffectKey).orElse(BulkSet::new);
     }
 
     @Override
@@ -40,6 +44,7 @@ public final class StoreMapReduce implements MapReduce<MapReduce.NullObject, Obj
     @Override
     public void loadState(final Configuration configuration) {
         this.sideEffectKey = configuration.getString(STORE_STEP_SIDE_EFFECT_KEY);
+        this.collectionSupplier = LambdaHolder.<Supplier<Traversal>>loadState(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER).get().get().sideEffects().<Collection>getWith(this.sideEffectKey).orElse(BulkSet::new);
     }
 
     @Override
@@ -53,10 +58,10 @@ public final class StoreMapReduce implements MapReduce<MapReduce.NullObject, Obj
     }
 
     @Override
-    public List<Object> generateFinalResult(final Iterator<Pair<NullObject, Object>> keyValues) {
-        final List<Object> result = new ArrayList<>();
-        keyValues.forEachRemaining(pair -> result.add(pair.getValue1()));
-        return result;
+    public Collection generateFinalResult(final Iterator<Pair<NullObject, Object>> keyValues) {
+        final Collection collection = this.collectionSupplier.get();
+        keyValues.forEachRemaining(pair -> collection.add(pair.getValue1()));
+        return collection;
     }
 
     @Override

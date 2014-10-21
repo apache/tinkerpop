@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -97,25 +98,120 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         public static final String DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY = Graph.Key.hide("gremlin.sideEffects");
         public static final String GRAPH_KEY = Graph.System.system("g");
 
+        /**
+         * Determines if the {@link Traversal.SideEffects} contains the respective key.
+         * If the key references a "with" supplier, then it should return true as it will be dynamically created on get().
+         *
+         * @param key the key to check for
+         * @return whether the key exists in the sideEffects
+         */
         public default boolean exists(final String key) {
             return this.keys().contains(key);
         }
 
-        public <V> void set(final String key, final V value);
+        /**
+         * Set the specified key to the specified value.
+         *
+         * @param key   the key
+         * @param value the value
+         */
+        public void set(final String key, final Object value);
 
+        /**
+         * Get the sideEffect associated with the provided key.
+         * If the sideEffect contains an object for the key, return it.
+         * If the sideEffect contains a "with" supplier, generate it, store it in the sideEffects, and return it.
+         *
+         * @param key the key to get the value for
+         * @param <V> the type of the value to retrieve
+         * @return the value associated with key
+         * @throws IllegalArgumentException if the key does not reference an object or "with" supplier.
+         */
         public <V> V get(final String key) throws IllegalArgumentException;
 
+        /**
+         * Return the value associated with the key or return the provided otherValue.
+         * The otherValue will not be stored in the sideEffect.
+         *
+         * @param key        the key to get the value for
+         * @param otherValue if not value is associated with key, return the other value.
+         * @param <V>        the type of the value to get
+         * @return the value associated with the key or the otherValue
+         */
         public default <V> V orElse(final String key, final V otherValue) {
             return this.exists(key) ? this.get(key) : otherValue;
         }
 
+        /**
+         * If a value or "with" supplier exists for the provided key, consume it with the provided consumer.
+         *
+         * @param key      the key to the value
+         * @param consumer the consumer to process the value
+         * @param <V>      the type of the value to consume
+         */
         public default <V> void ifPresent(final String key, final Consumer<V> consumer) {
             if (this.exists(key)) consumer.accept(this.get(key));
         }
 
+        /**
+         * Remove both the value and "with" supplier associated with provided key.
+         *
+         * @param key the key to remove the value and "with" supplier for
+         */
         public void remove(final String key);
 
+        /**
+         * The object and "with" keys of the sideEffect. In essence, that which is possible to get().
+         *
+         * @return the keys of the sideEffect
+         */
         public Set<String> keys();
+
+        ////////////
+
+        /**
+         * Store a "with" supplier associated with the provided key.
+         *
+         * @param key      the key to store the supplier with
+         * @param supplier the supplier that will generate an object when get() is called if it hasn't already been created
+         */
+        public void setWith(final String key, final Supplier supplier);
+
+        /**
+         * Get the "with" supplier associated with the specified key.
+         *
+         * @param key the key associated with the supplier
+         * @param <V> The return type of the supplier
+         * @return A non-empty optional if the supplier exists
+         */
+        public <V> Optional<Supplier<V>> getWith(final String key);
+
+        /**
+         * If the sideEffect contains an object associated with the key, return it.
+         * Else if a "with" supplier exists for the key, generate the object, store it in the sideEffects and return the object.
+         * Else use the provided supplier to generate the object, store it in the sideEffects and return the object.
+         *
+         * @param key      the key of the object to get
+         * @param orCreate if the object doesn't exist as an object or suppliable object, then generate it with the specified supplier
+         * @param <V>      the return type of the object
+         * @return the object that is either retrieved, generated, or supplier via orCreate
+         */
+        public default <V> V getOrCreate(final String key, final Supplier<V> orCreate) {
+            if (this.exists(key))
+                return this.<V>get(key);
+            final Optional<Supplier<V>> with = this.getWith(key);
+            if (with.isPresent()) {
+                final V v = with.get().get();
+                this.set(key, v);
+                return v;
+            } else {
+                final V v = orCreate.get();
+                this.set(key, v);
+                return v;
+            }
+        }
+
+        ////////////
 
         public default boolean graphExists() {
             return this.exists(GRAPH_KEY);
@@ -136,15 +232,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
             this.remove(GRAPH_KEY);
         }
 
-        public default <V> V getOrCreate(final String key, final Supplier<V> orCreate) {
-            if (this.exists(key))
-                return this.<V>get(key);
-            else {
-                final V v = orCreate.get();
-                this.set(key, v);
-                return v;
-            }
-        }
+        ////////////
 
         public default <V> void forEach(final BiConsumer<String, V> biConsumer) {
             this.keys().forEach(key -> biConsumer.accept(key, this.get(key)));

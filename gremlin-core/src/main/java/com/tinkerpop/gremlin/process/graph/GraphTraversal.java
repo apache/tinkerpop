@@ -70,7 +70,6 @@ import com.tinkerpop.gremlin.process.graph.strategy.UnionLinearStrategy;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.marker.CapTraversal;
 import com.tinkerpop.gremlin.process.marker.CountTraversal;
-import com.tinkerpop.gremlin.process.util.SideEffectHelper;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -101,7 +100,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S, E>, CapTraversal<S,E> {
+public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S, E>, CapTraversal<S, E> {
 
     @Override
     public default void prepareForGraphComputer() {
@@ -664,6 +663,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
 
     ///////////////////// UTILITY STEPS /////////////////////
 
+    public default GraphTraversal<S, E> with(final String key, final Supplier supplier) {
+        this.sideEffects().setWith(key, supplier);
+        return this;
+    }
+
     public default GraphTraversal<S, E> trackPaths() {
         return this.addStep(new PathIdentityStep<>(this));
     }
@@ -699,15 +703,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
 
         }
     }
-
-    public default GraphTraversal<S, E> with(final Object... sideEffectKeyValues) {
-        SideEffectHelper.legalSideEffectKeyValues(sideEffectKeyValues);
-        for (int i = 0; i < sideEffectKeyValues.length; i = i + 2) {
-            this.sideEffects().set((String) sideEffectKeyValues[i], sideEffectKeyValues[i + 1]);
-        }
-        return this;
-    }
-
 
     /////////////////////////////////////
 

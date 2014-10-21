@@ -574,8 +574,8 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.where(arg0, arg1, arg2);
 	}
 
-	public default Neo4jTraversal<S, E> with(java.lang.Object... arg0) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.with(arg0);
+	public default Neo4jTraversal<S, E> with(java.lang.String arg0, java.util.function.Supplier arg1) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.with(arg0, arg1);
 	}
 
 }

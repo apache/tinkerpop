@@ -4,7 +4,9 @@ import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -20,7 +22,7 @@ public class PathAwareSideEffects implements Traversal.SideEffects {
     }
 
     @Override
-    public <V> void set(final String key, final V value) {
+    public void set(final String key, final Object value) {
         this.sideEffects.set(key, value);
     }
 
@@ -31,6 +33,16 @@ public class PathAwareSideEffects implements Traversal.SideEffects {
         } else {
             return this.sideEffects.get(key);
         }
+    }
+
+    @Override
+    public void setWith(final String key, final Supplier supplier) {
+        this.sideEffects.set(key, supplier);
+    }
+
+    @Override
+    public <V> Optional<Supplier<V>> getWith(final String key) {
+        return this.sideEffects.getWith(key);
     }
 
     @Override

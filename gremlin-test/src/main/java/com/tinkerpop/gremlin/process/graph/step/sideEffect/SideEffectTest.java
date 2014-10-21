@@ -9,6 +9,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
@@ -67,21 +68,22 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_sideEffectXstore_aX_valueXnameX(final Object v1Id) {
-            final List<Vertex> a = new ArrayList<>();
-            return g.v(v1Id).with("a", a).sideEffect(traverser -> {
-                a.clear();
-                a.add(traverser.get());
+            return g.v(v1Id).with("a", ArrayList::new).sideEffect(traverser -> {
+                traverser.<List>get("a").clear();
+                traverser.<List<Vertex>>get("a").add(traverser.get());
             }).value("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_v1_out_sideEffectXincr_cX_valueXnameX(final Object v1Id) {
-            final List<Integer> c = new ArrayList<>();
-            c.add(0);
-            return g.v(v1Id).with("c", c).out().sideEffect(traverser -> {
-                Integer temp = c.get(0);
-                c.clear();
-                c.add(temp + 1);
+            return g.v(v1Id).with("c", () -> {
+               final List<Integer> list = new ArrayList<>();
+               list.add(0);
+               return list;
+            }).out().sideEffect(traverser -> {
+                Integer temp = traverser.<List<Integer>>get("c").get(0);
+                traverser.<List<Integer>>get("c").clear();
+                traverser.<List<Integer>>get("c").add(temp + 1);
             }).value("name");
         }
 

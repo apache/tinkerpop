@@ -41,7 +41,9 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupCountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyInjectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyProfileTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovySideEffectCapTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovySideEffectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyStoreTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovySubgraphTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyTreeTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
@@ -99,7 +101,9 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyInjectTest.StandardTest.class,
             GroovyProfileTest.StandardTest.class,
             GroovySideEffectCapTest.StandardTest.class,
+            GroovySideEffectTest.StandardTest.class,
             GroovyStoreTest.StandardTest.class,
+            GroovySubgraphTest.StandardTest.class,
             GroovyTreeTest.StandardTest.class,
 
             // util

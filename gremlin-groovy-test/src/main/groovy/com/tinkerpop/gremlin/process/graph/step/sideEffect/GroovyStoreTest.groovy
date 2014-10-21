@@ -25,6 +25,11 @@ public abstract class GroovyStoreTest {
         public Traversal<Vertex, Vertex> get_g_V_asXaX_out_storeXaX() {
             g.V.as('a').out.store('a');
         }
+
+        @Override
+        public Traversal<Vertex, Set<String>> get_g_V_withXa_setX_both_name_storeXaX() {
+            g.V.with('a') { [] as Set }.both.name.store('a')
+        }
     }
 
     public static class ComputerTest extends StoreTest {
@@ -42,6 +47,11 @@ public abstract class GroovyStoreTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_asXaX_out_storeXaX() {
             ComputerTestHelper.compute("g.V.as('a').out.store('a')", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Set<String>> get_g_V_withXa_setX_both_name_storeXaX() {
+            ComputerTestHelper.compute("g.V.with('a'){[] as Set}.both.name.store('a')", g);
         }
     }
 }
