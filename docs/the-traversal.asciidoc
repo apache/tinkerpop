@@ -1215,6 +1215,54 @@ The `until()` expression in the example above states:
 
 NOTE: The `until()`-step is not a "real" step. It is simply a marker that exist in the traversal. When the `UntilStrategy` is executed (see <<traversalstrategy,TraversalStrategy>>), the traversal is re-written by inserting `jump()`-steps accordingly. Thus, in the example above, the second traversal example using `until()` compiles to the first which uses `jump()`.
 
+[[vertex-steps]]
+Vertex Steps
+~~~~~~~~~~~~
+
+image::vertex-steps.png[width=350]
+
+The vertex steps (*flatMap*) are fundamental to the Gremlin language and are perhaps the only "graph oriented" steps. Via these steps, its possible to "move" on the graph -- i.e. traverser.
+
+* `out(integer, string...)`: Move to the outgoing adjacent vertices given the branch factor and edge labels.
+* `in(integer, string...)`: Move to the incoming adjacent vertices given the branch factor and edge labels.
+* `both(integer, string...)`: Move to both the incoming and outgoing adjacent vertices given the branch factor and edge labels.
+* `outE(integer, string...)`: Move to the outgoing incident edges given the branch factor and edge labels.
+* `inE(integer, string...)`: Move to the incoming incident edges given the branch factor and edge labels.
+* `bothE(integer, string...)`: Move to both the incoming and outgoing incident edges given the branch factor and edge labels.
+* `outV()`: Move to the outgoing vertex.
+* `inV()`: Move to the incoming vertex.
+* `bothV()`: Move to both vertices.
+
+[source,groovy]
+gremlin> g.v(4)
+==>v[4]
+gremlin> g.v(4).outE()  // all outgoing edges
+==>e[10][4-created->5]
+==>e[11][4-created->3]
+gremlin> g.v(4).outE(1)  // at most one outgoing edge per incoming vertex
+==>e[10][4-created->5]
+gremlin> g.v(4).inE('knows')  // all incoming knows-edges
+==>e[8][1-knows->4]
+gremlin> g.v(4).inE('created') // all incoming created-edges
+gremlin> g.v(4).bothE('knows','created','blah')
+==>e[10][4-created->5]
+==>e[11][4-created->3]
+==>e[8][1-knows->4]
+gremlin> g.v(4).both('knows','created','blah')
+==>v[5]
+==>v[3]
+==>v[1]
+gremlin> g.v(4).outE().inV() // moving forward touching edges,vertices
+==>v[5]
+==>v[3]
+gremlin> g.v(4).out()  // moving forward only touching vertices
+==>v[5]
+==>v[3]
+gremlin> g.v(4).inE().outV()
+==>v[1]
+gremlin> g.v(4).inE().bothV()
+==>v[1]
+==>v[4]
 
 [[traversalstrategy]]
 TraversalStrategy
