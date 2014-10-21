@@ -43,7 +43,6 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyProfileTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovySideEffectCapTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyStoreTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyTreeTest;
-import com.tinkerpop.gremlin.process.graph.step.util.TraversalSideEffectsTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -104,7 +103,7 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyTreeTest.StandardTest.class,
 
             // util
-            TraversalSideEffectsTest.StandardTest.class,
+            // TraversalSideEffectsTest.StandardTest.class,
 
             // compliance
             TraversalCoverageTest.class,

@@ -130,7 +130,7 @@ public class TinkerMemory implements Memory.Admin {
 
     @Override
     public String toString() {
-        return StringFactory.computeMemoryString(this);
+        return StringFactory.memoryString(this);
     }
 
     private void checkKeyValue(final String key, final Object value) {

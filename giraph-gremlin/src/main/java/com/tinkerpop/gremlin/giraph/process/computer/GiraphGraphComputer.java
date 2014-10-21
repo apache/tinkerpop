@@ -89,7 +89,7 @@ public final class GiraphGraphComputer extends Configured implements GraphComput
     }
 
     public String toString() {
-        return StringFactory.computerString(this);
+        return StringFactory.graphComputerString(this);
     }
 
     @Override

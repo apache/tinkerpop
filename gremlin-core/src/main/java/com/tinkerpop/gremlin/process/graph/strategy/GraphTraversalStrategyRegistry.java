@@ -41,6 +41,11 @@ public class GraphTraversalStrategyRegistry implements Traversal.Strategies {
     }
 
     @Override
+    public List<TraversalStrategy> toList() {
+        return new ArrayList<>(TRAVERSAL_STRATEGIES);
+    }
+
+    @Override
     public void register(final TraversalStrategy traversalStrategy) {
         if (!TRAVERSAL_STRATEGIES.contains(traversalStrategy))
             TRAVERSAL_STRATEGIES.add(traversalStrategy);

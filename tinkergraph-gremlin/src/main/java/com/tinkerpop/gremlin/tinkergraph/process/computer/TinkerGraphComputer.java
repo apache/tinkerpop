@@ -115,7 +115,7 @@ public class TinkerGraphComputer implements GraphComputer {
 
     @Override
     public String toString() {
-        return StringFactory.computerString(this);
+        return StringFactory.graphComputerString(this);
     }
 
 }

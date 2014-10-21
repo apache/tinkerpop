@@ -71,13 +71,15 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
     }
 
     /**
-     * Cloning is used to duplicate traversal typically in OLAP environments.
+     * Cloning is used to duplicate the traversal typically in OLAP environments.
      *
      * @return The cloned traversal
      */
     public Traversal<S, E> clone();
 
     public interface Strategies {
+
+        public List<TraversalStrategy> toList();
 
         public void register(final TraversalStrategy traversalStrategy);
 

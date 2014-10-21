@@ -178,7 +178,7 @@ public final class GiraphMemory extends MasterCompute implements Memory {
 
     @Override
     public String toString() {
-        return StringFactory.computeMemoryString(this);
+        return StringFactory.memoryString(this);
     }
 
     private void checkKeyValue(final String key, final Object value) {
