@@ -86,16 +86,16 @@ public final class TraversalMetrics implements Serializable {
 
         // Append headers
         StringBuilder sb = new StringBuilder();
-        sb.append("Traversal Metrics\n").append(String.format("%32s%12s%11s%16s%8s", HEADERS));
+        sb.append("Traversal Metrics\n").append(String.format("%28s %13s %11s %15s %8s", HEADERS));
 
         // Append each StepMetric's row
         for (StepTimer s : this.stepTimers.values()) {
-            sb.append(String.format("%n%32s%12d%11d%16.3f%8.2f",
-                    s.getName(), s.getCount(), s.getTraversers(), s.getTimeMs(), s.getPercentageDuration()));
+            sb.append(String.format("%n%28s %13d %11d %15.3f %8.2f",
+                    s.getShortName(28), s.getCount(), s.getTraversers(), s.getTimeMs(), s.getPercentageDuration()));
         }
 
         // Append total duration
-        sb.append(String.format("%n%32s%12s%11s%16.3f%8s",
+        sb.append(String.format("%n%28s %13s %11s %15.3f %8s",
                 "TOTAL", "-", "-", getTotalStepDurationMs(), "-"));
 
         return sb.toString();

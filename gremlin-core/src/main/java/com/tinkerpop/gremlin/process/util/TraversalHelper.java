@@ -279,4 +279,19 @@ public class TraversalHelper {
         }
     }
 
+    /**
+     * Returns the name of <i>step</i> truncated to <i>maxLength</i>. An ellipses is appended when the name exceeds
+     * <i>maxLength</i>.
+     *
+     * @param step
+     * @param maxLength Includes the 3 "..." characters that will be appended when the length of the name exceeds
+     *                  maxLength.
+     * @return short step name.
+     */
+    public static String getShortName(final Step step, final int maxLength) {
+        final String name = step.toString();
+        if (name.length() > maxLength)
+            return name.substring(0, maxLength - 3) + "...";
+        return name;
+    }
 }

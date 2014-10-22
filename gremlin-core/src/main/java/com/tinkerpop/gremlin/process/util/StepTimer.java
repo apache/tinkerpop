@@ -93,4 +93,10 @@ public class StepTimer implements StepMetrics, Serializable {
     public String getLabel() {
         return label;
     }
+
+    public String getShortName(int maxLength) {
+        if (name.length() > maxLength)
+            return name.substring(0, maxLength - 3) + "...";
+        return name;
+    }
 }

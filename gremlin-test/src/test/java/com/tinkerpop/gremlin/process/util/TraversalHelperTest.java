@@ -3,16 +3,17 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.step.map.PropertiesStep;
-import com.tinkerpop.gremlin.process.graph.step.map.ValueMapStep;
-import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RandomStep;
-import com.tinkerpop.gremlin.process.graph.step.map.ShuffleStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.TimeLimitStep;
+import com.tinkerpop.gremlin.process.graph.step.map.PropertiesStep;
+import com.tinkerpop.gremlin.process.graph.step.map.ShuffleStep;
+import com.tinkerpop.gremlin.process.graph.step.map.ValueMapStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.List;
 
@@ -154,5 +155,12 @@ public class TraversalHelperTest {
         assertEquals(((Step) traversal.getSteps().get(2)).getNextStep().getClass(), EmptyStep.class);
 
         assertEquals(traversal.getSteps().size(), 3);
+    }
+
+    @Test
+    public void shouldTruncateLongName() {
+        Step s = Mockito.mock(Step.class);
+        Mockito.when(s.toString()).thenReturn("0123456789");
+        assertEquals("0123...", TraversalHelper.getShortName(s, 7));
     }
 }
