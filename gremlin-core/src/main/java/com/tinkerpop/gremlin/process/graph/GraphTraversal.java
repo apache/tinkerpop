@@ -664,7 +664,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
     ///////////////////// UTILITY STEPS /////////////////////
 
     public default GraphTraversal<S, E> with(final String key, final Supplier supplier) {
-        this.sideEffects().setWith(key, supplier);
+        this.sideEffects().registerSupplier(key, supplier);
         return this;
     }
 

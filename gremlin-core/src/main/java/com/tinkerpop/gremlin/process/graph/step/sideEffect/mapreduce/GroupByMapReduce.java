@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.process.util.BulkSet;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
@@ -43,7 +42,7 @@ public final class GroupByMapReduce implements MapReduce<Object, Collection, Obj
         this.groupByStepKey = step.getLabel();
         this.sideEffectKey = step.getSideEffectKey();
         this.reduceFunction = step.getReduceFunction();
-        this.mapSupplier = step.getTraversal().sideEffects().<Map>getWith(this.sideEffectKey).orElse(HashMap::new);
+        this.mapSupplier = step.getTraversal().sideEffects().<Map>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
     }
 
     @Override
@@ -56,14 +55,12 @@ public final class GroupByMapReduce implements MapReduce<Object, Collection, Obj
     public void loadState(final Configuration configuration) {
         this.sideEffectKey = configuration.getString(GROUP_BY_STEP_SIDE_EFFECT_KEY);
         this.groupByStepKey = configuration.getString(GROUP_BY_STEP_STEP_LABEL);
-        final LambdaHolder<Supplier<Traversal>> traversalSupplier = LambdaHolder.loadState(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER);
-        final Traversal<?, ?> traversal = traversalSupplier.get().get();
+        final Traversal<?, ?> traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
         final GroupByStep groupByStep = (GroupByStep) traversal.getSteps().stream()
                 .filter(step -> step.getLabel().equals(this.groupByStepKey))
                 .findAny().get();
         this.reduceFunction = groupByStep.getReduceFunction();
-        this.mapSupplier = LambdaHolder.<Supplier<Traversal>>loadState(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER).get().get().sideEffects().<Map>getWith(this.sideEffectKey).orElse(HashMap::new);
-
+        this.mapSupplier = traversal.sideEffects().<Map>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
     }
 
     @Override

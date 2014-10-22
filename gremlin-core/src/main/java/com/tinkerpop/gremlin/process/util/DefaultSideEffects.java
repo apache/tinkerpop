@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 public class DefaultSideEffects implements Traversal.SideEffects {
 
     private Map<String, Object> sideEffectMap = new HashMap<>();
-    private Map<String, Supplier> withMap = new HashMap<>();
+    private Map<String, Supplier> registeredSupplierMap = new HashMap<>();
 
     public DefaultSideEffects() {
 
@@ -28,35 +28,58 @@ public class DefaultSideEffects implements Traversal.SideEffects {
         this.setLocalVertex(localVertex);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void setWith(final String key, final Supplier supplier) {
-        this.withMap.put(key, supplier);
+    public void registerSupplier(final String key, final Supplier supplier) {
+        this.registeredSupplierMap.put(key, supplier);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public <V> Optional<Supplier<V>> getWith(final String key) {
-        return Optional.ofNullable(this.withMap.get(key));
+    public <V> Optional<Supplier<V>> getRegisteredSupplier(final String key) {
+        return Optional.ofNullable(this.registeredSupplierMap.get(key));
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public void registerSupplierIfAbsent(final String key, final Supplier supplier) {
+        if (!this.registeredSupplierMap.containsKey(key))
+            this.registeredSupplierMap.put(key, supplier);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean exists(final String key) {
-        return this.sideEffectMap.containsKey(key) || this.withMap.containsKey(key);
+        return this.sideEffectMap.containsKey(key) || this.registeredSupplierMap.containsKey(key);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void set(final String key, final Object value) {
         SideEffectHelper.validateSideEffect(key, value);
         this.sideEffectMap.put(key, value);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <V> V get(final String key) throws IllegalArgumentException {
         final V value = (V) this.sideEffectMap.get(key);
         if (null != value)
             return value;
         else {
-            if (this.withMap.containsKey(key)) {
-                final V v = (V) this.withMap.get(key).get();
+            if (this.registeredSupplierMap.containsKey(key)) {
+                final V v = (V) this.registeredSupplierMap.get(key).get();
                 this.sideEffectMap.put(key, v);
                 return v;
             } else {
@@ -65,12 +88,15 @@ public class DefaultSideEffects implements Traversal.SideEffects {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <V> V getOrCreate(final String key, final Supplier<V> orCreate) {
         if (this.sideEffectMap.containsKey(key))
             return (V) this.sideEffectMap.get(key);
-        else if (this.withMap.containsKey(key)) {
-            final V value = (V) this.withMap.get(key).get();
+        else if (this.registeredSupplierMap.containsKey(key)) {
+            final V value = (V) this.registeredSupplierMap.get(key).get();
             this.sideEffectMap.put(key, value);
             return value;
         } else {
@@ -80,25 +106,29 @@ public class DefaultSideEffects implements Traversal.SideEffects {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void remove(final String key) {
         this.sideEffectMap.remove(key);
-        this.withMap.remove(key);
+        this.registeredSupplierMap.remove(key);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<String> keys() {
         final Set<String> keys = new HashSet<>();
         keys.addAll(this.sideEffectMap.keySet());
-        keys.addAll(this.withMap.keySet());
+        keys.addAll(this.registeredSupplierMap.keySet());
         return keys;
     }
 
-    @Override
-    public String toString() {
-        return StringFactory.traversalSideEffectsString(this);
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setLocalVertex(final Vertex vertex) {
         final Property<Map<String, Object>> property = vertex.property(DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY);
@@ -108,5 +138,10 @@ public class DefaultSideEffects implements Traversal.SideEffects {
             this.sideEffectMap = new HashMap<>();
             vertex.property(DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY, this.sideEffectMap);
         }
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.traversalSideEffectsString(this);
     }
 }

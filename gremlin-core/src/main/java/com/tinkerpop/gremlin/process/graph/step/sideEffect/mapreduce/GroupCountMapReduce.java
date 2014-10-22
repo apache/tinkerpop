@@ -1,10 +1,8 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
-import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -33,7 +31,7 @@ public final class GroupCountMapReduce implements MapReduce<Object, Long, Object
 
     public GroupCountMapReduce(final GroupCountStep step) {
         this.sideEffectKey = step.getSideEffectKey();
-        this.mapSupplier = step.getTraversal().sideEffects().<Map<Object, Long>>getWith(this.sideEffectKey).orElse(HashMap::new);
+        this.mapSupplier = step.getTraversal().sideEffects().<Map<Object, Long>>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
     }
 
     @Override
@@ -44,7 +42,7 @@ public final class GroupCountMapReduce implements MapReduce<Object, Long, Object
     @Override
     public void loadState(final Configuration configuration) {
         this.sideEffectKey = configuration.getString(GROUP_COUNT_STEP_SIDE_EFFECT_KEY);
-        this.mapSupplier = LambdaHolder.<Supplier<Traversal>>loadState(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER).get().get().sideEffects().<Map<Object, Long>>getWith(this.sideEffectKey).orElse(HashMap::new);
+        this.mapSupplier = TraversalVertexProgram.getTraversalSupplier(configuration).get().sideEffects().<Map<Object, Long>>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
 
     }
 

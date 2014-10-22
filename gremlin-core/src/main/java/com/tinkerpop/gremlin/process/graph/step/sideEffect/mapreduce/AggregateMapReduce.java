@@ -1,13 +1,10 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
-import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
 import com.tinkerpop.gremlin.process.util.BulkSet;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
@@ -34,7 +31,7 @@ public final class AggregateMapReduce implements MapReduce<MapReduce.NullObject,
 
     public AggregateMapReduce(final AggregateStep step) {
         this.sideEffectKey = step.getSideEffectKey();
-        this.collectionSupplier = step.getTraversal().sideEffects().<Collection>getWith(this.sideEffectKey).orElse(BulkSet::new);
+        this.collectionSupplier = step.getTraversal().sideEffects().<Collection>getRegisteredSupplier(this.sideEffectKey).orElse(BulkSet::new);
     }
 
     @Override
@@ -45,7 +42,7 @@ public final class AggregateMapReduce implements MapReduce<MapReduce.NullObject,
     @Override
     public void loadState(final Configuration configuration) {
         this.sideEffectKey = configuration.getString(AGGREGATE_STEP_SIDE_EFFECT_KEY);
-        this.collectionSupplier = LambdaHolder.<Supplier<Traversal>>loadState(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER).get().get().sideEffects().<Collection>getWith(this.sideEffectKey).orElse(BulkSet::new);
+        this.collectionSupplier = TraversalVertexProgram.getTraversalSupplier(configuration).get().sideEffects().<Collection>getRegisteredSupplier(this.sideEffectKey).orElse(BulkSet::new);
     }
 
     @Override

@@ -28,9 +28,9 @@ public final class GroupCountStep<S> extends SideEffectStep<S> implements SideEf
         this.preGroupFunction = preGroupFunction;
         this.sideEffectKey = null == sideEffectKey ? this.getLabel() : sideEffectKey;
         TraversalHelper.verifySideEffectKeyIsNotAStepLabel(this.sideEffectKey, this.traversal);
-        this.getTraversal().sideEffects().getOrCreate(this.sideEffectKey, HashMap::new); // TODO: for standard
+        this.traversal.sideEffects().registerSupplierIfAbsent(this.sideEffectKey, HashMap<Object, Long>::new);
         this.setConsumer(traverser -> {
-            final Map<Object, Long> groupCountMap = traverser.sideEffects().getOrCreate(this.sideEffectKey, HashMap::new);
+            final Map<Object, Long> groupCountMap = this.getTraversal().sideEffects().get(this.sideEffectKey);
             MapHelper.incr(groupCountMap,
                     null == this.preGroupFunction ? traverser.get() : this.preGroupFunction.apply(traverser),
                     traverser.bulk());

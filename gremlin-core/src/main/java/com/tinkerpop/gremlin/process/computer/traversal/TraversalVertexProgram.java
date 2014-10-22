@@ -69,6 +69,17 @@ public class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>>
         return new DefaultSideEffects(localVertex);
     }
 
+    /**
+     * A helper method to yield a {@link Supplier} of {@link Traversal} from the {@link Configuration}.
+     * The supplier is either a {@link Class}, {@link com.tinkerpop.gremlin.process.computer.util.ScriptEngineLambda}, or a direct Java8 lambda.
+     *
+     * @param configuration The configuration containing the public static TRAVERSAL_SUPPLIER key.
+     * @return the traversal supplier in the configuration
+     */
+    public static Supplier<Traversal> getTraversalSupplier(final Configuration configuration) {
+        return LambdaHolder.<Supplier<Traversal>>loadState(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER).get();
+    }
+
     @Override
     public void loadState(final Configuration configuration) {
         this.traversalSupplier = LambdaHolder.loadState(configuration, TRAVERSAL_SUPPLIER);

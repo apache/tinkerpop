@@ -100,7 +100,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
         /**
          * Determines if the {@link Traversal.SideEffects} contains the respective key.
-         * If the key references a "with" supplier, then it should return true as it will be dynamically created on get().
+         * If the key references a stored {@link Supplier}, then it should return true as it will be dynamically created on get().
          *
          * @param key the key to check for
          * @return whether the key exists in the sideEffects
@@ -111,6 +111,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
         /**
          * Set the specified key to the specified value.
+         * If a {@link Supplier} is provided, it is NOT assumed to be a supplier as set by registerSupplier().
          *
          * @param key   the key
          * @param value the value
@@ -120,12 +121,12 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         /**
          * Get the sideEffect associated with the provided key.
          * If the sideEffect contains an object for the key, return it.
-         * If the sideEffect contains a "with" supplier, generate it, store it in the sideEffects, and return it.
+         * Else if the sideEffect has a registered {@link Supplier} for that key, generate the object, store the object in the sideEffects, and return it.
          *
          * @param key the key to get the value for
          * @param <V> the type of the value to retrieve
          * @return the value associated with key
-         * @throws IllegalArgumentException if the key does not reference an object or "with" supplier.
+         * @throws IllegalArgumentException if the key does not reference an object or a registered supplier.
          */
         public <V> V get(final String key) throws IllegalArgumentException;
 
@@ -143,7 +144,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         }
 
         /**
-         * If a value or "with" supplier exists for the provided key, consume it with the provided consumer.
+         * If a value or registered {@link Supplier} exists for the provided key, consume it with the provided consumer.
          *
          * @param key      the key to the value
          * @param consumer the consumer to process the value
@@ -154,14 +155,15 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         }
 
         /**
-         * Remove both the value and "with" supplier associated with provided key.
+         * Remove both the value and registered {@link Supplier} associated with provided key.
          *
-         * @param key the key to remove the value and "with" supplier for
+         * @param key the key of the value and registered supplier to remove
          */
         public void remove(final String key);
 
         /**
-         * The object and "with" keys of the sideEffect. In essence, that which is possible to get().
+         * The keys of the sideEffect which includes registered {@link Supplier} keys.
+         * In essence, that which is possible to get().
          *
          * @return the keys of the sideEffect
          */
@@ -170,26 +172,40 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         ////////////
 
         /**
-         * Store a "with" supplier associated with the provided key.
+         * Register a {@link Supplier} with the provided key.
+         * When sideEffects get() are called, if no object exists and there exists a registered supplier for the key, the object is generated.
+         * Registered suppliers are used for the lazy generation of sideEffect data.
          *
-         * @param key      the key to store the supplier with
+         * @param key      the key to register the supplier with
          * @param supplier the supplier that will generate an object when get() is called if it hasn't already been created
          */
-        public void setWith(final String key, final Supplier supplier);
+        public void registerSupplier(final String key, final Supplier supplier);
 
         /**
-         * Get the "with" supplier associated with the specified key.
+         * Get the registered {@link Supplier} associated with the specified key.
          *
          * @param key the key associated with the supplier
-         * @param <V> The return type of the supplier
+         * @param <V> The object type of the supplier
          * @return A non-empty optional if the supplier exists
          */
-        public <V> Optional<Supplier<V>> getWith(final String key);
+        public <V> Optional<Supplier<V>> getRegisteredSupplier(final String key);
+
+        /**
+         * A helper method to register a {@link Supplier} if it has not already been registered.
+         *
+         * @param key the key of the supplier to register
+         * @param supplier the supplier to register if the key has not already been registered
+         */
+        public default void registerSupplierIfAbsent(final String key, final Supplier supplier) {
+            if (!this.getRegisteredSupplier(key).isPresent())
+                this.registerSupplier(key, supplier);
+        }
 
         /**
          * If the sideEffect contains an object associated with the key, return it.
          * Else if a "with" supplier exists for the key, generate the object, store it in the sideEffects and return the object.
          * Else use the provided supplier to generate the object, store it in the sideEffects and return the object.
+         * Note that if the orCreate supplier is used, it is NOT registered as a {@link Supplier}.
          *
          * @param key      the key of the object to get
          * @param orCreate if the object doesn't exist as an object or suppliable object, then generate it with the specified supplier
@@ -199,7 +215,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         public default <V> V getOrCreate(final String key, final Supplier<V> orCreate) {
             if (this.exists(key))
                 return this.<V>get(key);
-            final Optional<Supplier<V>> with = this.getWith(key);
+            final Optional<Supplier<V>> with = this.getRegisteredSupplier(key);
             if (with.isPresent()) {
                 final V v = with.get().get();
                 this.set(key, v);

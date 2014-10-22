@@ -36,13 +36,13 @@ public class PathAwareSideEffects implements Traversal.SideEffects {
     }
 
     @Override
-    public void setWith(final String key, final Supplier supplier) {
+    public void registerSupplier(final String key, final Supplier supplier) {
         this.sideEffects.set(key, supplier);
     }
 
     @Override
-    public <V> Optional<Supplier<V>> getWith(final String key) {
-        return this.sideEffects.getWith(key);
+    public <V> Optional<Supplier<V>> getRegisteredSupplier(final String key) {
+        return this.sideEffects.getRegisteredSupplier(key);
     }
 
     @Override
