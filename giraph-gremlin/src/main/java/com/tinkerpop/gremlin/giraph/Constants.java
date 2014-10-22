@@ -4,11 +4,14 @@ import com.esotericsoftware.kryo.Kryo;
 import com.tinkerpop.gremlin.giraph.process.computer.util.RuleWritable;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class Constants {
+
+    // public static final Kryo KRYO = new Kryo();
 
     public static final String CONFIGURATION = "configuration";
     public static final String GREMLIN_INPUT_LOCATION = "giraph.gremlin.inputLocation";

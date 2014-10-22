@@ -38,34 +38,24 @@ public final class KryoWritable<T> implements WritableComparable<KryoWritable> {
 
     @Override
     public void readFields(final DataInput input) throws IOException {
-        final int objectLength = WritableUtils.readVInt(input);
-        final byte[] objectBytes = new byte[objectLength];
-        for (int i = 0; i < objectLength; i++) {
-            objectBytes[i] = input.readByte();
-        }
         try {
+            final byte[] objectBytes = WritableUtils.readCompressedByteArray(input);
             this.t = (T) Serializer.deserializeObject(objectBytes);
         } catch (final ClassNotFoundException e) {
             throw new IOException(e.getMessage(), e);
         }
-        // TODO: Get Kryo to work
-        //final Input in = new Input(new ByteArrayInputStream(objectBytes));
-        //this.t = (T) Constants.KRYO.readClassAndObject(in);
-        //in.close();
+        //this.t = (T) Constants.KRYO.readClassAndObject(new Input(new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input))));
     }
 
     @Override
     public void write(final DataOutput output) throws IOException {
-        final byte[] objectBytes = Serializer.serializeObject(this.t);
-        WritableUtils.writeVInt(output, objectBytes.length);
-        output.write(objectBytes);
-        // TODO: Get Kryo to work
-        //final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        //final Output out = new Output(outputStream);
-        //Constants.KRYO.writeClassAndObject(out, this.t);
-        //out.flush();
-        //out.close();
-
+        WritableUtils.writeCompressedByteArray(output, Serializer.serializeObject(this.t));
+        /*final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        final Output out = new Output(outputStream);
+        Constants.KRYO.writeClassAndObject(out, this.t);
+        out.flush();
+        WritableUtils.writeCompressedByteArray(output, outputStream.toByteArray());
+        out.close();*/
     }
 
     @Override
