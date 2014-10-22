@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process.computer.lambda;
 
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
@@ -66,7 +65,7 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
 
     @Override
     public void storeState(final Configuration configuration) {
-        configuration.setProperty(GraphComputer.VERTEX_PROGRAM, this.getClass().getName());
+        configuration.setProperty(VERTEX_PROGRAM, this.getClass().getName());
         if (null != this.setupLambdaHolder)
             this.setupLambdaHolder.storeState(configuration);
         if (null != this.executeLambdaHolder)

@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process.computer.ranking.pagerank;
 
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
@@ -50,7 +49,6 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
     @Override
     public void loadState(final Configuration configuration) {
-
         this.traversalSupplier = LambdaHolder.loadState(configuration, INCIDENT_TRAVERSAL_SUPPLIER);
         if (null != this.traversalSupplier) {
             VertexProgramHelper.verifyReversibility(this.traversalSupplier.get().get());
@@ -59,12 +57,11 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
         this.alpha = configuration.getDouble(ALPHA, 0.85d);
         this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
-
     }
 
     @Override
     public void storeState(final Configuration configuration) {
-        configuration.setProperty(GraphComputer.VERTEX_PROGRAM, PageRankVertexProgram.class.getName());
+        configuration.setProperty(VERTEX_PROGRAM, PageRankVertexProgram.class.getName());
         configuration.setProperty(VERTEX_COUNT, this.vertexCountAsDouble);
         configuration.setProperty(ALPHA, this.alpha);
         configuration.setProperty(TOTAL_ITERATIONS, this.totalIterations);

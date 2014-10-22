@@ -95,7 +95,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
     public interface SideEffects {
 
-        public static final String DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY = Graph.Key.hide("gremlin.sideEffects");
+        public static final String SIDE_EFFECTS = Graph.Key.hide("gremlin.sideEffects");
         public static final String GRAPH_KEY = Graph.System.system("g");
 
         /**
@@ -264,14 +264,6 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         public void setLocalVertex(final Vertex vertex);
 
         public static class Exceptions {
-
-            public static IllegalArgumentException sideEffectKeyValuesMustBeAMultipleOfTwo() {
-                return new IllegalArgumentException("The provided side effect key/value array must be a multiple of two");
-            }
-
-            public static IllegalArgumentException sideEffectKeyValuesMustHaveALegalKeyOnEvenIndices() {
-                return new IllegalArgumentException("The provided side effect key/value array must have a String key on even array indices");
-            }
 
             public static IllegalArgumentException sideEffectKeyCanNotBeEmpty() {
                 return new IllegalArgumentException("Side effect key can not be the empty string");

@@ -6,6 +6,9 @@ import java.util.Iterator;
  * A {@link Step} denotes a unit of computation within a {@link Traversal}.
  * A step takes an incoming object and yields an outgoing object.
  * Steps are chained together in a {@link Traversal} to yield a lazy function chain of computation.
+ * <p/>
+ * In the constructor of a Step, never store explicit sideEffect objects in {@link com.tinkerpop.gremlin.process.Traversal.SideEffects}.
+ * If a sideEffect needs to be registered with the {@link Traversal}, use SideEffects.registerSupplier().
  *
  * @param <S> The incoming object type of the step
  * @param <E> The outgoing object type of the step
@@ -84,7 +87,9 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Cloneable {
     public void reset();
 
     /**
-     * Cloning is used to duplicate steps for the purpose of traversal optimization.
+     * Cloning is used to duplicate steps for the purpose of traversal optimization and OLTP replication.
+     * When cloning a step, it is important that the steps, the cloned step is equivalent to the state of the step when reset() is called.
+     * Moreover, the previous and next steps should be set to {@link com.tinkerpop.gremlin.process.util.EmptyStep}.
      *
      * @return The cloned step
      * @throws CloneNotSupportedException

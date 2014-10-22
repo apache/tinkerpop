@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.computer.util;
 
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.BaseConfiguration;
 
 /**
@@ -17,8 +17,14 @@ public abstract class AbstractVertexProgramBuilder<B extends VertexProgram.Build
     }
 
     public AbstractVertexProgramBuilder(final Class<? extends VertexProgram> vertexProgramClass) {
-        this.configuration.setProperty(GraphComputer.VERTEX_PROGRAM, vertexProgramClass.getName());
+        this.configuration.setProperty(VertexProgram.VERTEX_PROGRAM, vertexProgramClass.getName());
     }
+
+    /*@Override
+    public B graph(final Graph graph) {
+        this.configuration.setProperty(Graph.GRAPH, graph.getClass().getName());
+        return (B) this;
+    }*/
 
     @Override
     public B configure(final Object... keyValues) {

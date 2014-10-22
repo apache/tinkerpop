@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.PathTraverser;
 import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.MessageType;
@@ -53,7 +52,7 @@ public class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>>
     private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<>(Arrays.asList(VOTE_TO_HALT));
     private Set<String> elementComputeKeys = new HashSet<String>() {{
         add(TRAVERSER_TRACKER);
-        add(Traversal.SideEffects.DISTRIBUTED_SIDE_EFFECTS_VERTEX_PROPERTY_KEY);
+        add(Traversal.SideEffects.SIDE_EFFECTS);
     }};
 
     private TraversalVertexProgram() {
@@ -100,7 +99,7 @@ public class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>>
 
     @Override
     public void storeState(final Configuration configuration) {
-        configuration.setProperty(GraphComputer.VERTEX_PROGRAM, TraversalVertexProgram.class.getName());
+        configuration.setProperty(VERTEX_PROGRAM, TraversalVertexProgram.class.getName());
         this.traversalSupplier.storeState(configuration);
     }
 

@@ -18,6 +18,8 @@ import java.util.Set;
  */
 public interface VertexProgram<M> {
 
+    public static final String VERTEX_PROGRAM = "gremlin.vertexProgram";
+
     /**
      * When it is necessary to store the state of the VertexProgram, this method is called.
      * This is typically required when the VertexProgram needs to be serialized to another machine.
@@ -28,16 +30,13 @@ public interface VertexProgram<M> {
      * @param configuration the configuration to store the state of the VertexProgram in.
      */
     public default void storeState(final Configuration configuration) {
-        configuration.setProperty(GraphComputer.VERTEX_PROGRAM, this.getClass().getName());
+        configuration.setProperty(VERTEX_PROGRAM, this.getClass().getName());
     }
 
     /**
      * When it is necessary to load the state of the VertexProgram, this method is called.
      * This is typically required when the VertexProgram needs to be serialized to another machine.
      * Note that what is loaded is simply the instance state, not any processed data.
-     *
-     * It is important that the state loaded from loadState() is identical to any state created from a constructor.
-     * For those GraphComputers that do not need to use Configurations to migrate state between JVMs, the constructor/builder will only be used.
      *
      * @param configuration the configuration to load the state of the VertexProgram from.
      */
@@ -128,7 +127,7 @@ public interface VertexProgram<M> {
      */
     public static <V extends VertexProgram> V createVertexProgram(final Configuration configuration) {
         try {
-            final Class<V> vertexProgramClass = (Class) Class.forName(configuration.getString(GraphComputer.VERTEX_PROGRAM));
+            final Class<V> vertexProgramClass = (Class) Class.forName(configuration.getString(VERTEX_PROGRAM));
             final Constructor<V> constructor = vertexProgramClass.getDeclaredConstructor();
             constructor.setAccessible(true);
             final V vertexProgram = constructor.newInstance();
@@ -141,9 +140,9 @@ public interface VertexProgram<M> {
 
     public interface Builder {
 
-        public <P extends VertexProgram> P create();
-
         public Builder configure(final Object... keyValues);
+
+        public <P extends VertexProgram> P create();
 
     }
 

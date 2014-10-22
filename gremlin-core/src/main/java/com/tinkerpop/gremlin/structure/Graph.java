@@ -30,8 +30,10 @@ import java.util.stream.Collectors;
  */
 public interface Graph extends AutoCloseable {
 
+    public static final String GRAPH = "gremlin.graph";
+
     /**
-     * This is only used for
+     * This should only be used by vendors to create keys in a namespace safe from users.
      */
     public class System {
 
@@ -144,7 +146,7 @@ public interface Graph extends AutoCloseable {
     public default Vertex v(final Object id) throws NoSuchElementException {
         if (null == id) throw Graph.Exceptions.elementNotFound(Vertex.class, null);
         return (Vertex) this.V().has(T.id, id).next();
-}
+    }
 
     /**
      * Get a {@link Edge} given its unique identifier.

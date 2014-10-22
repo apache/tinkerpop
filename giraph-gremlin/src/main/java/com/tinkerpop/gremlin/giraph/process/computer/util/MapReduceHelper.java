@@ -6,9 +6,9 @@ import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphMap;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphReduce;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.Memory;
+import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.hadoop.conf.Configuration;
@@ -61,7 +61,7 @@ public class MapReduceHelper {
             job.setInputFormatClass(ConfUtil.getInputFormatFromVertexInputFormat((Class) newConfiguration.getClass(Constants.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class)));
             job.setOutputFormatClass(newConfiguration.getClass(Constants.GREMLIN_MEMORY_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class, OutputFormat.class)); // TODO: Make this configurable
             // if there is no vertex program, then grab the graph from the input location
-            final Path graphPath = configuration.get(GraphComputer.VERTEX_PROGRAM, null) != null ?
+            final Path graphPath = configuration.get(VertexProgram.VERTEX_PROGRAM, null) != null ?
                     new Path(newConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + Constants.SYSTEM_G) :
                     new Path(newConfiguration.get(Constants.GREMLIN_INPUT_LOCATION));
             final Path memoryPath = new Path(newConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + mapReduce.getMemoryKey());

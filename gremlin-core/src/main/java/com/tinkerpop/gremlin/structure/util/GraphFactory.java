@@ -39,7 +39,7 @@ public class GraphFactory {
         if (null == configuration)
             throw Graph.Exceptions.argumentCanNotBeNull("configuration");
 
-        final String clazz = configuration.getString("gremlin.graph", null);
+        final String clazz = configuration.getString(Graph.GRAPH, null);
         if (null == clazz)
             throw new RuntimeException("Configuration must contain a valid 'gremlin.graph' setting");
 

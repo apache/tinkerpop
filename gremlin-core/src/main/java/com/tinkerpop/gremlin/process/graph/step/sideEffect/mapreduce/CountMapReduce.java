@@ -26,7 +26,7 @@ public final class CountMapReduce implements MapReduce<MapReduce.NullObject, Lon
 
     @Override
     public void map(Vertex vertex, MapEmitter<MapReduce.NullObject, Long> emitter) {
-        emitter.emit(NullObject.instance(), TraversalVertexProgram.getLocalSideEffects(vertex).orElse(CountStep.COUNT_KEY, 0l));
+        emitter.emit(TraversalVertexProgram.getLocalSideEffects(vertex).orElse(CountStep.COUNT_KEY, 0l));
     }
 
     @Override
@@ -35,7 +35,7 @@ public final class CountMapReduce implements MapReduce<MapReduce.NullObject, Lon
         while (values.hasNext()) {
             count = values.next() + count;
         }
-        emitter.emit(NullObject.instance(), count);
+        emitter.emit(count);
     }
 
     @Override

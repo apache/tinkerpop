@@ -15,14 +15,4 @@ public class SideEffectHelper {
         if (key.isEmpty())
             throw Traversal.SideEffects.Exceptions.sideEffectKeyCanNotBeEmpty();
     }
-
-    public static void legalSideEffectKeyValues(final Object[] memoryKeyValues) {
-        if (memoryKeyValues.length % 2 != 0)
-            throw Traversal.SideEffects.Exceptions.sideEffectKeyValuesMustBeAMultipleOfTwo();
-        for (int i = 0; i < memoryKeyValues.length; i = i + 2) {
-            if (!(memoryKeyValues[i] instanceof String))
-                throw Traversal.SideEffects.Exceptions.sideEffectKeyValuesMustHaveALegalKeyOnEvenIndices();
-        }
-    }
-
 }

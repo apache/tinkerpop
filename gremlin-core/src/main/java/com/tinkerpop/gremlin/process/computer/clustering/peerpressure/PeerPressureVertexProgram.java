@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process.computer.clustering.peerpressure;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
@@ -69,7 +68,7 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
 
     @Override
     public void storeState(final Configuration configuration) {
-        configuration.setProperty(GraphComputer.VERTEX_PROGRAM, PeerPressureVertexProgram.class.getName());
+        configuration.setProperty(VERTEX_PROGRAM, PeerPressureVertexProgram.class.getName());
         configuration.setProperty(MAX_ITERATIONS, this.maxIterations);
         configuration.setProperty(DISTRIBUTE_VOTE, this.distributeVote);
         try {

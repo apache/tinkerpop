@@ -52,7 +52,7 @@ public final class AggregateMapReduce implements MapReduce<MapReduce.NullObject,
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<NullObject, Object> emitter) {
-        TraversalVertexProgram.getLocalSideEffects(vertex).<Collection<?>>orElse(this.sideEffectKey, Collections.emptyList()).forEach(object -> emitter.emit(NullObject.instance(), object));
+        TraversalVertexProgram.getLocalSideEffects(vertex).<Collection<?>>orElse(this.sideEffectKey, Collections.emptyList()).forEach(emitter::emit);
     }
 
     @Override

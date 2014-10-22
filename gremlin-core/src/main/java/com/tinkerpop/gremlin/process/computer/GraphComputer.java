@@ -13,8 +13,6 @@ import java.util.concurrent.Future;
  */
 public interface GraphComputer {
 
-    public static String VERTEX_PROGRAM = "gremlin.vertexProgram";
-
     public enum Isolation {
         /**
          * Computations are carried out in a bulk synchronous manner.
@@ -47,6 +45,7 @@ public interface GraphComputer {
 
     /**
      * Add a {@link MapReduce} job to the set of MapReduce jobs to be executed by the {@link GraphComputer}.
+     * There can be any number of MapReduce jobs.
      *
      * @param mapReduce the MapReduce job to add to the computation
      * @return the updated GraphComputer with newly added MapReduce job
