@@ -39,8 +39,7 @@ public final class KryoWritable<T> implements WritableComparable<KryoWritable> {
     @Override
     public void readFields(final DataInput input) throws IOException {
         try {
-            final byte[] objectBytes = WritableUtils.readCompressedByteArray(input);
-            this.t = (T) Serializer.deserializeObject(objectBytes);
+            this.t = (T) Serializer.deserializeObject(WritableUtils.readCompressedByteArray(input));
         } catch (final ClassNotFoundException e) {
             throw new IOException(e.getMessage(), e);
         }
