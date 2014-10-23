@@ -424,6 +424,16 @@ public class BatchGraph<G extends Graph> implements Graph {
         }
 
         @Override
+        public <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
+            return getCachedVertex(externalID).property(key, value, keyValues);
+        }
+
+        @Override
+        public <V> VertexProperty<V> singleProperty(final String key, final V value, final Object... keyValues) {
+            return getCachedVertex(externalID).singleProperty(key, value, keyValues);
+        }
+
+        @Override
         public <V> VertexProperty<V> property(final String key) {
             return getCachedVertex(externalID).property(key);
         }

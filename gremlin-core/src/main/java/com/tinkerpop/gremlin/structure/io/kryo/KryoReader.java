@@ -148,6 +148,8 @@ public class KryoReader implements GraphReader {
 
                     current.iterators().propertyIterator().forEachRemaining(p -> {
                         final List<Object> propertyArgs = new ArrayList<>();
+                        if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
+                            propertyArgs.addAll(Arrays.asList(T.id, p.id()));
                         p.iterators().propertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
                         p.iterators().hiddenPropertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
                         v.property(p.key(), p.value(), propertyArgs.toArray());
@@ -155,6 +157,8 @@ public class KryoReader implements GraphReader {
 
                     current.iterators().hiddenPropertyIterator().forEachRemaining(p -> {
                         final List<Object> propertyArgs = new ArrayList<>();
+                        if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
+                            propertyArgs.addAll(Arrays.asList(T.id, p.id()));
                         p.iterators().propertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
                         p.iterators().hiddenPropertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
                         v.property(Graph.Key.hide(p.key()), p.value(), propertyArgs.toArray());

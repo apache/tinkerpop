@@ -102,10 +102,11 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_INTEGER_VALUES)
     public void shouldNotEvaluateToEqualDifferentId() {
-        final Vertex v = g.addVertex("name", "marko", "age", 29);
-        assertFalse(DetachedVertex.detach(v).equals(DetachedVertex.detach(g.v(convertToVertexId("marko")))));
+        final DetachedVertex originalMarko = DetachedVertex.detach(g.v(convertToVertexId("marko")));
+        final Vertex secondMarko = g.addVertex("name", "marko", "age", 29);
+        assertFalse(DetachedVertex.detach(secondMarko).equals(originalMarko));
     }
 
     @Test
