@@ -39,8 +39,7 @@ import java.util.function.Supplier;
  */
 public final class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>> {
 
-    // TODO: if not an adjacent traversal, use Local message types
-    // TODO: a dual messaging system
+    // TODO: if not an adjacent traversal, use Local message type -- a dual messaging system.
 
     public static final String TRAVERSER_TRACKER = Graph.Key.hide("gremlin.traversalVertexProgram.traverserTracker");
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
