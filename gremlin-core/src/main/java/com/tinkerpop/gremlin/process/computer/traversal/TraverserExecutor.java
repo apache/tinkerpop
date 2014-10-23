@@ -57,9 +57,10 @@ public final class TraverserExecutor {
                 final Step<?, ?> step = TraversalHelper.getStep(start.getFuture(), traversal);
                 step.addStart((Traverser.Admin) start);
                 step.forEachRemaining(end -> {
-                    if (end.asAdmin().isHalted())
+                    if (end.asAdmin().isHalted()) {
+                        end.asAdmin().detach();
                         haltedTraversers.add((Traverser.Admin) end);
-                    else
+                    } else
                         aliveTraversers.add((Traverser.Admin) end);
                 });
             });
