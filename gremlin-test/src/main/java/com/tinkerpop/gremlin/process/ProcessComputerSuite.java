@@ -3,31 +3,36 @@ package com.tinkerpop.gremlin.process;
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
+import com.tinkerpop.gremlin.process.graph.step.branch.ChooseTest;
+import com.tinkerpop.gremlin.process.graph.step.branch.JumpTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.UnionTest;
+import com.tinkerpop.gremlin.process.graph.step.branch.UntilTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.ExceptTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasNotTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.IntervalTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.RandomTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.RangeTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.RetainTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.WhereTest;
 import com.tinkerpop.gremlin.process.graph.step.map.BackTest;
-import com.tinkerpop.gremlin.process.graph.step.branch.ChooseTest;
-import com.tinkerpop.gremlin.process.graph.step.branch.JumpTest;
+import com.tinkerpop.gremlin.process.graph.step.map.HiddenValueMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertiesTest;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
 import com.tinkerpop.gremlin.process.graph.step.map.ShuffleTest;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldTest;
-import com.tinkerpop.gremlin.process.graph.step.branch.UntilTest;
 import com.tinkerpop.gremlin.process.graph.step.map.ValueMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreTest;
@@ -80,44 +85,46 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
 
             // filter
             CyclicPathTest.ComputerTest.class,
-            // TODO: REMOVE? DedupTest.JavaComputerDedupTest.class
-            // TODO: Aggregate isn't accessible // ExceptTest.JavaComputerExceptTest.class,
+            // TODO: DedupTest.ComputerTest.class
+            ExceptTest.ComputerTest.class,
             FilterTest.ComputerTest.class,
             HasNotTest.ComputerTest.class,
             HasTest.ComputerTest.class,
             IntervalTest.ComputerTest.class,
             RandomTest.ComputerTest.class,
-            // TODO: REMOVE? RangeTest.JavaComputerRangeTest.class,
-            // TODO: Aggregate isn't accessible // RetainTest.JavaComputerRetainTest.class,
+            // TODO: RangeTest.ComputerTest.class,
+            RetainTest.ComputerTest.class,
             SimplePathTest.ComputerTest.class,
             WhereTest.ComputerTest.class,
 
             // map
             BackTest.ComputerTest.class,
-            // TODO: REMOVE? FoldTest.JavaComputerFoldTest.class,
+            // TODO: FoldTest.ComputerTest.class,
+            HiddenValueMapTest.ComputerTest.class,
             MapTest.ComputerTest.class,
-            // TODO: MatchTest.JavaComputerMatchTest.class,
-            // TODO: REMOVE? OrderTest.JavaOrderTest.class
+            // TODO: MatchTest.ComputerTest.class,
+            // TODO: OrderByTest.ComputerTest.class
+            // TODO: OrderTest.ComputerTest.class
             PathTest.ComputerTest.class,
             PropertiesTest.ComputerTest.class,
             SelectTest.ComputerTest.class,
             ShuffleTest.ComputerTest.class,
-            VertexTest.ComputerTest.class,
             UnfoldTest.ComputerTest.class,
             ValueMapTest.ComputerTest.class,
+            VertexTest.ComputerTest.class,
 
             // sideEffect
-            // TODO: REMOVE?  AddEdgeTest.JavaAddEdgeTest.class,
+            // TODO: AddEdgeTest.ComputerTest.class,
             AggregateTest.ComputerTest.class,
             CountTest.ComputerTest.class,
             GroupByTest.ComputerTest.class,
             GroupCountTest.ComputerTest.class,
-            // TODO: InjectTest.JavaComputerInjectTest.class,
+            // TODO: InjectTest.ComputerTest.class,
             ProfileTest.ComputerTest.class,
             SideEffectCapTest.ComputerTest.class,
-            // TODO: REMOVE? SideEffectTest.JavaSideEffectTest.class,
+            // TODO: REMOVE? SideEffectTest.ComputerTest.class,
             StoreTest.ComputerTest.class,
-            // TODO: REMOVE? SubgraphTest.JavaSideEffectTest.class,
+            // TODO: REMOVE? SubgraphTest.ComputerTest.class,
             TreeTest.ComputerTest.class,
 
             // algorithms
@@ -134,18 +141,23 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // basic api semantics testing
             GraphComputerTest.class,
 
+            // branch
+            ChooseTest.class,
+            JumpTest.class,
+            UnionTest.class,
+            UntilTest.class,
+
             // filter
             CyclicPathTest.class,
             // DedupTest.class,
-            // ExceptTest.class,
+            ExceptTest.class,
             FilterTest.class,
             HasNotTest.class,
             HasTest.class,
-            // InjectTest.class,
             IntervalTest.class,
             RandomTest.class,
             // RangeTest.class,
-            // RetainTest.class,
+            RetainTest.class,
             SimplePathTest.class,
             WhereTest.class,
 
@@ -153,17 +165,18 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // map
             BackTest.class,
             // FoldTest.class,
-            JumpTest.class,
+            HiddenValueMapTest.class,
             MapTest.class,
             // MatchTest.class,
+            // OrderByTest.class,
             // OrderTest.class,
             PathTest.class,
+            PropertiesTest.class,
             SelectTest.class,
-            Traversal.class,
+            ShuffleTest.class,
             UnfoldTest.class,
-            //UnionTest.class,
-            UntilTest.class,
             ValueMapTest.class,
+            VertexTest.class,
 
 
             // sideEffect
@@ -172,10 +185,12 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             CountTest.class,
             GroupByTest.class,
             GroupCountTest.class,
+            InjectTest.class,
+            ProfileTest.class,
             SideEffectCapTest.class,
             // SideEffectTest.class,
             StoreTest.class,
-            // SubGraphTest.class,
+            // SubgraphTest.class,
             TreeTest.class,
 
 

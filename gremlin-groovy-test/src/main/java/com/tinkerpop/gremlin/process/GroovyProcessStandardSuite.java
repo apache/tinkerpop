@@ -34,6 +34,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.GroovyShuffleTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyUnfoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyValueMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyVertexTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyAddEdgeTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyAggregateTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyCountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupByTest;
@@ -45,6 +46,8 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovySideEffectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyStoreTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovySubgraphTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyTreeTest;
+import com.tinkerpop.gremlin.process.graph.step.util.TraversalSideEffectsTest;
+import com.tinkerpop.gremlin.process.graph.step.util.TraversalStrategiesTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -94,6 +97,7 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyValueMapTest.StandardTest.class,
             GroovyVertexTest.StandardTest.class,
             // sideEffect
+            GroovyAddEdgeTest.StandardTest.class,
             GroovyAggregateTest.StandardTest.class,
             GroovyCountTest.StandardTest.class,
             GroovyGroupByTest.StandardTest.class,
@@ -105,9 +109,6 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyStoreTest.StandardTest.class,
             GroovySubgraphTest.StandardTest.class,
             GroovyTreeTest.StandardTest.class,
-
-            // util
-            // TraversalSideEffectsTest.StandardTest.class,
 
             // compliance
             TraversalCoverageTest.class,

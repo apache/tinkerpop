@@ -14,6 +14,7 @@ import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerTraversal;
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.util.HashMap;
@@ -35,6 +36,11 @@ import java.util.Set;
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_INTEGRATE)
 public class TinkerGraph implements Graph {
+
+    private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
+        this.setProperty(Graph.GRAPH, TinkerGraph.class.getName());
+    }};
+
     protected Long currentId = -1l;
     protected Map<Object, Vertex> vertices = new HashMap<>();
     protected Map<Object, Edge> edges = new HashMap<>();
@@ -174,6 +180,11 @@ public class TinkerGraph implements Graph {
     @Override
     public Transaction tx() {
         throw Exceptions.transactionsNotSupported();
+    }
+
+    @Override
+    public Configuration configuration() {
+        return EMPTY_CONFIGURATION;
     }
 
     /**

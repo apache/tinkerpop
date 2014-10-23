@@ -73,7 +73,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
             if (args.get(i).equals(USE_SUGAR))
                 this.useSugarPlugin = Boolean.valueOf(args.get(i + 1));
             else {
-                this.giraphGraph.variables().getConfiguration().setProperty(args.get(i), args.get(i + 1));
+                this.giraphGraph.configuration().setProperty(args.get(i), args.get(i + 1));
             }
         }
         return this.giraphGraph;

@@ -21,7 +21,7 @@ public class GiraphConfiguration extends BaseConfiguration implements Serializab
     }
 
     public GiraphConfiguration(final Configuration configuration) {
-        configuration.getKeys().forEachRemaining(key -> this.setProperty(key, configuration.getProperty(key)));
+        this.copy(configuration);
     }
 
     public Class<VertexInputFormat> getInputFormat() {

@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.neo4j.structure;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -15,6 +16,10 @@ import java.util.List;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class Neo4jHelper {
+
+    public static ExecutionEngine getCypher(final Neo4jGraph graph) {
+        return graph.cypher;
+    }
 
     public static org.neo4j.graphdb.Direction mapDirection(final Direction direction) {
         if (direction.equals(Direction.OUT))

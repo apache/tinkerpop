@@ -19,10 +19,6 @@ public class GiraphGraphVariables implements Graph.Variables {
 
     private final Map<String, Object> variables = new HashMap<>();
 
-    public GiraphGraphVariables(final Configuration configuration) {
-        this.variables.put(Constants.CONFIGURATION, configuration);
-    }
-
     @Override
     public Set<String> keys() {
         return this.variables.keySet();
@@ -44,10 +40,7 @@ public class GiraphGraphVariables implements Graph.Variables {
         this.variables.put(key, value);
     }
 
-    public GiraphConfiguration getConfiguration() {
-        return this.<GiraphConfiguration>get(Constants.CONFIGURATION).get();
-    }
-
+    @Override
     public String toString() {
         return StringFactory.graphVariablesString(this);
     }

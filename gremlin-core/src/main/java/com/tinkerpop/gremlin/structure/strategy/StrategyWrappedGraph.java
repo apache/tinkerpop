@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
+import org.apache.commons.configuration.Configuration;
 
 import java.util.Optional;
 
@@ -105,6 +106,11 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
     @Override
     public Variables variables() {
         return new StrategyWrappedVariables(this.baseGraph.variables(), this);
+    }
+
+    @Override
+    public Configuration configuration() {
+        return this.baseGraph.configuration();
     }
 
     @Override

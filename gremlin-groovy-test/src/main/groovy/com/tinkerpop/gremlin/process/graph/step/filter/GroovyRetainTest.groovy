@@ -21,7 +21,7 @@ public abstract class GroovyRetainTest {
         }
     }
 
-    public static class ComputerTestImpl extends RetainTest {
+    public static class ComputerTest extends RetainTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_retainXg_v2X(final Object v1Id, final Object v2Id) {
             ComputerTestHelper.compute("g.v(${v1Id}).out.retain(g.v($v2Id))", g);

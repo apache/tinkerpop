@@ -9,6 +9,9 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Removed `Neo4jGraph.getCypher()` as users should use `Neo4jGraph.cypher()` and get back TinkerPop3 graph objects.
+* `GiraphGraph.variables().getConfiguration()` is now replaced by `GiraphGraph.configuration()`.
+* Added `Graph.configuration()` which returns the `Configuration` object of `Graph.open()`.
 * Removed `TraverserTracker` as now there is only a `TraverserSet` for all halted traversers. A nice simplification of `TraversalVertexProgram`.
 * Renamed `Traverser.isDone()` to `Traverser.isHalted()` and `DONE` to `HALT`. Consistent with automata terminology.
 * Removed `PathTraverserExecutor` and `SimpleTraverserExecutor` as a single `TraverserExecutor` correctly executes both types of traversers.

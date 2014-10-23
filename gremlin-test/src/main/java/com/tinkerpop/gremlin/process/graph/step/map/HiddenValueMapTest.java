@@ -73,4 +73,21 @@ public abstract class HiddenValueMapTest extends AbstractGremlinProcessTest {
             return g.V().hiddenValueMap("name");
         }
     }
+
+    public static class ComputerTest extends HiddenValueMapTest {
+
+        public ComputerTest() {
+            requiresGraphComputer = true;
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, List>> get_g_V_hiddenValueMap() {
+            return (Traversal) g.V().hiddenValueMap().submit(g.compute());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, List>> get_g_V_hiddenValueMapXnameX() {
+            return (Traversal) g.V().hiddenValueMap("name").submit(g.compute());
+        }
+    }
 }

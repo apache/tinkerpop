@@ -43,7 +43,14 @@ import java.util.function.Function;
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
+
+    private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
+        this.setProperty(Graph.GRAPH, Neo4jGraph.class.getName());
+    }};
+
+
     private GraphDatabaseService baseGraph;
+    private BaseConfiguration configuration = new BaseConfiguration();
 
     public static final String CONFIG_DIRECTORY = "gremlin.neo4j.directory";
     public static final String CONFIG_HA = "gremlin.neo4j.ha";
@@ -58,9 +65,10 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     protected final boolean supportsMultiProperties;
 
     protected final TransactionManager transactionManager;
-    private final ExecutionEngine cypher;
+    protected final ExecutionEngine cypher;
 
     private Neo4jGraph(final GraphDatabaseService baseGraph) {
+        this.configuration.copy(EMPTY_CONFIGURATION);
         this.baseGraph = baseGraph;
         this.transactionManager = ((GraphDatabaseAPI) baseGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
         this.cypher = new ExecutionEngine(this.baseGraph);
@@ -91,9 +99,11 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
 
     private Neo4jGraph(final Configuration configuration) {
         try {
-            final String directory = configuration.getString(CONFIG_DIRECTORY);
-            final Map neo4jSpecificConfig = ConfigurationConverter.getMap(configuration.subset(CONFIG_CONF));
-            final boolean ha = configuration.getBoolean(CONFIG_HA, false);
+            this.configuration.copy(EMPTY_CONFIGURATION);
+            this.configuration.copy(configuration);
+            final String directory = this.configuration.getString(CONFIG_DIRECTORY);
+            final Map neo4jSpecificConfig = ConfigurationConverter.getMap(this.configuration.subset(CONFIG_CONF));
+            final boolean ha = this.configuration.getBoolean(CONFIG_HA, false);
             // if HA is enabled then use the correct factory to instantiate the GraphDatabaseService
             this.baseGraph = ha ?
                     new HighlyAvailableGraphDatabaseFactory().newHighlyAvailableDatabaseBuilder(directory).setConfig(neo4jSpecificConfig).newGraphDatabase() :
@@ -104,10 +114,10 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
             this.neo4jGraphVariables = new Neo4jGraphVariables(this);
             ///////////
             if (!this.neo4jGraphVariables.get(Graph.System.system(CONFIG_META_PROPERTIES)).isPresent())
-                this.neo4jGraphVariables.set(Graph.System.system(CONFIG_META_PROPERTIES), configuration.getBoolean(CONFIG_META_PROPERTIES, false));
+                this.neo4jGraphVariables.set(Graph.System.system(CONFIG_META_PROPERTIES), this.configuration.getBoolean(CONFIG_META_PROPERTIES, false));
             // TODO: Logger saying the configuration properties are ignored if already in Graph.Variables
             if (!this.neo4jGraphVariables.get(Graph.System.system(CONFIG_MULTI_PROPERTIES)).isPresent())
-                this.neo4jGraphVariables.set(Graph.System.system(CONFIG_MULTI_PROPERTIES), configuration.getBoolean(CONFIG_MULTI_PROPERTIES, false));
+                this.neo4jGraphVariables.set(Graph.System.system(CONFIG_MULTI_PROPERTIES), this.configuration.getBoolean(CONFIG_MULTI_PROPERTIES, false));
             // TODO: Logger saying the configuration properties are ignored if already in Graph.Variables
             this.supportsMetaProperties = this.neo4jGraphVariables.<Boolean>get(Graph.System.system(CONFIG_META_PROPERTIES)).get();
             this.supportsMultiProperties = this.neo4jGraphVariables.<Boolean>get(Graph.System.system(CONFIG_MULTI_PROPERTIES)).get();
@@ -132,7 +142,6 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
      */
     public static Neo4jGraph open(final Configuration configuration) {
         if (null == configuration) throw Graph.Exceptions.argumentCanNotBeNull("configuration");
-
         if (!configuration.containsKey(CONFIG_DIRECTORY))
             throw new IllegalArgumentException(String.format("Neo4j configuration requires that the %s be set", CONFIG_DIRECTORY));
 
@@ -151,8 +160,8 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     /**
      * Construct a Neo4jGraph instance using an existing Neo4j raw instance.
      */
-    public static Neo4jGraph open(final GraphDatabaseService rawGraph) {
-        return new Neo4jGraph(Optional.ofNullable(rawGraph).orElseThrow(() -> Graph.Exceptions.argumentCanNotBeNull("baseGraph")));
+    public static Neo4jGraph open(final GraphDatabaseService baseGraph) {
+        return new Neo4jGraph(Optional.ofNullable(baseGraph).orElseThrow(() -> Graph.Exceptions.argumentCanNotBeNull("baseGraph")));
     }
 
     @Override
@@ -242,6 +251,11 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         return this.neo4jGraphVariables;
     }
 
+    @Override
+    public Configuration configuration() {
+        return this.configuration;
+    }
+
     /**
      * This implementation of {@code close} will also close the current transaction on the the thread, but it
      * is up to the caller to deal with dangling transactions in other threads prior to calling this method.
@@ -266,18 +280,32 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
         return this.baseGraph;
     }
 
+    /**
+     * Provides access to Neo4j's schema system for managing indices.
+     *
+     * @return Neo4j's schema/index manager.
+     */
     public Schema getSchema() {
         return this.baseGraph.schema();
     }
 
-    public ExecutionEngine getCypher() {
-        return cypher;
-    }
-
+    /**
+     * Execute the Cypher query and get the result set as a {@link Neo4jTraversal}.
+     *
+     * @param query the Cypher query to execute
+     * @return a fluent Gremlin traversal
+     */
     public Neo4jTraversal cypher(final String query) {
         return cypher(query, Collections.emptyMap());
     }
 
+    /**
+     * Execute the Cypher query with provided parameters and get the result set as a {@link Neo4jTraversal}.
+     *
+     * @param query      the Cypher query to execute
+     * @param parameters the parameters of the Cypher query
+     * @return a fluent Gremlin traversal
+     */
     public Neo4jTraversal cypher(final String query, final Map<String, Object> parameters) {
         this.tx().readWrite();
         final Neo4jTraversal traversal = Neo4jTraversal.of(this);

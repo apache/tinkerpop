@@ -57,7 +57,7 @@ public final class GiraphGraphComputer extends Configured implements GraphComput
 
     public GiraphGraphComputer(final GiraphGraph giraphGraph) {
         this.giraphGraph = giraphGraph;
-        final Configuration configuration = giraphGraph.variables().getConfiguration();
+        final Configuration configuration = giraphGraph.configuration();
         configuration.getKeys().forEachRemaining(key -> this.giraphConfiguration.set(key, configuration.getProperty(key).toString()));
         this.giraphConfiguration.setMasterComputeClass(GiraphMemory.class);
         this.giraphConfiguration.setVertexClass(GiraphInternalVertex.class);

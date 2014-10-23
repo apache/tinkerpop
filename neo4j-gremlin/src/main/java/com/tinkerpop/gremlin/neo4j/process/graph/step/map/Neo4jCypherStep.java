@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.neo4j.process.graph.step.map;
 
 import com.tinkerpop.gremlin.neo4j.process.graph.step.util.Neo4jCypherIterator;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import com.tinkerpop.gremlin.neo4j.structure.Neo4jHelper;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
@@ -27,7 +28,7 @@ public class Neo4jCypherStep<S, E> extends FlatMapStep<S, Map<String, E>> {
     public Neo4jCypherStep(final Traversal traversal, final String query, final Map<String, Object> parameters) {
         super(traversal);
         final Neo4jGraph graph = (Neo4jGraph) traversal.sideEffects().getGraph();
-        final ExecutionEngine cypher = graph.getCypher();
+        final ExecutionEngine cypher = Neo4jHelper.getCypher(graph);
         this.setFunction(traverser -> {
             final S s = traverser.get();
             parameters.put(START, s);

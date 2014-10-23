@@ -29,7 +29,7 @@ public abstract class GiraphElementIterator<E extends Element> implements Iterat
 
     public GiraphElementIterator(final GiraphGraph graph, final VertexInputFormat inputFormat, final Path path) throws IOException {
         this.graph = graph;
-        final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.variables().getConfiguration());
+        final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.configuration());
         for (final FileStatus status : FileSystem.get(configuration).listStatus(path, HiddenFileFilter.instance())) {
             this.readers.add(inputFormat.createVertexReader(new FileSplit(status.getPath(), 0, Integer.MAX_VALUE, new String[]{}), new TaskAttemptContext(configuration, new TaskAttemptID())));
         }
@@ -38,10 +38,10 @@ public abstract class GiraphElementIterator<E extends Element> implements Iterat
     public GiraphElementIterator(final GiraphGraph graph) throws IOException {
         try {
             this.graph = graph;
-            if (this.graph.variables().getConfiguration().containsKey(Constants.GREMLIN_INPUT_LOCATION)) {
-                final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.variables().getConfiguration());
-                final VertexInputFormat inputFormat = this.graph.variables().getConfiguration().getInputFormat().getConstructor().newInstance();
-                for (final FileStatus status : FileSystem.get(configuration).listStatus(new Path(graph.variables().getConfiguration().getInputLocation()), HiddenFileFilter.instance())) {
+            if (this.graph.configuration().containsKey(Constants.GREMLIN_INPUT_LOCATION)) {
+                final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.configuration());
+                final VertexInputFormat inputFormat = this.graph.configuration().getInputFormat().getConstructor().newInstance();
+                for (final FileStatus status : FileSystem.get(configuration).listStatus(new Path(graph.configuration().getInputLocation()), HiddenFileFilter.instance())) {
                     this.readers.add(inputFormat.createVertexReader(new FileSplit(status.getPath(), 0, Integer.MAX_VALUE, new String[]{}), new TaskAttemptContext(configuration, new TaskAttemptID())));
                 }
             }

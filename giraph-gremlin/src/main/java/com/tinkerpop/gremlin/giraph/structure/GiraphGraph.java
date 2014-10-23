@@ -78,10 +78,16 @@ import java.util.Optional;
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 public class GiraphGraph implements Graph {
 
+    private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
+        this.setProperty(Graph.GRAPH, GiraphGraph.class.getName());
+    }};
+
     protected final GiraphGraphVariables variables;
+    protected final GiraphConfiguration configuration;
 
     private GiraphGraph(final Configuration configuration) {
-        this.variables = new GiraphGraphVariables(new GiraphConfiguration(configuration));
+        this.configuration = new GiraphConfiguration(configuration);
+        this.variables = new GiraphGraphVariables();
     }
 
     public static GiraphGraph open() {
@@ -89,7 +95,7 @@ public class GiraphGraph implements Graph {
     }
 
     public static GiraphGraph open(final Configuration configuration) {
-        return new GiraphGraph(Optional.ofNullable(configuration).orElse(new BaseConfiguration()));
+        return new GiraphGraph(Optional.ofNullable(configuration).orElse(EMPTY_CONFIGURATION));
     }
 
     @Override
@@ -126,16 +132,21 @@ public class GiraphGraph implements Graph {
 
 
     @Override
-    public GiraphGraphVariables variables() {
+    public Variables variables() {
         return this.variables;
     }
 
+    @Override
+    public GiraphConfiguration configuration() {
+        return this.configuration;
+    }
+
     public String toString() {
-        final org.apache.hadoop.conf.Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(this.variables().getConfiguration());
-        final String fromString = this.variables().getConfiguration().containsKey(Constants.GIRAPH_VERTEX_INPUT_FORMAT_CLASS) ?
+        final org.apache.hadoop.conf.Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(this.configuration);
+        final String fromString = this.configuration.containsKey(Constants.GIRAPH_VERTEX_INPUT_FORMAT_CLASS) ?
                 hadoopConfiguration.getClass(Constants.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class).getSimpleName() :
                 "no-input";
-        final String toString = this.variables().getConfiguration().containsKey(Constants.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS) ?
+        final String toString = this.configuration.containsKey(Constants.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS) ?
                 hadoopConfiguration.getClass(Constants.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS, VertexOutputFormat.class).getSimpleName() :
                 "no-output";
         return StringFactory.graphString(this, fromString.toLowerCase() + "->" + toString.toLowerCase());
@@ -143,7 +154,7 @@ public class GiraphGraph implements Graph {
 
     @Override
     public void close() {
-        this.variables().getConfiguration().clear();
+        this.configuration.clear();
     }
 
     @Override

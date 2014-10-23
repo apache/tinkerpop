@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.commons.configuration.Configuration;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -63,6 +64,11 @@ public class EmptyGraph implements Graph {
 
     @Override
     public Variables variables() {
+        throw new IllegalStateException(MESSAGE);
+    }
+
+    @Override
+    public Configuration configuration() {
         throw new IllegalStateException(MESSAGE);
     }
 

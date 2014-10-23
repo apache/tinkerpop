@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -31,7 +32,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, String> get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX(final Object v1Id);
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_exceptXg_VX();
+    public abstract Traversal<Vertex, Vertex> get_g_V_exceptXg_V_toListX();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_exceptXX();
 
@@ -77,8 +78,8 @@ public abstract class ExceptTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_exceptXg_VX() {
-        Traversal<Vertex, Vertex> traversal = get_g_V_exceptXg_VX();
+    public void g_V_exceptXg_V_toListX() {
+        Traversal<Vertex, Vertex> traversal = get_g_V_exceptXg_V_toListX();
         printTraversalForm(traversal);
         final List<Vertex> vertices = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(0, vertices.size());
@@ -126,7 +127,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_exceptXg_VX() {
+        public Traversal<Vertex, Vertex> get_g_V_exceptXg_V_toListX() {
             return g.V().except(g.V().toList());
         }
 
@@ -159,7 +160,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_exceptXg_VX() {
+        public Traversal<Vertex, Vertex> get_g_V_exceptXg_V_toListX() {
             return g.V().except(g.V().toList()).submit(g.compute());
         }
 

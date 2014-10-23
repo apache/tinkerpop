@@ -13,7 +13,6 @@ public class Constants {
 
     // public static final Kryo KRYO = new Kryo();
 
-    public static final String CONFIGURATION = "configuration";
     public static final String GREMLIN_INPUT_LOCATION = "giraph.gremlin.inputLocation";
     public static final String GREMLIN_OUTPUT_LOCATION = "giraph.gremlin.outputLocation";
     public static final String GIRAPH_VERTEX_INPUT_FORMAT_CLASS = "giraph.vertexInputFormatClass";

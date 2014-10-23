@@ -17,6 +17,9 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.batch.cache.VertexCache;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationUtils;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -245,6 +248,11 @@ public class BatchGraph<G extends Graph> implements Graph {
     @Override
     public Variables variables() {
         throw Exceptions.variablesNotSupported();
+    }
+
+    @Override
+    public Configuration configuration() {
+        return new BaseConfiguration();
     }
 
     @Override

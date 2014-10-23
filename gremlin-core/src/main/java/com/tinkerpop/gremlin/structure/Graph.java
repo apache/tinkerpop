@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
+import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
 import java.lang.annotation.ElementType;
@@ -214,6 +215,13 @@ public interface Graph extends AutoCloseable {
      * @return The variables associated with this graph
      */
     public Variables variables();
+
+    /**
+     * Get the {@link org.apache.commons.configuration.Configuration} associated with the construction of this graph.
+     *
+     * @return the configuration used during graph construction.
+     */
+    public Configuration configuration();
 
     /**
      * Graph variables are a set of key/value pairs associated with the graph.
