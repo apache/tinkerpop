@@ -99,7 +99,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
      */
     public interface Admin<T> extends Traverser<T>, Attachable<Admin<T>> {
 
-        public static final String DONE = Graph.System.system("done");
+        public static final String HALT = Graph.System.system("halt");
 
         /**
          * Set the current object location of the traverser.
@@ -123,7 +123,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
 
         /**
          * Set the number of times the traverser has gone through a loop back to 0.
-         * When a traverser exists a looping contruct, this method should be called.
+         * When a traverser exits a looping construct, this method should be called.
          */
         public void resetLoops();
 
@@ -138,6 +138,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
 
         /**
          * Set the future of the traverser as signified by the step's label.
+         * If the future is {@link Traverser.Admin#HALT}, then {@link Traverser.Admin#isHalted()} is true.
          *
          * @param label The future labeled step of the traverser
          */
@@ -152,12 +153,19 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
 
         /**
          * If the traverser has "no future" then it is done with its lifecycle.
+         * This does not mean that the traverser is "dead," only that it has successfully passed through the {@link Traversal}.
          *
          * @return Whether the traverser is done executing or not
          */
-        public default boolean isDone() {
-            return getFuture().equals(DONE);
+        public default boolean isHalted() {
+            return getFuture().equals(HALT);
         }
+
+        /*
+          A helper that sets the future of the traverser to {@link Traverser.Admin#HALT}.
+        public default void halt() {
+            this.setFuture(HALT);
+        } */
 
         /**
          * Generate a child traverser of the current traverser for current as step and new object location.

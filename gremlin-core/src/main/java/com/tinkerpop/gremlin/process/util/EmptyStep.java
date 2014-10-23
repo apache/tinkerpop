@@ -72,7 +72,7 @@ public final class EmptyStep<S, E> implements Step<S, E> {
 
     @Override
     public String getLabel() {
-        return Traverser.Admin.DONE;
+        return Traverser.Admin.HALT;
     }
 
     @Override

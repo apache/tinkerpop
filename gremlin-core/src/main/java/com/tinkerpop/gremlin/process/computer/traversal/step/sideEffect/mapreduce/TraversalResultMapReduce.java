@@ -2,10 +2,9 @@ package com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapredu
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.process.computer.traversal.TraverserTracker;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
+import com.tinkerpop.gremlin.process.util.TraverserSet;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.javatuples.Pair;
@@ -26,12 +25,7 @@ public final class TraversalResultMapReduce implements MapReduce<MapReduce.NullO
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<MapReduce.NullObject, Object> emitter) {
-        final Property mapProperty = vertex.property(TraversalVertexProgram.TRAVERSER_TRACKER);
-        if (mapProperty.isPresent()) {
-            final TraverserTracker tracker = (TraverserTracker) mapProperty.value();
-            tracker.getDoneObjectTracks().forEach(emitter::emit);
-            tracker.getDoneGraphTracks().forEach(emitter::emit);
-        }
+        vertex.<TraverserSet>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(emitter::emit));
     }
 
     @Override
