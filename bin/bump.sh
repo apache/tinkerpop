@@ -14,8 +14,8 @@ for pom in $(find . -name pom.xml); do
            | grep '<version>' | cut -f1 -d '-' | xargs -n1 -I{} sed -i -e "{}s@>.*<@>${VERSION}<@" $pom
 done
 
-# update YAML configuration
-sed 's/\[com.tinkerpop, neo4j-gremlin, ".*"\]/\[com.tinkerpop, neo4j-gremlin, "'"${VERSION}"'"\]/' gremlin-server/conf/gremlin-server-neo4j.yaml > gremlin-server/conf/gremlin-server-neo4j1.yaml && mv gremlin-server/conf/gremlin-server-neo4j1.yaml gremlin-server/conf/gremlin-server-neo4j.yaml
+# YAML configuration
+sed -i 's/\[com.tinkerpop, neo4j-gremlin, ".*"\]/\[com.tinkerpop, neo4j-gremlin, "'"${VERSION}"'"\]/' gremlin-server/conf/gremlin-server-neo4j.yaml
 
-# update README
-sed 's/\(http:\/\/tinkerpop.com\/.*docs\/\)[A-Za-z0-9.-]*\/\(.*\)/\1'"${VERSION}"'\/\2/' README.asciidoc > README1.asciidoc && mv README1.asciidoc README.asciidoc
+# README
+sed -i 's/\(http:\/\/tinkerpop.com\/.*docs\/\)[A-Za-z0-9.-]*\/\(.*\)/\1'"${VERSION}"'\/\2/' README.asciidoc
