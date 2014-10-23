@@ -57,9 +57,10 @@ Release Process
 . `git commit -a -m "TinkerPop x.y.z release"` and `git push`
 . `git tag -a -m "TinkerPop x.y.z release" x.y.z` and `git push --tags`
 . `bin/publish-docs.sh`
-. `mvn clean deploy -Psonatype-oss-release -Dmaven.test.skip=true`
+. `mvn clean install -Dasciidoc -Djavadoc -Dmaven.test.skip=true` - generate distributions for the release version with documentation included
+. `mvn deploy -Psonatype-oss-release -Dmaven.test.skip=true`
 . Log into link:https://oss.sonatype.org/[SonaType], close and then release the release.
-. `mvn deploy -Dasciidoc -Djavadoc -Darchives -Dmaven.test.skip=true`
+. `mvn deploy -Darchives -Dmaven.test.skip=true`
 . Update download links on home page.
 .. `s3cmd --acl-public put index.html s3://www.tinkerpop.com/`
 . Email gremlin-users mailing list and tweet.
