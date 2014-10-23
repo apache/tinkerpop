@@ -17,7 +17,7 @@ import java.util.Optional;
  * </pre>
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @author Joshua Shinavier (http://fortytwo.net)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface Vertex extends Element, VertexTraversal {
 

@@ -23,48 +23,45 @@ public final class TraverserExecutor {
 
     public static boolean execute(final Vertex vertex, final Messenger<Traverser.Admin<?>> messenger, final Traversal traversal) {
 
-        final TraverserTracker tracker = vertex.value(TraversalVertexProgram.TRAVERSER_TRACKER);
+        final TraverserSet<Object> haltedTraversers = vertex.value(TraversalVertexProgram.HALTED_TRAVERSERS);
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
-        final TraverserSet<Object> localTraverserSet = new TraverserSet<>();
 
-        // process incoming traversers
+        final TraverserSet<Object> aliveTraversers = new TraverserSet<>();
+        // gather incoming traversers into a traverser set and gain the 'weighted-set' optimization
         messenger.receiveMessages(MessageType.Global.to()).forEach(traverser -> {
             traverser.attach(vertex);
-            localTraverserSet.add((Traverser.Admin) traverser);
+            aliveTraversers.add((Traverser.Admin) traverser);
         });
 
-        while (!localTraverserSet.isEmpty()) {
-            final TraverserSet<Object> tempTraverserSet = new TraverserSet<>();
-            // process all the local objects and send messages or store locally accordingly
-            localTraverserSet.forEach(traverser -> {
+        // while there are still local traversers, process them until they leave the vertex or halt (i.e. isHalted()).
+        while (!aliveTraversers.isEmpty()) {
+            final TraverserSet<Object> toProcessTraversers = new TraverserSet<>();
+            // process all the local objects and send messages or store locally again
+            aliveTraversers.forEach(traverser -> {
                 if (traverser.get() instanceof Element || traverser.get() instanceof Property) {      // GRAPH OBJECT
-                    if (traverser.isDone()) {
+                    // if the element is remote, then message, else store it locally for re-processing
+                    final Vertex hostingVertex = TraverserExecutor.getHostingVertex(traverser.get());
+                    if (!vertex.equals(hostingVertex) || traverser.get() instanceof ReferencedElement) {
+                        voteToHalt.set(false);
                         traverser.detach();
-                        tracker.getDoneGraphTracks().add(traverser);
-                    } else {
-                        final Vertex hostingVertex = TraverserExecutor.getHostingVertex(traverser.get());
-                        if (!vertex.equals(hostingVertex) || traverser.get() instanceof ReferencedElement) {
-                            traverser.detach();
-                            voteToHalt.set(false);
-                            messenger.sendMessage(MessageType.Global.to(hostingVertex), traverser);
-                        } else {
-                            tempTraverserSet.add(traverser);
-                        }
-                    }
-                } else {                                                                              // STANDARD OBJECT
-                    if (traverser.isDone()) {
-                        traverser.detach();
-                        tracker.getDoneObjectTracks().add(traverser);
-                    } else {
-                        tempTraverserSet.add(traverser);
-                    }
-                }
+                        messenger.sendMessage(MessageType.Global.to(hostingVertex), traverser);
+                    } else
+                        toProcessTraversers.add(traverser);
+                } else                                                                              // STANDARD OBJECT
+                    toProcessTraversers.add(traverser);
             });
-            localTraverserSet.clear();
-            tempTraverserSet.forEach(start -> {
+
+            // process local traversers and if alive, repeat, else halt.
+            aliveTraversers.clear();
+            toProcessTraversers.forEach(start -> {
                 final Step<?, ?> step = TraversalHelper.getStep(start.getFuture(), traversal);
                 step.addStart((Traverser.Admin) start);
-                step.forEachRemaining(end -> localTraverserSet.add((Traverser.Admin) end));
+                step.forEachRemaining(end -> {
+                    if (end.asAdmin().isHalted())
+                        haltedTraversers.add((Traverser.Admin) end);
+                    else
+                        aliveTraversers.add((Traverser.Admin) end);
+                });
             });
         }
         return voteToHalt.get();
@@ -73,13 +70,11 @@ public final class TraverserExecutor {
     private final static Vertex getHostingVertex(final Object object) {
         if (object instanceof Vertex)
             return (Vertex) object;
-        else if (object instanceof Edge) {
+        else if (object instanceof Edge)
             return ((Edge) object).iterators().vertexIterator(Direction.OUT).next();
-        } else if (object instanceof Property)
+        else if (object instanceof Property)
             return getHostingVertex(((Property) object).element());
         else
-            throw new IllegalStateException("The host of the object is unknown: " + object.toString());
+            throw new IllegalStateException("The host of the object is unknown: " + object.toString() + ":" + object.getClass().getCanonicalName());
     }
-
-
 }

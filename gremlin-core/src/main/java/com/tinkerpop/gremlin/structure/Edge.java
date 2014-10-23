@@ -10,14 +10,14 @@ import java.util.Iterator;
  * {@link Vertex} (out {@link Vertex}) and which {@link Vertex} is the head {@link Vertex}
  * (in {@link Vertex}). The {@link Edge} {@code label} determines the type of relationship that exists between the
  * two vertices.
- * <p>
+ * <p/>
  * Diagrammatically:
  * <pre>
  * outVertex ---label---> inVertex.
  * </pre>
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @author Joshua Shinavier (http://fortytwo.net)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface Edge extends Element, EdgeTraversal {
 
