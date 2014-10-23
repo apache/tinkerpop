@@ -17,9 +17,10 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.util.DefaultSideEffects;
 import com.tinkerpop.gremlin.process.util.EmptyStep;
+import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -27,6 +28,7 @@ import org.apache.commons.configuration.Configuration;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -35,7 +37,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>> {
+public final class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>> {
 
     // TODO: if not an adjacent traversal, use Local message types
     // TODO: a dual messaging system
@@ -136,6 +138,8 @@ public class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>>
     private void executeFirstIteration(final Vertex vertex, final Messenger<Traverser.Admin<?>> messenger, final Memory memory) {
         final Traversal traversal = this.getTraversal();
         traversal.sideEffects().setLocalVertex(vertex);
+        final TraverserTracker traverserTracker = new TraverserTracker();
+        vertex.property(TRAVERSER_TRACKER, traverserTracker);
 
         if (!(traversal.getSteps().get(0) instanceof GraphStep))
             throw new UnsupportedOperationException("TraversalVertexProgram currently only supports GraphStep starts on vertices or edges");
@@ -143,41 +147,27 @@ public class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>>
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
         final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.Admin.DONE : startStep.getNextStep().getLabel();
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
-        if (startStep.returnsVertices()) {   // PROCESS VERTICES
-            final Traverser.Admin<Vertex> traverser = this.trackPaths ?
-                    new PathTraverser<>(startStep.getLabel(), vertex, traversal.sideEffects()) :
-                    new SimpleTraverser<>(vertex, traversal.sideEffects());
+        final Iterator<? extends Element> starts = startStep.returnsVertices() ? new SingleIterator<>(vertex) : vertex.iterators().edgeIterator(Direction.OUT, Integer.MAX_VALUE);
+        starts.forEachRemaining(element -> {
+            final Traverser.Admin<? extends Element> traverser = this.trackPaths ?
+                    new PathTraverser<>(startStep.getLabel(), element, traversal.sideEffects()) :
+                    new SimpleTraverser<>(element, traversal.sideEffects());
             traverser.setFuture(future);
             traverser.detach();
-            messenger.sendMessage(MessageType.Global.to(vertex), traverser);
-            voteToHalt.set(false);
-        } else if (startStep.returnsEdges()) {  // PROCESS EDGES
-            vertex.iterators().edgeIterator(Direction.OUT, Integer.MAX_VALUE).forEachRemaining(edge -> {
-                final Traverser.Admin<Edge> traverser = this.trackPaths ?
-                        new PathTraverser<>(startStep.getLabel(), edge, traversal.sideEffects()) :
-                        new SimpleTraverser<>(edge, traversal.sideEffects());
-                traverser.setFuture(future);
-                traverser.detach();
-                messenger.sendMessage(MessageType.Global.to(vertex), traverser);
+            if (traverser.isDone()) {
+                traverserTracker.getDoneGraphTracks().add(traverser);
+            } else {
                 voteToHalt.set(false);
-            });
-        } else {  // PROCESS ARBITRARY OBJECTS
-            throw new UnsupportedOperationException("TraversalVertexProgram currently only supports vertex and edge starts");
-        }
-
-        vertex.property(TRAVERSER_TRACKER, new TraverserTracker());
+                messenger.sendMessage(MessageType.Global.to(vertex), traverser);
+            }
+        });
         memory.and(VOTE_TO_HALT, voteToHalt.get());
     }
 
     private void executeOtherIterations(final Vertex vertex, final Messenger<Traverser.Admin<?>> messenger, final Memory memory) {
         final Traversal traversal = this.getTraversal();
         traversal.sideEffects().setLocalVertex(vertex);
-
-        if (this.trackPaths)
-            memory.and(VOTE_TO_HALT, PathTraverserExecutor.execute(vertex, messenger, traversal));
-        else
-            memory.and(VOTE_TO_HALT, SimpleTraverserExecutor.execute(vertex, messenger, traversal));
-        vertex.<TraverserTracker>value(TRAVERSER_TRACKER).completeIteration();
+        memory.and(VOTE_TO_HALT, TraverserExecutor.execute(vertex, messenger, traversal));
     }
 
     @Override
