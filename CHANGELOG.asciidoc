@@ -9,6 +9,10 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Improved build automation to package javadocs and asciidoc documentation in the distribution files.
+* Improved build automation with a script to automatically bump release versions in the various files that needed it such as the `pom.xml` files.
+* The identifier on `VertexProperty` is now read properly to those graphs that can support identifier assignment.
+* `GraphSONReader.readGraph()` now properly reads vertex properties.
 * Removed `Neo4jGraph.getCypher()` as users should use `Neo4jGraph.cypher()` and get back TinkerPop3 graph objects.
 * `GiraphGraph.variables().getConfiguration()` is now replaced by `GiraphGraph.configuration()`.
 * Added `Graph.configuration()` which returns the `Configuration` object of `Graph.open()`.
