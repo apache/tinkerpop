@@ -494,7 +494,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         // todo: review this feature check - this test does a lot of stuff - maybe losing some important assertions this way
         if (g.features().vertex().supportsMultiProperties()) {
             g.tx().readWrite();
-            ExecutionEngine cypher = g.getCypher();
+            ExecutionEngine cypher = Neo4jHelper.getCypher(g);
             Neo4jVertex a = (Neo4jVertex) g.addVertex("name", "marko", "name", "okram");
             Neo4jVertex b = (Neo4jVertex) g.addVertex("name", "stephen", "location", "virginia");
 
