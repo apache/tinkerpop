@@ -23,6 +23,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -90,8 +92,22 @@ public class GraphSONReader implements GraphReader {
                         readVertexData(vertexData, detachedVertex -> {
                             final Vertex v = Optional.ofNullable(graph.v(detachedVertex.id())).orElse(
                                     graph.addVertex(T.label, detachedVertex.label(), T.id, detachedVertex.id()));
-                            detachedVertex.iterators().propertyIterator().forEachRemaining(p -> v.<Object>property(p.key(), p.value()));
-                            detachedVertex.iterators().hiddenPropertyIterator().forEachRemaining(p -> v.<Object>property(Graph.Key.hide(p.key()), p.value()));
+                            detachedVertex.iterators().propertyIterator().forEachRemaining(p -> {
+                                final List<Object> propertyArgs = new ArrayList<>();
+                                if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
+                                    propertyArgs.addAll(Arrays.asList(T.id, p.id()));
+                                p.iterators().propertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
+                                p.iterators().hiddenPropertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
+                                v.property(p.key(), p.value(), propertyArgs.toArray());
+                            });
+                            detachedVertex.iterators().hiddenPropertyIterator().forEachRemaining(p -> {
+                                final List<Object> propertyArgs = new ArrayList<>();
+                                if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
+                                    propertyArgs.addAll(Arrays.asList(T.id, p.id()));
+                                p.iterators().propertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
+                                p.iterators().hiddenPropertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
+                                v.property(Graph.Key.hide(p.key()), p.value(), propertyArgs.toArray());
+                            });
                             return v;
                         });
                     }

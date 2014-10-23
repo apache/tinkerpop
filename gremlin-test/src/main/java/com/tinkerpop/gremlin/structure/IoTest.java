@@ -444,6 +444,32 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.CREW)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    public void shouldReadWriteCrewToGraphSON() throws Exception {
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = GraphSONWriter.build().create();
+            writer.writeGraph(os, g);
+
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
+            graphProvider.clear(configuration);
+            final Graph g1 = graphProvider.openTestGraph(configuration);
+            final GraphSONReader reader = GraphSONReader.build().create();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readGraph(bais, g1);
+            }
+
+            assertCrewGraph(g1, true);
+
+            // need to manually close the "g1" instance
+            graphProvider.clear(g1, configuration);
+        }
+    }
+
+    @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
