@@ -48,7 +48,7 @@ gremlin>
 Release Process
 ~~~~~~~~~~~~~~~
 
-. `mvn clean install -Dasciidoc -Djavadoc` - to generate distributions with documentation included
+. `mvn clean install`
 .. `mvn verify -DskipIntegrationTests=false`
 .. `mvn verify -DskipPerformanceTests=false`
 . Update `CHANGELOG.asciidoc` with release date.
@@ -59,7 +59,7 @@ Release Process
 . `bin/publish-docs.sh`
 . `mvn clean deploy -Psonatype-oss-release -Dmaven.test.skip=true`
 . Log into link:https://oss.sonatype.org/[SonaType], close and then release the release.
-. `mvn deploy -Darchives -Dmaven.test.skip=true`
+. `mvn deploy -Dasciidoc -Djavadoc -Darchives -Dmaven.test.skip=true`
 . Update download links on home page.
 .. `s3cmd --acl-public put index.html s3://www.tinkerpop.com/`
 . Email gremlin-users mailing list and tweet.
