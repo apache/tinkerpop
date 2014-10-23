@@ -15,8 +15,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class GroovyTraversalScriptTest extends AbstractGremlinTest {
 
-    // todo: review for other required features???
-
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldSubmitTraversalCorrectly() throws Exception {
