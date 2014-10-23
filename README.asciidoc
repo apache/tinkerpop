@@ -48,7 +48,7 @@ gremlin>
 Release Process
 ~~~~~~~~~~~~~~~
 
-. `mvn clean install`
+. `mvn clean install -Dasciidoc -Djavadoc` - to generate distributions with documentation included
 .. `mvn verify -DskipIntegrationTests=false`
 .. `mvn verify -DskipPerformanceTests=false`
 . Update `CHANGELOG.asciidoc` with release date.

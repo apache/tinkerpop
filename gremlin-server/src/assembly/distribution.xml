@@ -31,12 +31,13 @@
             <directory>src</directory>
         </fileSet>
         <fileSet>
-            <directory>../doc</directory>
+            <directory>target/${project.artifactId}-${project.version}-standalone/docs</directory>
+            <outputDirectory>docs</outputDirectory>
         </fileSet>
-        <!--<fileSet>
-            <directory>target/apidocs</directory>
-            <outputDirectory>doc/javadoc</outputDirectory>
-        </fileSet>-->
+        <fileSet>
+            <directory>target/${project.artifactId}-${project.version}-standalone/javadocs</directory>
+            <outputDirectory>javadocs</outputDirectory>
+        </fileSet>
         <fileSet>
             <directory>target/${project.artifactId}-${project.version}-standalone/lib</directory>
             <outputDirectory>lib</outputDirectory>
