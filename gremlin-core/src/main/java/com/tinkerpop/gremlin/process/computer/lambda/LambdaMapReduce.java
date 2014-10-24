@@ -10,9 +10,12 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -20,14 +23,18 @@ import java.util.function.Function;
 public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK, RV, R> {
 
     public static final String MAP_LAMBDA = "gremlin.lambdaMapReduce.mapLambda";
+    public static final String MAP_KEY_SORT = "gremlin.lambdaMapReduce.mapKeySort";
     public static final String COMBINE_LAMBDA = "gremlin.lambdaMapReduce.combineLambda";
     public static final String REDUCE_LAMBDA = "gremlin.lambdaMapReduce.reduceLambda";
+    public static final String REDUCE_KEY_SORT = "gremlin.lambdaMapReduce.reduceKeySort";
     public static final String MEMORY_LAMBDA = "gremlin.lambdaMapReduce.memoryLambda";
     public static final String MEMORY_KEY = "gremlin.lambdaMapReduce.memoryKey";
 
     private LambdaHolder<BiConsumer<Vertex, MapEmitter<MK, MV>>> mapLambdaHolder;
+    private LambdaHolder<Supplier<Comparator<MK>>> mapKeySortLambdaHolder;
     private LambdaHolder<TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>> combineLambdaHolder;
     private LambdaHolder<TriConsumer<MK, Iterator<MV>, ReduceEmitter<RK, RV>>> reduceLambdaHolder;
+    private LambdaHolder<Supplier<Comparator<RK>>> reduceKeySortLambdaHolder;
     private LambdaHolder<Function<Iterator<Pair<RK, RV>>, R>> memoryLambdaHolder;
     private String sideEffectKey;
 
@@ -38,8 +45,10 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
     @Override
     public void loadState(final Configuration configuration) {
         this.mapLambdaHolder = LambdaHolder.loadState(configuration, MAP_LAMBDA);
+        this.mapKeySortLambdaHolder = LambdaHolder.loadState(configuration, MAP_KEY_SORT);
         this.combineLambdaHolder = LambdaHolder.loadState(configuration, COMBINE_LAMBDA);
         this.reduceLambdaHolder = LambdaHolder.loadState(configuration, REDUCE_LAMBDA);
+        this.reduceKeySortLambdaHolder = LambdaHolder.loadState(configuration, REDUCE_KEY_SORT);
         this.memoryLambdaHolder = LambdaHolder.loadState(configuration, MEMORY_LAMBDA);
         this.sideEffectKey = configuration.getString(MEMORY_KEY, null);
     }
@@ -48,10 +57,14 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
     public void storeState(final Configuration configuration) {
         if (null != this.mapLambdaHolder)
             this.mapLambdaHolder.storeState(configuration);
+        if (null != this.mapKeySortLambdaHolder)
+            this.mapKeySortLambdaHolder.storeState(configuration);
         if (null != this.combineLambdaHolder)
             this.combineLambdaHolder.storeState(configuration);
         if (null != this.reduceLambdaHolder)
             this.reduceLambdaHolder.storeState(configuration);
+        if (null != this.reduceKeySortLambdaHolder)
+            this.reduceKeySortLambdaHolder.storeState(configuration);
         if (null != this.memoryLambdaHolder)
             this.memoryLambdaHolder.storeState(configuration);
         configuration.setProperty(MEMORY_KEY, this.sideEffectKey);
@@ -74,12 +87,22 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
 
     @Override
     public void combine(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter) {
-       this.combineLambdaHolder.get().accept(key, values, emitter);
+        this.combineLambdaHolder.get().accept(key, values, emitter);
     }
 
     @Override
     public void reduce(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter) {
         this.reduceLambdaHolder.get().accept(key, values, emitter);
+    }
+
+    @Override
+    public Optional<Comparator<MK>> getMapKeySort() {
+        return null == this.mapKeySortLambdaHolder ? Optional.empty() : Optional.of(this.mapKeySortLambdaHolder.get().get());
+    }
+
+    @Override
+    public Optional<Comparator<RK>> getReduceKeySort() {
+        return null == this.reduceKeySortLambdaHolder ? Optional.empty() : Optional.of(this.reduceKeySortLambdaHolder.get().get());
     }
 
     @Override
@@ -103,7 +126,7 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
         return new Builder<>();
     }
 
-    public static class Builder<MK, MV, RK, RV, R>  {
+    public static class Builder<MK, MV, RK, RV, R> {
 
         private final Configuration configuration = new BaseConfiguration();
 
@@ -124,6 +147,27 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
 
         public Builder<MK, MV, RK, RV, R> map(final String setupScript) {
             return map(AbstractVertexProgramBuilder.GREMLIN_GROOVY, setupScript);
+        }
+
+        //
+
+        public Builder<MK, MV, RK, RV, R> mapKeySort(final Comparator<MK> comparator) {
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, MAP_KEY_SORT, comparator);
+            return this;
+        }
+
+        public Builder<MK, MV, RK, RV, R> mapKeySort(final Class<? extends Comparator<MK>> comparatorClass) {
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.CLASS, MAP_KEY_SORT, comparatorClass);
+            return this;
+        }
+
+        public Builder<MK, MV, RK, RV, R> mapKeySort(final String scriptEngine, final String reduceScript) {
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SCRIPT, MAP_KEY_SORT, new String[]{scriptEngine, reduceScript});
+            return this;
+        }
+
+        public Builder<MK, MV, RK, RV, R> mapKeySort(final String setupScript) {
+            return mapKeySort(AbstractVertexProgramBuilder.GREMLIN_GROOVY, setupScript);
         }
 
         ////////////
@@ -166,6 +210,27 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
 
         public Builder<MK, MV, RK, RV, R> reduce(final String setupScript) {
             return reduce(AbstractVertexProgramBuilder.GREMLIN_GROOVY, setupScript);
+        }
+
+        //
+
+        public Builder<MK, MV, RK, RV, R> reduceKeySort(final Supplier<Comparator<RK>> comparator) {
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, REDUCE_KEY_SORT, comparator);
+            return this;
+        }
+
+        public Builder<MK, MV, RK, RV, R> reduceKeySort(final Class<? extends Supplier<Comparator<RK>>> comparatorClass) {
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.CLASS, REDUCE_KEY_SORT, comparatorClass);
+            return this;
+        }
+
+        public Builder<MK, MV, RK, RV, R> reduceKeySort(final String scriptEngine, final String reduceScript) {
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SCRIPT, REDUCE_KEY_SORT, new String[]{scriptEngine, reduceScript});
+            return this;
+        }
+
+        public Builder<MK, MV, RK, RV, R> reduceKeySort(final String setupScript) {
+            return reduceKeySort(AbstractVertexProgramBuilder.GREMLIN_GROOVY, setupScript);
         }
 
         ////////////

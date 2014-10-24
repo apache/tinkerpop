@@ -122,9 +122,9 @@ public abstract class GroovyGraphComputerTest {
         }
 
         @Override
-        public GraphComputer get_g_compute_mapXageXreduceXsumX_memoryXnextX_memoryKeyXageSumX() {
+        public GraphComputer get_g_compute_mapXageX_reduceXsumX_memoryXnextX_memoryKeyXageSumX() {
             g.compute().mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer> build()
-                    .map("gremlin-groovy","if(a.property('age').isPresent()) b.emit(MapReduce.NullObject.instance(), a.value('age'))")
+                    .map("gremlin-groovy", "if(a.property('age').isPresent()) b.emit(MapReduce.NullObject.instance(), a.value('age'))")
                     .reduce("gremlin-groovy", "c.emit(MapReduce.NullObject.instance(), b.sum())")
                     .memory("gremlin-groovy", "a.next().getValue1()")
                     .memoryKey("ageSum").create());
@@ -133,28 +133,43 @@ public abstract class GroovyGraphComputerTest {
         @Override
         public GraphComputer get_g_compute_executeXcounterX_terminateX8X_mapreduceXcounter_aX_mapreduceXcounter_bX() {
             return g.compute().program(LambdaVertexProgram.build()
-                    .execute("gremlin-groovy","a.singleProperty('counter', c.isInitialIteration() ? 1 : a.value('counter') + 1)")
-                    .terminate("gremlin-groovy","a.getIteration() > 8")
+                    .execute("gremlin-groovy", "a.singleProperty('counter', c.isInitialIteration() ? 1 : a.value('counter') + 1)")
+                    .terminate("gremlin-groovy", "a.getIteration() > 8")
                     .elementComputeKeys(["counter"] as Set).create())
-                    .mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()
-                    .map("gremlin-groovy","b.emit(MapReduce.NullObject.instance(), a.value('counter'))")
+                    .mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer> build()
+                    .map("gremlin-groovy", "b.emit(MapReduce.NullObject.instance(), a.value('counter'))")
                     .reduce("gremlin-groovy",
-                        """
+                    """
                         int counter = 0;
                         while (b.hasNext()) {
                             counter = counter + b.next();
                         }
                         c.emit(MapReduce.NullObject.instance(), counter);
                         """)
-                    .memory("gremlin-groovy","a.next().getValue1()")
+                    .memory("gremlin-groovy", "a.next().getValue1()")
                     .memoryKey("a").create())
-                    .mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()
-                    .map("gremlin-groovy","b.emit(MapReduce.NullObject.instance(), a.value('counter'))")
-                    .combine("gremlin-groovy","c.emit(MapReduce.NullObject.instance(), 1)")
-                    .reduce("gremlin-groovy","c.emit(MapReduce.NullObject.instance(), 1)")
-                    .memory("gremlin-groovy","a.next().getValue1()")
+                    .mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer> build()
+                    .map("gremlin-groovy", "b.emit(MapReduce.NullObject.instance(), a.value('counter'))")
+                    .combine("gremlin-groovy", "c.emit(MapReduce.NullObject.instance(), 1)")
+                    .reduce("gremlin-groovy", "c.emit(MapReduce.NullObject.instance(), 1)")
+                    .memory("gremlin-groovy", "a.next().getValue1()")
                     .memoryKey("b").create());
 
+        }
+
+        @Override
+        public GraphComputer get_g_compute_mapXidX_reduceXidX_reduceKeySortXreverseX_memoryKeyXidsX() {
+            return g.compute().mapReduce(LambdaMapReduce.<Long, Long, Long, Long, List<Long>> build()
+                    .map("b.emit(a.id() as Long, a.id() as Long)")
+                    .reduce("b.forEachRemaining{c.emit(it, it)}")
+                    .memoryKey("ids")
+                    .reduceKeySort("Comparator.reverseOrder()")
+                    .memory("""
+                        list = []
+                        a.forEachRemaining{list.add(it.getValue0())}
+                        list
+                    """)
+                    .create());
         }
     }
 }

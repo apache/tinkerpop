@@ -13,17 +13,14 @@ import java.util.Comparator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class KryoWritableComparator implements RawComparator<KryoWritable>, Configurable {
+public abstract class KryoWritableComparator implements RawComparator<KryoWritable>, Configurable {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(KryoWritableComparator.class);
 
-    private Configuration configuration;
-    private Comparator comparator;
+    protected Configuration configuration;
+    protected Comparator comparator;
     private final KryoWritable kryo1 = new KryoWritable();
     private final KryoWritable kryo2 = new KryoWritable();
-
-    private KryoWritableComparator() {
-    }
 
     @Override
     public int compare(final KryoWritable kryo1, final KryoWritable kryo2) {
@@ -44,13 +41,25 @@ public class KryoWritableComparator implements RawComparator<KryoWritable>, Conf
     }
 
     @Override
-    public void setConf(final Configuration configuration) {
-        this.configuration = configuration;
-        this.comparator = MapReduceHelper.getMapReduce(configuration).getMapKeySort().get();
-    }
-
-    @Override
     public Configuration getConf() {
         return this.configuration;
     }
+
+    public static class KryoWritableMapComparator extends KryoWritableComparator {
+        @Override
+        public void setConf(final Configuration configuration) {
+            this.configuration = configuration;
+            this.comparator = MapReduceHelper.getMapReduce(configuration).getMapKeySort().get();
+        }
+    }
+
+    public static class KryoWritableReduceComparator extends KryoWritableComparator {
+        @Override
+        public void setConf(final Configuration configuration) {
+            this.configuration = configuration;
+            this.comparator = MapReduceHelper.getMapReduce(configuration).getReduceKeySort().get();
+        }
+    }
+
+
 }

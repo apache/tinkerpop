@@ -15,9 +15,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.slf4j.Logger;
@@ -52,13 +54,13 @@ public class MapReduceHelper {
                 GiraphGraphComputer.LOGGER.warn(SEQUENCE_WARNING);
         } else {
             final Optional<Comparator<?>> mapSort = mapReduce.getMapKeySort();
-            final Optional<Comparator<?>> reduceSort = mapReduce.getReduceKeySort(); // TODO: see big comment chuck below
+            final Optional<Comparator<?>> reduceSort = mapReduce.getReduceKeySort();
 
             newConfiguration.setClass(Constants.MAP_REDUCE_CLASS, mapReduce.getClass(), MapReduce.class);
             final Job job = new Job(newConfiguration, mapReduce.toString());
             GiraphGraphComputer.LOGGER.info(Constants.GIRAPH_GREMLIN_JOB_PREFIX + mapReduce.toString());
             job.setJarByClass(GiraphGraph.class);
-            if (mapSort.isPresent()) job.setSortComparatorClass(KryoWritableComparator.class);
+            if (mapSort.isPresent()) job.setSortComparatorClass(KryoWritableComparator.KryoWritableMapComparator.class);
             job.setMapperClass(GiraphMap.class);
             if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
                 if (mapReduce.doStage(MapReduce.Stage.COMBINE)) job.setCombinerClass(GiraphReduce.class);
@@ -80,28 +82,34 @@ public class MapReduceHelper {
             final Path graphPath = configuration.get(VertexProgram.VERTEX_PROGRAM, null) != null ?
                     new Path(newConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + Constants.SYSTEM_G) :
                     new Path(newConfiguration.get(Constants.GREMLIN_INPUT_LOCATION));
-            final Path memoryPath = new Path(newConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + mapReduce.getMemoryKey());
+            Path memoryPath = new Path(newConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + (reduceSort.isPresent() ? mapReduce.getMemoryKey() + "-temp" : mapReduce.getMemoryKey()));
             if (FileSystem.get(newConfiguration).exists(memoryPath)) {
                 FileSystem.get(newConfiguration).delete(memoryPath, true);
             }
-
             FileInputFormat.setInputPaths(job, graphPath);
             FileOutputFormat.setOutputPath(job, memoryPath);
             job.waitForCompletion(true);
 
+
             // if there is a reduce sort, we need to run another identity MapReduce job
-            /*
-            // TODO: sort reduce output if it exists
-            if(reduceSort.isPresent()) {
-                final Job reduceSortJob = new Job(newConfiguration,"ReduceSort");
-                reduceSortJob.setSortComparatorClass(KryoWritableComparator.class);
+            if (reduceSort.isPresent()) {
+                final Job reduceSortJob = new Job(newConfiguration, "ReduceKeySort");
+                reduceSortJob.setSortComparatorClass(KryoWritableComparator.KryoWritableReduceComparator.class);
                 reduceSortJob.setMapperClass(Mapper.class);
                 reduceSortJob.setReducerClass(Reducer.class);
                 reduceSortJob.setMapOutputKeyClass(KryoWritable.class);
                 reduceSortJob.setMapOutputValueClass(KryoWritable.class);
                 reduceSortJob.setOutputKeyClass(KryoWritable.class);
                 reduceSortJob.setOutputValueClass(KryoWritable.class);
-            }*/
+                reduceSortJob.setInputFormatClass(SequenceFileInputFormat.class); // TODO: require this hard coded? If so, ERROR messages needed.
+                reduceSortJob.setOutputFormatClass(newConfiguration.getClass(Constants.GREMLIN_MEMORY_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class, OutputFormat.class));
+                FileInputFormat.setInputPaths(reduceSortJob, memoryPath);
+                final Path sortedMemoryPath = new Path(newConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + mapReduce.getMemoryKey());
+                FileOutputFormat.setOutputPath(reduceSortJob, sortedMemoryPath);
+                reduceSortJob.waitForCompletion(true);
+                FileSystem.get(newConfiguration).delete(memoryPath, true); // delete the temporary memory path
+                memoryPath = sortedMemoryPath;
+            }
 
             // if its not a SequenceFile there is no certain way to convert to necessary Java objects.
             // to get results you have to look through HDFS directory structure. Oh the horror.

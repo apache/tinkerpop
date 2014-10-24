@@ -10,8 +10,11 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.Future;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -49,9 +52,11 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
 
     public abstract GraphComputer get_g_compute_setupXabcdeX_executeXtestMemoryX_terminateXtestMemoryXmemoryKeysXabcdeX();
 
-    public abstract GraphComputer get_g_compute_mapXageXreduceXsumX_memoryXnextX_memoryKeyXageSumX();
+    public abstract GraphComputer get_g_compute_mapXageX_reduceXsumX_memoryXnextX_memoryKeyXageSumX();
 
     public abstract GraphComputer get_g_compute_executeXcounterX_terminateX8X_mapreduceXcounter_aX_mapreduceXcounter_bX();
+
+    public abstract GraphComputer get_g_compute_mapXidX_reduceXidX_reduceKeySortXreverseX_memoryKeyXidsX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -259,7 +264,7 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldAllowMapReduceWithNoVertexProgram() throws Exception {
-        final ComputerResult results = get_g_compute_mapXageXreduceXsumX_memoryXnextX_memoryKeyXageSumX().submit().get();
+        final ComputerResult results = get_g_compute_mapXageX_reduceXsumX_memoryXnextX_memoryKeyXageSumX().submit().get();
         assertEquals(123, results.memory().<Integer>get("ageSum").intValue());
     }
 
@@ -269,6 +274,20 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
         final ComputerResult results = get_g_compute_executeXcounterX_terminateX8X_mapreduceXcounter_aX_mapreduceXcounter_bX().submit().get();
         assertEquals(60, results.memory().<Integer>get("a").intValue());
         assertEquals(1, results.memory().<Integer>get("b").intValue());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldSortReduceOutput() throws Exception {
+        final ComputerResult results = get_g_compute_mapXidX_reduceXidX_reduceKeySortXreverseX_memoryKeyXidsX().submit().get();
+        final List<Long> ids = results.memory().get("ids");
+        assertEquals(6, ids.size());
+        assertEquals(Long.valueOf(6l), ids.get(0));
+        assertEquals(Long.valueOf(5l), ids.get(1));
+        assertEquals(Long.valueOf(4l), ids.get(2));
+        assertEquals(Long.valueOf(3l), ids.get(3));
+        assertEquals(Long.valueOf(2l), ids.get(4));
+        assertEquals(Long.valueOf(1l), ids.get(5));
     }
 
 
@@ -395,7 +414,7 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public GraphComputer get_g_compute_mapXageXreduceXsumX_memoryXnextX_memoryKeyXageSumX() {
+        public GraphComputer get_g_compute_mapXageX_reduceXsumX_memoryXnextX_memoryKeyXageSumX() {
             return g.compute().mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()
                     .map((v, e) -> v.<Integer>property("age").ifPresent(age -> e.emit(MapReduce.NullObject.instance(), age)))
                     .reduce((k, vv, e) -> e.emit(MapReduce.NullObject.instance(), StreamFactory.stream(vv).mapToInt(i -> i).sum()))
@@ -432,7 +451,23 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
 
         }
 
+        @Override
+        public GraphComputer get_g_compute_mapXidX_reduceXidX_reduceKeySortXreverseX_memoryKeyXidsX() {
+            return g.compute().mapReduce(LambdaMapReduce.<Long, Long, Long, Long, List<Long>>build()
+                    .map((vertex, emitter) -> emitter.emit(Long.valueOf(vertex.id().toString()), Long.valueOf(vertex.id().toString())))
+                    .reduce((key, values, emitter) -> values.forEachRemaining(id -> emitter.emit(id, id)))
+                    .memoryKey("ids")
+                    .reduceKeySort(Comparator::reverseOrder)
+                    .memory(itty -> {
+                        final List<Long> list = new ArrayList<>();
+                        itty.forEachRemaining(id -> list.add(id.getValue0()));
+                        return list;
+                    })
+                    .create());
+        }
+
     }
+
 
 
 
