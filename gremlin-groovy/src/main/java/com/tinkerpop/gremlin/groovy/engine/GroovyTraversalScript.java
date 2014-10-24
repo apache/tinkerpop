@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.process.computer.traversal.TraversalScript;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 
@@ -52,7 +53,7 @@ public class GroovyTraversalScript<S, E> implements TraversalScript<S, E> {
     @Override
     public GroovyTraversalScript<S, E> using(final GraphComputer graphComputer) {
         this.graphComputer = graphComputer;
-        this.graphComputerScript = "traversal.prepareForGraphComputer()\ntraversal.strategies().apply()\n";
+        this.graphComputerScript = "traversal.strategies().apply(" + TraversalEngine.class.getCanonicalName() + "." + TraversalEngine.COMPUTER + ")\n";
         return this;
     }
 

@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 /**
@@ -17,8 +18,8 @@ public class IdentityReductionStrategy extends AbstractTraversalStrategy impleme
     }
 
     @Override
-    public void apply(final Traversal<?, ?> traversal) {
-        if (!TraversalHelper.hasStepOfClass(IdentityStep.class, traversal))
+    public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
+        if (!TraversalHelper.hasStepOfClass(IdentityStep.class, traversal) || !TraversalHelper.hasStepOfClass(IdentityStep.class, traversal))
             return;
 
         TraversalHelper.getStepsOfClass(IdentityStep.class, traversal)

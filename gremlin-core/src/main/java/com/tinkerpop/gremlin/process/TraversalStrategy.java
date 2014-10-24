@@ -13,7 +13,7 @@ public interface TraversalStrategy extends Comparable<TraversalStrategy> {
     // A TraversalStrategy should not have a public constructor
     // Make use of a singleton instance() object to reduce object creation on the JVM
 
-    public void apply(final Traversal<?,?> traversal);
+    public void apply(final Traversal<?, ?> traversal, final TraversalEngine traversalEngine);
 
     public interface NoDependencies extends TraversalStrategy {
         @Override

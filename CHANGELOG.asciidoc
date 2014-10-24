@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `Traversal.Strategies.apply()` now takes a `TraversalEngine`. Greatly simplifies strategy application for `STANDARD` or `COMPUTER`.
 * `OrderStep` now works in OLAP, but only makes sense as a traversal end step.
 * `MapReduce` API extended to include `getMapKeySort()` and `getReduceKeySort()` to sort outputs accordingly.
 * Renamed `TraversalResultMapReduce` to `TraverserMapReduce`. Shorter and makes more sense.

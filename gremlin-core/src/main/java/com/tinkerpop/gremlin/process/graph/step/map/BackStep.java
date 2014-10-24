@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 /**
@@ -26,8 +27,8 @@ public final class BackStep<S, E> extends MapStep<S, E> implements PathConsumer,
     }
 
     @Override
-    public void onEngine(final Engine engine) {
-        this.requiresPaths = engine.equals(Engine.COMPUTER);
+    public void onEngine(final TraversalEngine traversalEngine) {
+        this.requiresPaths = traversalEngine.equals(TraversalEngine.COMPUTER);
     }
 
     @Override

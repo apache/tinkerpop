@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -108,7 +109,7 @@ public abstract class AbstractGremlinTest {
         afterLoadGraphWith(g);
     }
 
-    protected void beforeLoadGraphWith(final Graph g) throws Exception  {
+    protected void beforeLoadGraphWith(final Graph g) throws Exception {
         // do nothing
     }
 
@@ -210,7 +211,7 @@ public abstract class AbstractGremlinTest {
         final boolean muted = Boolean.parseBoolean(System.getProperty("muteTestLogs", "false"));
 
         if (!muted) System.out.println("Testing: " + traversal);
-        traversal.strategies().apply();
+        traversal.strategies().apply(TraversalEngine.STANDARD); // TODO!!!!
         if (!muted) System.out.println("         " + traversal);
     }
 

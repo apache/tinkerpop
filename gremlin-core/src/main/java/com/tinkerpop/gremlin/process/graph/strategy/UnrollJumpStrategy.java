@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.step.branch.JumpStep;
-import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStep;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.List;
@@ -20,12 +20,13 @@ public class UnrollJumpStrategy extends AbstractTraversalStrategy implements Tra
     }
 
     @Override
-    public void apply(final Traversal<?, ?> traversal) {
-        if (!TraversalHelper.hasStepOfClass(JumpStep.class, traversal))
+    public void apply(final Traversal<?, ?> traversal, final TraversalEngine traversalEngine) {
+        if (traversalEngine.equals(TraversalEngine.COMPUTER) || !TraversalHelper.hasStepOfClass(JumpStep.class, traversal))
             return;
+
         TraversalHelper.getStepsOfClass(JumpStep.class, traversal).stream()
                 .filter(JumpStep::unRollable)
-                // TODO: filter() when do unroll and when not to depending on the depth of looping?
+                        // TODO: filter() when do unroll and when not to depending on the depth of looping?
                 .forEach(toStep -> {
                     if (toStep.isDoWhile()) {
                         // DO WHILE SEMANTICS

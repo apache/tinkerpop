@@ -214,9 +214,22 @@ public class TraversalHelper {
         return (List) traversal.getSteps().stream().filter(step -> step.getClass().equals(stepClass)).collect(Collectors.toList());
     }
 
+    public static <S extends Step> List<S> getStepsOfAssignableClass(final Class stepClass, final Traversal<?, ?> traversal) {
+        return (List) traversal.getSteps().stream().filter(step -> stepClass.isAssignableFrom(step.getClass())).collect(Collectors.toList());
+    }
+
     public static boolean hasStepOfClass(final Class<? extends Step> stepClass, final Traversal<?, ?> traversal) {
         for (final Step<?, ?> step : traversal.getSteps()) {
             if (step.getClass().equals(stepClass)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean hasStepOfAssignableClass(final Class superClass, final Traversal<?, ?> traversal) {
+        for (final Step<?, ?> step : traversal.getSteps()) {
+            if (superClass.isAssignableFrom(step.getClass())) {
                 return true;
             }
         }

@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.step.branch.BranchStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.ChooseStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Map;
@@ -28,8 +29,8 @@ public class ChooseLinearStrategy extends AbstractTraversalStrategy implements T
 
     // x.choose(t -> M){a}{b}.y
     // x.branch(mapFunction.next().toString()).a.branch(end).as(z).b.as(end).y
-    public void apply(final Traversal<?, ?> traversal) {
-        if (!TraversalHelper.hasStepOfClass(ChooseStep.class, traversal))
+    public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
+        if (engine.equals(TraversalEngine.STANDARD) || !TraversalHelper.hasStepOfClass(ChooseStep.class, traversal))
             return;
 
         int chooseStepCounter = 0;

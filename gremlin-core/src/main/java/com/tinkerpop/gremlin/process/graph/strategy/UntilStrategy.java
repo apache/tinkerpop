@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.step.branch.JumpStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.UntilStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 
@@ -14,7 +15,7 @@ import java.util.UUID;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class UntilStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
+public class UntilStrategy extends AbstractTraversalStrategy implements TraversalStrategy.NoDependencies {
 
     private static final UntilStrategy INSTANCE = new UntilStrategy();
     private static final String UNTIL_PREFIX = "gremlin.until.";
@@ -25,7 +26,7 @@ public class UntilStrategy extends AbstractTraversalStrategy implements Traversa
     // g.V.until('a'){it.object == blah}.out.out.as('a').name
     // g.V.as('a').jump('b'){it.object == blah}.out.out.jump('a').as('b').name
     @Override
-    public void apply(final Traversal<?, ?> traversal) {
+    public void apply(final Traversal<?, ?> traversal, final TraversalEngine traversalEngine) {
         if (!TraversalHelper.hasStepOfClass(UntilStep.class, traversal))
             return;
 
@@ -49,12 +50,6 @@ public class UntilStrategy extends AbstractTraversalStrategy implements Traversa
             rightEndStep.setLabel(Graph.System.system(UUID.randomUUID().toString()));
             TraversalHelper.insertAfterStep(rightEndJumpStep, rightEndStep, traversal);
         }
-    }
-
-    @Override
-    public int compareTo(final TraversalStrategy traversalStrategy) {
-        return (traversalStrategy instanceof TraverserSourceStrategy) ||
-                (traversalStrategy instanceof GraphComputerStrategy) ? -1 : 0;
     }
 
     public static UntilStrategy instance() {

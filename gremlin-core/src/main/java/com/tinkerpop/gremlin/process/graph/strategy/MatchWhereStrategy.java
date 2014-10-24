@@ -3,11 +3,11 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.WhereStep;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectStep;
 import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.List;
@@ -23,7 +23,7 @@ public class MatchWhereStrategy extends AbstractTraversalStrategy implements Tra
     }
 
     @Override
-    public void apply(final Traversal<?, ?> traversal) {
+    public void apply(final Traversal<?, ?> traversal, TraversalEngine engine) {
         if (!TraversalHelper.hasStepOfClass(MatchStep.class, traversal))
             return;
 

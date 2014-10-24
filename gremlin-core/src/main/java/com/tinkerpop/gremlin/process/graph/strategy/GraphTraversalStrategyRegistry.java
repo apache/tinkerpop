@@ -1,7 +1,9 @@
 package com.tinkerpop.gremlin.process.graph.strategy;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,12 +20,15 @@ public class GraphTraversalStrategyRegistry implements Traversal.Strategies {
     static {
         TRAVERSAL_STRATEGIES.add(TraverserSourceStrategy.instance());
         TRAVERSAL_STRATEGIES.add(LabeledEndStepStrategy.instance());
-        TRAVERSAL_STRATEGIES.add(GraphStandardStrategy.instance());
         TRAVERSAL_STRATEGIES.add(UntilStrategy.instance());
         TRAVERSAL_STRATEGIES.add(DedupOptimizerStrategy.instance());
         TRAVERSAL_STRATEGIES.add(IdentityReductionStrategy.instance());
         TRAVERSAL_STRATEGIES.add(SideEffectCapStrategy.instance());
         TRAVERSAL_STRATEGIES.add(MatchWhereStrategy.instance());
+        TRAVERSAL_STRATEGIES.add(ChooseLinearStrategy.instance());
+        TRAVERSAL_STRATEGIES.add(UnionLinearStrategy.instance());
+        TRAVERSAL_STRATEGIES.add(ComparingReductionStrategy.instance());
+        TRAVERSAL_STRATEGIES.add(EngineDependentStrategy.instance());
     }
 
     private GraphTraversalStrategyRegistry() {
@@ -60,7 +65,7 @@ public class GraphTraversalStrategyRegistry implements Traversal.Strategies {
     }
 
     @Override
-    public void apply() {
+    public void apply(final TraversalEngine traversalEngine) {
         throw new UnsupportedOperationException("The global registry is not tied to a traversal, only accessible by traversals");
     }
 
@@ -76,7 +81,7 @@ public class GraphTraversalStrategyRegistry implements Traversal.Strategies {
 
     @Override
     public String toString() {
-        return TRAVERSAL_STRATEGIES.toString();
+        return StringFactory.traversalStrategiesString(this);
     }
 
 }

@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderByStep;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.ArrayList;
@@ -31,8 +32,8 @@ public class DedupOptimizerStrategy extends AbstractTraversalStrategy implements
             ));
 
     @Override
-    public void apply(final Traversal<?, ?> traversal) {
-        if (!TraversalHelper.hasStepOfClass(DedupStep.class, traversal))
+    public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
+        if (engine.equals(TraversalEngine.COMPUTER) || !TraversalHelper.hasStepOfClass(DedupStep.class, traversal))
             return;
 
         boolean done = false;

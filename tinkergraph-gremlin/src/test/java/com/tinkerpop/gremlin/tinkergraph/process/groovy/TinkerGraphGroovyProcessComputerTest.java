@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.tinkergraph.process.groovy;
 
-import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import com.tinkerpop.gremlin.process.GroovyProcessComputerSuite;
 import com.tinkerpop.gremlin.process.ProcessStandardSuite;

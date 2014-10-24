@@ -13,7 +13,6 @@ import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect.TinkerGraphStep;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerGraphStepStrategy;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
 /**
@@ -29,12 +28,6 @@ public class TinkerElementTraversal<S, E> extends DefaultGraphTraversal<S, E> {
         this.elementClass = element.getClass();
         this.id = element.id();
         this.addStep(new StartStep<>(this, element));
-    }
-
-    @Override
-    public void prepareForGraphComputer() {
-        super.prepareForGraphComputer();
-        this.strategies().unregister(TinkerGraphStepStrategy.class);  // shouldn't be needed, but doesn't hurt
     }
 
     @Override

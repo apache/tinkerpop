@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.EmptyTraverser;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
@@ -103,8 +104,8 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
     }
 
     @Override
-    public void onEngine(final Engine engine) {
-        if (engine.equals(Engine.COMPUTER)) {
+    public void onEngine(final TraversalEngine traversalEngine) {
+        if (traversalEngine.equals(TraversalEngine.COMPUTER)) {
             this.onGraphComputer = true;
             this.graphComputerQueue = new TraverserSet<>();
         } else {

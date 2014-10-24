@@ -1291,7 +1291,7 @@ A simple TraversalStrategy is the `IdentityReductionStrategy` and it is a type-1
 
 [source,java]
 public class IdentityReductionStrategy implements TraversalStrategy.NoDependencies {
-    public void apply(final Traversal traversal) {
+    public void apply(final Traversal traversal, final TraversalEngine traversalEngine) {
         traversal.getSteps().stream()
                 .filter(step -> step instanceof IdentityStep
                     && !TraversalHelper.isLabeled(step))
@@ -1321,7 +1321,7 @@ The expression above can be executed in a `O(|V|)` or `O(log(|V|)` fashion in <<
 
 [source,java]
 TinkerGraphStepStrategy implements TraversalStrategy.NoDependency {
-    public void apply(final Traversal traversal) {
+    public void apply(final Traversal traversal, final TraversalEngine traversalEngine) {
         if (traversal.getSteps().get(0) instanceof TinkerGraphStep) {
             final TinkerGraphStep tinkerGraphStep = (TinkerGraphStep) traversal.getSteps().get(0);
             Step currentStep = tinkerGraphStep.getNextStep();
@@ -1371,7 +1371,7 @@ WARNING: It is possible to create faulty traversals by modifying the `GraphTrave
 gremlin> import com.tinkerpop.gremlin.process.graph.strategy.*
 ...
 gremlin> GraphTraversalStrategyRegistry.instance()
-==>[TraverserSourceStrategy, LabeledEndStepStrategy, GraphStandardStrategy, UntilStrategy, DedupOptimizerStrategy, IdentityReductionStrategy, SideEffectCapStrategy, MatchWhereStrategy]
+==>strategies[TraverserSourceStrategy, LabeledEndStepStrategy, UntilStrategy, DedupOptimizerStrategy, IdentityReductionStrategy, SideEffectCapStrategy, MatchWhereStrategy, ChooseLinearStrategy, UnionLinearStrategy, ComparingReductionStrategy, EngineDependentStrategy]
 gremlin> t = g.V().identity().identity().identity().range(0,1)
 ==>v[1]
 ==>v[2]

@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.step.branch.BranchStep;
 import com.tinkerpop.gremlin.process.graph.step.branch.UnionStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.ArrayList;
@@ -28,8 +29,8 @@ public class UnionLinearStrategy extends AbstractTraversalStrategy implements Tr
 
     // x.union(a,b).y
     // x.branch(t->a,t->b).a.branch(end).as(z).b.as(end).y
-    public void apply(final Traversal<?, ?> traversal) {
-        if (!TraversalHelper.hasStepOfClass(UnionStep.class, traversal))
+    public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
+        if (engine.equals(TraversalEngine.STANDARD) || !TraversalHelper.hasStepOfClass(UnionStep.class, traversal))
             return;
 
         int unionStepCounter = 0;

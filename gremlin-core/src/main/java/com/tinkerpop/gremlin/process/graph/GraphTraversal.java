@@ -65,11 +65,10 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
-import com.tinkerpop.gremlin.process.graph.strategy.ChooseLinearStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.UnionLinearStrategy;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.marker.CapTraversal;
 import com.tinkerpop.gremlin.process.marker.CountTraversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -101,13 +100,6 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S, E>, CapTraversal<S, E> {
-
-    @Override
-    public default void prepareForGraphComputer() {
-        CountTraversal.super.prepareForGraphComputer();
-        this.strategies().register(ChooseLinearStrategy.instance());
-        this.strategies().register(UnionLinearStrategy.instance());
-    }
 
     @Override
     public default GraphTraversal<S, E> submit(final GraphComputer computer) {
@@ -252,7 +244,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> orderBy(final String key, final Comparator comparator) {
-        return this.addStep(new OrderByStep<>(this, key, comparator));
+        return this.addStep(new OrderByStep(this, key, comparator));
     }
 
     public default GraphTraversal<S, E> shuffle() {
@@ -280,7 +272,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
     }
 
     public default <E2> GraphTraversal<S, E2> hiddenValue(final String propertyKey) {
-        return this.addStep(new HiddenValueStep<>(this, propertyKey));
+        return this.addStep(new HiddenValueStep(this, propertyKey));
     }
 
     public default <E2> GraphTraversal<S, E2> hiddenValue(final String propertyKey, final E2 defaultValue) {
@@ -675,8 +667,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
     public default GraphTraversal<S, E> as(final String label) {
         TraversalHelper.verifyStepLabelIsNotAlreadyAStepLabel(label, this);
         TraversalHelper.verifyStepLabelIsNotASideEffectKey(label, this);
-        final List<Step> steps = this.getSteps();
-        steps.get(steps.size() - 1).setLabel(label);
+        TraversalHelper.getEnd(this).setLabel(label);
         return this;
     }
 
@@ -687,7 +678,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
     @Override
     public default void remove() {
         try {
-            this.strategies().apply();
+            this.strategies().apply(TraversalEngine.STANDARD);
             final Step<?, E> endStep = TraversalHelper.getEnd(this);
             while (true) {
                 final Object object = endStep.next().get();

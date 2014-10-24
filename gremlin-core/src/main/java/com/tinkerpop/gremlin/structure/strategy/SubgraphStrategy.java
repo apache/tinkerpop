@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.EmptyTraversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -106,7 +107,7 @@ public class SubgraphStrategy implements GraphStrategy {
     private class SubgraphTraversalStrategy implements TraversalStrategy.NoDependencies {
 
         @Override
-        public void apply(final Traversal traversal) {
+        public void apply(final Traversal traversal, final TraversalEngine traversalEngine) {
             // modify the traversal by appending filters after some steps, replacing others.  the idea is to
             // find VertexStep instances and replace them with SubgraphVertexStep. after each GraphStep,
             // EdgeVertexStep insert a SubgraphFilterStep.

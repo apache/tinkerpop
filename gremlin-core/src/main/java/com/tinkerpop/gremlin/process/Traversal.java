@@ -6,9 +6,6 @@ import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.graph.strategy.GraphComputerStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.GraphStandardStrategy;
-import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -47,17 +44,9 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
     public List<Step> getSteps();
 
-    public default void prepareForGraphComputer() {
-        this.sideEffects().removeGraph();
-        this.strategies().unregister(TraverserSourceStrategy.class);
-        this.strategies().unregister(GraphStandardStrategy.class);
-        this.strategies().register(GraphComputerStrategy.instance());
-    }
-
     public default Traversal<S, E> submit(final GraphComputer computer) {
         try {
-            this.prepareForGraphComputer();
-            this.strategies().apply();
+            this.strategies().apply(TraversalEngine.COMPUTER);
             final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(this::clone).create();
             final ComputerResult result = computer.program(vertexProgram).submit().get();
             final GraphTraversal<S, S> traversal = result.graph().of();
@@ -88,7 +77,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
         public void clear();
 
-        public void apply();
+        public void apply(final TraversalEngine engine);
 
         public boolean complete();
     }
@@ -193,7 +182,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         /**
          * A helper method to register a {@link Supplier} if it has not already been registered.
          *
-         * @param key the key of the supplier to register
+         * @param key      the key of the supplier to register
          * @param supplier the supplier to register if the key has not already been registered
          */
         public default void registerSupplierIfAbsent(final String key, final Supplier supplier) {
@@ -313,7 +302,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
     public default Collection<E> fill(final Collection<E> collection) {
         try {
-            this.strategies().apply();
+            this.strategies().apply(TraversalEngine.STANDARD);
             // use the end step so the results are bulked
             final Step<?, E> endStep = TraversalHelper.getEnd(this);
             while (true) {
@@ -327,7 +316,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
     public default Traversal iterate() {
         try {
-            this.strategies().apply();
+            this.strategies().apply(TraversalEngine.STANDARD);
             // use the end step so the results are bulked
             final Step<?, E> endStep = TraversalHelper.getEnd(this);
             while (true) {

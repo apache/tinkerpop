@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
@@ -39,8 +40,8 @@ public final class JumpStep<S> extends AbstractStep<S, S> implements EngineDepen
         this.futureSetByChild = true;
     }
 
-    public void onEngine(final Engine engine) {
-        if (engine.equals(Engine.COMPUTER)) {
+    public void onEngine(final TraversalEngine traversalEngine) {
+        if (traversalEngine.equals(TraversalEngine.COMPUTER)) {
             this.onGraphComputer = true;
             this.queue = new TraverserSet<>();
         } else {

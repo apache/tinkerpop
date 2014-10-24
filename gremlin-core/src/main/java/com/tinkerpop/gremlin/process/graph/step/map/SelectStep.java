@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Barrier;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
@@ -81,9 +82,9 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
     }
 
     @Override
-    public void onEngine(final Engine engine) {
-        this.onGraphComputer = engine.equals(Engine.COMPUTER);
-        this.requiresPaths = engine.equals(Engine.COMPUTER) ?
+    public void onEngine(final TraversalEngine traversalEngine) {
+        this.onGraphComputer = traversalEngine.equals(TraversalEngine.COMPUTER);
+        this.requiresPaths = traversalEngine.equals(TraversalEngine.COMPUTER) ?
                 TraversalHelper.getLabelsUpTo(this, this.traversal).stream().filter(this.selectLabels::contains).findAny().isPresent() :
                 TraversalHelper.getStepsUpTo(this, this.traversal).stream()
                         .filter(step -> step instanceof Barrier)

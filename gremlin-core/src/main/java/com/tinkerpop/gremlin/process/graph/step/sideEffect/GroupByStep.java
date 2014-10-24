@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupByMapReduce;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -71,8 +72,8 @@ public final class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements 
     }
 
     @Override
-    public void onEngine(final Engine engine) {
-        this.vertexCentric = engine.equals(Engine.COMPUTER);
+    public void onEngine(final TraversalEngine traversalEngine) {
+        this.vertexCentric = traversalEngine.equals(TraversalEngine.COMPUTER);
     }
 
     @Override

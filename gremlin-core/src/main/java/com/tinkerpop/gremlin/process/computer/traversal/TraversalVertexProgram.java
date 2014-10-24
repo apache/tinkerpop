@@ -200,7 +200,6 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
     @Override
     public String toString() {
         final Traversal traversal = this.getTraversal();
-        traversal.strategies().apply();
         final String traversalString = traversal.toString().substring(1);
         return StringFactory.vertexProgramString(this, traversalString.substring(0, traversalString.length() - 1));
     }
