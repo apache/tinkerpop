@@ -1,38 +1,31 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
-import com.tinkerpop.gremlin.giraph.Constants;
-import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.computer.util.KryoWritable;
+import com.tinkerpop.gremlin.giraph.process.computer.util.MapReduceHelper;
 import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class GiraphMap extends Mapper<NullWritable, GiraphInternalVertex, KryoWritable, KryoWritable> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(GiraphMap.class);
     private MapReduce mapReduce;
 
-    public GiraphMap() {
+    private GiraphMap() {
 
     }
 
     @Override
     public void setup(final Mapper<NullWritable, GiraphInternalVertex, KryoWritable, KryoWritable>.Context context) {
-        try {
-            final Class<? extends MapReduce> mapReduceClass = context.getConfiguration().getClass(Constants.MAP_REDUCE_CLASS, MapReduce.class, MapReduce.class);
-            final Constructor<? extends MapReduce> constructor = mapReduceClass.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            this.mapReduce = constructor.newInstance();
-            this.mapReduce.loadState(ConfUtil.makeApacheConfiguration(context.getConfiguration()));
-        } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+        this.mapReduce = MapReduceHelper.getMapReduce(context.getConfiguration());
     }
 
     @Override
@@ -57,6 +50,7 @@ public final class GiraphMap extends Mapper<NullWritable, GiraphInternalVertex, 
             try {
                 this.context.write(this.keyWritable, this.valueWritable);
             } catch (final Exception e) {
+                LOGGER.error(e.getMessage());
                 throw new IllegalStateException(e.getMessage(), e);
             }
         }

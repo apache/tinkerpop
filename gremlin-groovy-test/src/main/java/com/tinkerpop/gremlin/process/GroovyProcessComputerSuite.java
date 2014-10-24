@@ -10,18 +10,17 @@ import com.tinkerpop.gremlin.process.graph.step.branch.GroovyJumpTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyUnionTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyUntilTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyCyclicPathTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.GroovyExceptTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyFilterTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyHasNotTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyHasTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyIntervalTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRandomTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRetainTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovySimplePathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyWhereTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyBackTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyHiddenValueMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyMapTest;
+import com.tinkerpop.gremlin.process.graph.step.map.GroovyOrderTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyPathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovyPropertiesTest;
 import com.tinkerpop.gremlin.process.graph.step.map.GroovySelectTest;
@@ -81,7 +80,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyMapTest.ComputerTest.class,
             // TODO: GroovyMatchTest.ComputerTest.class,
             // TODO: GroovyOrderByTest.ComputerTest.class,
-            // TODO: GroovyOrderTest.ComputerTest.class,
+            GroovyOrderTest.ComputerTest.class,
             GroovyPathTest.ComputerTest.class,
             GroovyPropertiesTest.ComputerTest.class,
             GroovySelectTest.ComputerTest.class,

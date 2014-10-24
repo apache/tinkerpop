@@ -14,13 +14,13 @@ import com.tinkerpop.gremlin.process.graph.step.filter.HasNotTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.IntervalTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.RandomTest;
-import com.tinkerpop.gremlin.process.graph.step.filter.RangeTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.WhereTest;
 import com.tinkerpop.gremlin.process.graph.step.map.BackTest;
 import com.tinkerpop.gremlin.process.graph.step.map.HiddenValueMapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
+import com.tinkerpop.gremlin.process.graph.step.map.OrderTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertiesTest;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
@@ -104,7 +104,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             MapTest.ComputerTest.class,
             // TODO: MatchTest.ComputerTest.class,
             // TODO: OrderByTest.ComputerTest.class
-            // TODO: OrderTest.ComputerTest.class
+            OrderTest.ComputerTest.class,
             PathTest.ComputerTest.class,
             PropertiesTest.ComputerTest.class,
             SelectTest.ComputerTest.class,

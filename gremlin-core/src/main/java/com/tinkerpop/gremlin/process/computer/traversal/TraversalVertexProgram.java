@@ -96,7 +96,7 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
         });
 
         if (!(TraversalHelper.getEnd(traversal) instanceof SideEffectCapStep))
-            this.mapReducers.add(new TraverserMapReduce());
+            this.mapReducers.add(new TraverserMapReduce(TraversalHelper.getEnd(traversal)));
 
     }
 

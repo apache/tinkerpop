@@ -1,22 +1,48 @@
 package com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce;
 
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
+import com.tinkerpop.gremlin.process.graph.marker.Comparing;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraverserMapReduce implements MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Iterator<Object>> {
+public final class TraverserMapReduce implements MapReduce<Comparable, Object, Comparable, Object, Iterator<Object>> {
 
     public static final String TRAVERSERS = Graph.System.system("traversers");
+
+    private Optional<Comparator<Comparable>> comparator = Optional.empty();
+
+    private TraverserMapReduce() {
+    }
+
+    public TraverserMapReduce(final Step traversalEndStep) {
+        this.comparator = Optional.ofNullable(traversalEndStep instanceof Comparing ? ((Comparing) traversalEndStep).getComparator() : null);
+    }
+
+    @Override
+    public void storeState(final Configuration configuration) {
+
+    }
+
+    @Override
+    public void loadState(final Configuration configuration) {
+        final Step step = TraversalHelper.getEnd(TraversalVertexProgram.getTraversalSupplier(configuration).get());
+        this.comparator = Optional.ofNullable(step instanceof Comparing ? ((Comparing) step).getComparator() : null);
+    }
 
     @Override
     public boolean doStage(final Stage stage) {
@@ -24,12 +50,20 @@ public final class TraverserMapReduce implements MapReduce<MapReduce.NullObject,
     }
 
     @Override
-    public void map(final Vertex vertex, final MapEmitter<MapReduce.NullObject, Object> emitter) {
-        vertex.<TraverserSet>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(emitter::emit));
+    public void map(final Vertex vertex, final MapEmitter<Comparable, Object> emitter) {
+        if (this.comparator.isPresent())
+            vertex.<TraverserSet<?>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> emitter.emit(traverser, traverser)));
+        else
+            vertex.<TraverserSet<?>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(emitter::emit));
     }
 
     @Override
-    public Iterator<Object> generateFinalResult(final Iterator<Pair<MapReduce.NullObject, Object>> keyValues) {
+    public Optional<Comparator<Comparable>> getMapKeySort() {
+        return this.comparator;
+    }
+
+    @Override
+    public Iterator<Object> generateFinalResult(final Iterator<Pair<Comparable, Object>> keyValues) {
         return new Iterator<Object>() {
             @Override
             public boolean hasNext() {

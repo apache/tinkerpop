@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.map
 
 import com.tinkerpop.gremlin.process.Traversal
+import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -21,14 +22,28 @@ public abstract class GroovyOrderTest {
             g.V.name.order { a, b -> b.get() <=> a.get() }
         }
 
+        /*@Override
+        public Traversal<Vertex, String> get_g_V_orderXa_nameXb_nameX() {
+            g.V.order { a, b -> a.name <=> b.name }
+        }*/
+    }
+
+    public static class ComputerTest extends OrderTest {
+
         @Override
-        public Traversal<Vertex, String> get_g_V_orderXa_nameXb_nameX_name() {
-            g.V.order { a, b -> a.name <=> b.name }.name
+        public Traversal<Vertex, String> get_g_V_name_order() {
+            ComputerTestHelper.compute("g.V().name.order()", g);
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_lang_order() {
-            g.V.lang.order();
+        public Traversal<Vertex, String> get_g_V_name_orderXabX() {
+            ComputerTestHelper.compute("g.V.name.order { a, b -> b.get() <=> a.get() }", g);
         }
+
+       /* @Override
+        public Traversal<Vertex, String> get_g_V_orderXa_nameXb_nameX() {
+            ComputerTestHelper.compute("g.V.order { a, b -> a.name <=> b.name }", g);
+        }*/
+
     }
 }

@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -24,16 +23,14 @@ public abstract class OrderTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, String> get_g_V_name_orderXabX();
 
-    public abstract Traversal<Vertex, String> get_g_V_orderXa_nameXb_nameX_name();
-
-    public abstract Traversal<Vertex, String> get_g_V_lang_order();
+    // public abstract Traversal<Vertex, Vertex> get_g_V_orderXa_nameXb_nameX();
 
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_name_order() {
         final Traversal<Vertex, String> traversal = get_g_V_name_order();
         printTraversalForm(traversal);
-        final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
+        final List<String> names = traversal.toList();
         assertEquals(names.size(), 6);
         assertEquals("josh", names.get(0));
         assertEquals("lop", names.get(1));
@@ -58,34 +55,21 @@ public abstract class OrderTest extends AbstractGremlinTest {
         assertEquals("vadas", names.get(0));
     }
 
-    @Test
+   /* @Test
     @LoadGraphWith(MODERN)
     public void g_V_orderXa_nameXb_nameX_name() {
-        final Traversal<Vertex, String> traversal = get_g_V_orderXa_nameXb_nameX_name();
+        final Traversal<Vertex, Vertex> traversal = get_g_V_orderXa_nameXb_nameX();
         printTraversalForm(traversal);
-        final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
+        final List<Vertex> names = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(names.size(), 6);
-        assertEquals("josh", names.get(0));
-        assertEquals("lop", names.get(1));
-        assertEquals("marko", names.get(2));
-        assertEquals("peter", names.get(3));
-        assertEquals("ripple", names.get(4));
-        assertEquals("vadas", names.get(5));
+        assertEquals(convertToVertex(g,"josh"), names.get(0));
+        assertEquals(convertToVertex(g,"lop"), names.get(1));
+        assertEquals(convertToVertex(g,"marko"), names.get(2));
+        assertEquals(convertToVertex(g,"peter"), names.get(3));
+        assertEquals(convertToVertex(g,"ripple"), names.get(4));
+        assertEquals(convertToVertex(g,"vadas"), names.get(5));
     }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_V_lang_order() {
-        final Traversal<Vertex, String> traversal = get_g_V_lang_order();
-        printTraversalForm(traversal);
-        int counter = 0;
-        while (traversal.hasNext()) {
-            counter++;
-            assertEquals("java", traversal.next());
-        }
-        assertEquals(2, counter);
-        assertFalse(traversal.hasNext());
-    }
+    */
 
     public static class StandardTest extends OrderTest {
 
@@ -99,14 +83,28 @@ public abstract class OrderTest extends AbstractGremlinTest {
             return g.V().<String>value("name").order((a, b) -> b.get().compareTo(a.get()));
         }
 
+       /* @Override
+        public Traversal<Vertex, Vertex> get_g_V_orderXa_nameXb_nameX() {
+            return g.V().order((a, b) -> a.get().<String>value("name").compareTo(b.get().<String>value("name")));
+        }
+        */
+    }
+
+    public static class ComputerTest extends OrderTest {
+
         @Override
-        public Traversal<Vertex, String> get_g_V_orderXa_nameXb_nameX_name() {
-            return g.V().order((a, b) -> a.get().<String>value("name").compareTo(b.get().<String>value("name"))).value("name");
+        public Traversal<Vertex, String> get_g_V_name_order() {
+            return g.V().<String>value("name").order().submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_lang_order() {
-            return g.V().<String>value("lang").order();
+        public Traversal<Vertex, String> get_g_V_name_orderXabX() {
+            return g.V().<String>value("name").order((a, b) -> b.get().compareTo(a.get())).submit(g.compute());
         }
+
+       /* @Override
+        public Traversal<Vertex, Vertex> get_g_V_orderXa_nameXb_nameX() {
+            return g.V().order((a, b) -> a.get().<String>value("name").compareTo(b.get().<String>value("name"))).submit(g.compute());
+        } */
     }
 }

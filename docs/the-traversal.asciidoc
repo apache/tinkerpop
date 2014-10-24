@@ -64,7 +64,7 @@ gremlin> g.v(1).as('a').out.back('a') <3>
 
 <1> A standard outgoing traversal from vertex 1.
 <2> For each vertex outgoing adjacent to vertex 1, get the vertex at `a` (which is vertex 1).
-<3> The <<back-step,`back()`-step>> is implemented as a `map()`-step that accesses side effects.
+<3> The <<back-step,`back()`>>-step is implemented as a `map()`-step that accesses side effects.
 
 image:filter-lambda.png[width=160,float=right]
 [source,groovy]
@@ -285,7 +285,7 @@ gremlin> g.V().value('name').dedup{it.get().length()}
 Except Step
 ~~~~~~~~~~~
 
-The `except()`-step (*filter*) can be used to remove objects from the traversal stream. If `except()` is provided a string, then the excepting object is located at `traverser.sideEffects().get(label)`. If `except()` is provided a collection, then any object contained in that collection is filtered out. Please see the related <<retain-step,`retain()`-step>>.
+The `except()`-step (*filter*) can be used to remove objects from the traversal stream. If `except()` is provided a string, then the excepting object is located at `traverser.sideEffects().get(label)`. If `except()` is provided a collection, then any object contained in that collection is filtered out. Please see the related <<retain-step,`retain()`>>-step.
 
 [source,groovy]
 gremlin> g.v(1).as('x').out('created').in('created')
@@ -307,7 +307,7 @@ gremlin> g.v(1).as('x').out('created').in('created').value('name').except(['mark
 Fold Step
 ~~~~~~~~~
 
-There are situations when the traversal stream needs a "barrier" to aggregate all the objects and emit a computation that is a function of the aggregate. The `fold()`-step (*map*) is one particular instance of this. Please see <<unfold-step,`unfold()`-step>> for the inverse functionality.
+There are situations when the traversal stream needs a "barrier" to aggregate all the objects and emit a computation that is a function of the aggregate. The `fold()`-step (*map*) is one particular instance of this. Please see <<unfold-step,`unfold()`>>-step for the inverse functionality.
 
 [source,groovy]
 gremlin> g.v(1).out('knows').value('name')
@@ -429,7 +429,7 @@ gremlin> g.of().inject(1,2).map{it.get() + 1}.map{g.v(it.get())}.value('name')
 Interval Step
 ~~~~~~~~~~~~~
 
-The `interval()`-step (*filter*) is similar to <<has-step,`has()`-step>> in that it filters elements according to their properties.
+The `interval()`-step (*filter*) is similar to <<has-step,`has()`>>-step in that it filters elements according to their properties.
 
 [source,groovy]
 gremlin> g.V().interval('age',20,30)
@@ -882,7 +882,7 @@ gremlin> g.V().as('a').both().jump('a',1000000).range(6,10)
 Retain Step
 ~~~~~~~~~~~
 
-The `retain()`-step (*filter*) can be used to filter objects from the traversal stream that don't match the provided criteria. If `retain()` is provided a string, the retaining object is retrieved via `traverser.sideEffects().get(label)`. If `retain()` is provided a collection, then any object not contained in that collection is filtered out. Please see the related <<except-step,`except()`-step>>.
+The `retain()`-step (*filter*) can be used to filter objects from the traversal stream that don't match the provided criteria. If `retain()` is provided a string, the retaining object is retrieved via `traverser.sideEffects().get(label)`. If `retain()` is provided a collection, then any object not contained in that collection is filtered out. Please see the related <<except-step,`except()`>>-step.
 
 [source,groovy]
 gremlin> g.v(1).as('x').out('created').in('created')
@@ -926,7 +926,7 @@ gremlin> g.V().as('a').out().as('b').out().as('c').select('a') // if the selecti
 ==>v[1]
 ==>v[1]
 
-The second use case is best understood in terms of <<match-step,`match()`-step>> where the result of `match()` is a `Map<String,Object>` of variable bindings. However, any step that emits a `Map<String,Object>` can be selected. A contrived example is presented below.
+The second use case is best understood in terms of <<match-step,`match()`>>-step where the result of `match()` is a `Map<String,Object>` of variable bindings. However, any step that emits a `Map<String,Object>` can be selected. A contrived example is presented below.
 
 [source,groovy]
 gremlin> g.V()[0..1].as('a').map{[b:1,c:2]} <1>
@@ -951,7 +951,7 @@ gremlin> g.V()[0..1].as('a').map{[b:1,c:2]}.select('c') <4>
 Using Where with Select
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Finally, like <<match-step,`match()`-step>>, it is possible to use `where()`, as where is a filter that processes `Map<String,Object>` streams.
+Finally, like <<match-step,`match()`>>-step, it is possible to use `where()`, as where is a filter that processes `Map<String,Object>` streams.
 
 [source,groovy]
 gremlin> g.V().as('a').out('created').in('created').as('b').select{it.value('name')} <1>
@@ -1134,7 +1134,7 @@ gremlin> tree.getObjectsAtDepth(3)
 Unfold Step
 ~~~~~~~~~~~
 
-If the object reaching `unfold()` (*flatMap*) is an iterator, iterable, or map, then it is unrolled into a linear form. If not, then the object is simply emitted. Please see <<fold-step,`fold()`-step>> for the inverse behavior.
+If the object reaching `unfold()` (*flatMap*) is an iterator, iterable, or map, then it is unrolled into a linear form. If not, then the object is simply emitted. Please see <<fold-step,`fold()`>>-step for the inverse behavior.
 
 [source,groovy]
 gremlin> g.v(1).out().fold().inject('gremlin',[1.23,2.34])

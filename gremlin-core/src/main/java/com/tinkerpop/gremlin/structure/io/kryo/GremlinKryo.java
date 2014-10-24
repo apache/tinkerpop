@@ -13,6 +13,8 @@ import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.process.util.BulkSet;
+import com.tinkerpop.gremlin.process.util.ImmutablePath;
+import com.tinkerpop.gremlin.process.util.MutablePath;
 import com.tinkerpop.gremlin.process.util.StepTimer;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
@@ -243,6 +245,8 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(PathTraverser.class, null, 56));
             add(Triplet.<Class, Serializer, Integer>with(TraverserSet.class, null, 58));
             add(Triplet.<Class, Serializer, Integer>with(Path.class, null, 59));
+            //add(Triplet.<Class, Serializer, Integer>with(MutablePath.class, null, 72));
+            //add(Triplet.<Class, Serializer, Integer>with(ImmutablePath.class, null, 73));
             add(Triplet.<Class, Serializer, Integer>with(DetachedPath.class, null, 60));
             add(Triplet.<Class, Serializer, Integer>with(Tree.class, null, 61));
             add(Triplet.<Class, Serializer, Integer>with(HashSet.class, null, 62));
@@ -250,7 +254,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(BulkSet.class, null, 64));
             add(Triplet.<Class, Serializer, Integer>with(StepTimer.class, null, 69));
             add(Triplet.<Class, Serializer, Integer>with(TraversalMetrics.class, null, 70));
-            add(Triplet.<Class, Serializer, Integer>with(LinkedHashSet.class, null, 71));  // ***LAST ID***
+            add(Triplet.<Class, Serializer, Integer>with(LinkedHashSet.class, null, 71));// ***LAST ID***
         }};
 
         private static final byte major = 1;

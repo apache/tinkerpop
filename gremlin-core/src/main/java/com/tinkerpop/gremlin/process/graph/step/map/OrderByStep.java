@@ -2,36 +2,35 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.marker.Comparing;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.util.BarrierStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 
 import java.util.Comparator;
-import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class OrderByStep<S extends Element, C extends Comparable> extends BarrierStep<S> implements Reversible {
+public final class OrderByStep<S extends Element, C> extends BarrierStep<S> implements Reversible, Comparing<S> {
 
-    private final Comparator comparator;
+    private final Comparator<Traverser<S>> comparator;
     private final String elementKey;
 
-    public OrderByStep(final Traversal traversal, final String elementKey, final Comparator comparator) {
+    public OrderByStep(final Traversal traversal, final String elementKey, final Comparator<C> elementValueComparator) {
         super(traversal);
         this.elementKey = elementKey;
-        this.comparator = comparator;
-        this.setConsumer(traversers -> {
-            traversers.sort(Comparator.comparing((Function<Traverser<S>, Comparable>) traverser -> traverser.get().value(this.elementKey), this.comparator));
-        });
+        this.comparator = (a, b) -> elementValueComparator.compare(a.get().<C>value(this.elementKey), b.get().<C>value(this.elementKey));
+        this.setConsumer(traversers -> traversers.sort(this.comparator));
     }
 
-    public String getElementKey() {
+    /*public String getElementKey() {
         return this.elementKey;
-    }
+    }*/
 
-    public Comparator getComparator() {
+    @Override
+    public Comparator<Traverser<S>> getComparator() {
         return this.comparator;
     }
 

@@ -5,7 +5,9 @@ import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * A MapReduce is composed of map(), combine(), and reduce() stages.
@@ -40,7 +42,7 @@ public interface MapReduce<MK, MV, RK, RV, R> {
      * When it is necessary to load the state of a MapReduce job, this method is called.
      * This is typically required when the MapReduce job needs to be serialized to another machine.
      * Note that what is loaded is simply the instance state, not any processed data.
-     *
+     * <p/>
      * It is important that the state loaded from loadState() is identical to any state created from a constructor.
      * For those GraphComputers that do not need to use Configurations to migrate state between JVMs, the constructor will only be used.
      *
@@ -93,6 +95,29 @@ public interface MapReduce<MK, MV, RK, RV, R> {
      * @param emitter the component that allows for key/value pairs to be emitted as the final result.
      */
     public default void reduce(final MK key, final Iterator<MV> values, final ReduceEmitter<RK, RV> emitter) {
+    }
+
+    /**
+     * If a {@link Comparator} is provided, then all pairs leaving the {@link MapEmitter} are sorted.
+     * The sorted results are either fed sorted to the combine/reduce-stage or as the final output.
+     * If sorting is not required, then {@link Optional#empty} should be returned as sorting is computationally expensive.
+     * The default implementation returns {@link Optional#empty}.
+     *
+     * @return an {@link Optional} of a comparator for sorting the map output.
+     */
+    public default Optional<Comparator<MK>> getMapKeySort() {
+        return Optional.empty();
+    }
+
+    /**
+     * If a {@link Comparator} is provided, then all pairs leaving the {@link ReduceEmitter} are sorted.
+     * If sorting is not required, then {@link Optional#empty} should be returned as sorting is computationally expensive.
+     * The default implementation returns {@link Optional#empty}.
+     *
+     * @return an {@link Optional} of a comparator for sorting the reduce output.
+     */
+    public default Optional<Comparator<RK>> getReduceKeySort() {
+        return Optional.empty();
     }
 
     /**

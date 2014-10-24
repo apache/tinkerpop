@@ -16,16 +16,24 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.OutputFormat;
+import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.util.Comparator;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class MapReduceHelper {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MapReduceHelper.class);
 
     private static final String SEQUENCE_WARNING = "The " + Constants.GREMLIN_MEMORY_OUTPUT_FORMAT_CLASS
             + " is not " + SequenceFileOutputFormat.class.getCanonicalName()
@@ -43,17 +51,25 @@ public class MapReduceHelper {
             else
                 GiraphGraphComputer.LOGGER.warn(SEQUENCE_WARNING);
         } else {
+            final Optional<Comparator<?>> mapSort = mapReduce.getMapKeySort();
+            final Optional<Comparator<?>> reduceSort = mapReduce.getReduceKeySort(); // TODO: see big comment chuck below
+
             newConfiguration.setClass(Constants.MAP_REDUCE_CLASS, mapReduce.getClass(), MapReduce.class);
             final Job job = new Job(newConfiguration, mapReduce.toString());
             GiraphGraphComputer.LOGGER.info(Constants.GIRAPH_GREMLIN_JOB_PREFIX + mapReduce.toString());
             job.setJarByClass(GiraphGraph.class);
+            if (mapSort.isPresent()) job.setSortComparatorClass(KryoWritableComparator.class);
             job.setMapperClass(GiraphMap.class);
-            if (mapReduce.doStage(MapReduce.Stage.COMBINE))
-                job.setCombinerClass(GiraphReduce.class);
-            if (mapReduce.doStage(MapReduce.Stage.REDUCE))
+            if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
+                if (mapReduce.doStage(MapReduce.Stage.COMBINE)) job.setCombinerClass(GiraphReduce.class);
                 job.setReducerClass(GiraphReduce.class);
-            else
-                job.setNumReduceTasks(0);
+            } else {
+                if (mapSort.isPresent()) {
+                    job.setReducerClass(Reducer.class);
+                } else {
+                    job.setNumReduceTasks(0);
+                }
+            }
             job.setMapOutputKeyClass(KryoWritable.class);
             job.setMapOutputValueClass(KryoWritable.class);
             job.setOutputKeyClass(KryoWritable.class);
@@ -65,20 +81,48 @@ public class MapReduceHelper {
                     new Path(newConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + Constants.SYSTEM_G) :
                     new Path(newConfiguration.get(Constants.GREMLIN_INPUT_LOCATION));
             final Path memoryPath = new Path(newConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + mapReduce.getMemoryKey());
-            // necessary if store('a').out.out.store('a') exists twice -- TODO: only need to call the MapReduce once. May want to have a uniqueness critieria on MapReduce.
-            if(FileSystem.get(newConfiguration).exists(memoryPath)) {
-                FileSystem.get(newConfiguration).delete(memoryPath,true);
+            if (FileSystem.get(newConfiguration).exists(memoryPath)) {
+                FileSystem.get(newConfiguration).delete(memoryPath, true);
             }
 
             FileInputFormat.setInputPaths(job, graphPath);
             FileOutputFormat.setOutputPath(job, memoryPath);
             job.waitForCompletion(true);
+
+            // if there is a reduce sort, we need to run another identity MapReduce job
+            /*
+            // TODO: sort reduce output if it exists
+            if(reduceSort.isPresent()) {
+                final Job reduceSortJob = new Job(newConfiguration,"ReduceSort");
+                reduceSortJob.setSortComparatorClass(KryoWritableComparator.class);
+                reduceSortJob.setMapperClass(Mapper.class);
+                reduceSortJob.setReducerClass(Reducer.class);
+                reduceSortJob.setMapOutputKeyClass(KryoWritable.class);
+                reduceSortJob.setMapOutputValueClass(KryoWritable.class);
+                reduceSortJob.setOutputKeyClass(KryoWritable.class);
+                reduceSortJob.setOutputValueClass(KryoWritable.class);
+            }*/
+
             // if its not a SequenceFile there is no certain way to convert to necessary Java objects.
             // to get results you have to look through HDFS directory structure. Oh the horror.
             if (newConfiguration.getClass(Constants.GREMLIN_MEMORY_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
                 mapReduce.addResultToMemory(memory, new KryoWritableIterator(configuration, memoryPath));
             else
                 GiraphGraphComputer.LOGGER.warn(SEQUENCE_WARNING);
+        }
+    }
+
+    public static <MK, MV, RK, RV, R> MapReduce<MK, MV, RK, RV, R> getMapReduce(final Configuration configuration) {
+        try {
+            final Class<? extends MapReduce> mapReduceClass = configuration.getClass(Constants.MAP_REDUCE_CLASS, MapReduce.class, MapReduce.class);
+            final Constructor<? extends MapReduce> constructor = mapReduceClass.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            final MapReduce<MK, MV, RK, RV, R> mapReduce = constructor.newInstance();
+            mapReduce.loadState(ConfUtil.makeApacheConfiguration(configuration));
+            return mapReduce;
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 }

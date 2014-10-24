@@ -1,13 +1,13 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
-import com.tinkerpop.gremlin.giraph.Constants;
-import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.computer.util.KryoWritable;
+import com.tinkerpop.gremlin.giraph.process.computer.util.MapReduceHelper;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.util.Iterator;
 
 /**
@@ -15,23 +15,16 @@ import java.util.Iterator;
  */
 public final class GiraphReduce extends Reducer<KryoWritable, KryoWritable, KryoWritable, KryoWritable> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(GiraphReduce.class);
     private MapReduce mapReduce;
 
-    public GiraphReduce() {
+    private GiraphReduce() {
 
     }
 
     @Override
     public void setup(final Reducer<KryoWritable, KryoWritable, KryoWritable, KryoWritable>.Context context) {
-        try {
-            final Class<? extends MapReduce> mapReduceClass = context.getConfiguration().getClass(Constants.MAP_REDUCE_CLASS, MapReduce.class, MapReduce.class);
-            final Constructor<? extends MapReduce> constructor = mapReduceClass.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            this.mapReduce = constructor.newInstance();
-            this.mapReduce.loadState(ConfUtil.makeApacheConfiguration(context.getConfiguration()));
-        } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+        this.mapReduce = MapReduceHelper.getMapReduce(context.getConfiguration());
     }
 
     @Override
@@ -68,6 +61,7 @@ public final class GiraphReduce extends Reducer<KryoWritable, KryoWritable, Kryo
             try {
                 this.context.write(this.keyWritable, this.valueWritable);
             } catch (final Exception e) {
+                LOGGER.error(e.getMessage());
                 throw new IllegalStateException(e.getMessage(), e);
             }
         }
