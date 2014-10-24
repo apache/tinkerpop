@@ -1287,10 +1287,10 @@ image:traversal-strategy.png[width=125,float=right] A `TraversalStrategy` can an
  * There is a more efficient way to express the traversal at the TinkerPop3 level.
  * There is a more efficient way to express the traversal at the graph vendor level.
 
-A simple TraversalStrategy is the `IdentityReductionStrategy` and it is a type-1 strategy defined as follows:
+A simple TraversalStrategy is the `IdentityRemovalStrategy` and it is a type-1 strategy defined as follows:
 
 [source,java]
-public class IdentityReductionStrategy implements TraversalStrategy.NoDependencies {
+public class IdentityRemovalStrategy implements TraversalStrategy.NoDependencies {
     public void apply(final Traversal traversal, final TraversalEngine traversalEngine) {
         traversal.getSteps().stream()
                 .filter(step -> step instanceof IdentityStep
@@ -1371,13 +1371,13 @@ WARNING: It is possible to create faulty traversals by modifying the `GraphTrave
 gremlin> import com.tinkerpop.gremlin.process.graph.strategy.*
 ...
 gremlin> GraphTraversalStrategyRegistry.instance()
-==>strategies[TraverserSourceStrategy, LabeledEndStepStrategy, UntilStrategy, DedupOptimizerStrategy, IdentityReductionStrategy, SideEffectCapStrategy, MatchWhereStrategy, ChooseLinearStrategy, UnionLinearStrategy, ComparingReductionStrategy, EngineDependentStrategy]
+==>strategies[TraverserSourceStrategy, LabeledEndStepStrategy, UntilStrategy, DedupOptimizerStrategy, IdentityRemovalStrategy, SideEffectCapStrategy, MatchWhereStrategy, ChooseLinearStrategy, UnionLinearStrategy, ComparingReductionStrategy, EngineDependentStrategy]
 gremlin> t = g.V().identity().identity().identity().range(0,1)
 ==>v[1]
 ==>v[2]
 gremlin> t.toString()
 ==>[TinkerGraphStep(vertex), RangeStep(0,1)] // the identity reduction strategy removes unlabeled identity steps
-gremlin> GraphTraversalStrategyRegistry.instance().unregister(IdentityReductionStrategy)
+gremlin> GraphTraversalStrategyRegistry.instance().unregister(IdentityRemovalStrategy)
 ==>null
 gremlin> t = g.V().identity().identity().identity().range(0,1)
 ==>v[1]
@@ -1396,40 +1396,44 @@ image:gremlin-quill.png[width=200,float=right] The super interface of GraphTrave
 ----
 public interface SocialTraversal<S, E> extends Traversal<S, E> {
 
-        public default SocialTraversal<S, Vertex> people() {
-            return (SocialTraversal) this.addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has("age")));
-        }
-
-        public default SocialTraversal<S, Vertex> people(String name) {
-            return (SocialTraversal) this.addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has("name", name)));
-        }
-
-        public default SocialTraversal<S, Vertex> knows() {
-            final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
-            flatMapStep.setFunction(v -> v.get().out("knows"));
-            return (SocialTraversal) this.addStep(flatMapStep);
-        }
-
-        public default SocialTraversal<S, Vertex> created() {
-            final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
-            flatMapStep.setFunction(v -> v.get().out("created"));
-            return (SocialTraversal) this.addStep(flatMapStep);
-        }
-
-        public default SocialTraversal<S, String> name() {
-            MapStep<Vertex, String> mapStep = new MapStep<>(this);
-            mapStep.setFunction(v -> v.get().<String>value("name"));
-            return (SocialTraversal) this.addStep(mapStep);
-        }
-
-        public static <S> SocialTraversal<S, S> of(final Graph graph) {
-            final SocialTraversal traversal = new DefaultSocialTraversal();
-            traversal.sideEffects().setGraph(graph);
-            return traversal;
-        }
-
-        public class DefaultSocialTraversal extends DefaultTraversal implements SocialTraversal { }
+    public default SocialTraversal<S, Vertex> people() {
+        return (SocialTraversal) this.addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has("age")));
     }
+
+    public default SocialTraversal<S, Vertex> people(String name) {
+        return (SocialTraversal) this.addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has("name", name)));
+    }
+
+    public default SocialTraversal<S, Vertex> knows() {
+        final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
+        flatMapStep.setFunction(v -> v.get().out("knows"));
+        return (SocialTraversal) this.addStep(flatMapStep);
+    }
+
+    public default SocialTraversal<S, Vertex> created() {
+        final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
+        flatMapStep.setFunction(v -> v.get().out("created"));
+        return (SocialTraversal) this.addStep(flatMapStep);
+    }
+
+    public default SocialTraversal<S, String> name() {
+        MapStep<Vertex, String> mapStep = new MapStep<>(this);
+        mapStep.setFunction(v -> v.get().<String>value("name"));
+        return (SocialTraversal) this.addStep(mapStep);
+    }
+
+    public static <S> SocialTraversal<S, S> of(final Graph graph) {
+        final SocialTraversal traversal = new DefaultSocialTraversal(graph);
+        return traversal;
+    }
+
+    public class DefaultSocialTraversal extends DefaultTraversal implements SocialTraversal {
+        public DefaultSocialTraversal(final Graph graph) {
+            super(graph);
+            this.strategies().register(TraverserSourceStrategy.instance());
+        }
+    }
+}
 ----
 
 This traversal definition can now be used as follows.
@@ -1437,5 +1441,5 @@ This traversal definition can now be used as follows.
 [source,java]
 g.of(SocialTraversal.class).people("marko").knows().name()
 
-By extending Traversal, users can create a DSL that is respective of the semantics of their data. Instead of querying in terms of vertices/edges/properties, they can query in terms of, for example, people, their friends, and their names.
+By extending `Traversal`, users can create a DSL that is respective of the semantics of their data. Instead of querying in terms of vertices/edges/properties, they can query in terms of, for example, people, their friends, and their names.
 

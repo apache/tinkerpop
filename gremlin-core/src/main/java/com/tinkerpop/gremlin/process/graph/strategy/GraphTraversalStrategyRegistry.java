@@ -22,13 +22,14 @@ public class GraphTraversalStrategyRegistry implements Traversal.Strategies {
         TRAVERSAL_STRATEGIES.add(LabeledEndStepStrategy.instance());
         TRAVERSAL_STRATEGIES.add(UntilStrategy.instance());
         TRAVERSAL_STRATEGIES.add(DedupOptimizerStrategy.instance());
-        TRAVERSAL_STRATEGIES.add(IdentityReductionStrategy.instance());
+        TRAVERSAL_STRATEGIES.add(IdentityRemovalStrategy.instance());
         TRAVERSAL_STRATEGIES.add(SideEffectCapStrategy.instance());
         TRAVERSAL_STRATEGIES.add(MatchWhereStrategy.instance());
         TRAVERSAL_STRATEGIES.add(ChooseLinearStrategy.instance());
         TRAVERSAL_STRATEGIES.add(UnionLinearStrategy.instance());
-        TRAVERSAL_STRATEGIES.add(ComparingReductionStrategy.instance());
+        TRAVERSAL_STRATEGIES.add(ComparingRemovalStrategy.instance());
         TRAVERSAL_STRATEGIES.add(EngineDependentStrategy.instance());
+        //  TRAVERSAL_STRATEGIES.add(UnrollJumpStrategy.instance());
     }
 
     private GraphTraversalStrategyRegistry() {

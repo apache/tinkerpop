@@ -10,6 +10,8 @@ TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * `Traversal.Strategies.apply()` now takes a `TraversalEngine`. Greatly simplifies strategy application for `STANDARD` or `COMPUTER`.
+* Renamed `IdentityReductionStrategy` to `IdentityRemovalStrategy` for reasons of clarity.
+* Added `ComparingRemovalStrategy` that removes `Comparing`-marked steps unless they are the end step of the traversal.
 * `OrderStep` now works in OLAP, but only makes sense as a traversal end step.
 * `MapReduce` API extended to include `getMapKeySort()` and `getReduceKeySort()` to sort outputs accordingly.
 * Renamed `TraversalResultMapReduce` to `TraverserMapReduce`. Shorter and makes more sense.

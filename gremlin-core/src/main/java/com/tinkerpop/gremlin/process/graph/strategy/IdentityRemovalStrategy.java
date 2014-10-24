@@ -2,19 +2,19 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
-import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IdentityReductionStrategy extends AbstractTraversalStrategy implements TraversalStrategy.NoDependencies {
+public class IdentityRemovalStrategy extends AbstractTraversalStrategy implements TraversalStrategy.NoDependencies {
 
-    private static final IdentityReductionStrategy INSTANCE = new IdentityReductionStrategy();
+    private static final IdentityRemovalStrategy INSTANCE = new IdentityRemovalStrategy();
 
-    private IdentityReductionStrategy() {
+    private IdentityRemovalStrategy() {
     }
 
     @Override
@@ -28,7 +28,7 @@ public class IdentityReductionStrategy extends AbstractTraversalStrategy impleme
                 .forEach(step -> TraversalHelper.removeStep((Step) step, traversal));
     }
 
-    public static IdentityReductionStrategy instance() {
+    public static IdentityRemovalStrategy instance() {
         return INSTANCE;
     }
 }

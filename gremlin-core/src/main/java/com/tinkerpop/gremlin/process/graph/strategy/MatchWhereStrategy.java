@@ -54,6 +54,6 @@ public class MatchWhereStrategy extends AbstractTraversalStrategy implements Tra
 
     @Override
     public int compareTo(final TraversalStrategy traversalStrategy) {
-        return traversalStrategy instanceof IdentityReductionStrategy ? 1 : 0;
+        return traversalStrategy instanceof IdentityRemovalStrategy ? 1 : 0;
     }
 }
