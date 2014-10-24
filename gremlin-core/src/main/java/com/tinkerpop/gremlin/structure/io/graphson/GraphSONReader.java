@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
@@ -92,22 +93,8 @@ public class GraphSONReader implements GraphReader {
                         readVertexData(vertexData, detachedVertex -> {
                             final Vertex v = Optional.ofNullable(graph.v(detachedVertex.id())).orElse(
                                     graph.addVertex(T.label, detachedVertex.label(), T.id, detachedVertex.id()));
-                            detachedVertex.iterators().propertyIterator().forEachRemaining(p -> {
-                                final List<Object> propertyArgs = new ArrayList<>();
-                                if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
-                                    propertyArgs.addAll(Arrays.asList(T.id, p.id()));
-                                p.iterators().propertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
-                                p.iterators().hiddenPropertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
-                                v.property(p.key(), p.value(), propertyArgs.toArray());
-                            });
-                            detachedVertex.iterators().hiddenPropertyIterator().forEachRemaining(p -> {
-                                final List<Object> propertyArgs = new ArrayList<>();
-                                if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
-                                    propertyArgs.addAll(Arrays.asList(T.id, p.id()));
-                                p.iterators().propertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
-                                p.iterators().hiddenPropertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
-                                v.property(Graph.Key.hide(p.key()), p.value(), propertyArgs.toArray());
-                            });
+                            detachedVertex.iterators().propertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, false));
+                            detachedVertex.iterators().hiddenPropertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, true));
                             return v;
                         });
                     }
@@ -168,6 +155,15 @@ public class GraphSONReader implements GraphReader {
             readVertexEdges(edgeMaker, vertexData, GraphSONTokens.IN_E);
 
         return v;
+    }
+
+    private static void createVertexProperty(final Graph graphToWriteTo, final Vertex v, final VertexProperty<Object> p, final boolean hidden) {
+        final List<Object> propertyArgs = new ArrayList<>();
+        if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
+            propertyArgs.addAll(Arrays.asList(T.id, p.id()));
+        p.iterators().propertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
+        p.iterators().hiddenPropertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
+        v.property(hidden ? Graph.Key.hide(p.key()) : p.key(), p.value(), propertyArgs.toArray());
     }
 
     private static void readVertexEdges(final Function<DetachedEdge, Edge> edgeMaker, final Map<String, Object> vertexData, final String direction) throws IOException {

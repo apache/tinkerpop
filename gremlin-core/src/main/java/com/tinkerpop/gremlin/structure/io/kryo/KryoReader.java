@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
@@ -145,24 +146,8 @@ public class KryoReader implements GraphReader {
                     vertexArgs.addAll(Arrays.asList(T.label, current.label()));
 
                     final Vertex v = graph.addVertex(vertexArgs.toArray());
-
-                    current.iterators().propertyIterator().forEachRemaining(p -> {
-                        final List<Object> propertyArgs = new ArrayList<>();
-                        if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
-                            propertyArgs.addAll(Arrays.asList(T.id, p.id()));
-                        p.iterators().propertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
-                        p.iterators().hiddenPropertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
-                        v.property(p.key(), p.value(), propertyArgs.toArray());
-                    });
-
-                    current.iterators().hiddenPropertyIterator().forEachRemaining(p -> {
-                        final List<Object> propertyArgs = new ArrayList<>();
-                        if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
-                            propertyArgs.addAll(Arrays.asList(T.id, p.id()));
-                        p.iterators().propertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
-                        p.iterators().hiddenPropertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
-                        v.property(Graph.Key.hide(p.key()), p.value(), propertyArgs.toArray());
-                    });
+                    current.iterators().propertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, false));
+                    current.iterators().hiddenPropertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, true));
 
                     // the gio file should have been written with a direction specified
                     final boolean hasDirectionSpecified = input.readBoolean();
@@ -197,6 +182,15 @@ public class KryoReader implements GraphReader {
         } finally {
             deleteTempFileSilently();
         }
+    }
+
+    private static void createVertexProperty(final Graph graphToWriteTo, final Vertex v, final VertexProperty<Object> p, final boolean hidden) {
+        final List<Object> propertyArgs = new ArrayList<>();
+        if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
+            propertyArgs.addAll(Arrays.asList(T.id, p.id()));
+        p.iterators().propertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
+        p.iterators().hiddenPropertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
+        v.property(hidden ? Graph.Key.hide(p.key()) : p.key(), p.value(), propertyArgs.toArray());
     }
 
     private Vertex readVertex(final Direction directionRequested, final Function<DetachedVertex, Vertex> vertexMaker,
