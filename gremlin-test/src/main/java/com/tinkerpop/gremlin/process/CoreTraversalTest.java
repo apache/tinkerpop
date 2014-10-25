@@ -21,7 +21,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
 
     @Test
     @Ignore
-    public void shouldDetectNext() {
+    public void shouldAlterTraversalAfterDetectingNext() {
         g.addVertex();
         g.addVertex();
         g.addVertex();
