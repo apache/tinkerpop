@@ -3,10 +3,12 @@ package com.tinkerpop.gremlin.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
+import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.*;
@@ -77,6 +79,12 @@ public class EdgeTest extends AbstractGremlinTest {
             assertEquals(expectedException.getClass(), ex.getClass());
             assertEquals(expectedException.getMessage(), ex.getMessage());
         }
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldThrowNoSuchElementExceptionIfEdgeWithIdNotPresent() {
+        g.e("this-id-should-not-be-in-the-modern-graph");
     }
 
     @Test

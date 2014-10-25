@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.GraphManager;
+import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
@@ -13,6 +14,7 @@ import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.*;
@@ -74,6 +76,12 @@ public class VertexTest extends AbstractGremlinTest {
             assertEquals(expectedException.getClass(), ex.getClass());
             assertEquals(expectedException.getMessage(), ex.getMessage());
         }
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldThrowNoSuchElementExceptionIfVertexWithIdNotPresent() {
+        g.v("this-id-should-not-be-in-the-modern-graph");
     }
 
     @Test
