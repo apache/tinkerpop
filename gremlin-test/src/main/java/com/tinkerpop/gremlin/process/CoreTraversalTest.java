@@ -1,9 +1,11 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.util.TraverserIterator;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -16,6 +18,18 @@ import static org.junit.Assert.*;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class CoreTraversalTest extends AbstractGremlinProcessTest {
+
+    @Test
+    @Ignore
+    public void shouldDetectNext() {
+        g.addVertex();
+        g.addVertex();
+        g.addVertex();
+        this.tryCommit(g);
+        final GraphTraversal<Vertex, Vertex> gt = this.g.V();
+        assertTrue(gt.hasNext());
+        assertEquals(3, gt.count().next().intValue());
+    }
 
     @Test
     @LoadGraphWith(MODERN)
