@@ -48,7 +48,7 @@ public interface Transaction extends Closeable {
     public boolean isOpen();
 
     /**
-     * An internal function that signals a read or a write has occurred - not meant to be called directly.
+     * An internal function that signals a read or a write has occurred - not meant to be called directly by end users.
      */
     public void readWrite();
 
