@@ -18,6 +18,7 @@ Building and Testing
 ** Fast-build (does not run `neo4j-gremlin` tests - use with caution): `mvn clean install -DfeelingLucky`
 * Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
 * Build AsciiDocs: `mvn process-resources -Dasciidoc`
+* Build JavaDocs: `mvn process-resources -Djavadoc`
 * Deploy AsciiDocs: `mvn deploy -Dasciidoc`
 * Deploy JavaDocs: `mvn deploy -Djavadoc`
 * Deploy Zip Archives: `mvn deploy -Darchives`
