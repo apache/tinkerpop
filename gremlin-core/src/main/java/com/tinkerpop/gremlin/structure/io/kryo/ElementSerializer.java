@@ -48,7 +48,7 @@ class ElementSerializer {
 
         @Override
         public void write(final Kryo kryo, final Output output, final Vertex vertex) {
-            kryo.writeClassAndObject(output, vertex instanceof DetachedVertex ? (DetachedVertex) vertex : DetachedVertex.detach(vertex));
+            kryo.writeClassAndObject(output, DetachedVertex.detach(vertex));
         }
 
         @Override
@@ -63,7 +63,7 @@ class ElementSerializer {
 
         @Override
         public void write(final Kryo kryo, final Output output, final Property property) {
-            kryo.writeClassAndObject(output, property instanceof DetachedProperty ? (DetachedProperty) property : DetachedProperty.detach(property));
+            kryo.writeClassAndObject(output, DetachedProperty.detach(property));
         }
 
         @Override
@@ -78,7 +78,7 @@ class ElementSerializer {
 
         @Override
         public void write(final Kryo kryo, final Output output, final VertexProperty property) {
-            kryo.writeClassAndObject(output, property instanceof DetachedVertexProperty ? (DetachedVertexProperty) property : DetachedVertexProperty.detach(property));
+            kryo.writeClassAndObject(output, DetachedVertexProperty.detach(property));
         }
 
         @Override
