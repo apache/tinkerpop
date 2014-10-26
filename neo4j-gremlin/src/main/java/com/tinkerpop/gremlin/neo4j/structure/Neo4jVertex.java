@@ -38,18 +38,9 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
     public <V> VertexProperty<V> property(final String key) {
         this.graph.tx().readWrite();
         if (!this.graph.supportsMultiProperties) {
-            return this.getBaseVertex().hasProperty(key) ? new Neo4jVertexProperty<V>(this, key, (V) this.getBaseVertex().getProperty(key)) : VertexProperty.<V>empty();
+            return existsInNeo4j(key) ? new Neo4jVertexProperty<V>(this, key, (V) this.getBaseVertex().getProperty(key)) : VertexProperty.<V>empty();
         } else {
-            final boolean existsInNeo4j;
-            try {
-                existsInNeo4j = this.getBaseVertex().hasProperty(key);
-            } catch (IllegalStateException ise) {
-                return VertexProperty.<V>empty();
-            } catch (NotFoundException nfe) {
-                return VertexProperty.<V>empty();
-            }
-
-            if (existsInNeo4j) {
+            if (existsInNeo4j(key)) {
                 if (this.getBaseVertex().getProperty(key).equals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN)) {
                     if (this.getBaseVertex().getDegree(DynamicRelationshipType.withName(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat(key)), org.neo4j.graphdb.Direction.OUTGOING) > 1)
                         throw Vertex.Exceptions.multiplePropertiesExistForProvidedKey(key);
@@ -237,5 +228,13 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
                     else
                         return Stream.of(new Neo4jVertexProperty<>(Neo4jVertex.this, key, (V) getBaseVertex().getProperty(key)));
                 }).iterator();
+    }
+
+    private boolean existsInNeo4j(final String key) {
+        try {
+            return this.getBaseVertex().hasProperty(key);
+        } catch (IllegalStateException | NotFoundException ex) {
+            return false;
+        }
     }
 }
