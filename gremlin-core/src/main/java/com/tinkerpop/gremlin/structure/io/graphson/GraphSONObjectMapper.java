@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 
 /**
+ * An extension to the standard Jackson {@code ObjectMapper} which automatically registers the standard
+ * {@link GraphSONModule} for serializing {@link com.tinkerpop.gremlin.structure.Graph} elements.  This class
+ * can be used for generalized JSON serialization tasks that require meeting GraphSON standards.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphSONObjectMapper extends ObjectMapper {
@@ -67,11 +71,17 @@ public class GraphSONObjectMapper extends ObjectMapper {
             return this;
         }
 
+        /**
+         * Forces keys to be sorted.
+         */
         public Builder normalize(final boolean normalize) {
             this.normalize = normalize;
             return this;
         }
 
+        /**
+         * Embeds Java types into generated JSON to clarify their origins.
+         */
         public Builder embedTypes(final boolean embedTypes) {
             this.embedTypes = embedTypes;
             return this;
