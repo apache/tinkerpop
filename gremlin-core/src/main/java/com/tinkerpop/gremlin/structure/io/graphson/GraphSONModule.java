@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdKeySerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
@@ -93,15 +94,19 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.LABEL, edge.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.EDGE);
 
-            final Vertex inV = edge.inV().next();
+            final Map<String,Object> properties = StreamFactory.stream(edge.iterators().propertyIterator()).collect(Collectors.toMap(Property::key, Property::value));
+            final Map<String,Object> hiddens = StreamFactory.stream(edge.iterators().hiddenPropertyIterator()).collect(Collectors.toMap(Property::key, Property::value));
+
+            m.put(GraphSONTokens.PROPERTIES, properties);
+            m.put(GraphSONTokens.HIDDENS, hiddens);
+
+            final Vertex inV = edge.iterators().vertexIterator(Direction.IN).next();
             m.put(GraphSONTokens.IN, inV.id());
             m.put(GraphSONTokens.IN_LABEL, inV.label());
 
-            final Vertex outV = edge.outV().next();
+            final Vertex outV = edge.iterators().vertexIterator(Direction.OUT).next();
             m.put(GraphSONTokens.OUT, outV.id());
             m.put(GraphSONTokens.OUT_LABEL, outV.label());
-            m.put(GraphSONTokens.PROPERTIES, edge.valueMap().next());
-            m.put(GraphSONTokens.HIDDENS, edge.hiddenValueMap().next());
 
             jsonGenerator.writeObject(m);
         }
