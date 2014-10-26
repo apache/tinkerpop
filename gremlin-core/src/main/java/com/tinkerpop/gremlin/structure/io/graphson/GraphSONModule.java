@@ -55,23 +55,13 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.LABEL, property.label());
             m.put(GraphSONTokens.VALUE, property.value());
 
-            Map<String,Object> properties;
-            try {
-                properties = StreamFactory.<Property<Object>>stream(property.iterators().propertyIterator()).collect(Collectors.toMap(Property::key, Property::value));
-            } catch (UnsupportedOperationException uoe) {
-                // throws if meta-properties are no supported - no way at this time to check the feature
-                // directly as Graph is not available here.
-                properties = new HashMap<>();
-            }
+            final Map<String,Object> properties = (property.graph().features().vertex().supportsMetaProperties()) ?
+                StreamFactory.stream(property.iterators().propertyIterator()).collect(Collectors.toMap(Property::key, Property::value)) :
+                new HashMap<>();
 
-            Map<String,Object> hiddens;
-            try {
-                hiddens = StreamFactory.<Property<Object>>stream(property.iterators().hiddenPropertyIterator()).collect(Collectors.toMap(Property::key, Property::value));
-            } catch (UnsupportedOperationException uoe) {
-                // throws if meta-properties are no supported - no way at this time to check the feature
-                // directly as Graph is not available here.
-                hiddens = new HashMap<>();
-            }
+            final Map<String,Object> hiddens = (property.graph().features().vertex().supportsMetaProperties()) ?
+                    StreamFactory.stream(property.iterators().hiddenPropertyIterator()).collect(Collectors.toMap(Property::key, Property::value)) :
+                    new HashMap<>();
 
             m.put(GraphSONTokens.PROPERTIES, properties);
             m.put(GraphSONTokens.HIDDENS, hiddens);
