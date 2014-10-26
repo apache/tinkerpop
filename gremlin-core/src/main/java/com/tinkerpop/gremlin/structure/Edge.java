@@ -27,8 +27,18 @@ public interface Edge extends Element, EdgeTraversal {
      */
     public static final String DEFAULT_LABEL = "edge";
 
+    /**
+     * Gets the {@link Edge.Iterators} set.
+     *
+     * {@inheritDoc}
+     */
+    @Override
     public Edge.Iterators iterators();
 
+    /**
+     * An interface that provides access to iterators over properties and vertices, without constructing a
+     * {@link com.tinkerpop.gremlin.process.Traversal} object.
+     */
     public interface Iterators extends Element.Iterators {
 
         /**
@@ -39,13 +49,17 @@ public interface Edge extends Element, EdgeTraversal {
          */
         public Iterator<Vertex> vertexIterator(final Direction direction);
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys);
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public <V> Iterator<Property<V>> hiddenPropertyIterator(final String... propertyKeys);
-
-        public default <V> Iterator<V> valueIterator(final String... propertyKeys) {
-            return Element.Iterators.super.valueIterator(propertyKeys);
-        }
     }
 
     /**

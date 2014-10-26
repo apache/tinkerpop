@@ -15,6 +15,7 @@ import java.util.Set;
  * etc.)
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract interface Element {
 
@@ -98,8 +99,17 @@ public abstract interface Element {
      */
     public void remove();
 
+    /**
+     * Gets the iterators for the {@code Element}.  Iterators provide low-level access to the data associated with
+     * an {@code Element} as they do not come with the overhead of {@link com.tinkerpop.gremlin.process.Traversal}
+     * construction.  Use iterators in places where performance is most crucial.
+     */
     public Element.Iterators iterators();
 
+    /**
+     * An interface that provides access to iterators over properties of an {@code Element}, without constructing a
+     * {@link com.tinkerpop.gremlin.process.Traversal} object.
+     */
     public interface Iterators {
 
         /**

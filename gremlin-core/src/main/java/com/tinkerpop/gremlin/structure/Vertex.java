@@ -75,10 +75,23 @@ public interface Vertex extends Element, VertexTraversal {
         return this.property(key, value, keyValues);
     }
 
+    /**
+     * Gets the {@link Vertex.Iterators} set.
+     *
+     * {@inheritDoc}
+     */
+    @Override
     public Vertex.Iterators iterators();
 
+    /**
+     * An interface that provides access to iterators over {@link VertexProperty} objects, {@link Edge} objects
+     * and adjacent vertices, associated with the {@code Vertex}, without constructing a
+     * {@link com.tinkerpop.gremlin.process.Traversal} object.
+     */
     public interface Iterators extends Element.Iterators {
         /**
+         * Gets an {@link Iterator} of incident edges.
+         *
          * @param direction    The incident direction of the edges to retrieve off this vertex
          * @param branchFactor The max number of edges to retrieve
          * @param labels       The labels of the edges to retrieve
@@ -87,6 +100,8 @@ public interface Vertex extends Element, VertexTraversal {
         public Iterator<Edge> edgeIterator(final Direction direction, final int branchFactor, final String... labels);
 
         /**
+         * Gets an {@link Iterator} of adjacent vertices.
+         *
          * @param direction    The adjacency direction of the vertices to retrieve off this vertex
          * @param branchFactor The max number of vertices to retrieve
          * @param labels       The labels of the edges associated with the vertices to retrieve
@@ -94,8 +109,16 @@ public interface Vertex extends Element, VertexTraversal {
          */
         public Iterator<Vertex> vertexIterator(final Direction direction, final int branchFactor, final String... labels);
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys);
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public <V> Iterator<VertexProperty<V>> hiddenPropertyIterator(final String... propertyKeys);
     }
 
