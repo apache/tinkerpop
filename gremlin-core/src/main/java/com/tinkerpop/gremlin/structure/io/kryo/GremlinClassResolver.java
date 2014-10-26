@@ -30,8 +30,8 @@ class GremlinClassResolver implements ClassResolver {
 
     protected Kryo kryo;
 
-    protected final IntMap<Registration> idToRegistration = new IntMap();
-    protected final ObjectMap<Class, Registration> classToRegistration = new ObjectMap();
+    protected final IntMap<Registration> idToRegistration = new IntMap<>();
+    protected final ObjectMap<Class, Registration> classToRegistration = new ObjectMap<>();
 
     protected IdentityObjectIntMap<Class> classToNameId;
     protected IntMap<Class> nameIdToClass;
@@ -103,14 +103,14 @@ class GremlinClassResolver implements ClassResolver {
 
         final Registration registration = kryo.getRegistration(type);
         if (registration.getId() == NAME)
-            writeName(output, type, registration);
+            writeName(output, type);
         else
             output.writeVarInt(registration.getId() + 2, true);
 
         return registration;
     }
 
-    protected void writeName(final Output output, final Class type, final Registration registration) {
+    protected void writeName(final Output output, final Class type) {
         output.writeVarInt(NAME + 2, true);
         if (classToNameId != null) {
             final int nameId = classToNameId.get(type, -1);
@@ -121,7 +121,7 @@ class GremlinClassResolver implements ClassResolver {
         }
         // Only write the class name the first time encountered in object graph.
         final int nameId = nextNameId++;
-        if (classToNameId == null) classToNameId = new IdentityObjectIntMap();
+        if (classToNameId == null) classToNameId = new IdentityObjectIntMap<>();
         classToNameId.put(type, nameId);
         output.writeVarInt(nameId, true);
         output.writeString(type.getName());
@@ -147,7 +147,7 @@ class GremlinClassResolver implements ClassResolver {
 
     protected Registration readName(final Input input) {
         final int nameId = input.readVarInt(true);
-        if (nameIdToClass == null) nameIdToClass = new IntMap();
+        if (nameIdToClass == null) nameIdToClass = new IntMap<>();
         Class type = nameIdToClass.get(nameId);
         if (type == null) {
             // Only read the class name the first time encountered in object graph.
@@ -159,7 +159,7 @@ class GremlinClassResolver implements ClassResolver {
                 } catch (ClassNotFoundException ex) {
                     throw new KryoException("Unable to find class: " + className, ex);
                 }
-                if (nameToClass == null) nameToClass = new ObjectMap();
+                if (nameToClass == null) nameToClass = new ObjectMap<>();
                 nameToClass.put(className, type);
             }
             nameIdToClass.put(nameId, type);
