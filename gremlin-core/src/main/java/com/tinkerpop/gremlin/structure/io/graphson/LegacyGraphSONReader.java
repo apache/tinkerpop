@@ -162,7 +162,7 @@ public class LegacyGraphSONReader implements GraphReader {
             final ObjectMapper mapper = GraphSONObjectMapper.build()
                     .customModule(custom)
                     .embedTypes(embedTypes)
-                    .loadCustomModules(loadCustomModules).build();
+                    .loadCustomModules(loadCustomModules).create();
             return new LegacyGraphSONReader(mapper, batchSize);
         }
     }

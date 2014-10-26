@@ -29,7 +29,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
     protected static final ObjectMapper mapper = GraphSONObjectMapper.build()
             .customModule(new GremlinServerModule())
             .embedTypes(false)
-            .build();
+            .create();
 
     private static byte[] header;
 

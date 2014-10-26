@@ -132,7 +132,7 @@ public class GraphSONWriter implements GraphWriter {
                     .customModule(custom)
                     .loadCustomModules(loadCustomModules)
                     .normalize(normalize)
-                    .embedTypes(embedTypes).build();
+                    .embedTypes(embedTypes).create();
             return new GraphSONWriter(mapper);
         }
     }

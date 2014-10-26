@@ -77,7 +77,7 @@ public class GraphSONObjectMapper extends ObjectMapper {
             return this;
         }
 
-        public GraphSONObjectMapper build() {
+        public GraphSONObjectMapper create() {
             return new GraphSONObjectMapper(custom, loadCustomModules, normalize, embedTypes);
         }
     }

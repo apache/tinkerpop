@@ -255,7 +255,7 @@ public class GraphSONReader implements GraphReader {
             final ObjectMapper mapper = GraphSONObjectMapper.build()
                     .customModule(custom)
                     .embedTypes(embedTypes)
-                    .loadCustomModules(loadCustomModules).build();
+                    .loadCustomModules(loadCustomModules).create();
             return new GraphSONReader(mapper, batchSize, vertexIdKey, edgeIdKey);
         }
     }
