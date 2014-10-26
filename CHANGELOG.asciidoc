@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Changed GraphSON serialization to only use `iterators()` - there were still remnants of `Traversal` usage from previous refactoring.
+* Added overload for `detach` method to allow for the `Element` to be detached as a "reference" only (i.e. without properties).
 * Renamed `getBaseGraph` to `baseGraph` in `WrappedGraph`.
 * `Neo4jGraph` now returns an empty property `Vertex.property(k)` when the key is non-existent (a problem only visible when meta/multi property configuration was turned off).
 * `Traversal.Strategies.apply()` now takes a `TraversalEngine`. Greatly simplifies strategy application for `STANDARD` or `COMPUTER`.
