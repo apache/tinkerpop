@@ -65,6 +65,26 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(GraphData.MODERN)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    public void shouldConstructDetachedEdgeAsReference() {
+        g.e(convertToEdgeId("marko", "knows", "vadas")).property(Graph.Key.hide("year"), 2002);
+        final DetachedEdge detachedEdge = DetachedEdge.detach(g.e(convertToEdgeId("marko", "knows", "vadas")), true);
+        assertEquals(convertToEdgeId("marko", "knows", "vadas"), detachedEdge.id());
+        assertEquals("knows", detachedEdge.label());
+        assertEquals(DetachedVertex.class, detachedEdge.iterators().vertexIterator(Direction.OUT).next().getClass());
+        assertEquals(convertToVertexId("marko"), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
+        assertEquals("person", detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+        assertEquals(DetachedVertex.class, detachedEdge.iterators().vertexIterator(Direction.IN).next().getClass());
+        assertEquals(convertToVertexId("vadas"), detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
+        assertEquals("person", detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+
+        assertEquals(0, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+        assertEquals(0, StreamFactory.stream(detachedEdge.iterators().hiddenPropertyIterator()).count());
+    }
+
+    @Test
+    @LoadGraphWith(GraphData.MODERN)
     public void shouldEvaluateToEqual() {
         assertTrue(DetachedEdge.detach(g.e(convertToEdgeId("josh", "created", "lop"))).equals(DetachedEdge.detach(g.e(convertToEdgeId("josh", "created", "lop")))));
     }

@@ -54,7 +54,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
     private DetachedEdge() {
     }
 
-    private DetachedEdge(final Edge edge) {
+    private DetachedEdge(final Edge edge, final boolean asReference) {
         super(edge);
 
         final Vertex outV = edge.iterators().vertexIterator(Direction.OUT).next();
@@ -65,8 +65,10 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
         this.outVertex = new DetachedVertex(outV.id(), outV.label());
         this.inVertex = new DetachedVertex(inV.id(), inV.label());
 
-        edge.iterators().propertyIterator().forEachRemaining(p -> this.properties.put(p.key(), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : new DetachedProperty(p, this)))));
-        edge.iterators().hiddenPropertyIterator().forEachRemaining(p -> this.properties.put(Graph.Key.hide(p.key()), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : new DetachedProperty(p, this)))));
+        if (!asReference) {
+            edge.iterators().propertyIterator().forEachRemaining(p -> this.properties.put(p.key(), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : new DetachedProperty(p, this)))));
+            edge.iterators().hiddenPropertyIterator().forEachRemaining(p -> this.properties.put(Graph.Key.hide(p.key()), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : new DetachedProperty(p, this)))));
+        }
     }
 
     @Override
@@ -87,8 +89,12 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
     }
 
     public static DetachedEdge detach(final Edge edge) {
+        return detach(edge, false);
+    }
+
+    public static DetachedEdge detach(final Edge edge, final boolean asReference) {
         if (null == edge) throw Graph.Exceptions.argumentCanNotBeNull("edge");
-        return (edge instanceof DetachedEdge) ? (DetachedEdge) edge : new DetachedEdge(edge);
+        return (edge instanceof DetachedEdge) ? (DetachedEdge) edge : new DetachedEdge(edge, asReference);
     }
 
     public static Edge addTo(final Graph graph, final DetachedEdge detachedEdge) {

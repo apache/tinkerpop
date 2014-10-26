@@ -45,11 +45,13 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
         super(id, label);
     }
 
-    private DetachedVertex(final Vertex vertex) {
+    private DetachedVertex(final Vertex vertex, final boolean asReference) {
         super(vertex);
 
-        vertex.iterators().propertyIterator().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedVertexProperty ? p : new DetachedVertexProperty(p, this)));
-        vertex.iterators().hiddenPropertyIterator().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedVertexProperty ? p : new DetachedVertexProperty(p, this)));
+        if (!asReference) {
+            vertex.iterators().propertyIterator().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedVertexProperty ? p : new DetachedVertexProperty(p, this)));
+            vertex.iterators().hiddenPropertyIterator().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedVertexProperty ? p : new DetachedVertexProperty(p, this)));
+        }
     }
 
     @Override
@@ -99,8 +101,12 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
     }
 
     public static DetachedVertex detach(final Vertex vertex) {
+        return detach(vertex, false);
+    }
+
+    public static DetachedVertex detach(final Vertex vertex, final boolean asReference) {
         if (null == vertex) throw Graph.Exceptions.argumentCanNotBeNull("vertex");
-        return (vertex instanceof DetachedVertex) ? (DetachedVertex) vertex : new DetachedVertex(vertex);
+        return (vertex instanceof DetachedVertex) ? (DetachedVertex) vertex : new DetachedVertex(vertex, asReference);
     }
 
     public static Vertex addTo(final Graph graph, final DetachedVertex detachedVertex) {
