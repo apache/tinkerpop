@@ -57,8 +57,13 @@ class GraphSONVertex {
             m.put(GraphSONTokens.ID, vertex.id());
             m.put(GraphSONTokens.LABEL, vertex.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
-            m.put(GraphSONTokens.PROPERTIES, vertex.propertyMap().next());
-            m.put(GraphSONTokens.HIDDENS, vertex.hiddenMap().next());
+
+            final Object properties = StreamFactory.stream(vertex.iterators().propertyIterator())
+                    .collect(Collectors.groupingBy(vp -> vp.key()));
+            final Object hiddens = StreamFactory.stream(vertex.iterators().hiddenPropertyIterator())
+                    .collect(Collectors.groupingBy(vp -> vp.key()));
+            m.put(GraphSONTokens.PROPERTIES, properties);
+            m.put(GraphSONTokens.HIDDENS, hiddens);
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.OUT) {
                 m.put(GraphSONTokens.OUT_E, StreamFactory.stream(vertex.iterators().edgeIterator(Direction.OUT, Integer.MAX_VALUE)).collect(Collectors.toList()));
