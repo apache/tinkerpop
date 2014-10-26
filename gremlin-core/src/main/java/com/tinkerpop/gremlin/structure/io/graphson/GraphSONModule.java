@@ -12,6 +12,8 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.io.IOException;
@@ -55,19 +57,37 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.ID, property.id());
             m.put(GraphSONTokens.LABEL, property.label());
             m.put(GraphSONTokens.VALUE, property.value());
-
-            final Map<String,Object> properties = (property.graph().features().vertex().supportsMetaProperties()) ?
-                StreamFactory.stream(property.iterators().propertyIterator()).collect(Collectors.toMap(Property::key, Property::value)) :
-                new HashMap<>();
-
-            final Map<String,Object> hiddens = (property.graph().features().vertex().supportsMetaProperties()) ?
-                    StreamFactory.stream(property.iterators().hiddenPropertyIterator()).collect(Collectors.toMap(Property::key, Property::value)) :
-                    new HashMap<>();
-
-            m.put(GraphSONTokens.PROPERTIES, properties);
-            m.put(GraphSONTokens.HIDDENS, hiddens);
+            m.put(GraphSONTokens.PROPERTIES, props(property, false));
+            m.put(GraphSONTokens.HIDDENS, props(property, true));
 
             jsonGenerator.writeObject(m);
+        }
+
+        private Map<String,Object> props(final VertexProperty property, final boolean hidden) {
+            if (property instanceof DetachedVertexProperty) {
+                if (hidden) {
+                    try {
+                        return StreamFactory.stream(property.iterators().hiddenPropertyIterator()).collect(Collectors.toMap(Property::key, Property::value));
+                    } catch (UnsupportedOperationException uoe) {
+                        return new HashMap<>();
+                    }
+                } else {
+                    try {
+                        return StreamFactory.stream(property.iterators().propertyIterator()).collect(Collectors.toMap(Property::key, Property::value));
+                    } catch (UnsupportedOperationException uoe) {
+                        return new HashMap<>();
+                    }
+                }
+            } else {
+                if (hidden)
+                    return (property.graph().features().vertex().supportsMetaProperties()) ?
+                            StreamFactory.stream(property.iterators().hiddenPropertyIterator()).collect(Collectors.toMap(Property::key, Property::value)) :
+                            new HashMap<>();
+                else
+                    return (property.graph().features().vertex().supportsMetaProperties()) ?
+                            StreamFactory.stream(property.iterators().propertyIterator()).collect(Collectors.toMap(Property::key, Property::value)) :
+                            new HashMap<>();
+            }
         }
     }
 
@@ -137,8 +157,13 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.ID, vertex.id());
             m.put(GraphSONTokens.LABEL, vertex.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
-            m.put(GraphSONTokens.PROPERTIES, vertex.propertyMap().next());
-            m.put(GraphSONTokens.HIDDENS, vertex.hiddenMap().next());
+
+            final Object properties = StreamFactory.stream(vertex.iterators().propertyIterator())
+                    .collect(Collectors.groupingBy(vp -> vp.key()));
+            final Object hiddens = StreamFactory.stream(vertex.iterators().hiddenPropertyIterator())
+                    .collect(Collectors.groupingBy(vp -> vp.key()));
+            m.put(GraphSONTokens.PROPERTIES, properties);
+            m.put(GraphSONTokens.HIDDENS, hiddens);
 
             jsonGenerator.writeObject(m);
         }

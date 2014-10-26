@@ -32,6 +32,7 @@ import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.VertexByteArrayInputStream;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
@@ -66,6 +67,7 @@ import static com.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEA
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.*;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -611,8 +613,8 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(e.label(), detachedEdge.label());
                     assertEquals(e.hiddenKeys().size(), StreamFactory.stream(detachedEdge.iterators().hiddenPropertyIterator()).count());
                     assertEquals(e.keys().size(), StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
-                    assertEquals(0.5d, e.iterators().propertyIterator("weight").next().value());
-                    assertEquals("rw", e.iterators().hiddenPropertyIterator("acl").next().value());
+                    assertEquals(0.5d, detachedEdge.iterators().propertyIterator("weight").next().value());
+                    assertEquals("rw", detachedEdge.iterators().hiddenPropertyIterator("acl").next().value());
 
                     called.set(true);
 
@@ -936,6 +938,72 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    public void shouldReadWriteDetachedVertexNoEdgesToKryo() throws Exception {
+        final Vertex v1 = g.addVertex("name", "marko", Graph.Key.hide("acl"), "rw");
+        final Vertex v2 = g.addVertex();
+        v1.addEdge("friends", v2, "weight", 0.5d);
+
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = KryoWriter.build().create();
+            final DetachedVertex dv = DetachedVertex.detach(v1);
+            writer.writeVertex(os, dv);
+
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final KryoReader reader = KryoReader.build()
+                    .setWorkingDirectory(File.separator + "tmp").create();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais, detachedVertex -> {
+                    assertEquals(v1.id(), detachedVertex.id());
+                    assertEquals(v1.label(), detachedVertex.label());
+                    assertEquals(1, StreamFactory.stream(detachedVertex.iterators().hiddenPropertyIterator()).count());
+                    assertEquals(1, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+                    assertEquals("marko", detachedVertex.iterators().propertyIterator("name").next().value());
+                    assertEquals("rw", detachedVertex.iterators().hiddenPropertyIterator("acl").next().value());
+                    called.set(true);
+                    return mock(Vertex.class);
+                });
+            }
+            assertTrue(called.get());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    public void shouldReadWriteDetachedVertexAsReferenceNoEdgesToKryo() throws Exception {
+        final Vertex v1 = g.addVertex("name", "marko", Graph.Key.hide("acl"), "rw");
+        final Vertex v2 = g.addVertex();
+        v1.addEdge("friends", v2, "weight", 0.5d);
+
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = KryoWriter.build().create();
+            final DetachedVertex dv = DetachedVertex.detach(v1, true);
+            writer.writeVertex(os, dv);
+
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final KryoReader reader = KryoReader.build()
+                    .setWorkingDirectory(File.separator + "tmp").create();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais, detachedVertex -> {
+                    assertEquals(v1.id(), detachedVertex.id());
+                    assertEquals(v1.label(), detachedVertex.label());
+                    assertEquals(0, StreamFactory.stream(detachedVertex.iterators().hiddenPropertyIterator()).count());
+                    assertEquals(0, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+                    called.set(true);
+                    return mock(Vertex.class);
+                });
+            }
+            assertTrue(called.get());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
     public void shouldReadWriteVertexMultiPropsNoEdgesToKryo() throws Exception {
@@ -977,7 +1045,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldReadWriteVertexNoEdgesToGraphSON() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko");
+        final Vertex v1 = g.addVertex("name", "marko", Graph.Key.hide("acl"), "rw");
         final Vertex v2 = g.addVertex();
         v1.addEdge("friends", v2, "weight", 0.5f);
 
@@ -991,9 +1059,80 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais, detachedVertex -> {
                     assertEquals(v1.id().toString(), detachedVertex.id().toString()); // lossy
                     assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(0, StreamFactory.stream(detachedVertex.iterators().hiddenPropertyIterator()).count());
+                    assertEquals(1, StreamFactory.stream(detachedVertex.iterators().hiddenPropertyIterator()).count());
                     assertEquals(1, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
-                    assertEquals("marko", detachedVertex.value("name"));
+                    assertEquals("marko", detachedVertex.iterators().propertyIterator("name").next().value());
+                    assertEquals("rw", detachedVertex.iterators().hiddenPropertyIterator("acl").next().value());
+
+                    called.set(true);
+                    return detachedVertex;
+                });
+            }
+
+            assertTrue(called.get());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    public void shouldReadWriteDetachedVertexNoEdgesToGraphSON() throws Exception {
+        final Vertex v1 = g.addVertex("name", "marko", Graph.Key.hide("acl"), "rw");
+        final Vertex v2 = g.addVertex();
+        v1.addEdge("friends", v2, "weight", 0.5f);
+
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = GraphSONWriter.build().create();
+            final DetachedVertex dv = DetachedVertex.detach(v1);
+            writer.writeVertex(os, dv);
+
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final GraphSONReader reader = GraphSONReader.build().create();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais, detachedVertex -> {
+                    assertEquals(v1.id().toString(), detachedVertex.id().toString()); // lossy
+                    assertEquals(v1.label(), detachedVertex.label());
+                    assertEquals(1, StreamFactory.stream(detachedVertex.iterators().hiddenPropertyIterator()).count());
+                    assertEquals(1, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
+                    assertEquals("marko", detachedVertex.iterators().propertyIterator("name").next().value());
+                    assertEquals("rw", detachedVertex.iterators().hiddenPropertyIterator("acl").next().value());
+
+                    called.set(true);
+                    return detachedVertex;
+                });
+            }
+
+            assertTrue(called.get());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    public void shouldReadWriteDetachedVertexAsReferenceNoEdgesToGraphSON() throws Exception {
+        final Vertex v1 = g.addVertex("name", "marko", Graph.Key.hide("acl"), "rw");
+        final Vertex v2 = g.addVertex();
+        v1.addEdge("friends", v2, "weight", 0.5f);
+
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = GraphSONWriter.build().create();
+            final DetachedVertex dv = DetachedVertex.detach(v1, true);
+            writer.writeVertex(os, dv);
+
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final GraphSONReader reader = GraphSONReader.build().create();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais, detachedVertex -> {
+                    assertEquals(v1.id().toString(), detachedVertex.id().toString()); // lossy
+                    assertEquals(v1.label(), detachedVertex.label());
+                    assertEquals(0, StreamFactory.stream(detachedVertex.iterators().hiddenPropertyIterator()).count());
+                    assertEquals(0, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
 
                     called.set(true);
                     return detachedVertex;
