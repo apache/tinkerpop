@@ -87,8 +87,7 @@
         <skipIntegrationTests>true</skipIntegrationTests>
         <skipPerformanceTests>true</skipPerformanceTests>
         <slf4j.version>1.7.7</slf4j.version>
-        <javadoc-plugin.version>2.9.1</javadoc-plugin.version>
-        <tinkerpop.version>3.0.0-SNAPSHOT</tinkerpop.version>
+        <javadoc-plugin.version>2.10.1</javadoc-plugin.version>
         <muteTestLogs>false</muteTestLogs>
     </properties>
     <build>
