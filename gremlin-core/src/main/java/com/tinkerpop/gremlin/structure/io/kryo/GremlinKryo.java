@@ -30,6 +30,7 @@ import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import com.tinkerpop.gremlin.structure.util.referenced.ReferencedPath;
+import de.javakaffee.kryoserializers.UUIDSerializer;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
