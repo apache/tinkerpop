@@ -31,6 +31,7 @@ import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.VertexByteArrayInputStream;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
@@ -550,12 +551,164 @@ public class IoTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    public void shouldReadWriteDetachedEdgeAsReferenceToKryo() throws Exception {
+        final Vertex v1 = g.addVertex(T.label, "person");
+        final Vertex v2 = g.addVertex(T.label, "person");
+        final Edge e = DetachedEdge.detach(v1.addEdge("friend", v2, "weight", 0.5d, Graph.Key.hide("acl"), "rw"), true);
+
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = KryoWriter.build().create();
+            writer.writeEdge(os, e);
+
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final KryoReader reader = KryoReader.build()
+                    .setWorkingDirectory(File.separator + "tmp").create();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readEdge(bais, detachedEdge -> {
+                    assertEquals(e.id(), detachedEdge.id());
+                    assertEquals(v1.id(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
+                    assertEquals(v2.id(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
+                    assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
+                    assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                    assertEquals(e.label(), detachedEdge.label());
+                    assertEquals(e.hiddenKeys().size(), StreamFactory.stream(detachedEdge.iterators().hiddenPropertyIterator()).count());
+                    assertEquals(e.keys().size(), StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+
+                    called.set(true);
+
+                    return null;
+                });
+            }
+
+            assertTrue(called.get());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    public void shouldReadWriteDetachedEdgeToKryo() throws Exception {
+        final Vertex v1 = g.addVertex(T.label, "person");
+        final Vertex v2 = g.addVertex(T.label, "person");
+        final Edge e = DetachedEdge.detach(v1.addEdge("friend", v2, "weight", 0.5d, Graph.Key.hide("acl"), "rw"));
+
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = KryoWriter.build().create();
+            writer.writeEdge(os, e);
+
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final KryoReader reader = KryoReader.build()
+                    .setWorkingDirectory(File.separator + "tmp").create();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readEdge(bais, detachedEdge -> {
+                    assertEquals(e.id(), detachedEdge.id());
+                    assertEquals(v1.id(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
+                    assertEquals(v2.id(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
+                    assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
+                    assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                    assertEquals(e.label(), detachedEdge.label());
+                    assertEquals(e.hiddenKeys().size(), StreamFactory.stream(detachedEdge.iterators().hiddenPropertyIterator()).count());
+                    assertEquals(e.keys().size(), StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+                    assertEquals(0.5d, e.iterators().propertyIterator("weight").next().value());
+                    assertEquals("rw", e.iterators().hiddenPropertyIterator("acl").next().value());
+
+                    called.set(true);
+
+                    return null;
+                });
+            }
+
+            assertTrue(called.get());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldReadWriteEdgeToGraphSON() throws Exception {
         final Vertex v1 = g.addVertex(T.label, "person");
         final Vertex v2 = g.addVertex(T.label, "person");
         final Edge e = v1.addEdge("friend", v2, "weight", 0.5f, Graph.Key.hide("acl"), "rw");
+
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = GraphSONWriter.build().create();
+            writer.writeEdge(os, e);
+
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final GraphSONReader reader = GraphSONReader.build().create();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readEdge(bais, detachedEdge -> {
+                    assertEquals(e.id().toString(), detachedEdge.id().toString()); // lossy
+                    assertEquals(v1.id().toString(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id().toString()); // lossy
+                    assertEquals(v2.id().toString(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id().toString());  // lossy
+                    assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
+                    assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                    assertEquals(e.label(), detachedEdge.label());
+                    assertEquals(e.hiddenKeys().size(), StreamFactory.stream(detachedEdge.iterators().hiddenPropertyIterator()).count());
+                    assertEquals(e.keys().size(), StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+                    assertEquals(0.5d, detachedEdge.iterators().propertyIterator("weight").next().value());
+                    assertEquals("rw", detachedEdge.iterators().hiddenPropertyIterator("acl").next().value());
+
+                    called.set(true);
+
+                    return null;
+                });
+            }
+
+            assertTrue(called.get());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    public void shouldReadWriteDetachedEdgeAsReferenceToGraphSON() throws Exception {
+        final Vertex v1 = g.addVertex(T.label, "person");
+        final Vertex v2 = g.addVertex(T.label, "person");
+        final Edge e = DetachedEdge.detach(v1.addEdge("friend", v2, "weight", 0.5f, Graph.Key.hide("acl"), "rw"), true);
+
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = GraphSONWriter.build().create();
+            writer.writeEdge(os, e);
+
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final GraphSONReader reader = GraphSONReader.build().create();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readEdge(bais, detachedEdge -> {
+                    assertEquals(e.id().toString(), detachedEdge.id().toString()); // lossy
+                    assertEquals(v1.id().toString(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id().toString()); // lossy
+                    assertEquals(v2.id().toString(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id().toString());  // lossy
+                    assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
+                    assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
+                    assertEquals(e.label(), detachedEdge.label());
+                    assertEquals(e.hiddenKeys().size(), StreamFactory.stream(detachedEdge.iterators().hiddenPropertyIterator()).count());
+                    assertEquals(e.keys().size(), StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+
+                    called.set(true);
+
+                    return null;
+                });
+            }
+
+            assertTrue(called.get());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    public void shouldReadWriteDetachedEdgeToGraphSON() throws Exception {
+        final Vertex v1 = g.addVertex(T.label, "person");
+        final Vertex v2 = g.addVertex(T.label, "person");
+        final Edge e = DetachedEdge.detach(v1.addEdge("friend", v2, "weight", 0.5f, Graph.Key.hide("acl"), "rw"));
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().create();
