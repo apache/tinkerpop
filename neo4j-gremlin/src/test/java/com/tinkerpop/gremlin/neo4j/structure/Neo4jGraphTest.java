@@ -56,7 +56,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     @Test
     public void shouldReturnResultsLabeledIndexOnVertexWithHasHas() {
         this.g.tx().readWrite();
-        final Schema schema = this.g.getBaseGraph().schema();
+        final Schema schema = this.g.baseGraph().schema();
         schema.indexFor(DynamicLabel.label("Person")).on("name").create();
         this.g.tx().commit();
         this.g.addVertex(T.label, "Person", "name", "marko");
@@ -69,7 +69,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     @Test
     public void shouldEnsureColonedKeyIsTreatedAsNormalKey() {
         this.g.tx().readWrite();
-        final Schema schema = this.g.getBaseGraph().schema();
+        final Schema schema = this.g.baseGraph().schema();
         schema.indexFor(DynamicLabel.label("Person")).on("name").create();
         this.g.tx().commit();
         this.g.addVertex(T.label, "Person", "name", "marko");
@@ -83,7 +83,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     @Test
     public void shouldReturnResultsUsingLabeledIndexOnVertexWithHasHasHas() {
         this.g.tx().readWrite();
-        final Schema schema = this.g.getBaseGraph().schema();
+        final Schema schema = this.g.baseGraph().schema();
         schema.indexFor(DynamicLabel.label("Person")).on("name").create();
         this.g.tx().commit();
         this.g.addVertex(T.label, "Person", "name", "marko", "color", "blue");
@@ -106,7 +106,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     @Test
     public void shouldReturnResultsUsingLabeledIndexOnVertexWithColonFails() {
         this.g.tx().readWrite();
-        final Schema schema = this.g.getBaseGraph().schema();
+        final Schema schema = this.g.baseGraph().schema();
         schema.indexFor(DynamicLabel.label("Person")).on("name").create();
         this.g.tx().commit();
         this.g.addVertex(T.label, "Person", "name", "marko");
@@ -119,7 +119,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     @Test
     public void shouldReturnResultsUsingLegacyIndexOnVertex() {
         g.tx().readWrite();
-        final AutoIndexer<Node> nodeAutoIndexer = this.g.getBaseGraph().index().getNodeAutoIndexer();
+        final AutoIndexer<Node> nodeAutoIndexer = this.g.baseGraph().index().getNodeAutoIndexer();
         nodeAutoIndexer.startAutoIndexingProperty("name");
         this.g.tx().commit();
 
@@ -133,7 +133,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     @Test
     public void shouldUseLegacyIndexOnEdge() {
         g.tx().readWrite();
-        final AutoIndexer<Relationship> relAutoIndexer = this.g.getBaseGraph().index().getRelationshipAutoIndexer();
+        final AutoIndexer<Relationship> relAutoIndexer = this.g.baseGraph().index().getRelationshipAutoIndexer();
         relAutoIndexer.startAutoIndexingProperty("weight");
         this.g.tx().commit();
 
@@ -149,7 +149,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     @Test
     public void shouldEnforceUniqueConstraint() {
         this.g.tx().readWrite();
-        final Schema schema = this.g.getBaseGraph().schema();
+        final Schema schema = this.g.baseGraph().schema();
         schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("name").create();
         this.g.tx().commit();
         this.g.addVertex(T.label, "Person", "name", "marko");
@@ -160,7 +160,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     @Test
     public void shouldEnforceMultipleUniqueConstraint() {
         this.g.tx().readWrite();
-        final Schema schema = this.g.getBaseGraph().schema();
+        final Schema schema = this.g.baseGraph().schema();
         schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("name").create();
         schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("surname").create();
         this.g.tx().commit();
@@ -187,7 +187,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     @Test
     public void shouldDropMultipleUniqueConstraint() {
         this.g.tx().readWrite();
-        final Schema schema = this.g.getBaseGraph().schema();
+        final Schema schema = this.g.baseGraph().schema();
         schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("name").create();
         schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("surname").create();
         this.g.tx().commit();
@@ -229,7 +229,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     @Test(expected = ConstraintViolationException.class)
     public void shouldFailUniqueConstraint() {
         this.g.tx().readWrite();
-        final Schema schema = this.g.getBaseGraph().schema();
+        final Schema schema = this.g.baseGraph().schema();
         schema.constraintFor(DynamicLabel.label("Person")).assertPropertyIsUnique("name").create();
         this.g.tx().commit();
         this.g.addVertex(T.label, "Person", "name", "marko");
@@ -297,7 +297,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     public void shouldDoLabelAndIndexSearch() {
         g.tx().readWrite();
 
-        final Schema schema = g.getBaseGraph().schema();
+        final Schema schema = g.baseGraph().schema();
         schema.indexFor(DynamicLabel.label("Person")).on("name").create();
         this.g.tx().commit();
 
@@ -314,10 +314,10 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     public void shouldDoLabelAndLegacyIndexSearch() {
         g.tx().readWrite();
 
-        final Schema schema = g.getBaseGraph().schema();
+        final Schema schema = g.baseGraph().schema();
         schema.indexFor(DynamicLabel.label("Person")).on("name").create();
 
-        final AutoIndexer<Node> nodeAutoIndexer = this.g.getBaseGraph().index().getNodeAutoIndexer();
+        final AutoIndexer<Node> nodeAutoIndexer = this.g.baseGraph().index().getNodeAutoIndexer();
         nodeAutoIndexer.startAutoIndexingProperty("name");
 
         this.g.tx().commit();
@@ -336,7 +336,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         // todo: review this feature check - this test does a lot of stuff - maybe losing some important assertions this way
         if (g.features().vertex().supportsMultiProperties()) {
             g.tx().readWrite();
-            final Schema schema = g.getBaseGraph().schema();
+            final Schema schema = g.baseGraph().schema();
             schema.indexFor(DynamicLabel.label("person")).on("name").create();
             schema.indexFor(DynamicLabel.label("name")).on(T.value.getAccessor()).create();
             this.g.tx().commit();
@@ -393,7 +393,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     public void shouldDoLabelsNameSpaceBehavior() {
         g.tx().readWrite();
 
-        final Schema schema = g.getBaseGraph().schema();
+        final Schema schema = g.baseGraph().schema();
         schema.indexFor(DynamicLabel.label("Person")).on("name").create();
         schema.indexFor(DynamicLabel.label("Product")).on("name").create();
         schema.indexFor(DynamicLabel.label("Corporate")).on("name").create();
@@ -425,8 +425,8 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             assertEquals("rdf-xml", g.variables().get("namespace").get());
             assertEquals(0, g.V().count().next().intValue());
             assertEquals(0, g.E().count().next().intValue());
-            assertEquals(0, StreamFactory.stream(GlobalGraphOperations.at(g.getBaseGraph()).getAllNodes()).count());
-            assertEquals(0, StreamFactory.stream(GlobalGraphOperations.at(g.getBaseGraph()).getAllRelationships()).count());
+            assertEquals(0, StreamFactory.stream(GlobalGraphOperations.at(g.baseGraph()).getAllNodes()).count());
+            assertEquals(0, StreamFactory.stream(GlobalGraphOperations.at(g.baseGraph()).getAllRelationships()).count());
         });
     }
 

@@ -66,18 +66,18 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
                 final String prefixedKey = Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat(key);
                 if (this.getBaseVertex().hasProperty(key)) {
                     if (this.getBaseVertex().getProperty(key).equals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN)) {
-                        final Node node = this.graph.getBaseGraph().createNode(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL, DynamicLabel.label(Graph.Key.unHide(key)));
+                        final Node node = this.graph.baseGraph().createNode(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL, DynamicLabel.label(Graph.Key.unHide(key)));
                         node.setProperty(T.key.getAccessor(), key);
                         node.setProperty(T.value.getAccessor(), value);
                         this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
                         return new Neo4jVertexProperty<>(this, node);
                     } else {
-                        Node node = this.graph.getBaseGraph().createNode(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL, DynamicLabel.label(Graph.Key.unHide(key)));
+                        Node node = this.graph.baseGraph().createNode(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL, DynamicLabel.label(Graph.Key.unHide(key)));
                         node.setProperty(T.key.getAccessor(), key);
                         node.setProperty(T.value.getAccessor(), this.getBaseVertex().removeProperty(key));
                         this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
                         this.getBaseVertex().setProperty(key, Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN);
-                        node = this.graph.getBaseGraph().createNode(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL, DynamicLabel.label(Graph.Key.unHide(key)));
+                        node = this.graph.baseGraph().createNode(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL, DynamicLabel.label(Graph.Key.unHide(key)));
                         node.setProperty(T.key.getAccessor(), key);
                         node.setProperty(T.value.getAccessor(), value);
                         this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
@@ -113,7 +113,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
                 return new Neo4jVertexProperty<>(this, key, value);
             } else {
                 this.getBaseVertex().setProperty(key, Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN);
-                final Node node = this.graph.getBaseGraph().createNode(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL, DynamicLabel.label(Graph.Key.unHide(key)));
+                final Node node = this.graph.baseGraph().createNode(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL, DynamicLabel.label(Graph.Key.unHide(key)));
                 node.setProperty(T.key.getAccessor(), key);
                 node.setProperty(T.value.getAccessor(), value);
                 for (int i = 0; i < keyValues.length; i = i + 2) {
