@@ -53,9 +53,35 @@ public class VertexTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    public void shouldHaveExceptionConsistencyWhenUsingNullVertexLabelOnOverload() {
+        try {
+            g.addVertex((String) null);
+            fail("Call to Graph.addVertex() should throw an exception when label is null");
+        } catch (Exception ex) {
+            final Exception expectedException = Element.Exceptions.labelCanNotBeNull();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldHaveExceptionConsistencyWhenUsingEmptyVertexLabel() {
         try {
             g.addVertex(T.label, "");
+            fail("Call to Graph.addVertex() should throw an exception when label is empty");
+        } catch (Exception ex) {
+            final Exception expectedException = Element.Exceptions.labelCanNotBeEmpty();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    public void shouldHaveExceptionConsistencyWhenUsingEmptyVertexLabelOnOverload() {
+        try {
+            g.addVertex("");
             fail("Call to Graph.addVertex() should throw an exception when label is empty");
         } catch (Exception ex) {
             final Exception expectedException = Element.Exceptions.labelCanNotBeEmpty();
@@ -70,6 +96,20 @@ public class VertexTest extends AbstractGremlinTest {
         final String label = Graph.System.system("systemLabel");
         try {
             g.addVertex(T.label, label);
+            fail("Call to Graph.addVertex() should throw an exception when label is a system key");
+        } catch (Exception ex) {
+            final Exception expectedException = Element.Exceptions.labelCanNotBeASystemKey(label);
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    public void shouldHaveExceptionConsistencyWhenUsingSystemVertexLabelOnOverload() {
+        final String label = Graph.System.system("systemLabel");
+        try {
+            g.addVertex(label);
             fail("Call to Graph.addVertex() should throw an exception when label is a system key");
         } catch (Exception ex) {
             final Exception expectedException = Element.Exceptions.labelCanNotBeASystemKey(label);
@@ -134,6 +174,13 @@ public class VertexTest extends AbstractGremlinTest {
     public void shouldUseDefaultLabelIfNotSpecified() {
         final Vertex v = g.addVertex("name", "marko");
         assertEquals(Vertex.DEFAULT_LABEL, v.label());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldAddVertexWithLabel() {
+        final Vertex v = g.addVertex("person");
+        this.tryCommit(g, graph -> assertEquals("person", v.label()));
     }
 
     @Test
