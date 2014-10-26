@@ -11,7 +11,7 @@
     <artifactId>neo4j-gremlin</artifactId>
     <name>Neo4j Gremlin: An Implementation of TinkerPop3 for the Neo4j Graph Database</name>
     <properties>
-        <neo4j.version>2.1.4</neo4j.version>
+        <neo4j.version>2.1.5</neo4j.version>
     </properties>
     <dependencies>
         <dependency>

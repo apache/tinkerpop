@@ -94,7 +94,6 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
     }
 
     @Override
-    // TODO: remove if VertexPropertyTest works with a setProperty() bug in Neo4j fixed.
     public <V> VertexProperty<V> singleProperty(final String key, final V value, final Object... keyValues) {
         if (!this.graph.supportsMultiProperties) {
             this.getBaseVertex().setProperty(key, value);

@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed bug with multi-property removal in `Neo4jGraph`.
+* Bumped to Neo4j 2.1.5.
 * Used standard `UUIDSerializer` from the `kryo-serializers` library for serialization of `UUID` objects.
 * Changed GraphSON serialization to only use `iterators()` - there were still remnants of `Traversal` usage from previous refactoring.
 * Added overload for `detach` method to allow for the `Element` to be detached as a "reference" only (i.e. without properties).

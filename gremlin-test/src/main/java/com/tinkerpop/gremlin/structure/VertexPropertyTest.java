@@ -168,10 +168,9 @@ public class VertexPropertyTest extends AbstractGremlinTest {
 
             final Vertex u = g.addVertex("name", "marko", "name", "marko a. rodriguez", "name", "marko rodriguez");
             tryCommit(g);
-            // TODO: Neo4j no happy long time ---- u.properties().remove();
+            u.properties().remove();
             u.singleProperty("name", "okram", "acl", "private", "date", 2014);
             tryCommit(g, g -> {
-                // u.properties().forEach(p -> System.out.println(p + "::" + p.properties().toList()));
                 assertEquals(1, u.properties("name").count().next().intValue());
                 assertEquals(1, u.properties().count().next().intValue());
                 assertEquals(2, u.property("name").valueMap().next().size());
