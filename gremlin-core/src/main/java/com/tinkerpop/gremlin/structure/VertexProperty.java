@@ -22,31 +22,57 @@ public interface VertexProperty<V> extends Property<V>, Element, VertexPropertyT
 
     public static final String DEFAULT_LABEL = "vertexProperty";
 
+    /**
+     * Gets the {@link Vertex} that owns this {@code VertexProperty}.
+     */
     @Override
     public Vertex element();
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public default Graph graph() {
         return this.element().graph();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public default String label() {
         return this.key();
     }
 
+    /**
+     * Constructs an empty {@code VertexProperty}.
+     */
     public static <V> VertexProperty<V> empty() {
         return EmptyVertexProperty.instance();
     }
 
+    /**
+     * Gets the {@link VertexProperty.Iterators} set.
+     *
+     * {@inheritDoc}
+     */
     @Override
     public VertexProperty.Iterators iterators();
 
+    /**
+     * An interface that provides access to iterators over properties, without constructing a
+     * {@link com.tinkerpop.gremlin.process.Traversal} object.
+     */
     public interface Iterators extends Element.Iterators {
-
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys);
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public <U> Iterator<Property<U>> hiddenPropertyIterator(final String... propertyKeys);
     }
