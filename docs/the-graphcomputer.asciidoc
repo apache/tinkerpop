@@ -40,6 +40,8 @@ gremlin> result.memory().runtime
 
 NOTE: This model of "vertex-centric graph computing" was made popular by Google's link:http://googleresearch.blogspot.com/2009/06/large-scale-graph-computing-at-google.html[Pregel] graph engine. In the open source world, this model is found in OLAP graph computing systems such as link:https://giraph.apache.org/[Giraph], link:https://hama.apache.org/[Hama], and link:http://faunus.thinkaurelius.com[Faunus]. TinkerPop3 extends the popularized model with integrated post-processing <<mapreduce,MapReduce>> jobs over the vertex set.
 
+IMPORTANT: As of TinkerPop3 x.y.z, message combiners are not supported. The primary reason is that TinkerPop wants to provide a model of message combining that does not require all messages to a particular vertex to be combined. This allows for more complex message passing scenarios to exist, where multi-typed messages are possible. However, at this time, no general solution has been developed.
+
 [[mapreduce]]
 MapReduce
 ---------
