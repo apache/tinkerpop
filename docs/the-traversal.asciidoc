@@ -1322,29 +1322,29 @@ The expression above can be executed in a `O(|V|)` or `O(log(|V|)` fashion in <<
 [source,java]
 TinkerGraphStepStrategy implements TraversalStrategy.NoDependency {
     public void apply(final Traversal traversal, final TraversalEngine traversalEngine) {
-        if (traversal.getSteps().get(0) instanceof TinkerGraphStep) {
-            final TinkerGraphStep tinkerGraphStep = (TinkerGraphStep) traversal.getSteps().get(0);
-            Step currentStep = tinkerGraphStep.getNextStep();
-            while (true) {
-                if (currentStep == EmptyStep.instance()
-                    || TraversalHelper.isLabeled(currentStep)) 
-                    break;
-                if (currentStep instanceof HasStep) {
-                    tinkerGraphStep.hasContainers.add(((HasStep) currentStep).hasContainer);
-                    TraversalHelper.removeStep(currentStep, traversal);
-                } else if (currentStep instanceof IntervalStep) {
-                    tinkerGraphStep.hasContainers.add(((IntervalStep) currentStep).startContainer);
-                    tinkerGraphStep.hasContainers.add(((IntervalStep) currentStep).endContainer);
-                    TraversalHelper.removeStep(currentStep, traversal);
-                } else if (currentStep instanceof IdentityStep) {
-                    // do nothing
-                } else {
-                    break;
-                }
-                currentStep = currentStep.getNextStep();
+        if (engine.equals(TraversalEngine.COMPUTER))  // Gremlin OLAP does not use indices but linear scans of the graph
+            return;
+
+        final TinkerGraphStep tinkerGraphStep = (TinkerGraphStep) traversal.getSteps().get(0);
+        Step currentStep = tinkerGraphStep.getNextStep();
+        while (true) {
+            if (currentStep == EmptyStep.instance() || TraversalHelper.isLabeled(currentStep))
+                break;
+            if (currentStep instanceof HasStep) {
+                tinkerGraphStep.hasContainers.add(((HasStep) currentStep).hasContainer);
+                TraversalHelper.removeStep(currentStep, traversal);
+            } else if (currentStep instanceof IntervalStep) {
+                tinkerGraphStep.hasContainers.add(((IntervalStep) currentStep).startContainer);
+                tinkerGraphStep.hasContainers.add(((IntervalStep) currentStep).endContainer);
+                TraversalHelper.removeStep(currentStep, traversal);
+            } else if (currentStep instanceof IdentityStep) {
+                // do nothing
+            } else {
+                break;
             }
-            tinkerGraphStep.generateHolderIterator(false);
+            currentStep = currentStep.getNextStep();
         }
+        tinkerGraphStep.generateHolderIterator(false);
     }
 }
 

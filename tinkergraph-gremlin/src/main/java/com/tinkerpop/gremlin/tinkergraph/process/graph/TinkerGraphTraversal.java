@@ -11,7 +11,7 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
  */
 public class TinkerGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
 
-    public TinkerGraphTraversal(final TinkerGraph graph, final Class<? extends Element> elementClass) {
+    public TinkerGraphTraversal(final Class<? extends Element> elementClass, final TinkerGraph graph) {
         super(graph);
         this.strategies().register(TinkerGraphStepStrategy.instance());
         this.addStep(new TinkerGraphStep<>(this, elementClass));

@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraverserIterator;
 
 import java.util.Iterator;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -32,6 +33,14 @@ public class StartStep<S> extends SideEffectStep<S> implements TraverserSource, 
         this.starts.clear();
     }
 
+    public <T> T getStart() {
+        return (T) this.start;
+    }
+
+    public boolean startInstanceAssignableTo(final Class... checks) {
+        return Stream.of(checks).filter(check -> check.isAssignableFrom(this.start.getClass())).findAny().isPresent();
+    }
+
     public String toString() {
         return null == this.start ? TraversalHelper.makeStepString(this) : TraversalHelper.makeStepString(this, this.start);
     }
@@ -43,7 +52,7 @@ public class StartStep<S> extends SideEffectStep<S> implements TraverserSource, 
             if (this.start instanceof Iterator)
                 this.starts.add(new TraverserIterator(this, trackPaths, (Iterator) this.start));
             else
-                this.starts.add((Traverser.Admin) (trackPaths ? new PathTraverser<>(this.getLabel(), this.start, this.traversal.sideEffects()) : new SimpleTraverser<>(this.start,this.traversal.sideEffects())));
+                this.starts.add((Traverser.Admin) (trackPaths ? new PathTraverser<>(this.getLabel(), this.start, this.traversal.sideEffects()) : new SimpleTraverser<>(this.start, this.traversal.sideEffects())));
         }
     }
 }

@@ -112,12 +112,12 @@ public class TinkerGraph implements Graph {
 
     @Override
     public GraphTraversal<Vertex, Vertex> V() {
-        return new TinkerGraphTraversal<>(this, Vertex.class);
+        return new TinkerGraphTraversal<>(Vertex.class, this);
     }
 
     @Override
     public GraphTraversal<Edge, Edge> E() {
-        return new TinkerGraphTraversal<>(this, Edge.class);
+        return new TinkerGraphTraversal<>(Edge.class, this);
     }
 
     @Override
