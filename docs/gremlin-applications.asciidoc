@@ -212,19 +212,19 @@ The `:remote` command shown above displays the current status of the remote conn
 [source,groovy]
 ----
 gremlin> :> g.V().value('name')
-==>Item{resultItem=marko class=java.lang.String}
-==>Item{resultItem=vadas class=java.lang.String}
-==>Item{resultItem=lop class=java.lang.String}
-==>Item{resultItem=josh class=java.lang.String}
-==>Item{resultItem=ripple class=java.lang.String}
-==>Item{resultItem=peter class=java.lang.String}
+==>Result{resultItem=marko class=java.lang.String}
+==>Result{resultItem=vadas class=java.lang.String}
+==>Result{resultItem=lop class=java.lang.String}
+==>Result{resultItem=josh class=java.lang.String}
+==>Result{resultItem=ripple class=java.lang.String}
+==>Result{resultItem=peter class=java.lang.String}
 gremlin> :> g.V().has('name','marko').out('created').value('name')
-==>Item{resultItem=lop class=java.lang.String}
+==>Result{resultItem=lop class=java.lang.String}
 gremlin> :> g.E().label().groupCount()
-==>Item{resultItem={created=4, knows=2} class=java.lang.String}
+==>Result{resultItem={created=4, knows=2} class=java.lang.String}
 ----
 
-The `:>` command, which is a shorthand for `:submit`, sends the script to the server to execute there.  Results are wrapped in an `Item` object which is a just a holder for each individual result.  The `class` shows the data type for the containing value.  Note that the last script sent was supposed to return a `Map`, but its `class` is `java.lang.String`.  By default, the connection is configured to only return text results.  In other words, Gremlin Server is using `toString` to serialize all results back to the console.  This enables virtually any object on the server to be returned to the console, but it doesn't allow the opportunity to work with this data in any way in the console itself.  A different configuration of the `:remote` is required to get the results back as "objects":
+The `:>` command, which is a shorthand for `:submit`, sends the script to the server to execute there.  Results are wrapped in an `Result` object which is a just a holder for each individual result.  The `class` shows the data type for the containing value.  Note that the last script sent was supposed to return a `Map`, but its `class` is `java.lang.String`.  By default, the connection is configured to only return text results.  In other words, Gremlin Server is using `toString` to serialize all results back to the console.  This enables virtually any object on the server to be returned to the console, but it doesn't allow the opportunity to work with this data in any way in the console itself.  A different configuration of the `:remote` is required to get the results back as "objects":
 
 [source,groovy]
 ----
@@ -234,7 +234,7 @@ gremlin> :remote list <2>
 ==>0 - gremlin server - [localhost/127.0.0.1:8182]
 ==>*1 - gremlin server - [localhost/127.0.0.1:8182]
 gremlin> :> g.E().label().groupCount() <3>
-==>Item{resultItem={created=4, knows=2} class=java.util.HashMap}
+==>Result{resultItem={created=4, knows=2} class=java.util.HashMap}
 gremlin> m = _l[0].get(Map.class) <4>
 ==>created=4
 ==>knows=2
@@ -246,7 +246,7 @@ gremlin> m.sort{it.value}
 <1> This configuration file specifies that results should be deserialized back into an `Object` in the Console with the caveat being that the server and console both know how to serialize and deserialize the result to be returned.
 <2> There are now two configured remote connections.  The one marked by an asterisk is the one that was just created and denotes the current one that `:sumbit` will react to.
 <3> When the script is executed again, the `class` is no longer shown to be a `java.lang.String`.  It is instead a `java.util.HashMap`.
-<4> The last result of a remote script is always stored in the reserved variable `_l`, which allows access to the `Item` and by virtue of that, the `Map` itself.
+<4> The last result of a remote script is always stored in the reserved variable `_l`, which allows access to the `Result` and by virtue of that, the `Map` itself.
 
 Connecting via Java
 ~~~~~~~~~~~~~~~~~~~
@@ -282,7 +282,7 @@ Once a `Client` instance is ready, it is possible to issue some Gremlin:
 ResultSet results = client.submit("[1,2,3,4]");  <1>
 results.stream().map(i -> i.get(Integer.class) * 2);       <2>
 
-CompletableFuture<List<Item>> results = client.submit("[1,2,3,4]").all();  <3>
+CompletableFuture<List<Result>> results = client.submit("[1,2,3,4]").all();  <3>
 
 CompletableFuture<ResultSet> future = client.submitAsync("[1,2,3,4]"); <4>
 

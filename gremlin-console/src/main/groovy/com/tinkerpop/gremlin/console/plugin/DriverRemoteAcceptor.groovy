@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.console.plugin
 
 import com.tinkerpop.gremlin.driver.Client
 import com.tinkerpop.gremlin.driver.Cluster
-import com.tinkerpop.gremlin.driver.Item
+import com.tinkerpop.gremlin.driver.Result
 import com.tinkerpop.gremlin.driver.exception.ResponseException
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
@@ -74,7 +74,7 @@ class DriverRemoteAcceptor implements RemoteAcceptor {
         final String line = String.join(" ", args)
 
         try {
-            final List<Item> resultSet = send(line)
+            final List<Result> resultSet = send(line)
             shell.getInterp().getContext().setProperty("_l", resultSet)
             return resultSet
         } catch (Exception ex) {
@@ -98,7 +98,7 @@ class DriverRemoteAcceptor implements RemoteAcceptor {
         this.currentCluster.close()
     }
 
-    private def List<Item> send(final String gremlin) {
+    private def List<Result> send(final String gremlin) {
         try {
             return currentClient.submit(gremlin).all().get(timeout, TimeUnit.MILLISECONDS);
         } catch (TimeoutException ignored) {

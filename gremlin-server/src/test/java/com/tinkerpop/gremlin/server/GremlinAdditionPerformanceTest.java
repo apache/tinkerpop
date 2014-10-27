@@ -8,7 +8,7 @@ import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 import com.carrotsearch.junitbenchmarks.annotation.LabelType;
 import com.tinkerpop.gremlin.driver.Client;
 import com.tinkerpop.gremlin.driver.Cluster;
-import com.tinkerpop.gremlin.driver.Item;
+import com.tinkerpop.gremlin.driver.Result;
 import com.tinkerpop.gremlin.driver.ser.Serializers;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -64,7 +64,7 @@ public class GremlinAdditionPerformanceTest extends AbstractGremlinServerPerform
                 .serializer(mimeType)
                 .create();
         final Client client = cluster.connect();
-        assertEquals("2", client.submit("1+1").stream().map(Item::getString).findAny().orElse("invalid"));
+        assertEquals("2", client.submit("1+1").stream().map(Result::getString).findAny().orElse("invalid"));
     }
 
     @BeforeClass
@@ -80,6 +80,6 @@ public class GremlinAdditionPerformanceTest extends AbstractGremlinServerPerform
 
     private void tryWebSocketGremlin() throws Exception {
         final Client client = cluster.connect();
-        assertEquals("2", client.submit("1+1").stream().map(Item::getString).findAny().orElse("invalid"));
+        assertEquals("2", client.submit("1+1").stream().map(Result::getString).findAny().orElse("invalid"));
     }
 }

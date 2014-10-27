@@ -10,10 +10,10 @@ import com.tinkerpop.gremlin.structure.Vertex;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Item {
+public class Result {
     final Object resultItem;
 
-    public Item(final ResponseMessage response) {
+    public Result(final ResponseMessage response) {
         this.resultItem = response.getResult().getData();
     }
 
@@ -72,7 +72,7 @@ public class Item {
     @Override
     public String toString() {
         final String c = resultItem != null ? resultItem.getClass().getCanonicalName() : "null";
-        return "Item{" +
+        return "Result{" +
                 "resultItem=" + resultItem + " " +
                 "class=" + c +
                 '}';

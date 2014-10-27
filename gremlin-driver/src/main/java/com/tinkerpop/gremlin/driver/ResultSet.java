@@ -17,11 +17,11 @@ import java.util.stream.Stream;
  * results provided by the server.  The results from the server are streamed into the {@code ResultSet} and
  * therefore may not be available immediately.  As such, {@code ResultSet} provides access to a a number
  * of functions that help to work with the asynchronous nature of the data streaming back.  Data from results
- * is stored in an {@link Item} which can be used to retrieve the item once it is on the client side.
+ * is stored in an {@link Result} which can be used to retrieve the item once it is on the client side.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ResultSet implements Iterable<Item> {
+public class ResultSet implements Iterable<Result> {
     private final ResponseQueue responseQueue;
     private final ExecutorService executor;
     private final Channel channel;
@@ -63,18 +63,18 @@ public class ResultSet implements Iterable<Item> {
     }
 
     /**
-     * Get the next {@link Item} from the stream, blocking until one is available.
+     * Get the next {@link Result} from the stream, blocking until one is available.
      */
-    public Item one() {
+    public Result one() {
         ResponseMessage msg = responseQueue.poll();
         if (msg != null)
-            return new Item(msg);
+            return new Result(msg);
 
         awaitItems(1).join();
 
         msg = responseQueue.poll();
         if (msg != null)
-            return new Item(msg);
+            return new Result(msg);
         else
             return null;
     }
@@ -109,13 +109,13 @@ public class ResultSet implements Iterable<Item> {
     /**
      * Wait for all items to be available on the client exhausting the stream.
      */
-    public CompletableFuture<List<Item>> all() {
+    public CompletableFuture<List<Result>> all() {
         return CompletableFuture.supplyAsync(() -> {
-            final List<Item> list = new ArrayList<>();
+            final List<Result> list = new ArrayList<>();
             while (!isExhausted()) {
                 final ResponseMessage msg = responseQueue.poll();
                 if (msg != null)
-                    list.add(new Item(msg));
+                    list.add(new Result(msg));
             }
             return list;
         }, executor);
@@ -124,13 +124,13 @@ public class ResultSet implements Iterable<Item> {
     /**
      * Stream items with a blocking iterator.
      */
-    public Stream<Item> stream() {
+    public Stream<Result> stream() {
         return StreamFactory.stream(iterator());
     }
 
     @Override
-    public Iterator<Item> iterator() {
-        return new Iterator<Item>() {
+    public Iterator<Result> iterator() {
+        return new Iterator<Result>() {
 
             @Override
             public boolean hasNext() {
@@ -138,7 +138,7 @@ public class ResultSet implements Iterable<Item> {
             }
 
             @Override
-            public Item next() {
+            public Result next() {
                 return ResultSet.this.one();
             }
 

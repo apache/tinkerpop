@@ -2,14 +2,12 @@ package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.gremlin.driver.Client;
 import com.tinkerpop.gremlin.driver.Cluster;
-import com.tinkerpop.gremlin.driver.Item;
+import com.tinkerpop.gremlin.driver.Result;
 import com.tinkerpop.gremlin.driver.ResultSet;
 import com.tinkerpop.gremlin.driver.exception.ResponseException;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.driver.ser.JsonBuilderKryoSerializer;
 import com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.util.TimeUtil;
 import groovy.json.JsonBuilder;
 import org.junit.Rule;
@@ -23,7 +21,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -50,8 +47,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final ResultSet rsFive = client.submit("Thread.sleep(5000);'five'");
         final ResultSet rsZero = client.submit("'zero'");
 
-        final CompletableFuture<List<Item>> futureFive = rsFive.all();
-        final CompletableFuture<List<Item>> futureZero = rsZero.all();
+        final CompletableFuture<List<Result>> futureFive = rsFive.all();
+        final CompletableFuture<List<Result>> futureZero = rsZero.all();
 
         final long start = System.nanoTime();
         assertFalse(futureFive.isDone());
@@ -139,7 +136,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final ResultSet results = client.submit("TinkerFactory.createClassic()");
 
         try {
-            final CompletableFuture<List<Item>> all = results.all();
+            final CompletableFuture<List<Result>> all = results.all();
             all.join();
             fail();
         } catch (Exception ex) {
@@ -161,10 +158,10 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = Cluster.build().serializer(serializer).create();
         final Client client = cluster.connect();
 
-        final ResultSet results = client.submit("TinkerFactory.createClassic()");
-        final List<Item> items = results.all().join();
-        assertEquals(1, items.size());
-        assertEquals("tinkergraph[vertices:6 edges:6]", items.get(0).getString());
+        final ResultSet resultSet = client.submit("TinkerFactory.createClassic()");
+        final List<Result> results = resultSet.all().join();
+        assertEquals(1, results.size());
+        assertEquals("tinkergraph[vertices:6 edges:6]", results.get(0).getString());
 
         cluster.close();
     }
@@ -179,7 +176,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = Cluster.build().serializer(serializer).create();
         final Client client = cluster.connect();
 
-        final List<Item> json = client.submit("b = new JsonBuilder();b.people{person {fname 'stephen'\nlname 'mallette'}};b").all().join();
+        final List<Result> json = client.submit("b = new JsonBuilder();b.people{person {fname 'stephen'\nlname 'mallette'}};b").all().join();
         assertEquals("{\"people\":{\"person\":{\"fname\":\"stephen\",\"lname\":\"mallette\"}}}", json.get(0).getString());
         cluster.close();
     }

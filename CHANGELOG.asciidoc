@@ -14,6 +14,7 @@ TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 * Used standard `UUIDSerializer` from the `kryo-serializers` library for serialization of `UUID` objects.
 * Changed GraphSON serialization to only use `iterators()` - there were still remnants of `Traversal` usage from previous refactoring.
 * Added overload for `detach` method to allow for the `Element` to be detached as a "reference" only (i.e. without properties).
+* Renamed `Item` in `gremlin-driver` to `Result`.
 * Renamed `strategy` to `getStrategy` in `StrategyWrappedGraph`.
 * Renamed `baseGraph` to `getBaseGraph` in `Neo4jGraph`.
 * `Neo4jGraph` now returns an empty property `Vertex.property(k)` when the key is non-existent (a problem only visible when meta/multi property configuration was turned off).
