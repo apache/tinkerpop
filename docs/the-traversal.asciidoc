@@ -984,6 +984,26 @@ gremlin> g.V().as('a').out('created').in('created').as('b').select(). <3>
 <2> The `select{it.value('name')}` projects each binding vertex to their name property value and `where()` operates to ensure respective `a` and `b` strings are not the same.
 <3> The first `select()` projects a vertex binding set. A binding is filtered if `a` vertex equals `b` vertex. A binding is filtered if `a` doesn't know `b`. The second and final `select()` projects the name of the vertices.
 
+[[shuffle-step]]
+Shuffle Step
+~~~~~~~~~~~~
+
+Randomizing the order of the traversers at a particular point in the traversal is possible with `shuffle()`-step (*map*).
+
+[source,groovy]
+gremlin> g.of().inject(1,2,3).map{it.get() * 2}
+==>2
+==>4
+==>6
+gremlin> g.of().inject(1,2,3).map{it.get() * 2}.shuffle()
+==>4
+==>6
+==>2
+gremlin> g.of().inject(1,2,3).map{it.get() * 2}.shuffle()
+==>6
+==>4
+==>2
+
 [[simplepath-step]]
 SimplePath Step
 ~~~~~~~~~~~~~~~
