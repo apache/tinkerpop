@@ -73,7 +73,7 @@ public class BaseNeo4jGraphTest {
     protected static void validateCounts(final Neo4jGraph graph, int gV, int gE, int gN, int gR) {
         assertEquals(gV, graph.V().count().next().intValue());
         assertEquals(gE, graph.E().count().next().intValue());
-        assertEquals(gN, countIterable(GlobalGraphOperations.at(graph.baseGraph()).getAllNodes()));
-        assertEquals(gR, countIterable(GlobalGraphOperations.at(graph.baseGraph()).getAllRelationships()));
+        assertEquals(gN, countIterable(GlobalGraphOperations.at(graph.getBaseGraph()).getAllNodes()));
+        assertEquals(gR, countIterable(GlobalGraphOperations.at(graph.getBaseGraph()).getAllRelationships()));
     }
 }

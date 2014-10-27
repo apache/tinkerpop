@@ -91,7 +91,7 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty
             this.node.setProperty(key, value);
             return new Neo4jProperty<>(this, key, value);
         } else {
-            this.node = this.vertex.graph.baseGraph().createNode(VERTEX_PROPERTY_LABEL, DynamicLabel.label(this.label()));
+            this.node = this.vertex.graph.getBaseGraph().createNode(VERTEX_PROPERTY_LABEL, DynamicLabel.label(this.label()));
             this.node.setProperty(T.key.getAccessor(), this.key);
             this.node.setProperty(T.value.getAccessor(), this.value);
             this.node.setProperty(key, value);

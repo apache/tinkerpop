@@ -75,14 +75,14 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
     private Stream<Neo4jVertex> getAllVertices() {
         //System.out.println("allVertices");
-        return StreamFactory.stream(GlobalGraphOperations.at(this.graph.baseGraph()).getAllNodes())
+        return StreamFactory.stream(GlobalGraphOperations.at(this.graph.getBaseGraph()).getAllNodes())
                 .filter(node -> !Neo4jHelper.isDeleted(node))
                 .filter(node -> !node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL))
                 .map(node -> new Neo4jVertex(node, this.graph));
     }
 
     private Stream<Neo4jEdge> getAllEdges() {
-        return StreamFactory.stream(GlobalGraphOperations.at(this.graph.baseGraph()).getAllRelationships())
+        return StreamFactory.stream(GlobalGraphOperations.at(this.graph.getBaseGraph()).getAllRelationships())
                 .filter(relationship -> !Neo4jHelper.isDeleted(relationship))
                 .filter(relationship -> !relationship.getType().name().startsWith(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX))
                 .map(relationship -> new Neo4jEdge(relationship, this.graph));
@@ -90,8 +90,8 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
     private Stream<Neo4jVertex> getVerticesUsingLabelAndProperty(final String label, final HasContainer hasContainer) {
         //System.out.println("labelProperty: " + label + ":" + hasContainer);
-        final ResourceIterator<Node> iterator1 = graph.baseGraph().findNodesByLabelAndProperty(DynamicLabel.label(label), hasContainer.key, hasContainer.value).iterator();
-        final ResourceIterator<Node> iterator2 = graph.baseGraph().findNodesByLabelAndProperty(DynamicLabel.label(Graph.Key.unHide(hasContainer.key)), T.value.getAccessor(), hasContainer.value).iterator();
+        final ResourceIterator<Node> iterator1 = graph.getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(label), hasContainer.key, hasContainer.value).iterator();
+        final ResourceIterator<Node> iterator2 = graph.getBaseGraph().findNodesByLabelAndProperty(DynamicLabel.label(Graph.Key.unHide(hasContainer.key)), T.value.getAccessor(), hasContainer.value).iterator();
         final Stream<Neo4jVertex> stream1 = StreamFactory.stream(iterator1)
                 .map(node -> new Neo4jVertex(node, this.graph));
         final Stream<Neo4jVertex> stream2 = StreamFactory.stream(iterator2)
@@ -105,14 +105,14 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         //System.out.println("labels: " + labels);
         return labels.stream()
                 .filter(label -> !label.equals(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL.name()))
-                .flatMap(label -> StreamFactory.stream(GlobalGraphOperations.at(this.graph.baseGraph()).getAllNodesWithLabel(DynamicLabel.label(label)).iterator()))
+                .flatMap(label -> StreamFactory.stream(GlobalGraphOperations.at(this.graph.getBaseGraph()).getAllNodesWithLabel(DynamicLabel.label(label)).iterator()))
                 .filter(node -> !node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL))
                 .map(node -> new Neo4jVertex(node, this.graph));
     }
 
     private Stream<Neo4jVertex> getVerticesUsingAutomaticIndex(final HasContainer hasContainer) {
         //System.out.println("automatic index: " + hasContainer);
-        return StreamFactory.stream(this.graph.baseGraph().index().getNodeAutoIndexer().getAutoIndex().get(hasContainer.key, hasContainer.value).iterator())
+        return StreamFactory.stream(this.graph.getBaseGraph().index().getNodeAutoIndexer().getAutoIndex().get(hasContainer.key, hasContainer.value).iterator())
                 .map(node -> node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL) ?
                         node.getRelationships(Direction.INCOMING).iterator().next().getStartNode() :
                         node)
@@ -120,7 +120,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     }
 
     private Stream<Neo4jEdge> getEdgesUsingAutomaticIndex(final HasContainer hasContainer) {
-        return StreamFactory.stream(this.graph.baseGraph().index().getRelationshipAutoIndexer().getAutoIndex().get(hasContainer.key, hasContainer.value).iterator())
+        return StreamFactory.stream(this.graph.getBaseGraph().index().getRelationshipAutoIndexer().getAutoIndex().get(hasContainer.key, hasContainer.value).iterator())
                 .filter(relationship -> !relationship.getType().name().startsWith(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX))
                 .map(relationship -> new Neo4jEdge(relationship, this.graph));
     }
@@ -128,7 +128,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     private Pair<String, HasContainer> getHasContainerForLabelIndex() {
         for (final HasContainer hasContainer : this.hasContainers) {
             if (hasContainer.key.equals(T.label.getAccessor()) && hasContainer.predicate.equals(Compare.eq)) {
-                for (final IndexDefinition index : this.graph.baseGraph().schema().getIndexes(DynamicLabel.label((String) hasContainer.value))) {
+                for (final IndexDefinition index : this.graph.getBaseGraph().schema().getIndexes(DynamicLabel.label((String) hasContainer.value))) {
                     for (final HasContainer hasContainer1 : this.hasContainers) {
                         if (!hasContainer1.key.equals(T.label.getAccessor()) && hasContainer1.predicate.equals(Compare.eq)) {
                             for (final String key : index.getPropertyKeys()) {
@@ -155,8 +155,8 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
     private HasContainer getHasContainerForAutomaticIndex(final Class<? extends Element> elementClass) {
         final AutoIndexer<?> indexer = elementClass.equals(Vertex.class) ?
-                this.graph.baseGraph().index().getNodeAutoIndexer() :
-                this.graph.baseGraph().index().getRelationshipAutoIndexer();
+                this.graph.getBaseGraph().index().getNodeAutoIndexer() :
+                this.graph.getBaseGraph().index().getRelationshipAutoIndexer();
 
         if (!indexer.isEnabled())
             return null;

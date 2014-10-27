@@ -21,7 +21,7 @@ public class Neo4jGraphVariables implements Graph.Variables {
 
     protected Neo4jGraphVariables(final Neo4jGraph graph) {
         this.graph = graph;
-        this.graphVariables = ((GraphDatabaseAPI) this.graph.baseGraph()).getDependencyResolver().resolveDependency(NodeManager.class).getGraphProperties();
+        this.graphVariables = ((GraphDatabaseAPI) this.graph.getBaseGraph()).getDependencyResolver().resolveDependency(NodeManager.class).getGraphProperties();
     }
 
     @Override

@@ -21,7 +21,7 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
 
     public StrategyWrappedVertexProperty(final VertexProperty<V> baseVertexProperty, final StrategyWrappedGraph strategyWrappedGraph) {
         super(baseVertexProperty, strategyWrappedGraph);
-        this.strategyContext = new Strategy.Context<>(strategyWrappedGraph.baseGraph(), this);
+        this.strategyContext = new Strategy.Context<>(strategyWrappedGraph.getBaseGraph(), this);
         this.baseVertexProperty = baseVertexProperty;
         this.iterators = new StrategyWrappedVertexPropertyIterators();
     }

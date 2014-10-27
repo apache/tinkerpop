@@ -24,7 +24,7 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
 
     public StrategyWrappedVertex(final Vertex baseVertex, final StrategyWrappedGraph strategyWrappedGraph) {
         super(baseVertex, strategyWrappedGraph);
-        this.strategyContext = new Strategy.Context<>(strategyWrappedGraph.baseGraph(), this);
+        this.strategyContext = new Strategy.Context<>(strategyWrappedGraph.getBaseGraph(), this);
         this.baseVertex = baseVertex;
         this.iterators = new StrategyWrappedVertexIterators();
     }

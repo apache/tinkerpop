@@ -44,67 +44,67 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
             if (pick == 1) {
                 g.tx().readWrite();
                 if (random.nextBoolean())
-                    g.baseGraph().schema().indexFor(DynamicLabel.label("artist")).on("name").create();
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("artist")).on("name").create();
                 if (random.nextBoolean())
-                    g.baseGraph().schema().indexFor(DynamicLabel.label("song")).on("name").create();
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("song")).on("name").create();
                 if (random.nextBoolean())
-                    g.baseGraph().schema().indexFor(DynamicLabel.label("song")).on("songType").create();
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("song")).on("songType").create();
                 if (random.nextBoolean())
-                    g.baseGraph().schema().indexFor(DynamicLabel.label("song")).on("performances").create();
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("song")).on("performances").create();
                 g.tx().commit();
             } else if (pick == 2) {
                 g.tx().readWrite();
-                g.baseGraph().index().getNodeAutoIndexer().setEnabled(true);
+                g.getBaseGraph().index().getNodeAutoIndexer().setEnabled(true);
                 if (random.nextBoolean())
-                    g.baseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("name");
+                    g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("name");
                 if (random.nextBoolean())
-                    g.baseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("songType");
+                    g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("songType");
                 if (random.nextBoolean())
-                    g.baseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("performances");
+                    g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("performances");
                 g.tx().commit();
             }
         } else if (graphData.equals(LoadGraphWith.GraphData.MODERN)) {
             if (pick == 1) {
                 g.tx().readWrite();
                 if (random.nextBoolean())
-                    g.baseGraph().schema().indexFor(DynamicLabel.label("person")).on("name").create();
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("person")).on("name").create();
                 if (random.nextBoolean())
-                    g.baseGraph().schema().indexFor(DynamicLabel.label("person")).on("age").create();
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("person")).on("age").create();
                 if (random.nextBoolean())
-                    g.baseGraph().schema().indexFor(DynamicLabel.label("software")).on("name").create();
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("software")).on("name").create();
                 if (random.nextBoolean())
-                    g.baseGraph().schema().indexFor(DynamicLabel.label("software")).on("lang").create();
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("software")).on("lang").create();
                 g.tx().commit();
             } else if (pick == 2) {
                 g.tx().readWrite();
-                g.baseGraph().index().getNodeAutoIndexer().setEnabled(true);
+                g.getBaseGraph().index().getNodeAutoIndexer().setEnabled(true);
                 if (random.nextBoolean())
-                    g.baseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("name");
+                    g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("name");
                 if (random.nextBoolean())
-                    g.baseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("age");
+                    g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("age");
                 if (random.nextBoolean())
-                    g.baseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("lang");
+                    g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("lang");
                 g.tx().commit();
             }
         } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC)) {
             if (pick == 1) {
                 g.tx().readWrite();
                 if (random.nextBoolean())
-                    g.baseGraph().schema().indexFor(DynamicLabel.label("vertex")).on("name").create();
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("vertex")).on("name").create();
                 if (random.nextBoolean())
-                    g.baseGraph().schema().indexFor(DynamicLabel.label("vertex")).on("age").create();
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("vertex")).on("age").create();
                 if (random.nextBoolean())
-                    g.baseGraph().schema().indexFor(DynamicLabel.label("vertex")).on("lang").create();
+                    g.getBaseGraph().schema().indexFor(DynamicLabel.label("vertex")).on("lang").create();
                 g.tx().commit();
             } else if (pick == 2) {
                 g.tx().readWrite();
-                g.baseGraph().index().getNodeAutoIndexer().setEnabled(true);
+                g.getBaseGraph().index().getNodeAutoIndexer().setEnabled(true);
                 if (random.nextBoolean())
-                    g.baseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("name");
+                    g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("name");
                 if (random.nextBoolean())
-                    g.baseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("age");
+                    g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("age");
                 if (random.nextBoolean())
-                    g.baseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("lang");
+                    g.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty("lang");
                 g.tx().commit();
             }
         } else {

@@ -5,5 +5,5 @@ package com.tinkerpop.gremlin.structure.util.wrapped;
  */
 public interface WrappedGraph<G> {
 
-    public G baseGraph();
+    public G getBaseGraph();
 }

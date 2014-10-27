@@ -24,7 +24,7 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
 
     public StrategyWrappedEdge(final Edge baseEdge, final StrategyWrappedGraph strategyWrappedGraph) {
         super(baseEdge, strategyWrappedGraph);
-        this.strategyContext = new Strategy.Context<>(strategyWrappedGraph.baseGraph(), this);
+        this.strategyContext = new Strategy.Context<>(strategyWrappedGraph.getBaseGraph(), this);
         this.baseEdge = baseEdge;
         this.iterators = new StrategyWrappedEdgeIterators();
     }

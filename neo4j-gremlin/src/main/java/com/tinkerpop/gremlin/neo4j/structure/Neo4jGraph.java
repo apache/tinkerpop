@@ -276,7 +276,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     }
 
     @Override
-    public GraphDatabaseService baseGraph() {
+    public GraphDatabaseService getBaseGraph() {
         return this.baseGraph;
     }
 
@@ -343,7 +343,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
             if (isOpen())
                 throw Transaction.Exceptions.transactionAlreadyOpen();
             else
-                threadLocalTx.set(baseGraph().beginTx());
+                threadLocalTx.set(getBaseGraph().beginTx());
         }
 
         @Override
