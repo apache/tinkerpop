@@ -1,9 +1,8 @@
 package com.tinkerpop.gremlin.tinkergraph.process.graph;
 
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
-import com.tinkerpop.gremlin.process.graph.strategy.GraphTraversalStrategyRegistry;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerGraphStepStrategy;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerElementStepStrategy;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
 /**
@@ -12,8 +11,7 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 public class TinkerTraversal<S, E> extends DefaultGraphTraversal<S, E> {
 
     public TinkerTraversal(final TinkerGraph graph) {
-        super();
-        this.sideEffects().setGraph(graph);
+        super(graph);
         this.addStep(new StartStep<>(this));
     }
 }
