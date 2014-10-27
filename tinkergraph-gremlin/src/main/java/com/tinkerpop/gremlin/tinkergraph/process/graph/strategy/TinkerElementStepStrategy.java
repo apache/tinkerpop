@@ -32,8 +32,8 @@ public class TinkerElementStepStrategy extends AbstractTraversalStrategy impleme
         if (engine.equals(TraversalEngine.STANDARD))
             return;
 
-        final Step<?,?> startStep = TraversalHelper.getStart(traversal);
-        if (startStep instanceof StartStep && ((StartStep) startStep).startInstanceAssignableTo(Vertex.class, Edge.class)) {
+        final StartStep<Element> startStep = (StartStep) TraversalHelper.getStart(traversal);
+        if (startStep.startAssignableTo(Vertex.class, Edge.class)) {
             final Element element = ((StartStep<?>) startStep).getStart();
             final String label = startStep.getLabel();
             TraversalHelper.removeStep(startStep, traversal);

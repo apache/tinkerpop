@@ -37,8 +37,8 @@ public class StartStep<S> extends SideEffectStep<S> implements TraverserSource, 
         return (T) this.start;
     }
 
-    public boolean startInstanceAssignableTo(final Class... checks) {
-        return Stream.of(checks).filter(check -> check.isAssignableFrom(this.start.getClass())).findAny().isPresent();
+    public boolean startAssignableTo(final Class... assignableClasses) {
+        return Stream.of(assignableClasses).filter(check -> check.isAssignableFrom(this.start.getClass())).findAny().isPresent();
     }
 
     public String toString() {
