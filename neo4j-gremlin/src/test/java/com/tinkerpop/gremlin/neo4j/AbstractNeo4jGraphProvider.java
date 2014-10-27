@@ -32,11 +32,11 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
 
     @Override
     public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith) {
-        this.loadGraphData((Neo4jGraph) g, loadGraphWith.value());
+        this.createIndices((Neo4jGraph) g, loadGraphWith.value());
         super.loadGraphData(g, loadGraphWith);
     }
 
-    private void loadGraphData(final Neo4jGraph g, final LoadGraphWith.GraphData graphData) {
+    private void createIndices(final Neo4jGraph g, final LoadGraphWith.GraphData graphData) {
         final Random random = new Random();
         final int pick = random.nextInt(3);
         //final int pick = 2;

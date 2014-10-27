@@ -21,7 +21,14 @@ import java.util.stream.Collectors;
 
 /**
  * Those developing Gremlin implementations must provide a GraphProvider implementation so that the
- * StructureStandardSuite knows how to instantiate their implementations.
+ * different test suites know how to instantiate their implementations.  Implementers may choose to have multiple
+ * {@code GraphProvider} implementations to mix and match with multiple test suite implementations.  For example,
+ * create one {@code GraphProvider} that has no indices defined and a separate {@code GraphProvider} that has
+ * indices.  Then create separate test suite implementations for each {@code GraphProvider}.  This approach will
+ * have the test suites executed once for each {@code GraphProvider} ensuring that the {@link Graph} implementation
+ * works under multiple configurations.  Consider making these "extra" tests "integration tests" so that they
+ * don't have to be executed on every run of the build so as to save time.  Run the "integration tests" periodically
+ * to ensure overall compliance.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -136,7 +143,8 @@ public interface GraphProvider {
     /**
      * Tests are annotated with a {@link com.tinkerpop.gremlin.LoadGraphWith} annotation. These annotations tell
      * the test what kind of data to preload into the graph instance.  It is up to the implementation to load the
-     * graph with the data specified by that annotation.
+     * graph with the data specified by that annotation. This method also represents the place where indices should
+     * be configured according the the {@link Graph} implementation's API.
      *
      * @param g             the {@link Graph} instance to load data into constructed by this {@code GraphProvider}
      * @param loadGraphWith the annotation for the currently running test
