@@ -5,7 +5,6 @@ import org.apache.commons.configuration.Configuration;
 
 import java.lang.reflect.Constructor;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -97,12 +96,11 @@ public interface VertexProgram<M> {
         return Collections.emptySet();
     }
 
-    /**
+    /*
      * DO NOT USE YET.
-     */
     public default Optional<MessageCombiner<M>> getMessageCombiner() {
         return Optional.empty();
-    }
+    }*/
 
     /**
      * The set of {@link MapReduce} jobs that are associated with the {@link VertexProgram}.

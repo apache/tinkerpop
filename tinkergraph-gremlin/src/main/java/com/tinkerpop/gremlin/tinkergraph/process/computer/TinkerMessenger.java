@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
-import com.tinkerpop.gremlin.process.computer.MessageCombiner;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -8,7 +7,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -19,13 +17,13 @@ public class TinkerMessenger<M> implements Messenger<M> {
 
     private final Vertex vertex;
     private final TinkerMessageBoard<M> messageBoard;
-    private final Optional<MessageCombiner<M>> combiner;
+    //private final Optional<MessageCombiner<M>> combiner;
 
 
-    public TinkerMessenger(final Vertex vertex, final TinkerMessageBoard<M> messageBoard, final Optional<MessageCombiner<M>> combiner) {
+    public TinkerMessenger(final Vertex vertex, final TinkerMessageBoard<M> messageBoard) {
         this.vertex = vertex;
         this.messageBoard = messageBoard;
-        this.combiner = combiner;
+        //this.combiner = combiner;
     }
 
     @Override
@@ -57,10 +55,10 @@ public class TinkerMessenger<M> implements Messenger<M> {
         } else {
             ((MessageType.Global) messageType).vertices().forEach(v -> {
                 final Queue<M> queue = getMessageList(v);
-                if (this.combiner.isPresent() && !queue.isEmpty()) {
+                /*if (this.combiner.isPresent() && !queue.isEmpty()) {
                     this.combiner.get().combine(queue.remove(), message).forEachRemaining(queue::add);
-                } else
-                    queue.add(message);
+                } else*/
+                queue.add(message);
             });
         }
     }
