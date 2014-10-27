@@ -100,6 +100,8 @@ A Collection of VertexPrograms
 
 TinkerPop3 provides a collection of VertexPrograms that implement common algorithms. This section discusses the various implementations.
 
+IMPORTANT: The vertex programs presented are what are provided as of TinkerPop x.y.z. Over time, with future releases, more algorithms will be added.
+
 [[lambdavertexprogram]]
 LambdaVertexProgram
 ~~~~~~~~~~~~~~~~~~~
