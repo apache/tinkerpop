@@ -1235,6 +1235,65 @@ The `until()` expression in the example above states:
 
 NOTE: The `until()`-step is not a "real" step. It is simply a marker that exist in the traversal. When the `UntilStrategy` is executed (see <<traversalstrategy,TraversalStrategy>>), the traversal is re-written by inserting `jump()`-steps accordingly. Thus, in the example above, the second traversal example using `until()` compiles to the first which uses `jump()`.
 
+[[valuemap-step]]
+ValueMap Step
+~~~~~~~~~~~~~
+
+The `valueMap()`-step yields a Map representation of the properties of an element.
+
+[source,groovy]
+gremlin> g.V().valueMap()
+==>[name:[marko], age:[29]]
+==>[name:[vadas], age:[27]]
+==>[name:[lop], lang:[java]]
+==>[name:[josh], age:[32]]
+==>[name:[ripple], lang:[java]]
+==>[name:[peter], age:[35]]
+gremlin> g.V().valueMap('age')
+==>[age:[29]]
+==>[age:[27]]
+==>[:]
+==>[age:[32]]
+==>[:]
+==>[age:[35]]
+gremlin> g.V().valueMap('age','blah')
+==>[age:[29]]
+==>[age:[27]]
+==>[:]
+==>[age:[32]]
+==>[:]
+==>[age:[35]]
+gremlin> g.E().valueMap()
+==>[weight:0.5]
+==>[weight:1.0]
+==>[weight:0.4]
+==>[weight:1.0]
+==>[weight:0.4]
+==>[weight:0.2]
+
+It is important to note that the map of a vertex maintains a list of values for each key. The map of an edge or vertex-property represents a single property (not a list). The reason is that vertices in TinkerPop3 leverage <<vertex-properties,vertex properties>> which are support multiple values per key. Using the <<the-crew-toy-graph,"The Crew">> toy graph, the point is made explicit.
+
+[source,groovy]
+gremlin> g = TinkerFactory.createTheCrew()
+==>tinkergraph[vertices:6 edges:14]
+gremlin> g.V().valueMap()
+==>[name:[marko], location:[san diego, santa cruz, brussels, santa fe]]
+==>[name:[stephen], location:[centreville, dulles, purcellville]]
+==>[name:[matthias], location:[bremen, baltimore, oakland, seattle]]
+==>[name:[daniel], location:[spremberg, kaiserslautern, aachen]]
+==>[name:[gremlin]]
+==>[name:[tinkergraph]]
+gremlin> g.V().has('name','marko').properties('location')
+==>vp[location->san diego]
+==>vp[location->santa cruz]
+==>vp[location->brussels]
+==>vp[location->santa fe]
+gremlin> g.V().has('name','marko').properties('location').valueMap()
+==>[startTime:1997, endTime:2001]
+==>[startTime:2001, endTime:2004]
+==>[startTime:2004, endTime:2005]
+==>[startTime:2005]
+
 [[vertex-steps]]
 Vertex Steps
 ~~~~~~~~~~~~

@@ -13,6 +13,7 @@ Features are the means by which vendors can expose nuanced difference between th
  . *Vertex Features*
  . *Edge Features*
 
+[[vertex-properties]]
 Vertex Properties
 -----------------
 
