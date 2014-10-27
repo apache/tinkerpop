@@ -3,17 +3,14 @@ package com.tinkerpop.gremlin.structure.strategy;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
-import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.junit.Test;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_INTEGER_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
@@ -149,14 +146,14 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     public void shouldNotAllowVariableAsMapModifications() {
         g.variables().set("will", "be read-only");
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-        swg.strategy().setGraphStrategy(readOnlyGraphStrategy);
+        swg.getStrategy().setGraphStrategy(readOnlyGraphStrategy);
         swg.variables().asMap().put("will", "not work");
     }
 
     private void assertException(final ThrowingConsumer<Graph> stt) {
         try {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.strategy().setGraphStrategy(readOnlyGraphStrategy);
+            swg.getStrategy().setGraphStrategy(readOnlyGraphStrategy);
             stt.accept(swg);
             fail();
         } catch (Exception ex) {

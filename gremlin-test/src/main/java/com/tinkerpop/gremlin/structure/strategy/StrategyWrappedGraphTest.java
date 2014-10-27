@@ -98,7 +98,7 @@ public class StrategyWrappedGraphTest  {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
             final Vertex v1 = swg.addVertex(T.label, "Person");
             final Vertex originalVertex = ((StrategyWrappedVertex) v1).getBaseVertex();
-            swg.strategy().setGraphStrategy(strategy);
+            swg.getStrategy().setGraphStrategy(strategy);
             assertEquals(StringFactory.graphStrategyVertexString(strategy, originalVertex), v1.toString());
         }
 
@@ -110,7 +110,7 @@ public class StrategyWrappedGraphTest  {
             final Vertex v2 = swg.addVertex(T.label, "Person");
             final Edge e1 = v1.addEdge("friend", v2);
             final Edge originalEdge = ((StrategyWrappedEdge) e1).getBaseEdge();
-            swg.strategy().setGraphStrategy(strategy);
+            swg.getStrategy().setGraphStrategy(strategy);
             assertEquals(StringFactory.graphStrategyEdgeString(strategy, originalEdge), e1.toString());
         }
 
@@ -122,7 +122,7 @@ public class StrategyWrappedGraphTest  {
             final VertexProperty age = v1.property("age");
             final Vertex originalVertex = ((StrategyWrappedVertex) v1).getBaseVertex();
             final VertexProperty originalVertexProperty = originalVertex.property("age");
-            swg.strategy().setGraphStrategy(strategy);
+            swg.getStrategy().setGraphStrategy(strategy);
             assertEquals(StringFactory.graphStrategyPropertyString(strategy, originalVertexProperty), age.toString());
         }
 
@@ -136,16 +136,16 @@ public class StrategyWrappedGraphTest  {
             final Property weight = e1.property("weight");
             final Edge originalEdge = ((StrategyWrappedEdge) e1).getBaseEdge();
             final Property originalProperty = originalEdge.property("weight");
-            swg.strategy().setGraphStrategy(strategy);
+            swg.getStrategy().setGraphStrategy(strategy);
             assertEquals(StringFactory.graphStrategyPropertyString(strategy, originalProperty), weight.toString());
         }
 
         @Test
         public void shouldReturnWrappedToString() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            final GraphStrategy strategy = swg.strategy().getGraphStrategy().orElse(GraphStrategy.DefaultGraphStrategy.INSTANCE);
+            final GraphStrategy strategy = swg.getStrategy().getGraphStrategy().orElse(GraphStrategy.DefaultGraphStrategy.INSTANCE);
             assertNotEquals(g.toString(), swg.toString());
-            swg.strategy().setGraphStrategy(strategy);
+            swg.getStrategy().setGraphStrategy(strategy);
             assertEquals(StringFactory.graphStrategyString(strategy, g), swg.toString());
         }
     }
@@ -158,7 +158,7 @@ public class StrategyWrappedGraphTest  {
 
             // create an ad-hoc strategy that only marks a vertex as "deleted" and removes all edges and properties
             // but doesn't actually blow it away
-            swg.strategy().setGraphStrategy(new GraphStrategy() {
+            swg.getStrategy().setGraphStrategy(new GraphStrategy() {
                 @Override
                 public UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
                     return (t) -> () -> {
@@ -194,7 +194,7 @@ public class StrategyWrappedGraphTest  {
 
             // create an ad-hoc strategy that only marks a vertex as "deleted" and removes all edges and properties
             // but doesn't actually blow it away
-            swg.strategy().setGraphStrategy(new GraphStrategy() {
+            swg.getStrategy().setGraphStrategy(new GraphStrategy() {
                 @Override
                 public UnaryOperator<Supplier<Void>> getRemoveEdgeStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
                     return (t) -> () -> {
@@ -225,7 +225,7 @@ public class StrategyWrappedGraphTest  {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
 
             final AtomicInteger counter = new AtomicInteger(0);
-            swg.strategy().setGraphStrategy(new GraphStrategy() {
+            swg.getStrategy().setGraphStrategy(new GraphStrategy() {
                 @Override
                 public UnaryOperator<Supplier<Void>> getGraphCloseStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
                     return (t) -> () -> {

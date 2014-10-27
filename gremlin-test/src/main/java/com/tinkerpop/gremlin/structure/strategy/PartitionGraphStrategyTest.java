@@ -2,14 +2,9 @@ package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
-import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
 import java.util.NoSuchElementException;
@@ -62,7 +57,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldWriteVerticesToMultiplePartitions() {
         final Vertex vA = g.addVertex("any", "a");
-        final PartitionGraphStrategy strategy = (PartitionGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
+        final PartitionGraphStrategy strategy = (PartitionGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
         strategy.setWritePartition("B");
         final Vertex vB = g.addVertex("any", "b");
 
@@ -102,7 +97,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         final Vertex vA = g.addVertex("any", "a");
         assertEquals(vA.id(), g.v(vA.id()).id());
 
-        final PartitionGraphStrategy strategy = (PartitionGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
+        final PartitionGraphStrategy strategy = (PartitionGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
         strategy.clearReadPartitions();
 
         try {
@@ -121,7 +116,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         final Edge e = vA.addEdge("knows", vA);
         assertEquals(e.id(), g.e(e.id()).id());
 
-        final PartitionGraphStrategy strategy = (PartitionGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
+        final PartitionGraphStrategy strategy = (PartitionGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
         strategy.clearReadPartitions();
 
         try {
@@ -140,7 +135,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         final Vertex vAA = g.addVertex("any", "aa");
         final Edge eAtoAA = vA.addEdge("a->a", vAA);
 
-        final PartitionGraphStrategy strategy = (PartitionGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
+        final PartitionGraphStrategy strategy = (PartitionGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
         strategy.setWritePartition("B");
         final Vertex vB = g.addVertex("any", "b");
         vA.addEdge("a->b", vB);

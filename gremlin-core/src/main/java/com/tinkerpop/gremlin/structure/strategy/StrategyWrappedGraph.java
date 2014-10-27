@@ -47,7 +47,7 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
     /**
      * Gets the strategy hosted within the wrapper.
      */
-    public Strategy strategy() {
+    public Strategy getStrategy() {
         return this.strategy;
     }
 
@@ -61,14 +61,14 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
 
     @Override
     public Vertex v(final Object id) {
-        return new StrategyWrappedVertex(strategy().compose(
+        return new StrategyWrappedVertex(getStrategy().compose(
                 s -> s.getGraphvStrategy(graphContext),
                 this.baseGraph::v).apply(id), this);
     }
 
     @Override
     public Edge e(final Object id) {
-        return new StrategyWrappedEdge(strategy().compose(
+        return new StrategyWrappedEdge(getStrategy().compose(
                 s -> s.getGrapheStrategy(graphContext),
                 this.baseGraph::e).apply(id), this);
     }

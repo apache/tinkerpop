@@ -37,7 +37,7 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
 
     protected <S, E> GraphTraversal<S, E> applyStrategy(final GraphTraversal<S, E> traversal) {
         traversal.strategies().register(new StrategyWrappedTraversalStrategy(this.strategyWrappedGraph));
-        this.strategyWrappedGraph.strategy().getGraphStrategy().ifPresent(s -> s.applyStrategyToTraversal(traversal));
+        this.strategyWrappedGraph.getStrategy().getGraphStrategy().ifPresent(s -> s.applyStrategyToTraversal(traversal));
         return traversal;
     }
 }

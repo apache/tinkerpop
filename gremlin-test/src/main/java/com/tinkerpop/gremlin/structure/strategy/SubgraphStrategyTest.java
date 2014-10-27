@@ -1,14 +1,9 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.junit.Test;
 
 import java.util.NoSuchElementException;
@@ -35,7 +30,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
 
         final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
-        sg.strategy().setGraphStrategy(strategyToTest);
+        sg.getStrategy().setGraphStrategy(strategyToTest);
 
         // three vertices are included in the subgraph
         assertEquals(6, g.V().count().next().longValue());
@@ -133,7 +128,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
 
         final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
-        sg.strategy().setGraphStrategy(strategyToTest);
+        sg.getStrategy().setGraphStrategy(strategyToTest);
 
         // all vertices are here
         assertEquals(6, g.V().count().next().longValue());
@@ -226,7 +221,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
 
         final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
-        sg.strategy().setGraphStrategy(strategyToTest);
+        sg.getStrategy().setGraphStrategy(strategyToTest);
 
         // three vertices are included in the subgraph
         assertEquals(6, g.V().count().next().longValue());
@@ -303,7 +298,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
 
         final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
-        sg.strategy().setGraphStrategy(strategyToTest);
+        sg.getStrategy().setGraphStrategy(strategyToTest);
 
         sg.v(convertToVertexId("marko"));
     }
@@ -327,7 +322,7 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
 
         final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
-        sg.strategy().setGraphStrategy(strategyToTest);
+        sg.getStrategy().setGraphStrategy(strategyToTest);
 
         sg.e(sg.e(convertToEdgeId("marko", "knows", "vadas")));
     }

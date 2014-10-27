@@ -75,7 +75,7 @@ public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped 
 
     @Override
     public void remove() {
-        this.strategyWrappedGraph.strategy().compose(
+        this.strategyWrappedGraph.getStrategy().compose(
                 s -> s.getRemovePropertyStrategy(strategyContext),
                 () -> {
                     this.baseProperty.remove();
@@ -85,7 +85,7 @@ public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped 
 
     @Override
     public String toString() {
-        final GraphStrategy strategy = strategyWrappedGraph.strategy().getGraphStrategy().orElse(GraphStrategy.DefaultGraphStrategy.INSTANCE);
+        final GraphStrategy strategy = strategyWrappedGraph.getStrategy().getGraphStrategy().orElse(GraphStrategy.DefaultGraphStrategy.INSTANCE);
         return StringFactory.graphStrategyPropertyString(strategy, this.baseProperty);
     }
 }

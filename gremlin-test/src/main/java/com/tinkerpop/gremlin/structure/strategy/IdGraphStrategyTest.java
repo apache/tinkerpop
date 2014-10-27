@@ -34,7 +34,7 @@ public class IdGraphStrategyTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldInjectAnIdAndReturnBySpecifiedIdForVertex() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
+            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
             final Vertex v = g.addVertex(T.id, "test", "something", "else");
             tryCommit(g, c -> {
                 assertNotNull(v);
@@ -53,7 +53,7 @@ public class IdGraphStrategyTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldInjectAnIdAndReturnBySpecifiedIdForEdge() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
+            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
             final Vertex v = g.addVertex(T.id, "test", "something", "else");
             final Edge e = v.addEdge("self", v, T.id, "edge-id", "try", "this");
             tryCommit(g, c -> {
@@ -72,7 +72,7 @@ public class IdGraphStrategyTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldCreateAnIdAndReturnByCreatedIdForVertex() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
+            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
             final Vertex v = g.addVertex("something", "else");
             tryCommit(g, c -> {
                 assertNotNull(v);
@@ -90,7 +90,7 @@ public class IdGraphStrategyTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldCreateAnIdAndReturnByCreatedIdForEdge() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
+            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
             final Vertex v = g.addVertex("something", "else");
             final Edge e = v.addEdge("self", v, "try", "this");
             tryCommit(g, c -> {
@@ -115,7 +115,7 @@ public class IdGraphStrategyTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldCreateAnIdAndReturnByCreatedId() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
+            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
             final Vertex v = g.addVertex("something", "else");
             tryCommit(g, c -> {
                 assertNotNull(v);
@@ -140,7 +140,7 @@ public class IdGraphStrategyTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldCreateAnIdAndReturnByCreatedId() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
+            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
             final Vertex v = g.addVertex("something", "else");
             final Edge e = v.addEdge("self", v, "try", "this");
             tryCommit(g, c -> {
@@ -166,7 +166,7 @@ public class IdGraphStrategyTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldInjectAnIdAndReturnBySpecifiedId() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
+            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
             final Object o = GraphManager.get().convertId("1");
             final Vertex v = g.addVertex(T.id, o, "something", "else");
             tryCommit(g, c -> {
@@ -186,7 +186,7 @@ public class IdGraphStrategyTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldAllowDirectSettingOfIdField() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
+            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
             final Object o = GraphManager.get().convertId("1");
             final Vertex v = g.addVertex(T.id, o, "something", "else", strategy.getIdKey(), "should be ok to set this as supportsEdgeId=true");
             tryCommit(g, c -> {
@@ -227,7 +227,7 @@ public class IdGraphStrategyTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
         public void shouldInjectAnIdAndReturnBySpecifiedId() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
+            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
             final Vertex v = g.addVertex(T.id, "test", "something", "else");
             final Edge e = v.addEdge("self", v, T.id, "edge-id", "try", "this");
             tryCommit(g, c -> {
@@ -247,7 +247,7 @@ public class IdGraphStrategyTest {
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
         public void shouldAllowDirectSettingOfIdField() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
+            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).getStrategy().getGraphStrategy().get();
             final Vertex v = g.addVertex(T.id, "test", "something", "else");
             final Edge e = v.addEdge("self", v, T.id, "edge-id", "try", "this", strategy.getIdKey(), "should be ok to set this as supportsEdgeId=false");
             tryCommit(g, c -> {

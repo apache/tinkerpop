@@ -25,35 +25,35 @@ public class StrategyWrappedVariables implements StrategyWrapped, Graph.Variable
 
     @Override
     public Set<String> keys() {
-        return this.strategyWrappedGraph.strategy().compose(
+        return this.strategyWrappedGraph.getStrategy().compose(
                 s -> s.getVariableKeysStrategy(variableStrategyContext),
                 this.baseVariables::keys).get();
     }
 
     @Override
     public <R> Optional<R> get(final String key) {
-        return this.strategyWrappedGraph.strategy().compose(
+        return this.strategyWrappedGraph.getStrategy().compose(
                 s -> s.<R>getVariableGetStrategy(variableStrategyContext),
                 this.baseVariables::get).apply(key);
     }
 
     @Override
     public void set(final String key, final Object value) {
-        this.strategyWrappedGraph.strategy().compose(
+        this.strategyWrappedGraph.getStrategy().compose(
                 s -> s.getVariableSetStrategy(variableStrategyContext),
                 this.baseVariables::set).accept(key, value);
     }
 
     @Override
     public void remove(final String key) {
-        this.strategyWrappedGraph.strategy().compose(
+        this.strategyWrappedGraph.getStrategy().compose(
                 s -> s.getVariableRemoveStrategy(variableStrategyContext),
                 this.baseVariables::remove).accept(key);
     }
 
     @Override
     public Map<String, Object> asMap() {
-        return this.strategyWrappedGraph.strategy().compose(
+        return this.strategyWrappedGraph.getStrategy().compose(
                 s -> s.getVariableAsMapStrategy(variableStrategyContext),
                 this.baseVariables::asMap).get();
     }
