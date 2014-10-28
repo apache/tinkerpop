@@ -168,7 +168,7 @@ $bin/gremlin-server.sh conf/gremlin-server-classic.yaml
 [INFO] GremlinServer$WebSocketServerInitializer - Initialized GremlinExecutor and configured ScriptEngines.
 [INFO] GremlinServer$WebSocketServerInitializer - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
 [INFO] GremlinServer - Gremlin Server configured with worker thread pool of 1 and boss thread pool of 1
-[INFO] GremlinServer - Websocket channel started at port 8182.
+[INFO] GremlinServer - Channel started at port 8182.
 ----
 
 Gremlin Server is configured by the provided link:http://www.yaml.org/[YAML] file `conf/gremlin-server-classic.yaml`.  That file tells Gremlin Server many things such as:
