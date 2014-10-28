@@ -35,6 +35,14 @@ import java.util.function.Supplier;
 
 
 /**
+ * TraversalVertexProgram enables the evaluation of a {@link Traversal} on a {@link com.tinkerpop.gremlin.process.computer.GraphComputer}.
+ * At the start of the computation, each {@link Vertex} (or {@link com.tinkerpop.gremlin.structure.Edge}) is assigned a single {@link Traverser}.
+ * For each traverser that is local to the vertex, the vertex looks up its current location in the traversal and processes that step.
+ * If the outputted traverser of the step references a local structure on the vertex (e.g. the vertex, an incident edge, its properties, or an arbitrary object),
+ * then the vertex continues to compute the next traverser. If the traverser references another location in the graph,
+ * then the traverser is sent to that location in the graph via a message. The messages of TraversalVertexProgram are traversers.
+ * This continues until all traversers in the computation have halted.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>> {

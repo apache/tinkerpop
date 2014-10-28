@@ -1311,6 +1311,7 @@ The vertex steps (*flatMap*) are fundamental to the Gremlin language and are per
 * `outV()`: Move to the outgoing vertex.
 * `inV()`: Move to the incoming vertex.
 * `bothV()`: Move to both vertices.
+* `otherV()` : Move to the vertex that was not the vertex that was moved from.
 
 [source,groovy]
 gremlin> g.v(4)
@@ -1327,6 +1328,10 @@ gremlin> g.v(4).bothE('knows','created','blah')
 ==>e[10][4-created->5]
 ==>e[11][4-created->3]
 ==>e[8][1-knows->4]
+gremlin> g.v(4).bothE('knows','created','blah').otherV()
+==>v[5]
+==>v[3]
+==>v[1]
 gremlin> g.v(4).both('knows','created','blah')
 ==>v[5]
 ==>v[3]
