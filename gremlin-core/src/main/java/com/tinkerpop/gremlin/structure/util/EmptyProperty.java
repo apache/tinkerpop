@@ -37,7 +37,7 @@ public class EmptyProperty<V> implements Property<V> {
     }
 
     @Override
-    public <E extends Element> E element() {
+    public Element element() {
         throw Exceptions.propertyDoesNotExist();
     }
 

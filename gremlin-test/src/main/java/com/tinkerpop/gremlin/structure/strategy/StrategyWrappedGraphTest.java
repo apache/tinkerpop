@@ -441,7 +441,7 @@ public class StrategyWrappedGraphTest  {
             tests.add(Pair.with("g.v(1).outE()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).outE())));
             tests.add(Pair.with("g.v(4).bothE()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).bothE())));
             tests.add(Pair.with("g.v(4).inE()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).inE())));
-            tests.add(Pair.with("g.v(11).property(\"weight\").element()", (Graph g, AbstractGremlinTest instance) -> Stream.of(g.e(instance.convertToEdgeId("josh", "created", "lop")).property("weight").element())));
+            tests.add(Pair.with("g.v(11).property(\"weight\").element()", (Graph g, AbstractGremlinTest instance) -> Stream.of((Edge) g.e(instance.convertToEdgeId("josh", "created", "lop")).property("weight").element())));
             tests.add(Pair.with("g.v(1).iterators().edge(Direction.BOTH, 1)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).iterators().edgeIterator(Direction.BOTH, 1))));
             tests.add(Pair.with("g.v(4).iterators().edge(Direction.BOTH, Integer.MAX_VALUE)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).iterators().edgeIterator(Direction.BOTH, Integer.MAX_VALUE))));
             tests.add(Pair.with("g.v(1).iterators().edge(Direction.BOTH, Integer.MAX_VALUE)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).iterators().edgeIterator(Direction.OUT, Integer.MAX_VALUE))));

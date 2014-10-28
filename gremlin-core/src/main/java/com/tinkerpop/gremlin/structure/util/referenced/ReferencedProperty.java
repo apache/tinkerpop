@@ -30,7 +30,7 @@ public class ReferencedProperty<V> implements Property<V>, Attachable<Property>,
         this.key = property.key();
         this.value = property.value();
         this.hidden = property.isHidden();
-        this.element = ReferencedFactory.detach((Element)property.element());
+        this.element = ReferencedFactory.detach(property.element());
     }
 
     @Override
@@ -59,8 +59,8 @@ public class ReferencedProperty<V> implements Property<V>, Attachable<Property>,
     }
 
     @Override
-    public <E extends Element> E element() {
-        return (E) this.element;
+    public Element element() {
+        return this.element;
     }
 
     @Override

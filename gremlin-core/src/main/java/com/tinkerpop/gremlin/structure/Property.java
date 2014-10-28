@@ -93,10 +93,9 @@ public interface Property<V> {
     /**
      * Get the element that this property is associated with.
      *
-     * @param <E> The element type (i.e. {@link Vertex} or {@link Edge})
-     * @return The element associated with this property
+     * @return The element associated with this property (i.e. {@link Vertex}, {@link Edge}, or {@link VertexProperty}).
      */
-    public <E extends Element> E element();
+    public Element element();
 
     /**
      * Remove the property from the associated element.
