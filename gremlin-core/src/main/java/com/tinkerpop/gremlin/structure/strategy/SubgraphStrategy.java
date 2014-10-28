@@ -51,7 +51,7 @@ public class SubgraphStrategy implements GraphStrategy {
 
     @Override
     public GraphTraversal applyStrategyToTraversal(final GraphTraversal traversal) {
-        traversal.strategies().register(new SubgraphTraversalStrategy());
+        traversal.getStrategies().register(new SubgraphTraversalStrategy());
         return traversal;
     }
 

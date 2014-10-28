@@ -63,7 +63,6 @@ public class TreeTest {
         mergeTree.addTree(tree1);
         mergeTree.addTree(tree2);
 
-        System.out.println(mergeTree);
         assertEquals(1, mergeTree.size());
         assertEquals(0, mergeTree.getObjectsAtDepth(0).size());
         assertEquals(1, mergeTree.getObjectsAtDepth(1).size());

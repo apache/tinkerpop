@@ -606,7 +606,7 @@ gremlin> traversal = g.V().match('a',
 ==>null
 gremlin> traversal.toString()
 ==>[TinkerGraphStep(vertex), MatchStep, WhereStep, SelectStep] <3>
-gremlin> traversal.strategies().apply()
+gremlin> traversal.getStrategies().apply()
 ==>null
 gremlin> traversal.toString()
 ==>[TinkerGraphStep(vertex), MatchStep, SelectStep] <4>
@@ -1391,7 +1391,7 @@ gremlin> t = g.V().identity().identity().out(); null
 ==>null
 gremlin> t.toString()
 ==>[TinkerGraphStep, IdentityStep, IdentityStep, VertexStep(OUT)]
-gremlin> t.strategies().apply()         // never required by the user (automatically executed prior to evaluation)
+gremlin> t.getStrategies().apply()         // never required by the user (automatically executed prior to evaluation)
 ==>null
 gremlin> t.toString()
 ==>[TinkerGraphStep, VertexStep(OUT)]
@@ -1439,7 +1439,7 @@ gremlin> t = g.V().has('name','marko'); null
 ==>null
 gremlin> t.toString()
 ==>[TinkerGraphStep, HasStep([name,EQUAL,marko])]
-gremlin> t.strategies().apply()
+gremlin> t.getStrategies().apply()
 ==>null
 gremlin> t.toString()
 ==>[TinkerGraphStep([[name,EQUAL,marko]])]
@@ -1514,7 +1514,7 @@ public interface SocialTraversal<S, E> extends Traversal<S, E> {
     public class DefaultSocialTraversal extends DefaultTraversal implements SocialTraversal {
         public DefaultSocialTraversal(final Graph graph) {
             super(graph);
-            this.strategies().register(TraverserSourceStrategy.instance());
+            this.getStrategies().register(TraverserSourceStrategy.instance());
         }
     }
 }

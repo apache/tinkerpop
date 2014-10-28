@@ -678,7 +678,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
     @Override
     public default void remove() {
         try {
-            this.strategies().apply(TraversalEngine.STANDARD);
+            this.getStrategies().apply(TraversalEngine.STANDARD);
             final Step<?, E> endStep = TraversalHelper.getEnd(this);
             while (true) {
                 final Object object = endStep.next().get();

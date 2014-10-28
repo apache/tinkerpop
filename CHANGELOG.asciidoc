@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Once strategies are `complete()`, no more steps can be added to a `Traversal`.
+* Renamed `Traversal.strategies()` to `Traversal.getStrategies()` as it is not a "query language"-method.
 * Added test to enforce that a `label` on a `VertexProperty` is always set to the key of the owning property.
 * Fixed bug with multi-property removal in `Neo4jGraph`.
 * Bumped to Neo4j 2.1.5.

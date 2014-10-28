@@ -1,11 +1,11 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.marker.CountTraversal;
 import com.tinkerpop.gremlin.process.util.TraverserIterator;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -17,18 +17,24 @@ import static org.junit.Assert.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@ExceptionCoverage(exceptionClass = Traversal.Exceptions.class, methods = {
+        "traversalIsLocked"
+})
 public class CoreTraversalTest extends AbstractGremlinProcessTest {
 
     @Test
-    @Ignore
+    @LoadGraphWith(MODERN)
     public void shouldAlterTraversalAfterDetectingNext() {
-        g.addVertex();
-        g.addVertex();
-        g.addVertex();
-        this.tryCommit(g);
-        final GraphTraversal<Vertex, Vertex> gt = this.g.V();
-        assertTrue(gt.hasNext());
-        assertEquals(3, gt.count().next().intValue());
+        final CountTraversal<Vertex, Vertex> traversal = this.g.V();
+        assertTrue(traversal.hasNext());
+        try {
+            traversal.count().next();
+            fail("Should throw: " + Traversal.Exceptions.traversalIsLocked());
+        } catch (IllegalStateException e) {
+            assertEquals(Traversal.Exceptions.traversalIsLocked().getMessage(), e.getMessage());
+        } catch (Exception e) {
+            fail("Should throw: " + Traversal.Exceptions.traversalIsLocked());
+        }
     }
 
     @Test

@@ -27,7 +27,7 @@ public class SingleGraphTraversal<S> implements GraphTraversal<S, S> {
     }
 
     @Override
-    public Strategies strategies() {
+    public Strategies getStrategies() {
         return null;
     }
 

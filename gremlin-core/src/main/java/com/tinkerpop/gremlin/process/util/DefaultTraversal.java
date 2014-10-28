@@ -18,7 +18,6 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     private E lastEnd = null;
     private long lastEndCount = 0l;
 
-
     protected List<Step> steps = new ArrayList<>();
     protected final DefaultStrategies strategies = new DefaultStrategies(this);
     protected final DefaultSideEffects sideEffects = new DefaultSideEffects();
@@ -42,7 +41,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     }
 
     @Override
-    public Strategies strategies() {
+    public Strategies getStrategies() {
         return this.strategies;
     }
 

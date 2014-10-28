@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
@@ -15,9 +15,9 @@ import java.util.stream.Collectors;
  */
 public class DefaultStrategies implements Traversal.Strategies {
 
-    private List<TraversalStrategy> traversalStrategies = new ArrayList<>();
-    protected Traversal traversal;
-    private boolean complete = false;
+    protected final List<TraversalStrategy> traversalStrategies = new ArrayList<>();
+    protected final Traversal traversal;
+    protected boolean complete = false;
 
     public DefaultStrategies(final Traversal traversal) {
         this.traversal = traversal;
@@ -35,8 +35,8 @@ public class DefaultStrategies implements Traversal.Strategies {
     }
 
     @Override
-    public void unregister(final Class<? extends TraversalStrategy> optimizerClass) {
-        this.traversalStrategies.stream().filter(c -> optimizerClass.isAssignableFrom(c.getClass()))
+    public void unregister(final Class<? extends TraversalStrategy> traversalStrategyClass) {
+        this.traversalStrategies.stream().filter(c -> traversalStrategyClass.isAssignableFrom(c.getClass()))
                 .collect(Collectors.toList())
                 .forEach(this.traversalStrategies::remove);
     }
@@ -44,9 +44,9 @@ public class DefaultStrategies implements Traversal.Strategies {
     @Override
     public void apply(final TraversalEngine engine) {
         if (!this.complete) {
-            this.complete = true;
             Collections.sort(this.traversalStrategies);
             this.traversalStrategies.forEach(ts -> ts.apply(this.traversal, engine));
+            this.complete = true;
         }
     }
 

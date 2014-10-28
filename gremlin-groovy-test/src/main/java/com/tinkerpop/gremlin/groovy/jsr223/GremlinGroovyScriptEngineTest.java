@@ -226,7 +226,7 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
                         final Bindings bindings = engine.createBindings();
                         bindings.put("g", g);
                         bindings.put("name", name);
-                        final Object result = engine.eval("t = g.V().has('name',name); if(t.hasNext()) { t.out().count() } else { null }", bindings);
+                        final Object result = engine.eval("t = g.V().has('name',name); if(t.hasNext()) { t } else { null }", bindings);
                         if (name.equals("stephen") || name.equals("pavel") || name.equals("matthias"))
                             assertNull(result);
                         else
@@ -245,7 +245,7 @@ public class GremlinGroovyScriptEngineTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldBeThreadSafeOnCompiledScript() throws Exception {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
-        final CompiledScript script = engine.compile("t = g.V().has('name',name); if(t.hasNext()) { t.out().count() } else { null }");
+        final CompiledScript script = engine.compile("t = g.V().has('name',name); if(t.hasNext()) { t } else { null }");
 
         int runs = 500;
         final CountDownLatch latch = new CountDownLatch(runs);

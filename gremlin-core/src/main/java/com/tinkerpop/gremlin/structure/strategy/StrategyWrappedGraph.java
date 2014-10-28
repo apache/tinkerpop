@@ -138,7 +138,7 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
     }
 
     private <S, E> GraphTraversal<S, E> applyStrategy(final GraphTraversal<S, E> traversal) {
-        traversal.strategies().register(new StrategyWrappedTraversalStrategy(this));
+        traversal.getStrategies().register(new StrategyWrappedTraversalStrategy(this));
         this.strategy.getGraphStrategy().ifPresent(s -> s.applyStrategyToTraversal(traversal));
         return traversal;
     }

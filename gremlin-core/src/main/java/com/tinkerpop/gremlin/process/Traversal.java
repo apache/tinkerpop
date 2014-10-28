@@ -31,13 +31,14 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
     public SideEffects sideEffects();
 
-    public Strategies strategies();
+    public Strategies getStrategies();
 
     public void addStarts(final Iterator<Traverser<S>> starts);
 
     public void addStart(final Traverser<S> start);
 
     public default <E2> Traversal<S, E2> addStep(final Step<?, E2> step) {
+        if (this.getStrategies().complete()) throw Exceptions.traversalIsLocked();
         TraversalHelper.insertStep(step, this);
         return (Traversal) this;
     }
@@ -46,7 +47,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
     public default Traversal<S, E> submit(final GraphComputer computer) {
         try {
-            this.strategies().apply(TraversalEngine.COMPUTER);
+            this.getStrategies().apply(TraversalEngine.COMPUTER);
             final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(this::clone).create();
             final ComputerResult result = computer.program(vertexProgram).submit().get();
             final GraphTraversal<S, S> traversal = result.graph().of();
@@ -73,7 +74,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
         public void register(final TraversalStrategy traversalStrategy);
 
-        public void unregister(final Class<? extends TraversalStrategy> optimizerClass);
+        public void unregister(final Class<? extends TraversalStrategy> traversalStrategyClass);
 
         public void clear();
 
@@ -302,7 +303,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
     public default Collection<E> fill(final Collection<E> collection) {
         try {
-            this.strategies().apply(TraversalEngine.STANDARD);
+            this.getStrategies().apply(TraversalEngine.STANDARD);
             // use the end step so the results are bulked
             final Step<?, E> endStep = TraversalHelper.getEnd(this);
             while (true) {
@@ -316,7 +317,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
     public default Traversal iterate() {
         try {
-            this.strategies().apply(TraversalEngine.STANDARD);
+            this.getStrategies().apply(TraversalEngine.STANDARD);
             // use the end step so the results are bulked
             final Step<?, E> endStep = TraversalHelper.getEnd(this);
             while (true) {
@@ -334,6 +335,13 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
             }
         } catch (final NoSuchElementException ignored) {
 
+        }
+    }
+
+    public static class Exceptions {
+
+        public static IllegalStateException traversalIsLocked() {
+            return new IllegalStateException("The traversal strategies are complete and the traversal can no longer have steps added to it");
         }
     }
 }

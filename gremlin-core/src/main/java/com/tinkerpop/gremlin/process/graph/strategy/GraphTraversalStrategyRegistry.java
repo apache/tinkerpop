@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,6 +31,7 @@ public class GraphTraversalStrategyRegistry implements Traversal.Strategies {
         TRAVERSAL_STRATEGIES.add(ComparingRemovalStrategy.instance());
         TRAVERSAL_STRATEGIES.add(EngineDependentStrategy.instance());
         //  TRAVERSAL_STRATEGIES.add(UnrollJumpStrategy.instance());
+        Collections.sort(TRAVERSAL_STRATEGIES);
     }
 
     private GraphTraversalStrategyRegistry() {
@@ -59,8 +61,8 @@ public class GraphTraversalStrategyRegistry implements Traversal.Strategies {
     }
 
     @Override
-    public void unregister(final Class<? extends TraversalStrategy> optimizerClass) {
-        TRAVERSAL_STRATEGIES.stream().filter(c -> optimizerClass.isAssignableFrom(c.getClass()))
+    public void unregister(final Class<? extends TraversalStrategy> traversalStrategyClass) {
+        TRAVERSAL_STRATEGIES.stream().filter(c -> traversalStrategyClass.isAssignableFrom(c.getClass()))
                 .collect(Collectors.toList())
                 .forEach(TRAVERSAL_STRATEGIES::remove);
     }

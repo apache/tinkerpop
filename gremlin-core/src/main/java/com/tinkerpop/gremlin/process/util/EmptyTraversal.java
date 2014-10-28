@@ -42,7 +42,7 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
     }
 
     @Override
-    public Strategies strategies() {
+    public Strategies getStrategies() {
         return TRAVERSAL_STRATEGIES;
     }
 

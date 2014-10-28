@@ -211,7 +211,7 @@ public abstract class AbstractGremlinTest {
         final boolean muted = Boolean.parseBoolean(System.getProperty("muteTestLogs", "false"));
 
         if (!muted) System.out.println("Testing: " + traversal);
-        traversal.strategies().apply(TraversalEngine.STANDARD); // TODO!!!!
+        traversal.getStrategies().apply(TraversalEngine.STANDARD); // TODO!!!!
         if (!muted) System.out.println("         " + traversal);
     }
 
