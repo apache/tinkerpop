@@ -72,7 +72,7 @@ public class GremlinServer {
             ch = b.bind(settings.host, settings.port).sync().channel();
             logger.info("Gremlin Server configured with worker thread pool of {} and boss thread pool of {}",
                     settings.threadPoolWorker, settings.threadPoolBoss);
-            logger.info("Websocket channel started at port {}.", settings.port);
+            logger.info("Channel started at port {}.", settings.port);
 
             serverReady.ifPresent(future -> future.complete(null));
 
