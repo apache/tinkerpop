@@ -218,6 +218,8 @@ public interface Graph extends AutoCloseable {
 
     /**
      * Get the {@link org.apache.commons.configuration.Configuration} associated with the construction of this graph.
+     * Whatever configuration was passed to {@link com.tinkerpop.gremlin.structure.util.GraphFactory#open(org.apache.commons.configuration.Configuration)}
+     * is what should be returned by this method.
      *
      * @return the configuration used during graph construction.
      */
