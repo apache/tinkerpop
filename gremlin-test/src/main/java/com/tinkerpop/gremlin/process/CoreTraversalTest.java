@@ -24,7 +24,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void shouldAlterTraversalAfterDetectingNext() {
+    public void shouldNotAlterTraversalAfterTraversalBecomesLocked() {
         final CountTraversal<Vertex, Vertex> traversal = this.g.V();
         assertTrue(traversal.hasNext());
         try {
