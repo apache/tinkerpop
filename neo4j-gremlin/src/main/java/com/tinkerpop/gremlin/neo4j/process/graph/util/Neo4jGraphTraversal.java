@@ -17,8 +17,7 @@ public class Neo4jGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> imple
     }
 
     public Neo4jGraphTraversal(final Neo4jGraph neo4jGraph) {
-        this();
-        this.sideEffects().setGraph(neo4jGraph);
+        super(neo4jGraph);
         this.getStrategies().register(Neo4jGraphStepStrategy.instance());
     }
 
