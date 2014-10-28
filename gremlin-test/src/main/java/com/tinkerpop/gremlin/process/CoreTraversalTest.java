@@ -33,7 +33,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         } catch (IllegalStateException e) {
             assertEquals(Traversal.Exceptions.traversalIsLocked().getMessage(), e.getMessage());
         } catch (Exception e) {
-            fail("Should throw: " + Traversal.Exceptions.traversalIsLocked());
+            fail("Should throw: " + Traversal.Exceptions.traversalIsLocked() + " not " + e + ":" + e.getMessage());
         }
     }
 
