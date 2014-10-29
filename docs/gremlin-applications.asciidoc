@@ -203,7 +203,7 @@ The console has the notion of a "remote", which represents a place a script will
 
 [source,groovy]
 ----
-gremlin> :remote connect server conf/remote.yaml
+gremlin> :remote connect tinkerpop.server conf/remote.yaml
 ==>connected - localhost/127.0.0.1:8182
 ----
 
@@ -228,7 +228,7 @@ The `:>` command, which is a shorthand for `:submit`, sends the script to the se
 
 [source,groovy]
 ----
-gremlin> :remote connect server conf/remote-objects.yaml <1>
+gremlin> :remote connect tinkerpop.server conf/remote-objects.yaml <1>
 ==>connected - localhost/127.0.0.1:8182
 gremlin> :remote list <2>
 ==>0 - gremlin server - [localhost/127.0.0.1:8182]
