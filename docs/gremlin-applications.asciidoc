@@ -316,6 +316,8 @@ The `gremlin-server.sh` file also serves a second purpose.  It can be used to "i
 bin/gremlin-server.sh -i com.tinkerpop neo4j-gremlin x.y.z
 ----
 
+WARNING: As of `neo4j-gremlin x.y.z` there is a bug concerning how `ext/neo4j-gremlin` jars are loaded. The seemingly crazy workaround is to rename `ext/neo4j-gremlin/neo4j-lucene-index-2.1.4.jar` to `ext/neo4j-gremlin/a.jar`. We are unsure why this happens, but found that to work or to move the `neo4j-lucene-index-2.1.4.jar` to the `lib/` directory.
+
 This command will "grab" the appropriate dependencies and copy them to the `ext` directory of Gremlin Server, which will then allow them to be "used" the next time the server is started.  To uninstall dependencies, simply delete them from the `ext` directory.
 
 The following table describes the various configuration options that Gremlin Server expects:

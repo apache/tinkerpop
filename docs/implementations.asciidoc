@@ -458,7 +458,7 @@ gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
 ----
 
-WARNING: As of `neo4j-gremlin x.y.z` there is a bug concerning how `ext/neo4j-gremlin` jars are loaded. The seemlingly crazy workaround is to rename `ext/neo4j-gremlin/neo4j-lucene-index-2.1.4.jar` to `ext/neo4j-gremlin/a.jar`. We are unsure why this happens, but found that to work or to move the `neo4j-lucene-index-2.1.4.jar` to the `lib/` directory.
+WARNING: As of `neo4j-gremlin x.y.z` there is a bug concerning how `ext/neo4j-gremlin` jars are loaded. The seemingly crazy workaround is to rename `ext/neo4j-gremlin/neo4j-lucene-index-2.1.4.jar` to `ext/neo4j-gremlin/a.jar`. We are unsure why this happens, but found that to work or to move the `neo4j-lucene-index-2.1.4.jar` to the `lib/` directory.
 
 For those leveraging Neo4j High Availability, configure `Neo4jGraph` for "HA mode" by setting the `gremlin.neo4j.ha` flag to `true` in the `Configuration` object passed to `Neo4jGraph.open()`.  Note that when the flag is set (by default it is `false`), the `Neo4jGraph` instance expects HA configuration settings to be present.  As with embedded Neo4j, HA configuration keys should be prefixed with `gremlin.neo4j.conf`.  Please consult Neo4j documentation for more information on link:http://docs.neo4j.org/chunked/stable/ha.html[High Availability] configuration.
 
