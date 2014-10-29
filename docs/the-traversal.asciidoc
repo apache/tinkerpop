@@ -281,6 +281,8 @@ gremlin> g.V().value('name').dedup{it.get().length()}
 ==>josh
 ==>ripple
 
+WARNING: The `dedup()`-step does not have a correlate in <<traversalvertexprogram,Gremlin OLAP>> when used mid-traversal. When in mid-traversal de-duplication only occurs at the the current processing vertex and thus, is not a global operation as it in Gremlin OLTP. When `dedup()` is an end step, the resultant traversers are de-duplicated by `TraverserMapReduce`.
+
 [[except-step]]
 Except Step
 ~~~~~~~~~~~
@@ -341,6 +343,8 @@ The three lambda parameters of `groupBy` are discussed below.
 . Value-lambda: What feature of the group to store in the key-list?
 . Reduce-lambda: What feature of the key-list to ultimately return?
 
+WARNING: The `groupBy()`-step does not have a correlate in <<traversalvertexprogram,Gremlin OLAP>> when used mid-traversal. When in mid-traversal grouping only occurs at the the current processing vertex and thus, is not a global operation as it in Gremlin OLTP. However, `GroupByMapReduce` provides unified groups at the end of the traversal computation.
+
 [[groupcount-step]]
 GroupCount Step
 ~~~~~~~~~~~~~~~
@@ -366,6 +370,8 @@ gremlin> g.V().as('x').both().groupCount('m'){it.get().value('name')[1]}.jump('x
 ==>[a:19598, e:5740, i:5740, o:27716]
 
 The above is interesting in that it demonstrates the use of referencing the internal `Map<Object,Long>` of `groupCount` with a string variable. Given that `groupCount` is a sideEffect-step, it simply passes the object it received to its output. Internal to `groupCount`, the object's count is incremented. If `groupCount` is the last step in the traversal, the `SideEffectCapStrategy` (see <<traversalstrategy,Traversal Strategy>>) automatically returns the internal map. However, if the `groupCount` is not the last step, then the sideEffect data structure (i.e. the internal map of `groupCount`) can be accessed with `cap`-step by referencing the desired variable.
+
+WARNING: The `groupCount()`-step does not have a correlate in <<traversalvertexprogram,Gremlin OLAP>> when used mid-traversal. When in mid-traversal grouping only occurs at the the current processing vertex and thus, is not a global operation as it in Gremlin OLTP. However, `GroupCountMapReduce` provides unified groups at the end of the traversal computation.
 
 [[has-step]]
 Has Step
