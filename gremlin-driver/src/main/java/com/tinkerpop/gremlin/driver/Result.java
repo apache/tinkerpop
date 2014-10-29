@@ -11,69 +11,73 @@ import com.tinkerpop.gremlin.structure.Vertex;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class Result {
-    final Object resultItem;
+    final Object resultObject;
 
     public Result(final ResponseMessage response) {
-        this.resultItem = response.getResult().getData();
+        this.resultObject = response.getResult().getData();
     }
 
     public String getString() {
-        return resultItem.toString();
+        return resultObject.toString();
     }
 
     public int getInt() {
-        return Integer.parseInt(resultItem.toString());
+        return Integer.parseInt(resultObject.toString());
     }
 
     public byte getByte() {
-        return Byte.parseByte(resultItem.toString());
+        return Byte.parseByte(resultObject.toString());
     }
 
     public short getShort() {
-        return Short.parseShort(resultItem.toString());
+        return Short.parseShort(resultObject.toString());
     }
 
     public long getLong() {
-        return Long.parseLong(resultItem.toString());
+        return Long.parseLong(resultObject.toString());
     }
 
     public float getFloat() {
-        return Float.parseFloat(resultItem.toString());
+        return Float.parseFloat(resultObject.toString());
     }
 
     public double getDouble() {
-        return Double.parseDouble(resultItem.toString());
+        return Double.parseDouble(resultObject.toString());
     }
 
     public boolean getBoolean() {
-        return Boolean.parseBoolean(resultItem.toString());
+        return Boolean.parseBoolean(resultObject.toString());
     }
 
     public boolean isNull() {
-        return null == resultItem;
+        return null == resultObject;
     }
 
     public Vertex getVertex() {
-        return (Vertex) resultItem;
+        return (Vertex) resultObject;
     }
 
     public Edge getEdge() {
-        return (Edge) resultItem;
+        return (Edge) resultObject;
     }
 
     public Element getElement() {
-        return (Element) resultItem;
+        return (Element) resultObject;
     }
 
     public <T> T get(final Class<? extends T> clazz) {
-        return clazz.cast(this.resultItem);
+        return clazz.cast(this.resultObject);
+    }
+
+    public Object getObject() {
+        return this.resultObject;
     }
 
     @Override
     public String toString() {
-        final String c = resultItem != null ? resultItem.getClass().getCanonicalName() : "null";
-        return "Result{" +
-                "resultItem=" + resultItem + " " +
+        final String c = resultObject != null ? resultObject.getClass().getCanonicalName() : "null";
+        return "result{" +
+                "object=" + resultObject + " " +
                 "class=" + c +
                 '}';
     }

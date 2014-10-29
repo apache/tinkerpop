@@ -75,8 +75,8 @@ class DriverRemoteAcceptor implements RemoteAcceptor {
 
         try {
             final List<Result> resultSet = send(line)
-            shell.getInterp().getContext().setProperty("_l", resultSet)
-            return resultSet
+            shell.getInterp().getContext().setProperty(RESULT, resultSet)
+            return resultSet.stream().map { it.getObject() }.iterator()
         } catch (Exception ex) {
             final Optional<ResponseException> inner = findResponseException(ex)
             if (inner.isPresent()) {

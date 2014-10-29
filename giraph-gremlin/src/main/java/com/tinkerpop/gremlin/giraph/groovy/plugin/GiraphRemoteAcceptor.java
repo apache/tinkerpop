@@ -23,7 +23,6 @@ import java.util.List;
  */
 public class GiraphRemoteAcceptor implements RemoteAcceptor {
 
-    private static final String RESULT = "result";
     private static final String USE_SUGAR = "useSugar";
     private static final String SPACE = " ";
 

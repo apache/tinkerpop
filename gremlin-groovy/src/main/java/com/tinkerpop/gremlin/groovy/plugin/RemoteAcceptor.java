@@ -7,6 +7,9 @@ import java.util.List;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface RemoteAcceptor extends Closeable {
+
+    public static final String RESULT = "result";
+
     /**
      * Gets called when :remote is used in conjunction with the "connect" option.  It is up to the implementation
      * to decide how additional arguments on the line should be treated after "connect".
