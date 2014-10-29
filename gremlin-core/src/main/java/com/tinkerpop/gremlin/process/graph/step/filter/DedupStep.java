@@ -51,4 +51,9 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
             return set;
         });
     }
+
+    /*@Override
+    public void reset() { // TODO: reset the hashset? .. but if this becomes a SideEffectStep?
+        super.reset();
+    }*/
 }
