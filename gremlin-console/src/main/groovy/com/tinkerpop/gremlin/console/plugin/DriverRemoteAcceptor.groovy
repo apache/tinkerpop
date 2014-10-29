@@ -71,7 +71,7 @@ class DriverRemoteAcceptor implements RemoteAcceptor {
 
     @Override
     public Object submit(final List<String> args) {
-        final String line = String.join(" ", args)
+        final String line = RemoteAcceptor.getScript(String.join(" ", args), this.shell);
 
         try {
             final List<Result> resultSet = send(line)

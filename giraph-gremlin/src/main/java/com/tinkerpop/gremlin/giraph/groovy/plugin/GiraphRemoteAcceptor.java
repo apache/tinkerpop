@@ -81,7 +81,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object submit(final List<String> args) {
         try {
-            final GroovyTraversalScript<?, ?> traversal = GroovyTraversalScript.of(String.join(SPACE, args)).over(this.giraphGraph).using(this.giraphGraph.compute());
+            final GroovyTraversalScript<?, ?> traversal = GroovyTraversalScript.of(RemoteAcceptor.getScript(String.join(SPACE, args), this.shell)).over(this.giraphGraph).using(this.giraphGraph.compute());
             if (this.useSugarPlugin)
                 traversal.withSugar();
             final TraversalVertexProgram vertexProgram = traversal.program();
