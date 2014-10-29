@@ -30,6 +30,7 @@ public class GraphTraversalStrategyRegistry implements Traversal.Strategies {
         TRAVERSAL_STRATEGIES.add(UnionLinearStrategy.instance());
         TRAVERSAL_STRATEGIES.add(ComparingRemovalStrategy.instance());
         TRAVERSAL_STRATEGIES.add(EngineDependentStrategy.instance());
+        TRAVERSAL_STRATEGIES.add(ReducingStrategy.instance());
         //  TRAVERSAL_STRATEGIES.add(UnrollJumpStrategy.instance());
         Collections.sort(TRAVERSAL_STRATEGIES);
     }

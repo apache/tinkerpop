@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.map
 
 import com.tinkerpop.gremlin.process.Traversal
+import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -20,8 +21,25 @@ public abstract class GroovyFoldTest {
         }
 
         @Override
-        public Traversal<Vertex, Integer> get_g_V_hasXageX_foldX0_plusX() {
-            g.V.has('age').fold(0) { seed, v -> seed + v.age };
+        public Traversal<Vertex, Integer> get_g_V_valueXageX_foldX0_plusX() {
+            g.V.value('age').fold(0) { seed, age -> seed + age.get() };
+        }
+    }
+
+    public static class ComputerTest extends FoldTest {
+        @Override
+        public Traversal<Vertex, List<Vertex>> get_g_V_fold() {
+            ComputerTestHelper.compute("g.V.fold", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_fold_unfold() {
+            ComputerTestHelper.compute("g.V.fold.unfold", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Integer> get_g_V_valueXageX_foldX0_plusX() {
+            ComputerTestHelper.compute("g.V.value('age').fold(0) { seed, age -> seed + age.get() }", g);
         }
     }
 }

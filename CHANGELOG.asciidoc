@@ -10,6 +10,7 @@ TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Modified the signature of `Property.element()` to simply return `Element`
+* Added `Reducing` marker and `ReducingStrategy` which supports reduction-functions as a final step in Gremlin OLAP (e.g. `fold()`).
 * Once strategies are `complete()`, no more steps can be added to a `Traversal`.
 * Renamed `Traversal.strategies()` to `Traversal.getStrategies()` as it is not a "query language"-method.
 * Added test to enforce that a `label` on a `VertexProperty` is always set to the key of the owning property.
