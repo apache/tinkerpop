@@ -30,8 +30,8 @@ public class Graphs {
                 graphs.put(e.getKey(), newGraph);
                 logger.info("Graph [{}] was successfully configured via [{}].", e.getKey(), e.getValue());
             } catch (RuntimeException re) {
-                logger.warn("Graph [{}] configured at [{}] could not be instantiated and will not be available in Gremlin Server.  GraphFactory message: {}",
-                        e.getKey(), e.getValue(), re.getMessage());
+                logger.warn(String.format("Graph [%s] configured at [%s] could not be instantiated and will not be available in Gremlin Server.  GraphFactory message: %s",
+                        e.getKey(), e.getValue(), re.getMessage()), re);
                 if (re.getCause() != null) logger.debug("GraphFactory exception", re.getCause());
             }
         });
