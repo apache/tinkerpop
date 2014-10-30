@@ -26,7 +26,7 @@ public final class RangeStep<S> extends FilterStep<S> {
 
 
         this.setPredicate(traverser -> {
-            if (this.high != -1 && this.counter.get() > this.high) {
+            if (this.high != -1 && this.counter.get() >= this.high) {
                 throw FastNoSuchElementException.instance();
             }
 
@@ -45,8 +45,8 @@ public final class RangeStep<S> extends FilterStep<S> {
             }
 
             long toTrim = 0;
-            if (this.high != -1 && this.counter.get() + avail > this.high) {
-                toTrim = this.counter.get() + avail - this.high - 1;
+            if (this.high != -1 && this.counter.get() + avail >= this.high) {
+                toTrim = this.counter.get() + avail - this.high;
             }
 
             long toEmit = avail - toSkip - toTrim;
