@@ -28,8 +28,8 @@ metrics: {
   csvReporter: {enabled: true, interval: 180000, fileName: /tmp/gremlin-server-metrics.csv},
   jmxReporter: {enabled: true},
   slf4jReporter: {enabled: true, interval: 180000},
-  gangliaReporter: {enabled: true, interval: 180000, addressingMode: MULTICAST},
-  graphiteReporter: {enabled: true, interval: 180000}}
+  gangliaReporter: {enabled: false, interval: 180000, addressingMode: MULTICAST},
+  graphiteReporter: {enabled: false, interval: 180000}}
 threadPoolBoss: 1
 maxInitialLineLength: 4096
 maxHeaderSize: 8192
