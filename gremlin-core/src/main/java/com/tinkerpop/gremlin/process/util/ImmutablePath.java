@@ -61,10 +61,6 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
         return new ImmutablePath(this, labels, object);
     }
 
-    public <A> A get(final String label) {
-        return this.currentLabels.contains(label) ? (A) this.currentObject : this.previousPath.get(label);
-    }
-
     public <A> A get(final int index) {
         return (this.size() - 1) == index ? (A) this.currentObject : this.previousPath.get(index);
     }

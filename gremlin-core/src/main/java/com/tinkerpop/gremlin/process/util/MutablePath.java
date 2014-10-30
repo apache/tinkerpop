@@ -56,16 +56,6 @@ public class MutablePath implements Path, Serializable, Cloneable {
     }
 
     @Override
-    public <A> A get(final String label) {
-        for (int i = 0; i < this.objects.size(); i++) {
-            if (this.labels.get(i).contains(label)) {
-                return (A) this.objects.get(i);
-            }
-        }
-        throw Path.Exceptions.stepWithProvidedLabelDoesNotExist(label);
-    }
-
-    @Override
     public <A> A get(int index) {
         return (A) this.objects.get(index);
     }

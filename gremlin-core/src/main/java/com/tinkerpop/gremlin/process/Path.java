@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process;
 
 import org.javatuples.Pair;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -24,7 +25,9 @@ public interface Path extends Cloneable {
      *
      * @return the size of the path
      */
-    public int size();
+    public default int size() {
+        return this.objects().size();
+    }
 
     /**
      * Add a new step to the path which includes a {@link Step} label and the object produced by that step.
@@ -46,12 +49,34 @@ public interface Path extends Cloneable {
 
     /**
      * Get the object associated with the particular label of the path.
+     * If the path as multiple labels of the type, then return a {@link List} of those objects.
      *
      * @param label the label of the path
      * @param <A>   the type of the object associated with the label
      * @return the object associated with the label of the path
      */
-    public <A> A get(final String label);
+    public default <A> A get(final String label) {
+        final List<Object> objects = this.objects();
+        final List<Set<String>> labels = this.labels();
+        Object object = null;
+        for (int i = 0; i < labels.size(); i++) {
+            if (labels.get(i).contains(label)) {
+                if (null == object) {
+                    object = objects.get(i);
+                } else if (object instanceof List) {
+                    ((List) object).add(objects.get(i));
+                } else {
+                    final List list = new ArrayList();
+                    list.add(object);
+                    list.add(objects.get(i));
+                    object = list;
+                }
+            }
+        }
+        if (null == object)
+            throw Path.Exceptions.stepWithProvidedLabelDoesNotExist(label);
+        return (A) object;
+    }
 
     /**
      * Get the object associated with the specified index into the path.
@@ -60,7 +85,9 @@ public interface Path extends Cloneable {
      * @param <A>   the type of the object associated with the index
      * @return the object associated with the index of the path
      */
-    public <A> A get(final int index);
+    public default <A> A get(final int index) {
+        return (A) this.objects().get(index);
+    }
 
     /**
      * Return true if the path has the specified label, else return false.
@@ -68,7 +95,9 @@ public interface Path extends Cloneable {
      * @param label the label to search for
      * @return true if the label exists in the path
      */
-    public boolean hasLabel(final String label);
+    public default boolean hasLabel(final String label) {
+        return this.labels().stream().filter(labels -> labels.contains(label)).findAny().isPresent();
+    }
 
     /**
      * Add a label to the current head of the path.
