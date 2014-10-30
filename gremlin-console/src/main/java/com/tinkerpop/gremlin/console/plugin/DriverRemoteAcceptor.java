@@ -10,6 +10,7 @@ import org.codehaus.groovy.tools.shell.Groovysh;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -25,6 +26,8 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
     private int timeout = 180000;
 
     private static final String TOKEN_TIMEOUT = "timeout";
+    private static final List<String> POSSIBLE_TOKENS = Arrays.asList(TOKEN_TIMEOUT);
+
     private final Groovysh shell;
 
     public DriverRemoteAcceptor(final Groovysh shell) {
@@ -49,8 +52,8 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object configure(final List<String> args) {
         final String option = args.size() == 0 ? "" : args.get(0);
-        if (!option.contains(TOKEN_TIMEOUT))
-            return "The 'config' option expects one of ['timeout'] as an argument";
+        if (!POSSIBLE_TOKENS.contains(option))
+            return String.format("The 'config' option expects one of ['%s'] as an argument", String.join(",", POSSIBLE_TOKENS));
 
         final List<String> arguments = args.subList(1, args.size());
 
