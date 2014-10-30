@@ -122,17 +122,17 @@ public class PropertyTest {
             final Vertex v = g.addVertex("name", "marko", Graph.Key.hide("acl"), "rw", Graph.Key.hide("other"), "rw");
             tryCommit(g);
             final Vertex v1 = g.v(v.id());
-            v1.hiddenKeys().stream().forEach(hiddenKey -> assertTrue(v1.hiddenValue(hiddenKey).hasNext()));
-            assertFalse(v1.hiddenValue(Graph.Key.hide("other")).hasNext());
-            assertTrue(v1.hiddenValue("other").hasNext());
+            v1.hiddenKeys().stream().forEach(hiddenKey -> assertTrue(v1.hiddenValues(hiddenKey).hasNext()));
+            assertFalse(v1.hiddenValues(Graph.Key.hide("other")).hasNext());
+            assertTrue(v1.hiddenValues("other").hasNext());
 
             final Vertex u = g.addVertex();
             Edge e = v1.addEdge("knows", u, Graph.Key.hide("acl"), "private", "acl", "public");
             tryCommit(g);
             final Edge e1 = g.e(e.id());
-            e1.hiddenKeys().stream().forEach(hiddenKey -> assertTrue(e1.hiddenValue(hiddenKey).hasNext()));
-            assertFalse(e1.hiddenValue(Graph.Key.hide("acl")).hasNext());
-            assertTrue(e1.hiddenValue("acl").hasNext());
+            e1.hiddenKeys().stream().forEach(hiddenKey -> assertTrue(e1.hiddenValues(hiddenKey).hasNext()));
+            assertFalse(e1.hiddenValues(Graph.Key.hide("acl")).hasNext());
+            assertTrue(e1.hiddenValues("acl").hasNext());
             assertEquals("private", e1.iterators().hiddenPropertyIterator("acl").next().value());
             assertEquals("public", e1.iterators().propertyIterator("acl").next().value());
         }

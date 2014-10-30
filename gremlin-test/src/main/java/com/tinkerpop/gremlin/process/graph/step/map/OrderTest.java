@@ -75,12 +75,12 @@ public abstract class OrderTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_name_order() {
-            return g.V().<String>value("name").order();
+            return g.V().<String>values("name").order();
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_name_orderXabX() {
-            return g.V().<String>value("name").order((a, b) -> b.get().compareTo(a.get()));
+            return g.V().<String>values("name").order((a, b) -> b.get().compareTo(a.get()));
         }
 
        /* @Override
@@ -94,12 +94,12 @@ public abstract class OrderTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_name_order() {
-            return g.V().<String>value("name").order().submit(g.compute());
+            return g.V().<String>values("name").order().submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_name_orderXabX() {
-            return g.V().<String>value("name").order((a, b) -> b.get().compareTo(a.get())).submit(g.compute());
+            return g.V().<String>values("name").order((a, b) -> b.get().compareTo(a.get())).submit(g.compute());
         }
 
        /* @Override

@@ -24,7 +24,7 @@ public abstract class DedupTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, String> get_g_V_both_dedupXlangX_name();
 
-    public abstract Traversal<Vertex, String> get_g_V_both_name_orderXa_bX_dedup();
+    public abstract Traversal<Vertex, String> get_g_V_both_propertiesXnameX_orderXa_bX_dedup_value();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -57,7 +57,7 @@ public abstract class DedupTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_both_name_orderXa_bX_dedup() {
-        final Traversal<Vertex, String> traversal = get_g_V_both_name_orderXa_bX_dedup();
+        final Traversal<Vertex, String> traversal = get_g_V_both_propertiesXnameX_orderXa_bX_dedup_value();
         printTraversalForm(traversal);
         final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(6, names.size());
@@ -74,16 +74,16 @@ public abstract class DedupTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedup_name() {
-            return g.V().both().dedup().value("name");
+            return g.V().both().dedup().values("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedupXlangX_name() {
-            return g.V().both().dedup(v -> v.get().property("lang").orElse(null)).value("name");
+            return g.V().both().dedup(v -> v.get().property("lang").orElse(null)).values("name");
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_both_name_orderXa_bX_dedup() {
+        public Traversal<Vertex, String> get_g_V_both_propertiesXnameX_orderXa_bX_dedup_value() {
             return g.V().both().properties("name").order((a, b) -> ((String) a.get().value()).compareTo((String) b.get().value())).dedup().value();
         }
     }

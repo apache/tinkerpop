@@ -2047,19 +2047,19 @@ public class IoTest extends AbstractGremlinTest {
         final List<Edge> v1Edges = v1.bothE().toList();
         assertEquals(4, v1Edges.size());
         v1Edges.forEach(e -> {
-            if (e.inV().value("name").next().equals("gremlin") && e.label().equals("develops")) {
+            if (e.inV().values("name").next().equals("gremlin") && e.label().equals("develops")) {
                 assertEquals(2009, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 13);
-            } else if (e.inV().value("name").next().equals("tinkergraph") && e.label().equals("develops")) {
+            } else if (e.inV().values("name").next().equals("tinkergraph") && e.label().equals("develops")) {
                 assertEquals(2010, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 14);
-            } else if (e.inV().value("name").next().equals("gremlin") && e.label().equals("uses")) {
+            } else if (e.inV().values("name").next().equals("gremlin") && e.label().equals("uses")) {
                 assertEquals(4, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 15);
-            } else if (e.inV().value("name").next().equals("tinkergraph") && e.label().equals("uses")) {
+            } else if (e.inV().values("name").next().equals("tinkergraph") && e.label().equals("uses")) {
                 assertEquals(5, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 16);
@@ -2095,19 +2095,19 @@ public class IoTest extends AbstractGremlinTest {
         final List<Edge> v7Edges = v7.bothE().toList();
         assertEquals(4, v7Edges.size());
         v7Edges.forEach(e -> {
-            if (e.inV().value("name").next().equals("gremlin") && e.label().equals("develops")) {
+            if (e.inV().values("name").next().equals("gremlin") && e.label().equals("develops")) {
                 assertEquals(2010, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 17);
-            } else if (e.inV().value("name").next().equals("tinkergraph") && e.label().equals("develops")) {
+            } else if (e.inV().values("name").next().equals("tinkergraph") && e.label().equals("develops")) {
                 assertEquals(2011, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 18);
-            } else if (e.inV().value("name").next().equals("gremlin") && e.label().equals("uses")) {
+            } else if (e.inV().values("name").next().equals("gremlin") && e.label().equals("uses")) {
                 assertEquals(5, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 19);
-            } else if (e.inV().value("name").next().equals("tinkergraph") && e.label().equals("uses")) {
+            } else if (e.inV().values("name").next().equals("tinkergraph") && e.label().equals("uses")) {
                 assertEquals(4, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 20);
@@ -2147,15 +2147,15 @@ public class IoTest extends AbstractGremlinTest {
         final List<Edge> v8Edges = v8.bothE().toList();
         assertEquals(3, v8Edges.size());
         v8Edges.forEach(e -> {
-            if (e.inV().value("name").next().equals("gremlin") && e.label().equals("develops")) {
+            if (e.inV().values("name").next().equals("gremlin") && e.label().equals("develops")) {
                 assertEquals(2012, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 21);
-            } else if (e.inV().value("name").next().equals("gremlin") && e.label().equals("uses")) {
+            } else if (e.inV().values("name").next().equals("gremlin") && e.label().equals("uses")) {
                 assertEquals(3, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 22);
-            } else if (e.inV().value("name").next().equals("tinkergraph") && e.label().equals("uses")) {
+            } else if (e.inV().values("name").next().equals("tinkergraph") && e.label().equals("uses")) {
                 assertEquals(3, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 23);
@@ -2191,11 +2191,11 @@ public class IoTest extends AbstractGremlinTest {
         final List<Edge> v9Edges = v9.bothE().toList();
         assertEquals(2, v9Edges.size());
         v9Edges.forEach(e -> {
-            if (e.inV().value("name").next().equals("gremlin") && e.label().equals("uses")) {
+            if (e.inV().values("name").next().equals("gremlin") && e.label().equals("uses")) {
                 assertEquals(5, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 24);
-            } else if (e.inV().value("name").next().equals("tinkergraph") && e.label().equals("uses")) {
+            } else if (e.inV().values("name").next().equals("tinkergraph") && e.label().equals("uses")) {
                 assertEquals(3, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 25);
@@ -2214,35 +2214,35 @@ public class IoTest extends AbstractGremlinTest {
         final List<Edge> v10Edges = v10.bothE().toList();
         assertEquals(8, v10Edges.size());
         v10Edges.forEach(e -> {
-            if (e.outV().value("name").next().equals("marko") && e.label().equals("develops")) {
+            if (e.outV().values("name").next().equals("marko") && e.label().equals("develops")) {
                 assertEquals(2009, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 13);
-            } else if (e.outV().value("name").next().equals("marko") && e.label().equals("uses")) {
+            } else if (e.outV().values("name").next().equals("marko") && e.label().equals("uses")) {
                 assertEquals(4, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 15);
-            } else if (e.outV().value("name").next().equals("stephen") && e.label().equals("develops")) {
+            } else if (e.outV().values("name").next().equals("stephen") && e.label().equals("develops")) {
                 assertEquals(2010, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 17);
-            } else if (e.outV().value("name").next().equals("stephen") && e.label().equals("uses")) {
+            } else if (e.outV().values("name").next().equals("stephen") && e.label().equals("uses")) {
                 assertEquals(5, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 19);
-            } else if (e.outV().value("name").next().equals("matthias") && e.label().equals("develops")) {
+            } else if (e.outV().values("name").next().equals("matthias") && e.label().equals("develops")) {
                 assertEquals(2012, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 21);
-            } else if (e.outV().value("name").next().equals("matthias") && e.label().equals("uses")) {
+            } else if (e.outV().values("name").next().equals("matthias") && e.label().equals("uses")) {
                 assertEquals(3, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 22);
-            } else if (e.outV().value("name").next().equals("daniel") && e.label().equals("uses")) {
+            } else if (e.outV().values("name").next().equals("daniel") && e.label().equals("uses")) {
                 assertEquals(5, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 24);
-            } else if (e.inV().value("name").next().equals("tinkergraph") && e.label().equals("traverses")) {
+            } else if (e.inV().values("name").next().equals("tinkergraph") && e.label().equals("traverses")) {
                 assertEquals(false, e.value(Graph.Key.hide("visible")));
                 assertEquals(1, e.hiddenKeys().size());
                 assertId(g1, lossyForId, e, 26);
@@ -2261,31 +2261,31 @@ public class IoTest extends AbstractGremlinTest {
         final List<Edge> v11Edges = v11.bothE().toList();
         assertEquals(7, v11Edges.size());
         v11Edges.forEach(e -> {
-            if (e.outV().value("name").next().equals("marko") && e.label().equals("develops")) {
+            if (e.outV().values("name").next().equals("marko") && e.label().equals("develops")) {
                 assertEquals(2010, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 14);
-            } else if (e.outV().value("name").next().equals("marko") && e.label().equals("uses")) {
+            } else if (e.outV().values("name").next().equals("marko") && e.label().equals("uses")) {
                 assertEquals(5, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 16);
-            } else if (e.outV().value("name").next().equals("stephen") && e.label().equals("develops")) {
+            } else if (e.outV().values("name").next().equals("stephen") && e.label().equals("develops")) {
                 assertEquals(2011, (int) e.value("since"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 18);
-            } else if (e.outV().value("name").next().equals("stephen") && e.label().equals("uses")) {
+            } else if (e.outV().values("name").next().equals("stephen") && e.label().equals("uses")) {
                 assertEquals(4, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 20);
-            } else if (e.outV().value("name").next().equals("matthias") && e.label().equals("uses")) {
+            } else if (e.outV().values("name").next().equals("matthias") && e.label().equals("uses")) {
                 assertEquals(3, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 23);
-            } else if (e.outV().value("name").next().equals("daniel") && e.label().equals("uses")) {
+            } else if (e.outV().values("name").next().equals("daniel") && e.label().equals("uses")) {
                 assertEquals(3, (int) e.value("skill"));
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 25);
-            } else if (e.outV().value("name").next().equals("gremlin") && e.label().equals("traverses")) {
+            } else if (e.outV().values("name").next().equals("gremlin") && e.label().equals("traverses")) {
                 assertEquals(false, e.value(Graph.Key.hide("visible")));
                 assertEquals(1, e.hiddenKeys().size());
                 assertId(g1, lossyForId, e, 26);
@@ -2316,7 +2316,7 @@ public class IoTest extends AbstractGremlinTest {
         final List<Edge> v1Edges = v1.bothE().toList();
         assertEquals(3, v1Edges.size());
         v1Edges.forEach(e -> {
-            if (e.inV().value("name").next().equals("vadas")) {
+            if (e.inV().values("name").next().equals("vadas")) {
                 assertEquals("knows", e.label());
                 if (assertDouble)
                     assertEquals(0.5d, e.value("weight"), 0.0001d);
@@ -2324,7 +2324,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(0.5f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 7);
-            } else if (e.inV().value("name").next().equals("josh")) {
+            } else if (e.inV().values("name").next().equals("josh")) {
                 assertEquals("knows", e.label());
                 if (assertDouble)
                     assertEquals(1.0, e.value("weight"), 0.0001d);
@@ -2332,7 +2332,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(1.0f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 8);
-            } else if (e.inV().value("name").next().equals("lop")) {
+            } else if (e.inV().values("name").next().equals("lop")) {
                 assertEquals("created", e.label());
                 if (assertDouble)
                     assertEquals(0.4d, e.value("weight"), 0.0001d);
@@ -2354,7 +2354,7 @@ public class IoTest extends AbstractGremlinTest {
         final List<Edge> v2Edges = v2.bothE().toList();
         assertEquals(1, v2Edges.size());
         v2Edges.forEach(e -> {
-            if (e.outV().value("name").next().equals("marko")) {
+            if (e.outV().values("name").next().equals("marko")) {
                 assertEquals("knows", e.label());
                 if (assertDouble)
                     assertEquals(0.5d, e.value("weight"), 0.0001d);
@@ -2376,7 +2376,7 @@ public class IoTest extends AbstractGremlinTest {
         final List<Edge> v3Edges = v3.bothE().toList();
         assertEquals(3, v3Edges.size());
         v3Edges.forEach(e -> {
-            if (e.outV().value("name").next().equals("peter")) {
+            if (e.outV().values("name").next().equals("peter")) {
                 assertEquals("created", e.label());
                 if (assertDouble)
                     assertEquals(0.2d, e.value("weight"), 0.0001d);
@@ -2392,7 +2392,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(0.4f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 11);
-            } else if (e.outV().value("name").next().equals("marko")) {
+            } else if (e.outV().values("name").next().equals("marko")) {
                 assertEquals("created", e.label());
                 if (assertDouble)
                     assertEquals(0.4d, e.value("weight"), 0.0001d);
@@ -2414,7 +2414,7 @@ public class IoTest extends AbstractGremlinTest {
         final List<Edge> v4Edges = v4.bothE().toList();
         assertEquals(3, v4Edges.size());
         v4Edges.forEach(e -> {
-            if (e.inV().value("name").next().equals("ripple")) {
+            if (e.inV().values("name").next().equals("ripple")) {
                 assertEquals("created", e.label());
                 if (assertDouble)
                     assertEquals(1.0d, e.value("weight"), 0.0001d);
@@ -2422,7 +2422,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(1.0f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 10);
-            } else if (e.inV().value("name").next().equals("lop")) {
+            } else if (e.inV().values("name").next().equals("lop")) {
                 assertEquals("created", e.label());
                 if (assertDouble)
                     assertEquals(0.4d, e.value("weight"), 0.0001d);
@@ -2430,7 +2430,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(0.4f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 11);
-            } else if (e.outV().value("name").next().equals("marko")) {
+            } else if (e.outV().values("name").next().equals("marko")) {
                 assertEquals("knows", e.label());
                 if (assertDouble)
                     assertEquals(1.0d, e.value("weight"), 0.0001d);
@@ -2452,7 +2452,7 @@ public class IoTest extends AbstractGremlinTest {
         final List<Edge> v5Edges = v5.bothE().toList();
         assertEquals(1, v5Edges.size());
         v5Edges.forEach(e -> {
-            if (e.outV().value("name").next().equals("josh")) {
+            if (e.outV().values("name").next().equals("josh")) {
                 assertEquals("created", e.label());
                 if (assertDouble)
                     assertEquals(1.0d, e.value("weight"), 0.0001d);
@@ -2474,7 +2474,7 @@ public class IoTest extends AbstractGremlinTest {
         final List<Edge> v6Edges = v6.bothE().toList();
         assertEquals(1, v6Edges.size());
         v6Edges.forEach(e -> {
-            if (e.inV().value("name").next().equals("lop")) {
+            if (e.inV().values("name").next().equals("lop")) {
                 assertEquals("created", e.label());
                 if (assertDouble)
                     assertEquals(0.2d, e.value("weight"), 0.0001d);

@@ -64,12 +64,12 @@ public abstract class InjectTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_out_injectXv2X_name(final Object v1Id, final Object v2Id) {
-            return g.v(v1Id).out().inject(g.v(v2Id)).value("name");
+            return g.v(v1Id).out().inject(g.v(v2Id)).values("name");
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_v1_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id) {
-            return g.v(v1Id).out().<String>value("name").inject("daniel").as("a").map(t -> t.get().length()).path();
+            return g.v(v1Id).out().<String>values("name").inject("daniel").as("a").map(t -> t.get().length()).path();
         }
     }
 
@@ -77,12 +77,12 @@ public abstract class InjectTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_out_injectXv2X_name(final Object v1Id, final Object v2Id) {
-            return g.v(v1Id).out().inject(g.v(v2Id)).<String>value("name").submit(g.compute());
+            return g.v(v1Id).out().inject(g.v(v2Id)).<String>values("name").submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_v1_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id) {
-            return g.v(v1Id).out().<String>value("name").inject("daniel").as("a").map(t -> t.get().length()).path().submit(g.compute());
+            return g.v(v1Id).out().<String>values("name").inject("daniel").as("a").map(t -> t.get().length()).path().submit(g.compute());
         }
     }
 }

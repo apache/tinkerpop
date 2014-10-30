@@ -17,7 +17,7 @@ public abstract class GroovyInjectTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_v1_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id) {
-            g.v(v1Id).out().value('name').inject('daniel').as('a').map { it.length() }.path
+            g.v(v1Id).out().name.inject('daniel').as('a').map { it.length() }.path
         }
     }
 
@@ -30,7 +30,7 @@ public abstract class GroovyInjectTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_v1_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id) {
-            g.v(v1Id).out().value('name').inject('daniel').as('a').map { it.length() }.path
+            g.v(v1Id).out().name.inject('daniel').as('a').map { it.length() }.path
             // TODO: ComputerTestHelper.compute("g.v(${v1Id}).out().value('name').inject('daniel').as('a').map{it.length()}.path", g);
         }
     }

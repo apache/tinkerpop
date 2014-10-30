@@ -2,21 +2,20 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.Element;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ValuesStep<E> extends FlatMapStep<Element, E> {
+public final class ValuesStep<E> extends PropertiesStep<E> {
 
-    private final String[] propertyKeys;
-
-    public ValuesStep(final Traversal traversal, final String... propertyKeys) {
-        super(traversal);
-        this.propertyKeys = propertyKeys;
-        this.setFunction(traverser -> traverser.get().iterators().valueIterator(propertyKeys));
+    public ValuesStep(final Traversal traversal, final boolean hidden, final String... propertyKeys) {
+        super(traversal, hidden, propertyKeys);
+        this.setFunction(traverser -> this.hidden ?
+                (Iterator) traverser.get().iterators().hiddenValueIterator(this.propertyKeys) :
+                (Iterator) traverser.get().iterators().valueIterator(this.propertyKeys));
     }
 
     public String toString() {

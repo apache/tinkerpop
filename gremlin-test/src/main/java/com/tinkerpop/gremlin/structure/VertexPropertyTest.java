@@ -356,8 +356,8 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                 assertEquals(1, g.V().properties("name").properties("acl").count().next().intValue());
                 assertEquals("private", g.V().properties("age").properties("acl").value().next());
                 assertEquals("public", g.V().properties("name").properties("acl").value().next());
-                assertEquals("private", g.V().properties("age").value("acl").next());
-                assertEquals("public", g.V().properties("name").value("acl").next());
+                assertEquals("private", g.V().properties("age").values("acl").next());
+                assertEquals("public", g.V().properties("name").values("acl").next());
                 assertEquals(1, g.V().count().next().intValue());
                 assertEquals(0, g.E().count().next().intValue());
             });
@@ -365,8 +365,8 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             v.property("age").property("acl", "public");
             v.property("age").property("changeDate", 2014);
             tryCommit(g, g -> {
-                assertEquals("public", g.V().properties("age").value("acl").next());
-                assertEquals(2014, g.V().properties("age").value("changeDate").next());
+                assertEquals("public", g.V().properties("age").values("acl").next());
+                assertEquals(2014, g.V().properties("age").values("changeDate").next());
                 assertEquals(1, v.properties("age").valueMap().count().next().intValue());
                 assertEquals(2, v.properties("age").valueMap().next().size());
                 assertTrue(v.properties("age").valueMap().next().containsKey("acl"));

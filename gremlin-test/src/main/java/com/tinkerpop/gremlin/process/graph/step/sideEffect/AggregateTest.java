@@ -106,7 +106,7 @@ public abstract class AggregateTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_valueXnameX_aggregate() {
-            return (Traversal) g.V().value("name").aggregate();
+            return (Traversal) g.V().values("name").aggregate();
         }
 
         @Override
@@ -128,7 +128,7 @@ public abstract class AggregateTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_valueXnameX_aggregate() {
-            return (Traversal) g.V().value("name").aggregate().submit(g.compute());
+            return (Traversal) g.V().values("name").aggregate().submit(g.compute());
         }
 
         @Override

@@ -25,7 +25,7 @@ public abstract class GroovyBackTest {
         @Override
         public Traversal<Vertex, String> get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(
                 final Object v4Id) {
-            g.v(v4Id).out.as('here').has('lang', 'java').back('here').value('name')
+            g.v(v4Id).out.as('here').has('lang', 'java').back('here').name
         }
 
         @Override
@@ -53,7 +53,7 @@ public abstract class GroovyBackTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_asXhereXout_valueXnameX_backXhereX() {
-            g.V().as("here").out.value("name").back("here");
+            g.V().as("here").out.name.back("here");
         }
     }
 
@@ -72,7 +72,7 @@ public abstract class GroovyBackTest {
         @Override
         public Traversal<Vertex, String> get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(
                 final Object v4Id) {
-            ComputerTestHelper.compute("g.v(${v4Id}).out.as('here').has('lang', 'java').back('here').value('name')", g);
+            ComputerTestHelper.compute("g.v(${v4Id}).out.as('here').has('lang', 'java').back('here').name", g);
         }
 
         @Override
@@ -100,7 +100,7 @@ public abstract class GroovyBackTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_asXhereXout_valueXnameX_backXhereX() {
-            ComputerTestHelper.compute("g.V().as('here').out.value('name').back('here')", g);
+            ComputerTestHelper.compute("g.V().as('here').out.name.back('here')", g);
         }
     }
 }

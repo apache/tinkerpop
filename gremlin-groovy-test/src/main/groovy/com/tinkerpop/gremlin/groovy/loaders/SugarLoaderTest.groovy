@@ -64,8 +64,8 @@ class SugarLoaderTest extends AbstractGremlinTest {
         SugarLoader.load()
         assertEquals(g.V(), g.V)
         assertEquals(g.V().out(), g.V.out)
-        assertEquals(g.V().out().value('name'), g.V.out.name)
-        assertEquals(g.v(1).out().out().value('name'), g.v(1).out.out.name);
+        assertEquals(g.V().out().values('name'), g.V.out.name)
+        assertEquals(g.v(1).out().out().values('name'), g.v(1).out.out.name);
         g.v(1).name = 'okram'
         assertEquals('okram', g.v(1).name);
         g.v(1)['name'] = 'marko a. rodriguez'
@@ -109,9 +109,9 @@ class SugarLoaderTest extends AbstractGremlinTest {
         assertEquals(g.V().outE().inV().outE().inV(), g.V.outE.inV.outE.inV)
 
         println("\ng.V.name")
-        println "  Java8-style:  " + clock(5000) { g.V().value('name') }
+        println "  Java8-style:  " + clock(5000) { g.V().values('name') }
         println "  Groovy-style: " + clock(5000) { g.V.name }
-        assertEquals(g.V().value('name'), g.V.name)
+        assertEquals(g.V().values('name'), g.V.name)
 
         println("\ng.v(1).name")
         println "  Java8-style:  " + clock(5000) { g.v(1).value('name') }

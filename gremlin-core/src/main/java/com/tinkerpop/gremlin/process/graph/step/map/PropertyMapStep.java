@@ -15,14 +15,16 @@ import java.util.Map;
 public final class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> {
 
     private final String[] propertyKeys;
+    private final boolean hidden;
 
-    public PropertyMapStep(final Traversal traversal, final String... propertyKeys) {
+    public PropertyMapStep(final Traversal traversal, final boolean hidden, final String... propertyKeys) {
         super(traversal);
         this.propertyKeys = propertyKeys;
+        this.hidden = hidden;
         this.setFunction(traverser ->
                 traverser.get() instanceof Vertex ?
-                        (Map) ElementHelper.vertexPropertyMap((Vertex) traverser.get(), false, propertyKeys) :
-                        (Map) ElementHelper.propertyMap(traverser.get(), false, propertyKeys));
+                        (Map) ElementHelper.vertexPropertyMap((Vertex) traverser.get(), this.hidden, propertyKeys) :
+                        (Map) ElementHelper.propertyMap(traverser.get(), this.hidden, propertyKeys));
     }
 
     public String toString() {

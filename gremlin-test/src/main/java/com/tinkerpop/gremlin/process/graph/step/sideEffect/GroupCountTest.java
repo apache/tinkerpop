@@ -95,12 +95,12 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCount() {
-            return (Traversal) g.V().out("created").value("name").groupCount();
+            return (Traversal) g.V().out("created").values("name").groupCount();
         }
 
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCountXaX() {
-            return (Traversal) g.V().out("created").value("name").groupCount("a");
+            return (Traversal) g.V().out("created").values("name").groupCount("a");
         }
 
         @Override
@@ -132,12 +132,12 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCount() {
-            return (Traversal) g.V().out("created").value("name").groupCount().submit(g.compute());
+            return (Traversal) g.V().out("created").values("name").groupCount().submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCountXaX() {
-            return (Traversal) g.V().out("created").value("name").groupCount("a").submit(g.compute());
+            return (Traversal) g.V().out("created").values("name").groupCount("a").submit(g.compute());
         }
 
         @Override

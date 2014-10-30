@@ -178,20 +178,8 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().hiddens(propertyKeys);
     }
 
-    public default <E2> Neo4jTraversal<A, E2> hiddenValue(final String propertyKey) {
-        return this.start().hiddenValue(propertyKey);
-    }
-
-    public default <E2> Neo4jTraversal<A, E2> hiddenValue(final String propertyKey, final E2 defaultValue) {
-        return this.start().hiddenValue(propertyKey, defaultValue);
-    }
-
-    public default <E2> Neo4jTraversal<A, E2> hiddenValue(final String propertyKey, final Supplier<E2> defaultSupplier) {
-        return this.start().hiddenValue(propertyKey, defaultSupplier);
-    }
-
-    public default <E2> Neo4jTraversal<A, E2> value(final String propertyKey, final Supplier<E2> defaultSupplier) {
-        return this.start().value(propertyKey, defaultSupplier);
+    public default <E2> Neo4jTraversal<A, E2> hiddenValues(final String... propertyKeys) {
+        return this.start().hiddenValues(propertyKeys);
     }
 
     public default <E2> Neo4jTraversal<A, E2> values(final String... propertyKeys) {

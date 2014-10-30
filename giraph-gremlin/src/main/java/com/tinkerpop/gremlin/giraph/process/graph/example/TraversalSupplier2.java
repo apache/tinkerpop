@@ -11,6 +11,6 @@ import java.util.function.Supplier;
 public class TraversalSupplier2 implements Supplier<Traversal> {
     @Override
     public Traversal get() {
-        return GiraphGraph.open().V().<String>value("name").map(s -> s.get().length()).groupCount(i -> i.get() + 100);
+        return GiraphGraph.open().V().<String>values("name").map(s -> s.get().length()).groupCount(i -> i.get() + 100);
     }
 }

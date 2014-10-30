@@ -38,11 +38,11 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
         assertVertexEdgeCounts(3, 2).accept(subgraph);
         subgraph.E().forEachRemaining(e -> {
             assertEquals("knows", e.label());
-            assertEquals("marko", e.outV().value("name").next());
-            assertEquals(new Integer(29), e.outV().<Integer>value("age").next());
+            assertEquals("marko", e.outV().values("name").next());
+            assertEquals(new Integer(29), e.outV().<Integer>values("age").next());
             assertEquals("person", e.outV().label().next());
 
-            final String name = e.inV().<String>value("name").next();
+            final String name = e.inV().<String>values("name").next();
             if (name.equals("vadas"))
                 assertEquals(0.5d, e.value("weight"), 0.0001d);
             else if (name.equals("josh"))
@@ -74,12 +74,12 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Graph> get_g_v1_outE_subgraphXknowsX_name_capXsgX(final Object v1Id, final Graph subgraph) {
-            return g.v(v1Id).with("sg", () -> subgraph).outE().subgraph("sg", e -> e.label().equals("knows")).value("name").cap("sg");
+            return g.v(v1Id).with("sg", () -> subgraph).outE().subgraph("sg", e -> e.label().equals("knows")).values("name").cap("sg");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_inE_subgraphXcreatedX_name(final Graph subgraph) {
-            return g.V().with("sg", () -> subgraph).inE().subgraph("sg", e -> e.label().equals("created")).value("name");
+            return g.V().with("sg", () -> subgraph).inE().subgraph("sg", e -> e.label().equals("created")).values("name");
         }
     }
 }

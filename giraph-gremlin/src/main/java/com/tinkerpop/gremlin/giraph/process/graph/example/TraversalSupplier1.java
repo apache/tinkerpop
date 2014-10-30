@@ -11,6 +11,6 @@ import java.util.function.Supplier;
 public class TraversalSupplier1 implements Supplier<Traversal> {
     @Override
     public Traversal get() {
-        return GiraphGraph.open().V().out().out().value("name");
+        return GiraphGraph.open().V().out().out().values("name");
     }
 }

@@ -15,17 +15,17 @@ public abstract class GroovyDedupTest {
     public static class StandardTest extends DedupTest {
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedup_name() {
-            g.V.both.dedup.value('name')
+            g.V.both.dedup.name
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedupXlangX_name() {
-            g.V.both.dedup { it.get().property('lang').orElse(null) }.value('name')
+            g.V.both.dedup { it.get().property('lang').orElse(null) }.name
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_both_name_orderXa_bX_dedup() {
-            g.V.both.name.order { a, b -> a.get() <=> b.get() }.dedup
+        public Traversal<Vertex, String> get_g_V_both_propertiesXnameX_orderXa_bX_dedup_value() {
+            g.V().both().properties('name').order { a, b -> a.get().value() <=> b.get().value() }.dedup.value
         }
     }
 
@@ -41,8 +41,8 @@ public abstract class GroovyDedupTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_both_name_orderXa_bX_dedup() {
-            ComputerTestHelper.compute("g.V.both.name.order { a, b -> a.get() <=> b.get() }.dedup", g);
+        public Traversal<Vertex, String> get_g_V_both_propertiesXnameX_orderXa_bX_dedup_value() {
+            ComputerTestHelper.compute("g.V.both.properties('name').order { a, b -> a.get().value() <=> b.get().value() }.dedup.value", g);
         }
     }
 }

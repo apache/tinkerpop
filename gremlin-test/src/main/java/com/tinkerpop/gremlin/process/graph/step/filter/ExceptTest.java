@@ -123,7 +123,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX(final Object v1Id) {
-            return g.v(v1Id).out("created").in("created").except(g.v(v1Id)).value("name");
+            return g.v(v1Id).out("created").in("created").except(g.v(v1Id)).values("name");
         }
 
         @Override
@@ -156,7 +156,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX(final Object v1Id) {
-            return g.v(v1Id).out("created").in("created").except(g.v(v1Id)).<String>value("name").submit(g.compute());
+            return g.v(v1Id).out("created").in("created").except(g.v(v1Id)).<String>values("name").submit(g.compute());
         }
 
         @Override

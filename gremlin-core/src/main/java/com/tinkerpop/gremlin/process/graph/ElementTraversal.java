@@ -177,7 +177,7 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().hiddens(propertyKeys);
     }
 
-    public default <E2> GraphTraversal<A, E2> hiddenValue(final String propertyKey) {
+    /*public default <E2> GraphTraversal<A, E2> hiddenValue(final String propertyKey) {
         return this.start().hiddenValue(propertyKey);
     }
 
@@ -187,14 +187,18 @@ public abstract interface ElementTraversal<A extends Element> {
 
     public default <E2> GraphTraversal<A, E2> hiddenValue(final String propertyKey, final Supplier<E2> defaultSupplier) {
         return this.start().hiddenValue(propertyKey, defaultSupplier);
-    }
+
 
     public default <E2> GraphTraversal<A, E2> value(final String propertyKey, final Supplier<E2> defaultSupplier) {
         return this.start().value(propertyKey, defaultSupplier);
-    }
+    }*/
 
     public default <E2> GraphTraversal<A, E2> values(final String... propertyKeys) {
         return this.start().values(propertyKeys);
+    }
+
+    public default <E2> GraphTraversal<A, E2> hiddenValues(final String... propertyKeys) {
+        return this.start().hiddenValues(propertyKeys);
     }
 
     public default GraphTraversal<A, Path> path(final Function... pathFunctions) {

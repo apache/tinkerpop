@@ -170,7 +170,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_valueXnameX_order_asXbX_selectXname_itX() {
-            return g.V().as("a").value("name").order().as("b").select(v -> ((Vertex) v).value("name"), Function.identity());
+            return g.V().as("a").values("name").order().as("b").select(v -> ((Vertex) v).value("name"), Function.identity());
         }
 
 
@@ -218,7 +218,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_valueXnameX_order_asXbX_selectXname_itX() {
             // TODO: Micro elements do not store properties
-            return g.V().as("a").value("name").order().as("b").select(v -> ((Vertex) v).value("name"), Function.identity());
+            return g.V().as("a").values("name").order().as("b").select(v -> ((Vertex) v).value("name"), Function.identity());
         }
     }
 }

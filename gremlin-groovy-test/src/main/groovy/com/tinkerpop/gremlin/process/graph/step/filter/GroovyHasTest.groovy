@@ -82,7 +82,7 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_hasXperson_name_markoX_age() {
-            g.V.has('person', 'name', 'marko').value('age');
+            g.V.has('person', 'name', 'marko').age;
         }
     }
 
@@ -155,7 +155,7 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_hasXperson_name_markoX_age() {
-            ComputerTestHelper.compute("g.V.has('person', 'name', 'marko').value('age')", g);
+            ComputerTestHelper.compute("g.V.has('person', 'name', 'marko').age", g);
         }
     }
 }

@@ -600,12 +600,12 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_outX1_knowsX_name(final Object v1Id) {
-            return g.v(v1Id).out(1, "knows").value("name");
+            return g.v(v1Id).out(1, "knows").values("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_bothX1_createdX_name() {
-            return g.V().both(1, "created").value("name");
+            return g.V().both(1, "created").values("name");
         }
 
         @Override
@@ -645,17 +645,17 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v4_bothX1X_name(final Object v4Id) {
-            return g.v(v4Id).both(1).value("name");
+            return g.v(v4Id).both(1).values("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_v4_bothX2X_name(final Object v4Id) {
-            return g.v(v4Id).both(2).value("name");
+            return g.v(v4Id).both(2).values("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_inEX2_knowsX_outV_name() {
-            return g.V().inE(2, "knows").outV().value("name");
+            return g.V().inE(2, "knows").outV().values("name");
         }
 
         @Override
@@ -675,12 +675,12 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_out_outE_inV_inE_inV_both_name() {
-            return g.V().out().outE().inV().inE().inV().both().value("name");
+            return g.V().out().outE().inV().inE().inV().both().values("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_v1_outEXknowsX_bothV_name(final Object v1Id) {
-            return g.v(v1Id).outE("knows").bothV().value("name");
+            return g.v(v1Id).outE("knows").bothV().values("name");
         }
 
         @Override
@@ -730,7 +730,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_out_valueXnameX(final Object v1Id) {
-            return g.v(v1Id).out().value("name");
+            return g.v(v1Id).out().values("name");
         }
 
         @Override
@@ -766,22 +766,22 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_outX1_knowsX_name(final Object v1Id) {
-            return g.v(v1Id).out(1, "knows").<String>value("name").submit(g.compute());
+            return g.v(v1Id).out(1, "knows").<String>values("name").submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_bothX1_createdX_name() {
-            return g.V().both(1, "created").<String>value("name").submit(g.compute());
+            return g.V().both(1, "created").<String>values("name").submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, String> get_g_v4_bothX1X_name(final Object v4Id) {
-            return g.v(v4Id).both(1).<String>value("name").submit(g.compute());
+            return g.v(v4Id).both(1).<String>values("name").submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, String> get_g_v4_bothX2X_name(final Object v4Id) {
-            return g.v(v4Id).both(2).<String>value("name").submit(g.compute());
+            return g.v(v4Id).both(2).<String>values("name").submit(g.compute());
         }
 
         @Override
@@ -821,7 +821,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_inEX2_knowsX_outV_name() {
-            return g.V().inE(2, "knows").outV().<String>value("name").submit(g.compute());
+            return g.V().inE(2, "knows").outV().<String>values("name").submit(g.compute());
         }
 
         @Override
@@ -841,12 +841,12 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_out_outE_inV_inE_inV_both_name() {
-            return g.V().out().outE().inV().inE().inV().both().<String>value("name").submit(g.compute());
+            return g.V().out().outE().inV().inE().inV().both().<String>values("name").submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, String> get_g_v1_outEXknowsX_bothV_name(final Object v1Id) {
-            return g.v(v1Id).outE("knows").bothV().<String>value("name").submit(g.compute());
+            return g.v(v1Id).outE("knows").bothV().<String>values("name").submit(g.compute());
         }
 
         @Override
@@ -896,7 +896,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_out_valueXnameX(final Object v1Id) {
-            return g.v(v1Id).out().<String>value("name").submit(g.compute());
+            return g.v(v1Id).out().<String>values("name").submit(g.compute());
         }
 
         @Override

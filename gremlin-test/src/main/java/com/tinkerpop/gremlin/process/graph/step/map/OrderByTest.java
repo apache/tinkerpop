@@ -65,17 +65,17 @@ public abstract class OrderByTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_orderByXname_incrX_name() {
-            return g.V().orderBy("name", Order.incr).value("name");
+            return g.V().orderBy("name", Order.incr).values("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_orderByXnameX_name() {
-            return g.V().orderBy("name").value("name");
+            return g.V().orderBy("name").values("name");
         }
 
         @Override
         public Traversal<Vertex, Double> get_g_V_outE_orderByXweight_decrX_weight() {
-            return g.V().outE().orderBy("weight", Order.decr).value("weight");
+            return g.V().outE().orderBy("weight", Order.decr).values("weight");
         }
     }
 }

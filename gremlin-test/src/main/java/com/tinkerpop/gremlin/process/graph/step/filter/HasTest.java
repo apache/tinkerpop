@@ -283,7 +283,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_hasXperson_name_markoX_age() {
-            return g.V().has("person", "name", "marko").value("age");
+            return g.V().has("person", "name", "marko").values("age");
         }
     }
 
@@ -359,7 +359,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_hasXperson_name_markoX_age() {
-            return g.V().has("person", "name", "marko").<Integer>value("age").submit(g.compute());
+            return g.V().has("person", "name", "marko").<Integer>values("age").submit(g.compute());
         }
     }
 }

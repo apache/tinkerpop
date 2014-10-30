@@ -246,20 +246,12 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.hiddenMap(arg0);
 	}
 
-	public default <E2> Neo4jTraversal<S, E2> hiddenValue(java.lang.String arg0) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.hiddenValue(arg0);
-	}
-
-	public default <E2> Neo4jTraversal<S, E2> hiddenValue(java.lang.String arg0, E2 arg1) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.hiddenValue(arg0, arg1);
-	}
-
-	public default <E2> Neo4jTraversal<S, E2> hiddenValue(java.lang.String arg0, java.util.function.Supplier<E2> arg1) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.hiddenValue(arg0, arg1);
-	}
-
 	public default <E2> Neo4jTraversal<S, java.util.Map<java.lang.String, E2>> hiddenValueMap(java.lang.String... arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.hiddenValueMap(arg0);
+	}
+
+	public default <E2> Neo4jTraversal<S, E2> hiddenValues(java.lang.String... arg0) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.hiddenValues(arg0);
 	}
 
 	public default <E2> Neo4jTraversal<S, ? extends com.tinkerpop.gremlin.structure.Property<E2>> hiddens(java.lang.String... arg0) {
@@ -540,18 +532,6 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 
 	public default <E2> Neo4jTraversal<S, E2> value() {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.value();
-	}
-
-	public default <E2> Neo4jTraversal<S, E2> value(java.lang.String arg0) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.value(arg0);
-	}
-
-	public default <E2> Neo4jTraversal<S, E2> value(java.lang.String arg0, E2 arg1) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.value(arg0, arg1);
-	}
-
-	public default <E2> Neo4jTraversal<S, E2> value(java.lang.String arg0, java.util.function.Supplier<E2> arg1) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.value(arg0, arg1);
 	}
 
 	public default <E2> Neo4jTraversal<S, java.util.Map<java.lang.String, E2>> valueMap(java.lang.String... arg0) {

@@ -118,7 +118,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_v1_valueXnameX_path(final Object v1Id) {
-            return g.v(v1Id).identity().value("name").path();
+            return g.v(v1Id).identity().values("name").path();
         }
 
         @Override
@@ -153,7 +153,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_v1_valueXnameX_path(final Object v1Id) {
-            return g.v(v1Id).identity().value("name").path().submit(g.compute());
+            return g.v(v1Id).identity().values("name").path().submit(g.compute());
         }
 
         @Override

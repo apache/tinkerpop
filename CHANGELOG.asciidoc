@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `GraphTraversal.value(String)` no longer exists. Instead, use `GraphTraversal.
+* `HiddenXXXStep` no longer exist. `PropertyXXXStep` and `ValueXXXStep` take a boolean to denote hidden accesss.
 * `Path.get(String)` returns the object if only one object is referenced by label, else it returns a `List` of referenced objects.
 * Added overload to `GremlinKryo` to allow a serializer to be configured as a `Function<Kryo,Serializer>` to allow better flexibility in serializer creation.
 * Added a method to `GraphProvider` so that implementers could specify a custom built `GremlinKryo` class in case their implementation had custom classes to be serialized.

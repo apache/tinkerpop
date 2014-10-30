@@ -47,7 +47,7 @@ public class Neo4jCypherStartTest extends BaseNeo4jGraphTest {
 
         final Map<String, Object> bindings = new HashMap<>();
         bindings.put("ids", idList);
-        final Iterator<String> result = g.cypher("START n=node({ids}) RETURN n", bindings).select("n").value("name");
+        final Iterator<String> result = g.cypher("START n=node({ids}) RETURN n", bindings).select("n").values("name");
         assertNotNull(result);
         assertTrue(result.hasNext());
         assertEquals("marko", result.next());
@@ -59,7 +59,7 @@ public class Neo4jCypherStartTest extends BaseNeo4jGraphTest {
         this.g.addVertex("name", "marko", "age", 30, "color", "yellow");
 
         this.g.tx().commit();
-        final Traversal result = g.cypher("MATCH (a {name:\"marko\"}) RETURN a").select("a").has("age", 29).value("color");
+        final Traversal result = g.cypher("MATCH (a {name:\"marko\"}) RETURN a").select("a").has("age", 29).values("color");
         assertNotNull(result);
         assertTrue(result.hasNext());
         assertEquals("red", result.next().toString());
