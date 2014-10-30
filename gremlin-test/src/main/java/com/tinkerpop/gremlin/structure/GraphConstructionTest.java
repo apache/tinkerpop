@@ -40,20 +40,6 @@ public class GraphConstructionTest extends AbstractGremlinTest {
     }
 
     /**
-     * Gremlin Structure  implementations should have private constructor as all graphs.  They should be only
-     * instantiated through the {@link com.tinkerpop.gremlin.structure.util.GraphFactory} or the static
-     * {@link com.tinkerpop.gremlin.structure.util.GraphFactory#open(org.apache.commons.configuration.Configuration)}
-     * method on the Graph implementation itself.
-     */
-    @Test
-    public void shouldHavePrivateConstructor() {
-        assertTrue(Arrays.asList(g.getClass().getConstructors()).stream().allMatch(c -> {
-            final int modifier = c.getModifiers();
-            return Modifier.isPrivate(modifier) || Modifier.isPrivate(modifier);
-        }));
-    }
-
-    /**
      * Graphs should be empty on creation.
      */
     @Test
@@ -62,7 +48,7 @@ public class GraphConstructionTest extends AbstractGremlinTest {
     }
 
     /**
-     * A {@link Graph}
+     * A {@link Graph} should maintain the original {@code Configuration} object passed to it via {@link GraphFactory}.
      */
     @Test
     public void shouldMaintainOriginalConfigurationObjectGivenToFactory() {
