@@ -39,6 +39,7 @@ public interface Vertex extends Element, VertexTraversal {
      */
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues);
 
+    @Override
     public default <V> VertexProperty<V> property(final String key) {
         final Iterator<VertexProperty<V>> iterator = Graph.Key.isHidden(key) ?
                 this.iterators().hiddenPropertyIterator(Graph.Key.unHide(key)) :
@@ -54,6 +55,7 @@ public interface Vertex extends Element, VertexTraversal {
         }
     }
 
+    @Override
     public <V> VertexProperty<V> property(final String key, final V value);
 
     public default <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
