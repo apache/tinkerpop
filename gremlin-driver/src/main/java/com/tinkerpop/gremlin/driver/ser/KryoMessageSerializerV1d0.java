@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -86,7 +87,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
         }
 
         if (!classNameList.isEmpty()) {
-            final List<Pair> classList = classNameList.stream().map(serializerDefinition -> {
+            final List<Pair<Class, Function<Kryo,Serializer>>> classList = classNameList.stream().map(serializerDefinition -> {
                 String className;
                 Optional<String> serializerName;
                 if (serializerDefinition.contains(";")) {
@@ -110,16 +111,13 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
                     } else
                         serializer = null;
 
-                    return Pair.with(clazz, serializer);
+                    return Pair.<Class, Function<Kryo,Serializer>>with(clazz, kryo -> serializer);
                 } catch (Exception ex) {
                     throw new IllegalStateException("Class could not be found", ex);
                 }
             }).collect(Collectors.toList());
 
-            final Pair[] clazzes = new Pair[classList.size()];
-            classList.toArray(clazzes);
-
-            builder.addCustom(clazzes);
+            classList.forEach(c -> builder.addCustom(c.getValue0(), c.getValue1()));
         }
 
         this.serializeToString = Boolean.parseBoolean(config.getOrDefault(TOKEN_SERIALIZE_RESULT_TO_STRING, "false").toString());

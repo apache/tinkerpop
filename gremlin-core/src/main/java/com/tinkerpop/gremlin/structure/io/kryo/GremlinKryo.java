@@ -13,8 +13,6 @@ import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.process.util.BulkSet;
-import com.tinkerpop.gremlin.process.util.ImmutablePath;
-import com.tinkerpop.gremlin.process.util.MutablePath;
 import com.tinkerpop.gremlin.process.util.StepTimer;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
@@ -31,7 +29,6 @@ import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import com.tinkerpop.gremlin.structure.util.referenced.ReferencedPath;
 import de.javakaffee.kryoserializers.UUIDSerializer;
-import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
 import java.io.IOException;
@@ -52,13 +49,13 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -67,13 +64,13 @@ import java.util.stream.Collectors;
  */
 public final class GremlinKryo {
     static final byte[] GIO = "gio".getBytes();
-    private final List<Triplet<Class, Serializer, Integer>> serializationList;
+    private final List<Triplet<Class, Function<Kryo, Serializer>, Integer>> serializationList;
     private final HeaderWriter headerWriter;
     private final HeaderReader headerReader;
 
     public static final byte DEFAULT_EXTENDED_VERSION = Byte.MIN_VALUE;
 
-    private GremlinKryo(final List<Triplet<Class, Serializer, Integer>> serializationList,
+    private GremlinKryo(final List<Triplet<Class, Function<Kryo, Serializer>, Integer>> serializationList,
                         final HeaderWriter headerWriter,
                         final HeaderReader headerReader) {
         this.serializationList = serializationList;
@@ -86,8 +83,11 @@ public final class GremlinKryo {
         kryo.addDefaultSerializer(Map.Entry.class, new EntrySerializer());
         kryo.setRegistrationRequired(true);
         serializationList.forEach(p -> {
-            final Serializer serializer = Optional.ofNullable(p.getValue1()).orElse(kryo.getDefaultSerializer(p.getValue0()));
-            kryo.register(p.getValue0(), serializer, p.getValue2());
+            final Function<Kryo, Serializer> serializer = p.getValue1();
+            if (serializer == null)
+                kryo.register(p.getValue0(), kryo.getDefaultSerializer(p.getValue0()), p.getValue2());
+            else
+                kryo.register(p.getValue0(), serializer.apply(kryo), p.getValue2());
         });
         return kryo;
     }
@@ -131,9 +131,14 @@ public final class GremlinKryo {
         public Builder addCustom(final Class... custom);
 
         /**
-         * Add custom classes to serializes with custom serialization.
+         * Add custom class to serializes with custom serialization.
          */
-        public Builder addCustom(final Pair<Class, Serializer>... custom);
+        public Builder addCustom(final Class clazz, final Serializer serializer);
+
+        /**
+         * Add custom class to serializes with custom serialization as returned from a {@link Function}.
+         */
+        public Builder addCustom(final Class clazz, final Function<Kryo, Serializer> serializer);
 
         /**
          * If using custom classes it might be useful to tag the version stamped to the serialization with a custom
@@ -190,72 +195,70 @@ public final class GremlinKryo {
          * Note that the following are pre-registered boolean, Boolean, byte, Byte, char, Character, double, Double,
          * int, Integer, float, Float, long, Long, short, Short, String, void.
          */
-        private final List<Triplet<Class, Serializer, Integer>> serializationList = new ArrayList<Triplet<Class, Serializer, Integer>>() {{
-            add(Triplet.<Class, Serializer, Integer>with(byte[].class, null, 25));
-            add(Triplet.<Class, Serializer, Integer>with(char[].class, null, 26));
-            add(Triplet.<Class, Serializer, Integer>with(short[].class, null, 27));
-            add(Triplet.<Class, Serializer, Integer>with(int[].class, null, 28));
-            add(Triplet.<Class, Serializer, Integer>with(long[].class, null, 29));
-            add(Triplet.<Class, Serializer, Integer>with(float[].class, null, 30));
-            add(Triplet.<Class, Serializer, Integer>with(double[].class, null, 31));
-            add(Triplet.<Class, Serializer, Integer>with(String[].class, null, 32));
-            add(Triplet.<Class, Serializer, Integer>with(Object[].class, null, 33));
-            add(Triplet.<Class, Serializer, Integer>with(ArrayList.class, null, 10));
-            add(Triplet.<Class, Serializer, Integer>with(BigInteger.class, null, 34));
-            add(Triplet.<Class, Serializer, Integer>with(BigDecimal.class, null, 35));
-            add(Triplet.<Class, Serializer, Integer>with(Calendar.class, null, 39));
-            add(Triplet.<Class, Serializer, Integer>with(Class.class, null, 41));
-            add(Triplet.<Class, Serializer, Integer>with(Collection.class, null, 37));
-            add(Triplet.<Class, Serializer, Integer>with(Collections.EMPTY_LIST.getClass(), null, 51));
-            add(Triplet.<Class, Serializer, Integer>with(Collections.EMPTY_MAP.getClass(), null, 52));
-            add(Triplet.<Class, Serializer, Integer>with(Collections.EMPTY_SET.getClass(), null, 53));
-            add(Triplet.<Class, Serializer, Integer>with(Collections.singleton(null).getClass(), null, 54));
-            add(Triplet.<Class, Serializer, Integer>with(Collections.singletonList(null).getClass(), null, 24));
-            add(Triplet.<Class, Serializer, Integer>with(Collections.singletonMap(null, null).getClass(), null, 23));
-            add(Triplet.<Class, Serializer, Integer>with(Contains.class, null, 49));
-            add(Triplet.<Class, Serializer, Integer>with(Currency.class, null, 40));
-            add(Triplet.<Class, Serializer, Integer>with(Date.class, null, 38));
-            add(Triplet.<Class, Serializer, Integer>with(Direction.class, null, 12));
-            add(Triplet.<Class, Serializer, Integer>with(DetachedEdge.class, null, 21));
-            add(Triplet.<Class, Serializer, Integer>with(DetachedVertexProperty.class, null, 20));
-            add(Triplet.<Class, Serializer, Integer>with(DetachedProperty.class, null, 18));
-            add(Triplet.<Class, Serializer, Integer>with(DetachedVertex.class, null, 19));
-            add(Triplet.<Class, Serializer, Integer>with(EdgeTerminator.class, null, 14));
-            add(Triplet.<Class, Serializer, Integer>with(EnumSet.class, null, 46));
-            add(Triplet.<Class, Serializer, Integer>with(HashMap.class, null, 11));
-            add(Triplet.<Class, Serializer, Integer>with(HashMap.Entry.class, null, 16));
-            add(Triplet.<Class, Serializer, Integer>with(KryoSerializable.class, null, 36));
-            add(Triplet.<Class, Serializer, Integer>with(LinkedHashMap.class, null, 47));
-            add(Triplet.<Class, Serializer, Integer>with(LINKED_HASH_MAP_ENTRY_CLASS, null, 15));
-            add(Triplet.<Class, Serializer, Integer>with(Locale.class, null, 22));
-            add(Triplet.<Class, Serializer, Integer>with(StringBuffer.class, null, 43));
-            add(Triplet.<Class, Serializer, Integer>with(StringBuilder.class, null, 44));
-            add(Triplet.<Class, Serializer, Integer>with(T.class, null, 48));
-            add(Triplet.<Class, Serializer, Integer>with(TimeZone.class, null, 42));
-            add(Triplet.<Class, Serializer, Integer>with(TreeMap.class, null, 45));
-            add(Triplet.<Class, Serializer, Integer>with(TreeSet.class, null, 50));
-            add(Triplet.<Class, Serializer, Integer>with(UUID.class, new UUIDSerializer(), 17));
-            add(Triplet.<Class, Serializer, Integer>with(VertexTerminator.class, null, 13));
+        private final List<Triplet<Class, Function<Kryo, Serializer>, Integer>> serializationList = new ArrayList<Triplet<Class, Function<Kryo, Serializer>, Integer>>() {{
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(byte[].class, null, 25));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(char[].class, null, 26));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(short[].class, null, 27));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(int[].class, null, 28));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(long[].class, null, 29));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(float[].class, null, 30));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(double[].class, null, 31));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(String[].class, null, 32));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Object[].class, null, 33));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ArrayList.class, null, 10));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(BigInteger.class, null, 34));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(BigDecimal.class, null, 35));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Calendar.class, null, 39));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Class.class, null, 41));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Collection.class, null, 37));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Collections.EMPTY_LIST.getClass(), null, 51));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Collections.EMPTY_MAP.getClass(), null, 52));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Collections.EMPTY_SET.getClass(), null, 53));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Collections.singleton(null).getClass(), null, 54));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Collections.singletonList(null).getClass(), null, 24));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Collections.singletonMap(null, null).getClass(), null, 23));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Contains.class, null, 49));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Currency.class, null, 40));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Date.class, null, 38));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Direction.class, null, 12));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DetachedEdge.class, null, 21));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DetachedVertexProperty.class, null, 20));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DetachedProperty.class, null, 18));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DetachedVertex.class, null, 19));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(EdgeTerminator.class, null, 14));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(EnumSet.class, null, 46));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HashMap.class, null, 11));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HashMap.Entry.class, null, 16));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(KryoSerializable.class, null, 36));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedHashMap.class, null, 47));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LINKED_HASH_MAP_ENTRY_CLASS, null, 15));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Locale.class, null, 22));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StringBuffer.class, null, 43));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StringBuilder.class, null, 44));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(T.class, null, 48));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TimeZone.class, null, 42));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TreeMap.class, null, 45));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TreeSet.class, null, 50));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(UUID.class, kryo -> new UUIDSerializer(), 17));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(VertexTerminator.class, null, 13));
 
-            add(Triplet.<Class, Serializer, Integer>with(Edge.class, new ElementSerializer.EdgeSerializer(), 65));
-            add(Triplet.<Class, Serializer, Integer>with(Vertex.class, new ElementSerializer.VertexSerializer(), 66));
-            add(Triplet.<Class, Serializer, Integer>with(Property.class, new ElementSerializer.PropertySerializer(), 67));
-            add(Triplet.<Class, Serializer, Integer>with(VertexProperty.class, new ElementSerializer.VertexPropertySerializer(), 68));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Edge.class, kryo -> new ElementSerializer.EdgeSerializer(), 65));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Vertex.class, kryo -> new ElementSerializer.VertexSerializer(), 66));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Property.class, kryo -> new ElementSerializer.PropertySerializer(), 67));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(VertexProperty.class, kryo -> new ElementSerializer.VertexPropertySerializer(), 68));
 
-            add(Triplet.<Class, Serializer, Integer>with(SimpleTraverser.class, null, 55));
-            add(Triplet.<Class, Serializer, Integer>with(PathTraverser.class, null, 56));
-            add(Triplet.<Class, Serializer, Integer>with(TraverserSet.class, null, 58));
-            add(Triplet.<Class, Serializer, Integer>with(Path.class, null, 59));
-            //add(Triplet.<Class, Serializer, Integer>with(MutablePath.class, null, 72));
-            //add(Triplet.<Class, Serializer, Integer>with(ImmutablePath.class, null, 73));
-            add(Triplet.<Class, Serializer, Integer>with(DetachedPath.class, null, 60));
-            add(Triplet.<Class, Serializer, Integer>with(Tree.class, null, 61));
-            add(Triplet.<Class, Serializer, Integer>with(HashSet.class, null, 62));
-            add(Triplet.<Class, Serializer, Integer>with(ReferencedPath.class, null, 63));
-            add(Triplet.<Class, Serializer, Integer>with(BulkSet.class, null, 64));
-            add(Triplet.<Class, Serializer, Integer>with(StepTimer.class, null, 69));
-            add(Triplet.<Class, Serializer, Integer>with(TraversalMetrics.class, null, 70));
-            add(Triplet.<Class, Serializer, Integer>with(LinkedHashSet.class, null, 71));// ***LAST ID***
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(SimpleTraverser.class, null, 55));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(PathTraverser.class, null, 56));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TraverserSet.class, null, 58));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Path.class, null, 59));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DetachedPath.class, null, 60));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Tree.class, null, 61));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HashSet.class, null, 62));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ReferencedPath.class, null, 63));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(BulkSet.class, null, 64));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StepTimer.class, null, 69));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TraversalMetrics.class, null, 70));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedHashSet.class, null, 71));// ***LAST ID***
         }};
 
         private static final byte major = 1;
@@ -277,8 +280,8 @@ public final class GremlinKryo {
         public Builder addCustom(final Class... custom) {
             if (custom != null && custom.length > 0)
                 serializationList.addAll(Arrays.asList(custom).stream()
-                        .map(c -> Triplet.<Class, Serializer, Integer>with(c, null, currentSerializationId.getAndIncrement()))
-                        .collect(Collectors.<Triplet<Class, Serializer, Integer>>toList()));
+                        .map(c -> Triplet.<Class, Function<Kryo, Serializer>, Integer>with(c, null, currentSerializationId.getAndIncrement()))
+                        .collect(Collectors.<Triplet<Class, Function<Kryo, Serializer>, Integer>>toList()));
             return this;
         }
 
@@ -286,13 +289,17 @@ public final class GremlinKryo {
          * {@inheritDoc}
          */
         @Override
-        public Builder addCustom(final Pair<Class, Serializer>... custom) {
-            if (custom != null && custom.length > 0) {
-                serializationList.addAll(Arrays.asList(custom).stream()
-                        .map(c -> Triplet.with(c.getValue0(), c.getValue1(), currentSerializationId.getAndIncrement()))
-                        .collect(Collectors.<Triplet<Class, Serializer, Integer>>toList()));
-            }
+        public Builder addCustom(final Class clazz, final Serializer serializer) {
+            serializationList.add(Triplet.with(clazz, kryo -> serializer, currentSerializationId.getAndIncrement()));
+            return this;
+        }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Builder addCustom(final Class clazz, final Function<Kryo, Serializer> serializer) {
+            serializationList.add(Triplet.with(clazz, serializer, currentSerializationId.getAndIncrement()));
             return this;
         }
 
