@@ -75,6 +75,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
      * @return the comparison of the two objects of the traversers
      * @throws ClassCastException if the object of the traverser is not comparable
      */
+    @Override
     public default int compareTo(final Traverser<T> other) throws ClassCastException {
         final T a = this.get();
         if (a instanceof Comparable)
@@ -199,6 +200,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
          * @param hostVertex The vertex that is hosting the traverser
          * @return The inflated traverser
          */
+        @Override
         public Admin<T> attach(final Vertex hostVertex);
 
         /**
