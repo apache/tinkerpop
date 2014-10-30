@@ -25,9 +25,9 @@ public final class OrderByStep<S extends Element, C> extends BarrierStep<S> impl
         this.setConsumer(traversers -> traversers.sort(this.comparator));
     }
 
-    /*public String getElementKey() {
+    public String getElementKey() {
         return this.elementKey;
-    }*/
+    }
 
     @Override
     public Comparator<Traverser<S>> getComparator() {
