@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.commons.configuration.Configuration;
@@ -150,6 +151,22 @@ public interface GraphProvider {
      * @param loadGraphWith the annotation for the currently running test
      */
     public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith);
+
+
+    /**
+     * Construct a configured {@link GremlinKryo} instance.  The default implementation simply returns the most
+     * current version of the efault {@link GremlinKryo} configuration.  This object should be satisfactory for
+     * most implementations.
+     * <br/>
+     * The only reason to override this method is if the {@link Graph} implementation utilizes custom classes
+     * somewhere that will be serialized in the course of test suite execution.  The most common issue with respect
+     * to this situation is the serialization of {@link Element} identifiers that are returned as custom classes.
+     * If an implementation does that, then they will want to construct a {@link GremlinKryo} instance and register
+     * their serializer to it prior to returning it from this method.
+     */
+    public default GremlinKryo createConfiguredGremlinKryo() {
+        return GremlinKryo.build().create();
+    }
 
     /**
      * Get the set of concrete implementations of certain classes and interfaces utilized by the test suite. The
