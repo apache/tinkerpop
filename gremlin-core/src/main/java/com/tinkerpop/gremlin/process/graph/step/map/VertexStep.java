@@ -13,7 +13,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implements Reversible {
+public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implements Reversible {
 
     private final String[] edgeLabels;
     private Direction direction;
