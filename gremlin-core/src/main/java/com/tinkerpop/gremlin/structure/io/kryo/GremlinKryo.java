@@ -28,12 +28,12 @@ import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import com.tinkerpop.gremlin.structure.util.referenced.ReferencedPath;
-import de.javakaffee.kryoserializers.UUIDSerializer;
 import org.javatuples.Triplet;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -240,6 +240,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TreeMap.class, null, 45));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TreeSet.class, null, 50));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(UUID.class, kryo -> new UUIDSerializer(), 17));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(URI.class, kryo -> new URISerializer(), 72));     // ***LAST ID***
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(VertexTerminator.class, null, 13));
 
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Edge.class, kryo -> new ElementSerializer.EdgeSerializer(), 65));
@@ -258,7 +259,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(BulkSet.class, null, 64));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StepTimer.class, null, 69));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TraversalMetrics.class, null, 70));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedHashSet.class, null, 71));// ***LAST ID***
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedHashSet.class, null, 71));
         }};
 
         private static final byte major = 1;
