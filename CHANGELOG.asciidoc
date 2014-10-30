@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `Path.get(String)` returns the object if only one object is referenced by label, else it returns a `List` of referenced objects.
 * Added `Traversal.forEachRemaining(class,consumer)` for those traversals whose end type is different from declared due to strategy rewriting.
 * Removed `Traversal.forEach()` as traversal implements `Iterator` and users should use `forEachRemaining()`.
 * `RangeStep` now has an inclusive low and an exclusive high -- a change from Gremlin2.
