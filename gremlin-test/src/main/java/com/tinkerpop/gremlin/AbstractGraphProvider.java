@@ -99,7 +99,7 @@ public abstract class AbstractGraphProvider implements GraphProvider {
 
     protected void readIntoGraph(final Graph g, final String path) throws IOException {
         final GraphReader reader = KryoReader.build()
-                .setWorkingDirectory(File.separator + "tmp")
+                .workingDirectory(File.separator + "tmp")
                 .custom(createConfiguredGremlinKryo())
                 .create();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream(path)) {

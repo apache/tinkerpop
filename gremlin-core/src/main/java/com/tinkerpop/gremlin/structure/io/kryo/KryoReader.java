@@ -380,7 +380,7 @@ public class KryoReader implements GraphReader {
          * The reader requires a working directory to write temp files to.  If this value is not set, it will write
          * the temp file to the local directory.
          */
-        public Builder setWorkingDirectory(final String workingDirectory) {
+        public Builder workingDirectory(final String workingDirectory) {
             final File f = new File(workingDirectory);
             if (!f.exists() || !f.isDirectory())
                 throw new IllegalArgumentException("The workingDirectory is not a directory or does not exist");

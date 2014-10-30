@@ -31,7 +31,7 @@ public class VertexStreamIteratorTest {
 
             final AtomicInteger called = new AtomicInteger(0);
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
 
             VertexStreamIterator vsi = new VertexStreamIterator(new ByteArrayInputStream(os.toByteArray()), reader);
 

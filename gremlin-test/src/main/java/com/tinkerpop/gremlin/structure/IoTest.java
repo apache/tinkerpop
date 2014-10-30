@@ -329,7 +329,7 @@ public class IoTest extends AbstractGremlinTest {
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readGraph(bais, g1);
             }
@@ -357,7 +357,7 @@ public class IoTest extends AbstractGremlinTest {
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readGraph(bais, g1);
             }
@@ -386,7 +386,7 @@ public class IoTest extends AbstractGremlinTest {
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readGraph(bais, g1);
             }
@@ -487,7 +487,7 @@ public class IoTest extends AbstractGremlinTest {
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), detachedEdge.id());
@@ -526,7 +526,7 @@ public class IoTest extends AbstractGremlinTest {
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), detachedEdge.id());
@@ -565,7 +565,7 @@ public class IoTest extends AbstractGremlinTest {
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), detachedEdge.id());
@@ -602,7 +602,7 @@ public class IoTest extends AbstractGremlinTest {
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), detachedEdge.id());
@@ -842,7 +842,7 @@ public class IoTest extends AbstractGremlinTest {
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
                     assertEquals(e.id(), detachedEdge.id());
@@ -882,7 +882,7 @@ public class IoTest extends AbstractGremlinTest {
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, detachedVertex -> {
                     assertEquals(v1.id(), detachedVertex.id());
@@ -916,7 +916,7 @@ public class IoTest extends AbstractGremlinTest {
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, detachedVertex -> {
                     assertEquals(v1.id(), detachedVertex.id());
@@ -950,7 +950,7 @@ public class IoTest extends AbstractGremlinTest {
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, detachedVertex -> {
                     assertEquals(v1.id(), detachedVertex.id());
@@ -984,7 +984,7 @@ public class IoTest extends AbstractGremlinTest {
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, detachedVertex -> {
                     assertEquals(v1.id(), detachedVertex.id());
@@ -1018,7 +1018,7 @@ public class IoTest extends AbstractGremlinTest {
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, detachedVertex -> {
                     assertEquals(v1.id(), detachedVertex.id());
@@ -1190,7 +1190,7 @@ public class IoTest extends AbstractGremlinTest {
 
             final AtomicInteger called = new AtomicInteger(0);
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
 
             try (final VertexByteArrayInputStream vbais = new VertexByteArrayInputStream(new ByteArrayInputStream(os.toByteArray()))) {
                 reader.readVertex(new ByteArrayInputStream(vbais.readVertexBytes().toByteArray()),
@@ -1219,7 +1219,7 @@ public class IoTest extends AbstractGremlinTest {
 
             final AtomicInteger called = new AtomicInteger(0);
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
 
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 final Iterator<Vertex> itty = reader.readVertices(bais, null,
@@ -1284,7 +1284,7 @@ public class IoTest extends AbstractGremlinTest {
             final AtomicBoolean calledVertex = new AtomicBoolean(false);
             final AtomicBoolean calledEdge = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
 
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, Direction.OUT, detachedVertex -> {
@@ -1386,7 +1386,7 @@ public class IoTest extends AbstractGremlinTest {
             final AtomicBoolean calledEdge = new AtomicBoolean(false);
 
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, Direction.IN, detachedVertex -> {
                     assertEquals(v1.id(), detachedVertex.id());
@@ -1490,7 +1490,7 @@ public class IoTest extends AbstractGremlinTest {
             final AtomicBoolean calledEdge2 = new AtomicBoolean(false);
 
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, Direction.BOTH, detachedVertex -> {
                             assertEquals(v1.id(), detachedVertex.id());
@@ -1690,7 +1690,7 @@ public class IoTest extends AbstractGremlinTest {
             final AtomicBoolean edge1Called = new AtomicBoolean(false);
 
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, Direction.IN, detachedVertex -> {
                             assertEquals(v1.id(), detachedVertex.id());
@@ -1801,7 +1801,7 @@ public class IoTest extends AbstractGremlinTest {
             final AtomicBoolean edgeCalled = new AtomicBoolean(false);
 
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, Direction.OUT, detachedVertex -> {
                             assertEquals(v1.id(), detachedVertex.id());
@@ -1907,7 +1907,7 @@ public class IoTest extends AbstractGremlinTest {
             writer.writeVertex(os, v1, Direction.OUT);
 
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
                         Direction.BOTH,
@@ -1932,7 +1932,7 @@ public class IoTest extends AbstractGremlinTest {
             writer.writeVertex(os, v1, Direction.IN);
 
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
                         Direction.BOTH,
@@ -1957,7 +1957,7 @@ public class IoTest extends AbstractGremlinTest {
             writer.writeVertex(os, v1, Direction.IN);
 
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
                         Direction.OUT,
@@ -1982,7 +1982,7 @@ public class IoTest extends AbstractGremlinTest {
             writer.writeVertex(os, v1, Direction.IN);
 
             final KryoReader reader = KryoReader.build()
-                    .setWorkingDirectory(File.separator + "tmp").create();
+                    .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
                         Direction.OUT,
