@@ -54,16 +54,16 @@ class GraphSONGraph {
 
             jsonGenerator.writeArrayFieldStart(GraphSONTokens.VERTICES);
             if (normalize)
-                g.V().order(Comparators.HELD_VERTEX_COMPARATOR).forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
+                g.V().order(Comparators.HELD_VERTEX_COMPARATOR).forEachRemaining(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
             else
-                g.V().forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
+                g.V().forEachRemaining(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
             jsonGenerator.writeEndArray();
 
             jsonGenerator.writeArrayFieldStart(GraphSONTokens.EDGES);
             if (normalize)
-                g.E().order(Comparators.HELD_EDGE_COMPARATOR).forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
+                g.E().order(Comparators.HELD_EDGE_COMPARATOR).forEachRemaining(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
             else
-                g.E().forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
+                g.E().forEachRemaining(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
             jsonGenerator.writeEndArray();
 
             jsonGenerator.writeEndObject();

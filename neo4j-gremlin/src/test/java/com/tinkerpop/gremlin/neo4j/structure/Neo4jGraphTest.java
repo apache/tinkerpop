@@ -48,7 +48,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         this.g.addVertex("name", "b");
         this.g.addVertex("name", "c");
         this.g.addVertex("name", "d");
-        this.g.V().forEach(Vertex::remove);
+        this.g.V().forEachRemaining(Vertex::remove);
         this.g.tx().commit();
         assertEquals(0, this.g.V().count().next(), 0);
     }
@@ -381,7 +381,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             tryCommit(g, g -> {
                 assertEquals(2, g.V().has("person", "name", "marko").count().next().intValue());
                 assertEquals(1, g.V().has("person", "name", "marko").properties("name").has(T.value, "marko").has("acl", "private").count().next().intValue());
-                g.V().has("person", "name", "marko").forEach(v -> {
+                g.V().has("person", "name", "marko").forEachRemaining(v -> {
                     assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) v).getBaseVertex().getProperty("name"));
                 });
 

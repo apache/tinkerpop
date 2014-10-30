@@ -36,7 +36,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
         printTraversalForm(traversal);
         subgraph = traversal.next();
         assertVertexEdgeCounts(3, 2).accept(subgraph);
-        subgraph.E().forEach(e -> {
+        subgraph.E().forEachRemaining(e -> {
             assertEquals("knows", e.label());
             assertEquals("marko", e.outV().value("name").next());
             assertEquals(new Integer(29), e.outV().<Integer>value("age").next());

@@ -29,7 +29,7 @@ public final class GiraphMessenger<M> implements Messenger<M> {
     public void sendMessage(final MessageType messageType, final M message) {
         if (messageType instanceof MessageType.Local) {
             final MessageType.Local<?, ?> localMessageType = (MessageType.Local) messageType;
-            localMessageType.vertices(this.giraphInternalVertex.getBaseVertex()).forEach(v ->
+            localMessageType.vertices(this.giraphInternalVertex.getBaseVertex()).forEachRemaining(v ->
                     this.giraphInternalVertex.sendMessage(new LongWritable(Long.valueOf(v.id().toString())), new KryoWritable<>(message)));
         } else {
             final MessageType.Global globalMessageType = (MessageType.Global) messageType;

@@ -103,7 +103,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                 meta.get().property(Graph.Key.hide("counter"), meta.get().value().length());
             }).iterate();
             tryCommit(g, g -> {
-                v.properties().forEach(meta -> {
+                v.properties().forEachRemaining(meta -> {
                     assertEquals(meta.key(), meta.label());
                     assertTrue(meta.isPresent());
                     assertFalse(meta.isHidden());
@@ -392,7 +392,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             });
 
             v.properties("i").sideEffect(m -> m.get().<Object>property("aKey", "aValue")).iterate();
-            v.properties("i").properties("aKey").forEach(p -> assertEquals("aValue", p.value()));
+            v.properties("i").properties("aKey").forEachRemaining(p -> assertEquals("aValue", p.value()));
             tryCommit(g, g -> {
                 assertEquals(3, v.properties("i").properties("aKey").count().next().intValue());
                 assertEquals(3, g.V().properties("i").properties("aKey").count().next().intValue());

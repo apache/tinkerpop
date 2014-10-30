@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.marker.CountTraversal;
 import com.tinkerpop.gremlin.process.util.TraverserIterator;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -9,6 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Random;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -21,6 +23,13 @@ import static org.junit.Assert.*;
         "traversalIsLocked"
 })
 public class CoreTraversalTest extends AbstractGremlinProcessTest {
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldHavePropertyForEachRemainingBehaviorEvenWithStrategyRewrite() {
+        final GraphTraversal<Vertex, Vertex> traversal = g.V().out().groupCount();
+        traversal.forEachRemaining(Map.class, map -> assertTrue(map instanceof Map));
+    }
 
     @Test
     @LoadGraphWith(MODERN)

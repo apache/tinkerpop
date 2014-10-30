@@ -74,7 +74,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         assertTrue(t.strategies().get().stream().anyMatch(o -> o.getClass().equals(PartitionGraphStrategy.PartitionGraphTraversalStrategy.class)));
         */
 
-        g.V().forEach(v -> {
+        g.V().forEachRemaining(v -> {
             assertTrue(v instanceof StrategyWrappedVertex);
             assertEquals("a", v.property("any").value());
         });
@@ -82,7 +82,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         strategy.removeReadPartition("A");
         strategy.addReadPartition("B");
 
-        g.V().forEach(v -> {
+        g.V().forEachRemaining(v -> {
             assertTrue(v instanceof StrategyWrappedVertex);
             assertEquals("b", v.property("any").value());
         });

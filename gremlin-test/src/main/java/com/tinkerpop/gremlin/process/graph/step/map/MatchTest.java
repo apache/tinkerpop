@@ -999,7 +999,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     private <S, E> List<Bindings<E>> toBindings(final Traversal<S, Map<String, E>> traversal) {
         List<Bindings<E>> result = new LinkedList<>();
-        traversal.forEach(o -> {
+        traversal.forEachRemaining(o -> {
             result.add(new Bindings<>(o));
         });
         return result;

@@ -55,9 +55,9 @@ public class TinkerGraphTest {
     public void testTraversalDSL() throws Exception {
         Graph g = TinkerFactory.createClassic();
         assertEquals(2, g.of(TinkerFactory.SocialTraversal.class).people("marko").knows().name().toList().size());
-        g.of(TinkerFactory.SocialTraversal.class).people("marko").knows().name().forEach(name -> assertTrue(name.equals("josh") || name.equals("vadas")));
+        g.of(TinkerFactory.SocialTraversal.class).people("marko").knows().name().forEachRemaining(name -> assertTrue(name.equals("josh") || name.equals("vadas")));
         assertEquals(1, g.of(TinkerFactory.SocialTraversal.class).people("marko").created().name().toList().size());
-        g.of(TinkerFactory.SocialTraversal.class).people("marko").created().name().forEach(name -> assertEquals("lop", name));
+        g.of(TinkerFactory.SocialTraversal.class).people("marko").created().name().forEachRemaining(name -> assertEquals("lop", name));
     }
 
     /**

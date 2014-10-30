@@ -386,7 +386,7 @@ public class VertexTest extends AbstractGremlinTest {
         for (int i = 0; i < 25; i++) {
             g.addVertex("myId", i);
         }
-        g.V().forEach(v -> g.V().forEach(u -> v.addEdge("knows", u, "myEdgeId", 12)));
+        g.V().forEachRemaining(v -> g.V().forEachRemaining(u -> v.addEdge("knows", u, "myEdgeId", 12)));
 
         tryCommit(g, assertVertexEdgeCounts(25, 625));
 

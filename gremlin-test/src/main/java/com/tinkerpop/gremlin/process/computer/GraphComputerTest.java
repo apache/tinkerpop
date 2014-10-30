@@ -234,7 +234,7 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
         }
         assertEquals(Long.valueOf(6), results.graph().V().count().next());
 
-        results.graph().V().forEach(v -> {
+        results.graph().V().forEachRemaining(v -> {
             assertTrue(v.property("nameLengthCounter").isPresent());
             assertEquals(Integer.valueOf(v.<String>value("name").length() * 2), Integer.valueOf(v.<Integer>value("nameLengthCounter")));
         });

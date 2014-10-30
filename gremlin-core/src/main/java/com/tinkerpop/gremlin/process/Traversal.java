@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -27,38 +28,66 @@ import java.util.function.Supplier;
  */
 public interface Traversal<S, E> extends Iterator<E>, Cloneable {
 
+    /**
+     * Used for reflection based access to the static "of" method of a Traversal.
+     */
     public static final String OF = "of";
 
+    /**
+     * Get the {@link SideEffects} associated with the traversal.
+     *
+     * @return The traversal sideEffects
+     */
     public SideEffects sideEffects();
 
-    public Strategies getStrategies();
-
+    /**
+     * Add an iterator of {@link Traverser} objects to the head/start of the traversal.
+     * Users should typically not need to call this method. For dynamic inject of data, they should use {@link com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectStep}.
+     *
+     * @param starts an iterators of traversers
+     */
     public void addStarts(final Iterator<Traverser<S>> starts);
 
-    public void addStart(final Traverser<S> start);
+    /**
+     * Add a single {@link Traverser} object to the head of the traversal.
+     * Users should typically not need to call this method. For dynamic inject of data, they should use {@link com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectStep}.
+     *
+     * @param start a traverser to add to the traversal
+     */
+    public default void addStart(final Traverser<S> start) {
+        this.addStarts(new SingleIterator<>(start));
+    }
 
-    public default <E2> Traversal<S, E2> addStep(final Step<?, E2> step) {
+    /**
+     * Get the {@link Traversal.Strategies} associated with the traversal.
+     * Users should typically not need to call this method. Strategies are automatically registered and executed at traversal execution time.
+     * Expert users can access strategies to provide fine grained control over a traversal compilation.
+     *
+     * @return The strategies associated with the traversal
+     */
+    public Strategies getStrategies();
+
+    /**
+     * Get the {@link Step} instances associated with this traversal.
+     * The steps are ordered according to their linked list structure as defined by {@link Step#getPreviousStep()} and {@link Step#getNextStep()}.
+     *
+     * @return the ordered steps of the traversal
+     */
+    public List<Step> getSteps();
+
+    /**
+     * Add a {@link Step} to the end of the traversal.
+     * This method should automatically link the step accordingly. For example, see {@link TraversalHelper#insertStep}.
+     * If the {@link Traversal.Strategies} have already been applied, then an {@link IllegalStateException} is throw stating the traversal is locked.
+     *
+     * @param step the step to add
+     * @param <E2> the output of the step
+     * @return the updated traversal
+     */
+    public default <E2> Traversal<S, E2> addStep(final Step<?, E2> step) throws IllegalStateException {
         if (this.getStrategies().complete()) throw Exceptions.traversalIsLocked();
         TraversalHelper.insertStep(step, this);
         return (Traversal) this;
-    }
-
-    public List<Step> getSteps();
-
-    public default Traversal<S, E> submit(final GraphComputer computer) {
-        try {
-            this.getStrategies().apply(TraversalEngine.COMPUTER);
-            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(this::clone).create();
-            final ComputerResult result = computer.program(vertexProgram).submit().get();
-            final GraphTraversal<S, S> traversal = result.graph().of();
-            return traversal.addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
-        } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-    }
-
-    public default void reset() {
-        this.getSteps().forEach(Step::reset);
     }
 
     /**
@@ -68,19 +97,201 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      */
     public Traversal<S, E> clone();
 
+    /**
+     * Submit the traversal to a {@link GraphComputer} for OLAP execution.
+     * This method should apply the traversal strategies for {@link TraversalEngine#COMPUTER}.
+     * Then register and execute the traversal via {@link TraversalVertexProgram}.
+     * Then wrap the {@link ComputerResult} in a new {@link Traversal} containing a {@link ComputerResultStep}.
+     *
+     * @param computer the GraphComputer to execute the traversal on
+     * @return a new traversal with the starts being the results of the TraversalVertexProgram
+     */
+    public default Traversal<S, E> submit(final GraphComputer computer) {
+        try {
+            this.getStrategies().apply(TraversalEngine.COMPUTER);
+            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(this::clone).create();
+            final ComputerResult result = computer.program(vertexProgram).submit().get();
+            final GraphTraversal<S, S> traversal = result.graph().of();
+            return traversal.addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Call the {@link Step#reset} method on every step in the traversal.
+     */
+    public default void reset() {
+        this.getSteps().forEach(Step::reset);
+    }
+
+    /**
+     * Assume the every {@link Step} implements {@link Reversible} and call {@link Reversible#reverse()} for each.
+     *
+     * @return the traversal with its steps reversed
+     */
+    public default Traversal<S, E> reverse() throws IllegalStateException {
+        if (!TraversalHelper.isReversible(this)) throw Exceptions.traversalIsNotReversible();
+        this.getSteps().stream().forEach(step -> ((Reversible) step).reverse());
+        return this;
+    }
+
+    /**
+     * Get the next n-number of results from the traversal.
+     *
+     * @param amount the number of results to get
+     * @return the n-results in a {@link List}
+     */
+    public default List<E> next(final int amount) {
+        final List<E> result = new ArrayList<>();
+        int counter = 0;
+        while (counter++ < amount && this.hasNext()) {
+            result.add(this.next());
+        }
+        return result;
+    }
+
+    /**
+     * Put all the results into an {@link ArrayList}.
+     *
+     * @return the results in a list
+     */
+    public default List<E> toList() {
+        return this.fill(new ArrayList<>());
+    }
+
+    /**
+     * Put all the results into a {@link HashSet}.
+     *
+     * @return the results in a set
+     */
+    public default Set<E> toSet() {
+        return this.fill(new HashSet<>());
+    }
+
+    /**
+     * Add all the results of the traversal to the provided collection.
+     *
+     * @param collection the collection to fill
+     * @return the collection now filled
+     */
+    public default <C extends Collection<E>> C fill(final C collection) {
+        try {
+            this.getStrategies().apply(TraversalEngine.STANDARD);
+            // use the end step so the results are bulked
+            final Step<?, E> endStep = TraversalHelper.getEnd(this);
+            while (true) {
+                final Traverser<E> traverser = endStep.next();
+                TraversalHelper.addToCollection(collection, traverser.get(), traverser.bulk());
+            }
+        } catch (final NoSuchElementException ignored) {
+        }
+        return collection;
+    }
+
+    /**
+     * Iterate all the {@link Traverser} instances in the traversal.
+     * What is returned is the empty traversal.
+     * It is assumed that what is desired from the computation is are the sideEffects yielded by the traversal.
+     *
+     * @return the fully drained traversal
+     */
+    public default Traversal iterate() {
+        try {
+            this.getStrategies().apply(TraversalEngine.STANDARD);
+            // use the end step so the results are bulked
+            final Step<?, E> endStep = TraversalHelper.getEnd(this);
+            while (true) {
+                endStep.next();
+            }
+        } catch (final NoSuchElementException ignored) {
+        }
+        return this;
+    }
+
+    /**
+     * A traversal can be rewritten such that its defined end type E may yield objects of a different type.
+     * This helper method allows for the casting of the output to the known the type.
+     *
+     * @param endType  the true output type of the traversal
+     * @param consumer a {@link Consumer} to process each output
+     * @param <E2>     the known output type of the traversal
+     */
+    public default <E2> void forEachRemaining(final Class<E2> endType, final Consumer<E2> consumer) {
+        try {
+            while (true) {
+                consumer.accept((E2) next());
+            }
+        } catch (final NoSuchElementException ignore) {
+
+        }
+    }
+
+    /**
+     * A collection of {@link Exception} types associated with Traversal execution.
+     */
+    public static class Exceptions {
+
+        public static IllegalStateException traversalIsLocked() {
+            return new IllegalStateException("The traversal strategies are complete and the traversal can no longer have steps added to it");
+        }
+
+        public static IllegalStateException traversalIsNotReversible() {
+            return new IllegalStateException("The traversal is not reversible as it contains steps that are not reversible");
+        }
+    }
+
+    /**
+     * The strategies associated with the traversal.
+     * Strategies, at execution time, can alter the traversal for reason of optimization, re-writing for a different {@link TraversalEngine}, etc.
+     */
     public interface Strategies {
 
+        /**
+         * Return all the {@link TraversalStrategy} singleton instances associated with this traversal.
+         *
+         * @return
+         */
         public List<TraversalStrategy> toList();
 
+        /**
+         * Register a {@link TraversalStrategy} with this traversal.
+         *
+         * @param traversalStrategy the traversal strategy to register
+         */
         public void register(final TraversalStrategy traversalStrategy);
 
+        /**
+         * Unregister a {@link TraversalStrategy} associated with this traversal.
+         * Given that all traversal strategies are singletons, the class is sufficient to unregister it.
+         *
+         * @param traversalStrategyClass the class of the traversal strategy to unregister
+         */
         public void unregister(final Class<? extends TraversalStrategy> traversalStrategyClass);
 
-        public void clear();
-
+        /**
+         * Apply all the {@link TraversalStrategy} optimizers to the traversal for the stated {@link TraversalEngine}.
+         * This method should sort the strategies prior to application.
+         * This method should signal that the strategies are complete. See {@link Traversal.Strategies#complete()}.
+         *
+         * @param engine the engine that the traversal is going to be executed on
+         */
         public void apply(final TraversalEngine engine);
 
+        /**
+         * Returns true if the strategies have already been applied. Else it returns false.
+         *
+         * @return true if the strategies have been applied
+         */
         public boolean complete();
+
+        /**
+         * A helper method to remove all the {@link TraversalStrategy} instances from the traversal.
+         */
+        public default void clear() {
+            this.toList().forEach(strategy -> this.unregister(strategy.getClass()));
+        }
+
     }
 
     public interface SideEffects {
@@ -274,74 +485,6 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
             public static UnsupportedOperationException dataTypeOfSideEffectValueNotSupported(final Object val) {
                 return new UnsupportedOperationException(String.format("Side effect value [%s] is of type %s is not supported", val, val.getClass()));
             }
-        }
-    }
-
-    /////////
-
-    public default Traversal<S, E> reverse() {
-        this.getSteps().stream().filter(step -> step instanceof Reversible).forEach(step -> ((Reversible) step).reverse());
-        return this;
-    }
-
-    public default List<E> next(final int amount) {   // TODO: Use bulk (same theory as range)
-        final List<E> result = new ArrayList<>();
-        int counter = 0;
-        while (counter++ < amount && this.hasNext()) {
-            result.add(this.next());
-        }
-        return result;
-    }
-
-    public default List<E> toList() {
-        return (List<E>) this.fill(new ArrayList<>());
-    }
-
-    public default Set<E> toSet() {
-        return (Set<E>) this.fill(new HashSet<>());
-    }
-
-    public default Collection<E> fill(final Collection<E> collection) {
-        try {
-            this.getStrategies().apply(TraversalEngine.STANDARD);
-            // use the end step so the results are bulked
-            final Step<?, E> endStep = TraversalHelper.getEnd(this);
-            while (true) {
-                final Traverser<E> traverser = endStep.next();
-                TraversalHelper.addToCollection(collection, traverser.get(), traverser.bulk());
-            }
-        } catch (final NoSuchElementException ignored) {
-        }
-        return collection;
-    }
-
-    public default Traversal iterate() {
-        try {
-            this.getStrategies().apply(TraversalEngine.STANDARD);
-            // use the end step so the results are bulked
-            final Step<?, E> endStep = TraversalHelper.getEnd(this);
-            while (true) {
-                endStep.next();
-            }
-        } catch (final NoSuchElementException ignored) {
-        }
-        return this;
-    }
-
-    public default void forEach(final Consumer<E> consumer) {
-        try {
-            while (this.hasNext()) {
-                consumer.accept(this.next());
-            }
-        } catch (final NoSuchElementException ignored) {
-
-        }
-    }
-
-    public static class Exceptions {
-
-        public static IllegalStateException traversalIsLocked() {
-            return new IllegalStateException("The traversal strategies are complete and the traversal can no longer have steps added to it");
         }
     }
 }
