@@ -37,6 +37,6 @@ public class DriverGremlinPlugin extends AbstractGremlinPlugin {
 
     @Override
     public Optional<RemoteAcceptor> remoteAcceptor() {
-        return Optional.of(new DriverRemoteAcceptor(shell));
+        return Optional.of(new DriverRemoteAcceptor(this.shell));
     }
 }

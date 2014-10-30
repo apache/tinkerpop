@@ -98,7 +98,7 @@ class SugarLoader {
         }
 
         public static final getAt(final GraphTraversal graphTraversal, final Integer index) {
-            graphTraversal.range(index, index);
+            graphTraversal.range(index, index+1);
         }
 
         public static final getAt(final GraphTraversal graphTraversal, final Range range) {

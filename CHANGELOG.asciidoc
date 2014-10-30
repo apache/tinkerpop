@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `RangeStep` now has an inclusive low and an exclusive high -- a change from Gremlin2.
 * `DriverGremlinPlugin` returns raw results with driver results available via the `result` variable.
 * `RemoteAcceptor` now supports `@` prefixed lines that will grab the script string from the Gremlin Console shell.
 * Modified the signature of `Property.element()` to simply return `Element`
