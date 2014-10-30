@@ -70,11 +70,14 @@ public class StringFactory {
      * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Property} or {@link com.tinkerpop.gremlin.structure.VertexProperty}.
      */
     public static String propertyString(final Property property) {
-        final String valueString = String.valueOf(property.value());
         if (property instanceof VertexProperty) {
-            return property.isPresent() ? VP + L_BRACKET + property.key() + ARROW + valueString.substring(0, Math.min(valueString.length(), 20)) + R_BRACKET : EMPTY_VERTEX_PROPERTY;
+            if (!property.isPresent()) return EMPTY_VERTEX_PROPERTY;
+            final String valueString = String.valueOf(property.value());
+            return VP + L_BRACKET + property.key() + ARROW + valueString.substring(0, Math.min(valueString.length(), 20)) + R_BRACKET;
         } else {
-            return property.isPresent() ? P + L_BRACKET + property.key() + ARROW + valueString.substring(0, Math.min(valueString.length(), 20)) + R_BRACKET : EMPTY_PROPERTY;
+            if (!property.isPresent()) return EMPTY_PROPERTY;
+            final String valueString = String.valueOf(property.value());
+            return P + L_BRACKET + property.key() + ARROW + valueString.substring(0, Math.min(valueString.length(), 20)) + R_BRACKET;
         }
     }
 
