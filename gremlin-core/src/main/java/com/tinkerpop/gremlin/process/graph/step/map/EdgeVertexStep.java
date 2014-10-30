@@ -28,4 +28,8 @@ public final class EdgeVertexStep extends FlatMapStep<Edge, Vertex> implements R
     public void reverse() {
         this.direction = this.direction.opposite();
     }
+
+    public Direction getDirection() {
+        return this.direction;
+    }
 }
