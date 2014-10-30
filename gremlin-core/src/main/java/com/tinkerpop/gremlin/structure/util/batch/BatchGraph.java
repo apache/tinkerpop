@@ -55,7 +55,7 @@ import java.util.function.Function;
  */
 public class BatchGraph<G extends Graph> implements Graph {
     /**
-     * Default buffer size
+     * Default buffer size is 10000.
      */
     public static final long DEFAULT_BUFFER_SIZE = 10000;
 
@@ -599,6 +599,9 @@ public class BatchGraph<G extends Graph> implements Graph {
             return this;
         }
 
+        /**
+         * Number of mutations to perform between calls to {@link com.tinkerpop.gremlin.structure.Transaction#commit}.
+         */
         public Builder bufferSize(long bufferSize) {
             if (bufferSize <= 0) throw new IllegalArgumentException("BufferSize must be positive");
             this.bufferSize = bufferSize;

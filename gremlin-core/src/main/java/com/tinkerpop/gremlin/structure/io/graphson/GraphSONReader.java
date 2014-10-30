@@ -211,11 +211,21 @@ public class GraphSONReader implements GraphReader {
         private Builder() {
         }
 
+        /**
+         * The name of the key to supply to
+         * {@link com.tinkerpop.gremlin.structure.util.batch.BatchGraph.Builder#vertexIdKey} when reading data into
+         * the {@link Graph}.
+         */
         public Builder vertexIdKey(final String vertexIdKey) {
             this.vertexIdKey = vertexIdKey;
             return this;
         }
 
+        /**
+         * The name of the key to supply to
+         * {@link com.tinkerpop.gremlin.structure.util.batch.BatchGraph.Builder#edgeIdKey} when reading data into
+         * the {@link Graph}.
+         */
         public Builder edgeIdKey(final String edgeIdKey) {
             this.edgeIdKey = edgeIdKey;
             return this;
@@ -238,6 +248,10 @@ public class GraphSONReader implements GraphReader {
             return this;
         }
 
+        /**
+         * If data types of objects were embedded into the JSON that is to be read, then this value must be set to
+         * true.
+         */
         public Builder embedTypes(final boolean embedTypes) {
             this.embedTypes = embedTypes;
             return this;

@@ -390,6 +390,10 @@ public class GraphMLWriter implements GraphWriter {
             return this;
         }
 
+        /**
+         * Location of the GraphML schema which is defaulted to
+         * {@link com.tinkerpop.gremlin.structure.io.graphml.GraphMLTokens#DEFAULT_GRAPHML_SCHEMA_LOCATION}.
+         */
         public Builder xmlSchemaLocation(final String xmlSchemaLocation) {
             this.xmlSchemaLocation = xmlSchemaLocation;
             return this;
@@ -397,9 +401,10 @@ public class GraphMLWriter implements GraphWriter {
 
         /**
          * Set the name of the edge label in the GraphML. This value is defaulted to {@link GraphMLTokens#LABEL_E}.
-         * The value of Edge.label() is written as a data element on the edge and the appropriate key element is
-         * added to define it in the GraphML.  It is important that when reading this GraphML back in with the
-         * reader that this label key is set appropriately to properly read the edge labels.
+         * The value of {@link com.tinkerpop.gremlin.structure.Edge#label()} is written as a data element on the edge
+         * and the appropriate key element is added to define it in the GraphML.  It is important that when reading
+         * this GraphML back in with the reader that this label key is set appropriately to properly read the edge
+         * labels.
          *
          * @param edgeLabelKey if the label of an edge will be handled by the data property.
          */
@@ -408,6 +413,15 @@ public class GraphMLWriter implements GraphWriter {
             return this;
         }
 
+        /**
+         * Set the name of the vertex label in the GraphML. This value is defaulted to {@link GraphMLTokens#LABEL_V}.
+         * The value of {@link com.tinkerpop.gremlin.structure.Vertex#label()} is written as a data element on the
+         * vertex and the appropriate key element is added to define it in the GraphML.  It is important that when
+         * reading this GraphML back in with the reader that this label key is set appropriately to properly read the
+         * vertex labels.
+         *
+         * @param vertexLabelKey if the label of an vertex will be handled by the data property.
+         */
         public Builder vertexLabelKey(final String vertexLabelKey) {
             this.vertexLabelKey = vertexLabelKey;
             return this;

@@ -110,6 +110,9 @@ public class GraphSONWriter implements GraphWriter {
             return this;
         }
 
+        /**
+         * Set to true in order to embed data types into the JSON so as to explicitly preserve data types.
+         */
         public Builder embedTypes(final boolean embedTypes) {
             this.embedTypes = embedTypes;
             return this;

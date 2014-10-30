@@ -339,21 +339,38 @@ public class KryoReader implements GraphReader {
             this.tempFile = new File(UUID.randomUUID() + ".tmp");
         }
 
+        /**
+         * Set the size between commits when reading into the {@link Graph} instance.  This value defaults to
+         * {@link BatchGraph#DEFAULT_BUFFER_SIZE}.
+         */
         public Builder batchSize(final long batchSize) {
             this.batchSize = batchSize;
             return this;
         }
 
+        /**
+         * Supply a custom {@link GremlinKryo} instance to use as the serializer for the {@code KryoWriter}.
+         */
         public Builder custom(final GremlinKryo gremlinKryo) {
             this.gremlinKryo = gremlinKryo;
             return this;
         }
 
+        /**
+         * The name of the key to supply to
+         * {@link com.tinkerpop.gremlin.structure.util.batch.BatchGraph.Builder#vertexIdKey} when reading data into
+         * the {@link Graph}.
+         */
         public Builder vertexIdKey(final String vertexIdKey) {
             this.vertexIdKey = vertexIdKey;
             return this;
         }
 
+        /**
+         * The name of the key to supply to
+         * {@link com.tinkerpop.gremlin.structure.util.batch.BatchGraph.Builder#edgeIdKey} when reading data into
+         * the {@link Graph}.
+         */
         public Builder edgeIdKey(final String edgeIdKey) {
             this.edgeIdKey = edgeIdKey;
             return this;

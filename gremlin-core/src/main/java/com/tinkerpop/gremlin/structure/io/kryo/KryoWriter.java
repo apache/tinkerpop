@@ -145,11 +145,18 @@ public class KryoWriter implements GraphWriter {
         private Builder() {
         }
 
+        /**
+         * Supply a custom {@link GremlinKryo} instance to use as the serializer for the {@code KryoWriter}.
+         */
         public Builder custom(final GremlinKryo gremlinKryo) {
             this.gremlinKryo = gremlinKryo;
             return this;
         }
 
+        /**
+         * Create the {@code KryoWriter}.
+         * @return
+         */
         public KryoWriter create() {
             return new KryoWriter(this.gremlinKryo);
         }

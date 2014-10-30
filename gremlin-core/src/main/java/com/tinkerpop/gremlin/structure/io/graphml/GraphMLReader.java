@@ -243,26 +243,45 @@ public class GraphMLReader implements GraphReader {
         private Builder() {
         }
 
+        /**
+         * The name of the key to supply to
+         * {@link com.tinkerpop.gremlin.structure.util.batch.BatchGraph.Builder#vertexIdKey} when reading data into
+         * the {@link Graph}.
+         */
         public Builder vertexIdKey(final String vertexIdKey) {
             this.vertexIdKey = vertexIdKey;
             return this;
         }
 
+        /**
+         * The name of the key to supply to
+         * {@link com.tinkerpop.gremlin.structure.util.batch.BatchGraph.Builder#edgeIdKey} when reading data into
+         * the {@link Graph}.
+         */
         public Builder edgeIdKey(final String edgeIdKey) {
             this.edgeIdKey = edgeIdKey;
             return this;
         }
 
+        /**
+         * The key to use as the edge label.
+         */
         public Builder edgeLabelKey(final String edgeLabelKey) {
             this.edgeLabelKey = edgeLabelKey;
             return this;
         }
 
+        /**
+         * the key to use as the vertex label.
+         */
         public Builder vertexLabelKey(final String vertexLabelKey) {
             this.vertexLabelKey = vertexLabelKey;
             return this;
         }
 
+        /**
+         * Number of mutations to perform before a commit is executed.
+         */
         public Builder batchSize(final long batchSize) {
             this.batchSize = batchSize;
             return this;
