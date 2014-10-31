@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.filter
 
+import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.process.graph.step.ComputerTestHelper
 import com.tinkerpop.gremlin.structure.Edge
@@ -18,8 +19,8 @@ public abstract class GroovyLocalRangeTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_propertiesXlocationX_localRangeX0_2X_value() {
-            g.V.properties('location').localRange(0, 2).value
+        public Traversal<Vertex, String> get_g_V_propertiesXlocationX_orderByXvalueX_localRangeX0_2X_value() {
+            g.V.properties('location').orderBy(T.value).localRange(0, 2).value
         }
     }
 
@@ -31,8 +32,8 @@ public abstract class GroovyLocalRangeTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_propertiesXlocationX_localRangeX0_2X_value() {
-            ComputerTestHelper.compute("g.V.properties('location').localRange(0, 2).value", g)
+        public Traversal<Vertex, String> get_g_V_propertiesXlocationX_orderByXvalueX_localRangeX0_2X_value() {
+            g.V.properties('location').orderBy(T.value).localRange(0, 2).value // todo
         }
     }
 }

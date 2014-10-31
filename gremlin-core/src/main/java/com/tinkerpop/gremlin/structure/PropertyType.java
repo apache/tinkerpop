@@ -72,15 +72,7 @@ public enum PropertyType {
         }
     };
 
-    public boolean forProperties() {
-        return !forValues();
-    }
-
-    public boolean forValues() {
-        return this.equals(VALUE) || this.equals(HIDDEN_VALUE);
-    }
-
-    public boolean forHiddens() {
-        return this.equals(HIDDEN_PROPERTY) || this.equals(HIDDEN_VALUE);
-    }
+    public abstract boolean forProperties();
+    public abstract boolean forValues();
+    public abstract boolean forHiddens();
 }

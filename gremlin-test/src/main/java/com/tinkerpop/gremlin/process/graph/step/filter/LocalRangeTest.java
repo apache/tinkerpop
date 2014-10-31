@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process.graph.step.filter;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.T;
@@ -26,7 +25,7 @@ public abstract class LocalRangeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Edge> get_g_V_outE_localRangeX0_2X();
 
-    public abstract Traversal<Vertex, String> get_g_V_propertiesXlocationX_localRangeX0_2X_value();
+    public abstract Traversal<Vertex, String> get_g_V_propertiesXlocationX_orderByXvalueX_localRangeX0_2X_value();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -58,10 +57,10 @@ public abstract class LocalRangeTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(CREW)
-    public void g_V_randomX0X() {
-        final Traversal<Vertex, String> traversal = get_g_V_propertiesXlocationX_localRangeX0_2X_value();
+    public void g_V_propertiesXlocationX_orderByXvalueX_localRangeX0_2X_value() {
+        final Traversal<Vertex, String> traversal = get_g_V_propertiesXlocationX_orderByXvalueX_localRangeX0_2X_value();
         printTraversalForm(traversal);
-        //checkResults(Arrays.asList("brussels","san diego","centreville","dulles","baltimore","bremen","aachen","kaiserslautern"), traversal);
+        checkResults(Arrays.asList("brussels","san diego","centreville","dulles","baltimore","bremen","aachen","kaiserslautern"), traversal);
 
     }
 
@@ -73,7 +72,7 @@ public abstract class LocalRangeTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_propertiesXlocationX_localRangeX0_2X_value() {
+        public Traversal<Vertex, String> get_g_V_propertiesXlocationX_orderByXvalueX_localRangeX0_2X_value() {
             return g.V().properties("location").orderBy(T.value).localRange(0, 2).value();
         }
     }
@@ -86,8 +85,8 @@ public abstract class LocalRangeTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_propertiesXlocationX_localRangeX0_2X_value() {
-            return g.V().properties("location").orderBy(T.value).localRange(0, 2).<String>value().submit(g.compute());
+        public Traversal<Vertex, String> get_g_V_propertiesXlocationX_orderByXvalueX_localRangeX0_2X_value() {
+            return g.V().properties("location").orderBy(T.value).localRange(0, 2).<String>value(); // TODO:
         }
     }
 }

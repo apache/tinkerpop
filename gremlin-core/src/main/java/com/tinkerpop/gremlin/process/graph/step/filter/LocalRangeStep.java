@@ -3,16 +3,17 @@ package com.tinkerpop.gremlin.process.graph.step.filter;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.Ranging;
+import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
+import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -21,9 +22,9 @@ public final class LocalRangeStep<S extends Element> extends FilterStep<S> imple
 
     private final long low;
     private final long high;
-    private final AtomicLong counter = new AtomicLong(0l);
     private Direction direction = null;
-    private Element previousElement = null;
+    private final BulkSet<Element> bulkSet = new BulkSet<>();
+    private final Set<Element> doneElements = new HashSet<>();
 
     public LocalRangeStep(final Traversal traversal, final long low, final long high) {
         super(traversal);
@@ -34,58 +35,59 @@ public final class LocalRangeStep<S extends Element> extends FilterStep<S> imple
         this.high = high;
 
         this.setPredicate(traverser -> {
-            Element currentPreviousElement = null;
-            final Element currentElement = traverser.get();
-            if (currentElement instanceof Edge) {
+            Element previousElement = null;
+            final Element element = traverser.get();
+            if (element instanceof Edge) {
                 if (this.direction.equals(Direction.BOTH)) {
                     final List<Object> objects = traverser.path().objects();
                     for (int i = objects.size() - 2; i >= 0; i--) {
                         if (objects.get(i) instanceof Vertex) {
-                            currentPreviousElement = (Vertex) objects.get(i);
+                            previousElement = (Vertex) objects.get(i);
                             break;
                         }
                     }
                 } else {
-                    currentPreviousElement = ((Edge) currentElement).iterators().vertexIterator(this.direction).next();
+                    previousElement = ((Edge) element).iterators().vertexIterator(this.direction).next();
                 }
-            } else if (currentElement instanceof Property) {
-                currentPreviousElement = ((Property) currentElement).element();
+            } else if (element instanceof Property) {
+                previousElement = ((Property) element).element();
             } else {
                 throw new IllegalStateException("Only edges and properties can be subject to local range filtering");
             }
 
-            if (null == this.previousElement || !ElementHelper.areEqual(currentPreviousElement, this.previousElement)) {
-                this.previousElement = currentPreviousElement;
-                this.counter.set(0l);
-            }
+            if (this.doneElements.contains(previousElement))
+                return false;
 
             ////////////////
+            final long previousElementCounter = this.bulkSet.get(previousElement);
 
-            if (this.high != -1 && this.counter.get() >= this.high) {
+            if (this.high != -1 && previousElementCounter >= this.high) {
+                this.doneElements.add(previousElement);
+                this.bulkSet.remove(previousElement);
                 return false;
             }
 
             long avail = traverser.bulk();
-            if (this.counter.get() + avail <= this.low) {
+            if (previousElementCounter + avail <= this.low) {
                 // Will not surpass the low w/ this traverser. Skip and filter the whole thing.
-                this.counter.getAndAdd(avail);
+                this.bulkSet.add(previousElement, avail);
                 return false;
             }
 
             // Skip for the low and trim for the high. Both can happen at once.
 
             long toSkip = 0;
-            if (this.counter.get() < this.low) {
-                toSkip = this.low - this.counter.get();
+            if (previousElementCounter < this.low) {
+                toSkip = this.low - previousElementCounter;
             }
 
             long toTrim = 0;
-            if (this.high != -1 && this.counter.get() + avail >= this.high) {
-                toTrim = this.counter.get() + avail - this.high;
+            if (this.high != -1 && previousElementCounter + avail >= this.high) {
+                toTrim = previousElementCounter + avail - this.high;
             }
 
             long toEmit = avail - toSkip - toTrim;
-            this.counter.getAndAdd(toSkip + toEmit);
+            this.bulkSet.add(previousElement, toEmit);
             traverser.asAdmin().setBulk(toEmit);
 
             return true;
@@ -95,7 +97,8 @@ public final class LocalRangeStep<S extends Element> extends FilterStep<S> imple
     @Override
     public void reset() {
         super.reset();
-        this.counter.set(0l);
+        this.bulkSet.clear();
+        this.doneElements.clear();
     }
 
     @Override

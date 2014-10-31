@@ -41,10 +41,10 @@ public final class OrderByStep<S extends Element, C> extends BarrierStep<S> impl
                 this.comparator = (a, b) -> this.elementValueComparator.compare((C) a.get().label(), (C) b.get().label());
                 break;
             case key:
-                this.comparator = (a, b) -> this.elementValueComparator.compare((C) ((VertexProperty) a.get()).key(), (C) ((VertexProperty) a.get()).key());
+                this.comparator = (a, b) -> this.elementValueComparator.compare((C) ((VertexProperty) a.get()).key(), (C) ((VertexProperty) b.get()).key());
                 break;
             case value:
-                this.comparator = (a, b) -> this.elementValueComparator.compare((C) ((VertexProperty) a.get()).value(), (C) ((VertexProperty) a.get()).value());
+                this.comparator = (a, b) -> this.elementValueComparator.compare((C) ((VertexProperty) a.get()).value(), (C) ((VertexProperty) b.get()).value());
                 break;
             default:
                 throw new IllegalArgumentException("The provided token is unknown: " + accessor.name());
