@@ -312,6 +312,10 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().range(low, high);
     }
 
+    public default <E2 extends Element> Neo4jTraversal<A, E2> localRange(final int low, final int high) {
+        return this.start().localRange(low, high);
+    }
+
     public default Neo4jTraversal<A, A> retain(final String sideEffectKey) {
         return this.start().retain(sideEffectKey);
     }

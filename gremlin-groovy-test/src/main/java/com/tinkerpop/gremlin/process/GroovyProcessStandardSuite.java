@@ -15,6 +15,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.GroovyFilterTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyHasNotTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyHasTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyIntervalTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.GroovyLocalRangeTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRandomTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRangeTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRetainTest;
@@ -76,6 +77,7 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyHasNotTest.StandardTest.class,
             GroovyHasTest.StandardTest.class,
             GroovyIntervalTest.StandardTest.class,
+            GroovyLocalRangeTest.StandardTest.class,
             GroovyRandomTest.StandardTest.class,
             GroovyRangeTest.StandardTest.class,
             GroovyRetainTest.StandardTest.class,

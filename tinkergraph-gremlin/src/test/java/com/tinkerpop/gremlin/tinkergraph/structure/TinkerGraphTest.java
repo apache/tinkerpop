@@ -52,6 +52,15 @@ public class TinkerGraphTest {
     }
 
     @Test
+    @Ignore
+    public void testPlay() {
+        Graph g = TinkerFactory.createClassic();
+        //g.V().bothE().localRange(0,5).forEachRemaining(System.out::println);
+        //Graph g = TinkerFactory.createTheCrew();
+        g.V().outE().localRange(0, 2).forEachRemaining(System.out::println);
+    }
+
+    @Test
     public void testTraversalDSL() throws Exception {
         Graph g = TinkerFactory.createClassic();
         assertEquals(2, g.of(TinkerFactory.SocialTraversal.class).people("marko").knows().name().toList().size());
