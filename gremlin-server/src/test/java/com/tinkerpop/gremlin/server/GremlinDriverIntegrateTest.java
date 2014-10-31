@@ -8,12 +8,17 @@ import com.tinkerpop.gremlin.driver.exception.ResponseException;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.driver.ser.JsonBuilderKryoSerializer;
 import com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0;
+import com.tinkerpop.gremlin.server.channel.NioChannelizer;
+import com.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.TimeUtil;
 import groovy.json.JsonBuilder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +31,7 @@ import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -38,6 +44,22 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Rule
     public TestName name = new TestName();
+
+    /**
+     * Configure specific Gremlin Server settings for specific tests.
+     */
+    @Override
+    public Settings overrideSettings(final Settings settings) {
+        final String nameOfTest = name.getMethodName();
+        switch (nameOfTest) {
+            case "shouldExecuteScriptInSessionOnTransactionalGraph":
+                deleteDirectory(new File("/tmp/neo4j"));
+                settings.graphs.put("g", "conf/neo4j-empty.properties");
+                break;
+        }
+
+        return settings;
+    }
 
     @Test
     public void shouldProcessRequestsOutOfOrder() throws Exception {
@@ -230,6 +252,27 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         final ResultSet results3 = client.submit("x[1]+2");
         assertEquals(4, results3.all().get().get(0).getInt());
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldExecuteScriptInSessionOnTransactionalGraph() throws Exception {
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect(name.getMethodName());
+
+        final Vertex vertexBeforeTx = client.submit("v=g.addVertex(\"name\",\"stephen\")").all().get().get(0).getVertex();
+        assertEquals("stephen", vertexBeforeTx.iterators().valueIterator("name").next());
+
+        final Vertex vertexFromV = client.submit("g.V().next()").all().get().get(0).getVertex();
+        assertEquals("stephen", vertexFromV.iterators().valueIterator("name").next());
+
+        final Vertex vertexFromBinding = client.submit("v").all().get().get(0).getVertex();
+        assertEquals("stephen", vertexFromBinding.iterators().valueIterator("name").next());
+
+        final Vertex vertexAfterTx = client.submit("v.property(\"color\",\"blue\"); g.tx().commit(); v").all().get().get(0).getVertex();
+        assertEquals("stephen", vertexAfterTx.iterators().valueIterator("name").next());
+        assertEquals("blue", vertexAfterTx.iterators().valueIterator("color").next());
 
         cluster.close();
     }

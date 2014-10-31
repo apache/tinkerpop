@@ -10,6 +10,7 @@ TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Added `LocalRangeStep` which supports ranging the edges and properties of an element.
+* Gremlin Server sessions now allow serialization of results that were part of an open transaction.
 * `GraphTraversal.value(String)` no longer exists. Instead, use `GraphTraversal.values(String)`.
 * `HiddenXXXStep` and `ValueXXXStep` no longer exist. `PropertyXXXStep` takes a `PropertyType` to denote value and hidden access.
 * Added `PropertyType` to the structure-package which provide markers for denoting property types (vs. property classes).

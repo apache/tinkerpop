@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -79,5 +80,23 @@ public abstract class AbstractGremlinServerIntegrationTest {
 
     protected String getWebSocketBaseUri() {
         return "ws://" + getHostPort() + "/gremlin";
+    }
+
+    public static boolean deleteDirectory(final File directory) {
+        if(directory.exists()){
+            final File[] files = directory.listFiles();
+            if(null != files){
+                for(int i=0; i<files.length; i++) {
+                    if(files[i].isDirectory()) {
+                        deleteDirectory(files[i]);
+                    }
+                    else {
+                        files[i].delete();
+                    }
+                }
+            }
+        }
+
+        return(directory.delete());
     }
 }

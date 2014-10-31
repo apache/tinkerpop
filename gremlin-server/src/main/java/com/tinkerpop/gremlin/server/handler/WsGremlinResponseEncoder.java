@@ -6,7 +6,9 @@ import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import com.tinkerpop.gremlin.server.GremlinServer;
+import com.tinkerpop.gremlin.server.op.session.Session;
 import com.tinkerpop.gremlin.server.util.MetricManager;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
@@ -15,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -29,13 +32,22 @@ public class WsGremlinResponseEncoder extends MessageToMessageEncoder<ResponseMe
     protected void encode(final ChannelHandlerContext channelHandlerContext, final ResponseMessage o, final List<Object> objects) throws Exception {
         final MessageSerializer serializer = channelHandlerContext.channel().attr(StateKey.SERIALIZER).get();
         final boolean useBinary = channelHandlerContext.channel().attr(StateKey.USE_BINARY).get();
+        final Session session = channelHandlerContext.channel().attr(StateKey.SESSION).get();
 
         try {
             if (useBinary) {
+                final ByteBuf serialized;
+
+                // if the request came in on a session then the serialization must occur in that same thread.
+                if (null == session)
+                    serialized = serializer.serializeResponseAsBinary(o, channelHandlerContext.alloc());
+                else
+                    serialized = session.getExecutor().submit(() -> serializer.serializeResponseAsBinary(o, channelHandlerContext.alloc())).get();
+
                 if (o.getStatus().getCode().isSuccess())
-                    objects.add(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(o, channelHandlerContext.alloc())));
+                    objects.add(new BinaryWebSocketFrame(serialized));
                 else {
-                    objects.add(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(o, channelHandlerContext.alloc())));
+                    objects.add(new BinaryWebSocketFrame(serialized));
                     final ResponseMessage terminator = ResponseMessage.build(o.getRequestId()).code(ResponseStatusCode.SUCCESS_TERMINATOR).create();
                     objects.add(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(terminator, channelHandlerContext.alloc())));
                     errorMeter.mark();

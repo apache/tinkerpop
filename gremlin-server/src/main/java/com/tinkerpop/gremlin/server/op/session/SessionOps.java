@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.server.Context;
 import com.tinkerpop.gremlin.server.GremlinServer;
+import com.tinkerpop.gremlin.server.handler.StateKey;
 import com.tinkerpop.gremlin.server.op.OpProcessorException;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -57,6 +58,11 @@ final class SessionOps {
         final RequestMessage msg = context.getRequestMessage();
 
         final Session session = getSession(context, msg);
+
+        // place the session on the channel context so that it can be used during serialization.  in this way
+        // the serialization can occur on the same thread used to execute the gremlin within the session.  this
+        // is important given the threadlocal nature of Graph implementation transactions.
+        context.getChannelHandlerContext().channel().attr(StateKey.SESSION).set(session);
 
         final String script = (String) msg.getArgs().get(Tokens.ARGS_GREMLIN);
         final Optional<String> language = Optional.ofNullable((String) msg.getArgs().get(Tokens.ARGS_LANGUAGE));
