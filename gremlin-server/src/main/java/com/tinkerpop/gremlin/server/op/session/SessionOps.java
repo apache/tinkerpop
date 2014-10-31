@@ -82,42 +82,6 @@ final class SessionOps {
         });
     }
 
-    public static void traverseOp(final Context context) throws OpProcessorException {
-        final Timer.Context timerContext = traverseOpTimer.time();
-        final ChannelHandlerContext ctx = context.getChannelHandlerContext();
-        final RequestMessage msg = context.getRequestMessage();
-
-        final Session session = getSession(context, msg);
-
-        final Map<String, Object> args = msg.getArgs();
-        final Bindings sessionBindings = session.getBindings();
-        final Map<String, Object> bindings = Optional.ofNullable((Map<String, Object>) args.get(Tokens.ARGS_BINDINGS)).orElse(new HashMap<>());
-
-        // parameter bindings override session bindings
-        sessionBindings.putAll(bindings);
-        final Function<Graph, Traversal> traversal;
-        try {
-            // deserialize the traversal and shove it into the bindings so that it can be executed within the
-            // scriptengine.  the scriptengine acts as a sandbox within which to execute the traversal.
-            traversal = (Function<Graph, Traversal>) Serializer.deserializeObject((byte[]) args.get(Tokens.ARGS_GREMLIN));
-            bindings.put("____trvrslScrpt", traversal);
-        } catch (Exception ex) {
-            logger.warn(String.format("Exception processing a traversal on request [%s].", msg), ex);
-            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TRAVERSAL_EVALUATION).statusMessage(ex.getMessage()).create());
-            return;
-        }
-
-        final String script = String.format("____trvrslScrpt.apply(%s)", args.get(Tokens.ARGS_GRAPH_NAME));
-        final CompletableFuture<Object> future = session.getGremlinExecutor().eval(script, bindings);
-        future.handle((v, t) -> timerContext.stop());
-        future.thenAccept(o -> ctx.write(Pair.with(msg, convertToIterator(o))));
-        future.exceptionally(se -> {
-            logger.warn(String.format("Exception processing a traversal on request [%s].", msg), se);
-            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TRAVERSAL_EVALUATION).statusMessage(se.getMessage()).create());
-            return null;
-        });
-    }
-
     private static Session getSession(final Context context, final RequestMessage msg) {
         final String sessionId = (String) msg.getArgs().get(Tokens.ARGS_SESSION);
         final Session session = sessions.computeIfAbsent(sessionId, k -> new Session(k, context, sessions));
