@@ -56,10 +56,19 @@ public class WsGremlinResponseEncoder extends MessageToMessageEncoder<ResponseMe
                 // the expectation is that the GremlinTextRequestDecoder will have placed a MessageTextSerializer
                 // instance on the channel.
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
+
+                final String serialized;
+
+                // if the request came in on a session then the serialization must occur in that same thread.
+                if (null == session)
+                    serialized = textSerializer.serializeResponseAsString(o);
+                else
+                    serialized = session.getExecutor().submit(() -> textSerializer.serializeResponseAsString(o)).get();
+
                 if (o.getStatus().getCode().isSuccess())
-                    objects.add(new TextWebSocketFrame(true, 0, textSerializer.serializeResponseAsString(o)));
+                    objects.add(new TextWebSocketFrame(true, 0, serialized));
                 else {
-                    objects.add(new TextWebSocketFrame(true, 0, textSerializer.serializeResponseAsString(o)));
+                    objects.add(new TextWebSocketFrame(true, 0, serialized));
                     final ResponseMessage terminator = ResponseMessage.build(o.getRequestId()).code(ResponseStatusCode.SUCCESS_TERMINATOR).create();
                     objects.add(new TextWebSocketFrame(true, 0, textSerializer.serializeResponseAsString(terminator)));
                     errorMeter.mark();
