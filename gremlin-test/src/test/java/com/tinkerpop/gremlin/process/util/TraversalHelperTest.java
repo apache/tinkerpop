@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.PropertyMapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ShuffleStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.structure.PropertyType;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -69,11 +70,11 @@ public class TraversalHelperTest {
         traversal.addStep(new HasStep(traversal, null));
         traversal.addStep(new FilterStep(traversal));
 
-        traversal.addStep(new PropertiesStep(traversal, false, true, "marko"));
+        traversal.addStep(new PropertiesStep(traversal, PropertyType.VALUE, "marko"));
         TraversalHelper.removeStep(3, traversal);
         validateToyTraversal(traversal);
 
-        TraversalHelper.insertStep(new PropertiesStep(traversal, false, true, "marko"), 0, traversal);
+        TraversalHelper.insertStep(new PropertiesStep(traversal, PropertyType.PROPERTY, "marko"), 0, traversal);
         TraversalHelper.removeStep(0, traversal);
         validateToyTraversal(traversal);
 
@@ -88,7 +89,7 @@ public class TraversalHelperTest {
         Step step1 = new IdentityStep(traversal);
         Step step2 = new TimeLimitStep<>(traversal, 100);
         Step step3 = new RandomStep<>(traversal, 0.5);
-        Step step4 = new PropertyMapStep(traversal, false, false, "name");
+        Step step4 = new PropertyMapStep(traversal, PropertyType.PROPERTY, "name");
         Step step5 = new ShuffleStep<>(traversal);
         traversal.addStep(step1);
         traversal.addStep(step2);

@@ -71,6 +71,7 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Order;
 import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.PropertyType;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 
@@ -245,35 +246,35 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
     }
 
     public default <E2> GraphTraversal<S, ? extends Property<E2>> properties(final String... propertyKeys) {
-        return this.addStep(new PropertiesStep<>(this, false, false, propertyKeys));
-    }
-
-    public default <E2> GraphTraversal<S, Map<String, E2>> propertyMap(final String... propertyKeys) {
-        return this.addStep(new PropertyMapStep<>(this, false, false, propertyKeys));
+        return this.addStep(new PropertiesStep<>(this, PropertyType.PROPERTY, propertyKeys));
     }
 
     public default <E2> GraphTraversal<S, E2> values(final String... propertyKeys) {
-        return this.addStep(new PropertiesStep<>(this, false, true, propertyKeys));
-    }
-
-    public default <E2> GraphTraversal<S, Map<String, E2>> valueMap(final String... propertyKeys) {
-        return this.addStep(new PropertyMapStep<>(this, false, true, propertyKeys));
+        return this.addStep(new PropertiesStep<>(this, PropertyType.VALUE, propertyKeys));
     }
 
     public default <E2> GraphTraversal<S, ? extends Property<E2>> hiddens(final String... propertyKeys) {
-        return this.addStep(new PropertiesStep<>(this, true, false, propertyKeys));
-    }
-
-    public default <E2> GraphTraversal<S, Map<String, E2>> hiddenMap(final String... propertyKeys) {
-        return this.addStep(new PropertyMapStep<>(this, true, false, propertyKeys));
+        return this.addStep(new PropertiesStep<>(this, PropertyType.HIDDEN_PROPERTY, propertyKeys));
     }
 
     public default <E2> GraphTraversal<S, E2> hiddenValues(final String... propertyKeys) {
-        return this.addStep(new PropertiesStep<>(this, true, true, propertyKeys));
+        return this.addStep(new PropertiesStep<>(this, PropertyType.HIDDEN_VALUE, propertyKeys));
+    }
+
+    public default <E2> GraphTraversal<S, Map<String, E2>> propertyMap(final String... propertyKeys) {
+        return this.addStep(new PropertyMapStep<>(this, PropertyType.PROPERTY, propertyKeys));
+    }
+
+    public default <E2> GraphTraversal<S, Map<String, E2>> valueMap(final String... propertyKeys) {
+        return this.addStep(new PropertyMapStep<>(this, PropertyType.VALUE, propertyKeys));
+    }
+
+    public default <E2> GraphTraversal<S, Map<String, E2>> hiddenMap(final String... propertyKeys) {
+        return this.addStep(new PropertyMapStep<>(this, PropertyType.HIDDEN_PROPERTY, propertyKeys));
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> hiddenValueMap(final String... propertyKeys) {
-        return this.addStep(new PropertyMapStep<>(this, true, true, propertyKeys));
+        return this.addStep(new PropertyMapStep<>(this, PropertyType.HIDDEN_VALUE, propertyKeys));
     }
 
     public default GraphTraversal<S, String> key() {
