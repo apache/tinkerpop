@@ -119,7 +119,7 @@ gremlin> g.v(1).as('a').out('created').in('created').except('a') // marko can't 
 gremlin> g.v(1).as('a').out('created').in('created').except('a').addBothE('co-developer','a')
 ==>v[4]
 ==>v[6]
-gremlin> g.v(1).out('co-developer').value('name')
+gremlin> g.v(1).out('co-developer').values('name')
 ==>josh
 ==>peter
 gremlin> g.v(1).out('co-developer').in('co-developer')
@@ -151,7 +151,7 @@ gremlin> g.v(1).out('created').aggregate('x').in('created').out('created') // wh
 ==>v[5]
 ==>v[3]
 ==>v[3]
-gremlin> g.v(1).out('created').aggregate('x').in('created').out('created').except('x').value('name') // what have marko's collaborators created that he hasn't created?
+gremlin> g.v(1).out('created').aggregate('x').in('created').out('created').except('x').values('name') // what have marko's collaborators created that he hasn't created?
 ==>ripple
 
 In link:http://en.wikipedia.org/wiki/Recommender_system[recommendation systems], the above pattern is used:
@@ -189,14 +189,14 @@ Choose Step
 The `choose()`-step (*branch*) allows for the current `Traverser<T>` to select which traversal branch to take. With `choose()`, it is possible to implement if/else-based semantics.
 
 [source,groovy]
-gremlin> g.V().has('age').value('name').map{[it.get(), it.get().length()]}
+gremlin> g.V().has('age').values('name').map{[it.get(), it.get().length()]}
 ==>[marko, 5]
 ==>[vadas, 5]
 ==>[josh, 4]
 ==>[peter, 5]
-gremlin> g.V().has('age').filter{it.get().value('name').length() == 5}.in().value('name')
+gremlin> g.V().has('age').filter{it.get().value('name').length() == 5}.in().values('name')
 ==>marko
-gremlin> g.V().has('age').filter{it.get().value('name').length() == 4}.out().value('name')
+gremlin> g.V().has('age').filter{it.get().value('name').length() == 4}.out().values('name')
 ==>ripple
 ==>lop
 
@@ -207,13 +207,13 @@ image::choose-step.png[width=700]
 [source,groovy]
 gremlin> g.V().has('age').choose({it.get().value('name').length() == 5},   // If the predicate is true, then do `in`, else do `out`.
   g.of().in(),
-  g.of().out()).value('name')
+  g.of().out()).values('name')
 ==>marko
 ==>ripple
 ==>lop
 gremlin> g.V().has('age').choose({it.get().value('name').length()},   // Use the result of the function as a key to the map of traversal choices.
   [5:g.of().in(),
-   4:g.of().out()]).value('name')
+   4:g.of().out()]).values('name')
 ==>marko
 ==>ripple
 ==>lop
@@ -224,7 +224,7 @@ In Java8, there is no elegant syntax to create a `Map`. Thus, the last traversal
 g.V().has("age").choose(v -> v.get().value("name").length(), new HashMap() {{
   put(5,g.of().in());
   put(4,g.of().out());
-}}).value("name")
+}}).values("name")
 
 [[cyclicpath-step]]
 CyclicPath Step
@@ -259,23 +259,23 @@ Dedup Step
 With `dedup()`-step (*filter*), repeatedly seen objects are removed from the traversal stream. Note that if a traverser's bulk is greater than 1, then it is set to 1 before being emitted.
 
 [source,groovy]
-gremlin> g.V().value('lang')
+gremlin> g.V().values('lang')
 ==>java
 ==>java
-gremlin> g.V().value('lang').dedup()
+gremlin> g.V().values('lang').dedup()
 ==>java
 
 If a lambda is provided to `dedup()`, then the object is processed by the lambda prior to determining if it has been seen or not.
 
 [source,groovy]
-gremlin> g.V().value('name').map{[it.get(), it.get().length()]}
+gremlin> g.V().values('name').map{[it.get(), it.get().length()]}
 ==>[marko, 5]
 ==>[vadas, 5]
 ==>[lop, 3]
 ==>[josh, 4]
 ==>[ripple, 6]
 ==>[peter, 5]
-gremlin> g.V().value('name').dedup{it.get().length()}
+gremlin> g.V().values('name').dedup{it.get().length()}
 ==>marko
 ==>lop
 ==>josh
@@ -297,11 +297,11 @@ gremlin> g.v(1).as('x').out('created').in('created')
 gremlin> g.v(1).as('x').out('created').in('created').except('x') // co-developers
 ==>v[4]
 ==>v[6]
-gremlin> g.v(1).as('x').out('created').in('created').value('name')
+gremlin> g.v(1).as('x').out('created').in('created').values('name')
 ==>marko
 ==>josh
 ==>peter
-gremlin> g.v(1).as('x').out('created').in('created').value('name').except(['marko','stephen'])
+gremlin> g.v(1).as('x').out('created').in('created').values('name').except(['marko','stephen'])
 ==>josh
 ==>peter
 
@@ -312,12 +312,12 @@ Fold Step
 There are situations when the traversal stream needs a "barrier" to aggregate all the objects and emit a computation that is a function of the aggregate. The `fold()`-step (*map*) is one particular instance of this. Please see <<unfold-step,`unfold()`>>-step for the inverse functionality.
 
 [source,groovy]
-gremlin> g.v(1).out('knows').value('name')
+gremlin> g.v(1).out('knows').values('name')
 ==>vadas
 ==>josh
-gremlin> g.v(1).out('knows').value('name').fold() <1>
+gremlin> g.v(1).out('knows').values('name').fold() <1>
 ==>[vadas, josh]
-gremlin> g.v(1).out('knows').value('name').fold(0){a,b -> a + b.get().length()} <2>
+gremlin> g.v(1).out('knows').values('name').fold(0){a,b -> a + b.get().length()} <2>
 ==>9
 
 <1> A parameterless `fold()` will aggregate all the objects into a list and then emit the list.
@@ -354,7 +354,7 @@ When it is important to know how many times a particular object has been at a pa
 	"What is the distribution of ages in the graph?"
 
 [source,groovy]
-gremlin> g.V().has('age').value('age').groupCount()
+gremlin> g.V().has('age').values('age').groupCount()
 ==>[32:1, 35:1, 27:1, 29:1]
 gremlin> g.V().has('age').groupCount{it.get().value('age')} // you can also supply a pre-group lambda
 ==>[32:1, 35:1, 27:1, 29:1]
@@ -405,15 +405,15 @@ image::inject-step.png[width=800]
 One of the major features of TinkerPop3 is "injectable steps." This makes it possible to insert objects arbitrarily into a traversal stream. This is how <<jump-step,jump()>> is implemented. In general, `inject()`-step (*sideEffect*) exists and a few examples are provided below.
 
 [source,groovy]
-gremlin> g.v(4).out().value('name').inject('daniel')
+gremlin> g.v(4).out().values('name').inject('daniel')
 ==>ripple
 ==>lop
 ==>daniel
-gremlin> g.v(4).out().value('name').inject('daniel').map{it.get().length()}
+gremlin> g.v(4).out().values('name').inject('daniel').map{it.get().length()}
 ==>6
 ==>3
 ==>6
-gremlin> g.v(4).out().value('name').inject('daniel').map{it.get().length()}.path()
+gremlin> g.v(4).out().values('name').inject('daniel').map{it.get().length()}.path()
 ==>[v[4], v[5], ripple, 6]
 ==>[v[4], v[3], lop, 3]
 ==>[daniel, 6]
@@ -427,7 +427,7 @@ gremlin> g.of().inject(1,2)
 gremlin> g.of().inject(1,2).map{it.get() + 1}
 ==>2
 ==>3
-gremlin> g.of().inject(1,2).map{it.get() + 1}.map{g.v(it.get())}.value('name')
+gremlin> g.of().inject(1,2).map{it.get() + 1}.map{g.v(it.get())}.values('name')
 ==>vadas
 ==>lop
 
@@ -441,10 +441,10 @@ The `interval()`-step (*filter*) is similar to <<has-step,`has()`>>-step in that
 gremlin> g.V().interval('age',20,30)
 ==>v[1]
 ==>v[2]
-gremlin> g.V().interval('age',20,30).value('age')
+gremlin> g.V().interval('age',20,30).values('age')
 ==>29
 ==>27
-gremlin> g.V().has('age',gt,20).has('age',lte,30).value('age') // the equivalent expression using only has()
+gremlin> g.V().has('age',gt,20).has('age',lte,30).values('age') // the equivalent expression using only has()
 ==>29
 ==>27
 
@@ -455,13 +455,13 @@ Jump Step
 TinkerPop3 introduces the `jump()`-step (*branch*). This step allows the propagating traverser object to jump to any arbitrary section of the `Traversal`. Typically, this is determined by means of a predicate. In particular, with `jump`, the Gremlin is no longer constrained to *do-while* semantics, but can as well support *while-do* (see link:http://docs.oracle.com/javase/tutorial/java/nutsandbolts/while.html[Java Documentation on While]). Below are some examples of `jump()` in action.
 
 [source,groovy]
-gremlin> g.v(1).as('a').out().jump('a'){it.loops()<2}.value('name') <1>
+gremlin> g.v(1).as('a').out().jump('a'){it.loops()<2}.values('name') <1>
 ==>ripple
 ==>lop
-gremlin> g.v(1).as('a').jump('b'){it.loops()>1}.out().jump('a').as('b').value('name') <2>
+gremlin> g.v(1).as('a').jump('b'){it.loops()>1}.out().jump('a').as('b').values('name') <2>
 ==>ripple
 ==>lop
-gremlin> g.v(1).jump('a').out().out().out().as('a').value('name') <3>
+gremlin> g.v(1).jump('a').out().out().out().as('a').values('name') <3>
 ==>marko
 
 <1> do-while semantics as found in the classic `loop()`-step in TinkerPop2.
@@ -471,14 +471,14 @@ gremlin> g.v(1).jump('a').out().out().out().as('a').value('name') <3>
 If a predetermined number of loops is known, it is possible to avoid the use of the jump-predicate.
 
 [source,groovy]
-gremlin> g.v(1).as('a').out().jump('a',2).value('name')
+gremlin> g.v(1).as('a').out().jump('a',2).values('name')
 ==>ripple
 ==>lop
 
 The `jump()`-step also supports an "emit predicate." Whereby the traverser is split in two -- the traverser exits the code block as well as continues back within the code block.
 
 [source,groovy]
-gremlin> g.v(1).as('a').out().jump('a'){it.loops()<2}{true}.value('name')
+gremlin> g.v(1).as('a').out().jump('a'){it.loops()<2}{true}.values('name')
 ==>lop
 ==>vadas
 ==>josh
@@ -534,7 +534,7 @@ gremlin> g.loadGraphML('data/grateful-dead.xml')
 gremlin> g.V().match('a',
             g.of().as('a').has('name', 'Garcia'),
             g.of().as('a').in('writtenBy').as('b'),
-            g.of().as('a').in('sungBy').as('b')).select('b').value('name')
+            g.of().as('a').in('sungBy').as('b')).select('b').values('name')
 ==>CREAM PUFF WAR
 ==>CRYPTICAL ENVELOPMENT
 
@@ -545,7 +545,7 @@ gremlin> g.V().match('a',
             g.of().as('a').out('created').has('name','lop').as('b'), <1>
             g.of().as('b').in('created').has('age', 29).as('c'),
             g.of().as('c').out().jump('c',2)). <2>
-           select('c').out('knows').dedup().value('name') <3>
+           select('c').out('knows').dedup().values('name') <3>
 ==>vadas
 ==>josh
 
@@ -564,7 +564,7 @@ gremlin> g.V().match('a',
           match('a',
             g.of().as('a').in('created').as('b'),
             g.of().as('b').out('knows').as('c')).
-          select('c').value('name')
+          select('c').values('name')
 ==>vadas
 ==>josh
 
@@ -633,21 +633,21 @@ Order Step
 When the objects of the traversal stream need to be sorted, `order()`-step (*map*) can be leveraged.
 
 [source,groovy]
-gremlin> g.V().value('name').order()
+gremlin> g.V().values('name').order()
 ==>josh
 ==>lop
 ==>marko
 ==>peter
 ==>ripple
 ==>vadas
-gremlin> g.V().value('name').order(decr)
+gremlin> g.V().values('name').order(decr)
 ==>vadas
 ==>ripple
 ==>peter
 ==>marko
 ==>lop
 ==>josh
-gremlin> g.V().value('name').order{a,b -> a.get()[1] <=> b.get[1]} // order by the second letter
+gremlin> g.V().values('name').order{a,b -> a.get()[1] <=> b.get[1]} // order by the second letter
 ==>marko
 ==>vadas
 ==>peter
@@ -662,14 +662,14 @@ gremlin> import static java.util.Comparator.*
 ...
 gremlin> import java.util.function.*
 ...
-gremlin> g.V().value('name').order(comparing{it.get()[1]}) // order by the second letter
+gremlin> g.V().values('name').order(comparing{it.get()[1]}) // order by the second letter
 ==>marko
 ==>vadas
 ==>peter
 ==>ripple
 ==>lop
 ==>josh
-gremlin> g.V().value('name').
+gremlin> g.V().values('name').
            order(comparing{it.get()[1]}.thenComparing((Function){it.get()[2]})) // order by second letter and if a tie, the third letter
 ==>vadas
 ==>marko
@@ -716,10 +716,10 @@ A traverser is transformed as it moves through a series of steps within a `Trave
 image::path-step.png[width=650]
 
 [source,groovy]
-gremlin> g.V().out().out().value('name')
+gremlin> g.V().out().out().values('name')
 ==>ripple
 ==>lop
-gremlin> g.V().out().out().value('name').path()
+gremlin> g.V().out().out().values('name').path()
 ==>[v[1], v[4], v[5], ripple]
 ==>[v[1], v[4], v[3], lop]
 
@@ -742,8 +742,8 @@ Finally, because of lambda post-processing, nothing prevents the lambda from tri
 [source,groovy]
 gremlin> g.V().out().out().path{
   it.choose({it.get().has('age').hasNext()}, 
-    g.of().out('created').value('name'),
-    g.of().in('created').value('name')).toList()}
+    g.of().out('created').values('name'),
+    g.of().in('created').values('name')).toList()}
 ==>[[lop], [ripple, lop], [josh]]
 ==>[[lop], [ripple, lop], [marko, josh, peter]]
 
@@ -758,7 +758,7 @@ The `Path` data structure is an ordered list of objects, where each object is as
 image::path-data-structure.png[width=350]
 
 [source,groovy]
-gremlin> path = g.v(1).as('a').has('name').as('b').out('knows').out('created').as('c').has('name','ripple').value('name').as('d').identity().as('e').path().next()
+gremlin> path = g.v(1).as('a').has('name').as('b').out('knows').out('created').as('c').has('name','ripple').values('name').as('d').identity().as('e').path().next()
 ==>[v[1], v[4], v[5], ripple]
 gremlin> path.size()
 ==>4
@@ -897,11 +897,11 @@ gremlin> g.v(1).as('x').out('created').in('created')
 ==>v[6]
 gremlin> g.v(1).as('x').out('created').in('created').retain('x')
 ==>v[1]
-gremlin> g.v(1).as('x').out('created').in('created').value('name')
+gremlin> g.v(1).as('x').out('created').in('created').values('name')
 ==>marko
 ==>josh
 ==>peter
-gremlin> g.v(1).as('x').out('created').in('created').value('name').retain(['marko','stephen'])
+gremlin> g.v(1).as('x').out('created').in('created').values('name').retain(['marko','stephen'])
 ==>marko
 
 [[select-step]]
@@ -1204,14 +1204,14 @@ The `union()`-step (*branch*) supports the merging of the results of an arbitrar
 
 [source,groovy]
 gremlin> g.v(4).union(
-            g.of().in().value('age'),
-            g.of().out().value('lang'))
+            g.of().in().values('age'),
+            g.of().out().values('lang'))
 ==>29
 ==>java
 ==>java
 gremlin> g.v(4).union(
-            g.of().in().value('age'),
-            g.of().out().value('lang')).path()
+            g.of().in().values('age'),
+            g.of().out().values('lang')).path()
 ==>[v[4], v[1], 29]
 ==>[v[4], v[5], java]
 ==>[v[4], v[3], java]
@@ -1223,10 +1223,10 @@ Until Step
 Gremlin provides *while-do* looping. This was demonstrated in the <<jump-step,Jump Step>> section of the documentation. However, when only using `jump()` for *while-do*, the representation can be confusing as there are numerous `jump` constructions. For the sake of simplicity, `until()`-step exists (*branch*).
 
 [source,groovy]
-gremlin> g.v(1).as('a').jump('b'){it.loops() > 1}.out().jump('a').as('b').value('name') <1>
+gremlin> g.v(1).as('a').jump('b'){it.loops() > 1}.out().jump('a').as('b').values('name') <1>
 ==>ripple
 ==>lop
-gremlin> g.v(1).until('b'){it.loops() > 1}.out().as('b').value('name') <2>
+gremlin> g.v(1).until('b'){it.loops() > 1}.out().as('b').values('name') <2>
 ==>ripple
 ==>lop
 

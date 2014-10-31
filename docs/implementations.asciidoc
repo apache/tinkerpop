@@ -393,7 +393,7 @@ marko.addEdge("created",lop,"weight",0.6d);
 The above graph creates two vertices named "marko" and "lop" and connects them via a created-edge with a weight=0.6 property. Next, the graph can be queried as such.
 
 [source,java]
-g.V().has("name","marko").out("created").value("name")
+g.V().has("name","marko").out("created").values("name")
 
 The `g.V().has("name","marko")` part of the query can be executed in two ways.
 
@@ -496,7 +496,7 @@ gremlin> g.addVertex(label,'person','name','marko')
 ==>v[0]
 gremlin> g.addVertex(label,'dog','name','puppy')
 ==>v[1]
-gremlin> g.V().has(label,'person').has('name','marko').value('name')
+gremlin> g.V().has(label,'person').has('name','marko').values('name')
 ==>marko
 
 Below demonstrates the runtime benefits of indices and demonstrates how if there is no defined schema index (only vertex labels), a linear scan of the vertex-label partition is still faster than a linear scan of all vertices.
@@ -553,7 +553,7 @@ gremlin> g.addVertex(label,'person','name','marko')
 ==>v[0]
 gremlin> g.addVertex(label,'dog','name','puppy')
 ==>v[1]
-gremlin> g.V().has(label,'person').has('name','marko').value('name')
+gremlin> g.V().has(label,'person').has('name','marko').values('name')
 ==>marko
 
 WARNING: The preferred method for dealing with automatic indices in Neo4j is via `Neo4jGraph.open()` configuration as opposed to runtime updating as demonstrated above. This is because with runtime updating, index information is not propagated across Neo4j connections.
@@ -572,11 +572,11 @@ gremlin> g.loadKryo('data/tinkerpop-classic.gio')
 ==>null
 gremlin> g.cypher('MATCH (a {name:"marko"}) RETURN a')
 ==>[a:v[0]]
-gremlin> g.cypher('MATCH (a {name:"marko"}) RETURN a').select('a').out('knows').value('name')
+gremlin> g.cypher('MATCH (a {name:"marko"}) RETURN a').select('a').out('knows').values('name')
 ==>vadas
 ==>josh
 gremlin> g.cypher("MATCH (n{name:'marko'})-[:knows]->(m) RETURN m").select('m').id().fold().
-             cypher("MATCH (m)-[:created]->(n) WHERE id(m) in {start} RETURN n").select('n').value('name')
+             cypher("MATCH (m)-[:created]->(n) WHERE id(m) in {start} RETURN n").select('n').values('name')
 ==>lop
 ==>ripple
 
@@ -705,7 +705,7 @@ gremlin> g = GraphFactory.open('../../../giraph-gremlin/conf/giraph-kryo.propert
 ==>giraphgraph[kryovertexinputformat->kryovertexoutputformat]
 gremlin> g.V().count()
 ==>6
-gremlin> g.V().out().out().value('name')
+gremlin> g.V().out().out().values('name')
 ==>ripple
 ==>lop
 gremlin> g.V().groupBy{it.get().value('name')[1]}{it.get().value('name')}.next()
@@ -734,7 +734,7 @@ INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0038
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
 ==>6
-gremlin> :> g.V().out().out().value('name')
+gremlin> :> g.V().out().out().values('name')
 INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, VertexStep(OUT), VertexStep(OUT), ElementValueStep(name)]
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0031
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
@@ -818,7 +818,7 @@ The `TraversalSupplier1` class mentioned in the `giraph-kryo.properties` file is
 
 public class TraversalSupplier1 implements SSupplier<Traversal> {
     public Traversal get() {
-        return GiraphGraph.open().V().out().out().value("name");
+        return GiraphGraph.open().V().out().out().values("name");
     }
 }
 ----

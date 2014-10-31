@@ -35,7 +35,7 @@ IMPORTANT: TinkerPop3 is licensed under the popular link:http://www.apache.org/l
 
 image:tinkerpop-enabled.png[width=135,float=left] When a graph vendor implements the TinkerPop3 structure and process link:http://en.wikipedia.org/wiki/Application_programming_interface[APIs], their technology is considered _TinkerPop3-enabled_ and becomes nearly indistinguishable from any other TinkerPop-enabled graph system save for their respective time and space complexity. The purpose of this documentation is to describe the structure/process dichotomy at length and in doing so, explain how to leverage TinkerPop3 for the sole purpose of vendor-agnostic graph computing. Before deep-diving into the various structure/process APIs, a short introductory review of both APIs is provided.
 
-NOTE: The TinkerPop3 API rides a fine line between providing concise "query language" method names and respecting Java method naming standards. The general convention used throughout TinkerPop3 is that if a method is "user exposed," then a concise name is provided (e.g. `out()`, `path()`, `value()`). If the method is primarily for vendors, then the standard Java naming convention is followed (e.g. `getNextStep()`, `getSteps()`, `getElementComputeKeys()`).
+NOTE: The TinkerPop3 API rides a fine line between providing concise "query language" method names and respecting Java method naming standards. The general convention used throughout TinkerPop3 is that if a method is "user exposed," then a concise name is provided (e.g. `out()`, `path()`, `values()`). If the method is primarily for vendors, then the standard Java naming convention is followed (e.g. `getNextStep()`, `getSteps()`, `getElementComputeKeys()`).
 
 The Graph Structure
 -------------------
@@ -74,7 +74,7 @@ Below is a sequence of basic graph mutation operations represented in Java8. One
 
 IMPORTANT: image:groovy-logo.png[width=175,float=left] Gremlin-Groovy leverages the link:http://groovy.codehaus.org/[Groovy 2.x language] to express Gremlin traversals. One of the major benefits of Groovy is the inclusion of a runtime console that makes it easy for developers to practice with the Gremlin language and for production users to connect to their graph and execute traversals in an interactive manner. Moreover, Gremlin-Groovy provides various syntax simplifications.
 
-TIP: image:gremlin-sugar.png[width=100,float=left] For those wishing to use the Gremlin2 syntax, please see <<sugar-plugin,SugarPlugin>>. This plugin provides syntactic sugar at, typically, a runtime cost. It can be loaded programmaticaly via `SugarLoader.load()`. Once loaded, it is possible to do `g.V.out.name` instead of `g.V().out().value('name')` as well as a host of other niceities.
+TIP: image:gremlin-sugar.png[width=100,float=left] For those wishing to use the Gremlin2 syntax, please see <<sugar-plugin,SugarPlugin>>. This plugin provides syntactic sugar at, typically, a runtime cost. It can be loaded programmaticaly via `SugarLoader.load()`. Once loaded, it is possible to do `g.V.out.name` instead of `g.V().out().values('name')` as well as a host of other niceities.
 
 CAUTION: In the code examples presented throughout this documentation, either Gremlin-Java8 or Gremlin-Groovy is used. Usually which derivative of Gremlin is being used is made explicit in the text, however, if not, a simple mouse over on the code block will state the language as either "JAVA" or "GROOVY."
 
@@ -186,7 +186,7 @@ $ bin/gremlin.sh
 -----oOOo-(3)-oOOo-----
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> g.V().has('name','marko').out('knows').value('name')
+gremlin> g.V().has('name','marko').out('knows').values('name')
 ==>vadas
 ==>josh
 ----
@@ -199,7 +199,7 @@ gremlin> marko = g.v(1)
 gremlin> marko.out('knows') <1>
 ==>v[2]
 ==>v[4]
-gremlin> marko.out('knows').value('name') <2>
+gremlin> marko.out('knows').values('name') <2>
 ==>vadas
 ==>josh
 
@@ -240,7 +240,7 @@ image::traversal-mechanics.png[width=500]
 In TinkerPop3, the objects propagating through the traversal are wrapped in a `Traverser<T>`. The traverser concept is new to TinkerPop3 and provides the means by which steps remain stateless. A traverser maintains all the metadata about the traversal -- e.g., how many times the traverser has gone through a loop, the path history of the traverser, the current object being traversed, etc. Traverser metadata may be accessed by a step. A classic example is the `path()`-step.
 
 [source,groovy]
-marko.out('knows').value('name').path()
+marko.out('knows').values('name').path()
 ==>[v[1], v[2], vadas]
 ==>[v[1], v[4], josh]
 
@@ -249,7 +249,7 @@ CAUTION: Path calculation is costly in terms of space as an array of previously 
 Another example is the `jump()`-step which takes into account the number of times the traverser has gone through a particular section of the traversal expression.
 
 [source,groovy]
-marko.as('a').out().jump('a',2).value('name')
+marko.as('a').out().jump('a',2).values('name')
 ==>ripple
 ==>lop
 

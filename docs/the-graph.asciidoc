@@ -687,7 +687,7 @@ gremlin> bg = g.getBaseGraph()
 ==>tinkergraph[vertices:0 edges:0]
 gremlin> bg.addVertex('name','stephen')
 ==>v[0]
-gremlin> g.v(0l).value('name')
+gremlin> g.v(0l).values('name')
 ==>stephen
 ----
 

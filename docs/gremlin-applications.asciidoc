@@ -49,14 +49,14 @@ gremlin> g.V()
 ==>v[4]
 ==>v[5]
 ==>v[6]
-gremlin> g.V().value('name')
+gremlin> g.V().values('name')
 ==>marko
 ==>vadas
 ==>lop
 ==>josh
 ==>ripple
 ==>peter
-gremlin> g.V().has('name','marko').out('knows').value('name')
+gremlin> g.V().has('name','marko').out('knows').values('name')
 ==>vadas
 ==>josh
 ----
@@ -152,7 +152,7 @@ The most direct way to get started with Gremlin Server is to issue it some remot
 
 [source,text]
 ----
-$bin/gremlin-server.sh conf/gremlin-server-classic.yaml
+$ bin/gremlin-server.sh conf/gremlin-server-classic.yaml
 [INFO] GremlinServer -
          \,,,/
          (o o)
@@ -211,19 +211,21 @@ The `:remote` command shown above displays the current status of the remote conn
 
 [source,groovy]
 ----
-gremlin> :> g.V().value('name')
+gremlin> :> g.V().values('name')
 ==>marko
 ==>vadas
 ==>lop
 ==>josh
 ==>ripple
 ==>peter
-gremlin> :> g.V().has('name','marko').out('created').value('name')
+gremlin> :> g.V().has('name','marko').out('created').values('name')
 ==>lop
 gremlin> :> g.E().label().groupCount()
 ==>{created=4, knows=2}
 gremlin> result
 ==>result{object={created=4, knows=2} class=java.lang.String}
+gremlin> :remote close
+==>removed - gremlin server - [localhost/127.0.0.1:8182]
 ----
 
 The `:>` command, which is a shorthand for `:submit`, sends the script to the server to execute there.  Results are wrapped in an `Result` object which is a just a holder for each individual result.  The `class` shows the data type for the containing value.  Note that the last script sent was supposed to return a `Map`, but its `class` is `java.lang.String`.  By default, the connection is configured to only return text results.  In other words, Gremlin Server is using `toString` to serialize all results back to the console.  This enables virtually any object on the server to be returned to the console, but it doesn't allow the opportunity to work with this data in any way in the console itself.  A different configuration of the `:remote` is required to get the results back as "objects":
@@ -237,18 +239,31 @@ gremlin> :remote list <2>
 ==>*1 - gremlin server - [localhost/127.0.0.1:8182]
 gremlin> :> g.E().label().groupCount() <3>
 ==>[created:4, knows:2]
-gremlin> m = result[0].object
+gremlin> m = result[0].object <4>
 ==>created=4
 ==>knows=2
 gremlin> m.sort{it.value}
 ==>knows=2
 ==>created=4
+gremlin> script = """
+                  matthias = g.addVertex('name','matthias')
+                  matthias.addEdge('co-creator',g.V().has('name','marko').next())
+                  """
+gremlin> :> @script   <5>
+==>e[14][12-co-creator->1]
+gremlin> :> g.V().has('name','matthias').out('co-creator').values('name')
+==>marko
+gremlin> :remote close
+==>removed - gremlin server - [localhost/127.0.0.1:8182]
 ----
 
 <1> This configuration file specifies that results should be deserialized back into an `Object` in the Console with the caveat being that the server and console both know how to serialize and deserialize the result to be returned.
 <2> There are now two configured remote connections.  The one marked by an asterisk is the one that was just created and denotes the current one that `:sumbit` will react to.
 <3> When the script is executed again, the `class` is no longer shown to be a `java.lang.String`.  It is instead a `java.util.HashMap`.
 <4> The last result of a remote script is always stored in the reserved variable `result`, which allows access to the `Result` and by virtue of that, the `Map` itself.
+<5> If the submission requires multiple-lines to express, then a multi-line string can be created. The `:>` command realizes that the user is referencing a variable via `@` and submits the string script.
+
+TIP: In Groovy, `""" text """` is a convenient way to create a multi-line string and works well in concert with `:> @variable`. Note that this model of submitting a string variable works for all `:>` based plugins, not just Gremlin Server.
 
 Connecting via Java
 ~~~~~~~~~~~~~~~~~~~
@@ -629,7 +644,7 @@ To visualize it insert the appropriately named `store('n')` steps where `n` is a
 
 [source,groovy]
 gremlin> g.v(2).in('knows').out('knows').has('age',gt,30).
-               outE('created').has('weight',gt,0.5f).inV().value('name')
+               outE('created').has('weight',gt,0.5f).inV().values('name')
 ==>ripple
 gremlin> traversal = g.v(2).store('1').
                            in('knows').store('2').
@@ -707,7 +722,7 @@ IMPORTANT: It is important that the sugar plugin is loaded in a Gremlin Console 
 [source,groovy]
 gremlin> :plugin use tinkerpop.sugar
 ==>tinkerpop.sugar activated
-gremlin> g.v(1).value('name')  // conventional 
+gremlin> g.v(1).values('name')  // conventional
 ==>marko
 gremlin> g.v(1).name  // sugar
 ==>marko
@@ -728,10 +743,10 @@ gremlin> g.V.map{it.name}  // sugar
 
 The examples above are generalized below:
 
-. Missing element fields: if a vertex or edge's instance field is selected and that field does not exist, then it is assumed the user means `value('fieldName')`.
+. Missing element fields: if a vertex or edge's instance field is selected and that field does not exist, then it is assumed the user means `values('fieldName')`.
 . Missing traverser method: if a traverser method is called and that method doesn't exist, then it is assumed that the method is on the wrapped object of the traverser.
 . Missing traverser field: if a traverser field is called and that field doesn't exist, then it is assumed that the field is on the wrapped object of the traverser.
-. Missing traversal field: if a traversal field is called and that field doesn't exist, then it is assumed either a step() or defaults to `value('step')`.
+. Missing traversal field: if a traversal field is called and that field doesn't exist, then it is assumed either a step() or defaults to `values('step')`.
 
 [[utilities-plugin]]
 Utilities Plugin
@@ -773,7 +788,7 @@ gremlin> :plugin use tinkerpop.sugar // activate sugar plugin for use in benchma
 ==>tinkerpop.sugar activated
 gremlin> benchmark{ 
 gremlin>   'sugar' {g.v(1).name.next()}
-gremlin>   'nosugar' {g.v(1).value('name').next()}}.prettyPrint()
+gremlin>   'nosugar' {g.v(1).values('name').next()}}.prettyPrint()
 Environment
 ===========
 * Groovy: 2.3.6
