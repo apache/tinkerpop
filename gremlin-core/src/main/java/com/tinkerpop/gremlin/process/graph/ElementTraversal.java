@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Order;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 
@@ -129,8 +130,16 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().orderBy(key);
     }
 
+    public default GraphTraversal<A, A> orderBy(final T accessor) {
+        return this.start().orderBy(accessor);
+    }
+
     public default GraphTraversal<A, A> orderBy(final String key, final Comparator comparator) {
         return this.start().orderBy(key, comparator);
+    }
+
+    public default GraphTraversal<A, A> orderBy(final T accessor, final Comparator comparator) {
+        return this.start().orderBy(accessor, comparator);
     }
 
     public default GraphTraversal<A, A> shuffle() {

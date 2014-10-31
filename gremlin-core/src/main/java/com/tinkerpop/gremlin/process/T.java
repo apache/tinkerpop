@@ -52,4 +52,17 @@ public enum T {
 
     public abstract String getAccessor();
 
+    public static T fromString(final String accessor) {
+        if (accessor.equals(LABEL))
+            return label;
+        else if (accessor.equals(ID))
+            return id;
+        else if (accessor.equals(KEY))
+            return key;
+        else if (accessor.equals(VALUE))
+            return value;
+        else
+            throw new IllegalArgumentException("The following accessor string is unknown: " + accessor);
+    }
+
 }

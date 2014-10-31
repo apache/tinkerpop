@@ -2,6 +2,8 @@ package com.tinkerpop.gremlin.process.graph.step.filter;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -9,16 +11,18 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class LocalRangeTest extends AbstractGremlinTest {
+public abstract class LocalRangeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Edge> get_g_V_outE_localRangeX0_2X();
 
@@ -53,10 +57,11 @@ public abstract class LocalRangeTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(MODERN)
+    @LoadGraphWith(CREW)
     public void g_V_randomX0X() {
         final Traversal<Vertex, String> traversal = get_g_V_propertiesXlocationX_localRangeX0_2X_value();
         printTraversalForm(traversal);
+        //checkResults(Arrays.asList("brussels","san diego","centreville","dulles","baltimore","bremen","aachen","kaiserslautern"), traversal);
 
     }
 
@@ -69,7 +74,7 @@ public abstract class LocalRangeTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_propertiesXlocationX_localRangeX0_2X_value() {
-            return g.V().properties("location").localRange(0, 2).value();
+            return g.V().properties("location").orderBy(T.value).localRange(0, 2).value();
         }
     }
 
@@ -82,7 +87,7 @@ public abstract class LocalRangeTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_propertiesXlocationX_localRangeX0_2X_value() {
-            return g.V().properties("location").localRange(0, 2).<String>value().submit(g.compute());
+            return g.V().properties("location").orderBy(T.value).localRange(0, 2).<String>value().submit(g.compute());
         }
     }
 }

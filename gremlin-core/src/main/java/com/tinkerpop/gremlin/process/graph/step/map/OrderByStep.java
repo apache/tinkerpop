@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.map;
 
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Comparing;
@@ -7,6 +8,7 @@ import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.util.BarrierStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.Comparator;
 
@@ -27,8 +29,35 @@ public final class OrderByStep<S extends Element, C> extends BarrierStep<S> impl
         this.setConsumer(traversers -> traversers.sort(this.comparator));
     }
 
+    public OrderByStep(final Traversal traversal, final T accessor, final Comparator<C> elementValueComparator) {
+        super(traversal);
+        this.elementKey = accessor.getAccessor();
+        this.elementValueComparator = elementValueComparator;
+        switch (accessor) {
+            case id:
+                this.comparator = (a, b) -> this.elementValueComparator.compare((C) a.get().id(), (C) b.get().id());
+                break;
+            case label:
+                this.comparator = (a, b) -> this.elementValueComparator.compare((C) a.get().label(), (C) b.get().label());
+                break;
+            case key:
+                this.comparator = (a, b) -> this.elementValueComparator.compare((C) ((VertexProperty) a.get()).key(), (C) ((VertexProperty) a.get()).key());
+                break;
+            case value:
+                this.comparator = (a, b) -> this.elementValueComparator.compare((C) ((VertexProperty) a.get()).value(), (C) ((VertexProperty) a.get()).value());
+                break;
+            default:
+                throw new IllegalArgumentException("The provided token is unknown: " + accessor.name());
+        }
+        this.setConsumer(traversers -> traversers.sort(this.comparator));
+    }
+
     public String getElementKey() {
         return this.elementKey;
+    }
+
+    public T getElementAccessor() {
+        return T.fromString(this.elementKey);
     }
 
     @Override

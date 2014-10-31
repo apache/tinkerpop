@@ -334,8 +334,16 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.order(arg0);
 	}
 
+	public default <E2 extends Element> Neo4jTraversal<S, E2> orderBy(com.tinkerpop.gremlin.process.T arg0) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.orderBy(arg0);
+	}
+
 	public default <E2 extends Element> Neo4jTraversal<S, E2> orderBy(java.lang.String arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.orderBy(arg0);
+	}
+
+	public default <E2 extends Element> Neo4jTraversal<S, E2> orderBy(com.tinkerpop.gremlin.process.T arg0, java.util.Comparator arg1) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.orderBy(arg0, arg1);
 	}
 
 	public default <E2 extends Element> Neo4jTraversal<S, E2> orderBy(java.lang.String arg0, java.util.Comparator arg1) {

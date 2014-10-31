@@ -42,6 +42,10 @@ public class PropertiesStep<E> extends FlatMapStep<Element, E> implements Revers
         return this.returnType;
     }
 
+    public String[] getPropertyKeys() {
+        return this.propertyKeys;
+    }
+
     @Override
     public void reverse() {
         // TODO: only works if its element->property ... how do we do dynamic reversibility?

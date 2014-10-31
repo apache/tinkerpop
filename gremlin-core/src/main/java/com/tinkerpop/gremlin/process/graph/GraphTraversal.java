@@ -206,8 +206,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
         return this.orderBy(key, Order.incr);
     }
 
+    public default <E2 extends Element> GraphTraversal<S, E2> orderBy(final T accessor) {
+        return this.orderBy(accessor, Order.incr);
+    }
+
     public default <E2 extends Element> GraphTraversal<S, E2> orderBy(final String key, final Comparator comparator) {
         return this.addStep(new OrderByStep(this, key, comparator));
+    }
+
+    public default <E2 extends Element> GraphTraversal<S, E2> orderBy(final T accessor, final Comparator comparator) {
+        return this.addStep(new OrderByStep(this, accessor, comparator));
     }
 
     public default GraphTraversal<S, E> shuffle() {
