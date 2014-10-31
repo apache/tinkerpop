@@ -17,19 +17,18 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
 
     private final String[] edgeLabels;
     private Direction direction;
-    private final int branchFactor;
     private final Class<E> returnClass;
 
-    public VertexStep(final Traversal traversal, final Class<E> returnClass, final Direction direction, final int branchFactor, final String... edgeLabels) {
+    public VertexStep(final Traversal traversal, final Class<E> returnClass, final Direction direction, final String... edgeLabels) {
         super(traversal);
         this.direction = direction;
         this.edgeLabels = edgeLabels;
-        this.branchFactor = branchFactor;
         this.returnClass = returnClass;
         if (Vertex.class.isAssignableFrom(this.returnClass))
-            this.setFunction(traverser -> (Iterator<E>) traverser.get().iterators().vertexIterator(this.direction, this.branchFactor, this.edgeLabels));
+            this.setFunction(traverser -> (Iterator<E>) traverser.get().iterators().vertexIterator(this.direction, this.edgeLabels));
         else
-            this.setFunction(traverser -> (Iterator<E>) traverser.get().iterators().edgeIterator(this.direction, this.branchFactor, this.edgeLabels));
+            this.setFunction(traverser -> (Iterator<E>) traverser.get().iterators().edgeIterator(this.direction, this.edgeLabels));
+
     }
 
     @Override
@@ -43,10 +42,6 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
 
     public String[] getEdgeLabels() {
         return this.edgeLabels;
-    }
-
-    public int getBranchFactor() {
-        return this.branchFactor;
     }
 
     public Class<E> getReturnClass() {

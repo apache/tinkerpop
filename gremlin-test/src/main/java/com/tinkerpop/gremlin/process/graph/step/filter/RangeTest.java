@@ -16,9 +16,9 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class RangeTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_out_rangeX0_2X(final Object v1Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v1_out_limitX2X(final Object v1Id);
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_outX1X_rangeX0_3X();
+    public abstract Traversal<Vertex, Vertex> get_g_V_outE_localLimitX1X_inV_limitX3X();
 
     public abstract Traversal<Vertex, Vertex> get_g_v1_outXknowsX_outEXcreatedX_rangeX0_1X_inV(final Object v1Id);
 
@@ -32,8 +32,8 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_v1_out_rangeX0_1X() {
-        final Traversal<Vertex, Vertex> traversal = get_g_v1_out_rangeX0_2X(convertToVertexId("marko"));
+    public void g_v1_out_limitX2X() {
+        final Traversal<Vertex, Vertex> traversal = get_g_v1_out_limitX2X(convertToVertexId("marko"));
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -45,8 +45,8 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_outX1X_rangeX0_2X() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_outX1X_rangeX0_3X();
+    public void g_V_outE_localLimitX1X_inV_limitX3X() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_outE_localLimitX1X_inV_limitX3X();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -131,13 +131,13 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_out_rangeX0_2X(final Object v1Id) {
-            return g.v(v1Id).out().range(0, 2);
+        public Traversal<Vertex, Vertex> get_g_v1_out_limitX2X(final Object v1Id) {
+            return g.v(v1Id).out().limit(2);
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_outX1X_rangeX0_3X() {
-            return g.V().out(1).range(0, 3);
+        public Traversal<Vertex, Vertex> get_g_V_outE_localLimitX1X_inV_limitX3X() {
+            return g.V().outE().localLimit(1).inV().limit(3);
         }
 
         @Override

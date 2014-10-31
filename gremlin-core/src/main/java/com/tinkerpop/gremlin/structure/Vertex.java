@@ -10,7 +10,7 @@ import java.util.Optional;
  * A {@link Vertex} maintains pointers to both a set of incoming and outgoing {@link Edge} objects. The outgoing edges
  * are those edges for  which the {@link Vertex} is the tail. The incoming edges are those edges for which the
  * {@link Vertex} is the head.
- * <p>
+ * <p/>
  * Diagrammatically:
  * <pre>
  * ---inEdges---> vertex ---outEdges--->.
@@ -79,7 +79,7 @@ public interface Vertex extends Element, VertexTraversal {
 
     /**
      * Gets the {@link Vertex.Iterators} set.
-     *
+     * <p/>
      * {@inheritDoc}
      */
     @Override
@@ -94,22 +94,20 @@ public interface Vertex extends Element, VertexTraversal {
         /**
          * Gets an {@link Iterator} of incident edges.
          *
-         * @param direction    The incident direction of the edges to retrieve off this vertex
-         * @param branchFactor The max number of edges to retrieve
-         * @param labels       The labels of the edges to retrieve
+         * @param direction  The incident direction of the edges to retrieve off this vertex
+         * @param edgeLabels The labels of the edges to retrieve
          * @return An iterator of edges meeting the provided specification
          */
-        public Iterator<Edge> edgeIterator(final Direction direction, final int branchFactor, final String... labels);
+        public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels);
 
         /**
          * Gets an {@link Iterator} of adjacent vertices.
          *
-         * @param direction    The adjacency direction of the vertices to retrieve off this vertex
-         * @param branchFactor The max number of vertices to retrieve
-         * @param labels       The labels of the edges associated with the vertices to retrieve
+         * @param direction  The adjacency direction of the vertices to retrieve off this vertex
+         * @param edgeLabels The labels of the edges associated with the vertices to retrieve
          * @return An iterator of vertices meeting the provided specification
          */
-        public Iterator<Vertex> vertexIterator(final Direction direction, final int branchFactor, final String... labels);
+        public Iterator<Vertex> vertexIterator(final Direction direction, final String... edgeLabels);
 
         /**
          * {@inheritDoc}

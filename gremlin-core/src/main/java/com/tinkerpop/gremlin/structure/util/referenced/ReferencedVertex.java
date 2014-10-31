@@ -64,12 +64,12 @@ public class ReferencedVertex extends ReferencedElement implements Vertex, Verte
 
 
     @Override
-    public Iterator<Edge> edgeIterator(final Direction direction, final int branchFactor, final String... labels) {
+    public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
         return Collections.emptyIterator();
     }
 
     @Override
-    public Iterator<Vertex> vertexIterator(final Direction direction, final int branchFactor, final String... labels) {
+    public Iterator<Vertex> vertexIterator(final Direction direction, final String... labels) {
         return Collections.emptyIterator();
     }
 

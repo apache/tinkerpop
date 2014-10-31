@@ -12,13 +12,13 @@ public abstract class GroovyRangeTest {
     public static class StandardTest extends RangeTest {
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_out_rangeX0_2X(final Object v1Id) {
-            g.v(v1Id).out[0..2]
+        public Traversal<Vertex, Vertex> get_g_v1_out_limitX2X(final Object v1Id) {
+            g.v(v1Id).out.limit(2)
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_outX1X_rangeX0_3X() {
-            g.V.out(1)[0..3]
+        public Traversal<Vertex, Vertex> get_g_V_outE_localLimitX1X_inV_limitX3X() {
+            g.V.outE.localLimit(3).inV.limit(3)
         }
 
         @Override
@@ -50,13 +50,13 @@ public abstract class GroovyRangeTest {
     public static class ComputerTestImpl extends RangeTest {
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_out_rangeX0_2X(final Object v1Id) {
-            ComputerTestHelper.compute("g.v(${v1Id}).out[0..2]", g);
+        public Traversal<Vertex, Vertex> get_g_v1_out_limitX2X(final Object v1Id) {
+            ComputerTestHelper.compute("g.v(${v1Id}).out.limit(2)", g);
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_outX1X_rangeX0_3X() {
-            ComputerTestHelper.compute("g.V.out(1)[0..3]", g);
+        public Traversal<Vertex, Vertex> get_g_V_outE_localLimitX1X_inV_limitX3X() {
+            ComputerTestHelper.compute("g.V.out(1).limit(3)", g);
         }
 
         @Override

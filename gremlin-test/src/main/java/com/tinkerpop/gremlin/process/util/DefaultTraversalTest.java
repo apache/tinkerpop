@@ -26,9 +26,6 @@ public class DefaultTraversalTest {
             assertNotEquals(original.getSteps().get(i), clone.getSteps().get(i));
         }
         assertNotEquals(original.getStrategies(), clone.getStrategies());
-        assertEquals(original.strategies.traversal.hashCode(), original.hashCode());
-        assertEquals(clone.strategies.traversal.hashCode(), clone.hashCode());
-        assertNotEquals(original.strategies.traversal.hashCode(), clone.strategies.traversal.hashCode());
         assertNotEquals(original.sideEffects, clone.sideEffects);
 
     }

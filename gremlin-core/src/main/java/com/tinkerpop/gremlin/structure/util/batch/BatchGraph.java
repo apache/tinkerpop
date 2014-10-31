@@ -2,9 +2,7 @@ package com.tinkerpop.gremlin.structure.util.batch;
 
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.ElementTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.VertexTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -19,7 +17,6 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.batch.cache.VertexCache;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationUtils;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -460,12 +457,12 @@ public class BatchGraph<G extends Graph> implements Graph {
         }
 
         @Override
-        public Iterator<Edge> edgeIterator(final Direction direction, final int branchFactor, final String... labels) {
+        public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public Iterator<Vertex> vertexIterator(final Direction direction, final int branchFactor, final String... labels) {
+        public Iterator<Vertex> vertexIterator(final Direction direction, final String... labels) {
             throw retrievalNotSupported();
         }
 

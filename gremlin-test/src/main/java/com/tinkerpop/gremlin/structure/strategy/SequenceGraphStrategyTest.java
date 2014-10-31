@@ -564,12 +564,12 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         }
 
         @Override
-        public UnaryOperator<TriFunction<Direction, Integer, String[], Iterator<Vertex>>> getVertexIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+        public UnaryOperator<BiFunction<Direction, String[], Iterator<Vertex>>> getVertexIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
             return spy();
         }
 
         @Override
-        public UnaryOperator<TriFunction<Direction, Integer, String[], Iterator<Edge>>> getVertexIteratorsEdgesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+        public UnaryOperator<BiFunction<Direction, String[], Iterator<Edge>>> getVertexIteratorsEdgesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
             return spy();
         }
 

@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.marker.Ranging;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
@@ -10,7 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author Bob Briody (http://bobbriody.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RangeStep<S> extends FilterStep<S> {
+public final class RangeStep<S> extends FilterStep<S> implements Ranging {
 
     private final long low;
     private final long high;

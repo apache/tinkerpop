@@ -86,13 +86,13 @@ public class GiraphVertex extends GiraphElement implements Vertex, Vertex.Iterat
     }
 
     @Override
-    public Iterator<Vertex> vertexIterator(final Direction direction, final int branchFactor, final String... labels) {
-        return StreamFactory.stream(getBaseVertex().iterators().vertexIterator(direction, branchFactor, labels)).map(v -> graph.v(v.id())).iterator();
+    public Iterator<Vertex> vertexIterator(final Direction direction, final String... labels) {
+        return StreamFactory.stream(getBaseVertex().iterators().vertexIterator(direction, labels)).map(v -> graph.v(v.id())).iterator();
     }
 
     @Override
-    public Iterator<Edge> edgeIterator(final Direction direction, final int branchFactor, final String... labels) {
-        return StreamFactory.stream(getBaseVertex().iterators().edgeIterator(direction, branchFactor, labels)).map(e -> graph.e(e.id())).iterator();
+    public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
+        return StreamFactory.stream(getBaseVertex().iterators().edgeIterator(direction, edgeLabels)).map(e -> graph.e(e.id())).iterator();
     }
 
     @Override

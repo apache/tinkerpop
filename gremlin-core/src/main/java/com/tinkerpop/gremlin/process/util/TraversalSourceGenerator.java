@@ -27,6 +27,7 @@ public class TraversalSourceGenerator {
         add("interval");
         add("orderBy");
         add("localRange");
+        add("localLimit");
     }};
 
     public static void main(final String[] args) throws Exception {

@@ -142,68 +142,36 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
         return this.addStep(new IdentityStep<>(this));
     }
 
-    public default GraphTraversal<S, Vertex> to(final Direction direction, final int branchFactor, final String... edgeLabels) {
-        return this.addStep(new VertexStep<>(this, Vertex.class, direction, branchFactor, edgeLabels));
-    }
-
     public default GraphTraversal<S, Vertex> to(final Direction direction, final String... edgeLabels) {
-        return this.to(direction, Integer.MAX_VALUE, edgeLabels);
-    }
-
-    public default GraphTraversal<S, Vertex> out(final int branchFactor, final String... edgeLabels) {
-        return this.to(Direction.OUT, branchFactor, edgeLabels);
+        return this.addStep(new VertexStep<>(this, Vertex.class, direction, edgeLabels));
     }
 
     public default GraphTraversal<S, Vertex> out(final String... edgeLabels) {
-        return this.to(Direction.OUT, Integer.MAX_VALUE, edgeLabels);
-    }
-
-    public default GraphTraversal<S, Vertex> in(final int branchFactor, final String... edgeLabels) {
-        return this.to(Direction.IN, branchFactor, edgeLabels);
+        return this.to(Direction.OUT, edgeLabels);
     }
 
     public default GraphTraversal<S, Vertex> in(final String... edgeLabels) {
-        return this.to(Direction.IN, Integer.MAX_VALUE, edgeLabels);
-    }
-
-    public default GraphTraversal<S, Vertex> both(final int branchFactor, final String... edgeLabels) {
-        return this.to(Direction.BOTH, branchFactor, edgeLabels);
+        return this.to(Direction.IN, edgeLabels);
     }
 
     public default GraphTraversal<S, Vertex> both(final String... edgeLabels) {
-        return this.to(Direction.BOTH, Integer.MAX_VALUE, edgeLabels);
-    }
-
-    public default GraphTraversal<S, Edge> toE(final Direction direction, final int branchFactor, final String... edgeLabels) {
-        return this.addStep(new VertexStep<>(this, Edge.class, direction, branchFactor, edgeLabels));
+        return this.to(Direction.BOTH, edgeLabels);
     }
 
     public default GraphTraversal<S, Edge> toE(final Direction direction, final String... edgeLabels) {
-        return this.toE(direction, Integer.MAX_VALUE, edgeLabels);
-    }
-
-    public default GraphTraversal<S, Edge> outE(final int branchFactor, final String... edgeLabels) {
-        return this.toE(Direction.OUT, branchFactor, edgeLabels);
+        return this.addStep(new VertexStep<>(this, Edge.class, direction, edgeLabels));
     }
 
     public default GraphTraversal<S, Edge> outE(final String... edgeLabels) {
-        return this.toE(Direction.OUT, Integer.MAX_VALUE, edgeLabels);
-    }
-
-    public default GraphTraversal<S, Edge> inE(final int branchFactor, final String... edgeLabels) {
-        return this.toE(Direction.IN, branchFactor, edgeLabels);
+        return this.toE(Direction.OUT, edgeLabels);
     }
 
     public default GraphTraversal<S, Edge> inE(final String... edgeLabels) {
-        return this.toE(Direction.IN, Integer.MAX_VALUE, edgeLabels);
-    }
-
-    public default GraphTraversal<S, Edge> bothE(final int branchFactor, final String... edgeLabels) {
-        return this.toE(Direction.BOTH, branchFactor, edgeLabels);
+        return this.toE(Direction.IN, edgeLabels);
     }
 
     public default GraphTraversal<S, Edge> bothE(final String... edgeLabels) {
-        return this.toE(Direction.BOTH, Integer.MAX_VALUE, edgeLabels);
+        return this.toE(Direction.BOTH, edgeLabels);
     }
 
     public default GraphTraversal<S, Vertex> toV(final Direction direction) {
@@ -412,16 +380,24 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
         return this.addStep(new RandomStep<>(this, probability));
     }
 
-    public default GraphTraversal<S, E> range(final int low, final int high) {
+    public default GraphTraversal<S, E> range(final long low, final long high) {
         return this.addStep(new RangeStep<>(this, low, high));
     }
 
-    public default GraphTraversal<S, E> retain(final String variable) {
-        return this.addStep(new RetainStep<>(this, variable));
+    public default GraphTraversal<S, E> limit(final long limit) {
+        return this.range(0, limit);
     }
 
     public default <E2 extends Element> GraphTraversal<S, E2> localRange(final int low, final int high) {
         return this.addStep(new LocalRangeStep<>(this, low, high));
+    }
+
+    public default <E2 extends Element> GraphTraversal<S, E2> localLimit(final int limit) {
+        return this.localRange(0, limit);
+    }
+
+    public default GraphTraversal<S, E> retain(final String variable) {
+        return this.addStep(new RetainStep<>(this, variable));
     }
 
     public default GraphTraversal<S, E> retain(final E retainObject) {

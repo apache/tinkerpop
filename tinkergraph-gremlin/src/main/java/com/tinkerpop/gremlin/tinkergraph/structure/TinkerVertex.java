@@ -88,7 +88,7 @@ public class TinkerVertex extends TinkerElement implements Vertex, Vertex.Iterat
     @Override
     public void remove() {
         final List<Edge> edges = new ArrayList<>();
-        this.iterators().edgeIterator(Direction.BOTH, Integer.MAX_VALUE).forEachRemaining(edges::add);
+        this.iterators().edgeIterator(Direction.BOTH).forEachRemaining(edges::add);
         edges.forEach(Edge::remove);
         this.properties.clear();
         this.graph.vertexIndex.removeElement(this);
@@ -123,12 +123,12 @@ public class TinkerVertex extends TinkerElement implements Vertex, Vertex.Iterat
     }
 
     @Override
-    public Iterator<Edge> edgeIterator(final Direction direction, final int branchFactor, final String... labels) {
-        return (Iterator) TinkerHelper.getEdges(TinkerVertex.this, direction, branchFactor, labels);
+    public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
+        return (Iterator) TinkerHelper.getEdges(TinkerVertex.this, direction, edgeLabels);
     }
 
     @Override
-    public Iterator<Vertex> vertexIterator(final Direction direction, final int branchFactor, final String... labels) {
-        return (Iterator) TinkerHelper.getVertices(TinkerVertex.this, direction, branchFactor, labels);
+    public Iterator<Vertex> vertexIterator(final Direction direction, final String... edgeLabels) {
+        return (Iterator) TinkerHelper.getVertices(TinkerVertex.this, direction, edgeLabels);
     }
 }

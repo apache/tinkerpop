@@ -23,13 +23,12 @@ public class LocalRangeStrategy extends AbstractTraversalStrategy implements Tra
 
     @Override
     public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
-        TraversalHelper.getStepsOfClass(LocalRangeStep.class, traversal).stream().forEach(localRangeStep -> {
+        TraversalHelper.getStepsOfClass(LocalRangeStep.class, traversal).forEach(localRangeStep -> {
             Step previousStep = localRangeStep.getPreviousStep();
             while (!previousStep.equals(EmptyStep.instance()) && !(previousStep instanceof PropertiesStep) && !(previousStep instanceof VertexStep)) {
                 previousStep = previousStep.getPreviousStep();
                 // TODO: check for not filtering/sideEffect steps and throw an exception?
             }
-
             if (previousStep instanceof VertexStep) {
                 VertexStep vertexStep = (VertexStep) previousStep;
                 if (vertexStep.getReturnClass().equals(Edge.class)) {
@@ -48,9 +47,4 @@ public class LocalRangeStrategy extends AbstractTraversalStrategy implements Tra
     public static LocalRangeStrategy instance() {
         return INSTANCE;
     }
-
-    /*@Override
-    public int compareTo(final TraversalStrategy traversalStrategy) {
-        return traversalStrategy instanceof Path ? 1 : 0;
-    }*/
 }

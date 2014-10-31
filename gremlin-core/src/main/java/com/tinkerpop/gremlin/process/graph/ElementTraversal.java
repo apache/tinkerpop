@@ -65,64 +65,32 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().identity();
     }
 
-    public default GraphTraversal<A, Vertex> to(final Direction direction, final int branchFactor, final String... edgeLabels) {
-        return this.start().to(direction, branchFactor, edgeLabels);
-    }
-
     public default GraphTraversal<A, Vertex> to(final Direction direction, final String... edgeLabels) {
         return this.start().to(direction, edgeLabels);
-    }
-
-    public default GraphTraversal<A, Vertex> out(final int branchFactor, final String... edgeLabels) {
-        return this.start().out(branchFactor, edgeLabels);
     }
 
     public default GraphTraversal<A, Vertex> out(final String... edgeLabels) {
         return this.start().out(edgeLabels);
     }
 
-    public default GraphTraversal<A, Vertex> in(final int branchFactor, final String... edgeLabels) {
-        return this.start().in(branchFactor, edgeLabels);
-    }
-
     public default GraphTraversal<A, Vertex> in(final String... edgeLabels) {
         return this.start().in(edgeLabels);
-    }
-
-    public default GraphTraversal<A, Vertex> both(final int branchFactor, final String... edgeLabels) {
-        return this.start().both(branchFactor, edgeLabels);
     }
 
     public default GraphTraversal<A, Vertex> both(final String... edgeLabels) {
         return this.start().both(edgeLabels);
     }
 
-    public default GraphTraversal<A, Edge> toE(final Direction direction, final int branchFactor, final String... edgeLabels) {
-        return this.start().toE(direction, branchFactor, edgeLabels);
-    }
-
     public default GraphTraversal<A, Edge> toE(final Direction direction, final String... edgeLabels) {
         return this.start().toE(direction, edgeLabels);
-    }
-
-    public default GraphTraversal<A, Edge> outE(final int branchFactor, final String... edgeLabels) {
-        return this.start().outE(branchFactor, edgeLabels);
     }
 
     public default GraphTraversal<A, Edge> outE(final String... edgeLabels) {
         return this.start().outE(edgeLabels);
     }
 
-    public default GraphTraversal<A, Edge> inE(final int branchFactor, final String... edgeLabels) {
-        return this.start().inE(branchFactor, edgeLabels);
-    }
-
     public default GraphTraversal<A, Edge> inE(final String... edgeLabels) {
         return this.start().inE(edgeLabels);
-    }
-
-    public default GraphTraversal<A, Edge> bothE(final int branchFactor, final String... edgeLabels) {
-        return this.start().bothE(branchFactor, edgeLabels);
     }
 
     public default GraphTraversal<A, Edge> bothE(final String... edgeLabels) {
@@ -307,13 +275,22 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().random(probability);
     }
 
-    public default GraphTraversal<A, A> range(final int low, final int high) {
+    public default GraphTraversal<A, A> range(final long low, final long high) {
         return this.start().range(low, high);
+    }
+
+    public default GraphTraversal<A, A> limit(final long limit) {
+        return this.start().limit(limit);
     }
 
     public default <E2 extends Element> GraphTraversal<A, E2> localRange(final int low, final int high) {
         return this.start().localRange(low, high);
     }
+
+    public default <E2 extends Element> GraphTraversal<A, E2> localLimit(final int limit) {
+        return this.start().localLimit(limit);
+    }
+
 
     public default GraphTraversal<A, A> retain(final String sideEffectKey) {
         return this.start().retain(sideEffectKey);

@@ -2,6 +2,8 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -57,7 +59,11 @@ public class TinkerGraphTest {
         Graph g = TinkerFactory.createClassic();
         //g.V().bothE().localRange(0,5).forEachRemaining(System.out::println);
         //Graph g = TinkerFactory.createTheCrew();
-        g.V().outE().localRange(0, 2).forEachRemaining(System.out::println);
+        Traversal t = g.V().outE().localRange(0, 2);
+        System.out.println(t);
+        t.getStrategies().apply(TraversalEngine.STANDARD);
+        System.out.println(t);
+        t.forEachRemaining(System.out::println);
     }
 
     @Test

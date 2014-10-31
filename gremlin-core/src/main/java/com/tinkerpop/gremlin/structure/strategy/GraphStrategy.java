@@ -323,7 +323,7 @@ public interface GraphStrategy {
      * {@link com.tinkerpop.gremlin.structure.Vertex.Iterators#vertexIterator} signature
      * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
-    public default UnaryOperator<TriFunction<Direction, Integer, String[], Iterator<Vertex>>> getVertexIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+    public default UnaryOperator<BiFunction<Direction, String[], Iterator<Vertex>>> getVertexIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -347,7 +347,7 @@ public interface GraphStrategy {
      * {@link com.tinkerpop.gremlin.structure.Vertex.Iterators#vertexIterator} signature
      * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
-    public default UnaryOperator<TriFunction<Direction, Integer, String[], Iterator<Edge>>> getVertexIteratorsEdgesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+    public default UnaryOperator<BiFunction<Direction, String[], Iterator<Edge>>> getVertexIteratorsEdgesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
         return UnaryOperator.identity();
     }
 

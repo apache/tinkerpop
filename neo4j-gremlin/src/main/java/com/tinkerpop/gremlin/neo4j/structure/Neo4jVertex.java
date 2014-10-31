@@ -188,15 +188,15 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
     }
 
     @Override
-    public Iterator<Vertex> vertexIterator(final Direction direction, final int branchFactor, final String... labels) {
+    public Iterator<Vertex> vertexIterator(final Direction direction, final String... labels) {
         graph.tx().readWrite();
-        return (Iterator) StreamFactory.stream(Neo4jHelper.getVertices(Neo4jVertex.this, direction, labels)).limit(branchFactor).iterator();
+        return (Iterator) Neo4jHelper.getVertices(Neo4jVertex.this, direction, labels).iterator();
     }
 
     @Override
-    public Iterator<Edge> edgeIterator(final Direction direction, final int branchFactor, final String... labels) {
+    public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
         graph.tx().readWrite();
-        return (Iterator) StreamFactory.stream(Neo4jHelper.getEdges(Neo4jVertex.this, direction, labels)).limit(branchFactor).iterator();
+        return (Iterator) Neo4jHelper.getEdges(Neo4jVertex.this, direction, edgeLabels).iterator();
     }
 
     @Override

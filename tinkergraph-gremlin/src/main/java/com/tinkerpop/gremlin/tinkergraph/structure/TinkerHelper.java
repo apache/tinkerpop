@@ -103,7 +103,7 @@ public class TinkerHelper {
         return element.properties;
     }
 
-    public static Iterator<TinkerEdge> getEdges(final TinkerVertex vertex, final Direction direction, final int branchFactor, final String... labels) {
+    public static Iterator<TinkerEdge> getEdges(final TinkerVertex vertex, final Direction direction, final String... labels) {
         final MultiIterator<Edge> edges = new MultiIterator<>();
         if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH)) {
             if (labels.length > 0) {
@@ -127,16 +127,16 @@ public class TinkerHelper {
                 }
             }
         }
-        return new TinkerEdgeIterator((Iterator) edges, branchFactor);
+        return (Iterator) edges;
     }
 
-    public static Iterator<TinkerVertex> getVertices(final TinkerVertex vertex, final Direction direction, final int branchFactor, final String... labels) {
+    public static Iterator<TinkerVertex> getVertices(final TinkerVertex vertex, final Direction direction, final String... labels) {
         if (direction != Direction.BOTH) {
-            return new TinkerVertexIterator(TinkerHelper.getEdges(vertex, direction, branchFactor, labels), direction);
+            return new TinkerVertexIterator(TinkerHelper.getEdges(vertex, direction, labels), direction);
         } else {
-            final MultiIterator<TinkerVertex> vertices = new MultiIterator<>(branchFactor);
-            vertices.addIterator(new TinkerVertexIterator(TinkerHelper.getEdges(vertex, Direction.OUT, branchFactor, labels), Direction.OUT));
-            vertices.addIterator(new TinkerVertexIterator(TinkerHelper.getEdges(vertex, Direction.IN, branchFactor, labels), Direction.IN));
+            final MultiIterator<TinkerVertex> vertices = new MultiIterator<>();
+            vertices.addIterator(new TinkerVertexIterator(TinkerHelper.getEdges(vertex, Direction.OUT, labels), Direction.OUT));
+            vertices.addIterator(new TinkerVertexIterator(TinkerHelper.getEdges(vertex, Direction.IN, labels), Direction.IN));
             return vertices;
         }
     }

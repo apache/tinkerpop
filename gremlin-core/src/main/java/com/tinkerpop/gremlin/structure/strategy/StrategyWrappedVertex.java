@@ -127,17 +127,17 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
 
     public class StrategyWrappedVertexIterators implements Vertex.Iterators {
         @Override
-        public Iterator<Edge> edgeIterator(final Direction direction, final int branchFactor, final String... labels) {
+        public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
             return new StrategyWrappedEdge.StrategyWrappedEdgeIterator(strategyWrappedGraph.getStrategy().compose(
                     s -> s.getVertexIteratorsEdgesStrategy(strategyContext),
-                    (Direction d, Integer bf, String[] l) -> baseVertex.iterators().edgeIterator(d, bf, l)).apply(direction, branchFactor, labels), strategyWrappedGraph);
+                    (Direction d, String[] l) -> baseVertex.iterators().edgeIterator(d, l)).apply(direction, edgeLabels), strategyWrappedGraph);
         }
 
         @Override
-        public Iterator<Vertex> vertexIterator(final Direction direction, final int branchFactor, final String... labels) {
+        public Iterator<Vertex> vertexIterator(final Direction direction, final String... labels) {
             return new StrategyWrappedVertexIterator(strategyWrappedGraph.getStrategy().compose(
                     s -> s.getVertexIteratorsVerticesStrategy(strategyContext),
-                    (Direction d, Integer bf, String[] l) -> baseVertex.iterators().vertexIterator(d, bf, l)).apply(direction, branchFactor, labels), strategyWrappedGraph);
+                    (Direction d, String[] l) -> baseVertex.iterators().vertexIterator(d, l)).apply(direction, labels), strategyWrappedGraph);
         }
 
         @Override

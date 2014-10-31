@@ -156,7 +156,7 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
         final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.Admin.HALT : startStep.getNextStep().getLabel();
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
-        final Iterator<? extends Element> starts = startStep.returnsVertices() ? new SingleIterator<>(vertex) : vertex.iterators().edgeIterator(Direction.OUT, Integer.MAX_VALUE);
+        final Iterator<? extends Element> starts = startStep.returnsVertices() ? new SingleIterator<>(vertex) : vertex.iterators().edgeIterator(Direction.OUT);
         starts.forEachRemaining(element -> {
             final Traverser.Admin<? extends Element> traverser = this.trackPaths ?
                     new PathTraverser<>(startStep.getLabel(), element, traversal.sideEffects()) :

@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
+import com.tinkerpop.gremlin.process.graph.marker.Ranging;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -16,7 +17,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LocalRangeStep<S extends Element> extends FilterStep<S> implements PathConsumer {
+public final class LocalRangeStep<S extends Element> extends FilterStep<S> implements PathConsumer, Ranging {
 
     private final long low;
     private final long high;

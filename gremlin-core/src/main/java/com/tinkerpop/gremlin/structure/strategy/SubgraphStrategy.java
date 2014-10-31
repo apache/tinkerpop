@@ -2,17 +2,15 @@ package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
-import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
-import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.util.EmptyTraversal;
+import com.tinkerpop.gremlin.process.graph.util.EmptyGraphTraversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -157,21 +155,17 @@ public class SubgraphStrategy implements GraphStrategy {
      * A step that wraps up the adjacent traversal from the vertex allowing the results to be iterated within the
      * context of the subgraph filters.
      */
-    private class SubgraphVertexStep<E extends Element> extends FlatMapStep<Vertex, E> { // TODO: implement Reversible
-
-        private final Direction direction;
+    private class SubgraphVertexStep<E extends Element> extends VertexStep<E> {
 
         public SubgraphVertexStep(final VertexStep<E> other) {
-            this(other.getTraversal(), other.getReturnClass(), other.getDirection(), other.getBranchFactor(), other.getEdgeLabels());
+            this(other.getTraversal(), other.getReturnClass(), other.getDirection(), other.getEdgeLabels());
         }
 
         public SubgraphVertexStep(final Traversal traversal,
                                   final Class<E> returnClass,
                                   final Direction direction,
-                                  final int branchFactor,
-                                  final String... labels) {
-            super(traversal);
-            this.direction = direction;
+                                  final String... edgeLabels) {
+            super(traversal, returnClass, direction, edgeLabels);
             this.setFunction(traverser -> {
                 final Vertex nextVertex = traverser.get();
                 if (testVertex(nextVertex)) {
@@ -182,15 +176,15 @@ public class SubgraphStrategy implements GraphStrategy {
                         Iterator<Vertex> vertexIter = null;
                         switch (direction) {
                             case OUT:
-                                vertexIter = new EdgeVertexIterator(Direction.OUT, nextVertex.outE(labels));
+                                vertexIter = new EdgeVertexIterator(Direction.OUT, nextVertex.outE(edgeLabels));
                                 break;
                             case IN:
-                                vertexIter = new EdgeVertexIterator(Direction.IN, nextVertex.inE(labels));
+                                vertexIter = new EdgeVertexIterator(Direction.IN, nextVertex.inE(edgeLabels));
                                 break;
                             case BOTH:
                                 vertexIter = new MultiIterator<>(
-                                        new EdgeVertexIterator(Direction.IN, nextVertex.inE(labels)),
-                                        new EdgeVertexIterator(Direction.OUT, nextVertex.outE(labels)));
+                                        new EdgeVertexIterator(Direction.IN, nextVertex.inE(edgeLabels)),
+                                        new EdgeVertexIterator(Direction.OUT, nextVertex.outE(edgeLabels)));
                                 break;
                         }
 
@@ -199,13 +193,13 @@ public class SubgraphStrategy implements GraphStrategy {
                         Iterator<Edge> edgeIter = null;
                         switch (direction) {
                             case OUT:
-                                edgeIter = nextVertex.outE(labels);
+                                edgeIter = nextVertex.outE(edgeLabels);
                                 break;
                             case IN:
-                                edgeIter = nextVertex.inE(labels);
+                                edgeIter = nextVertex.inE(edgeLabels);
                                 break;
                             case BOTH:
-                                edgeIter = nextVertex.bothE(labels);
+                                edgeIter = nextVertex.bothE(edgeLabels);
                                 break;
                         }
 
@@ -213,33 +207,16 @@ public class SubgraphStrategy implements GraphStrategy {
                         iter = (Iterator<E>) edgeIter;
                     }
 
-                    if (branchFactor > 0)
-                        iter = new BranchFactorIterator<>(branchFactor, iter);
-
                     return iter;
                 } else {
-                    return new EmptyGraphTraversal();
+                    return EmptyGraphTraversal.instance();
                 }
             });
         }
 
-        public String toString() {
+        /*public String toString() {
             return TraversalHelper.makeStepString(this, this.direction);
-        }
-    }
-
-    private class EmptyGraphTraversal<S, E> extends EmptyTraversal<S, E> implements GraphTraversal<S, E> {
-
-        @Override
-        public GraphTraversal<S, E> submit(final GraphComputer computer) {
-            return new EmptyGraphTraversal<>();
-        }
-
-        @Override
-        public <E2> GraphTraversal<S, E2> addStep(final Step<?, E2> step) {
-            return (GraphTraversal) this;
-        }
-
+        }*/
     }
 
     private class EdgeIterator implements Iterator<Edge> {
@@ -336,30 +313,6 @@ public class SubgraphStrategy implements GraphStrategy {
                     }
                 }
             } while (true); // break out when the next vertex is found or the iterator is exhausted
-        }
-    }
-
-    private class BranchFactorIterator<V> implements Iterator<V> {
-        private final int branchFactor;
-        private final Iterator<V> baseIterator;
-        private long count = 0;
-
-        private BranchFactorIterator(final int branchFactor,
-                                     final Iterator<V> baseIterator) {
-            this.branchFactor = branchFactor;
-            this.baseIterator = baseIterator;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return count < branchFactor && baseIterator.hasNext();
-        }
-
-        @Override
-        public V next() {
-            if (count >= branchFactor) throw new NoSuchElementException();
-            count++;
-            return baseIterator.next();
         }
     }
 
