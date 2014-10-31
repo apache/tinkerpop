@@ -9,7 +9,6 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Added `LocalRangeStep` which supports ranging the edges and properties of an element.
 * Gremlin Server sessions now allow serialization of results that were part of an open transaction.
 * `Vertex.iterators()` no longer have a `branchFactor`. This is now at the query language level with `localLimit()`.
 * Added `limit(long)` and `localLimit(int,int)` which simply call the range equivalents with 0 as the low.
