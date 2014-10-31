@@ -12,19 +12,36 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> {
+public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> {
 
-    private final String[] propertyKeys;
-    private final boolean hidden;
+    protected final String[] propertyKeys;
+    protected final boolean getHiddens;
+    protected final boolean getValues;
 
-    public PropertyMapStep(final Traversal traversal, final boolean hidden, final String... propertyKeys) {
+    public PropertyMapStep(final Traversal traversal, final boolean getHiddens, final boolean getValues, final String... propertyKeys) {
         super(traversal);
         this.propertyKeys = propertyKeys;
-        this.hidden = hidden;
-        this.setFunction(traverser ->
-                traverser.get() instanceof Vertex ?
-                        (Map) ElementHelper.vertexPropertyMap((Vertex) traverser.get(), this.hidden, propertyKeys) :
-                        (Map) ElementHelper.propertyMap(traverser.get(), this.hidden, propertyKeys));
+        this.getHiddens = getHiddens;
+        this.getValues = getValues;
+        if (this.getValues) {
+            this.setFunction(traverser ->
+                    traverser.get() instanceof Vertex ?
+                            (Map) ElementHelper.vertexPropertyValueMap((Vertex) traverser.get(), this.getHiddens, propertyKeys) :
+                            (Map) ElementHelper.propertyValueMap(traverser.get(), this.getHiddens, propertyKeys));
+        } else {
+            this.setFunction(traverser ->
+                    traverser.get() instanceof Vertex ?
+                            (Map) ElementHelper.vertexPropertyMap((Vertex) traverser.get(), this.getHiddens, propertyKeys) :
+                            (Map) ElementHelper.propertyMap(traverser.get(), this.getHiddens, propertyKeys));
+        }
+    }
+
+    public boolean isGettingHiddens() {
+        return this.getHiddens;
+    }
+
+    public boolean isGettingValues() {
+        return this.getValues;
     }
 
     public String toString() {

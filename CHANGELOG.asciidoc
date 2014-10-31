@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `PropertiesStep` and `PropertyMapStep` are the only property accessing steps that exist now. Simplification of the step library.
 * `GraphTraversal.value(String)` no longer exists. Instead, use `GraphTraversal.
 * `HiddenXXXStep` no longer exist. `PropertyXXXStep` and `ValueXXXStep` take a boolean to denote hidden accesss.
 * Renamed `setWorkingDirectory` to `workingDirectory` in the `KryoReader` builder.

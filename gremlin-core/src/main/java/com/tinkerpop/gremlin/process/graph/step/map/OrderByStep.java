@@ -15,13 +15,15 @@ import java.util.Comparator;
  */
 public final class OrderByStep<S extends Element, C> extends BarrierStep<S> implements Reversible, Comparing<S> {
 
+    private final Comparator<C> elementValueComparator;
     private final Comparator<Traverser<S>> comparator;
     private final String elementKey;
 
     public OrderByStep(final Traversal traversal, final String elementKey, final Comparator<C> elementValueComparator) {
         super(traversal);
         this.elementKey = elementKey;
-        this.comparator = (a, b) -> elementValueComparator.compare(a.get().<C>value(this.elementKey), b.get().<C>value(this.elementKey));
+        this.elementValueComparator = elementValueComparator;
+        this.comparator = (a, b) -> this.elementValueComparator.compare(a.get().<C>value(this.elementKey), b.get().<C>value(this.elementKey));
         this.setConsumer(traversers -> traversers.sort(this.comparator));
     }
 
@@ -32,6 +34,10 @@ public final class OrderByStep<S extends Element, C> extends BarrierStep<S> impl
     @Override
     public Comparator<Traverser<S>> getComparator() {
         return this.comparator;
+    }
+
+    public Comparator<C> getElementValueComparator() {
+        return this.elementValueComparator;
     }
 
     @Override
