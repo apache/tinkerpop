@@ -82,15 +82,6 @@ public class TraversalHelper {
         return steps;
     }
 
-    public static <S extends Step> Optional<S> getFirstStepBefore(final Class<S> beforeStep, final Step<?, ?> afterStep, final Traversal<?, ?> traversal) {
-        Step current = afterStep.getPreviousStep();
-        while (!current.getClass().equals(beforeStep) && !(current instanceof EmptyStep)) {
-            current = current.getPreviousStep();
-        }
-        return current.getClass().equals(beforeStep) ? Optional.of((S) current) : Optional.<S>empty();
-    }
-
-
     public static <S, E> Step<S, ?> getStart(final Traversal<S, E> traversal) {
         return traversal.getSteps().get(0);
     }

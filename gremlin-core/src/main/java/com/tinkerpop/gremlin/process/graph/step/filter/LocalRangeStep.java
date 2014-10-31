@@ -32,7 +32,6 @@ public final class LocalRangeStep<S extends Element> extends FilterStep<S> imple
         this.low = low;
         this.high = high;
 
-
         this.setPredicate(traverser -> {
             Element currentPreviousElement = null;
             final Element currentElement = traverser.get();
