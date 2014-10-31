@@ -20,9 +20,9 @@ import static org.junit.Assert.assertFalse;
  */
 public abstract class HasNotTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String prop);
+    public abstract Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String propertyKey);
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String prop);
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String propertyKey);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -51,13 +51,13 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String key) {
-            return g.v(v1Id).hasNot(key);
+        public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String propertyKey) {
+            return g.v(v1Id).hasNot(propertyKey);
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String prop) {
-            return g.V().hasNot(prop);
+        public Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String propertyKey) {
+            return g.V().hasNot(propertyKey);
         }
     }
 
@@ -67,13 +67,13 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String key) {
-            return g.v(v1Id).<Vertex>hasNot(key).submit(g.compute());
+        public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String propertyKey) {
+            return g.v(v1Id).<Vertex>hasNot(propertyKey).submit(g.compute());
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String prop) {
-            return g.V().<Vertex>hasNot(prop).submit(g.compute());
+        public Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String propertyKey) {
+            return g.V().<Vertex>hasNot(propertyKey).submit(g.compute());
         }
     }
 }

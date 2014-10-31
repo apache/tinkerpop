@@ -19,7 +19,7 @@ import static org.junit.Assert.*;
  */
 public abstract class PathTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, Path> get_g_v1_valueXnameX_path(final Object v1Id);
+    public abstract Traversal<Vertex, Path> get_g_v1_name_path(final Object v1Id);
 
     public abstract Traversal<Vertex, Path> get_g_v1_out_pathXage_nameX(final Object v1Id);
 
@@ -31,8 +31,8 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_v1_valueXnameX_path() {
-        final Traversal<Vertex, Path> traversal = get_g_v1_valueXnameX_path(convertToVertexId("marko"));
+    public void g_v1_name_path() {
+        final Traversal<Vertex, Path> traversal = get_g_v1_name_path(convertToVertexId("marko"));
         printTraversalForm(traversal);
         final Path path = traversal.next();
         assertFalse(traversal.hasNext());
@@ -117,8 +117,8 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_v1_valueXnameX_path(final Object v1Id) {
-            return g.v(v1Id).identity().values("name").path();
+        public Traversal<Vertex, Path> get_g_v1_name_path(final Object v1Id) {
+            return g.v(v1Id).values("name").path();
         }
 
         @Override
@@ -152,7 +152,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_v1_valueXnameX_path(final Object v1Id) {
+        public Traversal<Vertex, Path> get_g_v1_name_path(final Object v1Id) {
             return g.v(v1Id).identity().values("name").path().submit(g.compute());
         }
 

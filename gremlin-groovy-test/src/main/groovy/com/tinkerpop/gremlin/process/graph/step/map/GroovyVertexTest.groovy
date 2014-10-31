@@ -150,7 +150,7 @@ public abstract class GroovyVertexTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_out_valueXnameX(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_out_name(final Object v1Id) {
             g.v(v1Id).out.name
         }
 
@@ -313,7 +313,7 @@ public abstract class GroovyVertexTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_out_valueXnameX(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_out_name(final Object v1Id) {
             ComputerTestHelper.compute("g.v(${v1Id}).out.name", g);
         }
 

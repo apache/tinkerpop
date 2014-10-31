@@ -43,7 +43,7 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_valueXnameX_order_asXbX_selectXname_itX() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_selectXname_itX() {
             g.V().as('a').name.order().as('b').select { it.name } { it }
         }
     }
@@ -84,7 +84,7 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_valueXnameX_order_asXbX_selectXname_itX() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_selectXname_itX() {
             g.V().as('a').name.order().as('b').select { it.name } { it } // TODO: computer
         }
     }

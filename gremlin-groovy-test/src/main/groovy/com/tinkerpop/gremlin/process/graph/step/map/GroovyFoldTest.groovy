@@ -21,7 +21,7 @@ public abstract class GroovyFoldTest {
         }
 
         @Override
-        public Traversal<Vertex, Integer> get_g_V_valueXageX_foldX0_plusX() {
+        public Traversal<Vertex, Integer> get_g_V_age_foldX0_plusX() {
             g.V.age.fold(0) { seed, age -> seed + age.get() };
         }
     }
@@ -38,7 +38,7 @@ public abstract class GroovyFoldTest {
         }
 
         @Override
-        public Traversal<Vertex, Integer> get_g_V_valueXageX_foldX0_plusX() {
+        public Traversal<Vertex, Integer> get_g_V_age_foldX0_plusX() {
             ComputerTestHelper.compute("g.V.age.fold(0) { seed, age -> seed + age.get() }", g);
         }
     }

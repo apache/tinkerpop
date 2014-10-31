@@ -22,7 +22,7 @@ import static org.junit.Assert.*;
  */
 public abstract class AggregateTest extends AbstractGremlinTest {
 
-    public abstract Traversal<Vertex, List<String>> get_g_V_valueXnameX_aggregate();
+    public abstract Traversal<Vertex, List<String>> get_g_V_name_aggregate();
 
     public abstract Traversal<Vertex, List<String>> get_g_V_aggregateXnameX();
 
@@ -33,7 +33,7 @@ public abstract class AggregateTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_valueXnameX_aggregate() {
-        Traversal<Vertex, List<String>> traversal = get_g_V_valueXnameX_aggregate();
+        Traversal<Vertex, List<String>> traversal = get_g_V_name_aggregate();
         printTraversalForm(traversal);
         final Collection<String> names = traversal.next();
         assertFalse(traversal.hasNext());
@@ -105,7 +105,7 @@ public abstract class AggregateTest extends AbstractGremlinTest {
     public static class StandardTest extends AggregateTest {
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_valueXnameX_aggregate() {
+        public Traversal<Vertex, List<String>> get_g_V_name_aggregate() {
             return (Traversal) g.V().values("name").aggregate();
         }
 
@@ -127,7 +127,7 @@ public abstract class AggregateTest extends AbstractGremlinTest {
     public static class ComputerTest extends AggregateTest {
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_valueXnameX_aggregate() {
+        public Traversal<Vertex, List<String>> get_g_V_name_aggregate() {
             return (Traversal) g.V().values("name").aggregate().submit(g.compute());
         }
 

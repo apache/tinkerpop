@@ -34,7 +34,7 @@ public abstract class GroovyChooseTest {
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_valueXnameX_3L_valueMapX() {
+        public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_name_3L_valueMapX() {
             g.V().choose({ it.out().count().next(); }, [
                     2L: g.of().name,
                     3L: g.of().valueMap()])
@@ -64,7 +64,7 @@ public abstract class GroovyChooseTest {
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_valueXnameX_3L_valueMapX() {
+        public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_name_3L_valueMapX() {
             ComputerTestHelper.compute("""g.V.choose({ it.out().count().next(); }, [
                     2L: g.of().name,
                     3L: g.of().valueMap])""", g);

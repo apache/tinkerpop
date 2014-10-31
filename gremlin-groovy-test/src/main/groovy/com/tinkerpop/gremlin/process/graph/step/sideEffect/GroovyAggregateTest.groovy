@@ -13,7 +13,7 @@ public abstract class GroovyAggregateTest {
     public static class StandardTest extends AggregateTest {
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_valueXnameX_aggregate() {
+        public Traversal<Vertex, List<String>> get_g_V_name_aggregate() {
             g.V.name.aggregate
         }
 
@@ -31,7 +31,7 @@ public abstract class GroovyAggregateTest {
     public static class ComputerTest extends AggregateTest {
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_valueXnameX_aggregate() {
+        public Traversal<Vertex, List<String>> get_g_V_name_aggregate() {
             ComputerTestHelper.compute("g.V.name.aggregate", g)
         }
 

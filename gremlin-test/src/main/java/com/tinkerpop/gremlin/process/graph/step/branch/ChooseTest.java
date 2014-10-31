@@ -26,7 +26,7 @@ public abstract class ChooseTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, String> get_g_V_hasXageX_chooseXname_lengthX5_in_4_out_3_bothX_name();
 
-    public abstract Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_valueXnameX_3L_valueMapX();
+    public abstract Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_name_3L_valueMapX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -91,7 +91,7 @@ public abstract class ChooseTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_chooseXout_count_nextX2L_valueXnameX_3L_valueMapX() {
-        final Traversal<Vertex, Object> traversal = get_g_V_chooseXout_count_nextX2L_valueXnameX_3L_valueMapX();
+        final Traversal<Vertex, Object> traversal = get_g_V_chooseXout_count_nextX2L_name_3L_valueMapX();
         printTraversalForm(traversal);
         Map<String, Long> counts = new HashMap<>();
         int counter = 0;
@@ -132,7 +132,7 @@ public abstract class ChooseTest extends AbstractGremlinTest {
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_valueXnameX_3L_valueMapX() {
+        public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_name_3L_valueMapX() {
             return g.V().choose(t -> t.get().out().count().next(), new HashMap() {{
                 put(2L, g.<Vertex>of().values("name"));
                 put(3L, g.<Vertex>of().valueMap());
@@ -166,7 +166,7 @@ public abstract class ChooseTest extends AbstractGremlinTest {
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_valueXnameX_3L_valueMapX() {
+        public Traversal<Vertex, Object> get_g_V_chooseXout_count_nextX2L_name_3L_valueMapX() {
             return g.V().choose(t -> t.get().out().count().next(), new HashMap() {{
                 put(2L, g.of().values("name"));
                 put(3L, g.of().valueMap());

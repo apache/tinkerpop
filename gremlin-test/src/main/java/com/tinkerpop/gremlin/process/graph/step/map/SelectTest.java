@@ -33,7 +33,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregate_asXbX_selectXnameX();
 
-    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_valueXnameX_order_asXbX_selectXname_itX();
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_selectXname_itX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -119,7 +119,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_asXaX_valueXnameX_order_asXbX_selectXname_itX() {
         Arrays.asList(
-                get_g_V_asXaX_valueXnameX_order_asXbX_selectXname_itX()).forEach(traversal -> {
+                get_g_V_asXaX_name_order_asXbX_selectXname_itX()).forEach(traversal -> {
             printTraversalForm(traversal);
             final List<Map<String, String>> expected = makeMapList(2,
                     "a", "marko", "b", "marko",
@@ -169,7 +169,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_valueXnameX_order_asXbX_selectXname_itX() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_selectXname_itX() {
             return g.V().as("a").values("name").order().as("b").select(v -> ((Vertex) v).value("name"), Function.identity());
         }
 
@@ -216,7 +216,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_valueXnameX_order_asXbX_selectXname_itX() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_selectXname_itX() {
             // TODO: Micro elements do not store properties
             return g.V().as("a").values("name").order().as("b").select(v -> ((Vertex) v).value("name"), Function.identity());
         }

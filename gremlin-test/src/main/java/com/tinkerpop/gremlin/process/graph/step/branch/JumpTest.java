@@ -26,7 +26,7 @@ import static org.junit.Assert.*;
  */
 public abstract class JumpTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(final Object v1Id);
+    public abstract Traversal<Vertex, String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_name(final Object v1Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_asXxX_out_jumpXx_loops_lt_2X();
 
@@ -54,7 +54,7 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX() {
         final List<Traversal<Vertex, String>> traversals = new ArrayList<>();
-        traversals.add(get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(convertToVertexId("marko")));
+        traversals.add(get_g_v1_asXxX_out_jumpXx_loops_lt_2X_name(convertToVertexId("marko")));
         traversals.add(get_g_v1_asXaX_jumpXb_loops_gt_1X_out_jumpXaX_asXbX_name(convertToVertexId("marko")));
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
@@ -184,7 +184,7 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_name(final Object v1Id) {
             return g.v(v1Id).as("x").out().jump("x", h -> h.loops() < 2).values("name");
         }
 
@@ -250,7 +250,7 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_name(final Object v1Id) {
             return g.v(v1Id).as("x").out().jump("x", t -> t.loops() < 2).<String>values("name").submit(g.compute());
         }
 

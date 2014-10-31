@@ -26,7 +26,7 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX(final Object v4Id);
 
-    public abstract Traversal<Vertex, String> get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(final Object v4Id);
+    public abstract Traversal<Vertex, String> get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_name(final Object v4Id);
 
     public abstract Traversal<Vertex, Edge> get_g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX(final Object v1Id);
 
@@ -36,7 +36,7 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Edge> get_g_v1_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_backXhereX(final Object v1Id);
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_asXhereXout_valueXnameX_backXhereX();
+    public abstract Traversal<Vertex, Vertex> get_g_V_asXhereXout_name_backXhereX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -83,7 +83,7 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX() {
-        final Traversal<Vertex, String> traversal = get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(convertToVertexId("josh"));
+        final Traversal<Vertex, String> traversal = get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_name(convertToVertexId("josh"));
         printTraversalForm(traversal);
         int counter = 0;
         final Set<String> names = new HashSet<>();
@@ -119,7 +119,7 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_asXhereXout_valueXnameX_backXhereX() {
-        Traversal<Vertex, Vertex> traversal = get_g_V_asXhereXout_valueXnameX_backXhereX();
+        Traversal<Vertex, Vertex> traversal = get_g_V_asXhereXout_name_backXhereX();
         super.checkResults(new HashMap<Vertex, Long>() {{
             put(convertToVertex(g, "marko"), 3l);
             put(convertToVertex(g, "josh"), 2l);
@@ -143,7 +143,7 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(final Object v4Id) {
+        public Traversal<Vertex, String> get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_name(final Object v4Id) {
             return g.v(v4Id).out().as("here").has("lang", "java").back("here").values("name");
         }
 
@@ -168,7 +168,7 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_asXhereXout_valueXnameX_backXhereX() {
+        public Traversal<Vertex, Vertex> get_g_V_asXhereXout_name_backXhereX() {
             return g.V().as("here").out().values("name").back("here");
         }
     }
@@ -189,7 +189,7 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(final Object v4Id) {
+        public Traversal<Vertex, String> get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_name(final Object v4Id) {
             return g.v(v4Id).out().as("here").has("lang", "java").back("here").<String>values("name").submit(g.compute());
         }
 
@@ -214,7 +214,7 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_asXhereXout_valueXnameX_backXhereX() {
+        public Traversal<Vertex, Vertex> get_g_V_asXhereXout_name_backXhereX() {
             return g.V().as("here").out().values("name").<Vertex>back("here").submit(g.compute());
         }
     }

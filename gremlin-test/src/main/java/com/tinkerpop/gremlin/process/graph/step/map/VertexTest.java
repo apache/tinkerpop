@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -82,7 +81,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_v1_out_out_out(final Object v1Id);
 
-    public abstract Traversal<Vertex, String> get_g_v1_out_valueXnameX(final Object v1Id);
+    public abstract Traversal<Vertex, String> get_g_v1_out_name(final Object v1Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_v1_outE_otherV(final Object v1Id);
 
@@ -539,7 +538,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_v1_out_propertyXnameX() {
-        final Traversal<Vertex, String> traversal = get_g_v1_out_valueXnameX(convertToVertexId("marko"));
+        final Traversal<Vertex, String> traversal = get_g_v1_out_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
         int counter = 0;
         Set<String> names = new HashSet<>();
@@ -729,7 +728,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_out_valueXnameX(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_out_name(final Object v1Id) {
             return g.v(v1Id).out().values("name");
         }
 
@@ -895,7 +894,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_out_valueXnameX(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_out_name(final Object v1Id) {
             return g.v(v1Id).out().<String>values("name").submit(g.compute());
         }
 

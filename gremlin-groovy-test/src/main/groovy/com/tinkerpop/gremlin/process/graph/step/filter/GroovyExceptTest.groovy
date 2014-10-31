@@ -25,7 +25,7 @@ public abstract class GroovyExceptTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_name(final Object v1Id) {
             g.v(v1Id).out('created').in('created').except(g.v(v1Id)).values('name')
         }
 
@@ -59,7 +59,7 @@ public abstract class GroovyExceptTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_name(final Object v1Id) {
             ComputerTestHelper.compute("g.v(${v1Id}).out('created').in('created').except(g.v(${v1Id})).values('name')", g);
         }
 

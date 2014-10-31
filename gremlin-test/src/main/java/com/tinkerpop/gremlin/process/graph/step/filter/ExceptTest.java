@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -30,7 +29,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_v1_out_aggregateXxX_out_exceptXxX(final Object v1Id);
 
-    public abstract Traversal<Vertex, String> get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX(final Object v1Id);
+    public abstract Traversal<Vertex, String> get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_name(final Object v1Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_exceptXg_V_toListX();
 
@@ -67,7 +66,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX() {
-        Traversal<Vertex, String> traversal = get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX(convertToVertexId("marko"));
+        Traversal<Vertex, String> traversal = get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
         List<String> names = Arrays.asList(traversal.next(), traversal.next());
         assertFalse(traversal.hasNext());
@@ -122,7 +121,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_name(final Object v1Id) {
             return g.v(v1Id).out("created").in("created").except(g.v(v1Id)).values("name");
         }
 
@@ -155,7 +154,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_name(final Object v1Id) {
             return g.v(v1Id).out("created").in("created").except(g.v(v1Id)).<String>values("name").submit(g.compute());
         }
 

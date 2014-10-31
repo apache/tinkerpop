@@ -11,25 +11,25 @@ public abstract class GroovyHasNotTest {
 
     public static class StandardTest extends HasNotTest {
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String key) {
-            g.v(v1Id).hasNot(key)
+        public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String propertyKey) {
+            g.v(v1Id).hasNot(propertyKey)
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String key) {
-            g.V.hasNot(key)
+        public Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String propertyKey) {
+            g.V.hasNot(propertyKey)
         }
     }
 
     public static class ComputerTest extends HasNotTest {
         @Override
-        public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String key) {
-           ComputerTestHelper.compute("g.v(${v1Id}).hasNot('${key}')",g);
+        public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String propertyKey) {
+           ComputerTestHelper.compute("g.v(${v1Id}).hasNot('${propertyKey}')",g);
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String key) {
-            ComputerTestHelper.compute("g.V.hasNot('${key}')",g);
+        public Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String propertyKey) {
+            ComputerTestHelper.compute("g.V.hasNot('${propertyKey}')",g);
         }
     }
 }

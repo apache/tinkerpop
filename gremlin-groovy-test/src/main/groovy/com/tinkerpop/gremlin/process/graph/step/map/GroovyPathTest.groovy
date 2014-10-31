@@ -13,7 +13,7 @@ public abstract class GroovyPathTest {
     public static class StandardTest extends PathTest {
 
         @Override
-        public Traversal<Vertex, Path> get_g_v1_valueXnameX_path(final Object v1Id) {
+        public Traversal<Vertex, Path> get_g_v1_name_path(final Object v1Id) {
             g.v(v1Id).identity.name.path
         }
 
@@ -41,7 +41,7 @@ public abstract class GroovyPathTest {
     public static class ComputerTest extends PathTest {
 
         @Override
-        public Traversal<Vertex, Path> get_g_v1_valueXnameX_path(final Object v1Id) {
+        public Traversal<Vertex, Path> get_g_v1_name_path(final Object v1Id) {
             ComputerTestHelper.compute("g.v(${v1Id}).identity.name.path", g);
         }
 

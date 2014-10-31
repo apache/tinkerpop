@@ -23,7 +23,7 @@ public abstract class FoldTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_fold_unfold();
 
-    public abstract Traversal<Vertex, Integer> get_g_V_valueXageX_foldX0_plusX();
+    public abstract Traversal<Vertex, Integer> get_g_V_age_foldX0_plusX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -55,7 +55,7 @@ public abstract class FoldTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasXageX_foldX0_plusX() {
-        final Traversal<Vertex, Integer> traversal = get_g_V_valueXageX_foldX0_plusX();
+        final Traversal<Vertex, Integer> traversal = get_g_V_age_foldX0_plusX();
         printTraversalForm(traversal);
         final Integer ageSum = traversal.next();
         assertFalse(traversal.hasNext());
@@ -75,7 +75,7 @@ public abstract class FoldTest extends AbstractGremlinTest {
         }
 
         @Override
-        public Traversal<Vertex, Integer> get_g_V_valueXageX_foldX0_plusX() {
+        public Traversal<Vertex, Integer> get_g_V_age_foldX0_plusX() {
             return g.V().<Integer>values("age").fold(0, (seed, age) -> seed + age.get());
         }
     }
@@ -93,7 +93,7 @@ public abstract class FoldTest extends AbstractGremlinTest {
         }
 
         @Override
-        public Traversal<Vertex, Integer> get_g_V_valueXageX_foldX0_plusX() {
+        public Traversal<Vertex, Integer> get_g_V_age_foldX0_plusX() {
             return g.V().<Integer>values("age").fold(0, (seed, age) -> seed + age.get()).submit(g.compute());
         }
     }

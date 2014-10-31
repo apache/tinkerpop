@@ -13,7 +13,7 @@ public abstract class GroovyJumpTest {
     public static class StandardTest extends JumpTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_name(final Object v1Id) {
             g.v(v1Id).as('x').out.jump('x') { it.loops() < 2 }.name
         }
 
@@ -77,7 +77,7 @@ public abstract class GroovyJumpTest {
     public static class ComputerTest extends JumpTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_name(final Object v1Id) {
             ComputerTestHelper.compute("g.v(${v1Id}).as('x').out.jump('x') { it.loops() < 2 }.name", g);
         }
 
