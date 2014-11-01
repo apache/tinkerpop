@@ -17,8 +17,10 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
+import org.javatuples.Triplet;
 
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -59,13 +61,18 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 ctx.write(new DefaultFullHttpResponse(HTTP_1_1, CONTINUE));
             }
 
-            if (req.getMethod() != GET) {
-                sendError(ctx, METHOD_NOT_ALLOWED);
+            if (req.getMethod() != GET && req.getMethod() != POST) {
+                sendError(ctx, METHOD_NOT_ALLOWED, METHOD_NOT_ALLOWED.toString());
                 return;
             }
 
-            final QueryStringDecoder decoder = new QueryStringDecoder(req.getUri());
-            final String script = decoder.parameters().get("gremlin").get(0);
+            final String script;
+            try {
+                script = getGremlinScript(req);
+            } catch (IllegalArgumentException iae) {
+                sendError(ctx, BAD_REQUEST, iae.getMessage());
+                return;
+            }
 
             final MessageTextSerializer serializer = (MessageTextSerializer) serializers.getOrDefault("application/json", jsonSerializer);
 
@@ -102,9 +109,18 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         ctx.close();
     }
 
-    private static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status) {
+    private static String getGremlinScript(final HttpRequest request) {
+        final QueryStringDecoder decoder = new QueryStringDecoder(request.getUri());
+        final List<String> gremlinParms = decoder.parameters().get("gremlin");
+        if (gremlinParms == null || gremlinParms.size() == 0) throw new IllegalArgumentException("no gremlin script supplied");
+        final String script = gremlinParms.get(0);
+        if (script.isEmpty()) throw new IllegalArgumentException("no gremlin script supplied");
+        return script;
+    }
+
+    private static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status, final String message) {
         final FullHttpResponse response = new DefaultFullHttpResponse(
-                HTTP_1_1, status, Unpooled.copiedBuffer("Failure: " + status + "\r\n", CharsetUtil.UTF_8));
+                HTTP_1_1, status, Unpooled.copiedBuffer("Failure: " + message + "\r\n", CharsetUtil.UTF_8));
         response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
 
         // Close the connection as soon as the error message is sent.
