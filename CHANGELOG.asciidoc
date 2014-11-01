@@ -10,6 +10,7 @@ TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Gremlin Server sessions now allow serialization of results that were part of an open transaction.
+* Refactor `OpProcessors` implementations in Gremlin Server for better reusability.
 * `Vertex.iterators()` no longer have a `branchFactor`. This is now at the query language level with `localLimit()`.
 * Added `limit(long)` and `localLimit(int,int)` which simply call the range equivalents with 0 as the low.
 * Added `LocalRangeStep` which supports ranging the edges and properties of an element -- `localRange(int,int)`.
