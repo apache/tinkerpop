@@ -15,6 +15,7 @@ import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -73,7 +74,7 @@ public abstract class AggregateTest extends AbstractGremlinTest {
             Path path = traversal.next();
             String first = path.get(0).toString();
             String second = path.get(1).toString();
-            assertNotEquals(first, second);
+            assertThat(first, not(second));
             MapHelper.incr(firstStepCounts, first, 1l);
             MapHelper.incr(secondStepCounts, second, 1l);
         }
