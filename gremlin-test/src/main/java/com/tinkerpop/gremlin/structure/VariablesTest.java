@@ -183,26 +183,28 @@ public class VariablesTest {
      */
     @RunWith(Parameterized.class)
     public static class GraphVariablesFeatureSupportTest extends AbstractGremlinTest {
-        private static final Map<String,Object> testMap = new HashMap<String,Object>() {{
-            put("testString", "try");
-            put("testInteger", 123);
-        }};
+        private static final Map<String,Object> testMap = new HashMap<>();
 
-        private static final ArrayList<Object> mixedList = new ArrayList<Object>() {{
-            add("try1");
-            add(2);
-        }};
+        private static final ArrayList<Object> mixedList = new ArrayList<>();
 
-        private static final ArrayList<String> uniformStringList = new ArrayList<String>() {{
-            add("try1");
-            add("try2");
-        }};
+        private static final ArrayList<String> uniformStringList = new ArrayList<>();
 
-        private static final ArrayList<Integer> uniformIntegerList = new ArrayList<Integer>() {{
-            add(100);
-            add(200);
-            add(300);
-        }};
+        private static final ArrayList<Integer> uniformIntegerList = new ArrayList<>();
+
+        static {
+            testMap.put("testString", "try");
+            testMap.put("testInteger", 123);
+
+            mixedList.add("try1");
+            mixedList.add(2);
+
+            uniformStringList.add("try1");
+            uniformStringList.add("try2");
+
+            uniformIntegerList.add(100);
+            uniformIntegerList.add(200);
+            uniformIntegerList.add(300);
+        }
 
         @Parameterized.Parameters(name = "{index}: supports{0}({1})")
         public static Iterable<Object[]> data() {
