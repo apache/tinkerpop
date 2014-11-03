@@ -198,24 +198,24 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
         return this.order((a, b) -> a.compareTo(b));
     }
 
-    public default GraphTraversal<S, E> order(final Comparator<Traverser<E>> comparator) {
-        return this.addStep(new OrderStep<>(this, comparator));
+    public default GraphTraversal<S, E> order(final Comparator<Traverser<E>>... comparators) {
+        return this.addStep(new OrderStep<>(this, comparators));
     }
 
-    public default <E2 extends Element> GraphTraversal<S, E2> orderBy(final String key) {
+    public default GraphTraversal<S, E> orderBy(final String key) {
         return this.orderBy(key, Order.incr);
     }
 
-    public default <E2 extends Element> GraphTraversal<S, E2> orderBy(final T accessor) {
+    public default GraphTraversal<S, E> orderBy(final T accessor) {
         return this.orderBy(accessor, Order.incr);
     }
 
-    public default <E2 extends Element> GraphTraversal<S, E2> orderBy(final String key, final Comparator comparator) {
-        return this.addStep(new OrderByStep(this, key, comparator));
+    public default <C> GraphTraversal<S, E> orderBy(final String key, final Comparator<C>... comparators) {
+        return this.addStep(new OrderByStep(this, key, comparators));
     }
 
-    public default <E2 extends Element> GraphTraversal<S, E2> orderBy(final T accessor, final Comparator comparator) {
-        return this.addStep(new OrderByStep(this, accessor, comparator));
+    public default <C> GraphTraversal<S, E> orderBy(final T accessor, final Comparator<C>... comparators) {
+        return this.addStep(new OrderByStep(this, accessor, comparators));
     }
 
     public default GraphTraversal<S, E> shuffle() {

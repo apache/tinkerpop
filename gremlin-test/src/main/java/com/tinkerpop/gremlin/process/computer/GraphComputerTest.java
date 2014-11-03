@@ -472,12 +472,6 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
 
 
    /*
-
-
-
-
-
-
     @Test
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)

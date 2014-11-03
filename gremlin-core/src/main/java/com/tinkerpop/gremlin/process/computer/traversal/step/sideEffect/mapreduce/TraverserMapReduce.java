@@ -35,7 +35,7 @@ public final class TraverserMapReduce implements MapReduce<Comparable, Object, C
     }
 
     public TraverserMapReduce(final Step traversalEndStep) {
-        this.comparator = Optional.ofNullable(traversalEndStep instanceof Comparing ? ((Comparing) traversalEndStep).getComparator() : null);
+        this.comparator = Optional.ofNullable(traversalEndStep instanceof Comparing ? GraphComputerHelper.chainComparators(((Comparing) traversalEndStep).getComparators()) : null);
         this.reducer = Optional.ofNullable(traversalEndStep instanceof Reducing ? ((Reducing) traversalEndStep).getReducer() : null);
     }
 
@@ -47,7 +47,7 @@ public final class TraverserMapReduce implements MapReduce<Comparable, Object, C
     @Override
     public void loadState(final Configuration configuration) {
         final Step step = TraversalHelper.getEnd(TraversalVertexProgram.getTraversalSupplier(configuration).get());
-        this.comparator = Optional.ofNullable(step instanceof Comparing ? ((Comparing) step).getComparator() : null);
+        this.comparator = Optional.ofNullable(step instanceof Comparing ? GraphComputerHelper.chainComparators(((Comparing) step).getComparators()) : null);
         this.reducer = Optional.ofNullable(step instanceof Reducing ? ((Reducing) step).getReducer() : null);
     }
 

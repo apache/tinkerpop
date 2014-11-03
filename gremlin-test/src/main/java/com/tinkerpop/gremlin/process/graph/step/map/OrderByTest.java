@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Order;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -26,6 +25,8 @@ public abstract class OrderByTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, String> get_g_V_orderByXnameX_name();
 
     public abstract Traversal<Vertex, Double> get_g_V_outE_orderByXweight_decrX_weight();
+
+    public abstract Traversal<Vertex, String> get_g_V_orderByXname_a1_b1__b2_a2X_name();
 
     // TODO: example using meta-properties
 
@@ -61,6 +62,21 @@ public abstract class OrderByTest extends AbstractGremlinTest {
 
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_orderByXname_decr__a2_b2X_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_orderByXname_a1_b1__b2_a2X_name();
+        printTraversalForm(traversal);
+        final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
+        assertEquals(names.size(), 6);
+        assertEquals("marko", names.get(0));
+        assertEquals("vadas", names.get(1));
+        assertEquals("peter", names.get(2));
+        assertEquals("ripple", names.get(3));
+        assertEquals("josh", names.get(4));
+        assertEquals("lop", names.get(5));
+    }
+
     public static class StandardTest extends OrderByTest {
 
         @Override
@@ -76,6 +92,13 @@ public abstract class OrderByTest extends AbstractGremlinTest {
         @Override
         public Traversal<Vertex, Double> get_g_V_outE_orderByXweight_decrX_weight() {
             return g.V().outE().orderBy("weight", Order.decr).values("weight");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_orderByXname_a1_b1__b2_a2X_name() {
+            return g.V().<String>orderBy("name",
+                    (a, b) -> a.substring(1, 2).compareTo(b.substring(1, 2)),
+                    (a, b) -> b.substring(2, 3).compareTo(a.substring(2, 3))).values("name");
         }
     }
 }

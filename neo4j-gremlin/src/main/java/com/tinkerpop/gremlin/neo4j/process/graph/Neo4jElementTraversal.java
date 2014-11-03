@@ -122,8 +122,8 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().order();
     }
 
-    public default Neo4jTraversal<A, A> order(final Comparator<Traverser<A>> comparator) {
-        return this.start().order(comparator);
+    public default Neo4jTraversal<A, A> order(final Comparator<Traverser<A>>... comparators) {
+        return this.start().order(comparators);
     }
 
     public default Neo4jTraversal<A, A> orderBy(final String key) {
@@ -134,12 +134,12 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().orderBy(accessor);
     }
 
-    public default Neo4jTraversal<A, A> orderBy(final String key, final Comparator comparator) {
-        return this.start().orderBy(key, comparator);
+    public default Neo4jTraversal<A, A> orderBy(final String key, final Comparator... comparators) {
+        return this.start().orderBy(key, comparators);
     }
 
-    public default Neo4jTraversal<A, A> orderBy(final T accessor, final Comparator comparator) {
-        return this.start().orderBy(accessor, comparator);
+    public default Neo4jTraversal<A, A> orderBy(final T accessor, final Comparator... comparators) {
+        return this.start().orderBy(accessor, comparators);
     }
 
     public default Neo4jTraversal<A, A> shuffle() {

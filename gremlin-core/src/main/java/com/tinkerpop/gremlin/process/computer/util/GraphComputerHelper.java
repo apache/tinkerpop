@@ -7,6 +7,8 @@ import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
 
 import java.lang.reflect.Method;
+import java.util.Comparator;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -51,6 +53,10 @@ public class GraphComputerHelper {
 
         if (!(b instanceof MapReduce)) return false;
         return a.getClass().equals(b.getClass()) && a.getMemoryKey().equals(((MapReduce) b).getMemoryKey());
+    }
+
+    public static <T> Comparator<T> chainComparators(final Comparator<T>[] comparators) {
+        return Stream.of(comparators).reduce((a, b) -> a.thenComparing(b)).get();
     }
 
 }

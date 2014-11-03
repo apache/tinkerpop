@@ -22,7 +22,7 @@ public final class ShuffleStep<S> extends BarrierStep<S> implements Comparing<S>
     }
 
     @Override
-    public Comparator<Traverser<S>> getComparator() {
-        return SHUFFLE_COMPARATOR;
+    public Comparator<Traverser<S>>[] getComparators() {
+        return new Comparator[]{SHUFFLE_COMPARATOR};
     }
 }

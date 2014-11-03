@@ -122,8 +122,8 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().order();
     }
 
-    public default GraphTraversal<A, A> order(final Comparator<Traverser<A>> comparator) {
-        return this.start().order(comparator);
+    public default GraphTraversal<A, A> order(final Comparator<Traverser<A>>... comparators) {
+        return this.start().order(comparators);
     }
 
     public default GraphTraversal<A, A> orderBy(final String key) {
@@ -134,12 +134,12 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().orderBy(accessor);
     }
 
-    public default GraphTraversal<A, A> orderBy(final String key, final Comparator comparator) {
-        return this.start().orderBy(key, comparator);
+    public default GraphTraversal<A, A> orderBy(final String key, final Comparator... comparators) {
+        return this.start().orderBy(key, comparators);
     }
 
-    public default GraphTraversal<A, A> orderBy(final T accessor, final Comparator comparator) {
-        return this.start().orderBy(accessor, comparator);
+    public default GraphTraversal<A, A> orderBy(final T accessor, final Comparator... comparators) {
+        return this.start().orderBy(accessor, comparators);
     }
 
     public default GraphTraversal<A, A> shuffle() {

@@ -1,6 +1,8 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
+import com.tinkerpop.gremlin.groovy.function.GComparator
 import com.tinkerpop.gremlin.groovy.function.GFunction
+import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.graph.GraphTraversal
 
 import java.util.function.Function
@@ -25,6 +27,18 @@ class StepLoader {
 
         GraphTraversal.metaClass.branch = { final Closure... labelClosures ->
             return ((GraphTraversal) delegate).branch(GFunction.make(labelClosures));
+        }
+
+        GraphTraversal.metaClass.order = { final Closure... orderClosures ->
+            return ((GraphTraversal) delegate).order(GComparator.make(orderClosures));
+        }
+
+        GraphTraversal.metaClass.orderBy = { final String propertyKey, final Closure... orderClosures ->
+            return ((GraphTraversal) delegate).orderBy(propertyKey, GComparator.make(orderClosures));
+        }
+
+        GraphTraversal.metaClass.orderBy = { final T accessor, final Closure... orderClosures ->
+            return ((GraphTraversal) delegate).orderBy(accessor, GComparator.make(orderClosures));
         }
 
         GraphTraversal.metaClass.path = { final Closure... pathClosures ->
