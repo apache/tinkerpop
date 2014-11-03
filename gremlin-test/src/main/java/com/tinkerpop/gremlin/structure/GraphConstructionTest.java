@@ -36,7 +36,7 @@ public class GraphConstructionTest extends AbstractGremlinTest {
         assertNotNull(createdGraph);
         assertEquals(expectedGraph.getClass(), createdGraph.getClass());
 
-        graphProvider.clear(g, c);
+        graphProvider.clear(createdGraph, c);
     }
 
     /**
