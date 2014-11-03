@@ -42,6 +42,8 @@ import static io.netty.handler.codec.http.HttpVersion.*;
 public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
+    private static final String KEY_GREMLIN = "gremlin";
+
     private final Map<String, MessageSerializer> serializers;
     private final MessageTextSerializer jsonSerializer = new JsonMessageSerializerV1d0();
 
@@ -120,7 +122,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private static Pair<String, Map<String,Object>> getGremlinScript(final FullHttpRequest request) {
         if (request.getMethod() == GET) {
             final QueryStringDecoder decoder = new QueryStringDecoder(request.getUri());
-            final List<String> gremlinParms = decoder.parameters().get("gremlin");
+            final List<String> gremlinParms = decoder.parameters().get(KEY_GREMLIN);
             if (gremlinParms == null || gremlinParms.size() == 0)
                 throw new IllegalArgumentException("no gremlin script supplied");
             final String script = gremlinParms.get(0);
@@ -134,7 +136,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 throw new IllegalArgumentException("body could not be parsed", ioe);
             }
 
-            final JsonNode scriptNode = body.get("gremlin");
+            final JsonNode scriptNode = body.get(KEY_GREMLIN);
             if (null == scriptNode) throw new IllegalArgumentException("no gremlin script supplied");
             return Pair.with(scriptNode.toString(), new HashMap<>());
         }
