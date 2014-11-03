@@ -322,13 +322,14 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldReadWriteModernToKryo() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeGraph(os, g);
 
             final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readGraph(bais, g1);
@@ -350,13 +351,14 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldReadWriteCrewToKryo() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeGraph(os, g);
 
             final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readGraph(bais, g1);
@@ -379,13 +381,14 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldReadWriteClassicToKryo() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeGraph(os, g);
 
             final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName());
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readGraph(bais, g1);
@@ -482,11 +485,12 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e = v1.addEdge("friend", v2, "weight", 0.5f, Graph.Key.hide("acl"), "rw");
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeEdge(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
@@ -521,11 +525,12 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e = v1.addEdge("friend", v2, "weight", 0.5d, Graph.Key.hide("acl"), "rw");
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeEdge(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
@@ -560,11 +565,12 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e = DetachedEdge.detach(v1.addEdge("friend", v2, "weight", 0.5d, Graph.Key.hide("acl"), "rw"), true);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeEdge(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
@@ -597,11 +603,12 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e = DetachedEdge.detach(v1.addEdge("friend", v2, "weight", 0.5d, Graph.Key.hide("acl"), "rw"));
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeEdge(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
@@ -837,11 +844,12 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e = v1.addEdge("friend", v2, "uuid", id);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeEdge(os, e);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
@@ -877,11 +885,12 @@ public class IoTest extends AbstractGremlinTest {
         v1.addEdge("friends", v2, "weight", 0.5f);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeVertex(os, v1);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, detachedVertex -> {
@@ -911,11 +920,12 @@ public class IoTest extends AbstractGremlinTest {
         v1.addEdge("friends", v2, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeVertex(os, v1);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, detachedVertex -> {
@@ -944,12 +954,13 @@ public class IoTest extends AbstractGremlinTest {
         v1.addEdge("friends", v2, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             final DetachedVertex dv = DetachedVertex.detach(v1);
             writer.writeVertex(os, dv);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, detachedVertex -> {
@@ -978,12 +989,13 @@ public class IoTest extends AbstractGremlinTest {
         v1.addEdge("friends", v2, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             final DetachedVertex dv = DetachedVertex.detach(v1, true);
             writer.writeVertex(os, dv);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, detachedVertex -> {
@@ -1013,11 +1025,12 @@ public class IoTest extends AbstractGremlinTest {
         v1.addEdge("friends", v2, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeVertex(os, v1);
 
             final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, detachedVertex -> {
@@ -1185,11 +1198,12 @@ public class IoTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldReadWriteVerticesNoEdgesToKryoManual() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeVertices(os, g.V().has("age", Compare.gt, 30));
 
             final AtomicInteger called = new AtomicInteger(0);
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
 
             try (final VertexByteArrayInputStream vbais = new VertexByteArrayInputStream(new ByteArrayInputStream(os.toByteArray()))) {
@@ -1214,11 +1228,12 @@ public class IoTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldReadWriteVerticesNoEdgesToKryo() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeVertices(os, g.V().has("age", Compare.gt, 30));
 
             final AtomicInteger called = new AtomicInteger(0);
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
 
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
@@ -1278,12 +1293,13 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e = v1.addEdge("friends", v2, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeVertex(os, v1, Direction.OUT);
 
             final AtomicBoolean calledVertex = new AtomicBoolean(false);
             final AtomicBoolean calledEdge = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
 
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
@@ -1379,13 +1395,14 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e = v2.addEdge("friends", v1, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeVertex(os, v1, Direction.IN);
 
             final AtomicBoolean calledVertex = new AtomicBoolean(false);
             final AtomicBoolean calledEdge = new AtomicBoolean(false);
 
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, Direction.IN, detachedVertex -> {
@@ -1482,7 +1499,7 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeVertex(os, v1, Direction.BOTH);
 
             final AtomicBoolean calledVertex = new AtomicBoolean(false);
@@ -1490,6 +1507,7 @@ public class IoTest extends AbstractGremlinTest {
             final AtomicBoolean calledEdge2 = new AtomicBoolean(false);
 
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, Direction.BOTH, detachedVertex -> {
@@ -1683,13 +1701,14 @@ public class IoTest extends AbstractGremlinTest {
         v1.addEdge("friends", v2, "weight", 1.0d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeVertex(os, v1, Direction.BOTH);
 
             final AtomicBoolean vertexCalled = new AtomicBoolean(false);
             final AtomicBoolean edge1Called = new AtomicBoolean(false);
 
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, Direction.IN, detachedVertex -> {
@@ -1794,13 +1813,14 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeVertex(os, v1, Direction.BOTH);
 
             final AtomicBoolean vertexCalled = new AtomicBoolean(false);
             final AtomicBoolean edgeCalled = new AtomicBoolean(false);
 
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, Direction.OUT, detachedVertex -> {
@@ -1903,10 +1923,11 @@ public class IoTest extends AbstractGremlinTest {
         v1.addEdge("friends", v2, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeVertex(os, v1, Direction.OUT);
 
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
@@ -1928,10 +1949,11 @@ public class IoTest extends AbstractGremlinTest {
         v2.addEdge("friends", v1, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeVertex(os, v1, Direction.IN);
 
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
@@ -1953,10 +1975,11 @@ public class IoTest extends AbstractGremlinTest {
         v2.addEdge("friends", v1, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeVertex(os, v1, Direction.IN);
 
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
@@ -1978,10 +2001,11 @@ public class IoTest extends AbstractGremlinTest {
         v1.addEdge("friends", v2, "weight", 0.5d);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.build().create();
+            final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
             writer.writeVertex(os, v1, Direction.IN);
 
             final KryoReader reader = KryoReader.build()
+                    .custom(graphProvider.createConfiguredGremlinKryo())
                     .workingDirectory(File.separator + "tmp").create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
