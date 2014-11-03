@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.MapHelper;
@@ -21,7 +21,7 @@ import static org.hamcrest.CoreMatchers.*;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class AggregateTest extends AbstractGremlinTest {
+public abstract class AggregateTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, List<String>> get_g_V_name_aggregate();
 
@@ -126,6 +126,10 @@ public abstract class AggregateTest extends AbstractGremlinTest {
     }
 
     public static class ComputerTest extends AggregateTest {
+
+        public ComputerTest() {
+            requiresGraphComputer = true;
+        }
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_name_aggregate() {

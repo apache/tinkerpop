@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -19,7 +19,7 @@ import static org.junit.Assert.*;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class GroupByTest extends AbstractGremlinTest {
+public abstract class GroupByTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_groupByXnameX();
 
@@ -127,6 +127,10 @@ public abstract class GroupByTest extends AbstractGremlinTest {
     }
 
     public static class ComputerTest extends GroupByTest {
+
+        public ComputerTest() {
+            requiresGraphComputer = true;
+        }
 
         @Override
         public Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_groupByXnameX() {

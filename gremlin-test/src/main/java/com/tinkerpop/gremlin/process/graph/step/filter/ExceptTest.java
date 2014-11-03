@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.filter;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -23,7 +23,7 @@ import static org.junit.Assert.*;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Daniel Kuppitz (daniel at thinkaurelius.com)
  */
-public abstract class ExceptTest extends AbstractGremlinTest {
+public abstract class ExceptTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_v1_out_exceptXg_v2X(final Object v1Id, final Object v2Id);
 
@@ -142,6 +142,10 @@ public abstract class ExceptTest extends AbstractGremlinTest {
     }
 
     public static class ComputerTest extends ExceptTest {
+
+        public ComputerTest() {
+            requiresGraphComputer = true;
+        }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_exceptXg_v2X(final Object v1Id, final Object v2Id) {

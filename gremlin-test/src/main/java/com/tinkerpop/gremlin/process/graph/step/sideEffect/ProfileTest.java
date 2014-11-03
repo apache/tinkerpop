@@ -1,23 +1,20 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.util.StepMetrics;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class ProfileTest extends AbstractGremlinTest {
+public abstract class ProfileTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, TraversalMetrics> get_g_V_out_out_profile();
 
 
@@ -73,6 +70,9 @@ public abstract class ProfileTest extends AbstractGremlinTest {
     }
 
     public static class ComputerTest extends ProfileTest {
+        public ComputerTest() {
+            requiresGraphComputer = true;
+        }
 
         @Override
         public Traversal<Vertex, TraversalMetrics> get_g_V_out_out_profile() {

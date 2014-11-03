@@ -42,6 +42,10 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
 
     public static class ComputerTest extends PropertiesTest {
 
+        public ComputerTest() {
+            requiresGraphComputer = true;
+        }
+
         public Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXname_ageX_value() {
             return g.V().has("age").properties("name", "age").value().submit(g.compute());
         }

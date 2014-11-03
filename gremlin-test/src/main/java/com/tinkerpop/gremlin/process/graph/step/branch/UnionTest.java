@@ -41,6 +41,10 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
 
     public static class ComputerTest extends UnionTest {
 
+        public ComputerTest() {
+            requiresGraphComputer = true;
+        }
+
         public Traversal<Vertex, String> get_g_V_unionXout_inX_name() {
             return g.V().union(g.<Vertex>of().out(), g.<Vertex>of().in()).<String>values("name").submit(g.compute());
         }

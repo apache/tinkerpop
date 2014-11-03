@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.map;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class UnfoldTest extends AbstractGremlinTest {
+public abstract class UnfoldTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Edge> get_g_V_mapXoutEX_unfold();
 
@@ -83,6 +83,10 @@ public abstract class UnfoldTest extends AbstractGremlinTest {
     }
 
     public static class ComputerTest extends UnfoldTest {
+
+        public ComputerTest() {
+            requiresGraphComputer = true;
+        }
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_mapXoutEX_unfold() {

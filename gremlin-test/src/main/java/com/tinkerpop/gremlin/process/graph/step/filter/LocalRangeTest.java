@@ -78,6 +78,9 @@ public abstract class LocalRangeTest extends AbstractGremlinProcessTest {
     }
 
     public static class ComputerTest extends LocalRangeTest {
+        public ComputerTest() {
+            requiresGraphComputer = true;
+        }
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_outE_localRangeX0_2X() {

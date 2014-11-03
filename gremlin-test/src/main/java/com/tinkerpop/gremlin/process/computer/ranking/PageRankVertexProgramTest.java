@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.computer.ranking;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -14,7 +14,11 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PageRankVertexProgramTest extends AbstractGremlinTest {
+public class PageRankVertexProgramTest extends AbstractGremlinProcessTest {
+
+    public PageRankVertexProgramTest() {
+        requiresGraphComputer = true;
+    }
 
     @Test
     @LoadGraphWith(MODERN)

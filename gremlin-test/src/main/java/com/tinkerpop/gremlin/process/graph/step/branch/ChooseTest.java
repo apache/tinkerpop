@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.branch;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -18,7 +18,7 @@ import static org.junit.Assert.assertFalse;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public abstract class ChooseTest extends AbstractGremlinTest {
+public abstract class ChooseTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name();
 
@@ -141,6 +141,10 @@ public abstract class ChooseTest extends AbstractGremlinTest {
     }
 
     public static class ComputerTest extends ChooseTest {
+
+        public ComputerTest() {
+            requiresGraphComputer = true;
+        }
 
         @Override
         public Traversal<Vertex, String> get_g_V_chooseXname_length_5XoutXinX_name() {
