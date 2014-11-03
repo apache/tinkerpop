@@ -704,6 +704,8 @@ gremlin> g.V().orderBy('name',decr).map{it.get().value('name') + ' is ' + it.get
 ==>lop is v[3]
 ==>josh is v[4]
 
+IMPORTANT: The `orderBy()`-step allows the user to provide an arbitrary number of comparators for primary, secondary, etc. sorting. These comparators can be lambdas or they can be pre-defined enums (e.g. `Order.incr`). It is always best to use a pre-defined enum instead of a generic lambda as the underlying vendor may be able to optimize the execution when the comparator is inspectable.
+
 [[path-step]]
 Path Step
 ~~~~~~~~~
