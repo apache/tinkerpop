@@ -22,7 +22,7 @@ public class GiraphGraphComputerIntegrateTest {
     public void shouldNotDeriveMemoryIfToldSo() throws Exception {
         final GiraphGraphProvider provider = new GiraphGraphProvider();
         final Map<String, Object> map = provider.getBaseConfiguration("gremlin.giraph", GiraphGraphComputerIntegrateTest.class, "shouldNotDeriveMemoryIfToldSo");
-        map.put(Constants.GREMLIN_DERIVE_MEMORY, false);
+        map.put(Constants.GREMLIN_GIRAPH_DERIVE_MEMORY, false);
         final GiraphGraph g = (GiraphGraph) GraphFactory.open(map);
         provider.loadGraphData(g, LoadGraphWith.GraphData.CLASSIC);
         final ComputerResult result = g.compute().program(LambdaVertexProgram.build().

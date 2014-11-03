@@ -648,16 +648,16 @@ The `GiraphGraphComputer` makes use of a properties file much like any other `Gr
 
 [source,text]
 gremlin.graph=com.tinkerpop.gremlin.giraph.structure.GiraphGraph
-giraph.gremlin.inputLocation=tinkerpop-classic-vertices.gio
+gremlin.giraph.inputLocation=tinkerpop-classic-vertices.gio
 giraph.vertexInputFormatClass=com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexInputFormat
-giraph.gremlin.outputLocation=output
+gremlin.giraph.outputLocation=output
 giraph.vertexOutputFormatClass=com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexOutputFormat
-giraph.gremlin.memoryOutputFormatClass=org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat
+gremlin.giraph.memoryOutputFormatClass=org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat
 gremlin.vertexProgram=com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
 gremlin.traversalVertexProgram.traversalSupplier.type=CLASS
 gremlin.traversalVertexProgram.traversalSupplier.object=com.tinkerpop.gremlin.giraph.process.graph.example.TraversalSupplier1
-giraph.gremlin.jarsInDistributedCache=true
-giraph.gremlin.deriveMemory=false
+gremlin.giraph.jarsInDistributedCache=true
+gremlin.giraph.deriveMemory=false
 giraph.minWorkers=2
 giraph.maxWorkers=2
 
@@ -667,26 +667,22 @@ A review of the properties above are presented in the table below.
 |=========================================================
 |Property |Description
 |gremlin.graph |The class of the graph to construct using GraphFactory
-|giraph.gremlin.inputLocation |The location of the input file(s) for Giraph to read the graph from.
+|gremlin.giraph.inputLocation |The location of the input file(s) for Giraph to read the graph from.
 |giraph.vertexInputFormatClass |The format that the graph input file(s) are represented in.
-|giraph.gremlin.outputLocation |The location to write the computed Giraph graph to.
+|gremlin.giraph.outputLocation |The location to write the computed Giraph graph to.
 |giraph.vertexOutputFormatClass |The format that the output file(s) should be represented in.
-|giraph.gremlin.memoryOutputFormatClass |The format of any resultant GraphComputer Memory.
+|gremlin.giraph.memoryOutputFormatClass |The format of any resultant GraphComputer Memory.
 |gremlin.vertexProgram |The `VertexProgram` to distribute to all vertices in the `GiraphGraph`
 |gremlin.traversalVertexProgram.traversalSupplier.object |For `TraversalVertexProgram`, the location of the Gremlin traversal to use (if not using Gremlin Console).
 |gremlin.traversalVertexProgram.traversalSupplier.type | Whether the traversal supplier is a CLASS, SCRIPT, or OBJECT.
-|giraph.gremlin.jarsInDistributedCache |Whether to upload the Giraph-Gremlin jars to Hadoop's distributed cache (necessary if jars are not on machines' classpaths).
-|giraph.gremlin.deriveMemory |Whether or not `Memory` is yielded (requires an extra MapReduce job if true).
+|gremlin.giraph.jarsInDistributedCache |Whether to upload the Giraph-Gremlin jars to Hadoop's distributed cache (necessary if jars are not on machines' classpaths).
+|gremlin.giraph.deriveMemory |Whether or not `Memory` is yielded (requires an extra MapReduce job if true).
 |giraph.minWorkers |The minimum number of parallel workers to execute the vertices of the graph.
 |giraph.maxWorkers |The maximum number of parallel workers to execute the vertices of the graph.
 |=========================================================
 
 IMPORTANT: The maximum number of workers can be no larger than the number of map-slots in the Hadoop cluster minus 1. For example, if the Hadoop cluster has 4 map slots, then `giraph.maxWorkers` can not be larger than 3. One map-slot is reserved for the master compute node and all other slots can be allocated as workers to execute the VertexPrograms on the vertices of the graph.
 
-The above properties file states:
-
-	The location of the graph is tinkerpop-classic-vertices.gio. Interpret that file using KryoVertexInputFormat. When evaluating the graph over the Giraph/Hadoop cluster, execute the TraversalVertexProgram on all vertices of the graph using the traversal defined in TraversalSupplier1. Write the computed on GiraphGraph to output/ using the KryoVertexOutputFormat. Use 2 workers (thus, 3 map-slots) to execute the job.
- 
 Along with the properties above, the numerous link:http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/core-default.xml[Hadoop specific properties] can be added as needed to tune and parameterize the executed Giraph-Gremlin job on the respective Hadoop cluster.
 
 OLTP Giraph-Gremlin

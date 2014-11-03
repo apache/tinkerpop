@@ -37,7 +37,7 @@ public class MapReduceHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MapReduceHelper.class);
 
-    private static final String SEQUENCE_WARNING = "The " + Constants.GREMLIN_MEMORY_OUTPUT_FORMAT_CLASS
+    private static final String SEQUENCE_WARNING = "The " + Constants.GREMLIN_GIRAPH_MEMORY_OUTPUT_FORMAT_CLASS
             + " is not " + SequenceFileOutputFormat.class.getCanonicalName()
             + " and thus, graph computer memory can not be converted to Java objects";
 
@@ -47,8 +47,8 @@ public class MapReduceHelper {
         mapReduce.storeState(apacheConfiguration);
         ConfUtil.mergeApacheIntoHadoopConfiguration(apacheConfiguration, newConfiguration);
         if (!mapReduce.doStage(MapReduce.Stage.MAP)) {
-            final Path memoryPath = new Path(configuration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + mapReduce.getMemoryKey());
-            if (newConfiguration.getClass(Constants.GREMLIN_MEMORY_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
+            final Path memoryPath = new Path(configuration.get(Constants.GREMLIN_GIRAPH_OUTPUT_LOCATION) + "/" + mapReduce.getMemoryKey());
+            if (newConfiguration.getClass(Constants.GREMLIN_GIRAPH_MEMORY_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
                 mapReduce.addResultToMemory(memory, new KryoWritableIterator(configuration, memoryPath));
             else
                 GiraphGraphComputer.LOGGER.warn(SEQUENCE_WARNING);
@@ -56,7 +56,7 @@ public class MapReduceHelper {
             final Optional<Comparator<?>> mapSort = mapReduce.getMapKeySort();
             final Optional<Comparator<?>> reduceSort = mapReduce.getReduceKeySort();
 
-            newConfiguration.setClass(Constants.MAP_REDUCE_CLASS, mapReduce.getClass(), MapReduce.class);
+            newConfiguration.setClass(Constants.GRELMIN_GIRAPH_MAP_REDUCE_CLASS, mapReduce.getClass(), MapReduce.class);
             final Job job = new Job(newConfiguration, mapReduce.toString());
             GiraphGraphComputer.LOGGER.info(Constants.GIRAPH_GREMLIN_JOB_PREFIX + mapReduce.toString());
             job.setJarByClass(GiraphGraph.class);
@@ -77,12 +77,12 @@ public class MapReduceHelper {
             job.setOutputKeyClass(KryoWritable.class);
             job.setOutputValueClass(KryoWritable.class);
             job.setInputFormatClass(ConfUtil.getInputFormatFromVertexInputFormat((Class) newConfiguration.getClass(Constants.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class)));
-            job.setOutputFormatClass(newConfiguration.getClass(Constants.GREMLIN_MEMORY_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class, OutputFormat.class)); // TODO: Make this configurable
+            job.setOutputFormatClass(newConfiguration.getClass(Constants.GREMLIN_GIRAPH_MEMORY_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class, OutputFormat.class)); // TODO: Make this configurable
             // if there is no vertex program, then grab the graph from the input location
             final Path graphPath = configuration.get(VertexProgram.VERTEX_PROGRAM, null) != null ?
-                    new Path(newConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + Constants.SYSTEM_G) :
-                    new Path(newConfiguration.get(Constants.GREMLIN_INPUT_LOCATION));
-            Path memoryPath = new Path(newConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + (reduceSort.isPresent() ? mapReduce.getMemoryKey() + "-temp" : mapReduce.getMemoryKey()));
+                    new Path(newConfiguration.get(Constants.GREMLIN_GIRAPH_OUTPUT_LOCATION) + "/" + Constants.SYSTEM_G) :
+                    new Path(newConfiguration.get(Constants.GREMLIN_GIRAPH_INPUT_LOCATION));
+            Path memoryPath = new Path(newConfiguration.get(Constants.GREMLIN_GIRAPH_OUTPUT_LOCATION) + "/" + (reduceSort.isPresent() ? mapReduce.getMemoryKey() + "-temp" : mapReduce.getMemoryKey()));
             if (FileSystem.get(newConfiguration).exists(memoryPath)) {
                 FileSystem.get(newConfiguration).delete(memoryPath, true);
             }
@@ -102,9 +102,9 @@ public class MapReduceHelper {
                 reduceSortJob.setOutputKeyClass(KryoWritable.class);
                 reduceSortJob.setOutputValueClass(KryoWritable.class);
                 reduceSortJob.setInputFormatClass(SequenceFileInputFormat.class); // TODO: require this hard coded? If so, ERROR messages needed.
-                reduceSortJob.setOutputFormatClass(newConfiguration.getClass(Constants.GREMLIN_MEMORY_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class, OutputFormat.class));
+                reduceSortJob.setOutputFormatClass(newConfiguration.getClass(Constants.GREMLIN_GIRAPH_MEMORY_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class, OutputFormat.class));
                 FileInputFormat.setInputPaths(reduceSortJob, memoryPath);
-                final Path sortedMemoryPath = new Path(newConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + mapReduce.getMemoryKey());
+                final Path sortedMemoryPath = new Path(newConfiguration.get(Constants.GREMLIN_GIRAPH_OUTPUT_LOCATION) + "/" + mapReduce.getMemoryKey());
                 FileOutputFormat.setOutputPath(reduceSortJob, sortedMemoryPath);
                 reduceSortJob.waitForCompletion(true);
                 FileSystem.get(newConfiguration).delete(memoryPath, true); // delete the temporary memory path
@@ -113,7 +113,7 @@ public class MapReduceHelper {
 
             // if its not a SequenceFile there is no certain way to convert to necessary Java objects.
             // to get results you have to look through HDFS directory structure. Oh the horror.
-            if (newConfiguration.getClass(Constants.GREMLIN_MEMORY_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
+            if (newConfiguration.getClass(Constants.GREMLIN_GIRAPH_MEMORY_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
                 mapReduce.addResultToMemory(memory, new KryoWritableIterator(configuration, memoryPath));
             else
                 GiraphGraphComputer.LOGGER.warn(SEQUENCE_WARNING);
@@ -122,7 +122,7 @@ public class MapReduceHelper {
 
     public static <MK, MV, RK, RV, R> MapReduce<MK, MV, RK, RV, R> getMapReduce(final Configuration configuration) {
         try {
-            final Class<? extends MapReduce> mapReduceClass = configuration.getClass(Constants.MAP_REDUCE_CLASS, MapReduce.class, MapReduce.class);
+            final Class<? extends MapReduce> mapReduceClass = configuration.getClass(Constants.GRELMIN_GIRAPH_MAP_REDUCE_CLASS, MapReduce.class, MapReduce.class);
             final Constructor<? extends MapReduce> constructor = mapReduceClass.getDeclaredConstructor();
             constructor.setAccessible(true);
             final MapReduce<MK, MV, RK, RV, R> mapReduce = constructor.newInstance();

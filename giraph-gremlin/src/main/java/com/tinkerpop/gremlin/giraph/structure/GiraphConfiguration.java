@@ -49,19 +49,19 @@ public class GiraphConfiguration extends BaseConfiguration implements Serializab
     }
 
     public String getInputLocation() {
-        return this.getString(Constants.GREMLIN_INPUT_LOCATION);
+        return this.getString(Constants.GREMLIN_GIRAPH_INPUT_LOCATION);
     }
 
     public void setInputLocation(final String inputLocation) {
-        this.setProperty(Constants.GREMLIN_INPUT_LOCATION, inputLocation);
+        this.setProperty(Constants.GREMLIN_GIRAPH_INPUT_LOCATION, inputLocation);
     }
 
     public String getOutputLocation() {
-        return this.getString(Constants.GREMLIN_OUTPUT_LOCATION);
+        return this.getString(Constants.GREMLIN_GIRAPH_OUTPUT_LOCATION);
     }
 
     public void setOutputLocation(final String outputLocation) {
-        this.setProperty(Constants.GREMLIN_OUTPUT_LOCATION, outputLocation);
+        this.setProperty(Constants.GREMLIN_GIRAPH_OUTPUT_LOCATION, outputLocation);
     }
 
     @Override

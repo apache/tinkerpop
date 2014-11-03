@@ -54,22 +54,22 @@ public final class GiraphMemory extends MasterCompute implements Memory {
                     MemoryHelper.validateKey(key);
                     this.registerPersistentAggregator(key, MemoryAggregator.class);
                 }
-                this.registerPersistentAggregator(Constants.GREMLIN_HALT, MemoryAggregator.class);
+                this.registerPersistentAggregator(Constants.GREMLIN_GIRAPH_HALT, MemoryAggregator.class);
                 this.registerPersistentAggregator(Constants.SYSTEM_RUNTIME, MemoryAggregator.class);
-                this.setAggregatedValue(Constants.GREMLIN_HALT, new RuleWritable(RuleWritable.Rule.SET, false));
+                this.setAggregatedValue(Constants.GREMLIN_GIRAPH_HALT, new RuleWritable(RuleWritable.Rule.SET, false));
                 this.set(Constants.SYSTEM_RUNTIME, System.currentTimeMillis());
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
             this.vertexProgram.setup(this);
         } else {
-            if (this.get(Constants.GREMLIN_HALT)) {
+            if (this.get(Constants.GREMLIN_GIRAPH_HALT)) {
                 this.haltComputation();
             } else if (this.vertexProgram.terminate(this)) { // terminate
-                if (!this.getConf().getBoolean(Constants.GREMLIN_DERIVE_MEMORY, false)) // no need for the extra BSP round if memory is not required
+                if (!this.getConf().getBoolean(Constants.GREMLIN_GIRAPH_DERIVE_MEMORY, false)) // no need for the extra BSP round if memory is not required
                     this.haltComputation();
                 else
-                    this.setAggregatedValue(Constants.GREMLIN_HALT, new RuleWritable(RuleWritable.Rule.SET, true));
+                    this.setAggregatedValue(Constants.GREMLIN_GIRAPH_HALT, new RuleWritable(RuleWritable.Rule.SET, true));
             }
         }
     }

@@ -39,12 +39,12 @@ public final class MemoryMapReduce implements MapReduce<String, Object, String, 
 
     @Override
     public void storeState(final Configuration configuration) {
-        configuration.setProperty(Constants.GREMLIN_MEMORY_KEYS, new ArrayList<>(this.memoryKeys.size()));
+        configuration.setProperty(Constants.GREMLIN_GIRAPH_MEMORY_KEYS, new ArrayList<>(this.memoryKeys.size()));
     }
 
     @Override
     public void loadState(final Configuration configuration) {
-        this.memoryKeys = new HashSet((List) configuration.getList(Constants.GREMLIN_MEMORY_KEYS));
+        this.memoryKeys = new HashSet((List) configuration.getList(Constants.GREMLIN_GIRAPH_MEMORY_KEYS));
     }
 
     @Override

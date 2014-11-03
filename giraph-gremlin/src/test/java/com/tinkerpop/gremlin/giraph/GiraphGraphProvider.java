@@ -55,17 +55,17 @@ public class GiraphGraphProvider extends AbstractGraphProvider {
             put("gremlin.graph", GiraphGraph.class.getName());
             put(GiraphConstants.VERTEX_INPUT_FORMAT_CLASS.getKey(), KryoVertexInputFormat.class.getCanonicalName());
             put(GiraphConstants.VERTEX_OUTPUT_FORMAT_CLASS.getKey(), KryoVertexOutputFormat.class.getCanonicalName());
-            //put(Constants.GREMLIN_MEMORY_OUTPUT_FORMAT_CLASS, TextOutputFormat.class.getCanonicalName());
-            put(Constants.GREMLIN_MEMORY_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class.getCanonicalName());
+            //put(Constants.GREMLIN_GIRAPH_MEMORY_OUTPUT_FORMAT_CLASS, TextOutputFormat.class.getCanonicalName());
+            put(Constants.GREMLIN_GIRAPH_MEMORY_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class.getCanonicalName());
             put(GiraphConstants.MIN_WORKERS, 1);
             put(GiraphConstants.MAX_WORKERS, 1);
             put(GiraphConstants.SPLIT_MASTER_WORKER.getKey(), false);
             //put("giraph.localTestMode", true);
             put(GiraphConstants.ZOOKEEPER_JAR, GiraphGraph.class.getResource("zookeeper-3.3.3.jar").getPath());
-            //put(Constants.GREMLIN_INPUT_LOCATION, KryoInputFormat.class.getResource("tinkerpop-classic-vertices.gio").getPath());
-            put(Constants.GREMLIN_OUTPUT_LOCATION, "giraph-gremlin/target/test-output");
-            put(Constants.GREMLIN_DERIVE_MEMORY, true);
-            put(Constants.GREMLIN_JARS_IN_DISTRIBUTED_CACHE, true);
+            //put(Constants.GREMLIN_GIRAPH_INPUT_LOCATION, KryoInputFormat.class.getResource("tinkerpop-classic-vertices.gio").getPath());
+            put(Constants.GREMLIN_GIRAPH_OUTPUT_LOCATION, "giraph-gremlin/target/test-output");
+            put(Constants.GREMLIN_GIRAPH_DERIVE_MEMORY, true);
+            put(Constants.GREMLIN_GIRAPH_JARS_IN_DISTRIBUTED_CACHE, true);
         }};
     }
 

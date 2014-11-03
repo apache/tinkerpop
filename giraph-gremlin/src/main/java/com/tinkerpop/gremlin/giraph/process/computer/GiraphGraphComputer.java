@@ -111,7 +111,7 @@ public final class GiraphGraphComputer extends Configured implements GraphComput
             try {
                 final FileSystem fs = FileSystem.get(this.giraphConfiguration);
                 this.loadJars(fs);
-                fs.delete(new Path(this.giraphConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION)), true);
+                fs.delete(new Path(this.giraphConfiguration.get(Constants.GREMLIN_GIRAPH_OUTPUT_LOCATION)), true);
                 ToolRunner.run(this, new String[]{});
                 // memory.keys().forEach(k -> LOGGER.error(k + "---" + memory.get(k)));
             } catch (Exception e) {
@@ -129,11 +129,11 @@ public final class GiraphGraphComputer extends Configured implements GraphComput
             // it is possible to run graph computer without a vertex program (and thus, only map reduce jobs if they exist)
             if (null != this.vertexProgram) {
                 final GiraphJob job = new GiraphJob(this.giraphConfiguration, Constants.GIRAPH_GREMLIN_JOB_PREFIX + this.vertexProgram);
-                final Path inputPath = new Path(this.giraphConfiguration.get(Constants.GREMLIN_INPUT_LOCATION));
+                final Path inputPath = new Path(this.giraphConfiguration.get(Constants.GREMLIN_GIRAPH_INPUT_LOCATION));
                 if (!FileSystem.get(this.giraphConfiguration).exists(inputPath))
                     throw new IllegalArgumentException("The provided input path does not exist: " + inputPath);
                 FileInputFormat.setInputPaths(job.getInternalJob(), inputPath);
-                FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(Constants.GREMLIN_OUTPUT_LOCATION) + "/" + Constants.SYSTEM_G));
+                FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(Constants.GREMLIN_GIRAPH_OUTPUT_LOCATION) + "/" + Constants.SYSTEM_G));
                 // job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
                 LOGGER.info(Constants.GIRAPH_GREMLIN_JOB_PREFIX + this.vertexProgram);
                 if (!job.run(true)) {
@@ -141,10 +141,10 @@ public final class GiraphGraphComputer extends Configured implements GraphComput
                 }
                 this.mapReduces.addAll(this.vertexProgram.getMapReducers());
                 // calculate main vertex program memory if desired (costs one mapreduce job)
-                if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_DERIVE_MEMORY, false)) {
+                if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_GIRAPH_DERIVE_MEMORY, false)) {
                     final Set<String> memoryKeys = new HashSet<String>(this.vertexProgram.getMemoryComputeKeys());
                     memoryKeys.add(Constants.SYSTEM_ITERATION);
-                    this.giraphConfiguration.setStrings(Constants.GREMLIN_MEMORY_KEYS, (String[]) memoryKeys.toArray(new String[memoryKeys.size()]));
+                    this.giraphConfiguration.setStrings(Constants.GREMLIN_GIRAPH_MEMORY_KEYS, (String[]) memoryKeys.toArray(new String[memoryKeys.size()]));
                     this.mapReduces.add(new MemoryMapReduce(memoryKeys));
                 }
             }
@@ -161,7 +161,7 @@ public final class GiraphGraphComputer extends Configured implements GraphComput
 
     private void loadJars(final FileSystem fs) {
         final String giraphGremlinLibsRemote = "giraph-gremlin-libs";
-        if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_JARS_IN_DISTRIBUTED_CACHE, true)) {
+        if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_GIRAPH_JARS_IN_DISTRIBUTED_CACHE, true)) {
             final String giraphGremlinLibsLocal = System.getenv(Constants.GIRAPH_GREMLIN_LIBS);
             if (null == giraphGremlinLibsLocal)
                 LOGGER.warn(Constants.GIRAPH_GREMLIN_LIBS + " is not set -- proceeding regardless");

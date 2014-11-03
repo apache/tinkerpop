@@ -38,7 +38,7 @@ public abstract class GiraphElementIterator<E extends Element> implements Iterat
     public GiraphElementIterator(final GiraphGraph graph) throws IOException {
         try {
             this.graph = graph;
-            if (this.graph.configuration().containsKey(Constants.GREMLIN_INPUT_LOCATION)) {
+            if (this.graph.configuration().containsKey(Constants.GREMLIN_GIRAPH_INPUT_LOCATION)) {
                 final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.configuration());
                 final VertexInputFormat inputFormat = this.graph.configuration().getInputFormat().getConstructor().newInstance();
                 for (final FileStatus status : FileSystem.get(configuration).listStatus(new Path(graph.configuration().getInputLocation()), HiddenFileFilter.instance())) {
