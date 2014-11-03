@@ -134,7 +134,9 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 throw new IllegalArgumentException("body could not be parsed", ioe);
             }
 
-            return Pair.with(body.get("gremlin").toString(), new HashMap<>());
+            final JsonNode scriptNode = body.get("gremlin");
+            if (null == scriptNode) throw new IllegalArgumentException("no gremlin script supplied");
+            return Pair.with(scriptNode.toString(), new HashMap<>());
         }
     }
 
