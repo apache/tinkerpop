@@ -44,7 +44,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     @Test
-    public void should200OnGETAndGremlinQueryStringArgument() throws Exception {
+    public void should200OnGETWithGremlinQueryStringArgument() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=1-1");
 
@@ -68,28 +68,11 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     @Test
-    public void should200OnPOSTAndGremlinQueryStringArgument() throws Exception {
-        final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182?gremlin=1-1");
-
-        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
-            assertEquals(200, response.getStatusLine().getStatusCode());
-            assertEquals("application/json", response.getEntity().getContentType().getValue());
-            final String json = EntityUtils.toString(response.getEntity());
-            final JsonNode node = mapper.readTree(json);
-            assertEquals(0, node.get("result").get("data").intValue());
-        }
-    }
-
-    @Test
-    @org.junit.Ignore
-    public void should200OnPOSTAndGremlinUrlEndcodedBody() throws Exception {
+    public void should200OnPOSTWithGremlinJsonEndcodedBody() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost("http://localhost:8182");
-        final List<NameValuePair> formparams = new ArrayList<>();
-        formparams.add(new BasicNameValuePair("gremlin", "1-1"));
-        final UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams, Consts.UTF_8);
-        httppost.setEntity(entity);
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());

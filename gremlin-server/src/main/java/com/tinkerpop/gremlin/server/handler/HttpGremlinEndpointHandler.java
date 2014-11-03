@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.server.handler;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
@@ -11,15 +13,19 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
+import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -39,6 +45,8 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private final Map<String, MessageSerializer> serializers;
     private final MessageTextSerializer jsonSerializer = new JsonMessageSerializerV1d0();
 
+    private static final ObjectMapper mapper = new ObjectMapper();
+
     private final GremlinExecutor gremlinExecutor;
 
     public HttpGremlinEndpointHandler(final Map<String, MessageSerializer> serializers,
@@ -54,8 +62,8 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
-        if (msg instanceof HttpRequest) {
-            final HttpRequest req = (HttpRequest) msg;
+        if (msg instanceof FullHttpRequest) {
+            final FullHttpRequest req = (FullHttpRequest) msg;
 
             if (is100ContinueExpected(req)) {
                 ctx.write(new DefaultFullHttpResponse(HTTP_1_1, CONTINUE));
@@ -68,7 +76,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
             final String script;
             try {
-                script = getGremlinScript(req);
+                script = getGremlinScript(req).getValue0();
             } catch (IllegalArgumentException iae) {
                 sendError(ctx, BAD_REQUEST, iae.getMessage());
                 return;
@@ -109,13 +117,25 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         ctx.close();
     }
 
-    private static String getGremlinScript(final HttpRequest request) {
-        final QueryStringDecoder decoder = new QueryStringDecoder(request.getUri());
-        final List<String> gremlinParms = decoder.parameters().get("gremlin");
-        if (gremlinParms == null || gremlinParms.size() == 0) throw new IllegalArgumentException("no gremlin script supplied");
-        final String script = gremlinParms.get(0);
-        if (script.isEmpty()) throw new IllegalArgumentException("no gremlin script supplied");
-        return script;
+    private static Pair<String, Map<String,Object>> getGremlinScript(final FullHttpRequest request) {
+        if (request.getMethod() == GET) {
+            final QueryStringDecoder decoder = new QueryStringDecoder(request.getUri());
+            final List<String> gremlinParms = decoder.parameters().get("gremlin");
+            if (gremlinParms == null || gremlinParms.size() == 0)
+                throw new IllegalArgumentException("no gremlin script supplied");
+            final String script = gremlinParms.get(0);
+            if (script.isEmpty()) throw new IllegalArgumentException("no gremlin script supplied");
+            return Pair.with(script, new HashMap<>());
+        } else {
+            final JsonNode body;
+            try {
+                body = mapper.readTree(request.content().toString(CharsetUtil.UTF_8));
+            } catch (IOException ioe) {
+                throw new IllegalArgumentException("body could not be parsed", ioe);
+            }
+
+            return Pair.with(body.get("gremlin").toString(), new HashMap<>());
+        }
     }
 
     private static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status, final String message) {
