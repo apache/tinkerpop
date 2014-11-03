@@ -76,9 +76,9 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 return;
             }
 
-            final String script;
+            final Pair<String, Map<String,Object>> scriptAndBindings;
             try {
-                script = getGremlinScript(req).getValue0();
+                scriptAndBindings = getGremlinScript(req);
             } catch (IllegalArgumentException iae) {
                 sendError(ctx, BAD_REQUEST, iae.getMessage());
                 return;
@@ -89,7 +89,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             try {
                 final ResponseMessage responseMessage = ResponseMessage.build(UUID.randomUUID())
                         .code(ResponseStatusCode.SUCCESS)
-                        .result(gremlinExecutor.eval(script).get()).create();
+                        .result(gremlinExecutor.eval(scriptAndBindings.getValue0(), scriptAndBindings.getValue1()).get()).create();
 
                 final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(
                         serializer.serializeResponseAsString(responseMessage).getBytes(UTF8)));
@@ -127,7 +127,13 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 throw new IllegalArgumentException("no gremlin script supplied");
             final String script = gremlinParms.get(0);
             if (script.isEmpty()) throw new IllegalArgumentException("no gremlin script supplied");
-            return Pair.with(script, new HashMap<>());
+
+            // query string parameters - take the first instance of a key only - ignore the rest
+            final Map<String,Object> bindings = new HashMap<>();
+            decoder.parameters().entrySet().stream().filter(kv -> !kv.getKey().equals(KEY_GREMLIN))
+                    .forEach(kv -> bindings.put(kv.getKey(), kv.getValue().get(0)));
+
+            return Pair.with(script, bindings);
         } else {
             final JsonNode body;
             try {
