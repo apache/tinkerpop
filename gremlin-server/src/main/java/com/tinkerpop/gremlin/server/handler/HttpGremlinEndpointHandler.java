@@ -173,8 +173,8 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             }
             return map;
         } else if (node.isArray()) {
-            ArrayNode arrayNode = (ArrayNode) node;
-            ArrayList<Object> array = new ArrayList<>();
+            final ArrayNode arrayNode = (ArrayNode) node;
+            final ArrayList<Object> array = new ArrayList<>();
             for (int i = 0; i < arrayNode.size(); i++) {
                 array.add(fromJsonNode(arrayNode.get(i)));
             }
