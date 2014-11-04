@@ -4,13 +4,13 @@ import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.computer.util.MemoryAggregator;
 import com.tinkerpop.gremlin.giraph.process.computer.util.RuleWritable;
-import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.MemoryHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.giraph.master.MasterCompute;
+import org.apache.giraph.worker.WorkerAggregatorUsage;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -23,19 +23,21 @@ import java.util.Set;
 public final class GiraphMemory extends MasterCompute implements Memory {
 
     private VertexProgram vertexProgram;
-    private GiraphInternalVertex giraphInternalVertex;
+    private WorkerAggregatorUsage worker;
     private Set<String> memoryKeys;
     private boolean isMasterCompute = true;
 
     public GiraphMemory() {
+        // Giraph ReflectionUtils requires this to be public at minimum
     }
 
-    public GiraphMemory(final GiraphInternalVertex giraphInternalVertex, final VertexProgram vertexProgram) {
-        this.giraphInternalVertex = giraphInternalVertex;
+    public GiraphMemory(final WorkerAggregatorUsage worker, final VertexProgram vertexProgram) {
+        this.worker = worker;
         this.vertexProgram = vertexProgram;
         this.memoryKeys = new HashSet<String>(this.vertexProgram.getMemoryComputeKeys());
         this.isMasterCompute = false;
     }
+
 
     @Override
     public void initialize() {
@@ -80,8 +82,17 @@ public final class GiraphMemory extends MasterCompute implements Memory {
             final int temp = (int) this.getSuperstep();
             return temp == 0 ? temp : temp - 1;
         } else {
-            return (int) this.giraphInternalVertex.getSuperstep();
+            return (int) (this.worker instanceof GiraphComputeVertex ?
+                    ((GiraphComputeVertex) this.worker).getSuperstep() :
+                    ((GiraphWorkerContext) this.worker).getSuperstep());
         }
+    }
+
+    @Override
+    public long getWorkerId() {
+        return (this.worker instanceof GiraphComputeVertex ?
+                ((GiraphComputeVertex) this.worker).getWorkerId() :
+                ((GiraphWorkerContext) this.worker).getWorkerId());
     }
 
     @Override
@@ -96,14 +107,14 @@ public final class GiraphMemory extends MasterCompute implements Memory {
 
     @Override
     public boolean exists(final String key) {
-        final RuleWritable rule = this.isMasterCompute ? this.getAggregatedValue(key) : this.giraphInternalVertex.getAggregatedValue(key);
+        final RuleWritable rule = this.isMasterCompute ? this.getAggregatedValue(key) : this.worker.getAggregatedValue(key);
         return null != rule.getObject();
     }
 
     @Override
     public <R> R get(final String key) throws IllegalArgumentException {
         //this.checkKey(key);
-        final RuleWritable rule = this.isMasterCompute ? this.getAggregatedValue(key) : this.giraphInternalVertex.getAggregatedValue(key);
+        final RuleWritable rule = this.isMasterCompute ? this.getAggregatedValue(key) : this.worker.getAggregatedValue(key);
         if (null == rule.getObject())
             throw Memory.Exceptions.memoryDoesNotExist(key);
         else
@@ -116,7 +127,7 @@ public final class GiraphMemory extends MasterCompute implements Memory {
         if (this.isMasterCompute)
             this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.SET, value));
         else
-            this.giraphInternalVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.SET, value));
+            this.worker.aggregate(key, new RuleWritable(RuleWritable.Rule.SET, value));
     }
 
     @Override
@@ -128,8 +139,8 @@ public final class GiraphMemory extends MasterCompute implements Memory {
             this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.AND, value));
             return value;
         } else {
-            final Boolean result = ((RuleWritable) this.giraphInternalVertex.getAggregatedValue(key)).getObject();
-            this.giraphInternalVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.AND, bool));
+            final Boolean result = ((RuleWritable) this.worker.getAggregatedValue(key)).getObject();
+            this.worker.aggregate(key, new RuleWritable(RuleWritable.Rule.AND, bool));
             return null == result ? bool : result && bool;
         }
     }
@@ -143,8 +154,8 @@ public final class GiraphMemory extends MasterCompute implements Memory {
             this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.OR, value));
             return value;
         } else {
-            final Boolean result = ((RuleWritable) this.giraphInternalVertex.getAggregatedValue(key)).getObject();
-            this.giraphInternalVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.OR, bool));
+            final Boolean result = ((RuleWritable) this.worker.getAggregatedValue(key)).getObject();
+            this.worker.aggregate(key, new RuleWritable(RuleWritable.Rule.OR, bool));
             return null == result ? bool : result || bool;
         }
     }
@@ -158,8 +169,8 @@ public final class GiraphMemory extends MasterCompute implements Memory {
             this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.INCR, value));
             return value.longValue();
         } else {
-            final Long result = ((RuleWritable) this.giraphInternalVertex.getAggregatedValue(key)).getObject();
-            this.giraphInternalVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.INCR, delta));
+            final Long result = ((RuleWritable) this.worker.getAggregatedValue(key)).getObject();
+            this.worker.aggregate(key, new RuleWritable(RuleWritable.Rule.INCR, delta));
             return null == result ? delta : result + delta;
         }
     }

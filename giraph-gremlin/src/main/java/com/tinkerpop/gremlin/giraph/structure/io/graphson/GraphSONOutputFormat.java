@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.giraph.structure.io.graphson;
 
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphComputeVertex;
 import com.tinkerpop.gremlin.giraph.structure.io.CommonOutputFormat;
-import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -15,11 +15,11 @@ import java.io.IOException;
 public class GraphSONOutputFormat extends CommonOutputFormat {
 
     @Override
-    public RecordWriter<NullWritable, GiraphInternalVertex> getRecordWriter(final TaskAttemptContext job) throws IOException, InterruptedException {
+    public RecordWriter<NullWritable, GiraphComputeVertex> getRecordWriter(final TaskAttemptContext job) throws IOException, InterruptedException {
         return new GraphSONRecordWriter(getDataOuputStream(job));
     }
 
-    public RecordWriter<NullWritable, GiraphInternalVertex> getRecordWriter(final TaskAttemptContext job,
+    public RecordWriter<NullWritable, GiraphComputeVertex> getRecordWriter(final TaskAttemptContext job,
                                                                             final DataOutputStream outputStream) throws IOException, InterruptedException {
         return new GraphSONRecordWriter(outputStream);
     }

@@ -57,6 +57,11 @@ public class TinkerMemory implements Memory.Admin {
     }
 
     @Override
+    public long getWorkerId() {
+        return this.hashCode();
+    }
+
+    @Override
     public void setRuntime(final long runTime) {
         if (this.complete) throw Memory.Exceptions.memoryCompleteAndImmutable();
         this.runtime.set(runTime);

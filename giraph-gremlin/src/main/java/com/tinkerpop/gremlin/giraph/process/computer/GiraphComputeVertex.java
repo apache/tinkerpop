@@ -1,8 +1,6 @@
-package com.tinkerpop.gremlin.giraph.structure.util;
+package com.tinkerpop.gremlin.giraph.process.computer;
 
 import com.tinkerpop.gremlin.giraph.Constants;
-import com.tinkerpop.gremlin.giraph.process.computer.GiraphMemory;
-import com.tinkerpop.gremlin.giraph.process.computer.GiraphMessenger;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.computer.util.KryoWritable;
 import com.tinkerpop.gremlin.giraph.process.computer.util.RuleWritable;
@@ -28,7 +26,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritable, KryoWritable> implements WrappedVertex<TinkerVertex> {
+public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWritable, KryoWritable> implements WrappedVertex<TinkerVertex> {
 
     //TODO: Dangerous that the underlying TinkerGraph Vertex can have edges written to it.
 
@@ -37,10 +35,10 @@ public final class GiraphInternalVertex extends Vertex<LongWritable, Text, NullW
     private TinkerVertex tinkerVertex;
     private GiraphMemory memory;
 
-    public GiraphInternalVertex() {
+    public GiraphComputeVertex() {
     }
 
-    public GiraphInternalVertex(final TinkerVertex tinkerVertex) {
+    public GiraphComputeVertex(final TinkerVertex tinkerVertex) {
         this.tinkerVertex = tinkerVertex;
         this.tinkerVertex.graph().variables().set(VERTEX_ID, this.tinkerVertex.id());
         this.initialize(new LongWritable(Long.valueOf(this.tinkerVertex.id().toString())), this.deflateTinkerVertex(), EmptyOutEdges.instance());
@@ -48,6 +46,10 @@ public final class GiraphInternalVertex extends Vertex<LongWritable, Text, NullW
 
     public TinkerVertex getBaseVertex() {
         return this.tinkerVertex;
+    }
+
+    protected long getWorkerId() {
+        return ((GiraphWorkerContext) this.getWorkerContext()).getWorkerId();
     }
 
     @Override

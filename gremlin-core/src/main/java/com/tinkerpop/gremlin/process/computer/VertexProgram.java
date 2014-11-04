@@ -24,7 +24,7 @@ public interface VertexProgram<M> {
      * This is typically required when the VertexProgram needs to be serialized to another machine.
      * Note that what is stored is simply the instance/configuration state, not any processed data.
      * The default implementation provided simply stores the VertexProgram class name for reflective reconstruction.
-     * It is typically a good idea to super.storeState().
+     * It is typically a good idea to VertexProgram.super.storeState().
      *
      * @param configuration the configuration to store the state of the VertexProgram in.
      */
@@ -36,6 +36,8 @@ public interface VertexProgram<M> {
      * When it is necessary to load the state of the VertexProgram, this method is called.
      * This is typically required when the VertexProgram needs to be serialized to another machine.
      * Note that what is loaded is simply the instance state, not any processed data.
+     * It is possible for this method to be called for each and every vertex in the graph.
+     * Thus, it is important to only store/load that state which is needed during execution in order to reduce startup time.
      *
      * @param configuration the configuration to load the state of the VertexProgram from.
      */
@@ -73,6 +75,32 @@ public interface VertexProgram<M> {
      * @return whether or not to halt the computation
      */
     public boolean terminate(final Memory memory);
+
+    /**
+     * This method is called at the <b>beginning</b> of each iteration of each "computational chunk."
+     * The set of vertices in the graph are typically not processed with full parallelism.
+     * The vertex set is split into subsets and a worker is assigned to call the {@link VertexProgram#execute} method.
+     * The typical use of this method is to create static state that exists for the life of the vertex subset.
+     * The default implementation is a no-op.
+     *
+     * @param memory The memory at the start of the iteration.
+     */
+    public default void workerStartup(final Memory memory) {
+
+    }
+
+    /**
+     * This method is called at the <b>end</b> of each iteration of each "computational chunk."
+     * The set of vertices in the graph are typically not processed with full parallelism.
+     * The vertex set is split into subsets and a worker is assigned to call the {@link VertexProgram#execute} method.
+     * The typical use of this method is to destroy static state that existed during the life of the vertex subset.
+     * The default implementation is a no-op.
+     *
+     * @param memory The memory at the start of the iteration.
+     */
+    public default void workerShutdown(final Memory memory) {
+
+    }
 
     /**
      * The {@link com.tinkerpop.gremlin.structure.Element} properties that will be mutated during the computation.

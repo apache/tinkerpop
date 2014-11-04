@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure.io.graphson;
 
-import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphComputeVertex;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -24,11 +24,11 @@ import java.util.function.Function;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphSONRecordReader extends RecordReader<NullWritable, GiraphInternalVertex> {
+public class GraphSONRecordReader extends RecordReader<NullWritable, GiraphComputeVertex> {
 
     private final LineRecordReader lineRecordReader;
     private final GraphSONReader graphSONReader;
-    private GiraphInternalVertex vertex = null;
+    private GiraphComputeVertex vertex = null;
 
     public GraphSONRecordReader() {
         this.lineRecordReader = new LineRecordReader();
@@ -55,7 +55,7 @@ public class GraphSONRecordReader extends RecordReader<NullWritable, GiraphInter
             v = (TinkerVertex) this.graphSONReader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
         }
 
-        this.vertex = new GiraphInternalVertex(v);
+        this.vertex = new GiraphComputeVertex(v);
         return true;
     }
 
@@ -65,7 +65,7 @@ public class GraphSONRecordReader extends RecordReader<NullWritable, GiraphInter
     }
 
     @Override
-    public GiraphInternalVertex getCurrentValue() {
+    public GiraphComputeVertex getCurrentValue() {
         return this.vertex;
     }
 

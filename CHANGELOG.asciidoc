@@ -9,6 +9,9 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Renamed `MessageType.XXX.to()` to `MessageType.XXX.of()` so it makes sense in both the sending and receiving context.
+* `VertexProgram` now has `workerStartup()` and `workerShutdown()` to allow developers to control vertex split static data structures.
+* `TraversalVertexProgram` startup time greatly reduced due to being smart about `loadState()` behavior.
 * Gremlin Server sessions now allow serialization of results that were part of an open transaction.
 * Refactor `OpProcessors` implementations in Gremlin Server for better reusability.
 * `Vertex.iterators()` no longer have a `branchFactor`. This is now at the query language level with `localLimit()`.

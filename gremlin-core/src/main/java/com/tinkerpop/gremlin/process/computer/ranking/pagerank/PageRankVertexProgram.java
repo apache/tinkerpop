@@ -26,7 +26,7 @@ import java.util.function.Supplier;
  */
 public class PageRankVertexProgram implements VertexProgram<Double> {
 
-    private MessageType.Local<?, ?> messageType = MessageType.Local.to(new OutETraversalSupplier());
+    private MessageType.Local<?, ?> messageType = MessageType.Local.of(new OutETraversalSupplier());
 
     public static final String PAGE_RANK = Graph.Key.hide("gremlin.pageRankVertexProgram.pageRank");
     public static final String EDGE_COUNT = Graph.Key.hide("gremlin.pageRankVertexProgram.edgeCount");
@@ -52,7 +52,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         this.traversalSupplier = LambdaHolder.loadState(configuration, INCIDENT_TRAVERSAL_SUPPLIER);
         if (null != this.traversalSupplier) {
             VertexProgramHelper.verifyReversibility(this.traversalSupplier.get().get());
-            this.messageType = MessageType.Local.to(this.traversalSupplier.get());
+            this.messageType = MessageType.Local.of(this.traversalSupplier.get());
         }
         this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
         this.alpha = configuration.getDouble(ALPHA, 0.85d);
