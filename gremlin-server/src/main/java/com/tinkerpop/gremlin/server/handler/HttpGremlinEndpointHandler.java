@@ -91,7 +91,6 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             final MessageTextSerializer serializer = (MessageTextSerializer) serializers.getOrDefault("application/json", jsonSerializer);
 
             try {
-                final Object o = gremlinExecutor.eval(scriptAndBindings.getValue0(), scriptAndBindings.getValue1()).get();
                 final ResponseMessage responseMessage = ResponseMessage.build(UUID.randomUUID())
                         .code(ResponseStatusCode.SUCCESS)
                         .result(gremlinExecutor.eval(scriptAndBindings.getValue0(), scriptAndBindings.getValue1()).get()).create();
