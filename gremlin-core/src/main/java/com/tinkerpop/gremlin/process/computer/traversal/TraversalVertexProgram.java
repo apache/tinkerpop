@@ -29,7 +29,10 @@ import org.apache.commons.configuration.Configuration;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -52,11 +55,13 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
     public static final String HALTED_TRAVERSERS = Graph.Key.hide("gremlin.traversalVertexProgram.haltedTraversers");
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
     public static final String TRAVERSAL_SUPPLIER = "gremlin.traversalVertexProgram.traversalSupplier";
+    private static final String JOB_ID = "gremlin.traversalVertexProgram.jobId";
+
+    private final static ThreadLocal<Map<UUID, Traversal>> threadLocalTraversal = new ThreadLocal<>();
 
     private LambdaHolder<Supplier<Traversal>> traversalSupplier;
-    private final ThreadLocal<Traversal> traversal = new ThreadLocal<>();
-
-    private boolean trackPaths = false;
+    private UUID jobId;
+    ///
     private final Set<MapReduce> mapReducers = new HashSet<>();
     private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<String>() {{
         add(VOTE_TO_HALT);
@@ -67,6 +72,22 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
     }};
 
     private TraversalVertexProgram() {
+    }
+
+    private TraversalVertexProgram(final Configuration configuration) {
+        this.traversalSupplier = LambdaHolder.loadState(configuration, TRAVERSAL_SUPPLIER);
+        if (null == this.traversalSupplier) {
+            throw new IllegalArgumentException("The configuration does not have a traversal supplier");
+        }
+        final Traversal<?, ?> traversal = this.traversalSupplier.get().get();
+        traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
+            final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
+            this.mapReducers.add(mapReduce);
+        });
+
+        if (!(TraversalHelper.getEnd(traversal) instanceof SideEffectCapStep))
+            this.mapReducers.add(new TraverserMapReduce(TraversalHelper.getEnd(traversal)));
+        this.jobId = UUID.randomUUID();
     }
 
     /**
@@ -93,41 +114,26 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
     @Override
     public void loadState(final Configuration configuration) {
         this.traversalSupplier = LambdaHolder.loadState(configuration, TRAVERSAL_SUPPLIER);
-        if (null == this.traversalSupplier) {
-            throw new IllegalArgumentException("The configuration does not have a traversal supplier");
-        }
-        final Traversal<?, ?> traversal = this.traversalSupplier.get().get();
-        this.trackPaths = TraversalHelper.trackPaths(traversal);
-        traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
-            final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
-            this.mapReducers.add(mapReduce);
-        });
-
-        if (!(TraversalHelper.getEnd(traversal) instanceof SideEffectCapStep))
-            this.mapReducers.add(new TraverserMapReduce(TraversalHelper.getEnd(traversal)));
-
+        this.jobId = UUID.fromString(configuration.getString(JOB_ID));
     }
 
     @Override
     public void storeState(final Configuration configuration) {
-        configuration.setProperty(VERTEX_PROGRAM, TraversalVertexProgram.class.getName());
+        VertexProgram.super.storeState(configuration);
         this.traversalSupplier.storeState(configuration);
+        configuration.setProperty(JOB_ID, this.jobId.toString());
     }
 
     public Traversal getTraversal() {
-        try {
-            Traversal traversal = this.traversal.get();
-            if (null != traversal)
-                return traversal;
-            else {
-                traversal = this.traversalSupplier.get().get();
-                this.traversal.set(traversal);
-                return traversal;
-            }
-
-        } catch (final Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
+        Map<UUID, Traversal> map = threadLocalTraversal.get();
+        if (null == map) {
+            map = new WeakHashMap<>();
+            threadLocalTraversal.set(map);
         }
+        Traversal traversal = map.get(this.jobId);
+        if (null == traversal)
+            map.put(this.jobId, traversal = this.traversalSupplier.get().get());
+        return traversal;
     }
 
     @Override
@@ -157,8 +163,9 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
         final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.Admin.HALT : startStep.getNextStep().getLabel();
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         final Iterator<? extends Element> starts = startStep.returnsVertices() ? new SingleIterator<>(vertex) : vertex.iterators().edgeIterator(Direction.OUT);
+        final boolean trackPaths = TraversalHelper.trackPaths(traversal);
         starts.forEachRemaining(element -> {
-            final Traverser.Admin<? extends Element> traverser = this.trackPaths ?
+            final Traverser.Admin<? extends Element> traverser = trackPaths ?
                     new PathTraverser<>(startStep.getLabel(), element, traversal.sideEffects()) :
                     new SimpleTraverser<>(element, traversal.sideEffects());
             traverser.setFuture(future);
@@ -256,6 +263,11 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
         public Builder traversal(final Class<Supplier<Traversal>> traversalClass) {
             LambdaHolder.storeState(this.configuration, LambdaHolder.Type.CLASS, TRAVERSAL_SUPPLIER, traversalClass);
             return this;
+        }
+
+        @Override
+        public <P extends VertexProgram> P create() {
+            return (P) new TraversalVertexProgram(this.configuration);
         }
 
         // TODO Builder resolveElements(boolean) to be fed to ComputerResultStep
