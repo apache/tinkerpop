@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
-import com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0;
 import com.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import io.netty.buffer.Unpooled;
@@ -18,12 +17,12 @@ import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
 import org.javatuples.Pair;
-import org.javatuples.Triplet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -45,6 +44,7 @@ import static io.netty.handler.codec.http.HttpVersion.*;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(HttpGremlinEndpointHandler.class);
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
     private static final String KEY_GREMLIN = "gremlin";
@@ -96,6 +96,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             }
 
             try {
+                logger.debug("Processing request containing script [{}] and bindings of [{}]", scriptAndBindings.getValue0(), scriptAndBindings.getValue1());
                 final ResponseMessage responseMessage = ResponseMessage.build(UUID.randomUUID())
                         .code(ResponseStatusCode.SUCCESS)
                         .result(gremlinExecutor.eval(scriptAndBindings.getValue0(), scriptAndBindings.getValue1()).get()).create();
@@ -124,7 +125,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
-        cause.printStackTrace();
+        logger.error("Error processing HTTP Request", cause);
         ctx.close();
     }
 
@@ -195,6 +196,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     }
 
     private static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status, final String message) {
+        logger.warn("Invalid request - responding with {} and {}", status, message);
         final FullHttpResponse response = new DefaultFullHttpResponse(
                 HTTP_1_1, status, Unpooled.copiedBuffer("Failure: " + message + "\r\n", CharsetUtil.UTF_8));
         response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
