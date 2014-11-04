@@ -1,0 +1,28 @@
+host: localhost
+port: 8182
+threadPoolWorker: 1
+gremlinPool: 8
+scriptEvaluationTimeout: 30000
+serializedResponseTimeout: 30000
+channelizer: com.tinkerpop.gremlin.server.channel.HttpChannelizer
+graphs: {
+  g: conf/tinkergraph-empty.properties}
+use:
+  - [org.apache.commons, commons-math3, "3.2"]
+scriptEngines: {
+  gremlin-groovy: {
+    imports: [com.tinkerpop.gremlin.tinkergraph.structure.*, com.tinkerpop.gremlin.tinkergraph.process.computer.*,java.lang.Math, org.apache.commons.math3.util.FastMath],
+    staticImports: [java.lang.Math.PI],
+    scripts: [scripts/generate-classic.groovy]}}
+serializers:
+  - { className: com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerGremlinV1d0 }
+  - { className: com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0 }
+metrics: {
+  slf4jReporter: {enabled: true, interval: 180000}}
+threadPoolBoss: 1
+maxInitialLineLength: 4096
+maxHeaderSize: 8192
+maxChunkSize: 8192
+maxContentLength: 65536
+maxAccumulationBufferComponents: 1024
+resultIterationBatchSize: 64
