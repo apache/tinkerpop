@@ -6,15 +6,12 @@ scriptEvaluationTimeout: 30000
 serializedResponseTimeout: 30000
 graphs: {
   g: conf/tinkergraph-empty.properties}
-use:
-  - [org.apache.commons, commons-math3, "3.2"]
 scriptEngines: {
   gremlin-groovy: {
-    imports: [com.tinkerpop.gremlin.tinkergraph.structure.*, com.tinkerpop.gremlin.tinkergraph.process.computer.*, java.lang.Math, org.apache.commons.math3.util.FastMath],
-    staticImports: [java.lang.Math.PI]}}
+    imports: [com.tinkerpop.gremlin.tinkergraph.structure.*, com.tinkerpop.gremlin.tinkergraph.process.computer.*]}}
 serializers:
-  - { className: com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0 }
-  - { className: com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0, config: { serializeResultToString: true }}
+  - { className: com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerGremlinV1d0 }
+  - { className: com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0 }
 metrics: {
   slf4jReporter: {enabled: true, interval: 180000}}
 threadPoolBoss: 1
