@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.server.channel;
 import com.tinkerpop.gremlin.server.AbstractChannelizer;
 import com.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
@@ -25,6 +26,7 @@ public class HttpChannelizer extends AbstractChannelizer {
         if (logger.isDebugEnabled())
             pipeline.addLast(new LoggingHandler("http-io", LogLevel.DEBUG));
 
+        pipeline.addLast(new HttpObjectAggregator(1048576));
         pipeline.addLast(gremlinGroup, "http-gremlin-handler", new HttpGremlinEndpointHandler(serializers, gremlinExecutor));
     }
 

@@ -46,7 +46,6 @@ final class SessionOps {
     private static ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<>();
 
     private static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
-    private static final Timer traverseOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "traverse"));
 
     static {
         MetricManager.INSTANCE.getGuage(sessions::size, name(GremlinServer.class, "sessions"));

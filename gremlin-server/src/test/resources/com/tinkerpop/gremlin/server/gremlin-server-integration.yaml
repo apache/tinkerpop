@@ -20,6 +20,7 @@ serializers:
   - { className: com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0, config: { custom: [groovy.json.JsonBuilder;com.tinkerpop.gremlin.driver.ser.JsonBuilderKryoSerializer]}}
   - { className: com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0, config: { serializeResultToString: true}}
   - { className: com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerGremlinV1d0 }
+  - { className: com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0 }
 processors:
   - { className: com.tinkerpop.gremlin.server.op.session.SessionOpProcessor, config: { sessionTimeout: 28800000 }}
 metrics: {

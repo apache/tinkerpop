@@ -12,6 +12,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
+import io.netty.util.internal.logging.InternalLoggerFactory;
+import io.netty.util.internal.logging.Slf4JLoggerFactory;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,12 @@ import java.util.concurrent.ScheduledExecutorService;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinServer {
+
+    static {
+        // hook slf4j up to netty internal logging
+        InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(GremlinServer.class);
     private final Settings settings;
     private Optional<Graphs> graphs = Optional.empty();
@@ -144,7 +152,7 @@ public class GremlinServer {
     }
 
     public static void main(final String[] args) throws Exception {
-        // add to vm options: -Dlog4j.configuration=file:config/log4j.properties
+        // add to vm options: -Dlog4j.configuration=file:conf/log4j.properties
         printHeader();
         final String file;
         if (args.length > 0)
