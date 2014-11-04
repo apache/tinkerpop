@@ -98,6 +98,34 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     @Test
+    public void should200OnPOSTWithGremlinJsonEndcodedBodyAndBindings() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"x+y\", \"bindings\":{\"x\":10, \"y\":10}}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(20, node.get("result").get("data").intValue());
+        }
+    }
+
+    @Test
+    public void should400OnPOSTWithGremlinJsonEndcodedBodyAndBadBindings() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"x+y\", \"bindings\":10}}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(400, response.getStatusLine().getStatusCode());
+        }
+    }
+
+    @Test
     public void should400OnPOSTWithGremlinJsonEndcodedBodyWithNoGremlinKey() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost("http://localhost:8182");

@@ -2,6 +2,8 @@ package com.tinkerpop.gremlin.server.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
@@ -25,7 +27,9 @@ import org.javatuples.Triplet;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -87,6 +91,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             final MessageTextSerializer serializer = (MessageTextSerializer) serializers.getOrDefault("application/json", jsonSerializer);
 
             try {
+                final Object o = gremlinExecutor.eval(scriptAndBindings.getValue0(), scriptAndBindings.getValue1()).get();
                 final ResponseMessage responseMessage = ResponseMessage.build(UUID.randomUUID())
                         .code(ResponseStatusCode.SUCCESS)
                         .result(gremlinExecutor.eval(scriptAndBindings.getValue0(), scriptAndBindings.getValue1()).get()).create();
@@ -144,8 +149,45 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
             final JsonNode scriptNode = body.get(KEY_GREMLIN);
             if (null == scriptNode) throw new IllegalArgumentException("no gremlin script supplied");
-            return Pair.with(scriptNode.toString(), new HashMap<>());
+
+            final JsonNode bindingsNode = body.get("bindings");
+            if (bindingsNode != null && !bindingsNode.isObject()) throw new IllegalArgumentException("bindings must be a Map");
+
+            final Map<String,Object> bindings = new HashMap<>();
+            if (bindingsNode != null)
+                bindingsNode.fields().forEachRemaining(kv -> bindings.put(kv.getKey(), fromJsonNode(kv.getValue())));
+
+            return Pair.with(scriptNode.asText(), bindings);
         }
+    }
+
+    public static Object fromJsonNode(final JsonNode node) {
+        if (node.isNull())
+            return null;
+        else if (node.isObject()) {
+            final Map<String, Object> map = new HashMap<>();
+            final ObjectNode objectNode = (ObjectNode) node;
+            final Iterator<String> iterator = objectNode.fieldNames();
+            while (iterator.hasNext()) {
+                String key = iterator.next();
+                map.put(key, fromJsonNode(objectNode.get(key)));
+            }
+            return map;
+        } else if (node.isArray()) {
+            ArrayNode arrayNode = (ArrayNode) node;
+            ArrayList<Object> array = new ArrayList<>();
+            for (int i = 0; i < arrayNode.size(); i++) {
+                array.add(fromJsonNode(arrayNode.get(i)));
+            }
+            return array;
+        } else if (node.isFloatingPointNumber())
+            return node.asDouble();
+        else if (node.isIntegralNumber())
+            return node.asLong();
+        else if (node.isBoolean())
+            return node.asBoolean();
+        else
+            return node.asText();
     }
 
     private static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status, final String message) {
