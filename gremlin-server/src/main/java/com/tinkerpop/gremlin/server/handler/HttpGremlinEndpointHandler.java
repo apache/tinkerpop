@@ -96,7 +96,8 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 return;
             }
 
-            final String accept = Optional.ofNullable(req.headers().get("Accept")).orElse("application/json");
+            final String acceptString = Optional.ofNullable(req.headers().get("Accept")).orElse("application/json");
+            final String accept = acceptString.equals("*/*") ? "application/json" : acceptString;
             final MessageTextSerializer serializer = (MessageTextSerializer) serializers.get(accept);
             if (null == serializer) {
                 sendError(ctx, BAD_REQUEST, String.format("no serializer for requested Accept header: %s", accept));
