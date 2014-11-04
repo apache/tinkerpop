@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
@@ -82,6 +83,8 @@ public class TinkerVertex extends TinkerElement implements Vertex, Vertex.Iterat
 
     @Override
     public Edge addEdge(final String label, final Vertex vertex, final Object... keyValues) {
+        if (null == label) Graph.Exceptions.argumentCanNotBeNull("label");
+        if (null == vertex) Graph.Exceptions.argumentCanNotBeNull("vertex");
         return TinkerHelper.addEdge(this.graph, this, (TinkerVertex) vertex, label, keyValues);
     }
 
