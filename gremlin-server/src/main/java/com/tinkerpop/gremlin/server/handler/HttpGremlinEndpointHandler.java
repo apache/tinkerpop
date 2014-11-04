@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static io.netty.handler.codec.http.HttpHeaders.Names.*;
@@ -49,7 +50,6 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private static final String KEY_GREMLIN = "gremlin";
 
     private final Map<String, MessageSerializer> serializers;
-    private final MessageTextSerializer jsonSerializer = new JsonMessageSerializerV1d0();
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -88,7 +88,12 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 return;
             }
 
-            final MessageTextSerializer serializer = (MessageTextSerializer) serializers.getOrDefault("application/json", jsonSerializer);
+            final String accept = Optional.ofNullable(req.headers().get("Accept")).orElse("application/json");
+            final MessageTextSerializer serializer = (MessageTextSerializer) serializers.get(accept);
+            if (null == serializer) {
+                sendError(ctx, BAD_REQUEST, String.format("no serializer for requested Accept header: %s", accept));
+                return;
+            }
 
             try {
                 final ResponseMessage responseMessage = ResponseMessage.build(UUID.randomUUID())
@@ -97,7 +102,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
                 final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(
                         serializer.serializeResponseAsString(responseMessage).getBytes(UTF8)));
-                response.headers().set(CONTENT_TYPE, "application/json");
+                response.headers().set(CONTENT_TYPE, accept);
                 response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
 
                 // handle cors business
