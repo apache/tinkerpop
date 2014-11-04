@@ -65,6 +65,10 @@ public interface GraphComputer {
     }
 
     public interface Features {
+        public default boolean supportsWorkerPersistenceBetweenIterations() {
+            return true;
+        }
+
         public default boolean supportsGlobalMessageTypes() {
             return true;
         }
