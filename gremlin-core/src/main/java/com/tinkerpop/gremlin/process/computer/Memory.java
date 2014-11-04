@@ -116,15 +116,6 @@ public interface Memory {
     }
 
     /**
-     * Memory is always stored at a particular worker, even if that worker is the global coordinator.
-     * This method is used by a {@link VertexProgram} to know which worker is executed its {@link VertexProgram#execute} method.
-     * For {@link VertexProgram#setup} and {@link VertexProgram#terminate}, the global coordinator is the worker.
-     *
-     * @return the unique long ID of the worker maintaining the memory
-     */
-    public long getWorkerId();
-
-    /**
      * The Admin interface is used by the {@link GraphComputer} to update the Memory.
      * The developer should never need to type-cast the provided Memory to Memory.Admin.
      */

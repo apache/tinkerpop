@@ -13,7 +13,6 @@ public final class GiraphWorkerContext extends WorkerContext {
 
     private VertexProgram vertexProgram;
     private GiraphMemory memory;
-    private long workerId;
 
     public GiraphWorkerContext() {
         // Giraph ReflectionUtils requires this to be public at minimum
@@ -22,22 +21,25 @@ public final class GiraphWorkerContext extends WorkerContext {
     public void preApplication() throws InstantiationException, IllegalAccessException {
         this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getContext().getConfiguration()));
         this.memory = new GiraphMemory(this, this.vertexProgram);
-        this.workerId = UUID.randomUUID().getLeastSignificantBits();
     }
 
     public void postApplication() {
-        // do nothing
+
     }
 
     public void preSuperstep() {
-        this.vertexProgram.workerStartup(this.memory);
+        this.vertexProgram.workerIterationStart(this.memory);
     }
 
     public void postSuperstep() {
-        this.vertexProgram.workerStartup(this.memory);
+        this.vertexProgram.workerIterationStart(this.memory);
     }
 
-    public long getWorkerId() {
-        return this.workerId;
+    public final VertexProgram getVertexProgram() {
+        return this.vertexProgram;
+    }
+
+    public final GiraphMemory getMemory() {
+        return this.memory;
     }
 }

@@ -765,7 +765,7 @@ gremlin> result.memory().a
 
 NOTE: Distributed graph computations on cluster-sized graphs can yield an enormous number of results. To be safe, Giraph-Gremlin only returns up to 20 results to the console (with, of course, all the results being available in HDFS). If more traversal results are desired, access `result.memory().get(Graph.System.system('traversers'))`.
 
-TIP: image:gremlin-sugar.png[width=50,float=left] For those wanting to use the <<sugar-plugin,SugarPlugin>> with their submitted traversal, do `:remote config useSugar true` as well as `:plugin use sugar` at the start of the Gremlin Console session if it is not already activated.
+TIP: image:gremlin-sugar.png[width=50,float=left] For those wanting to use the <<sugar-plugin,SugarPlugin>> with their submitted traversal, do `:remote config useSugar true` as well as `:plugin use tinkerpop.sugar` at the start of the Gremlin Console session if it is not already activated.
 
 The results of the graph traversal are stored in HDFS accessible via `hdfs`.
 

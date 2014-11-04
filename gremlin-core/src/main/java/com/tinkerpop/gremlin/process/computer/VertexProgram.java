@@ -8,9 +8,15 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * A {@link VertexProgram} represents one component of a distributed graph computation. Each applicable vertex
- * (theoretically) maintains a {@link VertexProgram} instance. The collective behavior of all instances yields
- * the computational result.
+ * A {@link VertexProgram} represents one component of a distributed graph computation. Each vertex in the graph
+ * (logically) executes the {@link VertexProgram} instance in parallel. The collective behavior yields
+ * the computational result. In practice, a "worker" (i.e. task, thread, etc.) is responsible for executing the
+ * VertexProgram against each vertex that it has in its vertex set (a subset of the full graph vertex set).
+ * At minimum there is one "worker" for each vertex, though this is impractical in practice and {@link GraphComputer}
+ * implementations that leverage such a design are not expected to perform well due to the excess object creation.
+ * Any local state/fields in a VertexProgram is static to the vertices within the same worker set.
+ * It is not safe to assume that the VertexProgram's "worker" state will remain stable between iterations.
+ * Hence, the existence of {@link VertexProgram#workerIterationStart} and {@link VertexProgram#workerIterationEnd}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
@@ -77,28 +83,28 @@ public interface VertexProgram<M> {
     public boolean terminate(final Memory memory);
 
     /**
-     * This method is called at the <b>beginning</b> of each iteration of each "computational chunk."
+     * This method is called at the start of each iteration of each "computational chunk."
      * The set of vertices in the graph are typically not processed with full parallelism.
      * The vertex set is split into subsets and a worker is assigned to call the {@link VertexProgram#execute} method.
-     * The typical use of this method is to create static state that exists for the life of the vertex subset.
+     * The typical use is to create static VertexProgram state that exists for the iteration of the vertex subset.
      * The default implementation is a no-op.
      *
      * @param memory The memory at the start of the iteration.
      */
-    public default void workerStartup(final Memory memory) {
+    public default void workerIterationStart(final Memory memory) {
 
     }
 
     /**
-     * This method is called at the <b>end</b> of each iteration of each "computational chunk."
+     * This method is called at the end of each iteration of each "computational chunk."
      * The set of vertices in the graph are typically not processed with full parallelism.
      * The vertex set is split into subsets and a worker is assigned to call the {@link VertexProgram#execute} method.
-     * The typical use of this method is to destroy static state that existed during the life of the vertex subset.
+     * The typical use is to destroy static VertexProgram state that existed during the iteration of the vertex subset.
      * The default implementation is a no-op.
      *
      * @param memory The memory at the start of the iteration.
      */
-    public default void workerShutdown(final Memory memory) {
+    public default void workerIterationEnd(final Memory memory) {
 
     }
 

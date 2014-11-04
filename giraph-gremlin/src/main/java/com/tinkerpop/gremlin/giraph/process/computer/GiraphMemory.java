@@ -10,7 +10,6 @@ import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.MemoryHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.giraph.master.MasterCompute;
-import org.apache.giraph.worker.WorkerAggregatorUsage;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -23,7 +22,7 @@ import java.util.Set;
 public final class GiraphMemory extends MasterCompute implements Memory {
 
     private VertexProgram vertexProgram;
-    private WorkerAggregatorUsage worker;
+    private GiraphWorkerContext worker;
     private Set<String> memoryKeys;
     private boolean isMasterCompute = true;
 
@@ -31,7 +30,7 @@ public final class GiraphMemory extends MasterCompute implements Memory {
         // Giraph ReflectionUtils requires this to be public at minimum
     }
 
-    public GiraphMemory(final WorkerAggregatorUsage worker, final VertexProgram vertexProgram) {
+    public GiraphMemory(final GiraphWorkerContext worker, final VertexProgram vertexProgram) {
         this.worker = worker;
         this.vertexProgram = vertexProgram;
         this.memoryKeys = new HashSet<String>(this.vertexProgram.getMemoryComputeKeys());
@@ -82,17 +81,8 @@ public final class GiraphMemory extends MasterCompute implements Memory {
             final int temp = (int) this.getSuperstep();
             return temp == 0 ? temp : temp - 1;
         } else {
-            return (int) (this.worker instanceof GiraphComputeVertex ?
-                    ((GiraphComputeVertex) this.worker).getSuperstep() :
-                    ((GiraphWorkerContext) this.worker).getSuperstep());
+            return (int) this.worker.getSuperstep();
         }
-    }
-
-    @Override
-    public long getWorkerId() {
-        return (this.worker instanceof GiraphComputeVertex ?
-                ((GiraphComputeVertex) this.worker).getWorkerId() :
-                ((GiraphWorkerContext) this.worker).getWorkerId());
     }
 
     @Override

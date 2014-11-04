@@ -70,11 +70,6 @@ public final class GiraphImmutableMemory implements Memory {
         throw Memory.Exceptions.memoryCompleteAndImmutable();
     }
 
-    @Override
-    public long getWorkerId() {
-        return this.hashCode();
-    }
-
     public String toString() {
         return StringFactory.memoryString(this);
     }
