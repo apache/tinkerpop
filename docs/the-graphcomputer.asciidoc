@@ -17,7 +17,7 @@ IMPORTANT: `GraphComputer` was designed from the start to be used within a multi
 VertexProgram
 -------------
 
-image:bsp-diagram.png[width=400,float=right] GraphComputer takes a `VertexProgram`. A VertexProgram can be thought of as a piece of code that is executed at each vertex in logically parallel manner until some termination condition is met (e.g. a number of iterations have occurred, no more data is changing in the graph, etc.). A submitted VertexProgram is copied to all the vertices in the graph. Then the GraphComputer orchestrates the execution of the `VertexProgram.execute()` method on all the vertices in an link:http://en.wikipedia.org/wiki/Bulk_synchronous_parallel[bulk synchronous parallel] (BSP) fashion. The vertices are able to communicate with one another via messages. There are two types of messages in Gremlin OLAP: `MessageType.Local` and `MessageType.Global`. A local message is a message to an adjacent vertex. A global message is a message to any arbitrary vertex in the graph. Once the VertexProgram has completed its execution, any number of `MapReduce` jobs are evaluated. MapReduce jobs are provided by the user via `GraphComputer.mapReduce()` or by the VertexProgram via `VertexProgram.getMapReducers()`.
+image:bsp-diagram.png[width=400,float=right] GraphComputer takes a `VertexProgram`. A VertexProgram can be thought of as a piece of code that is executed at each vertex in logically parallel manner until some termination condition is met (e.g. a number of iterations have occurred, no more data is changing in the graph, etc.). A submitted VertexProgram is copied to all the workers in the graph. A worker is not an explicit concept in the API, but is assumed of all GraphComputer implementations. At minimum each vertex is a worker (though this would be inefficient due to the fact that each vertex would maintain a VertexProgram). In practice, the workers partition the vertex set and and are responsible for the execution of the VertexProgram over all the vertices within their sphere of influence. The workers orchestrate the execution of the `VertexProgram.execute()` method on all their vertices in an link:http://en.wikipedia.org/wiki/Bulk_synchronous_parallel[bulk synchronous parallel] (BSP) fashion. The vertices are able to communicate with one another via messages. There are two types of messages in Gremlin OLAP: `MessageType.Local` and `MessageType.Global`. A local message is a message to an adjacent vertex. A global message is a message to any arbitrary vertex in the graph. Once the VertexProgram has completed its execution, any number of `MapReduce` jobs are evaluated. MapReduce jobs are provided by the user via `GraphComputer.mapReduce()` or by the VertexProgram via `VertexProgram.getMapReducers()`.
 
 image::graphcomputer.png[width=500]
 
@@ -176,7 +176,7 @@ image:gremlin-pagerank.png[width=400,float=right] link:http://en.wikipedia.org/w
 ----
 public class PageRankVertexProgram implements VertexProgram<Double> { <1>
 
-    private MessageType.Local<?, ?> messageType = MessageType.Local.to(new OutETraversalSupplier()); <2>
+    private MessageType.Local<?, ?> messageType = MessageType.Local.of(new OutETraversalSupplier()); <2>
 
     public static final String PAGE_RANK = Graph.Key.hide("gremlin.pageRankVertexProgram.pageRank"); <3>
     public static final String EDGE_COUNT = Graph.Key.hide("gremlin.pageRankVertexProgram.edgeCount");
@@ -200,7 +200,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
         this.traversalSupplier = LambdaHolder.loadState(configuration, INCIDENT_TRAVERSAL_SUPPLIER);
         if (null != this.traversalSupplier) {
             VertexProgramHelper.verifyReversibility(this.traversalSupplier.get().get());
-            this.messageType = MessageType.Local.to(this.traversalSupplier.get());
+            this.messageType = MessageType.Local.of(this.traversalSupplier.get());
         }
         this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
         this.alpha = configuration.getDouble(ALPHA, 0.85d);

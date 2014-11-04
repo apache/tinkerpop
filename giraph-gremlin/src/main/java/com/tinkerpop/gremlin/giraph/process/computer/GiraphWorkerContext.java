@@ -4,8 +4,6 @@ import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.giraph.worker.WorkerContext;
 
-import java.util.UUID;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
