@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.server.handler;
 
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -9,6 +11,8 @@ import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import com.tinkerpop.gremlin.server.GremlinServer;
+import com.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -34,6 +38,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.codahale.metrics.MetricRegistry.name;
 import static io.netty.handler.codec.http.HttpHeaders.Names.*;
 import static io.netty.handler.codec.http.HttpHeaders.*;
 import static io.netty.handler.codec.http.HttpMethod.*;
@@ -46,6 +51,9 @@ import static io.netty.handler.codec.http.HttpVersion.*;
 public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(HttpGremlinEndpointHandler.class);
     private static final Charset UTF8 = Charset.forName("UTF-8");
+    static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
+
+    private static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
 
     private static final String KEY_GREMLIN = "gremlin";
 
@@ -97,9 +105,13 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
             try {
                 logger.debug("Processing request containing script [{}] and bindings of [{}]", scriptAndBindings.getValue0(), scriptAndBindings.getValue1());
+                final Timer.Context timerContext = evalOpTimer.time();
+                final Object result = gremlinExecutor.eval(scriptAndBindings.getValue0(), scriptAndBindings.getValue1()).get();
+                timerContext.stop();
+
                 final ResponseMessage responseMessage = ResponseMessage.build(UUID.randomUUID())
                         .code(ResponseStatusCode.SUCCESS)
-                        .result(gremlinExecutor.eval(scriptAndBindings.getValue0(), scriptAndBindings.getValue1()).get()).create();
+                        .result(result).create();
 
                 final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(
                         serializer.serializeResponseAsString(responseMessage).getBytes(UTF8)));
@@ -126,6 +138,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
         logger.error("Error processing HTTP Request", cause);
+        errorMeter.mark();
         ctx.close();
     }
 
