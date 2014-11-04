@@ -140,7 +140,7 @@ image:gremlin-server.png[width=400,float=right] Gremlin Server provides a way to
 * Provides a method for Non-JVM languages (e.g. Python, .NET, etc.) to communicate with the TinkerPop stack.
 * Exposes numerous methods for extension and customization to include serialization options, remote commands, etc.
 
-NOTE: Gremlin Server is essentially the replacement for link:http://rexster.tinkerpop.com[Rexster].
+NOTE: Gremlin Server is the replacement for link:http://rexster.tinkerpop.com[Rexster].
 
 By default, communication with Gremlin Server occurs over link:http://en.wikipedia.org/wiki/WebSocket[WebSockets] and exposes a custom subprotocol for interacting with the server.
 
@@ -314,6 +314,59 @@ client.submit("[1,2,3,x]", params); <5>
 <4> Submit a script asynchronously without waiting for the request to be written to the server.
 <5> Parameterized request are considered the most efficient way to send Gremlin to the server as they can be cached, which will boost performance and reduce resources required on the server.
 
+
+Connecting via REST
+~~~~~~~~~~~~~~~~~~~
+
+While the default behavior for Gremlin Server is to provide a WebSockets-based connection, it can also be configured to support link:http://en.wikipedia.org/wiki/Representational_state_transfer[REST].  The REST endpoint provides for a communication protocol familiar to most developers, with a wide support of programming languages, tools and libraries for accessing it.  As a result, REST provides a fast way to get started with Gremlin Server.   It also may represent an easier upgrade path from link:http://rexster.tinkerpop.com/[Rexster] as the API for the endpoint is very similar to Rexster's link:https://github.com/tinkerpop/rexster/wiki/Gremlin-Extension[Gremlin Extension].
+
+Gremlin Server provides for a single REST endpoint - a Gremlin evaluator - which allows the submission of a Gremlin script as a request.  For each request, it returns a response containing the serialized results of that script.  To enable this endpoint, Gremlin Server needs to be configured with the `HttpChannelizer`, which replaces the default `WebSocketChannelizer`, in the configuration file:
+
+[source,yaml]
+channelizer: com.tinkerpop.gremlin.server.channel.HttpChannelizer
+
+This setting is already configured in the `gremlin-server-rest-classic.yaml` file that is packaged with the Gremlin Server distribution.  To utilize it, start Gremlin Server as follows:
+
+[source,text]
+bin/gremlin-server.sh conf/gremlin-server-rest-classic.yaml
+
+Once the server has started, issue a request.  Here's an example with link:http://curl.haxx.se/[cURL]:
+
+[source,text]
+$ curl "http://localhost:8182?gremlin=100-1"
+
+which returns:
+
+[source,js]
+{
+  "result":{"data":99,"meta":{}},
+  "requestId":"0581cdba-b152-45c4-80fa-3d36a6eecf1c",
+  "status":{"code":200,"attributes":{},"message":""}
+}
+
+The above example showed a `GET` operation, but the preferred method for this endpoint is `POST`:
+
+[source,text]
+curl -X POST -d "{\"gremlin\":\"100-1\"}" "http://localhost:8182"
+
+which returns:
+
+[source,js]
+{
+  "result":{"data":99,"meta":{}},
+  "requestId":"ef2fe16c-441d-4e13-9ddb-3c7b5dfb10ba",
+  "status":{"code":200,"attributes":{},"message":""}
+}
+
+It is also preferred that Gremlin scripts be parameterized when possible via `bindings`:
+
+[source,text]
+curl -X POST -d "{\"gremlin\":\"100-x\", \"bindings\":{\"x\":1}}" "http://localhost:8182"
+
+The `bindings` argument is a `Map` of variables where the keys become available as variables in the Gremlin script.  Note that parameterization of requests is critical to performance, as repeated script compilation can be avoided on each request.
+
+CAUTION: Consider the size of the result of a submitted script being returned from the REST endpoint.  A script that iterates thousands of results will serialize each of those in memory into a single JSON result set.  It is quite possible that such a script will generate `OutOfMemoryError` exceptions on the server.  Consider the default WebSockets configuration, which supports streaming, if that type of use case is required.
+
 Configuring
 ~~~~~~~~~~~
 
@@ -340,7 +393,7 @@ The following table describes the various configuration options that Gremlin Ser
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
-|channelizer |Defines the `Channelizer` implementation to use.  A `Channelizer` is a "channel initializer" which Gremlin Server uses to define the type of processing pipeline to use.  By allowing different `Channelizer` implementations, Gremlin Server can support different communication protocols (e.g. Websockets, Java NIO, etc.). |WebSocketChannelizer
+|channelizer |Defines the `Channelizer` implementation to use.  A `Channelizer` is a "channel initializer" which Gremlin Server uses to define the type of processing pipeline to use.  By allowing different `Channelizer` implementations, Gremlin Server can support different communication protocols (e.g. Websockets, Java NIO, etc.). |WebSocketChannelizer,HttpChannelizer
 |graphs |A `Map` of `Graph` configuration files where the key of the `Map` becomes the name to which the `Graph` will be bound and the value is the file name of a `Graph` configuration file. |_none_
 |gremlinPool |The number of "Gremlin" threads available to execute actual scripts in a `ScriptEngine`. This pool represents the workers available to handle blocking operations in Gremlin Server. |8
 |host |The name of the host to bind the server to. |localhost
