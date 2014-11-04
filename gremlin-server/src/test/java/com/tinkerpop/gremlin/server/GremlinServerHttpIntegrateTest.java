@@ -52,6 +52,20 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     @Test
+    public void should200OnGETWithGremlinQueryStringArgumentReturningVertex() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=g.addVertex('name','stephen')");
+
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals("stephen", node.get("result").get("data").get("properties").get("name").get(0).get("value").asText());
+        }
+    }
+
+    @Test
     public void should200OnGETWithGremlinQueryStringArgumentWithBindings() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=Integer.parseInt(x)%2BInteger.parseInt(y)&x=10&y=10");
