@@ -11,12 +11,10 @@ import org.apache.hadoop.io.LongWritable;
  */
 public final class GiraphMessenger<M> implements Messenger<M> {
 
-    // TODO: Make this an object shell for the worker so we don't generate so many objects
+    private GiraphComputeVertex giraphComputeVertex;
+    private Iterable<KryoWritable> messages;
 
-    private final GiraphComputeVertex giraphComputeVertex;
-    private final Iterable<KryoWritable> messages;
-
-    public GiraphMessenger(final GiraphComputeVertex giraphComputeVertex, final Iterable<KryoWritable> messages) {
+    public void setCurrentVertex(final GiraphComputeVertex giraphComputeVertex, final Iterable<KryoWritable> messages) {
         this.giraphComputeVertex = giraphComputeVertex;
         this.messages = messages;
     }

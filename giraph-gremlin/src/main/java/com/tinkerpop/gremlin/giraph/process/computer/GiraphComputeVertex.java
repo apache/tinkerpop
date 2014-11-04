@@ -51,9 +51,10 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWr
         if (null == this.tinkerVertex) inflateTinkerVertex();
         final VertexProgram vertexProgram = ((GiraphWorkerContext) this.getWorkerContext()).getVertexProgram();
         final GiraphMemory memory = ((GiraphWorkerContext) this.getWorkerContext()).getMemory();
+        final GiraphMessenger messenger = ((GiraphWorkerContext) this.getWorkerContext()).getMessenger(this, messages);
         ///////////
         if (!(Boolean) ((RuleWritable) this.getAggregatedValue(Constants.GREMLIN_GIRAPH_HALT)).getObject())
-            vertexProgram.execute(this.tinkerVertex, new GiraphMessenger(this, messages), memory);  // TODO provide a wrapper around TinkerVertex for Edge and non-ComputeKeys manipulation
+            vertexProgram.execute(this.tinkerVertex, messenger, memory);  // TODO provide a wrapper around TinkerVertex for Edge and non-ComputeKeys manipulation
         else if (this.getConf().getBoolean(Constants.GREMLIN_GIRAPH_DERIVE_MEMORY, false)) {
             final Map<String, Object> memoryMap = new HashMap<>(memory.asMap());
             memoryMap.put(Constants.SYSTEM_ITERATION, memory.getIteration() - 1);
