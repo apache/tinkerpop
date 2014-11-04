@@ -77,6 +77,32 @@ public interface VertexProgram<M> {
     public boolean terminate(final Memory memory);
 
     /**
+     * This method is called at the <b>beginning</b> of each iteration of each "computational chunk."
+     * The set of vertices in the graph are typically not processed with full parallelism.
+     * The vertex set is split into subsets and a worker is assigned to call the {@link VertexProgram#execute} method.
+     * The typical use of this method is to create static state that exists for the life of the vertex subset.
+     * The default implementation is a no-op.
+     *
+     * @param memory The memory at the start of the iteration.
+     */
+    public default void workerStartup(final Memory memory) {
+
+    }
+
+    /**
+     * This method is called at the <b>end</b> of each iteration of each "computational chunk."
+     * The set of vertices in the graph are typically not processed with full parallelism.
+     * The vertex set is split into subsets and a worker is assigned to call the {@link VertexProgram#execute} method.
+     * The typical use of this method is to destroy static state that existed during the life of the vertex subset.
+     * The default implementation is a no-op.
+     *
+     * @param memory The memory at the start of the iteration.
+     */
+    public default void workerShutdown(final Memory memory) {
+
+    }
+
+    /**
      * The {@link com.tinkerpop.gremlin.structure.Element} properties that will be mutated during the computation.
      * All properties in the graph are readable, but only the keys specified here are writable.
      * The default is an empty set.

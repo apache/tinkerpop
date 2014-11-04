@@ -1,9 +1,9 @@
 package com.tinkerpop.gremlin.giraph.hdfs;
 
 import com.google.common.collect.Iterators;
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphComputeVertex;
 import com.tinkerpop.gremlin.giraph.structure.GiraphEdge;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
-import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -38,7 +38,7 @@ public class GiraphEdgeIterator extends GiraphElementIterator<GiraphEdge> {
                 if (this.readers.isEmpty())
                     throw FastNoSuchElementException.instance();
                 if (this.readers.peek().nextVertex()) {
-                    this.edgeIterator = ((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getBaseVertex().iterators().edgeIterator(Direction.OUT);
+                    this.edgeIterator = ((GiraphComputeVertex) this.readers.peek().getCurrentVertex()).getBaseVertex().iterators().edgeIterator(Direction.OUT);
                 } else {
                     this.readers.remove();
                 }
@@ -57,7 +57,7 @@ public class GiraphEdgeIterator extends GiraphElementIterator<GiraphEdge> {
                 if (this.readers.isEmpty())
                     return false;
                 if (this.readers.peek().nextVertex()) {
-                    this.edgeIterator = ((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getBaseVertex().iterators().edgeIterator(Direction.OUT);
+                    this.edgeIterator = ((GiraphComputeVertex) this.readers.peek().getCurrentVertex()).getBaseVertex().iterators().edgeIterator(Direction.OUT);
                 } else {
                     this.readers.remove();
                 }

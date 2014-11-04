@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -28,17 +29,18 @@ public abstract class MessageType {
      * This message type should be avoided if a {@link Local} can be used.
      */
     public final static class Global extends MessageType {
+
         private final Iterable<Vertex> vertices;
 
         private Global(final Iterable<Vertex> vertices) {
             this.vertices = vertices;
         }
 
-        public static Global to(final Iterable<Vertex> vertices) {
+        public static Global of(final Iterable<Vertex> vertices) {
             return new Global(vertices);
         }
 
-        public static Global to(final Vertex... vertices) {
+        public static Global of(final Vertex... vertices) {
             return new Global(Arrays.asList(vertices));
         }
 
@@ -72,11 +74,11 @@ public abstract class MessageType {
             this.edgeFunction = edgeFunction;
         }
 
-        public static Local to(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal) {
+        public static Local of(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal) {
             return new Local(incidentTraversal);
         }
 
-        public static <M1, M2> Local to(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal, final BiFunction<M1, Edge, M2> edgeFunction) {
+        public static <M1, M2> Local of(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal, final BiFunction<M1, Edge, M2> edgeFunction) {
             return new Local<>(incidentTraversal, edgeFunction);
         }
 

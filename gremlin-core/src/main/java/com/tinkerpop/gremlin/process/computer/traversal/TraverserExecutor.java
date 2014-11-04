@@ -28,7 +28,7 @@ public final class TraverserExecutor {
 
         final TraverserSet<Object> aliveTraversers = new TraverserSet<>();
         // gather incoming traversers into a traverser set and gain the 'weighted-set' optimization
-        messenger.receiveMessages(MessageType.Global.to()).forEach(traverser -> {
+        messenger.receiveMessages(MessageType.Global.of()).forEach(traverser -> {
             traverser.attach(vertex);
             aliveTraversers.add((Traverser.Admin) traverser);
         });
@@ -44,7 +44,7 @@ public final class TraverserExecutor {
                     if (!vertex.equals(hostingVertex) || traverser.get() instanceof ReferencedElement) {
                         voteToHalt.set(false);
                         traverser.detach();
-                        messenger.sendMessage(MessageType.Global.to(hostingVertex), traverser);
+                        messenger.sendMessage(MessageType.Global.of(hostingVertex), traverser);
                     } else
                         toProcessTraversers.add(traverser);
                 } else                                                                              // STANDARD OBJECT

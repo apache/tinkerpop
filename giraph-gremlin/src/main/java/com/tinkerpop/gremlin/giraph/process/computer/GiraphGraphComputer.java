@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.giraph.process.computer.util.MemoryMapReduce;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.GiraphHelper;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
-import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
@@ -60,7 +59,8 @@ public final class GiraphGraphComputer extends Configured implements GraphComput
         final Configuration configuration = giraphGraph.configuration();
         configuration.getKeys().forEachRemaining(key -> this.giraphConfiguration.set(key, configuration.getProperty(key).toString()));
         this.giraphConfiguration.setMasterComputeClass(GiraphMemory.class);
-        this.giraphConfiguration.setVertexClass(GiraphInternalVertex.class);
+        this.giraphConfiguration.setVertexClass(GiraphComputeVertex.class);
+        this.giraphConfiguration.setWorkerContextClass(GiraphWorkerContext.class);
         this.giraphConfiguration.setOutEdgesClass(EmptyOutEdges.class);
         this.giraphConfiguration.setClass("giraph.vertexIdClass", LongWritable.class, LongWritable.class);
         this.giraphConfiguration.setClass("giraph.vertexValueClass", Text.class, Text.class);

@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure.io.graphson;
 
-import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphComputeVertex;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexWriter;
 import org.apache.hadoop.io.NullWritable;
@@ -15,7 +15,7 @@ import java.io.IOException;
 public class GraphSONVertexWriter extends VertexWriter {
 
     private final GraphSONOutputFormat outputFormat;
-    private RecordWriter<NullWritable, GiraphInternalVertex> recordWriter;
+    private RecordWriter<NullWritable, GiraphComputeVertex> recordWriter;
 
     public GraphSONVertexWriter() {
         outputFormat = new GraphSONOutputFormat();
@@ -33,6 +33,6 @@ public class GraphSONVertexWriter extends VertexWriter {
 
     @Override
     public void writeVertex(Vertex vertex) throws IOException, InterruptedException {
-        recordWriter.write(NullWritable.get(), (GiraphInternalVertex) vertex);
+        recordWriter.write(NullWritable.get(), (GiraphComputeVertex) vertex);
     }
 }

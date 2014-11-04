@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure.io.kryo;
 
-import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphComputeVertex;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.apache.hadoop.conf.Configuration;
@@ -19,7 +19,7 @@ import java.io.IOException;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class KryoRecordReader extends RecordReader<NullWritable, GiraphInternalVertex> {
+public class KryoRecordReader extends RecordReader<NullWritable, GiraphComputeVertex> {
 
     private VertexStreamIterator vertexStreamIterator;
     private FSDataInputStream inputStream;
@@ -68,8 +68,8 @@ public class KryoRecordReader extends RecordReader<NullWritable, GiraphInternalV
     }
 
     @Override
-    public GiraphInternalVertex getCurrentValue() {
-        return new GiraphInternalVertex((TinkerVertex) vertexStreamIterator.next());
+    public GiraphComputeVertex getCurrentValue() {
+        return new GiraphComputeVertex((TinkerVertex) vertexStreamIterator.next());
     }
 
     @Override

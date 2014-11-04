@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure.io.graphson;
 
-import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphComputeVertex;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
@@ -15,7 +15,7 @@ import java.io.UnsupportedEncodingException;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GraphSONRecordWriter extends RecordWriter<NullWritable, GiraphInternalVertex> {
+public class GraphSONRecordWriter extends RecordWriter<NullWritable, GiraphComputeVertex> {
     private static final String UTF8 = "UTF-8";
     private static final byte[] NEWLINE;
     private final DataOutputStream out;
@@ -35,7 +35,7 @@ public class GraphSONRecordWriter extends RecordWriter<NullWritable, GiraphInter
     }
 
     @Override
-    public void write(final NullWritable key, final GiraphInternalVertex vertex) throws IOException {
+    public void write(final NullWritable key, final GiraphComputeVertex vertex) throws IOException {
         if (null != vertex) {
             Vertex gremlinVertex = vertex.getBaseVertex();
             graphSONWriter.writeVertex(out, gremlinVertex, Direction.BOTH);

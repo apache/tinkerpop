@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.giraph.structure.io.graphson;
 
 import com.tinkerpop.gremlin.giraph.GiraphGraphProvider;
-import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphComputeVertex;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.hadoop.conf.Configuration;
@@ -58,7 +58,7 @@ public class GraphSONRecordReaderWriterTest {
                 float progress = reader.getProgress();
                 assertTrue(progress >= lastProgress);
                 assertEquals(NullWritable.class, reader.getCurrentKey().getClass());
-                GiraphInternalVertex v = (GiraphInternalVertex) reader.getCurrentValue();
+                GiraphComputeVertex v = (GiraphComputeVertex) reader.getCurrentValue();
                 writer.write(NullWritable.get(), v);
 
                 Vertex vertex = v.getBaseVertex();

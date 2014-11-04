@@ -27,12 +27,11 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
-import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -55,13 +54,10 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
     public static final String HALTED_TRAVERSERS = Graph.Key.hide("gremlin.traversalVertexProgram.haltedTraversers");
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
     public static final String TRAVERSAL_SUPPLIER = "gremlin.traversalVertexProgram.traversalSupplier";
-    private static final String JOB_ID = "gremlin.traversalVertexProgram.jobId";
 
-    private final static ThreadLocal<Map<UUID, Traversal>> threadLocalTraversal = new ThreadLocal<>();
+    private final static Map<Long, Traversal> TRAVERSAL_CACHE = new HashMap<>();
 
     private LambdaHolder<Supplier<Traversal>> traversalSupplier;
-    private UUID jobId;
-    ///
     private final Set<MapReduce> mapReducers = new HashSet<>();
     private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<String>() {{
         add(VOTE_TO_HALT);
@@ -87,7 +83,6 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
 
         if (!(TraversalHelper.getEnd(traversal) instanceof SideEffectCapStep))
             this.mapReducers.add(new TraverserMapReduce(TraversalHelper.getEnd(traversal)));
-        this.jobId = UUID.randomUUID();
     }
 
     /**
@@ -114,27 +109,25 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
     @Override
     public void loadState(final Configuration configuration) {
         this.traversalSupplier = LambdaHolder.loadState(configuration, TRAVERSAL_SUPPLIER);
-        this.jobId = UUID.fromString(configuration.getString(JOB_ID));
     }
 
     @Override
     public void storeState(final Configuration configuration) {
         VertexProgram.super.storeState(configuration);
         this.traversalSupplier.storeState(configuration);
-        configuration.setProperty(JOB_ID, this.jobId.toString());
     }
 
-    public Traversal getTraversal() {
-        Map<UUID, Traversal> map = threadLocalTraversal.get();
-        if (null == map) {
-            map = new WeakHashMap<>();
-            threadLocalTraversal.set(map);
-        }
-        Traversal traversal = map.get(this.jobId);
-        if (null == traversal)
-            map.put(this.jobId, traversal = this.traversalSupplier.get().get());
-        return traversal;
+    @Override
+    public void workerStartup(final Memory memory) {
+        final Traversal traversal = TRAVERSAL_CACHE.get(memory.getWorkerId());
+        if (null == traversal) TRAVERSAL_CACHE.put(memory.getWorkerId(), this.traversalSupplier.get().get());
+
     }
+
+    /*@Override
+    public void workerShutdown(final Memory memory) {
+        TRAVERSAL_CACHE.remove(memory.getWorkerId());  // TODO: this causes some state issues with localLimit()
+    }*/
 
     @Override
     public void setup(final Memory memory) {
@@ -143,47 +136,37 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
 
     @Override
     public void execute(final Vertex vertex, final Messenger<Traverser.Admin<?>> messenger, Memory memory) {
+        final Traversal traversal = TRAVERSAL_CACHE.get(memory.getWorkerId());
+        traversal.sideEffects().setLocalVertex(vertex);
         if (memory.isInitialIteration()) {
-            executeFirstIteration(vertex, messenger, memory);
+            final TraverserSet<Object> haltedTraversers = new TraverserSet<>();
+            vertex.property(HALTED_TRAVERSERS, haltedTraversers);
+
+            if (!(traversal.getSteps().get(0) instanceof GraphStep))
+                throw new UnsupportedOperationException("TraversalVertexProgram currently only supports GraphStep starts on vertices or edges");
+
+            final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
+            final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.Admin.HALT : startStep.getNextStep().getLabel();
+            final AtomicBoolean voteToHalt = new AtomicBoolean(true);
+            final Iterator<? extends Element> starts = startStep.returnsVertices() ? new SingleIterator<>(vertex) : vertex.iterators().edgeIterator(Direction.OUT);
+            final boolean trackPaths = TraversalHelper.trackPaths(traversal);
+            starts.forEachRemaining(element -> {
+                final Traverser.Admin<? extends Element> traverser = trackPaths ?
+                        new PathTraverser<>(startStep.getLabel(), element, traversal.sideEffects()) :
+                        new SimpleTraverser<>(element, traversal.sideEffects());
+                traverser.setFuture(future);
+                traverser.detach();
+                if (traverser.isHalted())
+                    haltedTraversers.add((Traverser.Admin) traverser);
+                else {
+                    voteToHalt.set(false);
+                    messenger.sendMessage(MessageType.Global.of(vertex), traverser);
+                }
+            });
+            memory.and(VOTE_TO_HALT, voteToHalt.get());
         } else {
-            executeOtherIterations(vertex, messenger, memory);
+            memory.and(VOTE_TO_HALT, TraverserExecutor.execute(vertex, messenger, traversal));
         }
-    }
-
-    private final void executeFirstIteration(final Vertex vertex, final Messenger<Traverser.Admin<?>> messenger, final Memory memory) {
-        final Traversal traversal = this.getTraversal();
-        traversal.sideEffects().setLocalVertex(vertex);
-        final TraverserSet<Object> haltedTraversers = new TraverserSet<>();
-        vertex.property(HALTED_TRAVERSERS, haltedTraversers);
-
-        if (!(traversal.getSteps().get(0) instanceof GraphStep))
-            throw new UnsupportedOperationException("TraversalVertexProgram currently only supports GraphStep starts on vertices or edges");
-
-        final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
-        final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.Admin.HALT : startStep.getNextStep().getLabel();
-        final AtomicBoolean voteToHalt = new AtomicBoolean(true);
-        final Iterator<? extends Element> starts = startStep.returnsVertices() ? new SingleIterator<>(vertex) : vertex.iterators().edgeIterator(Direction.OUT);
-        final boolean trackPaths = TraversalHelper.trackPaths(traversal);
-        starts.forEachRemaining(element -> {
-            final Traverser.Admin<? extends Element> traverser = trackPaths ?
-                    new PathTraverser<>(startStep.getLabel(), element, traversal.sideEffects()) :
-                    new SimpleTraverser<>(element, traversal.sideEffects());
-            traverser.setFuture(future);
-            traverser.detach();
-            if (traverser.isHalted())
-                haltedTraversers.add((Traverser.Admin) traverser);
-            else {
-                voteToHalt.set(false);
-                messenger.sendMessage(MessageType.Global.to(vertex), traverser);
-            }
-        });
-        memory.and(VOTE_TO_HALT, voteToHalt.get());
-    }
-
-    private final void executeOtherIterations(final Vertex vertex, final Messenger<Traverser.Admin<?>> messenger, final Memory memory) {
-        final Traversal traversal = this.getTraversal();
-        traversal.sideEffects().setLocalVertex(vertex);
-        memory.and(VOTE_TO_HALT, TraverserExecutor.execute(vertex, messenger, traversal));
     }
 
     @Override
@@ -214,7 +197,7 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
 
     @Override
     public String toString() {
-        final Traversal traversal = this.getTraversal();
+        final Traversal traversal = this.traversalSupplier.get().get();
         final String traversalString = traversal.toString().substring(1);
         return StringFactory.vertexProgramString(this, traversalString.substring(0, traversalString.length() - 1));
     }
