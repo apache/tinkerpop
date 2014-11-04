@@ -26,6 +26,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,9 +88,9 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 return;
             }
 
-            final Pair<String, Map<String,Object>> scriptAndBindings;
+            final Triplet<String, Map<String,Object>, Optional<String>> requestArguments;
             try {
-                scriptAndBindings = getGremlinScript(req);
+                requestArguments = getGremlinScript(req);
             } catch (IllegalArgumentException iae) {
                 sendError(ctx, BAD_REQUEST, iae.getMessage());
                 return;
@@ -104,9 +105,10 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             }
 
             try {
-                logger.debug("Processing request containing script [{}] and bindings of [{}]", scriptAndBindings.getValue0(), scriptAndBindings.getValue1());
+                logger.debug("Processing request containing script [{}] and bindings of [{}]", requestArguments.getValue0(), requestArguments.getValue1());
                 final Timer.Context timerContext = evalOpTimer.time();
-                final Object result = gremlinExecutor.eval(scriptAndBindings.getValue0(), scriptAndBindings.getValue1()).get();
+                final Object result = gremlinExecutor.eval(requestArguments.getValue0(),
+                        requestArguments.getValue2(), requestArguments.getValue1()).get();
                 timerContext.stop();
 
                 final ResponseMessage responseMessage = ResponseMessage.build(UUID.randomUUID())
@@ -142,11 +144,11 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         ctx.close();
     }
 
-    private static Pair<String, Map<String,Object>> getGremlinScript(final FullHttpRequest request) {
+    private static Triplet<String, Map<String,Object>, Optional<String>> getGremlinScript(final FullHttpRequest request) {
         if (request.getMethod() == GET) {
             final QueryStringDecoder decoder = new QueryStringDecoder(request.getUri());
             final List<String> gremlinParms = decoder.parameters().get(Tokens.ARGS_GREMLIN);
-            if (gremlinParms == null || gremlinParms.size() == 0)
+            if (null == gremlinParms || gremlinParms.size() == 0)
                 throw new IllegalArgumentException("no gremlin script supplied");
             final String script = gremlinParms.get(0);
             if (script.isEmpty()) throw new IllegalArgumentException("no gremlin script supplied");
@@ -156,7 +158,11 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             decoder.parameters().entrySet().stream().filter(kv -> !kv.getKey().equals(Tokens.ARGS_GREMLIN))
                     .forEach(kv -> bindings.put(kv.getKey(), kv.getValue().get(0)));
 
-            return Pair.with(script, bindings);
+            final List<String> languageParms = decoder.parameters().get(Tokens.ARGS_LANGUAGE);
+            final Optional<String> language =  (null == languageParms || languageParms.size() == 0) ?
+                    Optional.empty() : Optional.ofNullable(languageParms.get(0));
+
+            return Triplet.with(script, bindings, language);
         } else {
             final JsonNode body;
             try {
@@ -175,7 +181,11 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             if (bindingsNode != null)
                 bindingsNode.fields().forEachRemaining(kv -> bindings.put(kv.getKey(), fromJsonNode(kv.getValue())));
 
-            return Pair.with(scriptNode.asText(), bindings);
+            final JsonNode languageNode = body.get(Tokens.ARGS_LANGUAGE);
+            final Optional<String> language =  null == languageNode ?
+                    Optional.empty() : Optional.ofNullable(languageNode.asText());
+
+            return Triplet.with(scriptNode.asText(), bindings, language);
         }
     }
 
