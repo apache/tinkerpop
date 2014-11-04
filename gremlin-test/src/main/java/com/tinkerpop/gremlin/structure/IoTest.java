@@ -297,6 +297,7 @@ public class IoTest extends AbstractGremlinTest {
         graphProvider.clear(g1, configuration);
     }
 
+    @org.junit.Ignore
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
