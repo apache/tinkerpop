@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tinkerpop.gremlin.driver.MessageSerializer;
+import com.tinkerpop.gremlin.driver.Tokens;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
@@ -54,8 +55,6 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
 
     private static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
-
-    private static final String KEY_GREMLIN = "gremlin";
 
     private final Map<String, MessageSerializer> serializers;
 
@@ -146,7 +145,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private static Pair<String, Map<String,Object>> getGremlinScript(final FullHttpRequest request) {
         if (request.getMethod() == GET) {
             final QueryStringDecoder decoder = new QueryStringDecoder(request.getUri());
-            final List<String> gremlinParms = decoder.parameters().get(KEY_GREMLIN);
+            final List<String> gremlinParms = decoder.parameters().get(Tokens.ARGS_GREMLIN);
             if (gremlinParms == null || gremlinParms.size() == 0)
                 throw new IllegalArgumentException("no gremlin script supplied");
             final String script = gremlinParms.get(0);
@@ -154,7 +153,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
             // query string parameters - take the first instance of a key only - ignore the rest
             final Map<String,Object> bindings = new HashMap<>();
-            decoder.parameters().entrySet().stream().filter(kv -> !kv.getKey().equals(KEY_GREMLIN))
+            decoder.parameters().entrySet().stream().filter(kv -> !kv.getKey().equals(Tokens.ARGS_GREMLIN))
                     .forEach(kv -> bindings.put(kv.getKey(), kv.getValue().get(0)));
 
             return Pair.with(script, bindings);
@@ -166,10 +165,10 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 throw new IllegalArgumentException("body could not be parsed", ioe);
             }
 
-            final JsonNode scriptNode = body.get(KEY_GREMLIN);
+            final JsonNode scriptNode = body.get(Tokens.ARGS_GREMLIN);
             if (null == scriptNode) throw new IllegalArgumentException("no gremlin script supplied");
 
-            final JsonNode bindingsNode = body.get("bindings");
+            final JsonNode bindingsNode = body.get(Tokens.ARGS_BINDINGS);
             if (bindingsNode != null && !bindingsNode.isObject()) throw new IllegalArgumentException("bindings must be a Map");
 
             final Map<String,Object> bindings = new HashMap<>();
