@@ -33,7 +33,7 @@ public final class GiraphWorkerContext extends WorkerContext {
     }
 
     public void postSuperstep() {
-        this.vertexProgram.workerIterationStart(this.memory);
+        this.vertexProgram.workerIterationEnd(this.memory);
     }
 
     public final VertexProgram getVertexProgram() {
