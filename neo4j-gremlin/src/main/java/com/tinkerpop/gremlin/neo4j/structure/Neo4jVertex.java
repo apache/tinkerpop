@@ -51,7 +51,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
                     return new Neo4jVertexProperty<>(this, key, (V) this.getBaseVertex().getProperty(key));
                 }
             } else
-                throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id());
+                return VertexProperty.<V>empty();
         }
     }
 
@@ -234,7 +234,8 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
         try {
             return this.getBaseVertex().hasProperty(key);
         } catch (IllegalStateException | NotFoundException ex) {
-            return false;
+            // if vertex is removed before/after transaction close
+            throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id());
         }
     }
 }
