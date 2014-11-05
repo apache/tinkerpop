@@ -104,6 +104,10 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
         return LambdaHolder.<Supplier<Traversal>>loadState(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER).get();
     }
 
+    public Traversal getTraversal() {
+        return this.traversal;
+    }
+
     @Override
     public void loadState(final Configuration configuration) {
         this.traversalSupplier = LambdaHolder.loadState(configuration, TRAVERSAL_SUPPLIER);
