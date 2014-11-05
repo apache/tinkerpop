@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -50,7 +51,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
                     return new Neo4jVertexProperty<>(this, key, (V) this.getBaseVertex().getProperty(key));
                 }
             } else
-                return VertexProperty.<V>empty();
+                throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id());
         }
     }
 

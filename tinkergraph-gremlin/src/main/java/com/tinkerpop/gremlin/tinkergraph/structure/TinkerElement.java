@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.PropertyFilterIterator;
 
@@ -22,6 +23,7 @@ public abstract class TinkerElement implements Element, Element.Iterators {
     protected final Object id;
     protected final String label;
     protected final TinkerGraph graph;
+    protected boolean removed = false;
 
     protected TinkerElement(final Object id, final String label, final TinkerGraph graph) {
         this.graph = graph;
@@ -65,6 +67,7 @@ public abstract class TinkerElement implements Element, Element.Iterators {
 
     @Override
     public <V> Property<V> property(final String key) {
+        if (removed) throw Element.Exceptions.elementAlreadyRemoved(this.getClass(), this.id);
         if (TinkerHelper.inComputerMode(this.graph)) {
             final List<Property> list = this.graph.graphView.getProperty(this, key);
             return list.size() == 0 ? Property.<V>empty() : list.get(0);
@@ -73,6 +76,7 @@ public abstract class TinkerElement implements Element, Element.Iterators {
         }
     }
 
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     @Override
     public boolean equals(final Object object) {
         return ElementHelper.areEqual(this, object);

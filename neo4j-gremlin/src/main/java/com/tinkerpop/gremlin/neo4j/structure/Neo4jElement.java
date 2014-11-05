@@ -71,7 +71,7 @@ public abstract class Neo4jElement implements Element, Element.Iterators, Wrappe
             else
                 return Property.empty();
         } catch (IllegalStateException ise) {
-            return Property.<V>empty();
+            throw Element.Exceptions.elementAlreadyRemoved(this.getClass(), this.id());
         }
     }
 

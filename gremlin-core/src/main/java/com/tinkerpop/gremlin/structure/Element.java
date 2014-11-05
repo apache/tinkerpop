@@ -169,5 +169,9 @@ public abstract interface Element {
         public static IllegalArgumentException labelCanNotBeASystemKey(final String label) {
             return new IllegalArgumentException("Label can not be a system key: " + label);
         }
+
+        public static IllegalStateException elementAlreadyRemoved(final Class<? extends Element> clazz, final Object id) {
+            return new IllegalStateException(String.format("%s with id %s was removed.", clazz.getSimpleName(), id));
+        }
     }
 }

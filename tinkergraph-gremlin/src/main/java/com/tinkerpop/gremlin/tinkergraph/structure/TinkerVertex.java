@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -34,6 +35,8 @@ public class TinkerVertex extends TinkerElement implements Vertex, Vertex.Iterat
 
     @Override
     public <V> VertexProperty<V> property(final String key) {
+        if (removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id);
+
         if (TinkerHelper.inComputerMode(this.graph)) {
             final List<VertexProperty> list = (List) this.graph.graphView.getProperty(this, key);
             if (list.size() == 0)
@@ -96,6 +99,7 @@ public class TinkerVertex extends TinkerElement implements Vertex, Vertex.Iterat
         this.properties.clear();
         this.graph.vertexIndex.removeElement(this);
         this.graph.vertices.remove(this.id);
+        this.removed = true;
     }
 
     @Override
