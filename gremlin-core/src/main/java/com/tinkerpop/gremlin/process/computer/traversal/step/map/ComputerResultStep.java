@@ -14,8 +14,6 @@ import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.detached.Attachable;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 
 import java.util.Iterator;
 
@@ -36,10 +34,8 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
         this.memory = result.memory();
         this.attachElements = attachElements;
         this.memory.keys().forEach(key -> traversal.sideEffects().set(key, this.memory.get(key)));
+        this.computerTraversal = traversalVertexProgram.getTraversal();
 
-        final Configuration configuration = new BaseConfiguration();
-        traversalVertexProgram.storeState(configuration);
-        this.computerTraversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
         final Step endStep = TraversalHelper.getEnd(this.computerTraversal);
         this.traversers = endStep instanceof SideEffectCapStep ?
                 new SingleIterator<>(new SimpleTraverser<>((S) this.memory.get(((SideEffectCapStep) endStep).getSideEffectKey()), this.traversal.sideEffects())) :

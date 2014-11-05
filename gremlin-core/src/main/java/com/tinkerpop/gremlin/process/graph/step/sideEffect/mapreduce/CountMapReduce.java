@@ -45,7 +45,11 @@ public final class CountMapReduce implements MapReduce<MapReduce.NullObject, Lon
 
     @Override
     public Long generateFinalResult(Iterator<Pair<NullObject, Long>> keyValues) {
-        return keyValues.next().getValue1();
+        long count = 0l;
+        while (keyValues.hasNext()) {
+            count = count + keyValues.next().getValue1();
+        }
+        return count;
     }
 
     @Override
@@ -65,6 +69,6 @@ public final class CountMapReduce implements MapReduce<MapReduce.NullObject, Lon
 
     @Override
     public String toString() {
-        return StringFactory.mapReduceString(this,"");
+        return StringFactory.mapReduceString(this, "");
     }
 }

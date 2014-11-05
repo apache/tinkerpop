@@ -21,11 +21,6 @@ public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, T
     }
 
     @Override
-    public TraversalMetrics generateFinalResult(final Iterator<Pair<NullObject, TraversalMetrics>> keyValues) {
-        return keyValues.next().getValue1();
-    }
-
-    @Override
     public String getMemoryKey() {
         return ProfileStep.METRICS_KEY;
     }
@@ -43,6 +38,21 @@ public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, T
     @Override
     public void reduce(final NullObject key, final Iterator<TraversalMetrics> values, final ReduceEmitter<NullObject, TraversalMetrics> emitter) {
         emitter.emit(TraversalMetrics.merge(values));
+    }
+
+    @Override
+    public TraversalMetrics generateFinalResult(final Iterator<Pair<NullObject, TraversalMetrics>> keyValues) {
+        return TraversalMetrics.merge(new Iterator<TraversalMetrics>() {
+            @Override
+            public boolean hasNext() {
+                return keyValues.hasNext();
+            }
+
+            @Override
+            public TraversalMetrics next() {
+                return keyValues.next().getValue1();
+            }
+        });
     }
 
     @Override
