@@ -30,8 +30,11 @@ import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATU
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_THREADED_TRANSACTIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.isA;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
@@ -88,8 +91,8 @@ public class FeatureSupportTest {
             try {
                 g.compute();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphFeatures.class.getSimpleName(), FEATURE_COMPUTER));
-            } catch (UnsupportedOperationException e) {
-                assertEquals(Graph.Exceptions.graphComputerNotSupported().getMessage(), e.getMessage());
+            } catch (Exception e) {
+                assertThat(e, instanceOf(Graph.Exceptions.graphComputerNotSupported().getClass()));
             }
         }
 
@@ -104,7 +107,7 @@ public class FeatureSupportTest {
                 g.tx();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphFeatures.class.getSimpleName(), FEATURE_TRANSACTIONS));
             } catch (UnsupportedOperationException e) {
-                assertEquals(Graph.Exceptions.transactionsNotSupported().getMessage(), e.getMessage());
+                assertThat(e, instanceOf(Graph.Exceptions.transactionsNotSupported().getClass()));
             }
         }
 
@@ -119,7 +122,7 @@ public class FeatureSupportTest {
                 g.variables();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, Graph.Features.VariableFeatures.class.getSimpleName(), FEATURE_VARIABLES));
             } catch (UnsupportedOperationException e) {
-                assertEquals(Graph.Exceptions.variablesNotSupported().getMessage(), e.getMessage());
+                assertThat(e, instanceOf(Graph.Exceptions.variablesNotSupported().getClass()));
             }
         }
 
@@ -130,10 +133,8 @@ public class FeatureSupportTest {
             try {
                 g.tx().create();
                 fail("An exception should be thrown since the threaded transaction feature is not supported");
-            } catch (Exception ex) {
-                final Exception expectedException = Transaction.Exceptions.threadedTransactionsNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+            } catch (Exception e) {
+                assertThat(e, instanceOf(Transaction.Exceptions.threadedTransactionsNotSupported().getClass()));
             }
         }
     }
@@ -162,10 +163,8 @@ public class FeatureSupportTest {
             try {
                 g.addVertex();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_ADD_VERTICES));
-            } catch (Exception ex) {
-                final Exception expectedException = Graph.Exceptions.vertexAdditionsNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+            } catch (Exception e) {
+                assertThat(e, instanceOf(Graph.Exceptions.vertexAdditionsNotSupported().getClass()));
             }
         }
 
@@ -176,10 +175,8 @@ public class FeatureSupportTest {
             try {
                 g.addVertex(T.id, GraphManager.get().convertId(99999943835l));
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_USER_SUPPLIED_IDS));
-            } catch (Exception ex) {
-                final Exception expectedException = Vertex.Exceptions.userSuppliedIdsNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+            } catch (Exception e) {
+                assertThat(e, instanceOf(Vertex.Exceptions.userSuppliedIdsNotSupported().getClass()));
             }
         }
 
@@ -191,10 +188,8 @@ public class FeatureSupportTest {
             try {
                 g.addVertex(T.id, "this-is-a-valid-id");
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_STRING_IDS));
-            } catch (Exception ex) {
-                final Exception expectedException = Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+            } catch (Exception e) {
+                assertThat(e, instanceOf(Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
             }
         }
 
@@ -206,19 +201,15 @@ public class FeatureSupportTest {
             try {
                 g.addVertex(T.id, 123456);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
-            } catch (Exception ex) {
-                final Exception expectedException = Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+            } catch (Exception e) {
+                assertThat(e, instanceOf(Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
             }
 
             try {
                 g.addVertex(T.id, 123456l);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
-            } catch (Exception ex) {
-                final Exception expectedException = Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+            } catch (Exception e) {
+                assertThat(e, instanceOf(Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
             }
         }
 
@@ -230,10 +221,8 @@ public class FeatureSupportTest {
             try {
                 g.addVertex(T.id, UUID.randomUUID());
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_UUID_IDS));
-            } catch (Exception ex) {
-                final Exception expectedException = Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+            } catch (Exception e) {
+                assertThat(e, instanceOf(Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
             }
         }
 
@@ -245,10 +234,8 @@ public class FeatureSupportTest {
             try {
                 g.addVertex(T.id, new Date());
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_ANY_IDS));
-            } catch (Exception ex) {
-                final Exception expectedException = Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+            } catch (Exception e) {
+                assertThat(e, instanceOf(Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
             }
         }
 
@@ -290,10 +277,8 @@ public class FeatureSupportTest {
                 final Vertex v = g.addVertex();
                 v.property("should", "not-add-property");
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_ADD_PROPERTY));
-            } catch (Exception ex) {
-                final Exception expectedException = Element.Exceptions.propertyAdditionNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+            } catch (Exception e) {
+                assertThat(e, instanceOf(Element.Exceptions.propertyAdditionNotSupported().getClass()));
             }
         }
 
@@ -304,10 +289,8 @@ public class FeatureSupportTest {
             try {
                 g.addVertex().remove();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_REMOVE_VERTICES));
-            } catch (Exception ex) {
-                final Exception expectedException = Vertex.Exceptions.vertexRemovalNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+            } catch (Exception e) {
+                assertThat(e, instanceOf(Vertex.Exceptions.vertexRemovalNotSupported().getClass()));
             }
         }
 
@@ -319,10 +302,8 @@ public class FeatureSupportTest {
                 final Vertex v = g.addVertex("name", "me");
                 v.property("name").remove();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_REMOVE_PROPERTY));
-            } catch (Exception ex) {
-                final Exception expectedException = Element.Exceptions.propertyRemovalNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+            } catch (Exception e) {
+                assertThat(e, instanceOf(Element.Exceptions.propertyRemovalNotSupported().getClass()));
             }
         }
     }
@@ -353,10 +334,8 @@ public class FeatureSupportTest {
                 final Vertex v = g.addVertex();
                 v.addEdge("friend", v);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_ADD_EDGES));
-            } catch (Exception ex) {
-                final Exception expectedException = Vertex.Exceptions.edgeAdditionsNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+            } catch (Exception e) {
+                assertThat(e, instanceOf(Vertex.Exceptions.edgeAdditionsNotSupported().getClass()));
             }
         }
 
@@ -369,8 +348,8 @@ public class FeatureSupportTest {
                 final Vertex v = g.addVertex();
                 v.addEdge("friend", v, T.id, GraphManager.get().convertId(99999943835l));
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_USER_SUPPLIED_IDS));
-            } catch (Exception ex) {
-                assertEquals(Edge.Exceptions.userSuppliedIdsNotSupported().getMessage(), ex.getMessage());
+            } catch (Exception e) {
+                assertThat(e, instanceOf(Edge.Exceptions.userSuppliedIdsNotSupported().getClass()));
             }
         }
 
@@ -419,10 +398,8 @@ public class FeatureSupportTest {
                 final Vertex v = g.addVertex();
                 v.addEdge("test", v, T.id, "this-is-a-valid-id");
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_STRING_IDS));
-            } catch (Exception ex) {
-                final Exception expectedException = Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+            } catch (Exception e) {
+                assertThat(e, instanceOf(Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
             }
         }
 
@@ -435,20 +412,16 @@ public class FeatureSupportTest {
                 final Vertex v = g.addVertex();
                 v.addEdge("test", v, T.id, 123456);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
-            } catch (Exception ex) {
-                final Exception expectedException = Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+            } catch (Exception e) {
+                assertThat(e, instanceOf(Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
             }
 
             try {
                 final Vertex v = g.addVertex();
                 v.addEdge("test", v, T.id, 123456l);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
-            } catch (Exception ex) {
-                final Exception expectedException = Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+            } catch (Exception e) {
+                assertThat(e, instanceOf(Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
             }
         }
 
@@ -461,10 +434,8 @@ public class FeatureSupportTest {
                 final Vertex v = g.addVertex();
                 v.addEdge("test", v, T.id, UUID.randomUUID());
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_ANY_IDS));
-            } catch (Exception ex) {
-                final Exception expectedException = Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+            } catch (Exception e) {
+                assertThat(e, instanceOf(Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
             }
         }
 
@@ -478,10 +449,8 @@ public class FeatureSupportTest {
                 final Vertex v = g.addVertex();
                 v.addEdge("test", v, T.id, new Date());
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_ANY_IDS));
-            } catch (Exception ex) {
-                final Exception expectedException = Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+            } catch (Exception e) {
+                assertThat(e, instanceOf(Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
             }
         }
 
@@ -495,10 +464,8 @@ public class FeatureSupportTest {
                 final Edge e = v.addEdge("test", v);
                 e.property("should", "not-add-property");
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgePropertyFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_ADD_PROPERTY));
-            } catch (Exception ex) {
-                final Exception expectedException = Element.Exceptions.propertyAdditionNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+            } catch (Exception e) {
+                assertThat(e, instanceOf(Element.Exceptions.propertyAdditionNotSupported().getClass()));
             }
         }
 
@@ -513,9 +480,7 @@ public class FeatureSupportTest {
                 v.remove();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_REMOVE_EDGES));
             } catch (Exception ex) {
-                final Exception expectedException = Edge.Exceptions.edgeRemovalNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+                assertThat(ex, instanceOf(Edge.Exceptions.edgeRemovalNotSupported().getClass()));
             }
         }
 
@@ -529,9 +494,7 @@ public class FeatureSupportTest {
                 e.property("name").remove();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_REMOVE_PROPERTY));
             } catch (Exception ex) {
-                final Exception expectedException = Element.Exceptions.propertyRemovalNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+                assertThat(ex, instanceOf(Element.Exceptions.propertyRemovalNotSupported().getClass()));
             }
         }
     }
@@ -569,7 +532,7 @@ public class FeatureSupportTest {
                 edge.property("aKey", value);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgePropertyFeatures.class.getSimpleName(), featureName));
             } catch (UnsupportedOperationException e) {
-                assertEquals(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getMessage(), e.getMessage());
+                assertThat(e, instanceOf(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getClass()));
             }
         }
 
@@ -581,7 +544,7 @@ public class FeatureSupportTest {
                 g.addVertex("aKey", value);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), featureName));
             } catch (UnsupportedOperationException e) {
-                assertEquals(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getMessage(), e.getMessage());
+                assertThat(e, instanceOf(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getClass()));
             }
         }
 
@@ -627,7 +590,7 @@ public class FeatureSupportTest {
                 variables.set("aKey", value);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, Graph.Features.VariableFeatures.class.getSimpleName(), featureName));
             } catch (UnsupportedOperationException e) {
-                assertEquals(Graph.Variables.Exceptions.dataTypeOfVariableValueNotSupported(value).getMessage(), e.getMessage());
+                assertThat(e, instanceOf(Graph.Variables.Exceptions.dataTypeOfVariableValueNotSupported(value).getClass()));
             }
         }
     }
@@ -652,9 +615,7 @@ public class FeatureSupportTest {
                 v.property("name", "me", T.id, GraphManager.get().convertId(99999943835l));
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexPropertyFeatures.FEATURE_USER_SUPPLIED_IDS));
             } catch (Exception ex) {
-                final Exception expectedException = VertexProperty.Exceptions.userSuppliedIdsNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+                assertThat(ex, instanceOf(VertexProperty.Exceptions.userSuppliedIdsNotSupported().getClass()));
             }
         }
 
@@ -668,9 +629,7 @@ public class FeatureSupportTest {
                 v.property("test", v, T.id, "this-is-a-valid-id");
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_STRING_IDS));
             } catch (Exception ex) {
-                final Exception expectedException = VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+                assertThat(ex, instanceOf(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
             }
         }
 
@@ -684,9 +643,7 @@ public class FeatureSupportTest {
                 v.property("test", v, T.id, 123456);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
             } catch (Exception ex) {
-                final Exception expectedException = VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+                assertThat(ex, instanceOf(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
             }
 
             try {
@@ -694,9 +651,7 @@ public class FeatureSupportTest {
                 v.property("test", v, T.id, 123456l);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
             } catch (Exception ex) {
-                final Exception expectedException = VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+                assertThat(ex, instanceOf(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
             }
         }
 
@@ -710,9 +665,7 @@ public class FeatureSupportTest {
                 v.property("test", v, T.id, UUID.randomUUID());
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_ANY_IDS));
             } catch (Exception ex) {
-                final Exception expectedException = VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+                assertThat(ex, instanceOf(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
             }
         }
 
@@ -727,9 +680,7 @@ public class FeatureSupportTest {
                 v.property("test", v, T.id, new Date());
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_ANY_IDS));
             } catch (Exception ex) {
-                final Exception expectedException = VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+                assertThat(ex, instanceOf(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
             }
         }
 
@@ -778,9 +729,7 @@ public class FeatureSupportTest {
                 p.property("test").remove();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), VertexPropertyFeatures.FEATURE_REMOVE_PROPERTY));
             } catch (Exception ex) {
-                final Exception expectedException = Element.Exceptions.propertyRemovalNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+                assertThat(ex, instanceOf(Element.Exceptions.propertyRemovalNotSupported().getClass()));
             }
         }
 
@@ -794,7 +743,7 @@ public class FeatureSupportTest {
                 if (StreamFactory.stream(v.iterators().propertyIterator()).count() == 2)
                     fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_MULTI_PROPERTIES));
             } catch (Exception ex) {
-                assertEquals(VertexProperty.Exceptions.multiPropertiesNotSupported().getMessage(), ex.getMessage());
+                assertThat(ex, instanceOf(VertexProperty.Exceptions.multiPropertiesNotSupported().getClass()));
             }
         }
 
@@ -809,7 +758,7 @@ public class FeatureSupportTest {
                 v.property("name", "stephen", "property", "on-property");
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_META_PROPERTIES));
             } catch (Exception ex) {
-                assertEquals(VertexProperty.Exceptions.metaPropertiesNotSupported().getMessage(), ex.getMessage());
+                assertThat(ex, instanceOf(VertexProperty.Exceptions.metaPropertiesNotSupported().getClass()));
             }
         }
 
@@ -824,7 +773,7 @@ public class FeatureSupportTest {
                 v.property("name").property("property", "on-property");
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_META_PROPERTIES));
             } catch (Exception ex) {
-                assertEquals(VertexProperty.Exceptions.metaPropertiesNotSupported().getMessage(), ex.getMessage());
+                assertThat(ex, instanceOf(VertexProperty.Exceptions.metaPropertiesNotSupported().getClass()));
             }
         }
     }
