@@ -431,13 +431,16 @@ public class VertexTest {
     })
     public static class ExceptionConsistencyWhenVertexRemovedTest extends AbstractGremlinTest {
 
-        @Parameterized.Parameters(name = "{index}: expect - {1}")
+        @Parameterized.Parameters(name = "{index}: expect - {0}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
-                    {FunctionUtils.wrapConsumer((Vertex v) -> v.property("name"))}});
+                    {"property(k)", FunctionUtils.wrapConsumer((Vertex v) -> v.property("name"))}});
         }
 
         @Parameterized.Parameter(value = 0)
+        public String name;
+
+        @Parameterized.Parameter(value = 1)
         public Consumer<Vertex> functionToTest;
 
         @Test
