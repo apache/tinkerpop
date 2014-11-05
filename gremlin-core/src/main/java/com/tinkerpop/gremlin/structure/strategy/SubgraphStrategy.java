@@ -102,7 +102,7 @@ public class SubgraphStrategy implements GraphStrategy {
         return SubgraphStrategy.class.getSimpleName().toLowerCase();
     }
 
-    private class SubgraphTraversalStrategy implements TraversalStrategy.NoDependencies {
+    public class SubgraphTraversalStrategy implements TraversalStrategy.NoDependencies {
 
         @Override
         public void apply(final Traversal traversal, final TraversalEngine traversalEngine) {
