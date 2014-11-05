@@ -8,7 +8,7 @@ import java.util.Arrays;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class VertexTerminator {
+class VertexTerminator {
     public static final VertexTerminator INSTANCE = new VertexTerminator();
 
     public final byte[] terminal;

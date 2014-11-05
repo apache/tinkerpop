@@ -10,7 +10,7 @@ import java.util.UUID;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class UUIDSerializer extends Serializer<UUID> {
+class UUIDSerializer extends Serializer<UUID> {
     public UUIDSerializer() {
         setImmutable(true);
     }

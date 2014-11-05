@@ -10,7 +10,7 @@ import java.net.URI;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class URISerializer extends Serializer<URI> {
+class URISerializer extends Serializer<URI> {
 
     public URISerializer() {
         setImmutable(true);
