@@ -10,6 +10,7 @@ TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Renamed `MessageType.XXX.to()` to `MessageType.XXX.of()` so it makes sense in both the sending and receiving context.
+* Relaxed exception consistency checks in the test suite to only check that a thrown exception from an implementation extends the expected exception class (but no longer validates that it is the exact class or that the message text).
 * `VertexProgram` now has `workerIterationStart()` and `workerIterationEnd()` to allow developers to control vertex split static data structures.
 * `TraversalVertexProgram` startup time greatly reduced due to being smart about `loadState()` behavior.
 * Gremlin Server sessions now allow serialization of results that were part of an open transaction.
