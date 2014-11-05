@@ -27,10 +27,9 @@ public class Neo4jEdge extends Neo4jElement implements Edge, Edge.Iterators, Wra
         this.graph.tx().readWrite();
         try {
             ((Relationship) baseElement).delete();
-        } catch (NotFoundException ignored) {
-            // this one happens if the edge is committed
-        } catch (IllegalStateException ignored) {
-            // this one happens if the edge is still chilling in the tx
+        } catch (IllegalStateException | NotFoundException ignored) {
+            // NotFoundException happens if the edge is committed
+            // IllegalStateException happens if the edge is still chilling in the tx
         }
     }
 

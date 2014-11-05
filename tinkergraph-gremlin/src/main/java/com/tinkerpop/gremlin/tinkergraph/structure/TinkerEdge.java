@@ -63,6 +63,7 @@ public class TinkerEdge extends TinkerElement implements Edge, Edge.Iterators {
         this.graph.edgeIndex.removeElement(this);
         this.graph.edges.remove(this.id());
         this.properties.clear();
+        this.removed = true;
     }
 
     @Override
