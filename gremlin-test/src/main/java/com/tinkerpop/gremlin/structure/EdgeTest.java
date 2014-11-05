@@ -227,34 +227,6 @@ public class EdgeTest {
             final Edge e = v.addEdge("knows", v);
             assertEquals(0, e.properties().count().next().intValue());
         }
-
-        @Test
-        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_REMOVE_EDGES)
-        public void shouldSupportIdempotentRemoval() {
-            final Vertex v1 = g.addVertex();
-            final Vertex v2 = g.addVertex();
-            final Edge e = v1.addEdge("test", v2);
-            tryCommit(g, assertVertexEdgeCounts(2, 1));
-
-            e.remove();
-            e.remove();
-            e.remove();
-
-            // some graphs may crap out on commit (i.e. doesn't really support the idempotency). that may be bad for
-            // users as they won't get a good reason for why their transaction failed.  for purposes of enforcing the
-            // test, simply rollback the tx, do a single remove and then commit again
-            try {
-                tryCommit(g);
-            } catch (Exception ex) {
-                tryRollback(g);
-                e.remove();
-                tryCommit(g);
-            } finally {
-                assertVertexEdgeCounts(0, 0);
-            }
-        }
     }
 
     @RunWith(Parameterized.class)

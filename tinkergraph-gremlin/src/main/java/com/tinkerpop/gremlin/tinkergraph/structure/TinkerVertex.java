@@ -86,16 +86,17 @@ public class TinkerVertex extends TinkerElement implements Vertex, Vertex.Iterat
 
     @Override
     public Edge addEdge(final String label, final Vertex vertex, final Object... keyValues) {
-        if (null == label) Graph.Exceptions.argumentCanNotBeNull("label");
         if (null == vertex) Graph.Exceptions.argumentCanNotBeNull("vertex");
         return TinkerHelper.addEdge(this.graph, this, (TinkerVertex) vertex, label, keyValues);
     }
 
     @Override
     public void remove() {
+        if (this.removed)
+            throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id);
         final List<Edge> edges = new ArrayList<>();
         this.iterators().edgeIterator(Direction.BOTH).forEachRemaining(edges::add);
-        edges.forEach(Edge::remove);
+        edges.stream().filter(edge -> !((TinkerEdge)edge).removed).forEach(Edge::remove);
         this.properties.clear();
         this.graph.vertexIndex.removeElement(this);
         this.graph.vertices.remove(this.id);

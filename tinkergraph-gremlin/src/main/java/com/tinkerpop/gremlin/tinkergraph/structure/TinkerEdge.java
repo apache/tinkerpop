@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -46,6 +47,8 @@ public class TinkerEdge extends TinkerElement implements Edge, Edge.Iterators {
 
     @Override
     public void remove() {
+        if (this.removed)
+            throw Element.Exceptions.elementAlreadyRemoved(Edge.class, this.id);
         final TinkerVertex outVertex = (TinkerVertex) this.outVertex;
         final TinkerVertex inVertex = (TinkerVertex) this.inVertex;
 
