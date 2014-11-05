@@ -367,6 +367,13 @@ The `bindings` argument is a `Map` of variables where the keys become available 
 
 NOTE: It is possible to pass bindings via `GET` based requests.  All query string arguments besides the "gremlin" key containing the script to execute will be treated as bindings.  The caveat is that these arguments will always be treated as `String` values.  To ensure that data types are preserved or to pass complex objects such as lists or maps, use `POST` which will at least support the allowed JSON data types.
 
+Finally, as Gremlin Server can host multiple `ScriptEngine` instances (e.g. `gremlin-groovy`, `nashorn`), it is possible to define the language to utilize to process the request:
+
+[source,text]
+curl -X POST -d "{\"gremlin\":\"100-x\", \"language\"=\"gremlin-groovy\", \"bindings\":{\"x\":1}}" "http://localhost:8182"
+
+By default this value is set to `gremlin-groovy`.  If using a `GET` operation, this value can be set as a query string argument with by setting the `language` key.
+
 CAUTION: Consider the size of the result of a submitted script being returned from the REST endpoint.  A script that iterates thousands of results will serialize each of those in memory into a single JSON result set.  It is quite possible that such a script will generate `OutOfMemoryError` exceptions on the server.  Consider the default WebSockets configuration, which supports streaming, if that type of use case is required.
 
 Configuring
