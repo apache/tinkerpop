@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Pair;
@@ -116,6 +117,15 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
         }
         if (null == inV) {
             inV = graph.addVertex(T.id, detachedEdge.inVertex.id());
+        }
+
+        if (ElementHelper.areEqual(outV,inV)) {
+            final Iterator<Edge> itty = outV.iterators().edgeIterator(Direction.OUT, detachedEdge.label());
+            while (itty.hasNext()) {
+                final Edge e = itty.next();
+                if (ElementHelper.areEqual(detachedEdge, e))
+                    return e;
+            }
         }
 
         final Edge e = outV.addEdge(detachedEdge.label(), inV, T.id, detachedEdge.id());

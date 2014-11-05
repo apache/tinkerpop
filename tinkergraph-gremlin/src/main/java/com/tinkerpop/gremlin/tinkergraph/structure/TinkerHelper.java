@@ -26,7 +26,7 @@ import java.util.stream.Stream;
  */
 public class TinkerHelper {
 
-    protected static long getNextId(final TinkerGraph graph) {
+    protected final synchronized static long getNextId(final TinkerGraph graph) {
         return Stream.generate(() -> (++graph.currentId)).filter(id -> !graph.vertices.containsKey(id) && !graph.edges.containsKey(id)).findAny().get();
     }
 

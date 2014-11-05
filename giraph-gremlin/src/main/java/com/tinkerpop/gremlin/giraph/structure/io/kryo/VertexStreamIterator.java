@@ -19,6 +19,7 @@ import java.util.function.Function;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class VertexStreamIterator implements Iterator<Vertex> {
 
@@ -35,99 +36,90 @@ public class VertexStreamIterator implements Iterator<Vertex> {
     private int len;
     private int currentByte;
     private Vertex currentVertex;
+    private final long maxLength;
+    private long currentLength = 0;
 
-    public VertexStreamIterator(final InputStream inputStream,
-                                final KryoReader reader) {
+    public VertexStreamIterator(final InputStream inputStream, final KryoReader reader) {
+        this(inputStream, Long.MAX_VALUE, reader);
+    }
+
+    public VertexStreamIterator(final InputStream inputStream, final long maxLength, final KryoReader reader) {
         this.inputStream = inputStream;
-
         this.reader = reader;
+        this.maxLength = maxLength;
     }
 
     @Override
     public boolean hasNext() {
-        if (null != currentVertex) {
-            return true;
-        } else if (-1 == currentByte) {
+        if (this.currentLength >= this.maxLength) // gone beyond the split boundary
             return false;
-        } else {
+        if (null != this.currentVertex)
+            return true;
+        else if (-1 == this.currentByte)
+            return false;
+        else {
             try {
-                currentVertex = advance();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                this.currentVertex = advanceToNextVertex();
+                return null != this.currentVertex;
+            } catch (final IOException e) {
+                throw new IllegalStateException(e.getMessage(), e);
             }
-            return -1 != currentByte;
         }
     }
 
     @Override
     public Vertex next() {
         try {
-            if (null == currentVertex) {
-                if (hasNext()) {
-                    try {
-                        return advanceToNextVertex();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                } else {
-                    throw new IllegalStateException();
-                }
-            } else {
-                return currentVertex;
-            }
+            if (null == this.currentVertex) {
+                if (this.hasNext())
+                    return this.currentVertex;
+                else
+                    throw new IllegalStateException("There are no more vertices in this split");
+            } else
+                return this.currentVertex;
         } finally {
-            currentVertex = null;
-            len = 0;
-            output.reset();
+            this.currentVertex = null;
+            this.len = 0;
+            this.output.reset();
         }
     }
 
-    private Vertex advanceToNextVertex() throws IOException {
-        while (null == currentVertex) {
-            currentVertex = advance();
-        }
-
-        return currentVertex;
-    }
-
-    private Vertex advance() throws IOException {
-        currentByte = inputStream.read();
-
-        if (-1 == currentByte) {
-            if (len > 0) {
-                throw new IllegalStateException("remainder of stream exhausted without matching a vertex");
-            } else {
-                return null;
-            }
-        }
-
-        if (len >= BUFLEN) {
-            output.write(buffer[len % BUFLEN]);
-        }
-
-        buffer[len % BUFLEN] = currentByte;
-
-        len++;
-
-        if (len > BUFLEN) {
-            boolean terminated = true;
-            for (int i = 0; i < BUFLEN; i++) {
-                if (buffer[(len + i) % BUFLEN] != TERMINATOR[i]) {
-                    terminated = false;
-                    break;
+    private final Vertex advanceToNextVertex() throws IOException {
+        while (true) {
+            this.currentByte = this.inputStream.read();
+            this.currentLength++;
+            if (-1 == this.currentByte) {
+                if (this.len > 0) {
+                    throw new IllegalStateException("Remainder of stream exhausted without matching a vertex");
+                } else {
+                    return null;
                 }
             }
 
-            if (terminated) {
-                final Graph gLocal = TinkerGraph.open();
-                final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex);
-                final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge);
-                try (InputStream in = new ByteArrayInputStream(output.toByteArray())) {
-                    return reader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
+            if (this.len >= BUFLEN)
+                this.output.write(this.buffer[this.len % BUFLEN]);
+
+            this.buffer[this.len % BUFLEN] = this.currentByte;
+            this.len++;
+
+            if (this.len > BUFLEN) {
+                boolean terminated = true;
+                for (int i = 0; i < BUFLEN; i++) {
+                    if (this.buffer[(this.len + i) % BUFLEN] != TERMINATOR[i]) {
+                        terminated = false;
+                        break;
+                    }
+                }
+
+                if (terminated) {
+                    final Graph gLocal = TinkerGraph.open();
+                    final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex);
+                    final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge);
+                    try (InputStream in = new ByteArrayInputStream(this.output.toByteArray())) {
+                        return this.reader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
+                    }
                 }
             }
         }
-
-        return null;
     }
 }
