@@ -67,6 +67,7 @@ public final class GremlinKryo {
     private final List<Triplet<Class, Function<Kryo, Serializer>, Integer>> serializationList;
     private final HeaderWriter headerWriter;
     private final HeaderReader headerReader;
+    private final byte[] versionedHeader;
 
     public static final byte DEFAULT_EXTENDED_VERSION = Byte.MIN_VALUE;
 
@@ -76,6 +77,14 @@ public final class GremlinKryo {
         this.serializationList = serializationList;
         this.headerWriter = headerWriter;
         this.headerReader = headerReader;
+
+        final Output out = new Output();
+        try {
+            this.headerWriter.write(createKryo(), out);
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
+        this.versionedHeader = out.toBytes();
     }
 
     public Kryo createKryo() {
@@ -98,6 +107,14 @@ public final class GremlinKryo {
 
     public HeaderReader getHeaderReader() {
         return headerReader;
+    }
+
+    /**
+     * Gets the header for a Gremlin Kryo file, which is based on the version of Gremlin Kryo that is constructed
+     * via the builder classes.
+     */
+    public byte[] getVersionedHeader() {
+        return versionedHeader;
     }
 
     @FunctionalInterface
