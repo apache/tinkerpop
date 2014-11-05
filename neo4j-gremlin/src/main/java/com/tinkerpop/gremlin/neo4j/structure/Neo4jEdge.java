@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.neo4j.structure;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jEdgeTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -24,6 +25,8 @@ public class Neo4jEdge extends Neo4jElement implements Edge, Edge.Iterators, Wra
 
     @Override
     public void remove() {
+        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Edge.class, this.getBaseEdge().getId());
+        this.removed = true;
         this.graph.tx().readWrite();
         try {
             ((Relationship) baseElement).delete();

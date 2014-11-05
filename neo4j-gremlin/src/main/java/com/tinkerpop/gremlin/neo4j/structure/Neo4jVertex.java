@@ -127,6 +127,8 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
 
     @Override
     public void remove() {
+        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.getBaseVertex().getId());
+        this.removed = true;
         this.graph.tx().readWrite();
         try {
             final Node node = this.getBaseVertex();

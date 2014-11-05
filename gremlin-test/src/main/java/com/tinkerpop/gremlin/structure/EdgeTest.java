@@ -238,7 +238,8 @@ public class EdgeTest {
         @Parameterized.Parameters(name = "{index}: expect - {0}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
-                    {"property(k)", FunctionUtils.wrapConsumer((Edge e) -> e.property("x"))}});
+                    {"property(k)", FunctionUtils.wrapConsumer((Edge e) -> e.property("x"))},
+                    {"e.remove()", FunctionUtils.wrapConsumer(Edge::remove)}});
         }
 
         @Parameterized.Parameter(value = 0)

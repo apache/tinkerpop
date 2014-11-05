@@ -407,7 +407,8 @@ public class VertexTest {
         @Parameterized.Parameters(name = "{index}: expect - {0}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
-                    {"property(k)", FunctionUtils.wrapConsumer((Vertex v) -> v.property("name"))}});
+                    {"property(k)", FunctionUtils.wrapConsumer((Vertex v) -> v.property("name"))},
+                    {"v.remove()", FunctionUtils.wrapConsumer(Vertex::remove)}});
         }
 
         @Parameterized.Parameter(value = 0)
