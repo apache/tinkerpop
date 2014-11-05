@@ -46,7 +46,7 @@ public class EdgeTest extends AbstractGremlinTest {
             v.addEdge(null, v);
             fail("Call to Vertex.addEdge() should throw an exception when label is null");
         } catch (Exception ex) {
-            assertThat(ex, instanceOf(Element.Exceptions.labelCanNotBeNull().getClass()));
+            validateException(Element.Exceptions.labelCanNotBeNull(), ex);
         }
     }
 
@@ -59,7 +59,7 @@ public class EdgeTest extends AbstractGremlinTest {
             v.addEdge("", v);
             fail("Call to Vertex.addEdge() should throw an exception when label is empty");
         } catch (Exception ex) {
-            assertThat(ex, instanceOf(Element.Exceptions.labelCanNotBeEmpty().getClass()));
+            validateException(Element.Exceptions.labelCanNotBeEmpty(), ex);
         }
     }
 
@@ -73,7 +73,7 @@ public class EdgeTest extends AbstractGremlinTest {
             v.addEdge(label, v);
             fail("Call to Vertex.addEdge() should throw an exception when label is a system key");
         } catch (Exception ex) {
-            assertThat(ex, instanceOf(Element.Exceptions.labelCanNotBeASystemKey(label).getClass()));
+            validateException(Element.Exceptions.labelCanNotBeASystemKey(label), ex);
         }
     }
 

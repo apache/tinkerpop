@@ -91,7 +91,7 @@ public class FeatureSupportTest {
                 g.compute();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphFeatures.class.getSimpleName(), FEATURE_COMPUTER));
             } catch (Exception e) {
-                assertThat(e, instanceOf(Graph.Exceptions.graphComputerNotSupported().getClass()));
+                validateException(Graph.Exceptions.graphComputerNotSupported(), e);
             }
         }
 
@@ -106,7 +106,7 @@ public class FeatureSupportTest {
                 g.tx();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphFeatures.class.getSimpleName(), FEATURE_TRANSACTIONS));
             } catch (UnsupportedOperationException e) {
-                assertThat(e, instanceOf(Graph.Exceptions.transactionsNotSupported().getClass()));
+                validateException(Graph.Exceptions.transactionsNotSupported(), e);
             }
         }
 
@@ -121,7 +121,7 @@ public class FeatureSupportTest {
                 g.variables();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, Graph.Features.VariableFeatures.class.getSimpleName(), FEATURE_VARIABLES));
             } catch (UnsupportedOperationException e) {
-                assertThat(e, instanceOf(Graph.Exceptions.variablesNotSupported().getClass()));
+                validateException(Graph.Exceptions.variablesNotSupported(), e);
             }
         }
 
@@ -133,7 +133,7 @@ public class FeatureSupportTest {
                 g.tx().create();
                 fail("An exception should be thrown since the threaded transaction feature is not supported");
             } catch (Exception e) {
-                assertThat(e, instanceOf(Transaction.Exceptions.threadedTransactionsNotSupported().getClass()));
+                validateException(Transaction.Exceptions.threadedTransactionsNotSupported(), e);
             }
         }
     }
@@ -163,7 +163,7 @@ public class FeatureSupportTest {
                 g.addVertex();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_ADD_VERTICES));
             } catch (Exception e) {
-                assertThat(e, instanceOf(Graph.Exceptions.vertexAdditionsNotSupported().getClass()));
+                validateException(Graph.Exceptions.vertexAdditionsNotSupported(), e);
             }
         }
 
@@ -175,7 +175,7 @@ public class FeatureSupportTest {
                 g.addVertex(T.id, GraphManager.get().convertId(99999943835l));
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_USER_SUPPLIED_IDS));
             } catch (Exception e) {
-                assertThat(e, instanceOf(Vertex.Exceptions.userSuppliedIdsNotSupported().getClass()));
+                validateException(Vertex.Exceptions.userSuppliedIdsNotSupported(), e);
             }
         }
 
@@ -188,7 +188,7 @@ public class FeatureSupportTest {
                 g.addVertex(T.id, "this-is-a-valid-id");
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_STRING_IDS));
             } catch (Exception e) {
-                assertThat(e, instanceOf(Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
+                validateException(Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), e);
             }
         }
 
@@ -201,14 +201,14 @@ public class FeatureSupportTest {
                 g.addVertex(T.id, 123456);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
             } catch (Exception e) {
-                assertThat(e, instanceOf(Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
+                validateException(Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), e);
             }
 
             try {
                 g.addVertex(T.id, 123456l);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
             } catch (Exception e) {
-                assertThat(e, instanceOf(Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
+                validateException(Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), e);
             }
         }
 
@@ -221,7 +221,7 @@ public class FeatureSupportTest {
                 g.addVertex(T.id, UUID.randomUUID());
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_UUID_IDS));
             } catch (Exception e) {
-                assertThat(e, instanceOf(Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
+                validateException(Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), e);
             }
         }
 
@@ -234,7 +234,7 @@ public class FeatureSupportTest {
                 g.addVertex(T.id, new Date());
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_ANY_IDS));
             } catch (Exception e) {
-                assertThat(e, instanceOf(Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
+                validateException(Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), e);
             }
         }
 
@@ -277,7 +277,7 @@ public class FeatureSupportTest {
                 v.property("should", "not-add-property");
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_ADD_PROPERTY));
             } catch (Exception e) {
-                assertThat(e, instanceOf(Element.Exceptions.propertyAdditionNotSupported().getClass()));
+                validateException(Element.Exceptions.propertyAdditionNotSupported(), e);
             }
         }
 
@@ -289,7 +289,7 @@ public class FeatureSupportTest {
                 g.addVertex().remove();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_REMOVE_VERTICES));
             } catch (Exception e) {
-                assertThat(e, instanceOf(Vertex.Exceptions.vertexRemovalNotSupported().getClass()));
+                validateException(Vertex.Exceptions.vertexRemovalNotSupported(), e);
             }
         }
 
@@ -302,7 +302,7 @@ public class FeatureSupportTest {
                 v.property("name").remove();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_REMOVE_PROPERTY));
             } catch (Exception e) {
-                assertThat(e, instanceOf(Element.Exceptions.propertyRemovalNotSupported().getClass()));
+                validateException(Element.Exceptions.propertyRemovalNotSupported(), e);
             }
         }
     }
@@ -334,7 +334,7 @@ public class FeatureSupportTest {
                 v.addEdge("friend", v);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_ADD_EDGES));
             } catch (Exception e) {
-                assertThat(e, instanceOf(Vertex.Exceptions.edgeAdditionsNotSupported().getClass()));
+                validateException(Vertex.Exceptions.edgeAdditionsNotSupported(), e);
             }
         }
 
@@ -348,7 +348,7 @@ public class FeatureSupportTest {
                 v.addEdge("friend", v, T.id, GraphManager.get().convertId(99999943835l));
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_USER_SUPPLIED_IDS));
             } catch (Exception e) {
-                assertThat(e, instanceOf(Edge.Exceptions.userSuppliedIdsNotSupported().getClass()));
+                validateException(Edge.Exceptions.userSuppliedIdsNotSupported(), e);
             }
         }
 
@@ -398,7 +398,7 @@ public class FeatureSupportTest {
                 v.addEdge("test", v, T.id, "this-is-a-valid-id");
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_STRING_IDS));
             } catch (Exception e) {
-                assertThat(e, instanceOf(Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
+                validateException(Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), e);
             }
         }
 
@@ -412,7 +412,7 @@ public class FeatureSupportTest {
                 v.addEdge("test", v, T.id, 123456);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
             } catch (Exception e) {
-                assertThat(e, instanceOf(Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
+                validateException(Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), e);
             }
 
             try {
@@ -420,7 +420,7 @@ public class FeatureSupportTest {
                 v.addEdge("test", v, T.id, 123456l);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
             } catch (Exception e) {
-                assertThat(e, instanceOf(Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
+                validateException(Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), e);
             }
         }
 
@@ -434,7 +434,7 @@ public class FeatureSupportTest {
                 v.addEdge("test", v, T.id, UUID.randomUUID());
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_ANY_IDS));
             } catch (Exception e) {
-                assertThat(e, instanceOf(Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
+                validateException(Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), e);
             }
         }
 
@@ -449,7 +449,7 @@ public class FeatureSupportTest {
                 v.addEdge("test", v, T.id, new Date());
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_ANY_IDS));
             } catch (Exception e) {
-                assertThat(e, instanceOf(Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
+                validateException(Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), e);
             }
         }
 
@@ -464,7 +464,7 @@ public class FeatureSupportTest {
                 e.property("should", "not-add-property");
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgePropertyFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_ADD_PROPERTY));
             } catch (Exception e) {
-                assertThat(e, instanceOf(Element.Exceptions.propertyAdditionNotSupported().getClass()));
+                validateException(Element.Exceptions.propertyAdditionNotSupported(), e);
             }
         }
 
@@ -479,7 +479,7 @@ public class FeatureSupportTest {
                 v.remove();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_REMOVE_EDGES));
             } catch (Exception ex) {
-                assertThat(ex, instanceOf(Edge.Exceptions.edgeRemovalNotSupported().getClass()));
+                validateException(Edge.Exceptions.edgeRemovalNotSupported(), ex);
             }
         }
 
@@ -493,7 +493,7 @@ public class FeatureSupportTest {
                 e.property("name").remove();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_REMOVE_PROPERTY));
             } catch (Exception ex) {
-                assertThat(ex, instanceOf(Element.Exceptions.propertyRemovalNotSupported().getClass()));
+                validateException(Element.Exceptions.propertyRemovalNotSupported(), ex);
             }
         }
     }
@@ -531,7 +531,7 @@ public class FeatureSupportTest {
                 edge.property("aKey", value);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgePropertyFeatures.class.getSimpleName(), featureName));
             } catch (UnsupportedOperationException e) {
-                assertThat(e, instanceOf(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getClass()));
+                validateException(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value), e);
             }
         }
 
@@ -543,7 +543,7 @@ public class FeatureSupportTest {
                 g.addVertex("aKey", value);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), featureName));
             } catch (UnsupportedOperationException e) {
-                assertThat(e, instanceOf(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getClass()));
+                validateException(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value), e);
             }
         }
 
@@ -589,7 +589,7 @@ public class FeatureSupportTest {
                 variables.set("aKey", value);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, Graph.Features.VariableFeatures.class.getSimpleName(), featureName));
             } catch (UnsupportedOperationException e) {
-                assertThat(e, instanceOf(Graph.Variables.Exceptions.dataTypeOfVariableValueNotSupported(value).getClass()));
+                validateException(Graph.Variables.Exceptions.dataTypeOfVariableValueNotSupported(value), e);
             }
         }
     }
@@ -614,7 +614,7 @@ public class FeatureSupportTest {
                 v.property("name", "me", T.id, GraphManager.get().convertId(99999943835l));
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexPropertyFeatures.FEATURE_USER_SUPPLIED_IDS));
             } catch (Exception ex) {
-                assertThat(ex, instanceOf(VertexProperty.Exceptions.userSuppliedIdsNotSupported().getClass()));
+                validateException(VertexProperty.Exceptions.userSuppliedIdsNotSupported(), ex);
             }
         }
 
@@ -628,7 +628,7 @@ public class FeatureSupportTest {
                 v.property("test", v, T.id, "this-is-a-valid-id");
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_STRING_IDS));
             } catch (Exception ex) {
-                assertThat(ex, instanceOf(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
+                validateException(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), ex);
             }
         }
 
@@ -642,7 +642,7 @@ public class FeatureSupportTest {
                 v.property("test", v, T.id, 123456);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
             } catch (Exception ex) {
-                assertThat(ex, instanceOf(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
+                validateException(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), ex);
             }
 
             try {
@@ -650,7 +650,7 @@ public class FeatureSupportTest {
                 v.property("test", v, T.id, 123456l);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
             } catch (Exception ex) {
-                assertThat(ex, instanceOf(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
+                validateException(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), ex);
             }
         }
 
@@ -664,7 +664,7 @@ public class FeatureSupportTest {
                 v.property("test", v, T.id, UUID.randomUUID());
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_ANY_IDS));
             } catch (Exception ex) {
-                assertThat(ex, instanceOf(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
+                validateException(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), ex);
             }
         }
 
@@ -679,7 +679,7 @@ public class FeatureSupportTest {
                 v.property("test", v, T.id, new Date());
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_ANY_IDS));
             } catch (Exception ex) {
-                assertThat(ex, instanceOf(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported().getClass()));
+                validateException(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), ex);
             }
         }
 
@@ -728,7 +728,7 @@ public class FeatureSupportTest {
                 p.property("test").remove();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), VertexPropertyFeatures.FEATURE_REMOVE_PROPERTY));
             } catch (Exception ex) {
-                assertThat(ex, instanceOf(Element.Exceptions.propertyRemovalNotSupported().getClass()));
+                validateException(Element.Exceptions.propertyRemovalNotSupported(), ex);
             }
         }
 
@@ -742,7 +742,7 @@ public class FeatureSupportTest {
                 if (StreamFactory.stream(v.iterators().propertyIterator()).count() == 2)
                     fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_MULTI_PROPERTIES));
             } catch (Exception ex) {
-                assertThat(ex, instanceOf(VertexProperty.Exceptions.multiPropertiesNotSupported().getClass()));
+                validateException(VertexProperty.Exceptions.multiPropertiesNotSupported(), ex);
             }
         }
 
@@ -757,7 +757,7 @@ public class FeatureSupportTest {
                 v.property("name", "stephen", "property", "on-property");
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_META_PROPERTIES));
             } catch (Exception ex) {
-                assertThat(ex, instanceOf(VertexProperty.Exceptions.metaPropertiesNotSupported().getClass()));
+                validateException(VertexProperty.Exceptions.metaPropertiesNotSupported(), ex);
             }
         }
 
@@ -772,7 +772,7 @@ public class FeatureSupportTest {
                 v.property("name").property("property", "on-property");
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_META_PROPERTIES));
             } catch (Exception ex) {
-                assertThat(ex, instanceOf(VertexProperty.Exceptions.metaPropertiesNotSupported().getClass()));
+                validateException(VertexProperty.Exceptions.metaPropertiesNotSupported(), ex);
             }
         }
     }
