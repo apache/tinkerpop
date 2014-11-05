@@ -78,7 +78,7 @@ public final class GremlinKryo {
         this.headerWriter = headerWriter;
         this.headerReader = headerReader;
 
-        final Output out = new Output();
+        final Output out = new Output(32);
         try {
             this.headerWriter.write(createKryo(), out);
         } catch (IOException ioe) {
