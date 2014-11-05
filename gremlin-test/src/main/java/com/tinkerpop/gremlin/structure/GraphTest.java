@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.ExceptionCoverage;
 import com.tinkerpop.gremlin.FeatureRequirement;
@@ -20,11 +19,11 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_PERSISTENCE;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.*;
 
 /**
@@ -34,6 +33,7 @@ import static org.junit.Assert.*;
         "vertexWithIdAlreadyExists",
         "elementNotFound"
 })
+@SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 public class GraphTest extends AbstractGremlinTest {
 
     /**
@@ -74,9 +74,7 @@ public class GraphTest extends AbstractGremlinTest {
             g.v(null);
             fail("Call to g.v(null) should throw an exception");
         } catch (Exception ex) {
-            final Exception expectedException = Graph.Exceptions.elementNotFound(Vertex.class, null);
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            assertThat(ex, instanceOf(Graph.Exceptions.elementNotFound(Vertex.class, null).getClass()));
         }
 
     }
@@ -87,9 +85,7 @@ public class GraphTest extends AbstractGremlinTest {
             g.e(null);
             fail("Call to g.e(null) should throw an exception");
         } catch (Exception ex) {
-            final Exception expectedException = Graph.Exceptions.elementNotFound(Edge.class, null);
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            assertThat(ex, instanceOf(Graph.Exceptions.elementNotFound(Edge.class, null).getClass()));
         }
 
     }
@@ -100,9 +96,7 @@ public class GraphTest extends AbstractGremlinTest {
             g.v(10000l);
             fail("Call to g.v(null) should throw an exception");
         } catch (Exception ex) {
-            final Exception expectedException = Graph.Exceptions.elementNotFound(Vertex.class, 10000l);
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            assertThat(ex, instanceOf(Graph.Exceptions.elementNotFound(Vertex.class, 10000l).getClass()));
         }
 
     }
@@ -113,9 +107,7 @@ public class GraphTest extends AbstractGremlinTest {
             g.e(10000l);
             fail("Call to g.e(null) should throw an exception");
         } catch (Exception ex) {
-            final Exception expectedException = Graph.Exceptions.elementNotFound(Edge.class, 10000l);
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            assertThat(ex, instanceOf(Graph.Exceptions.elementNotFound(Edge.class, 10000l).getClass()));
         }
 
     }
@@ -130,9 +122,7 @@ public class GraphTest extends AbstractGremlinTest {
             g.addVertex(T.id, o);
             fail("Assigning the same ID to an Element should throw an exception");
         } catch (Exception ex) {
-            final Exception expectedException = Graph.Exceptions.vertexWithIdAlreadyExists(o);
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            assertThat(ex, instanceOf(Graph.Exceptions.vertexWithIdAlreadyExists(0).getClass()));
         }
 
     }

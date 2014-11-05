@@ -34,6 +34,7 @@ import static org.junit.Assert.*;
         "graphDoesNotSupportProvidedGraphComputer",
         "onlyOneOrNoGraphComputerClass"
 })
+@SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
 
     public abstract GraphComputer get_g_compute();
