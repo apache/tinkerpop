@@ -45,9 +45,7 @@ public class VertexTest extends AbstractGremlinTest {
             g.addVertex(T.label, null);
             fail("Call to Graph.addVertex() should throw an exception when label is null");
         } catch (Exception ex) {
-            final Exception expectedException = Element.Exceptions.labelCanNotBeNull();
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Element.Exceptions.labelCanNotBeNull(), ex);
         }
     }
 
@@ -58,9 +56,7 @@ public class VertexTest extends AbstractGremlinTest {
             g.addVertex((String) null);
             fail("Call to Graph.addVertex() should throw an exception when label is null");
         } catch (Exception ex) {
-            final Exception expectedException = Element.Exceptions.labelCanNotBeNull();
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Element.Exceptions.labelCanNotBeNull(), ex);
         }
     }
 
@@ -71,9 +67,7 @@ public class VertexTest extends AbstractGremlinTest {
             g.addVertex(T.label, "");
             fail("Call to Graph.addVertex() should throw an exception when label is empty");
         } catch (Exception ex) {
-            final Exception expectedException = Element.Exceptions.labelCanNotBeEmpty();
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Element.Exceptions.labelCanNotBeEmpty(), ex);
         }
     }
 
@@ -84,9 +78,7 @@ public class VertexTest extends AbstractGremlinTest {
             g.addVertex("");
             fail("Call to Graph.addVertex() should throw an exception when label is empty");
         } catch (Exception ex) {
-            final Exception expectedException = Element.Exceptions.labelCanNotBeEmpty();
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Element.Exceptions.labelCanNotBeEmpty(), ex);
         }
     }
 
@@ -98,9 +90,7 @@ public class VertexTest extends AbstractGremlinTest {
             g.addVertex(T.label, label);
             fail("Call to Graph.addVertex() should throw an exception when label is a system key");
         } catch (Exception ex) {
-            final Exception expectedException = Element.Exceptions.labelCanNotBeASystemKey(label);
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Element.Exceptions.labelCanNotBeASystemKey(label), ex);
         }
     }
 
@@ -112,9 +102,7 @@ public class VertexTest extends AbstractGremlinTest {
             g.addVertex(label);
             fail("Call to Graph.addVertex() should throw an exception when label is a system key");
         } catch (Exception ex) {
-            final Exception expectedException = Element.Exceptions.labelCanNotBeASystemKey(label);
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Element.Exceptions.labelCanNotBeASystemKey(label), ex);
         }
     }
 
@@ -138,9 +126,7 @@ public class VertexTest extends AbstractGremlinTest {
             v.addEdge("label", v, T.id, o);
             fail("Assigning the same ID to an Element should throw an exception");
         } catch (Exception ex) {
-            final Exception expectedException = Graph.Exceptions.edgeWithIdAlreadyExists(o);
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Graph.Exceptions.edgeWithIdAlreadyExists(o), ex);
         }
 
     }
@@ -155,9 +141,7 @@ public class VertexTest extends AbstractGremlinTest {
             v.addEdge("label", v, T.id, "");
             fail("Call to addEdge should have thrown an exception when ID was specified as it is not supported");
         } catch (Exception ex) {
-            final Exception expectedException = Edge.Exceptions.userSuppliedIdsNotSupported();
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Edge.Exceptions.userSuppliedIdsNotSupported(), ex);
         }
     }
 

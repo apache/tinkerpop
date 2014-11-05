@@ -78,11 +78,10 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             try {
                 v.property("name");
                 fail("This should throw a: " + Vertex.Exceptions.multiplePropertiesExistForProvidedKey("name"));
-            } catch (final IllegalStateException e) {
-                assertEquals(Vertex.Exceptions.multiplePropertiesExistForProvidedKey("name").getMessage(), e.getMessage());
             } catch (final Exception e) {
-                fail("This should throw a: " + Vertex.Exceptions.multiplePropertiesExistForProvidedKey("name"));
+                validateException(Vertex.Exceptions.multiplePropertiesExistForProvidedKey("name"), e);
             }
+
             assertTrue(v.valueMap().next().get("name").contains("marko"));
             assertTrue(v.valueMap().next().get("name").contains("marko a. rodriguez"));
             assertEquals(3, v.properties().count().next().intValue());

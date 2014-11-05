@@ -29,6 +29,7 @@ import static org.junit.Assume.assumeThat;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Enclosed.class)
+@SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 public class VariablesTest {
 
     /**
@@ -82,8 +83,7 @@ public class VariablesTest {
                 g.variables().set(key, val);
                 fail(String.format("Setting an annotation with these arguments [key: %s value: %s] should throw an exception", key, val));
             } catch (Exception ex) {
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+                validateException(expectedException, ex);
             }
         }
     }

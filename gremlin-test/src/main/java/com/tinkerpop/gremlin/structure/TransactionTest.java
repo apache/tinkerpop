@@ -46,9 +46,7 @@ public class TransactionTest extends AbstractGremlinTest {
             g.tx().open();
             fail("An exception should be thrown when a transaction is opened twice");
         } catch (Exception ex) {
-            final Exception expectedException = Transaction.Exceptions.transactionAlreadyOpen();
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Transaction.Exceptions.transactionAlreadyOpen(), ex);
         }
     }
 
@@ -64,9 +62,7 @@ public class TransactionTest extends AbstractGremlinTest {
             g.close();
             fail("An exception should be thrown when close behavior is manual and the graph is close with an open transaction");
         } catch (Exception ex) {
-            final Exception expectedException = Transaction.Exceptions.openTransactionsOnClose();
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Transaction.Exceptions.openTransactionsOnClose(), ex);
         }
     }
 
@@ -80,9 +76,7 @@ public class TransactionTest extends AbstractGremlinTest {
             g.addVertex();
             fail("An exception should be thrown when read/write behavior is manual and no transaction is opened");
         } catch (Exception ex) {
-            final Exception expectedException = Transaction.Exceptions.transactionMustBeOpenToReadWrite();
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Transaction.Exceptions.transactionMustBeOpenToReadWrite(), ex);
         }
     }
 
@@ -93,9 +87,7 @@ public class TransactionTest extends AbstractGremlinTest {
             g.tx().onClose(null);
             fail("An exception should be thrown when onClose behavior is set to null");
         } catch (Exception ex) {
-            final Exception expectedException = Transaction.Exceptions.onCloseBehaviorCannotBeNull();
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Transaction.Exceptions.onCloseBehaviorCannotBeNull(), ex);
         }
     }
 
@@ -106,9 +98,7 @@ public class TransactionTest extends AbstractGremlinTest {
             g.tx().onReadWrite(null);
             fail("An exception should be thrown when onClose behavior is set to null");
         } catch (Exception ex) {
-            final Exception expectedException = Transaction.Exceptions.onReadWriteBehaviorCannotBeNull();
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Transaction.Exceptions.onReadWriteBehaviorCannotBeNull(), ex);
         }
     }
 
@@ -272,8 +262,7 @@ public class TransactionTest extends AbstractGremlinTest {
             g.v(oid);
             fail("Vertex should not be found as close behavior was set to rollback");
         } catch (Exception ex) {
-            final Exception expected = Graph.Exceptions.elementNotFound(Vertex.class, oid);
-            assertEquals(expected.getMessage(), ex.getMessage());
+            validateException(Graph.Exceptions.elementNotFound(Vertex.class, oid), ex);
         }
     }
 

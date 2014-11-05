@@ -12,6 +12,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.*;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.*;
 
 /**
@@ -23,6 +24,7 @@ import static org.junit.Assert.*;
         "labelCanNotBeEmpty",
         "labelCanNotBeASystemKey"
 })
+@SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 public class EdgeTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
@@ -44,9 +46,7 @@ public class EdgeTest extends AbstractGremlinTest {
             v.addEdge(null, v);
             fail("Call to Vertex.addEdge() should throw an exception when label is null");
         } catch (Exception ex) {
-            final Exception expectedException = Element.Exceptions.labelCanNotBeNull();
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Element.Exceptions.labelCanNotBeNull(), ex);
         }
     }
 
@@ -59,9 +59,7 @@ public class EdgeTest extends AbstractGremlinTest {
             v.addEdge("", v);
             fail("Call to Vertex.addEdge() should throw an exception when label is empty");
         } catch (Exception ex) {
-            final Exception expectedException = Element.Exceptions.labelCanNotBeEmpty();
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Element.Exceptions.labelCanNotBeEmpty(), ex);
         }
     }
 
@@ -75,9 +73,7 @@ public class EdgeTest extends AbstractGremlinTest {
             v.addEdge(label, v);
             fail("Call to Vertex.addEdge() should throw an exception when label is a system key");
         } catch (Exception ex) {
-            final Exception expectedException = Element.Exceptions.labelCanNotBeASystemKey(label);
-            assertEquals(expectedException.getClass(), ex.getClass());
-            assertEquals(expectedException.getMessage(), ex.getMessage());
+            validateException(Element.Exceptions.labelCanNotBeASystemKey(label), ex);
         }
     }
 

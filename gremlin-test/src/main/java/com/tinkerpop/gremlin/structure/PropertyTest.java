@@ -10,7 +10,6 @@ import com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
-import com.tinkerpop.gremlin.util.function.TriFunction;
 import org.javatuples.Pair;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -37,6 +36,7 @@ import static org.junit.Assume.assumeThat;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Enclosed.class)
+@SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 public class PropertyTest {
 
     /**
@@ -178,8 +178,7 @@ public class PropertyTest {
                 this.g.addVertex(arguments);
                 fail(String.format("Call to addVertex should have thrown an exception with these arguments [%s]", arguments));
             } catch (Exception ex) {
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+                validateException(expectedException, ex);
             }
         }
 
@@ -193,8 +192,7 @@ public class PropertyTest {
                 v.addEdge("label", v, arguments);
                 fail(String.format("Call to addVertex should have thrown an exception with these arguments [%s]", arguments));
             } catch (Exception ex) {
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+                validateException(expectedException, ex);
             }
         }
     }
@@ -215,9 +213,7 @@ public class PropertyTest {
                 v.value("does-not-exist");
                 fail("Call to Element.value() with a key that is not present should throw an exception");
             } catch (Exception ex) {
-                final Exception expectedException = Property.Exceptions.propertyDoesNotExist("does-not-exist");
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+                validateException(Property.Exceptions.propertyDoesNotExist("does-not-exist"), ex);
             }
 
         }
@@ -233,9 +229,7 @@ public class PropertyTest {
                 e.value("does-not-exist");
                 fail("Call to Element.value() with a key that is not present should throw an exception");
             } catch (Exception ex) {
-                final Exception expectedException = Property.Exceptions.propertyDoesNotExist("does-not-exist");
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+                validateException(Property.Exceptions.propertyDoesNotExist("does-not-exist"), ex);
             }
 
         }
@@ -283,8 +277,7 @@ public class PropertyTest {
                 v.property(key, val);
                 fail(String.format("Call to Vertex.setProperty should have thrown an exception with these arguments [%s, %s]", key, val));
             } catch (Exception ex) {
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+                validateException(expectedException, ex);
             }
         }
 
@@ -299,8 +292,7 @@ public class PropertyTest {
                 v.addEdge("label", v).property(key, val);
                 fail(String.format("Call to Edge.setProperty should have thrown an exception with these arguments [%s, %s]", key, val));
             } catch (Exception ex) {
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+                validateException(expectedException, ex);
             }
         }
     }
