@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.FeatureRequirement;
 import com.tinkerpop.gremlin.FeatureRequirementSet;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import com.tinkerpop.gremlin.util.function.TriFunction;
 import org.javatuples.Pair;
 import org.junit.Test;
@@ -14,8 +15,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -331,17 +334,42 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                 assertEquals(0, g.E().count().next().intValue());
             });
         }
+    }
+
+    @RunWith(Parameterized.class)
+    @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
+            "elementAlreadyRemoved"
+    })
+    public static class ExceptionConsistencyWhenVertexPropertyRemovedTest extends AbstractGremlinTest {
+
+        @Parameterized.Parameters(name = "{index}: expect - {0}")
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][]{
+                    {"property(k)", FunctionUtils.wrapConsumer((VertexProperty p) -> p.property("name"))}});
+        }
+
+        @Parameterized.Parameter(value = 0)
+        public String name;
+
+        @Parameterized.Parameter(value = 1)
+        public Consumer<VertexProperty> functionToTest;
 
         @Test
-        @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_REMOVE_PROPERTY)
-        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
-        public void shouldReturnEmptyPropertyIfEdgeWasRemoved() {
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_VERTICES)
+        public void shouldThrowExceptionIfVertexPropertyWasRemoved() {
             final Vertex v1 = g.addVertex();
             final VertexProperty p = v1.property("name", "stephen", "year", "2012");
+            final Object id = p.id();
             p.remove();
-            final Property ip = p.property("year");
-            tryCommit(g, g -> assertEquals(Property.empty(), ip));
+            tryCommit(g, g -> {
+                try {
+                    functionToTest.accept(p);
+                    fail("Should have thrown exception as the Vertex was already removed");
+                } catch (Exception ex) {
+                    validateException(Element.Exceptions.elementAlreadyRemoved(VertexProperty.class, id), ex);
+                }
+            });
         }
     }
 

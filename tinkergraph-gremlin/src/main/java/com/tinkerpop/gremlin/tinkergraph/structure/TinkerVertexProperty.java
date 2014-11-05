@@ -105,6 +105,7 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
             });
             if (delete.get()) this.graph.vertexIndex.remove(this.key, this.value, this.vertex);
             this.properties.clear();
+            this.removed = true;
         }
     }
 
