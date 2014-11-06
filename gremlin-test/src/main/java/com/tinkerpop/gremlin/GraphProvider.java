@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin;
 
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
@@ -7,6 +8,7 @@ import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONModule;
 import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.util.GraphFactory;
@@ -155,17 +157,32 @@ public interface GraphProvider {
 
     /**
      * Construct a configured {@link GremlinKryo} instance.  The default implementation simply returns the most
-     * current version of the efault {@link GremlinKryo} configuration.  This object should be satisfactory for
+     * current version of the default {@link GremlinKryo} configuration.  This object should be satisfactory for
      * most implementations.
      * <br/>
      * The only reason to override this method is if the {@link Graph} implementation utilizes custom classes
      * somewhere that will be serialized in the course of test suite execution.  The most common issue with respect
      * to this situation is the serialization of {@link Element} identifiers that are returned as custom classes.
-     * If an implementation does that, then they will want to construct a {@link GremlinKryo} instance and register
-     * their serializer to it prior to returning it from this method.
+     * If an implementation does that, then the implementer will want to construct a {@link GremlinKryo} instance
+     * and register serializers to it prior to returning it from this method.
      */
     public default GremlinKryo createConfiguredGremlinKryo() {
         return GremlinKryo.build().create();
+    }
+
+    /**
+     * Construct a configured {@code SimpleModule} instance.  The default implementation simply returns null, which
+     * does not apply any additional implementation specific serializers or behaviors.  This return value should
+     * be satisfactory for most implementations.
+     * <br/>
+     * The only reason to override this method is if the {@link Graph} implementation utilizes custom classes
+     * somewhere that will be serialized in the course of test suite execution.  The most common issue with respect
+     * to this situation is the serialization of {@link Element} identifiers that are returned as custom classes.
+     * If an implementation does that, then the implementer will want to construct a {@code SimpleModule} instance
+     * with a registered a custom serializer returning it from this method.
+     */
+    public default SimpleModule createConfiguredGraphSONModule() {
+        return null;
     }
 
     /**
