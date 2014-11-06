@@ -563,8 +563,10 @@ public class PropertyTest {
         }
     }
 
-    private static class MockSerializable implements Serializable {
+    public static class MockSerializable implements Serializable {
         private String testField;
+
+        public MockSerializable() {}
 
         public MockSerializable(final String testField) {
             this.testField = testField;
