@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.neo4j.process.graph.step.sideEffect;
 import com.tinkerpop.gremlin.neo4j.structure.*;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.*;
@@ -36,10 +37,10 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     }
 
     @Override
-    public void generateTraverserIterator(final boolean trackPaths) {
+    public void generateTraversers(final TraverserGenerator traverserGenerator) {
         if (PROFILING_ENABLED) TraversalMetrics.start(this);
         this.start = Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges();
-        super.generateTraverserIterator(trackPaths);
+        super.generateTraversers(traverserGenerator);
         if (PROFILING_ENABLED) TraversalMetrics.stop(this);
     }
 

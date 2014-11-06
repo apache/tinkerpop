@@ -3,6 +3,9 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
+import com.tinkerpop.gremlin.process.TraverserGenerator;
+import com.tinkerpop.gremlin.process.traversers.TraverserGeneratorFactory;
+import com.tinkerpop.gremlin.process.traversers.util.DefaultTraverserGeneratorFactory;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
@@ -16,6 +19,7 @@ import java.util.stream.Collectors;
 public class DefaultStrategies implements Traversal.Strategies {
 
     protected final List<TraversalStrategy> traversalStrategies = new ArrayList<>();
+    protected TraverserGeneratorFactory traverserGeneratorFactory = DefaultTraverserGeneratorFactory.instance();
     protected final Traversal traversal;
     protected boolean complete = false;
 
@@ -63,5 +67,15 @@ public class DefaultStrategies implements Traversal.Strategies {
     @Override
     public String toString() {
         return StringFactory.traversalStrategiesString(this);
+    }
+
+    @Override
+    public void registerTraverserGeneratorFactory(final TraverserGeneratorFactory traverserGeneratorFactory) {
+        this.traverserGeneratorFactory = traverserGeneratorFactory;
+    }
+
+    @Override
+    public TraverserGenerator getTraverserGenerator() {
+        return this.traverserGeneratorFactory.getTraverserGenerator(this.traversal);
     }
 }

@@ -1,13 +1,10 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
-import com.tinkerpop.gremlin.process.PathTraverser;
-import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
+import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.util.TraverserIterator;
 
 import java.util.Iterator;
 import java.util.stream.Stream;
@@ -46,13 +43,14 @@ public class StartStep<S> extends SideEffectStep<S> implements TraverserSource, 
     }
 
     @Override
-    public void generateTraverserIterator(final boolean trackPaths) {
+    public void generateTraversers(final TraverserGenerator traverserGenerator) {
         if (null != this.start) {
-            this.starts.clear();
-            if (this.start instanceof Iterator)
-                this.starts.add(new TraverserIterator(this, trackPaths, (Iterator) this.start));
-            else
-                this.starts.add((Traverser.Admin) (trackPaths ? new PathTraverser<>(this.getLabel(), this.start, this.traversal.sideEffects()) : new SimpleTraverser<>(this.start, this.traversal.sideEffects())));
+            if (this.start instanceof Iterator) {
+                this.starts.add(traverserGenerator.generateIterator((Iterator<S>) this.start, this));
+            } else {
+                this.starts.add(traverserGenerator.generate((S) this.start, this));
+            }
+
         }
     }
 }

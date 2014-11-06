@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
+import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.Compare;
@@ -31,10 +32,10 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
     }
 
     @Override
-    public void generateTraverserIterator(final boolean trackPaths) {
+    public void generateTraversers(final TraverserGenerator traverserGenerator) {
         if (PROFILING_ENABLED) TraversalMetrics.start(this);
         this.start = Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges();
-        super.generateTraverserIterator(trackPaths);
+        super.generateTraversers(traverserGenerator);
         if (PROFILING_ENABLED) TraversalMetrics.stop(this);
     }
 

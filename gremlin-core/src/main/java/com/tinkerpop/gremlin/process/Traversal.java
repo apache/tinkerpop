@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.traversers.TraverserGeneratorFactory;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -291,6 +292,10 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         public default void clear() {
             this.toList().forEach(strategy -> this.unregister(strategy.getClass()));
         }
+
+        public void registerTraverserGeneratorFactory(final TraverserGeneratorFactory traverserGeneratorFactory);
+
+        public TraverserGenerator getTraverserGenerator();
 
     }
 

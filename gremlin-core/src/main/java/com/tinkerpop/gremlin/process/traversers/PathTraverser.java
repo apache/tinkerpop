@@ -1,5 +1,7 @@
-package com.tinkerpop.gremlin.process;
+package com.tinkerpop.gremlin.process.traversers;
 
+import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.ImmutablePath;
 import com.tinkerpop.gremlin.process.util.PathAwareSideEffects;
 import com.tinkerpop.gremlin.structure.util.referenced.ReferencedFactory;

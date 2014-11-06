@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin.process.computer.traversal;
 
-import com.tinkerpop.gremlin.process.PathTraverser;
-import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
@@ -15,6 +13,7 @@ import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
+import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.util.DefaultSideEffects;
 import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
@@ -135,15 +134,13 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
             if (!(this.traversal.getSteps().get(0) instanceof GraphStep))
                 throw new UnsupportedOperationException("TraversalVertexProgram currently only supports GraphStep starts on vertices or edges");
 
-            final GraphStep startStep = (GraphStep) this.traversal.getSteps().get(0);   // TODO: make this generic to Traversal
+            final GraphStep<Element> startStep = (GraphStep<Element>) this.traversal.getSteps().get(0);   // TODO: make this generic to Traversal
+            final TraverserGenerator traverserGenerator = this.traversal.getStrategies().getTraverserGenerator();
             final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.Admin.HALT : startStep.getNextStep().getLabel();
             final AtomicBoolean voteToHalt = new AtomicBoolean(true);
             final Iterator<? extends Element> starts = startStep.returnsVertices() ? new SingleIterator<>(vertex) : vertex.iterators().edgeIterator(Direction.OUT);
-            final boolean trackPaths = TraversalHelper.trackPaths(this.traversal);
             starts.forEachRemaining(element -> {
-                final Traverser.Admin<? extends Element> traverser = trackPaths ?
-                        new PathTraverser<>(startStep.getLabel(), element, this.traversal.sideEffects()) :
-                        new SimpleTraverser<>(element, this.traversal.sideEffects());
+                final Traverser.Admin<Element> traverser = traverserGenerator.generate(element, startStep);
                 traverser.setFuture(future);
                 traverser.detach();
                 if (traverser.isHalted())

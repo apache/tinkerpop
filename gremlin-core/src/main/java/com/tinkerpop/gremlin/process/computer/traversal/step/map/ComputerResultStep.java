@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.computer.traversal.step.map;
 
-import com.tinkerpop.gremlin.process.SimpleTraverser;
+import com.tinkerpop.gremlin.process.traversers.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;

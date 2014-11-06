@@ -3,6 +3,9 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
+import com.tinkerpop.gremlin.process.TraverserGenerator;
+import com.tinkerpop.gremlin.process.traversers.TraverserGeneratorFactory;
+import com.tinkerpop.gremlin.process.traversers.util.DefaultTraverserGeneratorFactory;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
@@ -17,6 +20,7 @@ public class GraphTraversalStrategyRegistry implements Traversal.Strategies {
 
     private static final List<TraversalStrategy> TRAVERSAL_STRATEGIES = new ArrayList<>();
     private static final GraphTraversalStrategyRegistry INSTANCE = new GraphTraversalStrategyRegistry();
+    private static TraverserGeneratorFactory TRAVERSER_GENERATOR_FACTORY = DefaultTraverserGeneratorFactory.instance();
 
     static {
         TRAVERSAL_STRATEGIES.add(TraverserSourceStrategy.instance());
@@ -48,6 +52,7 @@ public class GraphTraversalStrategyRegistry implements Traversal.Strategies {
         for (final TraversalStrategy strategy : TRAVERSAL_STRATEGIES) {
             strategies.register(strategy);
         }
+        strategies.registerTraverserGeneratorFactory(TRAVERSER_GENERATOR_FACTORY);
     }
 
     @Override
@@ -89,4 +94,13 @@ public class GraphTraversalStrategyRegistry implements Traversal.Strategies {
         return StringFactory.traversalStrategiesString(this);
     }
 
+    @Override
+    public TraverserGenerator getTraverserGenerator() {
+        throw new UnsupportedOperationException("The global registry is not tied to a traversal, only accessible by traversals");
+    }
+
+    @Override
+    public void registerTraverserGeneratorFactory(final TraverserGeneratorFactory traverserGeneratorFactory) {
+        TRAVERSER_GENERATOR_FACTORY = traverserGeneratorFactory;
+    }
 }
