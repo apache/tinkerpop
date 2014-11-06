@@ -1661,7 +1661,7 @@ public class IoTest extends AbstractGremlinTest {
                     .customModule(graphProvider.createConfiguredGraphSONModule()).embedTypes(true).create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, Direction.BOTH, detachedVertex -> {
-                    assertEquals(v1.id(), detachedVertex.id());
+                    assertEquals(v1.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedVertex.id()));
                     assertEquals(v1.label(), detachedVertex.label());
                     assertEquals(0, StreamFactory.stream(detachedVertex.iterators().hiddenPropertyIterator()).count());
                     assertEquals(1, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
@@ -1669,9 +1669,9 @@ public class IoTest extends AbstractGremlinTest {
                     vertexCalled.set(true);
                     return null;
                 }, detachedEdge -> {
-                    if (detachedEdge.id().equals(e1.id())) {
-                        assertEquals(v2.id(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
-                        assertEquals(v1.id(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
+                    if (graphProvider.reconstituteGraphSONIdentifier(Edge.class, detachedEdge.id()).equals(e1.id())) {
+                        assertEquals(v2.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.iterators().vertexIterator(Direction.OUT).next().id()));
+                        assertEquals(v1.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.iterators().vertexIterator(Direction.IN).next().id()));
                         assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
                         assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
                         assertEquals(e1.label(), detachedEdge.label());
@@ -1679,9 +1679,9 @@ public class IoTest extends AbstractGremlinTest {
                         assertEquals(1, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
                         assertEquals(0.5f, detachedEdge.value("weight"), 0.00001f);
                         edge1Called.set(true);
-                    } else if (detachedEdge.id().equals(e2.id())) {
-                        assertEquals(v1.id(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
-                        assertEquals(v2.id(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
+                    } else if (graphProvider.reconstituteGraphSONIdentifier(Edge.class, detachedEdge.id()).equals(e2.id())) {
+                        assertEquals(v1.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.iterators().vertexIterator(Direction.OUT).next().id()));
+                        assertEquals(v2.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.iterators().vertexIterator(Direction.IN).next().id()));
                         assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
                         assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
                         assertEquals(e1.label(), detachedEdge.label());

@@ -21,7 +21,7 @@ import java.io.OutputStreamWriter;
  * Further note that serialized {@code Map} objects do not support complex types for keys.  {@link Edge} and
  * {@link Vertex} objects are serialized to {@code Map} instances. If an
  * {@link com.tinkerpop.gremlin.structure.Element} is used as a key, it is coerced to its identifier.  Other complex
- * objects are converted via {@link Object#toString()}.
+ * objects are converted via {@link Object#toString()} unless a custom serializer is supplied.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
