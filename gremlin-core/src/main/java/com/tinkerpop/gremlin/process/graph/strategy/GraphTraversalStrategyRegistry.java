@@ -9,7 +9,6 @@ import com.tinkerpop.gremlin.process.traversers.util.DefaultTraverserGeneratorFa
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,7 +36,7 @@ public class GraphTraversalStrategyRegistry implements Traversal.Strategies {
         TRAVERSAL_STRATEGIES.add(ReducingStrategy.instance());
         TRAVERSAL_STRATEGIES.add(LocalRangeStrategy.instance());
         //  TRAVERSAL_STRATEGIES.add(UnrollJumpStrategy.instance());
-        Collections.sort(TRAVERSAL_STRATEGIES);
+        TraversalStrategy.sortStrategies(TRAVERSAL_STRATEGIES);
     }
 
     private GraphTraversalStrategyRegistry() {

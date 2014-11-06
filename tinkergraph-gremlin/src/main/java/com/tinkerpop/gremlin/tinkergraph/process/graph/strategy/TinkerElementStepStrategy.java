@@ -20,7 +20,7 @@ import com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect.TinkerGra
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerElementStepStrategy extends AbstractTraversalStrategy implements TraversalStrategy.NoDependencies {
+public class TinkerElementStepStrategy extends AbstractTraversalStrategy {
 
     private static final TinkerElementStepStrategy INSTANCE = new TinkerElementStepStrategy();
 

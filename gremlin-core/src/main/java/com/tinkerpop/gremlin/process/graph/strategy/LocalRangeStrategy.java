@@ -14,7 +14,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LocalRangeStrategy extends AbstractTraversalStrategy implements TraversalStrategy.NoDependencies {
+public class LocalRangeStrategy extends AbstractTraversalStrategy {
 
     private static final LocalRangeStrategy INSTANCE = new LocalRangeStrategy();
 

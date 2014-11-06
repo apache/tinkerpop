@@ -17,7 +17,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class UnionLinearStrategy extends AbstractTraversalStrategy implements TraversalStrategy.NoDependencies {
+public class UnionLinearStrategy extends AbstractTraversalStrategy {
 
     private static final UnionLinearStrategy INSTANCE = new UnionLinearStrategy();
 

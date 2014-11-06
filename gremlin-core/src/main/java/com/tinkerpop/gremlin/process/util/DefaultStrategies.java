@@ -48,7 +48,7 @@ public class DefaultStrategies implements Traversal.Strategies {
     @Override
     public void apply(final TraversalEngine engine) {
         if (!this.complete) {
-            Collections.sort(this.traversalStrategies);
+            TraversalStrategy.sortStrategies(this.traversalStrategies);
             this.traversalStrategies.forEach(ts -> ts.apply(this.traversal, engine));
             this.complete = true;
         }

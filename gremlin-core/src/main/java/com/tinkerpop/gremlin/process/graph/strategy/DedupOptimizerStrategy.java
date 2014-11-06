@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DedupOptimizerStrategy extends AbstractTraversalStrategy implements TraversalStrategy.NoDependencies {
+public class DedupOptimizerStrategy extends AbstractTraversalStrategy {
 
     private static final DedupOptimizerStrategy INSTANCE = new DedupOptimizerStrategy();
 

@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.PropertyElementStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertyMapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
+import com.tinkerpop.gremlin.process.graph.strategy.AbstractTraversalStrategy;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -30,7 +31,7 @@ import java.util.List;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class StrategyWrappedTraversalStrategy implements TraversalStrategy.NoDependencies {
+public class StrategyWrappedTraversalStrategy extends AbstractTraversalStrategy {
 
     private final StrategyWrappedGraph graph;
 

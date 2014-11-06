@@ -10,7 +10,10 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -18,6 +21,11 @@ import java.util.List;
 public class MatchWhereStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
 
     private static final MatchWhereStrategy INSTANCE = new MatchWhereStrategy();
+    private static final Set<Class<? extends TraversalStrategy>> PRIORS = new HashSet<>();
+
+    static {
+        PRIORS.add(IdentityRemovalStrategy.class);
+    }
 
     private MatchWhereStrategy() {
     }
@@ -52,8 +60,14 @@ public class MatchWhereStrategy extends AbstractTraversalStrategy implements Tra
         return INSTANCE;
     }
 
-    @Override
-    public int compareTo(final TraversalStrategy traversalStrategy) {
+
+    /*public int compareTo(final TraversalStrategy traversalStrategy) {
         return traversalStrategy instanceof IdentityRemovalStrategy ? 1 : 0;
+    }*/
+
+    @Override
+    public Set<Class<? extends TraversalStrategy>> applyPrior() {
+        return PRIORS;
     }
+
 }

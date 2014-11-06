@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
+import com.tinkerpop.gremlin.process.graph.strategy.AbstractTraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.util.EmptyGraphTraversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -102,7 +103,7 @@ public class SubgraphStrategy implements GraphStrategy {
         return SubgraphStrategy.class.getSimpleName().toLowerCase();
     }
 
-    public class SubgraphTraversalStrategy implements TraversalStrategy.NoDependencies {
+    public class SubgraphTraversalStrategy extends AbstractTraversalStrategy {
 
         @Override
         public void apply(final Traversal traversal, final TraversalEngine traversalEngine) {

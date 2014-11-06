@@ -8,16 +8,24 @@ import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.IntervalStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.strategy.AbstractTraversalStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect.TinkerGraphStep;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphStepStrategy extends AbstractTraversalStrategy implements TraversalStrategy.NoDependencies {
+public class TinkerGraphStepStrategy extends AbstractTraversalStrategy {
 
     private static final TinkerGraphStepStrategy INSTANCE = new TinkerGraphStepStrategy();
+    private static final Set<Class<? extends TraversalStrategy>> POSTS = new HashSet<>();
+    static {
+        POSTS.add(TraverserSourceStrategy.class);
+    }
 
     private TinkerGraphStepStrategy() {
     }
@@ -44,6 +52,11 @@ public class TinkerGraphStepStrategy extends AbstractTraversalStrategy implement
             }
             currentStep = currentStep.getNextStep();
         }
+    }
+
+    @Override
+    public Set<Class<? extends TraversalStrategy>> applyPost() {
+        return POSTS;
     }
 
     public static TinkerGraphStepStrategy instance() {

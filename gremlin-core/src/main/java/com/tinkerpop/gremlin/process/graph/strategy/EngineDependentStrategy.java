@@ -5,6 +5,10 @@ import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -28,8 +32,7 @@ public class EngineDependentStrategy extends AbstractTraversalStrategy implement
         return INSTANCE;
     }
 
-    @Override
-    public int compareTo(final TraversalStrategy traversalStrategy) {
+    /*public int compareTo(final TraversalStrategy traversalStrategy) {
         return traversalStrategy instanceof TraverserSourceStrategy ? -1 : 1;
-    }
+    }*/
 }

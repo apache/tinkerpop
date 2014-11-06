@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LabeledEndStepStrategy implements TraversalStrategy.NoDependencies {
+public class LabeledEndStepStrategy extends AbstractTraversalStrategy {
 
     private static final LabeledEndStepStrategy INSTANCE = new LabeledEndStepStrategy();
 

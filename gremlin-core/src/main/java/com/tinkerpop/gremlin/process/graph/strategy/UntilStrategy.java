@@ -15,7 +15,7 @@ import java.util.UUID;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class UntilStrategy extends AbstractTraversalStrategy implements TraversalStrategy.NoDependencies {
+public class UntilStrategy extends AbstractTraversalStrategy {
 
     private static final UntilStrategy INSTANCE = new UntilStrategy();
     private static final String UNTIL_PREFIX = "gremlin.until.";

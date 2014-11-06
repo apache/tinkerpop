@@ -72,11 +72,6 @@ public class UnrollJumpStrategy extends AbstractTraversalStrategy implements Tra
                 });
     }
 
-    @Override
-    public int compareTo(final TraversalStrategy traversalStrategy) {
-        return traversalStrategy instanceof TraverserSourceStrategy ? -1 : 1;
-    }
-
     public static UnrollJumpStrategy instance() {
         return INSTANCE;
     }
