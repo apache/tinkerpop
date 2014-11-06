@@ -50,7 +50,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     public void shouldAddStartsProperly() {
         final Traversal<Object, Vertex> traversal = g.of().out().out();
         assertFalse(traversal.hasNext());
-        traversal.addStarts(traversal.getStrategies().getTraverserGenerator().generateIterator(g.V(), traversal.getSteps().get(0)));
+        traversal.addStarts(TraversalStrategies.GlobalCache.getStrategies(traversal.getClass()).getTraverserGenerator(traversal,TraversalEngine.STANDARD).generateIterator(g.V(), traversal.getSteps().get(0)));
         assertTrue(traversal.hasNext());
         int counter = 0;
         while (traversal.hasNext()) {
@@ -59,8 +59,8 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         }
         assertEquals(2, counter);
 
-        traversal.addStarts(traversal.getStrategies().getTraverserGenerator().generateIterator(g.V(), traversal.getSteps().get(0)));
-        traversal.addStarts(traversal.getStrategies().getTraverserGenerator().generateIterator(g.V(), traversal.getSteps().get(0)));
+        traversal.addStarts(TraversalStrategies.GlobalCache.getStrategies(traversal.getClass()).getTraverserGenerator(traversal,TraversalEngine.STANDARD).generateIterator(g.V(), traversal.getSteps().get(0)));
+        traversal.addStarts(TraversalStrategies.GlobalCache.getStrategies(traversal.getClass()).getTraverserGenerator(traversal,TraversalEngine.STANDARD).generateIterator(g.V(), traversal.getSteps().get(0)));
         counter = 0;
         while (traversal.hasNext()) {
             counter++;
@@ -76,7 +76,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         final Traversal<Object, Vertex> traversal = g.of().as("a").out().out().<Vertex>has("name", Contains.within, Arrays.asList("ripple", "lop")).as("b");
         if (new Random().nextBoolean()) traversal.reset();
         assertFalse(traversal.hasNext());
-        traversal.addStarts(traversal.getStrategies().getTraverserGenerator().generateIterator(g.V(), traversal.getSteps().get(0)));
+        traversal.addStarts(TraversalStrategies.GlobalCache.getStrategies(traversal.getClass()).getTraverserGenerator(traversal,TraversalEngine.STANDARD).generateIterator(g.V(), traversal.getSteps().get(0)));
         assertTrue(traversal.hasNext());
         int counter = 0;
         while (traversal.hasNext()) {
@@ -86,14 +86,14 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         assertEquals(2, counter);
 
         if (new Random().nextBoolean()) traversal.reset();
-        traversal.addStarts(traversal.getStrategies().getTraverserGenerator().generateIterator(g.V(), traversal.getSteps().get(0)));
+        traversal.addStarts(TraversalStrategies.GlobalCache.getStrategies(traversal.getClass()).getTraverserGenerator(traversal,TraversalEngine.STANDARD).generateIterator(g.V(), traversal.getSteps().get(0)));
         assertTrue(traversal.hasNext());
         traversal.next();
         assertTrue(traversal.hasNext());
         traversal.reset();
         assertFalse(traversal.hasNext());
 
-        traversal.addStarts(traversal.getStrategies().getTraverserGenerator().generateIterator(g.V(), traversal.getSteps().get(0)));
+        traversal.addStarts(TraversalStrategies.GlobalCache.getStrategies(traversal.getClass()).getTraverserGenerator(traversal,TraversalEngine.STANDARD).generateIterator(g.V(), traversal.getSteps().get(0)));
         counter = 0;
         while (traversal.hasNext()) {
             counter++;

@@ -2,8 +2,10 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.TraversalStrategies;
+import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.strategy.GraphTraversalStrategyRegistry;
 import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.ArrayList;
@@ -17,10 +19,16 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     private E lastEnd = null;
     private long lastEndCount = 0l;
+    protected boolean locked = false;
 
     protected List<Step> steps = new ArrayList<>();
-    protected final DefaultStrategies strategies = new DefaultStrategies(this);
-    protected final DefaultSideEffects sideEffects = new DefaultSideEffects();
+    protected final DefaultTraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
+
+    static {
+        final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
+        GraphTraversalStrategyRegistry.instance().toList().forEach(traversalStrategies::register);
+        TraversalStrategies.GlobalCache.registerStrategies(DefaultTraversal.class, traversalStrategies);
+    }
 
     public DefaultTraversal() {
     }
@@ -31,6 +39,19 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     }
 
     @Override
+    public void applyStrategies(final TraversalEngine engine) {
+        if (!this.locked) {
+            TraversalStrategies.GlobalCache.getStrategies(this.getClass()).apply(this, engine);
+            this.locked = true;
+        }
+    }
+
+    @Override
+    public boolean isLocked() {
+        return this.locked;
+    }
+
+    @Override
     public List<Step> getSteps() {
         return this.steps;
     }
@@ -38,11 +59,6 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     @Override
     public SideEffects sideEffects() {
         return this.sideEffects;
-    }
-
-    @Override
-    public Strategies getStrategies() {
-        return this.strategies;
     }
 
     @Override
@@ -57,13 +73,13 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     @Override
     public boolean hasNext() {
-        this.applyStrategies();
+        this.applyStrategies(TraversalEngine.STANDARD);
         return this.lastEndCount > 0l || TraversalHelper.getEnd(this).hasNext();
     }
 
     @Override
     public E next() {
-        this.applyStrategies();
+        this.applyStrategies(TraversalEngine.STANDARD);
         if (this.lastEndCount > 0l) {
             this.lastEndCount--;
             return this.lastEnd;
@@ -85,10 +101,6 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     public boolean equals(final Object object) {
         return object instanceof Iterator && TraversalHelper.areEqual(this, (Iterator) object);
-    }
-
-    private final void applyStrategies() {
-        if (!this.strategies.complete()) this.strategies.apply(TraversalEngine.STANDARD);
     }
 
     @Override

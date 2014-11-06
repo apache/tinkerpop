@@ -7,6 +7,8 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.strategy.process.graph.StrategyWrappedGraphTraversal;
+import com.tinkerpop.gremlin.structure.strategy.process.graph.StrategyWrappedTraversal;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
@@ -75,22 +77,27 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
 
     @Override
     public GraphTraversal<Vertex, Vertex> V() {
-        return applyStrategy(baseGraph.V());
+        final GraphTraversal<Vertex, Vertex> traversal = new StrategyWrappedGraphTraversal<>(Vertex.class, getStrategy().compose(
+                s -> s.getGraphVStrategy(graphContext),
+                this.baseGraph::V).get(), this);
+        return traversal;
     }
 
     @Override
     public GraphTraversal<Edge, Edge> E() {
-        return applyStrategy(baseGraph.E());
+        return new StrategyWrappedGraphTraversal<>(Edge.class, getStrategy().compose(
+                s -> s.getGraphEStrategy(graphContext),
+                this.baseGraph::E).get(), this);
     }
 
     @Override
     public <S> GraphTraversal<S, S> of() {
-        return applyStrategy(baseGraph.of());
+        return new StrategyWrappedTraversal<>(this);
     }
 
     @Override
     public <T extends Traversal<S, S>, S> T of(final Class<T> traversalClass) {
-        return this.baseGraph.of(traversalClass);
+        return this.baseGraph.of(traversalClass);  // TODO: wrap the users traversal in StrategyWrappedTraversal
     }
 
     @Override
@@ -135,11 +142,5 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
     public String toString() {
         final GraphStrategy strategy = this.strategy.getGraphStrategy().orElse(GraphStrategy.DefaultGraphStrategy.INSTANCE);
         return StringFactory.graphStrategyString(strategy, this.baseGraph);
-    }
-
-    private <S, E> GraphTraversal<S, E> applyStrategy(final GraphTraversal<S, E> traversal) {
-        traversal.getStrategies().register(new StrategyWrappedTraversalStrategy(this));
-        this.strategy.getGraphStrategy().ifPresent(s -> s.applyStrategyToTraversal(traversal));
-        return traversal;
     }
 }

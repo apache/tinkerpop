@@ -1,8 +1,10 @@
 package com.tinkerpop.gremlin.process.graph.util;
 
+import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.strategy.GraphTraversalStrategyRegistry;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
+import com.tinkerpop.gremlin.process.util.DefaultTraversalStrategies;
 import com.tinkerpop.gremlin.structure.Graph;
 
 /**
@@ -10,8 +12,14 @@ import com.tinkerpop.gremlin.structure.Graph;
  */
 public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implements GraphTraversal<S, E> {
 
+    static {
+        final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
+        GraphTraversalStrategyRegistry.instance().toList().forEach(traversalStrategies::register);
+        TraversalStrategies.GlobalCache.registerStrategies(DefaultGraphTraversal.class, traversalStrategies);
+    }
+
     public DefaultGraphTraversal() {
-        GraphTraversalStrategyRegistry.populate(this.strategies);
+
     }
 
     public DefaultGraphTraversal(final Graph graph) {

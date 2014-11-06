@@ -2,12 +2,13 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
-import com.tinkerpop.gremlin.process.traversers.util.DefaultTraverserGeneratorFactory;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
+import com.tinkerpop.gremlin.process.util.DefaultTraversalStrategies;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 
@@ -148,9 +149,15 @@ public class TinkerFactory {
         }
 
         public class DefaultSocialTraversal extends DefaultTraversal implements SocialTraversal {
+
+            static {
+                final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
+                traversalStrategies.register(TraverserSourceStrategy.instance());
+                TraversalStrategies.GlobalCache.registerStrategies(DefaultSocialTraversal.class, traversalStrategies);
+            }
+
             public DefaultSocialTraversal(final Graph graph) {
                 super(graph);
-                this.getStrategies().register(TraverserSourceStrategy.instance());
             }
         }
     }

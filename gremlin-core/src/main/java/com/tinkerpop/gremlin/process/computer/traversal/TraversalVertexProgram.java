@@ -1,7 +1,10 @@
 package com.tinkerpop.gremlin.process.computer.traversal;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.MessageType;
@@ -13,8 +16,7 @@ import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
-import com.tinkerpop.gremlin.process.TraverserGenerator;
-import com.tinkerpop.gremlin.process.util.DefaultSideEffects;
+import com.tinkerpop.gremlin.process.util.DefaultTraversalSideEffects;
 import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -89,7 +91,7 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
      * @return a sideEffect API to get and put sideEffect data onto the vertex
      */
     public static Traversal.SideEffects getLocalSideEffects(final Vertex localVertex) {
-        return new DefaultSideEffects(localVertex);
+        return new DefaultTraversalSideEffects(localVertex);
     }
 
     /**
@@ -135,7 +137,7 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
                 throw new UnsupportedOperationException("TraversalVertexProgram currently only supports GraphStep starts on vertices or edges");
 
             final GraphStep<Element> startStep = (GraphStep<Element>) this.traversal.getSteps().get(0);   // TODO: make this generic to Traversal
-            final TraverserGenerator traverserGenerator = this.traversal.getStrategies().getTraverserGenerator();
+            final TraverserGenerator traverserGenerator = TraversalStrategies.GlobalCache.getStrategies(this.traversal.getClass()).getTraverserGenerator(this.traversal, TraversalEngine.COMPUTER);
             final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.Admin.HALT : startStep.getNextStep().getLabel();
             final AtomicBoolean voteToHalt = new AtomicBoolean(true);
             final Iterator<? extends Element> starts = startStep.returnsVertices() ? new SingleIterator<>(vertex) : vertex.iterators().edgeIterator(Direction.OUT);

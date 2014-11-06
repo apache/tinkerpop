@@ -60,15 +60,6 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
     }
 
     /**
-     * Get the {@link Traversal.Strategies} associated with the traversal.
-     * Users should typically not need to call this method. Strategies are automatically registered and executed at traversal execution time.
-     * Expert users can access strategies to provide fine grained control over a traversal compilation.
-     *
-     * @return The strategies associated with the traversal
-     */
-    public Strategies getStrategies();
-
-    /**
      * Get the {@link Step} instances associated with this traversal.
      * The steps are ordered according to their linked list structure as defined by {@link Step#getPreviousStep()} and {@link Step#getNextStep()}.
      *
@@ -76,17 +67,21 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      */
     public List<Step> getSteps();
 
+    public void applyStrategies(final TraversalEngine engine);
+
+    public boolean isLocked();
+
     /**
      * Add a {@link Step} to the end of the traversal.
      * This method should automatically link the step accordingly. For example, see {@link TraversalHelper#insertStep}.
-     * If the {@link Traversal.Strategies} have already been applied, then an {@link IllegalStateException} is throw stating the traversal is locked.
+     * If the {@link TraversalStrategies} have already been applied, then an {@link IllegalStateException} is throw stating the traversal is locked.
      *
      * @param step the step to add
      * @param <E2> the output of the step
      * @return the updated traversal
      */
     public default <E2> Traversal<S, E2> addStep(final Step<?, E2> step) throws IllegalStateException {
-        if (this.getStrategies().complete()) throw Exceptions.traversalIsLocked();
+        if (this.isLocked()) throw Exceptions.traversalIsLocked();
         TraversalHelper.insertStep(step, this);
         return (Traversal) this;
     }
@@ -109,7 +104,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      */
     public default Traversal<S, E> submit(final GraphComputer computer) {
         try {
-            this.getStrategies().apply(TraversalEngine.COMPUTER);
+            this.applyStrategies(TraversalEngine.COMPUTER);
             final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(this::clone).create();
             final ComputerResult result = computer.program(vertexProgram).submit().get();
             final GraphTraversal<S, S> traversal = result.graph().of();
@@ -178,7 +173,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      */
     public default <C extends Collection<E>> C fill(final C collection) {
         try {
-            this.getStrategies().apply(TraversalEngine.STANDARD);
+            this.applyStrategies(TraversalEngine.STANDARD);
             // use the end step so the results are bulked
             final Step<?, E> endStep = TraversalHelper.getEnd(this);
             while (true) {
@@ -199,7 +194,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      */
     public default Traversal iterate() {
         try {
-            this.getStrategies().apply(TraversalEngine.STANDARD);
+            this.applyStrategies(TraversalEngine.STANDARD);
             // use the end step so the results are bulked
             final Step<?, E> endStep = TraversalHelper.getEnd(this);
             while (true) {
@@ -240,63 +235,6 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         public static IllegalStateException traversalIsNotReversible() {
             return new IllegalStateException("The traversal is not reversible as it contains steps that are not reversible");
         }
-    }
-
-    /**
-     * The strategies associated with the traversal.
-     * Strategies, at execution time, can alter the traversal for reason of optimization, re-writing for a different {@link TraversalEngine}, etc.
-     */
-    public interface Strategies {
-
-        /**
-         * Return all the {@link TraversalStrategy} singleton instances associated with this traversal.
-         *
-         * @return
-         */
-        public List<TraversalStrategy> toList();
-
-        /**
-         * Register a {@link TraversalStrategy} with this traversal.
-         *
-         * @param traversalStrategy the traversal strategy to register
-         */
-        public void register(final TraversalStrategy traversalStrategy);
-
-        /**
-         * Unregister a {@link TraversalStrategy} associated with this traversal.
-         * Given that all traversal strategies are singletons, the class is sufficient to unregister it.
-         *
-         * @param traversalStrategyClass the class of the traversal strategy to unregister
-         */
-        public void unregister(final Class<? extends TraversalStrategy> traversalStrategyClass);
-
-        /**
-         * Apply all the {@link TraversalStrategy} optimizers to the traversal for the stated {@link TraversalEngine}.
-         * This method should sort the strategies prior to application.
-         * This method should signal that the strategies are complete. See {@link Traversal.Strategies#complete()}.
-         *
-         * @param engine the engine that the traversal is going to be executed on
-         */
-        public void apply(final TraversalEngine engine);
-
-        /**
-         * Returns true if the strategies have already been applied. Else it returns false.
-         *
-         * @return true if the strategies have been applied
-         */
-        public boolean complete();
-
-        /**
-         * A helper method to remove all the {@link TraversalStrategy} instances from the traversal.
-         */
-        public default void clear() {
-            this.toList().forEach(strategy -> this.unregister(strategy.getClass()));
-        }
-
-        public void registerTraverserGeneratorFactory(final TraverserGeneratorFactory traverserGeneratorFactory);
-
-        public TraverserGenerator getTraverserGenerator();
-
     }
 
     public interface SideEffects {

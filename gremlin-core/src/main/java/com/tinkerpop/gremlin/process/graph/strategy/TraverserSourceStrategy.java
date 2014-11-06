@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
@@ -42,7 +43,7 @@ public class TraverserSourceStrategy extends AbstractTraversalStrategy {
         if (engine.equals(TraversalEngine.COMPUTER))
             return;
 
-        final TraverserGenerator traverserGenerator = traversal.getStrategies().getTraverserGenerator();
+        final TraverserGenerator traverserGenerator = TraversalStrategies.GlobalCache.getStrategies(traversal.getClass()).getTraverserGenerator(traversal, TraversalEngine.STANDARD);
         traversal.getSteps()
                 .stream()
                 .filter(step -> step instanceof TraverserSource)

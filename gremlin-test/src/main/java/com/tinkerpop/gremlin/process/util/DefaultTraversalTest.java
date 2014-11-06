@@ -25,7 +25,6 @@ public class DefaultTraversalTest {
         for (int i = 0; i < original.steps.size(); i++) {
             assertNotEquals(original.getSteps().get(i), clone.getSteps().get(i));
         }
-        assertNotEquals(original.getStrategies(), clone.getStrategies());
         assertNotEquals(original.sideEffects, clone.sideEffects);
 
     }

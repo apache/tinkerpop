@@ -56,14 +56,16 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay() {
-        Graph g = TinkerFactory.createClassic();
-        //g.V().bothE().localRange(0,5).forEachRemaining(System.out::println);
-        //Graph g = TinkerFactory.createTheCrew();
-        Traversal t = g.V().outE().localRange(0, 2);
-        System.out.println(t);
-        t.getStrategies().apply(TraversalEngine.STANDARD);
+        Graph g = TinkerFactory.createModern();
+        Traversal t = g.V().has("name","marko").out().out().values("name");
         System.out.println(t);
         t.forEachRemaining(System.out::println);
+        System.out.println(t);
+        System.out.println("!!!!!!!!");
+        t = g.V().has("name","marko").out().out().values("name");
+        System.out.println(t);
+        t.forEachRemaining(System.out::println);
+        System.out.println(t);
     }
 
     @Test

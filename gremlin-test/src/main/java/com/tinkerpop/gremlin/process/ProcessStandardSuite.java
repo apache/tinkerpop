@@ -45,7 +45,6 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeTest;
 import com.tinkerpop.gremlin.process.graph.step.util.TraversalSideEffectsTest;
-import com.tinkerpop.gremlin.process.graph.step.util.TraversalStrategiesTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -136,7 +135,6 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
 
             // util
             TraversalSideEffectsTest.StandardTest.class,
-            TraversalStrategiesTest.StandardTest.class,
 
             // compliance
             TraversalCoverageTest.class,
@@ -202,7 +200,6 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
 
             // util
             TraversalSideEffectsTest.class,
-            TraversalStrategiesTest.class,
 
             // compliance
             TraversalCoverageTest.class,

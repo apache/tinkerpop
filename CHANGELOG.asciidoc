@@ -9,6 +9,10 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Greatly simplified `SubgraphStrategy` by removing requirements for `Traversal` introspection.
+* `StrategyWrappedGraph` mimics vendor use of `GraphStep` and `GraphTraversal` and no longer requires dynamic strategy application.
+* `TraversalStrategies` make use of a dependency tree sorting algorithm to ensure proper sorts prior to application.
+* `TraversalStrategies` are not static and not longer bound to a `Traversal`.
 * Fixed bug in Gephi Plugin that prevented it from communicating with the Gephi Streaming Server.
 * Renamed `MessageType.XXX.to()` to `MessageType.XXX.of()` so it makes sense in both the sending and receiving context.
 * Improved messaging with respect to tests that are ignored due to features to make it clear that those tests are not in error.

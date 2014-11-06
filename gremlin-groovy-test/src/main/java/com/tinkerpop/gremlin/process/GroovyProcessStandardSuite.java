@@ -47,8 +47,6 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovySideEffectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyStoreTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovySubgraphTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyTreeTest;
-import com.tinkerpop.gremlin.process.graph.step.util.TraversalSideEffectsTest;
-import com.tinkerpop.gremlin.process.graph.step.util.TraversalStrategiesTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 

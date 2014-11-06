@@ -2,6 +2,8 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 
@@ -15,8 +17,7 @@ import java.util.List;
 public class EmptyTraversal<S, E> implements Traversal<S, E> {
 
     private static final EmptyTraversal INSTANCE = new EmptyTraversal();
-    private static final SideEffects SIDE_EFFECTS = new DefaultSideEffects();
-    private static final Strategies TRAVERSAL_STRATEGIES = new DefaultStrategies(INSTANCE);
+    private static final SideEffects SIDE_EFFECTS = new DefaultTraversalSideEffects();
 
     public static <A, B> EmptyTraversal<A, B> instance() {
         return INSTANCE;
@@ -42,8 +43,13 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
     }
 
     @Override
-    public Strategies getStrategies() {
-        return TRAVERSAL_STRATEGIES;
+    public void applyStrategies(final TraversalEngine engine) {
+
+    }
+
+    @Override
+    public boolean isLocked() {
+        return true;
     }
 
     @Override

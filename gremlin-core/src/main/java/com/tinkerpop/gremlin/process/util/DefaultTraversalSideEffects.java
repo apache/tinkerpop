@@ -15,16 +15,16 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DefaultSideEffects implements Traversal.SideEffects {
+public class DefaultTraversalSideEffects implements Traversal.SideEffects {
 
     private Map<String, Object> objectMap = new HashMap<>();
     private Map<String, Supplier> supplierMap = new HashMap<>();
 
-    public DefaultSideEffects() {
+    public DefaultTraversalSideEffects() {
 
     }
 
-    public DefaultSideEffects(final Vertex localVertex) {
+    public DefaultTraversalSideEffects(final Vertex localVertex) {
         this.setLocalVertex(localVertex);
     }
 

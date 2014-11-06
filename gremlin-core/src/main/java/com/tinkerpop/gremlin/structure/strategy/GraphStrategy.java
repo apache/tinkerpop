@@ -681,6 +681,18 @@ public interface GraphStrategy {
         return UnaryOperator.identity();
     }
 
+    public default UnaryOperator<Supplier<GraphTraversal<Vertex,Vertex>>> getGraphVStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return UnaryOperator.identity();
+    }
+
+    public default UnaryOperator<Supplier<GraphTraversal<Edge,Edge>>> getGraphEStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return UnaryOperator.identity();
+    }
+
+    public default UnaryOperator<Supplier<GraphTraversal>> getGraphOfStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return UnaryOperator.identity();
+    }
+
     public static class DefaultGraphStrategy implements GraphStrategy {
         public static final DefaultGraphStrategy INSTANCE = new DefaultGraphStrategy();
 
