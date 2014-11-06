@@ -236,8 +236,9 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     }
 
     def addVertexToGephi(def Vertex v, def boolean ignoreEdges = false) {
-        def props = v.values()
-        props.put('label', v.label())
+        // grab the first property value from the list of values
+        def props = v.valueMap().next().collectEntries {kv -> [(kv.key):kv.value[0]]}
+        props << [label:v.label()]
 
         // only add if it does not exist in graph already
         if (!getFromGephiGraph([operation: "getNode", id: v.id().toString()]).isPresent())
@@ -251,7 +252,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     }
 
     def addEdgeToGephi(def Edge e) {
-        def props = e.values()
+        def props = e.valueMap().next()
         props.put('label', e.label())
         props.put('source', e.outV().id().next().toString())
         props.put('target', e.inV().id().next().toString())
