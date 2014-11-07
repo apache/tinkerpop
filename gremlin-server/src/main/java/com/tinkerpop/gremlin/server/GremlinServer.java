@@ -184,19 +184,36 @@ public class GremlinServer {
 
     private static void configureMetrics(final Settings.ServerMetrics settings) {
         final MetricManager metrics = MetricManager.INSTANCE;
-        settings.optionalConsoleReporter().ifPresent(config -> metrics.addConsoleReporter(config.interval));
-        settings.optionalCsvReporter().ifPresent(config -> metrics.addCsvReporter(config.interval, config.fileName));
-        settings.optionalJmxReporter().ifPresent(config -> metrics.addJmxReporter(config.domain, config.agentId));
-        settings.optionalSlf4jReporter().ifPresent(config -> metrics.addSlf4jReporter(config.interval, config.loggerName));
+        settings.optionalConsoleReporter().ifPresent(config -> {
+            if (config.enabled) metrics.addConsoleReporter(config.interval);
+        });
+
+        settings.optionalCsvReporter().ifPresent(config -> {
+            if (config.enabled) metrics.addCsvReporter(config.interval, config.fileName);
+        });
+
+        settings.optionalJmxReporter().ifPresent(config -> {
+            if (config.enabled) metrics.addJmxReporter(config.domain, config.agentId);
+        });
+
+        settings.optionalSlf4jReporter().ifPresent(config -> {
+            if (config.enabled) metrics.addSlf4jReporter(config.interval, config.loggerName);
+        });
+
         settings.optionalGangliaReporter().ifPresent(config -> {
-            try {
-                metrics.addGangliaReporter(config.host, config.port,
-                        config.optionalAddressingMode(), config.ttl, config.protocol31, config.hostUUID, config.spoof, config.interval);
-            } catch (IOException ioe) {
-                logger.warn("Error configuring the Ganglia Reporter.", ioe);
+            if (config.enabled) {
+                try {
+                    metrics.addGangliaReporter(config.host, config.port,
+                            config.optionalAddressingMode(), config.ttl, config.protocol31, config.hostUUID, config.spoof, config.interval);
+                } catch (IOException ioe) {
+                    logger.warn("Error configuring the Ganglia Reporter.", ioe);
+                }
             }
         });
-        settings.optionalGraphiteReporter().ifPresent(config -> metrics.addGraphiteReporter(config.host, config.port, config.prefix, config.interval));
+
+        settings.optionalGraphiteReporter().ifPresent(config -> {
+            if (config.enabled) metrics.addGraphiteReporter(config.host, config.port, config.prefix, config.interval);
+        });
     }
 
     private static void printHeader() {
