@@ -34,7 +34,7 @@ public abstract class GremlinWritableComparator implements RawComparator<Gremlin
             this.gremlin2.readFields(new DataInputStream(new ByteArrayInputStream(bytes1, i2, i3)));
             //System.out.println(gremlin1 + "<=>" + gremlin2 + ":::" + this.comparator.compare(gremlin1.get(), gremlin2.get()));
             return this.comparator.compare(this.gremlin1.get(), this.gremlin2.get());
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.error(e.getMessage());
             throw new IllegalStateException(e.getMessage());
         }
