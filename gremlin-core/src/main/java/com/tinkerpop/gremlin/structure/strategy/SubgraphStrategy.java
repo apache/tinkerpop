@@ -61,6 +61,7 @@ public class SubgraphStrategy implements GraphStrategy {
         };
     }
 
+    @Override
     public UnaryOperator<BiFunction<Direction, String[], Iterator<Vertex>>> getVertexIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
         return (f) -> (direction, labels) -> StreamFactory
                 .stream(ctx.getCurrent().edgeIterator(direction, labels))
@@ -71,18 +72,22 @@ public class SubgraphStrategy implements GraphStrategy {
         // TODO: why do we have to unwrap? Note that we are not doing f.apply() like the other methods. Is this bad?
     }
 
+    @Override
     public UnaryOperator<BiFunction<Direction, String[], Iterator<Edge>>> getVertexIteratorsEdgesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
         return (f) -> (direction, labels) -> StreamFactory.stream(f.apply(direction, labels)).filter(this::testEdge).iterator();
     }
 
+    @Override
     public UnaryOperator<Function<Direction, Iterator<Vertex>>> getEdgeIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
         return (f) -> direction -> StreamFactory.stream(f.apply(direction)).filter(this::testVertex).iterator();
     }
 
+    @Override
     public UnaryOperator<Supplier<GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return (f) -> () -> f.get().filter(t -> this.testVertex(t.get())); // TODO: we should make sure index hits go first.
     }
 
+    @Override
     public UnaryOperator<Supplier<GraphTraversal<Edge, Edge>>> getGraphEStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return (f) -> () -> f.get().filter(t -> this.testEdge(t.get()));  // TODO: we should make sure index hits go first.
     }
