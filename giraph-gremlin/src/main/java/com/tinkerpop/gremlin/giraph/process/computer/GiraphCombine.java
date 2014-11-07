@@ -13,12 +13,14 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GiraphReduce extends Reducer<GremlinWritable, GremlinWritable, GremlinWritable, GremlinWritable> {
+public class GiraphCombine extends Reducer<GremlinWritable, GremlinWritable, GremlinWritable, GremlinWritable> {
+
+    // TODO: extend GiraphReduce for code reuse
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GiraphReduce.class);
     private MapReduce mapReduce;
 
-    private GiraphReduce() {
+    private GiraphCombine() {
 
     }
 
@@ -30,7 +32,7 @@ public final class GiraphReduce extends Reducer<GremlinWritable, GremlinWritable
     @Override
     public void reduce(final GremlinWritable key, final Iterable<GremlinWritable> values, final Reducer<GremlinWritable, GremlinWritable, GremlinWritable, GremlinWritable>.Context context) throws IOException, InterruptedException {
         final Iterator<GremlinWritable> itty = values.iterator();
-        this.mapReduce.reduce(key.get(), new Iterator() {
+        this.mapReduce.combine(key.get(), new Iterator() {
             @Override
             public boolean hasNext() {
                 return itty.hasNext();
@@ -40,17 +42,17 @@ public final class GiraphReduce extends Reducer<GremlinWritable, GremlinWritable
             public Object next() {
                 return itty.next().get();
             }
-        }, new GiraphReduceEmitter<>(context));
+        }, new GiraphCombineEmitter<>(context));
     }
 
 
-    public static class GiraphReduceEmitter<OK, OV> implements MapReduce.ReduceEmitter<OK, OV> {
+    public static class GiraphCombineEmitter<OK, OV> implements MapReduce.ReduceEmitter<OK, OV> {
 
         final Reducer<GremlinWritable, GremlinWritable, GremlinWritable, GremlinWritable>.Context context;
         final GremlinWritable<OK> keyWritable = new GremlinWritable<>();
         final GremlinWritable<OV> valueWritable = new GremlinWritable<>();
 
-        public GiraphReduceEmitter(final Reducer<GremlinWritable, GremlinWritable, GremlinWritable, GremlinWritable>.Context context) {
+        public GiraphCombineEmitter(final Reducer<GremlinWritable, GremlinWritable, GremlinWritable, GremlinWritable>.Context context) {
             this.context = context;
         }
 

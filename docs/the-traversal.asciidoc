@@ -1400,7 +1400,7 @@ public class IdentityRemovalStrategy extends AbstractTraversalStrategy {
         return INSTANCE;
     }
 }
----
+----
 
 This strategy simply removes any unlabeled `IdentityStep` steps in the Traversal as `aStep().identity().identity().bStep()` is equivalent to `aStep().bStep()`. For those traversal strategies that require other strategies to execute prior or post to the strategy, then the following two methods can be defined in `TraversalStrategy` (with defaults being an empty set).
 

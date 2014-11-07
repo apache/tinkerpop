@@ -53,8 +53,9 @@ public interface TraversalStrategies {
             });
         });
         //Now, compute transitive closure until convergence
-        boolean updated = false;
+        boolean updated;
         do {
+            updated = false;
             for (final Class<? extends TraversalStrategy> sc : strategyClass) {
                 List<Class<? extends TraversalStrategy>> toAdd = null;
                 for (Class<? extends TraversalStrategy> before : dependencyMap.get(sc)) {

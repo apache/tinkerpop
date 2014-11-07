@@ -11,14 +11,14 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class KryoWritable<T> implements WritableComparable<KryoWritable> {
+public final class GremlinWritable<T> implements WritableComparable<GremlinWritable> {
 
     T t;
 
-    public KryoWritable() {
+    public GremlinWritable() {
     }
 
-    public KryoWritable(final T t) {
+    public GremlinWritable(final T t) {
         this();
         this.t = t;
     }
@@ -58,7 +58,7 @@ public final class KryoWritable<T> implements WritableComparable<KryoWritable> {
     }
 
     @Override
-    public int compareTo(final KryoWritable kryoWritable) {
-        return this.t instanceof Comparable ? ((Comparable) this.t).compareTo(kryoWritable.get()) : 1;
+    public int compareTo(final GremlinWritable gremlinWritable) {
+        return this.t instanceof Comparable ? ((Comparable) this.t).compareTo(gremlinWritable.get()) : 1;
     }
 }

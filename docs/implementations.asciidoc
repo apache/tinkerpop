@@ -715,7 +715,7 @@ OLAP Giraph-Gremlin
 
 image:giraph-furnace.png[width=110,float=left] Giraph-Gremlin was designed to execute OLAP operations via `GraphComputer`. The OLTP examples presented above are reproduced below, but using `TraversalVertexProgram` for the execution of the Gremlin traversal.
 
-IMPORTANT: When using Giraph-Gremlin OLAP from the Gremlin Console, the only Gremlin language subset supported is Gremlin-Groovy.
+IMPORTANT: As of TinkerPop3 x.y.z, when using Giraph-Gremlin OLAP from the Gremlin Console, the only Gremlin language subset supported is Gremlin-Groovy. Future versions will support other Gremlin language dialects.
 
 [source,text]
 gremlin> :remote connect tinkerpop.giraph ../../../giraph-gremlin/conf/giraph-kryo.properties
@@ -780,7 +780,7 @@ gremlin> hdfs.ls('output/a')
 ==>rw-r--r-- marko supergroup 0 _SUCCESS
 ==>rwxr-xr-x marko supergroup 0 (D) _logs
 ==>rw-r--r-- marko supergroup 332 part-r-00000
-gremlin> hdfs.head('output/a',KryoWritable.class)
+gremlin> hdfs.head('output/a',GremlinWritable.class)
 ==>[a, [marko, vadas]]
 ==>[e, [peter]]
 ==>[i, [ripple]]
