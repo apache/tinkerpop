@@ -22,9 +22,9 @@ Building and Testing
 * Deploy AsciiDocs: `mvn deploy -Dasciidoc`
 * Deploy JavaDocs: `mvn deploy -Djavadoc`
 * Deploy Zip Archives: `mvn deploy -Darchives`
-* Integration Tests: `mvn clean verify -DskipIntegrationTests=false`
-* Performance Tests: `mvn clean verify -DskipPerformanceTests=false`
-* Gatling Load Tests: `mvn clean test -Pgatling -Dhost={hostname}`
+* Integration Tests: `mvn verify -DskipIntegrationTests=false`
+* Performance Tests: `mvn verify -DskipPerformanceTests=false`
+* Gatling Load Tests: `mvn test -Pgatling -Dhost={hostname}`
 
 Travis Automation
 ~~~~~~~~~~~~~~~~~
