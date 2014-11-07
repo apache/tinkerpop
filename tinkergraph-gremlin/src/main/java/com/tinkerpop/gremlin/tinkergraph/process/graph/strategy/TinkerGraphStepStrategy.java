@@ -15,6 +15,8 @@ import com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect.TinkerGra
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -22,10 +24,7 @@ import java.util.Set;
 public class TinkerGraphStepStrategy extends AbstractTraversalStrategy {
 
     private static final TinkerGraphStepStrategy INSTANCE = new TinkerGraphStepStrategy();
-    private static final Set<Class<? extends TraversalStrategy>> POSTS = new HashSet<>();
-    static {
-        POSTS.add(TraverserSourceStrategy.class);
-    }
+    private final static Set<Class<? extends TraversalStrategy>> POSTS = Stream.of(TraverserSourceStrategy.class).collect(Collectors.toSet());
 
     private TinkerGraphStepStrategy() {
     }

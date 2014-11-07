@@ -14,7 +14,7 @@ public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implemen
 
     static {
         final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
-        GraphTraversalStrategyRegistry.instance().toList().forEach(traversalStrategies::register);
+        GraphTraversalStrategyRegistry.instance().getTraversalStrategies().forEach(traversalStrategies::addStrategy);
         TraversalStrategies.GlobalCache.registerStrategies(DefaultGraphTraversal.class, traversalStrategies);
     }
 

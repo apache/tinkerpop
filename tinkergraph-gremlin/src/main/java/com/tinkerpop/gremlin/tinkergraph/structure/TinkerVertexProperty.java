@@ -1,11 +1,13 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerElementTraversal;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -36,6 +38,11 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
         this.value = value;
         ElementHelper.legalPropertyKeyValueArray(propertyKeyValues);
         ElementHelper.attachProperties(this, propertyKeyValues);
+    }
+
+    @Override
+    public GraphTraversal<VertexProperty, VertexProperty> start() {
+        return new TinkerElementTraversal<>(this, this.graph);
     }
 
     @Override

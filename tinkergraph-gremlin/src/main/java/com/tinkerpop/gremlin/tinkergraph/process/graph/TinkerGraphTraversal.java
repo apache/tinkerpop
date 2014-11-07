@@ -16,8 +16,8 @@ public class TinkerGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
 
     static {
         final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
-        GraphTraversalStrategyRegistry.instance().toList().forEach(traversalStrategies::register);
-        traversalStrategies.register(TinkerGraphStepStrategy.instance());
+        GraphTraversalStrategyRegistry.instance().getTraversalStrategies().forEach(traversalStrategies::addStrategy);
+        traversalStrategies.addStrategy(TinkerGraphStepStrategy.instance());
         TraversalStrategies.GlobalCache.registerStrategies(TinkerGraphTraversal.class, traversalStrategies);
     }
 

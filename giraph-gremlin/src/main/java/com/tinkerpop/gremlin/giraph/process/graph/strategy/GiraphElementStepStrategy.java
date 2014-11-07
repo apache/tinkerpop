@@ -1,5 +1,8 @@
-package com.tinkerpop.gremlin.tinkergraph.process.graph.strategy;
+package com.tinkerpop.gremlin.giraph.process.graph.strategy;
 
+import com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect.GiraphGraphStep;
+import com.tinkerpop.gremlin.giraph.structure.GiraphElement;
+import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
@@ -16,7 +19,6 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect.TinkerGraphStep;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,13 +27,12 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerElementStepStrategy extends AbstractTraversalStrategy {
+public class GiraphElementStepStrategy extends AbstractTraversalStrategy {
 
-    private static final TinkerElementStepStrategy INSTANCE = new TinkerElementStepStrategy();
-
+    private static final GiraphElementStepStrategy INSTANCE = new GiraphElementStepStrategy();
     private final static Set<Class<? extends TraversalStrategy>> POSTS = Stream.of(TraverserSourceStrategy.class).collect(Collectors.toSet());
 
-    private TinkerElementStepStrategy() {
+    private GiraphElementStepStrategy() {
     }
 
     @Override
@@ -41,16 +42,16 @@ public class TinkerElementStepStrategy extends AbstractTraversalStrategy {
 
         final StartStep<Element> startStep = (StartStep) TraversalHelper.getStart(traversal);
         if (startStep.startAssignableTo(Vertex.class, Edge.class)) {
-            final Element element = ((StartStep<?>) startStep).getStart();
-            final String label = startStep.getLabel();
-            TraversalHelper.removeStep(startStep, traversal);
+            final GiraphElement element = ((StartStep<?>) startStep).getStart();
+            final String label = TraversalHelper.getStart(traversal).getLabel();
+            TraversalHelper.removeStep(TraversalHelper.getStart(traversal), traversal);
             if (TraversalHelper.isLabeled(label)) {
                 final Step identityStep = new IdentityStep(traversal);
                 identityStep.setLabel(label);
                 TraversalHelper.insertStep(identityStep, 0, traversal);
             }
             TraversalHelper.insertStep(new HasStep(traversal, new HasContainer(T.id, Compare.eq, element.id())), 0, traversal);
-            TraversalHelper.insertStep(new TinkerGraphStep<>(traversal, element.getClass()), 0, traversal);
+            TraversalHelper.insertStep(new GiraphGraphStep<>(traversal, element.getClass(), (GiraphGraph) element.graph()), 0, traversal);
         }
     }
 
@@ -58,8 +59,7 @@ public class TinkerElementStepStrategy extends AbstractTraversalStrategy {
         return POSTS;
     }
 
-    public static TinkerElementStepStrategy instance() {
+    public static GiraphElementStepStrategy instance() {
         return INSTANCE;
     }
-
 }

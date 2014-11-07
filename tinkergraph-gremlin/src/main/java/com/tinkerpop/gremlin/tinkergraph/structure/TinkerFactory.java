@@ -152,7 +152,7 @@ public class TinkerFactory {
 
             static {
                 final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
-                traversalStrategies.register(TraverserSourceStrategy.instance());
+                traversalStrategies.addStrategy(TraverserSourceStrategy.instance());
                 TraversalStrategies.GlobalCache.registerStrategies(DefaultSocialTraversal.class, traversalStrategies);
             }
 

@@ -17,8 +17,8 @@ public class Neo4jGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> imple
 
     static {
         final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
-        GraphTraversalStrategyRegistry.instance().toList().forEach(traversalStrategies::register);
-        traversalStrategies.register(Neo4jGraphStepStrategy.instance());
+        GraphTraversalStrategyRegistry.instance().getTraversalStrategies().forEach(traversalStrategies::addStrategy);
+        traversalStrategies.addStrategy(Neo4jGraphStepStrategy.instance());
         TraversalStrategies.GlobalCache.registerStrategies(Neo4jGraphTraversal.class, traversalStrategies);
     }
 
