@@ -8,9 +8,7 @@ import java.io.Serializable;
 public class MockSerializable implements Serializable {
     private String testField;
 
-    public MockSerializable() {
-        this("");
-    }
+    private MockSerializable() {}
 
     public MockSerializable(final String testField) {
         this.testField = testField;
