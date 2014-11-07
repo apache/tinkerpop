@@ -34,7 +34,7 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     public void register(final TraversalStrategy traversalStrategy) {
         if (!this.traversalStrategies.contains(traversalStrategy)) {
             this.traversalStrategies.add(traversalStrategy);
-            TraversalStrategy.sortStrategies(this.traversalStrategies);
+            TraversalStrategies.sortStrategies(this.traversalStrategies);
         }
     }
 
@@ -43,7 +43,7 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
         this.traversalStrategies.stream().filter(c -> traversalStrategyClass.isAssignableFrom(c.getClass()))
                 .collect(Collectors.toList())
                 .forEach(this.traversalStrategies::remove);
-        TraversalStrategy.sortStrategies(this.traversalStrategies);
+        TraversalStrategies.sortStrategies(this.traversalStrategies);
     }
 
     @Override

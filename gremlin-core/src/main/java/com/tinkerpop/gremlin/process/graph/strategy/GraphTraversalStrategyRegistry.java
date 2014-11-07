@@ -37,7 +37,7 @@ public class GraphTraversalStrategyRegistry implements TraversalStrategies {
         TRAVERSAL_STRATEGIES.add(ReducingStrategy.instance());
         TRAVERSAL_STRATEGIES.add(LocalRangeStrategy.instance());
         //  TRAVERSAL_STRATEGIES.add(UnrollJumpStrategy.instance());
-        TraversalStrategy.sortStrategies(TRAVERSAL_STRATEGIES);
+        TraversalStrategies.sortStrategies(TRAVERSAL_STRATEGIES);
     }
 
     private GraphTraversalStrategyRegistry() {
@@ -64,7 +64,7 @@ public class GraphTraversalStrategyRegistry implements TraversalStrategies {
     public void register(final TraversalStrategy traversalStrategy) {
         if (!TRAVERSAL_STRATEGIES.contains(traversalStrategy)) {
             TRAVERSAL_STRATEGIES.add(traversalStrategy);
-            TraversalStrategy.sortStrategies(TRAVERSAL_STRATEGIES);
+            TraversalStrategies.sortStrategies(TRAVERSAL_STRATEGIES);
         }
 
     }
@@ -74,7 +74,7 @@ public class GraphTraversalStrategyRegistry implements TraversalStrategies {
         TRAVERSAL_STRATEGIES.stream().filter(c -> traversalStrategyClass.isAssignableFrom(c.getClass()))
                 .collect(Collectors.toList())
                 .forEach(TRAVERSAL_STRATEGIES::remove);
-        TraversalStrategy.sortStrategies(TRAVERSAL_STRATEGIES);
+        TraversalStrategies.sortStrategies(TRAVERSAL_STRATEGIES);
     }
 
     @Override
