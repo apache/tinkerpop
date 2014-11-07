@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import com.tinkerpop.gremlin.server.GremlinServer;
+import com.tinkerpop.gremlin.server.util.IteratorUtil;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -107,13 +108,12 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             try {
                 logger.debug("Processing request containing script [{}] and bindings of [{}]", requestArguments.getValue0(), requestArguments.getValue1());
                 final Timer.Context timerContext = evalOpTimer.time();
-                final Object result = gremlinExecutor.eval(requestArguments.getValue0(),
-                        requestArguments.getValue2(), requestArguments.getValue1()).get();
+                final Object result = gremlinExecutor.eval(requestArguments.getValue0(), requestArguments.getValue2(), requestArguments.getValue1()).get();
                 timerContext.stop();
 
                 final ResponseMessage responseMessage = ResponseMessage.build(UUID.randomUUID())
                         .code(ResponseStatusCode.SUCCESS)
-                        .result(result).create();
+                        .result(IteratorUtil.convertToList(result)).create();
 
                 final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(
                         serializer.serializeResponseAsString(responseMessage).getBytes(UTF8)));

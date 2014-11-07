@@ -15,6 +15,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import java.io.File;
+import java.util.Arrays;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -34,6 +37,13 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Override
     public Settings overrideSettings(final Settings settings) {
         settings.channelizer = HttpChannelizer.class.getName();
+        final String nameOfTest = name.getMethodName();
+        switch (nameOfTest) {
+            case "should200OnGETWithGremlinQueryStringArgumentWithIteratorResult":
+            case "should200OnPOSTWithGremlinJsonEndcodedBodyWithIteratorResult":
+                settings.scriptEngines.get("gremlin-groovy").scripts = Arrays.asList("scripts/generate-classic.groovy");
+                break;
+        }
         return settings;
     }
 
@@ -47,10 +57,23 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals("application/json", response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertEquals(20, node.get("result").get("data").intValue());
+            assertEquals(20, node.get("result").get("data").get(0).intValue());
         }
     }
 
+    @Test
+    public void should200OnGETWithGremlinQueryStringArgumentWithIteratorResult() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=g.V()");
+
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(6, node.get("result").get("data").size());
+        }
+    }
 
     @Test
     public void should200OnGETWithGremlinQueryStringArgument() throws Exception {
@@ -76,7 +99,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals("application/json", response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertEquals("stephen", node.get("result").get("data").get("properties").get("name").get(0).get("value").asText());
+            assertEquals("stephen", node.get("result").get("data").get(0).get("properties").get("name").get(0).get("value").asText());
         }
     }
 
@@ -90,7 +113,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals("application/json", response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertEquals(20, node.get("result").get("data").intValue());
+            assertEquals(20, node.get("result").get("data").get(0).intValue());
         }
     }
 
@@ -115,7 +138,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals("application/json", response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertEquals(0, node.get("result").get("data").asInt());
+            assertEquals(0, node.get("result").get("data").get(0).asInt());
         }
     }
 
@@ -142,7 +165,23 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals("application/json", response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertEquals(0, node.get("result").get("data").intValue());
+            assertEquals(0, node.get("result").get("data").get(0).intValue());
+        }
+    }
+
+    @Test
+    public void should200OnPOSTWithGremlinJsonEndcodedBodyWithIteratorResult() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.V()\"}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(6, node.get("result").get("data").size());
         }
     }
 
@@ -158,7 +197,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals("application/json", response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertEquals(20, node.get("result").get("data").intValue());
+            assertEquals(20, node.get("result").get("data").get(0).intValue());
         }
     }
 
@@ -174,7 +213,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals("application/json", response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertEquals(10, node.get("result").get("data").intValue());
+            assertEquals(10, node.get("result").get("data").get(0).intValue());
         }
     }
 
@@ -190,7 +229,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals("application/json", response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertEquals(10.5d, node.get("result").get("data").doubleValue(), 0.0001);
+            assertEquals(10.5d, node.get("result").get("data").get(0).doubleValue(), 0.0001);
         }
     }
 
@@ -206,7 +245,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals("application/json", response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertEquals("10", node.get("result").get("data").textValue());
+            assertEquals("10", node.get("result").get("data").get(0).textValue());
         }
     }
 
@@ -222,7 +261,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals("application/json", response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertEquals(true, node.get("result").get("data").booleanValue());
+            assertEquals(true, node.get("result").get("data").get(0).booleanValue());
         }
     }
 
@@ -238,7 +277,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals("application/json", response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertEquals(true, node.get("result").get("data").isNull());
+            assertEquals(true, node.get("result").get("data").get(0).isNull());
         }
     }
 
@@ -273,8 +312,9 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals("application/json", response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertEquals(true, node.get("result").get("data").isObject());
-            assertEquals(1, node.get("result").get("data").get("y").asInt());
+            assertEquals(true, node.get("result").get("data").get(0).isObject());
+            assertEquals("y", node.get("result").get("data").get(0).get("key").asText());
+            assertEquals(1, node.get("result").get("data").get(0).get("value").asInt());
         }
     }
 
@@ -328,7 +368,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals("application/json", response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertEquals(0, node.get("result").get("data").asInt());
+            assertEquals(0, node.get("result").get("data").get(0).asInt());
         }
     }
 }
