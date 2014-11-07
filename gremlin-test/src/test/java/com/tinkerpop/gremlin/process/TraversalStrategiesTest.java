@@ -18,6 +18,11 @@ import static org.junit.Assert.fail;
  */
 public class TraversalStrategiesTest {
 
+    /**
+     * Tests that {@link com.tinkerpop.gremlin.process.TraversalStrategies#sortStrategies(java.util.List)}
+     * works as advertised. This class defines a bunch of dummy strategies which define an order. It is verified
+     * that the right order is being returned.
+     */
     @Test
     public void testTraversalStrategySorting() {
         TraversalStrategy
@@ -76,7 +81,7 @@ public class TraversalStrategiesTest {
         assertEquals(c, s.get(3));
         assertEquals(e, s.get(4));
 
-        //Dependency well defined
+        //Circular dependency => throws exception
         s = Stream.of(d, c, k, a, e, b)
                 .collect(Collectors.toList());
         try {
