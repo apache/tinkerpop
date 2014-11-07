@@ -181,7 +181,6 @@ public abstract class AbstractGremlinSuite extends Suite {
 
         @Override
         public boolean shouldRun(final Description description) {
-            System.out.println(description.getMethodName());
             if (description.isTest()) {
                 return !testsToIgnore.contains(description);
             }
