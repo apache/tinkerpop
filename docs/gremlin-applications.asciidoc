@@ -370,7 +370,7 @@ NOTE: It is possible to pass bindings via `GET` based requests.  All query strin
 Finally, as Gremlin Server can host multiple `ScriptEngine` instances (e.g. `gremlin-groovy`, `nashorn`), it is possible to define the language to utilize to process the request:
 
 [source,text]
-curl -X POST -d "{\"gremlin\":\"100-x\", \"language\"=\"gremlin-groovy\", \"bindings\":{\"x\":1}}" "http://localhost:8182"
+curl -X POST -d "{\"gremlin\":\"100-x\", \"language\":\"gremlin-groovy\", \"bindings\":{\"x\":1}}" "http://localhost:8182"
 
 By default this value is set to `gremlin-groovy`.  If using a `GET` operation, this value can be set as a query string argument with by setting the `language` key.
 
