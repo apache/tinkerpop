@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
-import com.tinkerpop.gremlin.giraph.process.computer.util.KryoWritable;
+import com.tinkerpop.gremlin.giraph.process.computer.util.GremlinWritable;
 import com.tinkerpop.gremlin.giraph.process.computer.util.MapReduceHelper;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.hadoop.io.NullWritable;
@@ -13,7 +13,7 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GiraphMap extends Mapper<NullWritable, GiraphComputeVertex, KryoWritable, KryoWritable> {
+public final class GiraphMap extends Mapper<NullWritable, GiraphComputeVertex, GremlinWritable, GremlinWritable> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GiraphMap.class);
     private MapReduce mapReduce;
@@ -23,22 +23,22 @@ public final class GiraphMap extends Mapper<NullWritable, GiraphComputeVertex, K
     }
 
     @Override
-    public void setup(final Mapper<NullWritable, GiraphComputeVertex, KryoWritable, KryoWritable>.Context context) {
+    public void setup(final Mapper<NullWritable, GiraphComputeVertex, GremlinWritable, GremlinWritable>.Context context) {
         this.mapReduce = MapReduceHelper.getMapReduce(context.getConfiguration());
     }
 
     @Override
-    public void map(final NullWritable key, final GiraphComputeVertex value, final Mapper<NullWritable, GiraphComputeVertex, KryoWritable, KryoWritable>.Context context) throws IOException, InterruptedException {
+    public void map(final NullWritable key, final GiraphComputeVertex value, final Mapper<NullWritable, GiraphComputeVertex, GremlinWritable, GremlinWritable>.Context context) throws IOException, InterruptedException {
         this.mapReduce.map(value.getBaseVertex(), new GiraphMapEmitter<>(context));
     }
 
     public static class GiraphMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {
 
-        final Mapper<NullWritable, GiraphComputeVertex, KryoWritable, KryoWritable>.Context context;
-        final KryoWritable<K> keyWritable = new KryoWritable<>();
-        final KryoWritable<V> valueWritable = new KryoWritable<>();
+        final Mapper<NullWritable, GiraphComputeVertex, GremlinWritable, GremlinWritable>.Context context;
+        final GremlinWritable<K> keyWritable = new GremlinWritable<>();
+        final GremlinWritable<V> valueWritable = new GremlinWritable<>();
 
-        public GiraphMapEmitter(final Mapper<NullWritable, GiraphComputeVertex, KryoWritable, KryoWritable>.Context context) {
+        public GiraphMapEmitter(final Mapper<NullWritable, GiraphComputeVertex, GremlinWritable, GremlinWritable>.Context context) {
             this.context = context;
         }
 

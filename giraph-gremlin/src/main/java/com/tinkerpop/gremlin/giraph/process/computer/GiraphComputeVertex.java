@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
 import com.tinkerpop.gremlin.giraph.Constants;
-import com.tinkerpop.gremlin.giraph.process.computer.util.KryoWritable;
+import com.tinkerpop.gremlin.giraph.process.computer.util.GremlinWritable;
 import com.tinkerpop.gremlin.giraph.process.computer.util.RuleWritable;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
@@ -25,10 +25,10 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWritable, KryoWritable> implements WrappedVertex<TinkerVertex> {
+public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWritable, GremlinWritable> implements WrappedVertex<TinkerVertex> {
 
     //TODO: Dangerous that the underlying TinkerGraph Vertex can have edges written to it.
-    //TODO: LongWritable as the key is not general enough -- KryoWritable causes problems though :|
+    //TODO: LongWritable as the key is not general enough -- GremlinWritable causes problems though :|
 
     private static final String VERTEX_ID = Graph.System.system("giraph.gremlin.vertexId");
     private TinkerVertex tinkerVertex;
@@ -47,7 +47,7 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWr
     }
 
     @Override
-    public void compute(final Iterable<KryoWritable> messages) {
+    public void compute(final Iterable<GremlinWritable> messages) {
         if (null == this.tinkerVertex) inflateTinkerVertex();
         final VertexProgram vertexProgram = ((GiraphWorkerContext) this.getWorkerContext()).getVertexProgram();
         final GiraphMemory memory = ((GiraphWorkerContext) this.getWorkerContext()).getMemory();

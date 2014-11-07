@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Renamed `KryoWritable` to `GremlinWritable` as it is no necessarily Kryo that is the serialization mechanism.
 * Fixed an input split bug in Giraph that was making it so that splits were not always at vertex boundaries.
 * Fixed a combiner bug in `GirapGraphComputer`. Combiners were always calling `MapReduce.reduce()`, not `MapReduce.combine()`.
 * Greatly simplified `SubgraphStrategy` by removing requirements for `Traversal` introspection.

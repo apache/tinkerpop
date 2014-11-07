@@ -2,9 +2,9 @@ package com.tinkerpop.gremlin.giraph.groovy.plugin
 
 import com.tinkerpop.gremlin.giraph.hdfs.HDFSTools
 import com.tinkerpop.gremlin.giraph.hdfs.HiddenFileFilter
-import com.tinkerpop.gremlin.giraph.hdfs.KryoWritableIterator
+import com.tinkerpop.gremlin.giraph.hdfs.GremlinWritableIterator
 import com.tinkerpop.gremlin.giraph.hdfs.TextIterator
-import com.tinkerpop.gremlin.giraph.process.computer.util.KryoWritable
+import com.tinkerpop.gremlin.giraph.process.computer.util.GremlinWritable
 import com.tinkerpop.gremlin.util.StreamFactory
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.*
@@ -96,8 +96,8 @@ class HadoopLoader {
                 // if(writableClass.equals(org.apache.giraph.graph.Vertex.class)) {
                 /// return StreamFactory.stream(new GiraphVertexIterator(((FileSystem) delegate).getConf(), new Path(path))).limit(totalKeyValues).iterator();
                 // } else
-                if (writableClass.equals(KryoWritable.class)) {
-                    return StreamFactory.stream(new KryoWritableIterator(((FileSystem) delegate).getConf(), new Path(path))).limit(totalKeyValues).iterator();
+                if (writableClass.equals(GremlinWritable.class)) {
+                    return StreamFactory.stream(new GremlinWritableIterator(((FileSystem) delegate).getConf(), new Path(path))).limit(totalKeyValues).iterator();
                 } else {
                     return StreamFactory.stream(new TextIterator(((FileSystem) delegate).getConf(), new Path(path))).limit(totalKeyValues).iterator();
                 }

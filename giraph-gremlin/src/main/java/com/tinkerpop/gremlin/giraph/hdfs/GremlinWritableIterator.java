@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.giraph.hdfs;
 
-import com.tinkerpop.gremlin.giraph.process.computer.util.KryoWritable;
+import com.tinkerpop.gremlin.giraph.process.computer.util.GremlinWritable;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -17,14 +17,14 @@ import java.util.Queue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class KryoWritableIterator implements Iterator<Pair> {
+public class GremlinWritableIterator implements Iterator<Pair> {
 
-    private final KryoWritable key = new KryoWritable();
-    private final KryoWritable value = new KryoWritable();
+    private final GremlinWritable key = new GremlinWritable();
+    private final GremlinWritable value = new GremlinWritable();
     private boolean available = false;
     private final Queue<SequenceFile.Reader> readers = new LinkedList<>();
 
-    public KryoWritableIterator(final Configuration configuration, final Path path) throws IOException {
+    public GremlinWritableIterator(final Configuration configuration, final Path path) throws IOException {
         final FileSystem fs = FileSystem.get(configuration);
         for (final FileStatus status : fs.listStatus(path, HiddenFileFilter.instance())) {
             this.readers.add(new SequenceFile.Reader(fs, status.getPath(), configuration));

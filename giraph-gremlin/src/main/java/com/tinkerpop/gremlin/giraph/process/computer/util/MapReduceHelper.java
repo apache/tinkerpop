@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.giraph.process.computer.util;
 
 import com.tinkerpop.gremlin.giraph.Constants;
-import com.tinkerpop.gremlin.giraph.hdfs.KryoWritableIterator;
+import com.tinkerpop.gremlin.giraph.hdfs.GremlinWritableIterator;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphCombine;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphMap;
@@ -50,7 +50,7 @@ public class MapReduceHelper {
         if (!mapReduce.doStage(MapReduce.Stage.MAP)) {
             final Path memoryPath = new Path(configuration.get(Constants.GREMLIN_GIRAPH_OUTPUT_LOCATION) + "/" + mapReduce.getMemoryKey());
             if (newConfiguration.getClass(Constants.GREMLIN_GIRAPH_MEMORY_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
-                mapReduce.addResultToMemory(memory, new KryoWritableIterator(configuration, memoryPath));
+                mapReduce.addResultToMemory(memory, new GremlinWritableIterator(configuration, memoryPath));
             else
                 GiraphGraphComputer.LOGGER.warn(SEQUENCE_WARNING);
         } else {
@@ -61,7 +61,7 @@ public class MapReduceHelper {
             final Job job = new Job(newConfiguration, mapReduce.toString());
             GiraphGraphComputer.LOGGER.info(Constants.GIRAPH_GREMLIN_JOB_PREFIX + mapReduce.toString());
             job.setJarByClass(GiraphGraph.class);
-            if (mapSort.isPresent()) job.setSortComparatorClass(KryoWritableComparator.KryoWritableMapComparator.class);
+            if (mapSort.isPresent()) job.setSortComparatorClass(GremlinWritableComparator.GremlinWritableMapComparator.class);
             job.setMapperClass(GiraphMap.class);
             if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
                 if (mapReduce.doStage(MapReduce.Stage.COMBINE))
@@ -74,10 +74,10 @@ public class MapReduceHelper {
                     job.setNumReduceTasks(0);
                 }
             }
-            job.setMapOutputKeyClass(KryoWritable.class);
-            job.setMapOutputValueClass(KryoWritable.class);
-            job.setOutputKeyClass(KryoWritable.class);
-            job.setOutputValueClass(KryoWritable.class);
+            job.setMapOutputKeyClass(GremlinWritable.class);
+            job.setMapOutputValueClass(GremlinWritable.class);
+            job.setOutputKeyClass(GremlinWritable.class);
+            job.setOutputValueClass(GremlinWritable.class);
             job.setInputFormatClass(ConfUtil.getInputFormatFromVertexInputFormat((Class) newConfiguration.getClass(Constants.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class)));
             job.setOutputFormatClass(newConfiguration.getClass(Constants.GREMLIN_GIRAPH_MEMORY_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class, OutputFormat.class)); // TODO: Make this configurable
             // if there is no vertex program, then grab the graph from the input location
@@ -96,13 +96,13 @@ public class MapReduceHelper {
             // if there is a reduce sort, we need to run another identity MapReduce job
             if (reduceSort.isPresent()) {
                 final Job reduceSortJob = new Job(newConfiguration, "ReduceKeySort");
-                reduceSortJob.setSortComparatorClass(KryoWritableComparator.KryoWritableReduceComparator.class);
+                reduceSortJob.setSortComparatorClass(GremlinWritableComparator.GremlinWritableReduceComparator.class);
                 reduceSortJob.setMapperClass(Mapper.class);
                 reduceSortJob.setReducerClass(Reducer.class);
-                reduceSortJob.setMapOutputKeyClass(KryoWritable.class);
-                reduceSortJob.setMapOutputValueClass(KryoWritable.class);
-                reduceSortJob.setOutputKeyClass(KryoWritable.class);
-                reduceSortJob.setOutputValueClass(KryoWritable.class);
+                reduceSortJob.setMapOutputKeyClass(GremlinWritable.class);
+                reduceSortJob.setMapOutputValueClass(GremlinWritable.class);
+                reduceSortJob.setOutputKeyClass(GremlinWritable.class);
+                reduceSortJob.setOutputValueClass(GremlinWritable.class);
                 reduceSortJob.setInputFormatClass(SequenceFileInputFormat.class); // TODO: require this hard coded? If so, ERROR messages needed.
                 reduceSortJob.setOutputFormatClass(newConfiguration.getClass(Constants.GREMLIN_GIRAPH_MEMORY_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class, OutputFormat.class));
                 FileInputFormat.setInputPaths(reduceSortJob, memoryPath);
@@ -116,7 +116,7 @@ public class MapReduceHelper {
             // if its not a SequenceFile there is no certain way to convert to necessary Java objects.
             // to get results you have to look through HDFS directory structure. Oh the horror.
             if (newConfiguration.getClass(Constants.GREMLIN_GIRAPH_MEMORY_OUTPUT_FORMAT_CLASS, SequenceFileOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
-                mapReduce.addResultToMemory(memory, new KryoWritableIterator(configuration, memoryPath));
+                mapReduce.addResultToMemory(memory, new GremlinWritableIterator(configuration, memoryPath));
             else
                 GiraphGraphComputer.LOGGER.warn(SEQUENCE_WARNING);
         }

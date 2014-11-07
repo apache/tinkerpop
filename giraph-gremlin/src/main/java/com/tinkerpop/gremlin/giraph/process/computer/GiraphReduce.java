@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
-import com.tinkerpop.gremlin.giraph.process.computer.util.KryoWritable;
+import com.tinkerpop.gremlin.giraph.process.computer.util.GremlinWritable;
 import com.tinkerpop.gremlin.giraph.process.computer.util.MapReduceHelper;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -13,7 +13,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GiraphReduce extends Reducer<KryoWritable, KryoWritable, KryoWritable, KryoWritable> {
+public final class GiraphReduce extends Reducer<GremlinWritable, GremlinWritable, GremlinWritable, GremlinWritable> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GiraphReduce.class);
     private MapReduce mapReduce;
@@ -23,13 +23,13 @@ public final class GiraphReduce extends Reducer<KryoWritable, KryoWritable, Kryo
     }
 
     @Override
-    public void setup(final Reducer<KryoWritable, KryoWritable, KryoWritable, KryoWritable>.Context context) {
+    public void setup(final Reducer<GremlinWritable, GremlinWritable, GremlinWritable, GremlinWritable>.Context context) {
         this.mapReduce = MapReduceHelper.getMapReduce(context.getConfiguration());
     }
 
     @Override
-    public void reduce(final KryoWritable key, final Iterable<KryoWritable> values, final Reducer<KryoWritable, KryoWritable, KryoWritable, KryoWritable>.Context context) throws IOException, InterruptedException {
-        final Iterator<KryoWritable> itty = values.iterator();
+    public void reduce(final GremlinWritable key, final Iterable<GremlinWritable> values, final Reducer<GremlinWritable, GremlinWritable, GremlinWritable, GremlinWritable>.Context context) throws IOException, InterruptedException {
+        final Iterator<GremlinWritable> itty = values.iterator();
         this.mapReduce.reduce(key.get(), new Iterator() {
             @Override
             public boolean hasNext() {
@@ -46,11 +46,11 @@ public final class GiraphReduce extends Reducer<KryoWritable, KryoWritable, Kryo
 
     public static class GiraphReduceEmitter<OK, OV> implements MapReduce.ReduceEmitter<OK, OV> {
 
-        final Reducer<KryoWritable, KryoWritable, KryoWritable, KryoWritable>.Context context;
-        final KryoWritable<OK> keyWritable = new KryoWritable<>();
-        final KryoWritable<OV> valueWritable = new KryoWritable<>();
+        final Reducer<GremlinWritable, GremlinWritable, GremlinWritable, GremlinWritable>.Context context;
+        final GremlinWritable<OK> keyWritable = new GremlinWritable<>();
+        final GremlinWritable<OV> valueWritable = new GremlinWritable<>();
 
-        public GiraphReduceEmitter(final Reducer<KryoWritable, KryoWritable, KryoWritable, KryoWritable>.Context context) {
+        public GiraphReduceEmitter(final Reducer<GremlinWritable, GremlinWritable, GremlinWritable, GremlinWritable>.Context context) {
             this.context = context;
         }
 
