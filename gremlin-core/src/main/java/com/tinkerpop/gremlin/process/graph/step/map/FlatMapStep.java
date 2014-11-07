@@ -34,7 +34,7 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
             else {
                 final Traverser.Admin<S> traverser = this.starts.next();
                 if (PROFILING_ENABLED) TraversalMetrics.start(this);
-                this.iterator = new FlatMapTraverserIterator<>(traverser, this, this.function.apply(traverser));
+                this.iterator = new FlatMapTraverserIterator<>(traverser, this.function.apply(traverser));
                 if (PROFILING_ENABLED) TraversalMetrics.stop(this);
             }
         }
@@ -50,12 +50,10 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
 
         private final Traverser.Admin<A> head;
         private final Iterator<B> iterator;
-        private final Step step;
 
-        private FlatMapTraverserIterator(final Traverser.Admin<A> head, final Step step, final Iterator<B> iterator) {
+        private FlatMapTraverserIterator(final Traverser.Admin<A> head, final Iterator<B> iterator) {
             this.iterator = iterator;
             this.head = head;
-            this.step = step;
         }
 
         @Override
@@ -66,7 +64,7 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
         @Override
         public final Traverser<B> next() {
             if (FlatMapStep.PROFILING_ENABLED) TraversalMetrics.start(FlatMapStep.this);
-            final Traverser.Admin<B> traverser = this.head.makeChild(this.step.getLabel(), this.iterator.next());
+            final Traverser.Admin<B> traverser = this.head.makeChild(FlatMapStep.this.getLabel(), this.iterator.next());
             if (FlatMapStep.PROFILING_ENABLED) TraversalMetrics.finish(FlatMapStep.this, this.head);
             return traverser;
         }

@@ -1305,7 +1305,7 @@ Vertex Steps
 
 image::vertex-steps.png[width=350]
 
-The vertex steps (*flatMap*) are fundamental to the Gremlin language and are perhaps the only "graph oriented" steps. Via these steps, its possible to "move" on the graph -- i.e. traverser.
+The vertex steps (*flatMap*) are fundamental to the Gremlin language and are perhaps the only "graph oriented" steps. Via these steps, its possible to "move" on the graph -- i.e. traverse.
 
 * `out(integer, string...)`: Move to the outgoing adjacent vertices given the branch factor and edge labels.
 * `in(integer, string...)`: Move to the incoming adjacent vertices given the branch factor and edge labels.
