@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -9,10 +8,9 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.util.StreamFactory;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -43,10 +41,9 @@ public class SubgraphStrategy implements GraphStrategy {
     public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return (f) -> (id) -> {
             final Vertex v = f.apply(id);
-            if (!testVertex(v)) {
+            if (!this.testVertex(v)) {
                 throw Graph.Exceptions.elementNotFound(Vertex.class, id);
             }
-
             return v;
         };
     }
@@ -56,7 +53,7 @@ public class SubgraphStrategy implements GraphStrategy {
         return (f) -> (id) -> {
             final Edge e = f.apply(id);
 
-            if (!testEdge(e)) {
+            if (!this.testEdge(e)) {
                 throw Graph.Exceptions.elementNotFound(Edge.class, id);
             }
 
@@ -65,33 +62,29 @@ public class SubgraphStrategy implements GraphStrategy {
     }
 
     public UnaryOperator<BiFunction<Direction, String[], Iterator<Vertex>>> getVertexIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
-        return (f) -> (direction, labels) ->
-                new ChainIterator(
-                        new PredicateIterator<>(ctx.getCurrent().getBaseVertex().iterators().edgeIterator(direction, labels)),
-                        e -> {
-                            if (direction.equals(Direction.BOTH)) {
-                                return notStart(ctx.getCurrent(), e);
-                            } else
-                                return e.iterators().vertexIterator(direction.opposite());
-                        });
-
-
+        return (f) -> (direction, labels) -> StreamFactory
+                .stream(ctx.getCurrent().edgeIterator(direction, labels))
+                .filter(this::testEdge)
+                .map(edge -> otherVertex(direction, ctx.getCurrent(), edge))
+                .filter(this::testVertex)
+                .map(v -> ((StrategyWrappedVertex) v).getBaseVertex()).iterator();
+        // TODO: why do we have to unwrap? Note that we are not doing f.apply() like the other methods. Is this bad?
     }
 
     public UnaryOperator<BiFunction<Direction, String[], Iterator<Edge>>> getVertexIteratorsEdgesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
-        return (f) -> (direction, labels) -> new PredicateIterator<>(f.apply(direction, labels));
+        return (f) -> (direction, labels) -> StreamFactory.stream(f.apply(direction, labels)).filter(this::testEdge).iterator();
     }
 
     public UnaryOperator<Function<Direction, Iterator<Vertex>>> getEdgeIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
-        return (f) -> direction -> new PredicateIterator<>(f.apply(direction));
+        return (f) -> direction -> StreamFactory.stream(f.apply(direction)).filter(this::testVertex).iterator();
     }
 
     public UnaryOperator<Supplier<GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return (f) -> () -> f.get().filter(t -> this.testVertex(t.get()));
+        return (f) -> () -> f.get().filter(t -> this.testVertex(t.get())); // TODO: we should make sure index hits go first.
     }
 
     public UnaryOperator<Supplier<GraphTraversal<Edge, Edge>>> getGraphEStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return (f) -> () -> f.get().filter(t -> this.testEdge(t.get()));
+        return (f) -> () -> f.get().filter(t -> this.testEdge(t.get()));  // TODO: we should make sure index hits go first.
     }
 
     // TODO: make this work for DSL -- we need Element predicate
@@ -117,11 +110,14 @@ public class SubgraphStrategy implements GraphStrategy {
         return element instanceof Vertex ? testVertex((Vertex) element) : testEdge((Edge) element);
     }
 
-    public Iterator<Vertex> notStart(final Vertex start, final Edge edge) {
-        if (ElementHelper.areEqual(start, edge.iterators().vertexIterator(Direction.IN).next())) {
-            return edge.iterators().vertexIterator(Direction.OUT);
+    private static final Vertex otherVertex(final Direction direction, final Vertex start, final Edge edge) {
+        if (direction.equals(Direction.BOTH)) {
+            final Vertex inVertex = edge.iterators().vertexIterator(Direction.IN).next();
+            return ElementHelper.areEqual(start, inVertex) ?
+                    edge.iterators().vertexIterator(Direction.OUT).next() :
+                    inVertex;
         } else {
-            return edge.iterators().vertexIterator(Direction.IN);
+            return edge.iterators().vertexIterator(direction.opposite()).next();
         }
     }
 
@@ -129,87 +125,4 @@ public class SubgraphStrategy implements GraphStrategy {
     public String toString() {
         return StringFactory.graphStrategyString(this);
     }
-
-    private final class PredicateIterator<E extends Element> implements Iterator<E> {
-
-        private E nextUp;
-        private final Iterator<E> iterator;
-
-        public PredicateIterator(final Iterator<E> iterator) {
-            this.iterator = iterator;
-        }
-
-        @Override
-        public boolean hasNext() {
-            if (null != this.nextUp) {
-                return true;
-            } else {
-                return this.advanceToNext();
-            }
-        }
-
-        @Override
-        public E next() {
-            try {
-                if (null != this.nextUp) {
-                    return this.nextUp;
-                } else {
-                    if (this.advanceToNext())
-                        return this.nextUp;
-                    else
-                        throw FastNoSuchElementException.instance();
-                }
-            } finally {
-                this.nextUp = null;
-            }
-        }
-
-        public boolean advanceToNext() {
-            this.nextUp = null;
-            while (this.iterator.hasNext()) {
-                final E element = this.iterator.next();
-                if (element instanceof Vertex) {
-                    if (testVertex((Vertex) element)) {
-                        this.nextUp = element;
-                        return true;
-                    }
-                } else if (element instanceof Edge) {
-                    if (testEdge((Edge) element)) {
-                        this.nextUp = element;
-                        return true;
-                    }
-                } else {
-                    throw new UnsupportedOperationException("This iterator only filters vertices and edges for now: " + element.getClass());
-                }
-            }
-            return false;
-        }
-    }
-
-    public class ChainIterator implements Iterator<Vertex> {
-
-        private final Iterator<Vertex> iterator;
-
-        public ChainIterator(final Iterator<Edge> first, final Function<Edge, Iterator<Vertex>> mapFunction) {
-            final List<Vertex> list = new ArrayList<>();
-            while (first.hasNext()) {
-                mapFunction.apply(first.next()).forEachRemaining(list::add);
-            }
-            this.iterator = new PredicateIterator(list.iterator());
-        }
-
-        @Override
-        public boolean hasNext() {
-            return this.iterator.hasNext();
-        }
-
-        @Override
-        public Vertex next() {
-            return this.iterator.next();
-        }
-
-
-    }
-
-
 }
