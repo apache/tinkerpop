@@ -27,7 +27,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -156,11 +155,11 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]").create();
 
-            // should be 11 responses when you include the terminator
+            // should be 2 responses when you include the terminator
             final CountDownLatch latch = new CountDownLatch(2);
             client.submit(request, r -> latch.countDown());
 
-            assertTrue(latch.await(300, TimeUnit.MILLISECONDS));
+            assertTrue(latch.await(500, TimeUnit.MILLISECONDS));
         }
     }
 
@@ -172,8 +171,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try {
             // this should return "nothing" - there should be no exception
             assertNull(client.submit("g.V().has('name','kadfjaldjfla')").one());
-        } catch (Exception re) {
-            throw re;
         } finally {
             cluster.close();
         }
