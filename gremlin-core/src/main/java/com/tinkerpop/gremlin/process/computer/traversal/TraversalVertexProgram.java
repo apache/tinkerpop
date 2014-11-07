@@ -91,7 +91,7 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
      * @return a sideEffect API to get and put sideEffect data onto the vertex
      */
     public static Traversal.SideEffects getLocalSideEffects(final Vertex localVertex) {
-        return new DefaultTraversalSideEffects(localVertex);
+        return new DefaultTraversalSideEffects(localVertex);    // TODO: use a worker static object
     }
 
     /**
