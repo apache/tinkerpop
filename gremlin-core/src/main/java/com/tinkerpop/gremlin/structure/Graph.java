@@ -977,6 +977,11 @@ public interface Graph extends AutoCloseable {
          * The reason the implementation is opting out of this test.
          */
         public String reason();
+
+        /**
+         * For parameterized tests specify the name of the test itself without its "square brackets".
+         */
+        public String specific() default "";
     }
 
     /**

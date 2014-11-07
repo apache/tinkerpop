@@ -342,7 +342,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
     })
     public static class ExceptionConsistencyWhenVertexPropertyRemovedTest extends AbstractGremlinTest {
 
-        @Parameterized.Parameters(name = "{index}: expect - {0}")
+        @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
                     {"property(k)", FunctionUtils.wrapConsumer((VertexProperty p) -> p.property("year"))}});

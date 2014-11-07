@@ -235,7 +235,7 @@ public class EdgeTest {
     })
     public static class ExceptionConsistencyWhenEdgeRemovedTest extends AbstractGremlinTest {
 
-        @Parameterized.Parameters(name = "{index}: expect - {0}")
+        @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
                     {"property(k)", FunctionUtils.wrapConsumer((Edge e) -> e.property("x"))},
