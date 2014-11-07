@@ -827,9 +827,9 @@ public class IoTest extends AbstractGremlinTest {
                     .create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais, detachedEdge -> {
-                    assertEquals(e.id(), detachedEdge.id());
-                    assertEquals(v1.id(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().id());
-                    assertEquals(v2.id(), detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
+                    assertEquals(e.id(), graphProvider.reconstituteGraphSONIdentifier(Edge.class, detachedEdge.id()));
+                    assertEquals(v1.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.iterators().vertexIterator(Direction.OUT).next().id()));
+                    assertEquals(v2.id(), graphProvider.reconstituteGraphSONIdentifier(Vertex.class, detachedEdge.iterators().vertexIterator(Direction.IN).next().id()));
                     assertEquals(v1.label(), detachedEdge.iterators().vertexIterator(Direction.OUT).next().label());
                     assertEquals(v2.label(), detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
                     assertEquals(e.label(), detachedEdge.label());
