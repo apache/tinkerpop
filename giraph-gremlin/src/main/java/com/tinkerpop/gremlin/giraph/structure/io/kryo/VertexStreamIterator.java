@@ -49,6 +49,16 @@ public class VertexStreamIterator implements Iterator<Vertex> {
         this.maxLength = maxLength;
     }
 
+    public float getProgress() {
+        if (0 == this.currentLength || 0 == this.maxLength)
+            return 0.0f;
+        else if (this.currentLength >= this.maxLength || this.maxLength == Long.MAX_VALUE)
+            return 1.0f;
+        else
+            return (float) this.currentLength / (float) this.maxLength;
+
+    }
+
     @Override
     public boolean hasNext() {
         if (this.currentLength >= this.maxLength) // gone beyond the split boundary
