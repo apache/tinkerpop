@@ -15,7 +15,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
-import java.io.File;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
@@ -369,6 +368,18 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
             assertEquals(0, node.get("result").get("data").get(0).asInt());
+        }
+    }
+
+    @Test
+    public void should500OnGETWithGremlinEvalFailure() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"1/0\"}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(500, response.getStatusLine().getStatusCode());
         }
     }
 }

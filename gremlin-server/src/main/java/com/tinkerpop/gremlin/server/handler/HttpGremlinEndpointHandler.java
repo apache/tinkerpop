@@ -140,7 +140,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
         logger.error("Error processing HTTP Request", cause);
-        errorMeter.mark();
+        sendError(ctx, INTERNAL_SERVER_ERROR, cause.getCause().getMessage());
         ctx.close();
     }
 
@@ -221,8 +221,8 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status, final String message) {
         logger.warn("Invalid request - responding with {} and {}", status, message);
         final FullHttpResponse response = new DefaultFullHttpResponse(
-                HTTP_1_1, status, Unpooled.copiedBuffer("Failure: " + message + "\r\n", CharsetUtil.UTF_8));
-        response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
+                HTTP_1_1, status, Unpooled.copiedBuffer("{\"message\": \"" + message + "\"}", CharsetUtil.UTF_8));
+        response.headers().set(CONTENT_TYPE, "application/json");
 
         // Close the connection as soon as the error message is sent.
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
