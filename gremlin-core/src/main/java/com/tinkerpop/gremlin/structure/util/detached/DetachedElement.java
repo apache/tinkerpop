@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
-import com.tinkerpop.gremlin.structure.util.PropertyFilterIterator;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -87,11 +86,23 @@ public abstract class DetachedElement<E> implements Element, Element.Iterators, 
 
     @Override
     public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys) {
-        return new PropertyFilterIterator<>(properties.values().stream().flatMap(list -> list.stream()).collect(Collectors.toList()).iterator(), false, propertyKeys);
+        return (Iterator) this.properties.values().stream().flatMap(list -> list.stream()).filter(p -> !p.isHidden()).filter(p -> keyExists(p.key(), propertyKeys)).iterator();
     }
 
     @Override
     public <V> Iterator<? extends Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
-        return new PropertyFilterIterator<>(properties.values().stream().flatMap(list -> list.stream()).collect(Collectors.toList()).iterator(), true, propertyKeys);
+        return (Iterator) this.properties.values().stream().flatMap(list -> list.stream()).filter(Property::isHidden).filter(p -> keyExists(p.key(), propertyKeys)).iterator();
+    }
+
+    private final boolean keyExists(final String key, final String... providedKeys) {
+        if (0 == providedKeys.length) return true;
+        if (1 == providedKeys.length) return key.equals(providedKeys[0]);
+        else {
+            for (final String temp : providedKeys) {
+                if (temp.equals(key))
+                    return true;
+            }
+            return false;
+        }
     }
 }
