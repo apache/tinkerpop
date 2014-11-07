@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import com.tinkerpop.gremlin.server.GremlinServer;
+import com.tinkerpop.gremlin.server.util.IteratorUtil;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -107,13 +108,12 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             try {
                 logger.debug("Processing request containing script [{}] and bindings of [{}]", requestArguments.getValue0(), requestArguments.getValue1());
                 final Timer.Context timerContext = evalOpTimer.time();
-                final Object result = gremlinExecutor.eval(requestArguments.getValue0(),
-                        requestArguments.getValue2(), requestArguments.getValue1()).get();
+                final Object result = gremlinExecutor.eval(requestArguments.getValue0(), requestArguments.getValue2(), requestArguments.getValue1()).get();
                 timerContext.stop();
 
                 final ResponseMessage responseMessage = ResponseMessage.build(UUID.randomUUID())
                         .code(ResponseStatusCode.SUCCESS)
-                        .result(result).create();
+                        .result(IteratorUtil.convertToList(result)).create();
 
                 final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(
                         serializer.serializeResponseAsString(responseMessage).getBytes(UTF8)));
@@ -140,7 +140,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
         logger.error("Error processing HTTP Request", cause);
-        errorMeter.mark();
+        sendError(ctx, INTERNAL_SERVER_ERROR, cause.getCause().getMessage());
         ctx.close();
     }
 
@@ -221,8 +221,8 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status, final String message) {
         logger.warn("Invalid request - responding with {} and {}", status, message);
         final FullHttpResponse response = new DefaultFullHttpResponse(
-                HTTP_1_1, status, Unpooled.copiedBuffer("Failure: " + message + "\r\n", CharsetUtil.UTF_8));
-        response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
+                HTTP_1_1, status, Unpooled.copiedBuffer("{\"message\": \"" + message + "\"}", CharsetUtil.UTF_8));
+        response.headers().set(CONTENT_TYPE, "application/json");
 
         // Close the connection as soon as the error message is sent.
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);

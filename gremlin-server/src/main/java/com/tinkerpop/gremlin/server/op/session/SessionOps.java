@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.server.Context;
 import com.tinkerpop.gremlin.server.GremlinServer;
 import com.tinkerpop.gremlin.server.handler.StateKey;
 import com.tinkerpop.gremlin.server.op.OpProcessorException;
+import com.tinkerpop.gremlin.server.util.IteratorUtil;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.util.Serializer;
@@ -73,7 +74,7 @@ final class SessionOps {
 
         final CompletableFuture<Object> future = session.getGremlinExecutor().eval(script, language, bindings);
         future.handle((v, t) -> timerContext.stop());
-        future.thenAccept(o -> ctx.write(Pair.with(msg, convertToIterator(o))));
+        future.thenAccept(o -> ctx.write(Pair.with(msg, IteratorUtil.convertToIterator(o))));
         future.exceptionally(se -> {
             logger.warn(String.format("Exception processing a script on request [%s].", msg), se);
             ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION).statusMessage(se.getMessage()).create());
@@ -86,24 +87,5 @@ final class SessionOps {
         final Session session = sessions.computeIfAbsent(sessionId, k -> new Session(k, context, sessions));
         session.touch();
         return session;
-    }
-
-    private static Iterator convertToIterator(final Object o) {
-        final Iterator itty;
-        if (o instanceof Iterable)
-            itty = ((Iterable) o).iterator();
-        else if (o instanceof Iterator)
-            itty = (Iterator) o;
-        else if (o instanceof Object[])
-            itty = new ArrayIterator(o);
-        else if (o instanceof Stream)
-            itty = ((Stream) o).iterator();
-        else if (o instanceof Map)
-            itty = ((Map) o).entrySet().iterator();
-        else if (o instanceof Throwable)
-            itty = new SingleIterator<Object>(((Throwable) o).getMessage());
-        else
-            itty = new SingleIterator<>(o);
-        return itty;
     }
 }
