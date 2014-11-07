@@ -26,7 +26,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     static {
         final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
-        GraphTraversalStrategyRegistry.instance().toList().forEach(traversalStrategies::register);
+        GraphTraversalStrategyRegistry.instance().getTraversalStrategies().forEach(traversalStrategies::addStrategy);
         TraversalStrategies.GlobalCache.registerStrategies(DefaultTraversal.class, traversalStrategies);
     }
 

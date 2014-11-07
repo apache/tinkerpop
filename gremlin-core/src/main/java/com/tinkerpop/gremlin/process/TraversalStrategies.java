@@ -2,8 +2,6 @@ package com.tinkerpop.gremlin.process;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
-import com.tinkerpop.gremlin.process.graph.strategy.GraphTraversalStrategyRegistry;
-import com.tinkerpop.gremlin.process.traversers.TraverserGeneratorFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,42 +19,22 @@ import java.util.Set;
 public interface TraversalStrategies {
 
     /**
-     * Return all the {@link TraversalStrategy} singleton instances associated with this traversal.
+     * Return all the {@link TraversalStrategy} singleton instances associated with this {@link TraversalStrategies}.
      */
     public List<TraversalStrategy> toList();
 
     /**
-     * Register a {@link TraversalStrategy} with this traversal.
+     * Apply all the {@link TraversalStrategy} optimizers to the {@link Traversal} for the stated {@link TraversalEngine}.
+     * This method must ensure that the strategies are sorted prior to application.
      *
-     * @param traversalStrategy the traversal strategy to register
-     */
-    public void register(final TraversalStrategy traversalStrategy);
-
-    /**
-     * Unregister a {@link TraversalStrategy} associated with this traversal.
-     * Given that all traversal strategies are singletons, the class is sufficient to unregister it.
-     *
-     * @param traversalStrategyClass the class of the traversal strategy to unregister
-     */
-    public void unregister(final Class<? extends TraversalStrategy> traversalStrategyClass);
-
-    /**
-     * Apply all the {@link TraversalStrategy} optimizers to the traversal for the stated {@link TraversalEngine}.
-     * This method should sort the strategies prior to application.
-     *
-     * @param engine the engine that the traversal is going to be executed on
+     * @param traversal the traversal to apply the strategies to
+     * @param engine    the engine that the traversal is going to be executed on
      */
     public void apply(final Traversal traversal, final TraversalEngine engine);
 
     /**
-     * A helper method to remove all the {@link TraversalStrategy} instances from the traversal.
+     * Get the {@link TraverserGenerator} to use to generate traversers in the {@link Traversal}.
      */
-    public default void clear() {
-        this.toList().forEach(strategy -> this.unregister(strategy.getClass()));
-    }
-
-    public void registerTraverserGeneratorFactory(final TraverserGeneratorFactory traverserGeneratorFactory);
-
     public TraverserGenerator getTraverserGenerator(final Traversal traversal, final TraversalEngine engine);
 
     public static void sortStrategies(final List<? extends TraversalStrategy> strategies) {
@@ -113,8 +91,10 @@ public interface TraversalStrategies {
         }
 
         public static TraversalStrategies getStrategies(final Class<? extends Traversal> traversalClass) {
-            final TraversalStrategies ts = CACHE.get(traversalClass);
-            return null == ts ? GraphTraversalStrategyRegistry.instance() : ts;
+            final TraversalStrategies traversalStrategies = CACHE.get(traversalClass);
+            if (null == traversalStrategies)
+                throw new IllegalArgumentException("The provided traversal class does not have a cached strategies: " + traversalClass.getCanonicalName());
+            return traversalStrategies;
         }
     }
 

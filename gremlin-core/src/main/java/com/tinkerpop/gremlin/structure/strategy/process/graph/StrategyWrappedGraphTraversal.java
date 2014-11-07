@@ -15,7 +15,7 @@ public class StrategyWrappedGraphTraversal<S, E> extends DefaultGraphTraversal<S
 
     static {
         final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
-        GraphTraversalStrategyRegistry.instance().toList().forEach(traversalStrategies::register);
+        GraphTraversalStrategyRegistry.instance().getTraversalStrategies().forEach(traversalStrategies::addStrategy);
         TraversalStrategies.GlobalCache.registerStrategies(StrategyWrappedGraphTraversal.class, traversalStrategies);
     }
 

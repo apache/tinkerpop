@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
+import com.tinkerpop.gremlin.giraph.process.graph.GiraphElementTraversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -23,6 +25,11 @@ public class GiraphVertexProperty<V> implements VertexProperty<V>, VertexPropert
     public GiraphVertexProperty(final TinkerVertexProperty<V> tinkerVertexProperty, final GiraphVertex giraphVertex) {
         this.tinkerVertexProperty = tinkerVertexProperty;
         this.giraphVertex = giraphVertex;
+    }
+
+    @Override
+    public GraphTraversal<VertexProperty, VertexProperty> start() {
+        return new GiraphElementTraversal<>(this, this.giraphVertex.graph);
     }
 
     @Override

@@ -1,21 +1,11 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
-import com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect.GiraphGraphStep;
-import com.tinkerpop.gremlin.process.Step;
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.giraph.process.graph.GiraphElementTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
-import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
@@ -39,23 +29,7 @@ public class GiraphEdge extends GiraphElement implements Edge, Edge.Iterators, W
 
     @Override
     public GraphTraversal<Edge, Edge> start() {
-        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<Edge, Edge>(this.graph) {
-            @Override
-            public GraphTraversal<Edge, Edge> submit(final GraphComputer computer) {
-                final String label = TraversalHelper.getStart(this).getLabel();
-                TraversalHelper.removeStep(TraversalHelper.getStart(this), this);
-                if (TraversalHelper.isLabeled(label)) {
-                    final Step identityStep = new IdentityStep(this);
-                    identityStep.setLabel(label);
-                    TraversalHelper.insertStep(identityStep, 0, this);
-                }
-                TraversalHelper.insertStep(new HasStep(this, new HasContainer(T.id, Compare.eq, tinkerElement.id())), 0, this);
-                TraversalHelper.insertStep(new GiraphGraphStep<>(this, Edge.class, graph), 0, this);
-
-                return super.submit(computer);
-            }
-        };
-        return traversal.addStep(new StartStep<>(traversal, this));
+        return new GiraphElementTraversal<>(this, this.graph);
     }
 
     @Override

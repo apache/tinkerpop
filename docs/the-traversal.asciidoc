@@ -1379,27 +1379,34 @@ image:traversal-strategy.png[width=125,float=right] A `TraversalStrategy` can an
 A simple TraversalStrategy is the `IdentityRemovalStrategy` and it is a type-1 strategy defined as follows:
 
 [source,java]
-public class IdentityRemovalStrategy implements TraversalStrategy.NoDependencies {
-    public void apply(final Traversal traversal, final TraversalEngine traversalEngine) {
-        traversal.getSteps().stream()
-                .filter(step -> step instanceof IdentityStep
-                    && !TraversalHelper.isLabeled(step))
-                .collect(Collectors.<Step>toList())
+----
+public class IdentityRemovalStrategy extends AbstractTraversalStrategy {
+
+    private static final IdentityRemovalStrategy INSTANCE = new IdentityRemovalStrategy();
+
+    private IdentityRemovalStrategy() {
+    }
+
+    @Override
+    public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
+        if (!TraversalHelper.hasStepOfClass(IdentityStep.class, traversal))  // break fast if there are no identity steps
+            return;
+        TraversalHelper.getStepsOfClass(IdentityStep.class, traversal).stream()
+                .filter(step -> !TraversalHelper.isLabeled(step))
                 .forEach(step -> TraversalHelper.removeStep(step, traversal));
     }
+
+    public static IdentityRemovalStrategy instance() {
+        return INSTANCE;
+    }
 }
+---
 
-This strategy simply removes any unlabeled `IdentityStep` steps in the Traversal as `aStep().identity().identity().bStep()` is equivalent to `aStep().bStep()`. The `NoDepedencies` interface is a marker interface that states that this strategy does not require the execution of another strategy before or after it. For those that do have dependencies, TraversalStrategy implements Comparable<TraversalStrategy> to allow a sort order of strategies prior to their evaluation.
+This strategy simply removes any unlabeled `IdentityStep` steps in the Traversal as `aStep().identity().identity().bStep()` is equivalent to `aStep().bStep()`. For those traversal strategies that require other strategies to execute prior or post to the strategy, then the following two methods can be defined in `TraversalStrategy` (with defaults being an empty set).
 
-[source,groovy]
-gremlin> t = g.V().identity().identity().out(); null
-==>null
-gremlin> t.toString()
-==>[TinkerGraphStep, IdentityStep, IdentityStep, VertexStep(OUT)]
-gremlin> t.getStrategies().apply()         // never required by the user (automatically executed prior to evaluation)
-==>null
-gremlin> t.toString()
-==>[TinkerGraphStep, VertexStep(OUT)]
+[source,java]
+public Set<Class<? extends TraversalStrategy>> applyPrior();
+public Set<Class<? extends TraversalStrategy>> applyPost();
 
 Type-2 strategies are defined by graph vendors who implement TinkerPop3.
 
@@ -1409,9 +1416,9 @@ g.V().has('name','marko')
 The expression above can be executed in a `O(|V|)` or `O(log(|V|)` fashion in <<tinkergraph-gremlin,TinkerGraph>> depending on whether there is or is not an index defined for "name."
 
 [source,java]
-TinkerGraphStepStrategy implements TraversalStrategy.NoDependency {
+TinkerGraphStepStrategy implements TraversalStrategy {
     public void apply(final Traversal traversal, final TraversalEngine traversalEngine) {
-        if (engine.equals(TraversalEngine.COMPUTER))  // Gremlin OLAP does not use indices but linear scans of the graph
+        if (engine.equals(TraversalEngine.COMPUTER))  // TinkerGraphComputer does not use indices but linear scans of the graph
             return;
         final TinkerGraphStep tinkerGraphStep = (TinkerGraphStep) traversal.getSteps().get(0);
         Step currentStep = tinkerGraphStep.getNextStep();
@@ -1442,36 +1449,11 @@ The traversal is redefined by simply taking a chain of `has()`-steps and `interv
 gremlin> t = g.V().has('name','marko'); null
 ==>null
 gremlin> t.toString()
-==>[TinkerGraphStep, HasStep([name,EQUAL,marko])]
-gremlin> t.getStrategies().apply()
+==>[TinkerGraphStep(vertex), HasStep([name,eq,marko])]
+gremlin> t.iterate(); null
 ==>null
 gremlin> t.toString()
-==>[TinkerGraphStep([[name,EQUAL,marko]])]
-
-GraphTraversalStrategyRegistry
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-There are various default strategies that are applied to a `GraphTraversal` when it is created. However, not all these strategies are required and in fact, depending on _a priori_ knowledge of the statistics of the graph being traversed, turning off default strategies and/or activating custom strategies may prove fruitful. `GraphTraversalStrategyRegistry` is a global static class that supports the registering (and un-registering) of traversal strategies that will be applied every time a `GraphTraversal` is constructed (e.g. `DefaultGraphTraversal`).
-
-WARNING: It is possible to create faulty traversals by modifying the `GraphTraversalStrategyRegistry`. This functionality is reserved for experts with a solid understanding of Gremlin's traversal strategy framework.
-
-[source,groovy]
-gremlin> import com.tinkerpop.gremlin.process.graph.strategy.*
-...
-gremlin> GraphTraversalStrategyRegistry.instance()
-==>strategies[TraverserSourceStrategy, LabeledEndStepStrategy, UntilStrategy, DedupOptimizerStrategy, IdentityRemovalStrategy, SideEffectCapStrategy, MatchWhereStrategy, ChooseLinearStrategy, UnionLinearStrategy, ComparingReductionStrategy, EngineDependentStrategy]
-gremlin> t = g.V().identity().identity().identity().range(0,1)
-==>v[1]
-==>v[2]
-gremlin> t.toString()
-==>[TinkerGraphStep(vertex), RangeStep(0,1)] // the identity reduction strategy removes unlabeled identity steps
-gremlin> GraphTraversalStrategyRegistry.instance().unregister(IdentityRemovalStrategy)
-==>null
-gremlin> t = g.V().identity().identity().identity().range(0,1)
-==>v[1]
-==>v[2]
-gremlin> t.toString()
-==>[TinkerGraphStep(vertex), IdentityStep, IdentityStep, IdentityStep, RangeStep(0,1)]
+==>[TinkerGraphStep([[name,eq,marko]])]
 
 Domain Specific Languages
 -------------------------
@@ -1516,9 +1498,14 @@ public interface SocialTraversal<S, E> extends Traversal<S, E> {
     }
 
     public class DefaultSocialTraversal extends DefaultTraversal implements SocialTraversal {
+        static {
+            final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
+            traversalStrategies.addStrategy(TraverserSourceStrategy.instance());
+            TraversalStrategies.GlobalCache.registerStrategies(DefaultSocialTraversal.class, traversalStrategies);
+        }
+
         public DefaultSocialTraversal(final Graph graph) {
             super(graph);
-            this.getStrategies().register(TraverserSourceStrategy.instance());
         }
     }
 }
