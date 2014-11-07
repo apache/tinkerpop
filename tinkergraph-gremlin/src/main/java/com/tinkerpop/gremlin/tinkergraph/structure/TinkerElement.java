@@ -3,9 +3,7 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
-import com.tinkerpop.gremlin.structure.util.PropertyFilterIterator;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -86,15 +84,27 @@ public abstract class TinkerElement implements Element, Element.Iterators {
 
     @Override
     public <V> Iterator<? extends Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
-        return TinkerHelper.inComputerMode(graph) ?
-                new PropertyFilterIterator<>(graph.graphView.getProperties(TinkerElement.this).iterator(), true, propertyKeys) :
-                new PropertyFilterIterator<>(properties.values().stream().flatMap(list -> list.stream()).collect(Collectors.toList()).iterator(), true, propertyKeys);
+        return (Iterator) (TinkerHelper.inComputerMode(this.graph) ?
+                this.graph.graphView.getProperties(TinkerElement.this).stream().filter(Property::isHidden).filter(p -> keyExists(p.key(), propertyKeys)).iterator() :
+                this.properties.values().stream().flatMap(list -> list.stream()).filter(Property::isHidden).filter(p -> keyExists(p.key(), propertyKeys)).collect(Collectors.toList()).iterator());
     }
 
     @Override
     public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys) {
-        return TinkerHelper.inComputerMode(graph) ?
-                new PropertyFilterIterator<>(graph.graphView.getProperties(TinkerElement.this).iterator(), false, propertyKeys) :
-                new PropertyFilterIterator<>(properties.values().stream().flatMap(list -> list.stream()).collect(Collectors.toList()).iterator(), false, propertyKeys);
+        return (Iterator) (TinkerHelper.inComputerMode(this.graph) ?
+                this.graph.graphView.getProperties(TinkerElement.this).stream().filter(p -> !p.isHidden()).filter(p -> keyExists(p.key(), propertyKeys)).iterator() :
+                this.properties.values().stream().flatMap(list -> list.stream()).filter(p -> !p.isHidden()).filter(p -> keyExists(p.key(), propertyKeys)).collect(Collectors.toList()).iterator());
+    }
+
+    private final boolean keyExists(final String key, final String... providedKeys) {
+        if (0 == providedKeys.length) return true;
+        if (1 == providedKeys.length) return key.equals(providedKeys[0]);
+        else {
+            for (final String temp : providedKeys) {
+                if (temp.equals(key))
+                    return true;
+            }
+            return false;
+        }
     }
 }

@@ -116,14 +116,36 @@ public abstract interface Element {
          * Get the values of non-hidden properties as a {@link Map} of keys and values.
          */
         public default <V> Iterator<V> valueIterator(final String... propertyKeys) {
-            return StreamFactory.stream(this.propertyIterator(propertyKeys)).map(property -> (V) property.value()).iterator();
+            final Iterator<? extends Property<V>> iterator = this.propertyIterator(propertyKeys);
+            return new Iterator<V>() {
+                @Override
+                public boolean hasNext() {
+                    return iterator.hasNext();
+                }
+
+                @Override
+                public V next() {
+                    return iterator.next().value();
+                }
+            };
         }
 
         /**
          * Get the values of hidden properties as a {@link Map} of keys and values.
          */
         public default <V> Iterator<V> hiddenValueIterator(final String... propertyKeys) {
-            return StreamFactory.stream(this.hiddenPropertyIterator(propertyKeys)).map(property -> (V) property.value()).iterator();
+            final Iterator<? extends Property<V>> iterator = this.hiddenPropertyIterator(propertyKeys);
+            return new Iterator<V>() {
+                @Override
+                public boolean hasNext() {
+                    return iterator.hasNext();
+                }
+
+                @Override
+                public V next() {
+                    return iterator.next().value();
+                }
+            };
         }
 
         /**
