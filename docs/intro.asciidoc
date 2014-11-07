@@ -158,7 +158,7 @@ image:gremlin-running.png[width=125,float=left] The primary way in which graphs 
  . Move from those friend-vertices to company-vertices via worksFor-edges.
  . Finally, select the name-property value of the current company-vertices. 
 
-Traversals in Gremlin are spawned from either a `Graph`, `Vertex`, or `Edge`. The Graph interface provides two traversal methods.
+Traversals in Gremlin are spawned from either a `Graph`, `Vertex`, `Edge`, or `VertexProperty`. The Graph interface provides two traversal methods.
 
  . `Graph.V()`: generates a traversal starting at all vertices in the graph. 
  . `Graph.E()`: generates a traversal starting at all edges in the graph.
@@ -169,7 +169,7 @@ The return type of `V()` and `E()` is `GraphTraversal`. A GraphTraversal maintai
  . `flatMap`: transform the incoming object to an iterator of other objects (S &rarr; E^*^).
  . `filter`: allow or disallow the object from proceeding to the next step (S &rarr; S &cup; &empty;).
 
-In fact, nearly all steps in GraphTraversal either extend `MapStep`, `FlatMapStep`, or `FilterStep`. Note that there is also `BranchStep` and `SideEffectStep` though their discussion will be left for later in the documentation.
+Nearly every step in GraphTraversal either extend `MapStep`, `FlatMapStep`, or `FilterStep`. Note that there is also `BranchStep` and `SideEffectStep` though their discussion will be left for later in the documentation (see <<traversal,The Traversal>>).
 
 TIP: `GraphTraversal` is a link:http://en.wikipedia.org/wiki/Monoid[monoid] in that it is an algebraic structure that has a single binary operation that is associative. The binary operation is function composition (i.e. method chaining) and its identity is the step `identity()`. This is related to a link:http://en.wikipedia.org/wiki/Monad_(functional_programming)[monad] as popularized by the functional programming community. 
 
