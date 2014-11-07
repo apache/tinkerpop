@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
@@ -26,7 +25,6 @@ public class KryoRecordReader extends RecordReader<NullWritable, GiraphComputeVe
     private VertexStreamIterator vertexStreamIterator;
     private FSDataInputStream inputStream;
 
-    private float progress = 0f;
     private static final byte[] PATTERN = GremlinKryo.build().create().getVersionedHeader();
 
     public KryoRecordReader() {
@@ -34,20 +32,18 @@ public class KryoRecordReader extends RecordReader<NullWritable, GiraphComputeVe
 
     @Override
     public void initialize(final InputSplit genericSplit, final TaskAttemptContext context) throws IOException {
-        FileSplit split = (FileSplit) genericSplit;
-        Configuration job = context.getConfiguration();
+        final FileSplit split = (FileSplit) genericSplit;
+        final Configuration job = context.getConfiguration();
         long start = split.getStart();
         final Path file = split.getPath();
-        CompressionCodecFactory compressionCodecs = new CompressionCodecFactory(job);
-        if (null != compressionCodecs.getCodec(file)) {
+        if (null != new CompressionCodecFactory(job).getCodec(file)) {
             throw new IllegalStateException("Compression is not supported for the (binary) Gremlin Kryo format");
         }
         // open the file and seek to the start of the split
-        FileSystem fs = file.getFileSystem(job);
-        inputStream = fs.open(split.getPath());
-        inputStream.seek(start);
-        final long newStart = seekToHeader(inputStream, start);
-        vertexStreamIterator = new VertexStreamIterator(inputStream, split.getLength() - (newStart - start), KryoReader.build().create());
+        this.inputStream = file.getFileSystem(job).open(split.getPath());
+        this.inputStream.seek(start);
+        final long newStart = seekToHeader(this.inputStream, start);
+        this.vertexStreamIterator = new VertexStreamIterator(this.inputStream, split.getLength() - (newStart - start), KryoReader.build().create());
     }
 
     private static long seekToHeader(final FSDataInputStream inputStream, final long start) throws IOException {
@@ -77,17 +73,7 @@ public class KryoRecordReader extends RecordReader<NullWritable, GiraphComputeVe
 
     @Override
     public boolean nextKeyValue() throws IOException {
-        boolean hasNext = vertexStreamIterator.hasNext();
-
-        // this is a pretty coarse metric of progress, as we don't have a reliable way to estimate the number of vertices in the chunk
-        // TODO: vertexStreamIterator can provide access to its currentLength variable
-        if (hasNext) {
-            progress = 0.5f;
-        } else if (progress > 0) {
-            progress = 1f;
-        }
-
-        return hasNext;
+        return this.vertexStreamIterator.hasNext();
     }
 
     @Override
@@ -97,16 +83,16 @@ public class KryoRecordReader extends RecordReader<NullWritable, GiraphComputeVe
 
     @Override
     public GiraphComputeVertex getCurrentValue() {
-        return new GiraphComputeVertex((TinkerVertex) vertexStreamIterator.next()); // TODO: this is hardcoded for TinkerVertex
+        return new GiraphComputeVertex((TinkerVertex) this.vertexStreamIterator.next());
     }
 
     @Override
     public float getProgress() throws IOException {
-        return progress;
+        return this.vertexStreamIterator.getProgress();
     }
 
     @Override
     public synchronized void close() throws IOException {
-        inputStream.close();
+        this.inputStream.close();
     }
 }

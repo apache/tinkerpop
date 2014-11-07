@@ -56,6 +56,7 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay() {
+        System.out.println((float)1l / (float)7l);
         Graph g = TinkerFactory.createModern();
         Traversal t = g.V().has("name","marko").out().out().values("name");
         System.out.println(t);

@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.giraph.process.computer.util;
 
 import com.tinkerpop.gremlin.giraph.Constants;
 import com.tinkerpop.gremlin.giraph.hdfs.KryoWritableIterator;
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphCombine;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphMap;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphReduce;
@@ -63,7 +64,8 @@ public class MapReduceHelper {
             if (mapSort.isPresent()) job.setSortComparatorClass(KryoWritableComparator.KryoWritableMapComparator.class);
             job.setMapperClass(GiraphMap.class);
             if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
-                if (mapReduce.doStage(MapReduce.Stage.COMBINE)) job.setCombinerClass(GiraphReduce.class);
+                if (mapReduce.doStage(MapReduce.Stage.COMBINE))
+                    job.setCombinerClass(GiraphCombine.class);
                 job.setReducerClass(GiraphReduce.class);
             } else {
                 if (mapSort.isPresent()) {

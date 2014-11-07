@@ -43,7 +43,7 @@ public class TraverserSourceStrategy extends AbstractTraversalStrategy {
         if (engine.equals(TraversalEngine.COMPUTER))
             return;
 
-        final TraverserGenerator traverserGenerator = TraversalStrategies.GlobalCache.getStrategies(traversal.getClass()).getTraverserGenerator(traversal, TraversalEngine.STANDARD);
+        final TraverserGenerator traverserGenerator = TraversalStrategies.GlobalCache.getStrategies(traversal.getClass()).getTraverserGenerator(traversal, engine);
         traversal.getSteps()
                 .stream()
                 .filter(step -> step instanceof TraverserSource)
