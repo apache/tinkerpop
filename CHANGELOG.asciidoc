@@ -6,8 +6,8 @@ TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 
 image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 
-TinkerPop 3.0.0.M5 (NOT OFFICIALLY RELEASED YET)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TinkerPop 3.0.0.M5 (Release Date: November 7, 2014)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Removed `PropertyFilterIterator` as using Java8 streams was just as efficient for the use case.
 * Renamed `KryoWritable` to `GremlinWritable` as it is no necessarily Kryo that is the serialization mechanism.
