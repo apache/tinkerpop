@@ -8,7 +8,7 @@ channelizer: com.tinkerpop.gremlin.server.channel.WebSocketChannelizer
 graphs: {
   g: conf/neo4j-empty.properties}
 use:
-  - [com.tinkerpop, neo4j-gremlin, "3.0.0.M5"]
+  - [com.tinkerpop, neo4j-gremlin, "3.0.0-SNAPSHOT"]
   - [org.apache.commons, commons-math3, "3.2"]
 scriptEngines: {
   gremlin-groovy: {

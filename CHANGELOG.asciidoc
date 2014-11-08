@@ -6,11 +6,15 @@ TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 
 image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 
+TinkerPop 3.0.0.M6 (Release Date: NOT OFFICIALLY RELEASED YET)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 TinkerPop 3.0.0.M5 (Release Date: November 7, 2014)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Removed `PropertyFilterIterator` as using Java8 streams was just as efficient for the use case.
-* Renamed `KryoWritable` to `GremlinWritable` as it is no necessarily Kryo that is the serialization mechanism.
+* Renamed `KryoWritable` to `GremlinWritable` as it is not necessarily Kryo that is the serialization mechanism.
 * Fixed an input split bug in Giraph that was making it so that splits were not always at vertex boundaries.
 * Fixed a combiner bug in `GirapGraphComputer`. Combiners were always calling `MapReduce.reduce()`, not `MapReduce.combine()`.
 * Greatly simplified `SubgraphStrategy` by removing requirements for `Traversal` introspection.
