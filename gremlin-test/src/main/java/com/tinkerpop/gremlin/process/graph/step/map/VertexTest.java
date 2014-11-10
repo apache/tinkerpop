@@ -304,7 +304,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         while (traversal.hasNext()) {
             counter++;
             final String name = traversal.next();
-            assertTrue(name.equals("marko") || name.equals("ripple") || name.equals("lop"));
+            assertTrue(name.equals("josh") || name.equals("ripple") || name.equals("lop"));
         }
         assertEquals(1, counter);
         assertFalse(traversal.hasNext());
