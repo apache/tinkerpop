@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.console.plugin
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
+import com.tinkerpop.gremlin.groovy.plugin.RemoteException
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.structure.Edge
 import com.tinkerpop.gremlin.structure.Graph
@@ -41,7 +42,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     }
 
     @Override
-    Object connect(final List<String> args) {
+    connect(final List<String> args) throws RemoteException {
         if (args.size() >= 1)
             workspace = args[0]
 
@@ -52,19 +53,19 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
             try {
                 port = Integer.parseInt(args[2])
             } catch (Exception ex) {
-                return "Port must be an integer value"
+                throw new RemoteException("Port must be an integer value")
             }
         }
 
         String vizConfig = " with stepDelay:$vizStepDelay, startRGBColor:$vizStartRGBColor, " +
                 "colorToFade:$vizColorToFade, colorFadeRate:$vizColorFadeRate"
-        if (args.size() >= 4)
+        if (args.size() >= 4) {
             if (args.size() > 7) {
                 vizConfig = configVizOptions(args.subList(3, 6))
-            }
-            else {
+            } else {
                 vizConfig = configVizOptions(args.subList(3, args.size()))
             }
+        }
 
         return "Connection to Gephi - http://$host:$port/$workspace" + vizConfig
     }

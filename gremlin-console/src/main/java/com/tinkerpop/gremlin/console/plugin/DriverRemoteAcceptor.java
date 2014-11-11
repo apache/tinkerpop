@@ -6,7 +6,9 @@ import com.tinkerpop.gremlin.driver.Result;
 import com.tinkerpop.gremlin.driver.exception.ResponseException;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
+import com.tinkerpop.gremlin.groovy.plugin.RemoteException;
 import org.codehaus.groovy.tools.shell.Groovysh;
+import org.codehaus.groovy.tools.shell.IO;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -35,17 +37,18 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
     }
 
     @Override
-    public Object connect(final List<String> args) {
-        if (args.size() != 1) return "Expects the location of a configuration file as an argument";
+    public Object connect(final List<String> args) throws RemoteException {
+        if (args.size() != 1) throw new RemoteException("Expects the location of a configuration file as an argument");
+
         try {
             this.currentCluster = Cluster.open(args.get(0));
             this.currentClient = this.currentCluster.connect();
             this.currentClient.init();
             return String.format("Connected - " + this.currentCluster);
         } catch (final FileNotFoundException ignored) {
-            return "The 'connect' option must be accompanied by a valid configuration file";
+            throw new RemoteException("The 'connect' option must be accompanied by a valid configuration file");
         } catch (final Exception ex) {
-            return "Error during 'connect' - " + ex.getMessage();
+            throw new RemoteException("Error during 'connect' - " + ex.getMessage(), ex);
         }
     }
 

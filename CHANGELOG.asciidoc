@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M6 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `RemoteException` for usage with `RemoteAcceptor` implementations for the Gremlin Console so as to better standardize their development.
 * Standardized all text being written to the Gremlin Console using starting upper case letter.
 * Prevented error in the Console when `:submit` is called but no remotes were configured.
 * Provided a way to clean the `grapes` directory as part of a standard build with `mvn clean install`.

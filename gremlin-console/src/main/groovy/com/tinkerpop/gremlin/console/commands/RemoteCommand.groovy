@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.console.commands
 
 import com.tinkerpop.gremlin.console.Mediator
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
+import com.tinkerpop.gremlin.groovy.plugin.RemoteException
 import org.codehaus.groovy.tools.shell.ComplexCommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
 
@@ -19,18 +20,21 @@ class RemoteCommand extends ComplexCommandSupport {
     }
 
     def Object do_connect = { List<String> arguments ->
-        if (arguments.size() == 0) return "Define the remote to configured (e.g. server)"
+        if (arguments.size() == 0) return "Define the remote to configured (e.g. tinkerpop.server)"
 
         if (!mediator.availablePlugins.values().any{it.plugin.name==arguments[0]}) return "No plugin named ${arguments[0]}"
         def plugin = mediator.availablePlugins.values().find{it.plugin.name==arguments[0]}.plugin
         def Optional<RemoteAcceptor> remoteAcceptor = plugin.remoteAcceptor()
         if (!remoteAcceptor.isPresent()) return "${arguments[0]} does not accept remote configuration"
 
-        def remote = remoteAcceptor.get()
-
-        mediator.addRemote(remote)
-
-        return remote.connect(arguments.tail())
+        try {
+            def remote = remoteAcceptor.get()
+            def result = remote.connect(arguments.tail())
+            mediator.addRemote(remote)
+            return result
+        } catch (RemoteException re) {
+            return re.message
+        }
     }
 
     def Object do_config = { List<String> arguments ->
