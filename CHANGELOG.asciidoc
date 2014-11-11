@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M6 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Prevent error in the Console when `:submit` is called but no remotes were configured.
+* Provide a way to clean the `grapes` directory as part of a standard build with `mvn clean install`.
 
 TinkerPop 3.0.0.M5 (Release Date: November 7, 2014)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
