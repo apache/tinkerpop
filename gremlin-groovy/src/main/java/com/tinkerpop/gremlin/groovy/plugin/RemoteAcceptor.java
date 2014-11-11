@@ -24,8 +24,11 @@ public interface RemoteAcceptor extends Closeable {
     /**
      * Gets called when :remote is used in conjunction with the "config" option.  It is up to the implementation
      * to decide how additional arguments on the line should be treated after "config".
+     *
+     * @return an object to display as output to the user
+     * @throws com.tinkerpop.gremlin.groovy.plugin.RemoteException if there is a problem with configuration
      */
-    public Object configure(final List<String> args);
+    public Object configure(final List<String> args) throws RemoteException;
 
     /**
      * Gets called when :submit is executed.  It is up to the implementation to decide how additional arguments on

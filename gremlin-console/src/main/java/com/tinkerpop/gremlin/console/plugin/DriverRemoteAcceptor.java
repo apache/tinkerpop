@@ -53,23 +53,23 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
     }
 
     @Override
-    public Object configure(final List<String> args) {
+    public Object configure(final List<String> args) throws RemoteException {
         final String option = args.size() == 0 ? "" : args.get(0);
         if (!POSSIBLE_TOKENS.contains(option))
-            return String.format("The 'config' option expects one of ['%s'] as an argument", String.join(",", POSSIBLE_TOKENS));
+            throw new RemoteException(String.format("The 'config' option expects one of ['%s'] as an argument", String.join(",", POSSIBLE_TOKENS)));
 
         final List<String> arguments = args.subList(1, args.size());
 
         if (option.equals(TOKEN_TIMEOUT)) {
             final String errorMessage = "The timeout option expects a positive integer representing milliseconds or 'max' as an argument";
-            if (arguments.size() != 1) return errorMessage;
+            if (arguments.size() != 1) throw new RemoteException(errorMessage);
             try {
                 final int to = arguments.get(0).equals("max") ? Integer.MAX_VALUE : Integer.parseInt(arguments.get(0));
-                if (to <= 0) return errorMessage;
+                if (to <= 0) throw new RemoteException(errorMessage);
                 this.timeout = to;
                 return "Set remote timeout to " + to + "ms";
             } catch (Exception ignored) {
-                return errorMessage;
+                throw new RemoteException(errorMessage);
             }
         }
 

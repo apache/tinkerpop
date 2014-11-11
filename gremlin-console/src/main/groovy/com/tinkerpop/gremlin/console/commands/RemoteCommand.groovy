@@ -39,7 +39,11 @@ class RemoteCommand extends ComplexCommandSupport {
 
     def Object do_config = { List<String> arguments ->
         if (mediator.remotes.size() == 0) return "Please add a remote first with [connect]"
-        return mediator.currentRemote().configure(arguments)
+        try {
+            return mediator.currentRemote().configure(arguments)
+        } catch (RemoteException re) {
+            return re.message
+        }
     }
 
     def Object do_current = {

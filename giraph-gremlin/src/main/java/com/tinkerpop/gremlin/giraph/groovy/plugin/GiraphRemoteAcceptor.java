@@ -68,7 +68,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     }
 
     @Override
-    public Object configure(final List<String> args) {
+    public Object configure(final List<String> args) throws RemoteException {
         for (int i = 0; i < args.size(); i = i + 2) {
             if (args.get(i).equals(USE_SUGAR))
                 this.useSugarPlugin = Boolean.valueOf(args.get(i + 1));
