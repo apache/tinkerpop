@@ -41,7 +41,7 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
             this.currentCluster = Cluster.open(args.get(0));
             this.currentClient = this.currentCluster.connect();
             this.currentClient.init();
-            return String.format("connected - " + this.currentCluster);
+            return String.format("Connected - " + this.currentCluster);
         } catch (final FileNotFoundException ignored) {
             return "The 'connect' option must be accompanied by a valid configuration file";
         } catch (final Exception ex) {
@@ -114,7 +114,7 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
 
     @Override
     public String toString() {
-        return "gremlin server - [" + this.currentCluster + "]";
+        return "Gremlin Server - [" + this.currentCluster + "]";
     }
 
     private Optional<ResponseException> findResponseException(final Throwable ex) {

@@ -21,16 +21,16 @@ class UninstallCommand extends CommandSupport {
     @Override
     def Object execute(final List<String> arguments) {
         final String module = arguments.size() >= 1 ? arguments.get(0) : null
-        if (module == null || module.isEmpty()) return "specify the name of the module containing plugins to uninstall"
+        if (module == null || module.isEmpty()) return "Specify the name of the module containing plugins to uninstall"
 
         final String extClassPath = getPathFromDependency(module)
 
         final File f = new File(extClassPath)
         if (!f.exists())
-            return "there is no module with the name $module to remove - $extClassPath"
+            return "There is no module with the name $module to remove - $extClassPath"
         else {
             f.deleteDir()
-            return "uninstalled $module - restart the console for removal to take effect"
+            return "Uninstalled $module - restart the console for removal to take effect"
         }
     }
 

@@ -34,7 +34,7 @@ class InstallCommand extends CommandSupport {
         final String extClassPath = getPathFromDependency(dep)
         final File f = new File(extClassPath)
         if (f.exists())
-            return "a module with the name ${dep.module} is already installed"
+            return "A module with the name ${dep.module} is already installed"
         else
             f.mkdirs()
 
@@ -49,7 +49,7 @@ class InstallCommand extends CommandSupport {
                 .findAll{!(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/)}
                 .each { Files.copy(it, target.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
 
-        return "loaded: " + arguments + (pluginsThatNeedRestart.size() == 0 ? "" : " - restart the console to use $pluginsThatNeedRestart")
+        return "Loaded: " + arguments + (pluginsThatNeedRestart.size() == 0 ? "" : " - restart the console to use $pluginsThatNeedRestart")
     }
 
     private static String getPathFromDependency(final Map<String, Object> dep) {

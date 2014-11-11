@@ -204,7 +204,7 @@ The console has the notion of a "remote", which represents a place a script will
 [source,groovy]
 ----
 gremlin> :remote connect tinkerpop.server conf/remote.yaml
-==>connected - localhost/127.0.0.1:8182
+==>Connected - localhost/127.0.0.1:8182
 ----
 
 The `:remote` command shown above displays the current status of the remote connection.  This command can also be used to configure a new connection and change other related settings.  To actually send a script to the server a different command is required:
@@ -225,7 +225,7 @@ gremlin> :> g.E().label().groupCount()
 gremlin> result
 ==>result{object={created=4, knows=2} class=java.lang.String}
 gremlin> :remote close
-==>removed - gremlin server - [localhost/127.0.0.1:8182]
+==>Removed - gremlin server - [localhost/127.0.0.1:8182]
 ----
 
 The `:>` command, which is a shorthand for `:submit`, sends the script to the server to execute there.  Results are wrapped in an `Result` object which is a just a holder for each individual result.  The `class` shows the data type for the containing value.  Note that the last script sent was supposed to return a `Map`, but its `class` is `java.lang.String`.  By default, the connection is configured to only return text results.  In other words, Gremlin Server is using `toString` to serialize all results back to the console.  This enables virtually any object on the server to be returned to the console, but it doesn't allow the opportunity to work with this data in any way in the console itself.  A different configuration of the `:remote` is required to get the results back as "objects":
@@ -235,8 +235,8 @@ The `:>` command, which is a shorthand for `:submit`, sends the script to the se
 gremlin> :remote connect tinkerpop.server conf/remote-objects.yaml <1>
 ==>connected - localhost/127.0.0.1:8182
 gremlin> :remote list <2>
-==>0 - gremlin server - [localhost/127.0.0.1:8182]
-==>*1 - gremlin server - [localhost/127.0.0.1:8182]
+==>0 - Gremlin Server - [localhost/127.0.0.1:8182]
+==>*1 - Gremlin Server - [localhost/127.0.0.1:8182]
 gremlin> :> g.E().label().groupCount() <3>
 ==>[created:4, knows:2]
 gremlin> m = result[0].object <4>
@@ -254,7 +254,7 @@ gremlin> :> @script   <5>
 gremlin> :> g.V().has('name','matthias').out('co-creator').values('name')
 ==>marko
 gremlin> :remote close
-==>removed - gremlin server - [localhost/127.0.0.1:8182]
+==>Removed - gremlin server - [localhost/127.0.0.1:8182]
 ----
 
 <1> This configuration file specifies that results should be deserialized back into an `Object` in the Console with the caveat being that the server and console both know how to serialize and deserialize the result to be returned.
@@ -679,11 +679,11 @@ Start the xref:gremlin-console[Gremlin Console] and activate the Gephi plugin:
 
 [source,groovy]
 gremlin> :plugin use tinkerpop.gephi
-==>gephi activated
+==>tinkerpop.gephi activated
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> :remote connect tinkerpop.gephi
-==>connection to Gephi - http://localhost:8080/workspace0 with stepDelay:1000, startRGBColor:[0.0, 1.0, 0.5], colorToFade:g, colorFadeRate:0.7
+==>Connection to Gephi - http://localhost:8080/workspace0 with stepDelay:1000, startRGBColor:[0.0, 1.0, 0.5], colorToFade:g, colorFadeRate:0.7
 gremlin> :> g
 ==>tinkergraph[vertices:6 edges:6]
 
@@ -737,11 +737,11 @@ Once a traversal visualization has executed, clear the colors in Gephi by select
 
 [source,groovy]
 gremlin> :remote config startRGBColor [0.0,0.3,1.0]
-==>connection to Gephi - http://localhost:8080/workspace0 with stepDelay:1000, startRGBColor:[0.0, 0.3, 1.0], colorToFade:g, colorFadeRate:0.7
+==>Connection to Gephi - http://localhost:8080/workspace0 with stepDelay:1000, startRGBColor:[0.0, 0.3, 1.0], colorToFade:g, colorFadeRate:0.7
 gremlin> :remote config colorToFade b
-==>connection to Gephi - http://localhost:8080/workspace0 with stepDelay:1000, startRGBColor:[0.0, 0.3, 1.0], colorToFade:b, colorFadeRate:0.7
+==>Connection to Gephi - http://localhost:8080/workspace0 with stepDelay:1000, startRGBColor:[0.0, 0.3, 1.0], colorToFade:b, colorFadeRate:0.7
 gremlin> :remote config colorFadeRate 0.5
-==>connection to Gephi - http://localhost:8080/workspace0 with stepDelay:1000, startRGBColor:[0.0, 0.3, 1.0], colorToFade:b, colorFadeRate:0.5
+==>Connection to Gephi - http://localhost:8080/workspace0 with stepDelay:1000, startRGBColor:[0.0, 0.3, 1.0], colorToFade:b, colorFadeRate:0.5
 gremlin> :> traversal
 Visualizing vertices at step: 1... visited: 1
 Visualizing vertices at step: 2... visited: 1
