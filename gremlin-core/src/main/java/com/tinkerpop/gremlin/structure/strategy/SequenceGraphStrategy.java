@@ -35,17 +35,6 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public GraphTraversal applyStrategyToTraversal(final GraphTraversal traversal) {
-        final UnaryOperator<GraphTraversal> composedStrategy = graphStrategySequence.stream().map(SequenceGraphStrategy::convertToUnaryOperator)
-                .reduce(null, (acc, next) -> acc == null ? next : toUnaryOp(acc.compose(next)));
-        return composedStrategy.apply(traversal);
-    }
-
-    public static UnaryOperator<GraphTraversal> convertToUnaryOperator(final GraphStrategy s) {
-        return s::applyStrategyToTraversal;
-    }
-
-    @Override
     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getAddVertexStrategy(ctx));
     }

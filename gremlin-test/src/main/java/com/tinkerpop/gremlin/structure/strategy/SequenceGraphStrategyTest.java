@@ -518,12 +518,6 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         }
 
         @Override
-        public GraphTraversal applyStrategyToTraversal(final GraphTraversal traversal) {
-            spy();
-            return traversal;
-        }
-
-        @Override
         public <V> UnaryOperator<Function<String[], Iterator<VertexProperty<V>>>> getVertexIteratorsPropertiesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
             return spy();
         }
