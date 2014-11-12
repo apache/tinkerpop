@@ -33,9 +33,15 @@ public interface RemoteAcceptor extends Closeable {
     /**
      * Gets called when :submit is executed.  It is up to the implementation to decide how additional arguments on
      * the line should be treated after "submit".
+     *
+     * @return an object to display as output to the user
+     * @throws com.tinkerpop.gremlin.groovy.plugin.RemoteException if there is a problem with submission
      */
-    public Object submit(final List<String> args);
+    public Object submit(final List<String> args) throws RemoteException;
 
+    /**
+     * Retrieve a script as defined in the shell context.  This allows for multi-line scripts to be submitted.
+     */
     public static String getScript(final String submittedScript, final Groovysh shell) {
         return submittedScript.startsWith("@") ? shell.getInterp().getContext().getProperty(submittedScript.substring(1)).toString() : submittedScript;
     }

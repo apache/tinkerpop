@@ -160,15 +160,14 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     }
 
     @Override
-    Object submit(final List<String> args) {
+    Object submit(final List<String> args) throws RemoteException {
         final String line = String.join(" ", args)
         final Object o = shell.execute(line)
         if (o instanceof Graph) {
             clearGraph()
             def g = (Graph) o
             g.V().sideEffect { addVertexToGephi(it.get()) }.iterate()
-        }
-        else if (o instanceof Traversal) {
+        } else if (o instanceof Traversal) {
             fadingVertexColors = [:]
             def traversal = (Traversal) o
             def memKeys = traversal.sideEffects().keys()
@@ -223,13 +222,12 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     }
 
     def fadeColorIndex() {
-        if (vizColorToFade == 'r') {
+        if (vizColorToFade == 'r')
             return 0
-        } else if (vizColorToFade == 'g') {
+        else if (vizColorToFade == 'g')
             return 1
-        } else if (vizColorToFade == 'b') {
+        else if (vizColorToFade == 'b')
             return 2
-        }
     }
 
     def addVertexToGephi(def Vertex v, def boolean ignoreEdges = false) {

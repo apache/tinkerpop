@@ -77,7 +77,7 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
     }
 
     @Override
-    public Object submit(final List<String> args) {
+    public Object submit(final List<String> args) throws RemoteException {
         final String line = RemoteAcceptor.getScript(String.join(" ", args), this.shell);
 
         try {
@@ -89,20 +89,20 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
             if (inner.isPresent()) {
                 final ResponseException responseException = inner.get();
                 if (responseException.getResponseStatusCode() == ResponseStatusCode.SERVER_ERROR_SERIALIZATION)
-                    return String.format("Server could not serialize the result requested. Server error - %s. Note that the class must be serializable by the client and server for proper operation.", responseException.getMessage());
+                    throw new RemoteException(String.format("Server could not serialize the result requested. Server error - %s. Note that the class must be serializable by the client and server for proper operation.", responseException.getMessage()));
                 else
-                    return responseException.getMessage();
+                    throw new RemoteException(responseException.getMessage());
             } else if (ex.getCause() != null)
-                return ex.getCause().getMessage();
+                throw new RemoteException(ex.getCause().getMessage());
             else
-                return ex.getMessage();
+                throw new RemoteException(ex.getMessage());
         }
     }
 
     @Override
     public void close() throws IOException {
-        this.currentClient.close();
-        this.currentCluster.close();
+        if (this.currentClient != null) this.currentClient.close();
+        if (this.currentCluster != null) this.currentCluster.close();
     }
 
     private List<Result> send(final String gremlin) {
