@@ -155,6 +155,12 @@ public class Settings {
     public List<List<String>> use;
 
     /**
+     * The list of plugins to enable for the server.  Plugins may be available on the classpath, but with this
+     * configuration it is possible to explicitly include or omit them.
+     */
+    public List<String> plugins = new ArrayList<>();
+
+    /**
      * Custom settings for {@link com.tinkerpop.gremlin.server.OpProcessor} implementations.
      */
     public List<ProcessorSettings> processors = new ArrayList<>();
@@ -199,6 +205,7 @@ public class Settings {
         settingsDescription.putMapPropertyType("scriptEngines", String.class, ScriptEngineSettings.class);
         settingsDescription.putListPropertyType("serializers", SerializerSettings.class);
         settingsDescription.putListPropertyType("use", List.class);
+        settingsDescription.putListPropertyType("plugins", List.class);
         settingsDescription.putListPropertyType("processors", ProcessorSettings.class);
         constructor.addTypeDescription(settingsDescription);
 

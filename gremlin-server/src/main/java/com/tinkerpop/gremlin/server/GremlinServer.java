@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
@@ -85,6 +86,8 @@ public class GremlinServer {
             serverReady.ifPresent(future -> future.complete(null));
 
             ch.closeFuture().sync();
+        } catch (Exception ex) {
+            logger.error("Gremlin Server Error", ex);
         } finally {
             logger.info("Shutting down thread pools");
 
@@ -126,6 +129,7 @@ public class GremlinServer {
                 .beforeEval(b -> graphs.get().rollbackAll())
                 .afterTimeout(b -> graphs.get().rollbackAll())
                 .use(settings.use)
+                .enabledPlugins(new HashSet<>(settings.plugins))
                 .globalBindings(graphs.get().getGraphsAsBindings())
                 .executorService(gremlinGroup)
                 .scheduledExecutorService(scheduledExecutorService);
