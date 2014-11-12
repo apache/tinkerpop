@@ -649,7 +649,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v4_bothE_localLimitX2X_otherV_name(final Object v4Id) {
-            return g.v(v4Id).bothE().localLimit(2).inV().values("name");
+            return g.v(v4Id).bothE().localLimit(2).otherV().values("name");
         }
 
         @Override
