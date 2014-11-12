@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.console.plugin;
 
+import com.tinkerpop.gremlin.driver.Result;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.junit.After;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.startsWith;
@@ -49,12 +51,14 @@ public class DriverRemoteAcceptorIntegrationTest extends AbstractGremlinServerIn
     public void shouldConnectAndSubmitSimple() throws Exception {
         assertThat(acceptor.connect(Arrays.asList(generateTempFile(this.getClass(), "remote.yaml"))).toString(), startsWith("Connected - "));
         assertEquals("2", ((Iterator) acceptor.submit(Arrays.asList("1+1"))).next());
+        assertEquals("2", ((List<Result>) groovysh.getInterp().getContext().getProperty(DriverRemoteAcceptor.RESULT)).iterator().next().getString());
     }
 
     @Test
     public void shouldConnectAndSubmitSimpleList() throws Exception {
         assertThat(acceptor.connect(Arrays.asList(generateTempFile(this.getClass(), "remote.yaml"))).toString(), startsWith("Connected - "));
         assertThat(StreamFactory.stream(((Iterator<String>) acceptor.submit(Arrays.asList("[1,2,3,4,5]")))).collect(Collectors.toList()), contains("1", "2", "3", "4", "5"));
+        assertThat(((List<Result>) groovysh.getInterp().getContext().getProperty(DriverRemoteAcceptor.RESULT)).stream().map(result -> result.getString()).collect(Collectors.toList()), contains("1", "2", "3", "4", "5"));
     }
 
     // todo: let's bring some more tests here
