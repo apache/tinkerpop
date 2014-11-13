@@ -11,7 +11,9 @@ import com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONVertexInputFor
 import com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexInputFormat;
 import com.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
 import com.tinkerpop.gremlin.groovy.plugin.Artifact;
+import com.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
 import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
+import com.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupCountMapReduce;
 import org.apache.giraph.job.GiraphJob;
@@ -55,7 +57,7 @@ public class GiraphGremlinPlugin extends AbstractGremlinPlugin {
     }
 
     @Override
-    public void pluginTo(final PluginAcceptor pluginAcceptor) {
+    public void afterPluginTo(final PluginAcceptor pluginAcceptor) throws PluginInitializationException, IllegalEnvironmentException{
         super.pluginTo(pluginAcceptor);
         pluginAcceptor.addImports(IMPORTS);
         try {
@@ -71,7 +73,7 @@ public class GiraphGremlinPlugin extends AbstractGremlinPlugin {
             else
                 GiraphGraphComputer.LOGGER.info(Constants.GIRAPH_GREMLIN_LIBS + " is set to: " + System.getenv(Constants.GIRAPH_GREMLIN_LIBS));
         } catch (final Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+            throw new PluginInitializationException(e.getMessage(), e);
         }
     }
 

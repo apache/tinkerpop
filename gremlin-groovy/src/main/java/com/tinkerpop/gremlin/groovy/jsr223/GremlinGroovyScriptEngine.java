@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.groovy.ImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.plugin.Artifact;
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
+import com.tinkerpop.gremlin.groovy.plugin.GremlinPluginException;
 import groovy.grape.Grape;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
@@ -151,13 +152,13 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     @Override
-    public void loadPlugins(final List<GremlinPlugin> plugins) {
-        plugins.forEach(it -> {
-            if (!loadedPlugins.contains(it.getName())) {
-                it.pluginTo(new ScriptEnginePluginAcceptor(this));
-                loadedPlugins.add(it.getName());
+    public void loadPlugins(final List<GremlinPlugin> plugins) throws GremlinPluginException {
+        for (GremlinPlugin gremlinPlugin : plugins) {
+            if (!loadedPlugins.contains(gremlinPlugin.getName())) {
+                gremlinPlugin.pluginTo(new ScriptEnginePluginAcceptor(this));
+                loadedPlugins.add(gremlinPlugin.getName());
             }
-        });
+        }
     }
 
     @Override

@@ -25,8 +25,12 @@ public interface GremlinPlugin {
     /**
      * Implementers will typically execute imports of classes within their project that they want available in the
      * console or they may use meta programming to introduce new extensions to the Gremlin.
+     *
+     * @throws IllegalEnvironmentException if there are missing environment properties required by the plugin as
+     * provided from {@link PluginAcceptor#environment()}.
+     * @throws PluginInitializationException if there is a failure in the plugin iniitalization process
      */
-    public void pluginTo(final PluginAcceptor pluginAcceptor);
+    public void pluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException;
 
     /**
      * Some plugins may require a restart of the plugin host for the classloader to pick up the features.  This is

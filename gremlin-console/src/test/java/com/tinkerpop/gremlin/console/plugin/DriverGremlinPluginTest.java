@@ -17,7 +17,7 @@ import static org.junit.Assert.assertThat;
  */
 public class DriverGremlinPluginTest {
     @Test
-    public void shouldPluginToAndDoImports() {
+    public void shouldPluginToAndDoImports() throws Exception {
         final DriverGremlinPlugin plugin = new DriverGremlinPlugin();
         final SpyPluginAcceptor spy = new SpyPluginAcceptor();
         plugin.pluginTo(spy);
@@ -27,7 +27,7 @@ public class DriverGremlinPluginTest {
     }
 
     @Test
-    public void shouldConstructEmptyRemoteAcceptorWhenNotInConsoleEnvironment() {
+    public void shouldConstructEmptyRemoteAcceptorWhenNotInConsoleEnvironment() throws Exception {
         final DriverGremlinPlugin plugin = new DriverGremlinPlugin();
         final SpyPluginAcceptor spy = new SpyPluginAcceptor();
         plugin.pluginTo(spy);
@@ -36,7 +36,7 @@ public class DriverGremlinPluginTest {
     }
 
     @Test
-    public void shouldConstructRemoteAcceptorWhenInConsoleEnvironment() {
+    public void shouldConstructRemoteAcceptorWhenInConsoleEnvironment() throws Exception {
         final DriverGremlinPlugin plugin = new DriverGremlinPlugin();
         final Map<String,Object> env = new HashMap<>();
         env.put("ConsolePluginAcceptor.io", new IO());

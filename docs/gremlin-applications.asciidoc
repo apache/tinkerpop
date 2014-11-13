@@ -424,6 +424,7 @@ The following table describes the various configuration options that Gremlin Ser
 |metrics.jmxReporter.enabled |Turns on JMX reporting of metrics. |false
 |metrics.slf4jReporter.enabled |Turns on SLF4j reporting of metrics. |false
 |metrics.slf4jReporter.interval |Time in milliseconds between reports of metrics to SLF4j. |180000
+|plugins |A list of plugins that should be activated on server startup in the available script engines. It assumes that the plugins are in Gremlin Server's classpath. |_none_
 |port |The port to bind the server to. |8182
 |processors |A `List` of `Map` settings, where each `Map` represents a `OpProcessor` implementation to use along with its configuration. |_none_
 |processors[X].className |The full class name of the `OpProcessor` implementation. |_none_

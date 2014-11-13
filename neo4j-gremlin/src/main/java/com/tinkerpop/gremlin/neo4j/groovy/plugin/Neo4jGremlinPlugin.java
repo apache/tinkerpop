@@ -1,7 +1,9 @@
 package com.tinkerpop.gremlin.neo4j.groovy.plugin;
 
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
+import com.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
 import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
+import com.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 
 import java.util.HashSet;
@@ -25,7 +27,7 @@ public class Neo4jGremlinPlugin implements GremlinPlugin {
     }
 
     @Override
-    public void pluginTo(final PluginAcceptor pluginAcceptor) {
+    public void pluginTo(final PluginAcceptor pluginAcceptor) throws PluginInitializationException, IllegalEnvironmentException {
         pluginAcceptor.addImports(IMPORTS);
     }
 }

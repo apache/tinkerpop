@@ -5,7 +5,9 @@ import com.tinkerpop.gremlin.driver.exception.ConnectionException;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.ser.SerTokens;
 import com.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
+import com.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
 import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
+import com.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 
 import java.util.HashSet;
@@ -30,14 +32,12 @@ public class DriverGremlinPlugin extends AbstractGremlinPlugin {
     }
 
     @Override
-    public void pluginTo(final PluginAcceptor pluginAcceptor) {
-        super.pluginTo(pluginAcceptor);
+    public void afterPluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException {
         pluginAcceptor.addImports(IMPORTS);
     }
 
     @Override
     public Optional<RemoteAcceptor> remoteAcceptor() {
-        // todo: this seems like it could be the wrong behavior - throw an exception instead?  if you call this from server that likely indicates "error"
         return null == this.shell ? Optional.empty() : Optional.of(new DriverRemoteAcceptor(this.shell));
     }
 }

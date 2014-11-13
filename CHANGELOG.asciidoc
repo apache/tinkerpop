@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M6 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Gremlin Server now allows for the explicit configuration of plugin activation.
+* Refactored `GremlinPlugin` and `AbstractGremlinPlugin` to better account for plugins that run on the server and those that run in the console.
 * Added a `plugins` configuration to Gremlin Server to control the plugins that are enabled on initialization.
 * Added a builder option to `GremlinExecutor` to control the plugins that are enabled on initialization.
 * Added `RemoteException` for usage with `RemoteAcceptor` implementations for the Gremlin Console so as to better standardize their development.
