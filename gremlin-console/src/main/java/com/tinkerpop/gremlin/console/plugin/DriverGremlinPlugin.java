@@ -37,6 +37,7 @@ public class DriverGremlinPlugin extends AbstractGremlinPlugin {
 
     @Override
     public Optional<RemoteAcceptor> remoteAcceptor() {
-        return Optional.of(new DriverRemoteAcceptor(this.shell));
+        // todo: this seems like it could be the wrong behavior - throw an exception instead?  if you call this from server that likely indicates "error"
+        return null == this.shell ? Optional.empty() : Optional.of(new DriverRemoteAcceptor(this.shell));
     }
 }
