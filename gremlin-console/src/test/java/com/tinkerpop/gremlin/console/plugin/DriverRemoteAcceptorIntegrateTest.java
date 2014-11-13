@@ -1,11 +1,14 @@
 package com.tinkerpop.gremlin.console.plugin;
 
 import com.tinkerpop.gremlin.driver.Result;
+import com.tinkerpop.gremlin.server.Settings;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -18,18 +21,36 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class DriverRemoteAcceptorIntegrationTest extends AbstractGremlinServerIntegrationTest {
+public class DriverRemoteAcceptorIntegrateTest extends AbstractGremlinServerIntegrationTest {
     private final Groovysh groovysh = new Groovysh();
     private DriverRemoteAcceptor acceptor;
 
+    @Rule
+    public TestName name = new TestName();
+
+    /**
+     * Configure specific Gremlin Server settings for specific tests.
+     */
+    @Override
+    public Settings overrideSettings(final Settings settings) {
+        try {
+            final String tinkerGraphConfig = generateTempFile(this.getClass(), "tinkergraph-empty.properties");
+            settings.graphs.put("g", tinkerGraphConfig);
+            return settings;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
     @Before
-    public void before() {
+    public void before() throws Exception {
         acceptor = new DriverRemoteAcceptor(groovysh);
     }
 
@@ -61,7 +82,12 @@ public class DriverRemoteAcceptorIntegrationTest extends AbstractGremlinServerIn
         assertThat(((List<Result>) groovysh.getInterp().getContext().getProperty(DriverRemoteAcceptor.RESULT)).stream().map(result -> result.getString()).collect(Collectors.toList()), contains("1", "2", "3", "4", "5"));
     }
 
-    // todo: let's bring some more tests here
+    @Test
+    public void shouldConnectAndReturnVertices() throws Exception {
+        assertThat(acceptor.connect(Arrays.asList(generateTempFile(this.getClass(), "remote.yaml"))).toString(), startsWith("Connected - "));
+        assertThat(StreamFactory.stream(((Iterator<String>) acceptor.submit(Arrays.asList("g.addVertex('name','stephen');g.addVertex('name','marko');g.V()")))).collect(Collectors.toList()), hasSize(2));
+        assertThat(((List<Result>) groovysh.getInterp().getContext().getProperty(DriverRemoteAcceptor.RESULT)).stream().map(result -> result.getString()).collect(Collectors.toList()), hasSize(2));
+    }
 
     public static String generateTempFile(final Class resourceClass, final String fileName) throws IOException {
         final File temp = File.createTempFile(fileName, ".tmp");

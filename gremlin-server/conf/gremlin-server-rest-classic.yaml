@@ -9,9 +9,11 @@ graphs: {
   g: conf/tinkergraph-empty.properties}
 use:
   - [org.apache.commons, commons-math3, "3.2"]
+plugins:
+  - tinkerpop.tinkergraph
 scriptEngines: {
   gremlin-groovy: {
-    imports: [com.tinkerpop.gremlin.tinkergraph.structure.*, com.tinkerpop.gremlin.tinkergraph.process.computer.*,java.lang.Math, org.apache.commons.math3.util.FastMath],
+    imports: [java.lang.Math, org.apache.commons.math3.util.FastMath],
     staticImports: [java.lang.Math.PI],
     scripts: [scripts/generate-classic.groovy]}}
 serializers:

@@ -42,6 +42,17 @@
             <outputDirectory>/lib</outputDirectory>
             <unpack>false</unpack>
             <scope>compile</scope>
+            <excludes>
+                <exclude>com.tinkerpop:tinkergraph-gremlin</exclude>
+            </excludes>
+        </dependencySet>
+        <dependencySet>
+            <outputDirectory>/ext</outputDirectory>
+            <unpack>false</unpack>
+            <scope>compile</scope>
+            <includes>
+                <include>com.tinkerpop:tinkergraph-gremlin</include>
+            </includes>
         </dependencySet>
         <dependencySet>
             <outputDirectory>/lib</outputDirectory>
