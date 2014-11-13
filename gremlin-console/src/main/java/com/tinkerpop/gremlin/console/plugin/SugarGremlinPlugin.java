@@ -20,8 +20,7 @@ public class SugarGremlinPlugin extends AbstractGremlinPlugin {
     @Override
     public void afterPluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException {
         try {
-            pluginAcceptor.eval(SugarLoader.class.getPackage().getName() + "." + SugarLoader.class.getSimpleName());
-            pluginAcceptor.eval(SugarLoader.class.getSimpleName() + ".load()");
+            pluginAcceptor.eval(SugarLoader.class.getPackage().getName() + "." + SugarLoader.class.getSimpleName() + ".load()");
         } catch (Exception ex) {
             if (io != null)
                 io.out.println("Error loading the 'tinkerpop.sugar' plugin - " + ex.getMessage());
