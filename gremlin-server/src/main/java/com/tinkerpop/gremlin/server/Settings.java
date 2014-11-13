@@ -205,7 +205,7 @@ public class Settings {
         settingsDescription.putMapPropertyType("scriptEngines", String.class, ScriptEngineSettings.class);
         settingsDescription.putListPropertyType("serializers", SerializerSettings.class);
         settingsDescription.putListPropertyType("use", List.class);
-        settingsDescription.putListPropertyType("plugins", List.class);
+        settingsDescription.putListPropertyType("plugins", String.class);
         settingsDescription.putListPropertyType("processors", ProcessorSettings.class);
         constructor.addTypeDescription(settingsDescription);
 
