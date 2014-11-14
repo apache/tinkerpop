@@ -79,14 +79,21 @@ public class DriverRemoteAcceptorIntegrateTest extends AbstractGremlinServerInte
     public void shouldConnectAndSubmitSimpleList() throws Exception {
         assertThat(acceptor.connect(Arrays.asList(generateTempFile(this.getClass(), "remote.yaml"))).toString(), startsWith("Connected - "));
         assertThat(StreamFactory.stream(((Iterator<String>) acceptor.submit(Arrays.asList("[1,2,3,4,5]")))).collect(Collectors.toList()), contains("1", "2", "3", "4", "5"));
-        assertThat(((List<Result>) groovysh.getInterp().getContext().getProperty(DriverRemoteAcceptor.RESULT)).stream().map(result -> result.getString()).collect(Collectors.toList()), contains("1", "2", "3", "4", "5"));
+        assertThat(((List<Result>) groovysh.getInterp().getContext().getProperty(DriverRemoteAcceptor.RESULT)).stream().map(Result::getString).collect(Collectors.toList()), contains("1", "2", "3", "4", "5"));
     }
 
     @Test
     public void shouldConnectAndReturnVertices() throws Exception {
         assertThat(acceptor.connect(Arrays.asList(generateTempFile(this.getClass(), "remote.yaml"))).toString(), startsWith("Connected - "));
         assertThat(StreamFactory.stream(((Iterator<String>) acceptor.submit(Arrays.asList("g.addVertex('name','stephen');g.addVertex('name','marko');g.V()")))).collect(Collectors.toList()), hasSize(2));
-        assertThat(((List<Result>) groovysh.getInterp().getContext().getProperty(DriverRemoteAcceptor.RESULT)).stream().map(result -> result.getString()).collect(Collectors.toList()), hasSize(2));
+        assertThat(((List<Result>) groovysh.getInterp().getContext().getProperty(DriverRemoteAcceptor.RESULT)).stream().map(Result::getString).collect(Collectors.toList()), hasSize(2));
+    }
+
+    @Test
+    public void shouldConnectAndSubmitForNull() throws Exception {
+        assertThat(acceptor.connect(Arrays.asList(generateTempFile(this.getClass(), "remote.yaml"))).toString(), startsWith("Connected - "));
+        assertThat(StreamFactory.stream(((Iterator<String>) acceptor.submit(Arrays.asList("g.V().remove()")))).collect(Collectors.toList()), contains("null"));
+        assertThat(((List<Result>) groovysh.getInterp().getContext().getProperty(DriverRemoteAcceptor.RESULT)).stream().map(Result::getObject).collect(Collectors.toList()), contains("null"));
     }
 
     public static String generateTempFile(final Class resourceClass, final String fileName) throws IOException {

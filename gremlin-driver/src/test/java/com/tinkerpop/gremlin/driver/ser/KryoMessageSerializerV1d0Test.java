@@ -33,11 +33,21 @@ import static org.junit.Assert.assertNull;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class KryoMessageSerializerV1d0Test {
+    private static final Map<String,Object> config = new HashMap<String,Object>(){{
+        put("serializeResultToString", true);
+    }};
+
     private UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
     private ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
     private static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
-    public MessageSerializer serializer = new KryoMessageSerializerV1d0();
+    public MessageSerializer binarySerializer = new KryoMessageSerializerV1d0();
+
+    public MessageSerializer textSerializer = new KryoMessageSerializerV1d0();
+
+    public KryoMessageSerializerV1d0Test() {
+        textSerializer.configure(config);
+    }
 
     @Test
     public void serializeIterable() throws Exception {
@@ -45,7 +55,7 @@ public class KryoMessageSerializerV1d0Test {
         list.add(1);
         list.add(100);
 
-        final ResponseMessage response = convert(list);
+        final ResponseMessage response = convertBinary(list);
         assertCommon(response);
 
         final List<Integer> deserializedFunList = (List<Integer>) response.getResult().getData();
@@ -55,13 +65,45 @@ public class KryoMessageSerializerV1d0Test {
     }
 
     @Test
+    public void serializeIterableToString() throws Exception {
+        final ArrayList<Integer> list = new ArrayList<>();
+        list.add(1);
+        list.add(100);
+
+        final ResponseMessage response = convertText(list);
+        assertCommon(response);
+
+        final List deserializedFunList = (List) response.getResult().getData();
+        assertEquals(2, deserializedFunList.size());
+        assertEquals("1", deserializedFunList.get(0));
+        assertEquals("100", deserializedFunList.get(1));
+    }
+
+    @Test
+    public void serializeIterableToStringWithNull() throws Exception {
+        final ArrayList<Integer> list = new ArrayList<>();
+        list.add(1);
+        list.add(null);
+        list.add(100);
+
+        final ResponseMessage response = convertText(list);
+        assertCommon(response);
+
+        final List deserializedFunList = (List) response.getResult().getData();
+        assertEquals(3, deserializedFunList.size());
+        assertEquals("1", deserializedFunList.get(0).toString());
+        assertEquals("null", deserializedFunList.get(1).toString());
+        assertEquals("100", deserializedFunList.get(2).toString());
+    }
+
+    @Test
     public void serializeIterableWithNull() throws Exception {
         final ArrayList<Integer> list = new ArrayList<>();
         list.add(1);
         list.add(null);
         list.add(100);
 
-        final ResponseMessage response = convert(list);
+        final ResponseMessage response = convertBinary(list);
         assertCommon(response);
 
         final List<Integer> deserializedFunList = (List<Integer>) response.getResult().getData();
@@ -81,7 +123,7 @@ public class KryoMessageSerializerV1d0Test {
         map.put("y", "some");
         map.put("z", innerMap);
 
-        final ResponseMessage response = convert(map);
+        final ResponseMessage response = convertBinary(map);
         assertCommon(response);
 
         final Map<String, Object> deserializedMap = (Map<String, Object>) response.getResult().getData();
@@ -104,7 +146,7 @@ public class KryoMessageSerializerV1d0Test {
 
         final Iterable<Edge> iterable = g.E().toList();
 
-        final ResponseMessage response = convert(iterable);
+        final ResponseMessage response = convertBinary(iterable);
         assertCommon(response);
 
         final List<DetachedEdge> edgeList = (List<DetachedEdge>) response.getResult().getData();
@@ -139,7 +181,7 @@ public class KryoMessageSerializerV1d0Test {
 
         final List list = g.V().toList();
 
-        final ResponseMessage response = convert(list);
+        final ResponseMessage response = convertBinary(list);
         assertCommon(response);
 
         final List<DetachedVertex> vertexList = (List<DetachedVertex>) response.getResult().getData();
@@ -168,7 +210,7 @@ public class KryoMessageSerializerV1d0Test {
         final Map<Vertex, Integer> map = new HashMap<>();
         map.put(g.V().<Vertex>has("name", Compare.eq, "marko").next(), 1000);
 
-        final ResponseMessage response = convert(map);
+        final ResponseMessage response = convertBinary(map);
         assertCommon(response);
 
         final Map<Vertex, Integer> deserializedMap = (Map<Vertex, Integer>) response.getResult().getData();
@@ -204,8 +246,8 @@ public class KryoMessageSerializerV1d0Test {
                 .statusMessage("worked")
                 .create();
 
-        final ByteBuf bb = serializer.serializeResponseAsBinary(response, allocator);
-        final ResponseMessage deserialized = serializer.deserializeResponse(bb);
+        final ByteBuf bb = binarySerializer.serializeResponseAsBinary(response, allocator);
+        final ResponseMessage deserialized = binarySerializer.deserializeResponse(bb);
 
         assertEquals(id, deserialized.getRequestId());
         assertEquals("this", deserialized.getResult().getMeta().get("test"));
@@ -222,8 +264,13 @@ public class KryoMessageSerializerV1d0Test {
         assertEquals(ResponseStatusCode.SUCCESS, response.getStatus().getCode());
     }
 
-    private ResponseMessage convert(final Object toSerialize) throws SerializationException {
-        final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).create(), allocator);
-        return serializer.deserializeResponse(bb);
+    private ResponseMessage convertBinary(final Object toSerialize) throws SerializationException {
+        final ByteBuf bb = binarySerializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).create(), allocator);
+        return binarySerializer.deserializeResponse(bb);
+    }
+
+    private ResponseMessage convertText(final Object toSerialize) throws SerializationException {
+        final ByteBuf bb = textSerializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).create(), allocator);
+        return textSerializer.deserializeResponse(bb);
     }
 }
