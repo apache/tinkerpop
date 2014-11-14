@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.console.plugin;
 
+import com.tinkerpop.gremlin.groovy.plugin.SugarGremlinPlugin;
 import com.tinkerpop.gremlin.groovy.util.MetaRegistryUtil;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
@@ -16,6 +17,9 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 
 /**
+ * This test lives here (even though the SugarPlugin is over in gremlin-groovy, because it really tests the
+ * plugin with respect to the Console.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class SugarGremlinPluginTest {

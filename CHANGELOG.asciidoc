@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M6 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Moved `SugarGremlinPlugin` from `gremlin-console` to `gremlin-groovy` so that it could be shared with Gremlin Server.
 * Fixed bug in serialization of `null` results returned to the Gremlin Console when serializing to strings.
 * Moved the `GremlinPlugin` for `TinkerGraph` to `tinkergraph-gremlin` module (it is no longer in `gremlin-console`).
 * Gremlin Server now allows for the explicit configuration of plugin activation.
