@@ -33,9 +33,8 @@ public class UtilitiesGremlinPluginTest {
     @Test
     public void shouldFailWithoutUtilitiesPlugin() throws Exception {
         final Groovysh groovysh = new Groovysh();
-        groovysh.getInterp().getContext().setProperty("g", TinkerFactory.createClassic());
         try {
-            groovysh.execute("describeGraph(g)");
+            groovysh.execute("describeGraph(g.class)");
             fail("Utilities were not loaded - this should fail.");
         } catch (Exception ignored) { }
     }
@@ -45,6 +44,7 @@ public class UtilitiesGremlinPluginTest {
         final UtilitiesGremlinPlugin plugin = new UtilitiesGremlinPlugin();
 
         final Groovysh groovysh = new Groovysh();
+        groovysh.getInterp().getContext().setProperty("g", TinkerFactory.createClassic());
 
         final Map<String,Object> env = new HashMap<>();
         env.put("ConsolePluginAcceptor.io", new IO());
@@ -53,8 +53,7 @@ public class UtilitiesGremlinPluginTest {
         final SpyPluginAcceptor spy = new SpyPluginAcceptor(groovysh::execute, () -> env);
         plugin.pluginTo(spy);
 
-        groovysh.getInterp().getContext().setProperty("g", TinkerFactory.createClassic());
-        assertThat(groovysh.execute("describeGraph(g.class)").toString(), containsString("IMPLEMENTATION - com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph"));
+        assertThat(groovysh.execute("describeGraph(com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph)").toString(), containsString("IMPLEMENTATION - com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph"));
         assertThat(groovysh.execute("clock {g.V().count().next()}"), is(instanceOf(Number.class)));
     }
 }
