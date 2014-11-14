@@ -48,11 +48,18 @@
             </excludes>
         </dependencySet>
         <dependencySet>
-            <outputDirectory>/ext</outputDirectory>
+            <outputDirectory>/ext/tinkergraph-gremlin</outputDirectory>
             <unpack>false</unpack>
             <scope>compile</scope>
             <includes>
                 <include>com.tinkerpop:tinkergraph-gremlin</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <outputDirectory>/ext/gremlin-groovy</outputDirectory>
+            <unpack>false</unpack>
+            <scope>compile</scope>
+            <includes>
                 <include>com.tinkerpop:gremlin-groovy</include>
             </includes>
         </dependencySet>
