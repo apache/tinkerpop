@@ -8,8 +8,10 @@ import groovy.grape.Grape
 import org.codehaus.groovy.tools.shell.CommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
 
+import java.nio.file.DirectoryStream
 import java.nio.file.FileSystems
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 
 /**
@@ -19,6 +21,7 @@ import java.nio.file.StandardCopyOption
  */
 class InstallCommand extends CommandSupport {
 
+    private final static String fileSep = System.getProperty("file.separator")
     private final Mediator mediator
 
     public InstallCommand(final Groovysh shell, final Mediator mediator) {
@@ -43,17 +46,23 @@ class InstallCommand extends CommandSupport {
         def fs = FileSystems.default
         def target = fs.getPath(extClassPath)
 
+        // collect the files already on the path
+        def filesAlreadyInPath = []
+        getFileNames(filesAlreadyInPath, fs.getPath(System.getProperty("user.dir") + fileSep + "lib"))
+        getFileNames(filesAlreadyInPath, target)
+
         // ignore slf4j related jars.  they are already in the path and will create duplicate bindings which
-        // generate annoying log messages that make you think stuff is wrong
+        // generate annoying log messages that make you think stuff is wrong.  also, don't bring over files
+        // that are already on the path
         dependencyLocations.collect{fs.getPath(it.path)}
                 .findAll{!(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/)}
+                .findAll{!filesAlreadyInPath.collect{it.getFileName().toString()}.contains(it.fileName.toFile().name)}
                 .each { Files.copy(it, target.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
 
         return "Loaded: " + arguments + (pluginsThatNeedRestart.size() == 0 ? "" : " - restart the console to use $pluginsThatNeedRestart")
     }
 
     private static String getPathFromDependency(final Map<String, Object> dep) {
-        def fileSep = System.getProperty("file.separator")
         def extClassPath = System.getProperty("user.dir") + fileSep + "ext" + fileSep + (String) dep.module
         return extClassPath
     }
@@ -107,5 +116,20 @@ class InstallCommand extends CommandSupport {
         map.put("version", artifact.getVersion())
         map.put("changing", false)
         return map
+    }
+
+    private static void getFileNames(final List fileNames, final Path dir){
+        try {
+            final DirectoryStream<Path> stream = Files.newDirectoryStream(dir);
+            for (Path path : stream) {
+                if(path.toFile().isDirectory()) getFileNames(fileNames, path);
+                else {
+                    fileNames.add(path.toAbsolutePath());
+                }
+            }
+            stream.close();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
     }
 }
