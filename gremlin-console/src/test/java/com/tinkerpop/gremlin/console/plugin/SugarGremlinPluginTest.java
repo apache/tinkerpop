@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.console.plugin;
 
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 import org.junit.Test;
@@ -29,7 +29,7 @@ public class SugarGremlinPluginTest {
         plugin.pluginTo(spy);
 
         groovysh.getInterp().getContext().setProperty("g", TinkerFactory.createClassic());
-        assertEquals(6l, groovysh.execute("g.V().count().next()"));
-        assertEquals(6l, groovysh.execute("g.V.count().next()"));
+        assertEquals(6l, ((GraphTraversal) groovysh.execute("g.V()")).count().next());
+        assertEquals(6l, ((GraphTraversal) groovysh.execute("g.V")).count().next());
     }
 }
