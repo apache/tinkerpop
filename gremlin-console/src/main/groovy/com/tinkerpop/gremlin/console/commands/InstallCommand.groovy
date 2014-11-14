@@ -46,10 +46,9 @@ class InstallCommand extends CommandSupport {
         def fs = FileSystems.default
         def target = fs.getPath(extClassPath)
 
-        // collect the files already on the path
+        // collect the files already on the path in /lib
         def filesAlreadyInPath = []
         getFileNames(filesAlreadyInPath, fs.getPath(System.getProperty("user.dir") + fileSep + "lib"))
-        getFileNames(filesAlreadyInPath, target)
 
         // ignore slf4j related jars.  they are already in the path and will create duplicate bindings which
         // generate annoying log messages that make you think stuff is wrong.  also, don't bring over files
