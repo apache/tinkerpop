@@ -12,6 +12,7 @@ TinkerPop 3.0.0.M6 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Moved `SugarGremlinPlugin` from `gremlin-console` to `gremlin-groovy` so that it could be shared with Gremlin Server.
 * Fixed bug in serialization of `null` results returned to the Gremlin Console when serializing to strings.
 * Moved the `GremlinPlugin` for `TinkerGraph` to `tinkergraph-gremlin` module (it is no longer in `gremlin-console`).
+* Added a `plugin-info.txt` file to Gremlin Console `/ext/{module}` subdirectories to identify the module that was originally requested.
 * Gremlin Server now allows for the explicit configuration of plugin activation.
 * Refactored `GremlinPlugin` and `AbstractGremlinPlugin` to better account for plugins that run on the server and those that run in the console.
 * Added a `plugins` configuration to Gremlin Server to control the plugins that are enabled on initialization.

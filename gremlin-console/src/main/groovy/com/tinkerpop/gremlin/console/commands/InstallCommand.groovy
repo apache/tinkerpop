@@ -38,8 +38,10 @@ class InstallCommand extends CommandSupport {
         final File f = new File(extClassPath)
         if (f.exists())
             return "A module with the name ${dep.module} is already installed"
-        else
+        else {
             f.mkdirs()
+            new File(extClassPath + fileSep + "plugin-info.txt").withWriter { out -> out << arguments.join(":") }
+        }
 
         final def dependencyLocations = Grape.resolve([classLoader: shell.getInterp().getClassLoader()], null, dep)
 
