@@ -185,7 +185,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Gremlin-Plugin>neo4j-lucene-index-${neo4j.version}=../</Gremlin-Plugin>
+                            <Gremlin-Plugin>neo4j-lucene-index-${neo4j.version}.jar=a-neo4j-lucene-index-${neo4j.version}.jar</Gremlin-Plugin>
                         </manifestEntries>
                     </archive>
                 </configuration>
