@@ -13,6 +13,8 @@ import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import java.util.jar.JarFile
+import java.util.jar.Manifest
 
 /**
  * Install a dependency into the console.
@@ -31,7 +33,8 @@ class InstallCommand extends CommandSupport {
 
     @Override
     def Object execute(final List<String> arguments) {
-        final def dep = createDependencyRecord(arguments)
+        final def artifact = createArtifact(arguments)
+        final def dep = makeDepsMap(artifact)
         final def pluginsThatNeedRestart = grabDeps(dep)
 
         final String extClassPath = getPathFromDependency(dep)
@@ -48,9 +51,22 @@ class InstallCommand extends CommandSupport {
         def fs = FileSystems.default
         def target = fs.getPath(extClassPath)
 
-        // collect the files already on the path in /lib
+        // collect the files already on the path in /lib. making some unfortunate assumptions about what the path
+        // looks like for the gremlin distribution
         def filesAlreadyInPath = []
-        getFileNames(filesAlreadyInPath, fs.getPath(System.getProperty("user.dir") + fileSep + "lib"))
+        def libClassPath
+        try {
+            libClassPath = fs.getPath(System.getProperty("user.dir") + fileSep + "lib")
+            getFileNames(filesAlreadyInPath, libClassPath)
+        } catch (Exception ignored) {
+            // the user might have a non-standard directory system.  if they are non-standard then they must be
+            // smart and they are therefore capable of resolving their own dependency problems.  this could also
+            // mean that they are running gremlin from source and not from target/*standalone*
+            io.println "Detected a non-standard Gremlin directory structure during install.  Expecting a 'lib' " +
+                       "directory sibling to 'ext'. This message does not necessarily imply failure, however " +
+                       "the console requires a certain directory structure for proper execution. Altering that " +
+                       "structure can lead to unexpected behavior."
+        }
 
         // ignore slf4j related jars.  they are already in the path and will create duplicate bindings which
         // generate annoying log messages that make you think stuff is wrong.  also, don't bring over files
@@ -60,12 +76,50 @@ class InstallCommand extends CommandSupport {
                 .findAll{!filesAlreadyInPath.collect{it.getFileName().toString()}.contains(it.fileName.toFile().name)}
                 .each { Files.copy(it, target.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
 
+        // the ordering of jars seems to matter in some cases (e.g. neo4j).  the plugin system allows the plugin
+        // to place a Gremlin-Plugin entry in the jar manifest file to define where specific jar files should
+        // go in the path which provides enough flexibility to control when jars should load.  unfortunately,
+        // this "ordering" issue doesn't seem to be documented as an issue anywhere and it is difficult to say
+        // whether it is a java issue, groovy classloader issue, grape issue, etc.  see this issue for more
+        // on the weirdness: https://github.com/tinkerpop/tinkerpop3/issues/230
+        //
+        // another unfortunate side-effect to this approach is that manual cleanup of jars is kinda messy now
+        // because you can't just delete the plugin director as one or more of the jars might have been moved.
+        // unsure of what the long term effects of this is.  at the end of the day, users may simply need to
+        // know something about their dependencies in order to have lots of "installed" plugins/dependencies.
+        alterPaths(target, artifact)
+
         return "Loaded: " + arguments + (pluginsThatNeedRestart.size() == 0 ? "" : " - restart the console to use $pluginsThatNeedRestart")
     }
 
     private static String getPathFromDependency(final Map<String, Object> dep) {
-        def extClassPath = System.getProperty("user.dir") + fileSep + "ext" + fileSep + (String) dep.module
-        return extClassPath
+        return System.getProperty("user.dir") + fileSep + "ext" + fileSep + (String) dep.module
+    }
+
+    private static alterPaths(final Path extPath, final Artifact artifact) {
+        try {
+            // another assumption about the pathing - seems safe for right now as the :install command is
+            // responsible for all this stuff.  if the user chooses to manually install their dependencies
+            // to the console, then it's up to them to sort this stuff out.
+            def pathToInstalled = extPath.resolve(artifact.artifact + "-" + artifact.version + ".jar")
+            final JarFile jar = new JarFile(pathToInstalled.toFile());
+            final Manifest manifest = jar.getManifest()
+
+            // containsKey doesn't seem to want to work - so just check for null - dah
+            def attrLine = manifest.mainAttributes.getValue("Gremlin-Plugin")
+            if (attrLine != null) {
+                def splitLine = attrLine.split(";")
+                splitLine.each {
+                    def kv = it.split("=")
+                    Files.move(extPath.resolve(kv[0] + ".jar"), extPath.resolve(kv[1]).resolve(kv[0] + ".jar"), StandardCopyOption.REPLACE_EXISTING)
+                }
+            }
+        } catch (Exception ex) {
+            // errors here will likely have to do with bad pathing or poorly constructed entries in the manifest.
+            // hopefully these will only occur for developers of plugins who need to make use of this function.
+            // internally to tinkerpop this is a neo4j-only issue
+            throw new RuntimeException(ex)
+        }
     }
 
     private def grabDeps(final Map<String, Object> map) {
@@ -92,7 +146,7 @@ class InstallCommand extends CommandSupport {
         return pluginsThatNeedRestart
     }
 
-    private def createDependencyRecord(final List<String> arguments) {
+    private static def createArtifact(final List<String> arguments) {
         final String group = arguments.size() >= 1 ? arguments.get(0) : null
         final String module = arguments.size() >= 2 ? arguments.get(1) : null
         final String version = arguments.size() >=3 ? arguments.get(2) : null
@@ -106,7 +160,7 @@ class InstallCommand extends CommandSupport {
         if (version == null || version.isEmpty())
             throw new IllegalArgumentException("Version cannot be null or empty")
 
-        return makeDepsMap(new Artifact(group, module, version))
+        return new Artifact(group, module, version)
     }
 
     private def makeDepsMap(final Artifact artifact) {
@@ -120,17 +174,13 @@ class InstallCommand extends CommandSupport {
     }
 
     private static void getFileNames(final List fileNames, final Path dir){
-        try {
-            final DirectoryStream<Path> stream = Files.newDirectoryStream(dir);
-            for (Path path : stream) {
-                if(path.toFile().isDirectory()) getFileNames(fileNames, path);
-                else {
-                    fileNames.add(path.toAbsolutePath());
-                }
+        final DirectoryStream<Path> stream = Files.newDirectoryStream(dir)
+        for (Path path : stream) {
+            if(path.toFile().isDirectory()) getFileNames(fileNames, path)
+            else {
+                fileNames.add(path.toAbsolutePath())
             }
-            stream.close();
-        } catch(IOException e){
-            e.printStackTrace();
         }
+        stream.close()
     }
 }
