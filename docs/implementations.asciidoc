@@ -602,7 +602,7 @@ IMPORTANT: image:hadoop-logo-notext.png[width=100,float=left] This section assum
 Installing Giraph-Gremlin
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To the `.bash_profile` file, add the following environmental variable (of course, be sure the directories are respective of the local machine locations). The `GIRAPH_GREMLIN_LIBS` folder is the location of all the Giraph-Gremlin jars. It is possible to place developer jars into this directory for loading into the Hadoop job's classpath.
+To the `.bash_profile` file, add the following environmental variable (of course, be sure the directories are respective of the local machine locations). The `GIRAPH_GREMLIN_LIBS` is the location of all the Giraph-Gremlin jars. It is possible to place developer jars into this directory for loading into the Hadoop job's classpath. Note that `GIRAPH_GREMLIN_LIBS` can be a colon-separated (`:`) list of locations.
 
 [source,shell]
 export GIRAPH_GREMLIN_LIBS=/usr/local/gremlin-console/ext/giraph-gremlin/
