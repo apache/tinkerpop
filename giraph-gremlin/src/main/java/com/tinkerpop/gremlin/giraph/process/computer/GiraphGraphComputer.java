@@ -184,7 +184,7 @@ public final class GiraphGraphComputer extends Configured implements GraphComput
                             }
                         });
                     } else {
-                        LOGGER.warn(path + " does not reference a valid directory -- proceeding regardless ");
+                        LOGGER.warn(path + " does not reference a valid directory -- proceeding regardless");
                     }
                 }
             }
