@@ -35,7 +35,7 @@ public class Neo4jProperty<V> implements Property<V> {
 
     @Override
     public String key() {
-        return Graph.Key.unHide(this.key);
+        return this.key;
     }
 
     @Override
@@ -46,11 +46,6 @@ public class Neo4jProperty<V> implements Property<V> {
     @Override
     public boolean isPresent() {
         return null != this.value;
-    }
-
-    @Override
-    public boolean isHidden() {
-        return Graph.Key.isHidden(this.key);
     }
 
     public String toString() {

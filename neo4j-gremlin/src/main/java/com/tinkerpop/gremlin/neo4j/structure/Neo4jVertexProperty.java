@@ -130,7 +130,7 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty
 
     @Override
     public String key() {
-        return Graph.Key.unHide(this.key);
+        return this.key;
     }
 
     @Override
@@ -166,7 +166,7 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty
             final Set<String> keys = new HashSet<>();
             for (final String key : this.node.getPropertyKeys()) {
                 if (Graph.Key.isHidden(key))
-                    keys.add(Graph.Key.unHide(key));
+                    keys.add(key);
             }
             return keys;
         } else {
@@ -177,11 +177,6 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty
     @Override
     public boolean isPresent() {
         return null != this.value;
-    }
-
-    @Override
-    public boolean isHidden() {
-        return Graph.Key.isHidden(this.key);
     }
 
     @Override
@@ -244,7 +239,7 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty
             vertex.graph.tx().readWrite();
             return (Iterator) StreamFactory.stream(node.getPropertyKeys())
                     .filter(key -> Graph.Key.isHidden(key))
-                    .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(k -> k.equals(Graph.Key.unHide(key))).findAny().isPresent())
+                    .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(k -> k.equals(key)).findAny().isPresent())
                     .map(key -> new Neo4jProperty<>(Neo4jVertexProperty.this, key, (V) node.getProperty(key))).iterator();
         }
     }

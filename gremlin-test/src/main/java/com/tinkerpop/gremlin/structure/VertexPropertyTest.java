@@ -120,7 +120,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                         assertTrue(meta.keys().contains("counter"));
                         assertEquals(1, meta.hiddens().count().next().intValue());
                         assertEquals(1, meta.hiddenKeys().size());
-                        assertTrue(meta.hiddenKeys().contains("counter"));
+                        assertTrue(meta.hiddenKeys().contains(Graph.Key.hide("counter")));
                     }
                 });
                 assertEquals(1, g.V().count().next().intValue());
@@ -461,32 +461,32 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             tests.add(Pair.with("v.value(\"age\").equals(16)", (Graph g, Vertex v, Boolean multi) -> v.value("age").equals(16)));
             tests.add(Pair.with("v.properties(\"age\").count().next().intValue() == 1", (Graph g, Vertex v, Boolean multi) -> v.properties("age").count().next().intValue() == 1));
             tests.add(Pair.with("v.properties(\"age\").value().next().equals(16)", (Graph g, Vertex v, Boolean multi) -> v.properties("age").value().next().equals(16)));
-            tests.add(Pair.with("v.hiddens(\"age\").count().next().intValue() == 2", (Graph g, Vertex v, Boolean multi) -> v.hiddens("age").count().next().intValue() == (multi ? 2 : 1)));
-            tests.add(Pair.with("v.hiddens(Graph.Key.hide(\"age\")).count().next().intValue() == 0", (Graph g, Vertex v, Boolean multi) -> v.hiddens(Graph.Key.hide("age")).count().next().intValue() == 0));
+            tests.add(Pair.with("v.hiddens(\"age\").count().next().intValue() == 0", (Graph g, Vertex v, Boolean multi) -> v.hiddens("age").count().next().intValue() == 0));
+            tests.add(Pair.with("v.hiddens(Graph.Key.hide(\"age\")).count().next().intValue() == 2", (Graph g, Vertex v, Boolean multi) -> v.hiddens(Graph.Key.hide("age")).count().next().intValue() == (multi ? 2 : 1)));
             tests.add(Pair.with("v.properties(Graph.Key.hide(\"age\")).count().next() == 0", (Graph g, Vertex v, Boolean multi) -> v.properties(Graph.Key.hide("age")).count().next().intValue() == 0));
             tests.add(Pair.with("v.propertyMap(Graph.Key.hide(\"age\")).next().size() == 0", (Graph g, Vertex v, Boolean multi) -> v.propertyMap(Graph.Key.hide("age")).next().size() == 0));
             tests.add(Pair.with("v.valueMap(Graph.Key.hide(\"age\")).next().size() == 0", (Graph g, Vertex v, Boolean multi) -> v.valueMap(Graph.Key.hide("age")).next().size() == 0));
             tests.add(Pair.with("v.propertyMap(\"age\").next().size() == 1", (Graph g, Vertex v, Boolean multi) -> v.propertyMap("age").next().size() == 1));
             tests.add(Pair.with("v.valueMap(\"age\").next().size() == 1", (Graph g, Vertex v, Boolean multi) -> v.valueMap("age").next().size() == 1));
-            tests.add(Pair.with("v.hiddenMap(Graph.Key.hide(\"age\")).next().size() == 0", (Graph g, Vertex v, Boolean multi) -> v.hiddenMap(Graph.Key.hide("age")).next().size() == 0));
-            tests.add(Pair.with("v.hiddenMap(\"age\").next().size() == 1", (Graph g, Vertex v, Boolean multi) -> v.hiddenMap("age").next().size() == 1));
-            tests.add(Pair.with("v.hiddenValueMap(Graph.Key.hide(\"age\")).next().size() == 0", (Graph g, Vertex v, Boolean multi) -> v.hiddenValueMap(Graph.Key.hide("age")).next().size() == 0));
-            tests.add(Pair.with("v.hiddenValueMap(\"age\").next().size() == 1", (Graph g, Vertex v, Boolean multi) -> v.hiddenValueMap("age").next().size() == 1));
-            tests.add(Pair.with("v.hiddens(\"age\").value().toList().contains(34)", (Graph g, Vertex v, Boolean multi) -> multi ? v.hiddens("age").value().toList().contains(34) : v.hiddens("age").value().toList().contains(29)));
-            tests.add(Pair.with("v.hiddens(\"age\").value().toList().contains(29)", (Graph g, Vertex v, Boolean multi) -> v.hiddens("age").value().toList().contains(29)));
+            tests.add(Pair.with("v.hiddenMap(Graph.Key.hide(\"age\")).next().size() == 1", (Graph g, Vertex v, Boolean multi) -> v.hiddenMap(Graph.Key.hide("age")).next().size() == 1));
+            tests.add(Pair.with("v.hiddenMap(\"age\").next().size() == 0", (Graph g, Vertex v, Boolean multi) -> v.hiddenMap("age").next().size() == 0));
+            tests.add(Pair.with("v.hiddenValueMap(Graph.Key.hide(\"age\")).next().size() == 1", (Graph g, Vertex v, Boolean multi) -> v.hiddenValueMap(Graph.Key.hide("age")).next().size() == 1));
+            tests.add(Pair.with("v.hiddenValueMap(\"age\").next().size() == 0", (Graph g, Vertex v, Boolean multi) -> v.hiddenValueMap("age").next().size() == 0));
+            tests.add(Pair.with("v.hiddens(Graph.Key.hide(\"age\")).value().toList().contains(34)", (Graph g, Vertex v, Boolean multi) -> multi ? v.hiddens(Graph.Key.hide("age")).value().toList().contains(34) : v.hiddens(Graph.Key.hide("age")).value().toList().contains(29)));
+            tests.add(Pair.with("v.hiddens(Graph.Key.hide(\"age\")).value().toList().contains(29)", (Graph g, Vertex v, Boolean multi) -> v.hiddens(Graph.Key.hide("age")).value().toList().contains(29)));
             tests.add(Pair.with("v.hiddenKeys().size() == 2", (Graph g, Vertex v, Boolean multi) -> v.hiddenKeys().size() == 2));
             tests.add(Pair.with("v.keys().size() == 3", (Graph g, Vertex v, Boolean multi) -> v.keys().size() == 3));
             tests.add(Pair.with("v.keys().contains(\"age\")", (Graph g, Vertex v, Boolean multi) -> v.keys().contains("age")));
             tests.add(Pair.with("v.keys().contains(\"name\")", (Graph g, Vertex v, Boolean multi) -> v.keys().contains("name")));
-            tests.add(Pair.with("v.hiddenKeys().contains(\"age\")", (Graph g, Vertex v, Boolean multi) -> v.hiddenKeys().contains("age")));
-            tests.add(Pair.with("v.property(Graph.Key.hide(\"color\")).key().equals(\"color\")", (Graph g, Vertex v, Boolean multi) -> v.property(Graph.Key.hide("color")).key().equals("color")));
+            tests.add(Pair.with("v.hiddenKeys().contains(Graph.Key.hide(\"age\"))", (Graph g, Vertex v, Boolean multi) -> v.hiddenKeys().contains(Graph.Key.hide("age"))));
+            tests.add(Pair.with("v.property(Graph.Key.hide(\"color\")).key().equals(Graph.Key.hide(\"color\"))", (Graph g, Vertex v, Boolean multi) -> v.property(Graph.Key.hide("color")).key().equals(Graph.Key.hide("color"))));
             tests.add(Pair.with("StreamFactory.stream(v.iterators().propertyIterator(Graph.Key.hide(\"color\"))).count() == 0", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().propertyIterator(Graph.Key.hide("color"))).count() == 0));
             tests.add(Pair.with("StreamFactory.stream(v.iterators().propertyIterator(Graph.Key.hide(\"age\"))).count() == 0", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().propertyIterator(Graph.Key.hide("age"))).count() == 0));
             tests.add(Pair.with("StreamFactory.stream(v.iterators().propertyIterator(\"age\")).count() == 1", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().propertyIterator("age")).count() == 1));
-            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide(\"color\"))).count() == 0", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide("color"))).count() == 0));
-            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide(\"age\"))).count() == 0", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide("age"))).count() == 0));
-            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(\"color\")).count() == 1", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator("color")).count() == 1));
-            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(\"age\")).count() == 2", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator("age")).count() == (multi ? 2 : 1)));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide(\"color\"))).count() == 1", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide("color"))).count() == 1));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide(\"age\"))).count() == 2", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide("age"))).count() == (multi ? 2 : 1)));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(\"color\")).count() == 0", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator("color")).count() == 0));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(\"age\")).count() == 0", (Graph g, Vertex v, Boolean multi) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator("age")).count() == 0));
 
             return tests.stream().map(d -> {
                 final Object[] o = new Object[2];

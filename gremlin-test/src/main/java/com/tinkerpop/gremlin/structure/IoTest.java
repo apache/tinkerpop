@@ -552,7 +552,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(e.hiddenKeys().size(), StreamFactory.stream(detachedEdge.iterators().hiddenPropertyIterator()).count());
                     assertEquals(e.keys().size(), StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
                     assertEquals(0.5d, e.iterators().propertyIterator("weight").next().value());
-                    assertEquals("rw", e.iterators().hiddenPropertyIterator("acl").next().value());
+                    assertEquals("rw", e.iterators().hiddenPropertyIterator(Graph.Key.hide("acl")).next().value());
 
                     called.set(true);
 
@@ -912,7 +912,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(1, StreamFactory.stream(detachedVertex.iterators().hiddenPropertyIterator()).count());
                     assertEquals(1, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
                     assertEquals(v1.value("name"), detachedVertex.value("name").toString());
-                    assertEquals(v1.hiddens("acl").value().next().toString(), detachedVertex.value(Graph.Key.hide("acl")).toString());
+                    assertEquals(v1.hiddens(Graph.Key.hide("acl")).value().next().toString(), detachedVertex.value(Graph.Key.hide("acl")).toString());
 
                     called.set(true);
                     return mock(Vertex.class);
@@ -947,7 +947,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(1, StreamFactory.stream(detachedVertex.iterators().hiddenPropertyIterator()).count());
                     assertEquals(1, StreamFactory.stream(detachedVertex.iterators().propertyIterator()).count());
                     assertEquals(v1.value("name"), detachedVertex.value("name").toString());
-                    assertEquals(v1.hiddens("acl").value().next().toString(), detachedVertex.value(Graph.Key.hide("acl")).toString());
+                    assertEquals(v1.hiddens(Graph.Key.hide("acl")).value().next().toString(), detachedVertex.value(Graph.Key.hide("acl")).toString());
                     called.set(true);
                     return mock(Vertex.class);
                 });
@@ -1055,7 +1055,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals("b", detachedVertex.property("propsSquared").value("y"));
                     assertEquals(2, StreamFactory.stream(detachedVertex.iterators().propertyIterator("name")).count());
                     assertTrue(StreamFactory.stream(detachedVertex.iterators().propertyIterator("name")).allMatch(p -> p.key().equals("name") && (p.value().equals("marko") || p.value().equals("mark"))));
-                    assertEquals(v1.hiddens("acl").value().next().toString(), detachedVertex.value(Graph.Key.hide("acl")).toString());
+                    assertEquals(v1.hiddens(Graph.Key.hide("acl")).value().next().toString(), detachedVertex.value(Graph.Key.hide("acl")).toString());
                     called.set(true);
                     return mock(Vertex.class);
                 });
@@ -1198,7 +1198,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals("b", detachedVertex.property("propsSquared").value("y"));
                     assertEquals(2, StreamFactory.stream(detachedVertex.iterators().propertyIterator("name")).count());
                     assertTrue(StreamFactory.stream(detachedVertex.iterators().propertyIterator("name")).allMatch(p -> p.key().equals("name") && (p.value().equals("marko") || p.value().equals("mark"))));
-                    assertEquals(v1.hiddens("acl").value().next().toString(), detachedVertex.value(Graph.Key.hide("acl")).toString());
+                    assertEquals(v1.hiddens(Graph.Key.hide("acl")).value().next().toString(), detachedVertex.value(Graph.Key.hide("acl")).toString());
                     called.set(true);
                     return mock(Vertex.class);
                 });
@@ -2057,7 +2057,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final Vertex v1 = (Vertex) g1.V().has("name", "marko").next();
         assertEquals("person", v1.label());
-        assertEquals(true, v1.iterators().hiddenValueIterator("visible").next());
+        assertEquals(true, v1.iterators().hiddenValueIterator(Graph.Key.hide("visible")).next());
         assertEquals(2, v1.keys().size());
         assertEquals(1, v1.hiddenKeys().size());
         assertEquals(4, (int) StreamFactory.stream(v1.iterators().propertyIterator("location")).count());
@@ -2109,7 +2109,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final Vertex v7 = (Vertex) g1.V().has("name", "stephen").next();
         assertEquals("person", v7.label());
-        assertEquals(true, v7.iterators().hiddenValueIterator("visible").next());
+        assertEquals(true, v7.iterators().hiddenValueIterator(Graph.Key.hide("visible")).next());
         assertEquals(2, v7.keys().size());
         assertEquals(1, v7.hiddenKeys().size());
         assertEquals(3, (int) StreamFactory.stream(v7.iterators().propertyIterator("location")).count());
@@ -2157,7 +2157,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final Vertex v8 = (Vertex) g1.V().has("name", "matthias").next();
         assertEquals("person", v8.label());
-        assertEquals(true, v8.iterators().hiddenValueIterator("visible").next());
+        assertEquals(true, v8.iterators().hiddenValueIterator(Graph.Key.hide("visible")).next());
         assertEquals(2, v8.keys().size());
         assertEquals(1, v8.hiddenKeys().size());
         assertEquals(4, (int) StreamFactory.stream(v8.iterators().propertyIterator("location")).count());
@@ -2205,7 +2205,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final Vertex v9 = (Vertex) g1.V().has("name", "daniel").next();
         assertEquals("person", v9.label());
-        assertEquals(false, v9.iterators().hiddenValueIterator("visible").next());
+        assertEquals(false, v9.iterators().hiddenValueIterator(Graph.Key.hide("visible")).next());
         assertEquals(2, v9.keys().size());
         assertEquals(1, v9.hiddenKeys().size());
         assertEquals(3, (int) StreamFactory.stream(v9.iterators().propertyIterator("location")).count());
@@ -2245,7 +2245,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final Vertex v10 = (Vertex) g1.V().has("name", "gremlin").next();
         assertEquals("software", v10.label());
-        assertEquals(true, v10.iterators().hiddenValueIterator("visible").next());
+        assertEquals(true, v10.iterators().hiddenValueIterator(Graph.Key.hide("visible")).next());
         assertEquals(1, v10.keys().size());
         assertEquals(1, v10.hiddenKeys().size());
         assertId(g1, lossyForId, v10, 10);
@@ -2292,7 +2292,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final Vertex v11 = (Vertex) g1.V().has("name", "tinkergraph").next();
         assertEquals("software", v11.label());
-        assertEquals(false, v11.iterators().hiddenValueIterator("visible").next());
+        assertEquals(false, v11.iterators().hiddenValueIterator(Graph.Key.hide("visible")).next());
         assertEquals(1, v11.keys().size());
         assertEquals(1, v11.hiddenKeys().size());
         assertId(g1, lossyForId, v11, 11);

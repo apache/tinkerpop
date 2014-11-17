@@ -60,12 +60,12 @@ public abstract class TinkerElement implements Element, Element.Iterators {
     public Set<String> hiddenKeys() {
         return TinkerHelper.inComputerMode(this.graph) ?
                 Element.super.hiddenKeys() :
-                this.properties.keySet().stream().filter(Graph.Key::isHidden).map(Graph.Key::unHide).collect(Collectors.toSet());
+                this.properties.keySet().stream().filter(Graph.Key::isHidden).collect(Collectors.toSet());
     }
 
     @Override
     public <V> Property<V> property(final String key) {
-        if (removed) throw Element.Exceptions.elementAlreadyRemoved(this.getClass(), this.id);
+        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(this.getClass(), this.id);
         if (TinkerHelper.inComputerMode(this.graph)) {
             final List<Property> list = this.graph.graphView.getProperty(this, key);
             return list.size() == 0 ? Property.<V>empty() : list.get(0);

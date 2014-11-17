@@ -103,37 +103,37 @@ public class PropertyTest {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-        public void shouldReturnHiddenKeysWithOutHiddenPrefix() {
+        public void shouldReturnHiddenKeysWithHiddenPrefix() {
             final Vertex v = g.addVertex("name", "marko", Graph.Key.hide("acl"), "rw", Graph.Key.hide("other"), "rw", "acl", "r");
             tryCommit(g);
             final Vertex v1 = g.v(v.id());
             assertEquals(2, v1.hiddenKeys().size());
-            assertTrue(v1.hiddenKeys().stream().allMatch(key -> !Graph.Key.isHidden(key)));
-            assertTrue(v1.hiddenKeys().stream().allMatch(k -> k.equals("acl") || k.equals("other")));
-            assertEquals("rw", v1.iterators().hiddenPropertyIterator("acl").next().value());
+            assertTrue(v1.hiddenKeys().stream().allMatch(key -> Graph.Key.isHidden(key)));
+            assertTrue(v1.hiddenKeys().stream().allMatch(k -> k.equals(Graph.Key.hide("acl")) || k.equals(Graph.Key.hide("other"))));
+            assertEquals("rw", v1.iterators().hiddenPropertyIterator(Graph.Key.hide("acl")).next().value());
             assertEquals("r", v1.iterators().propertyIterator("acl").next().value());
-            assertEquals("acl", v1.property(Graph.Key.hide("acl")).key());
-            assertEquals("other", v1.property(Graph.Key.hide("other")).key());
+            assertEquals(Graph.Key.hide("acl"), v1.property(Graph.Key.hide("acl")).key());
+            assertEquals(Graph.Key.hide("other"), v1.property(Graph.Key.hide("other")).key());
         }
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-        public void shouldNotReHideAnAlreadyHiddenKeyWhenGettingHiddenValue() {
+        public void shouldReHideAnAlreadyHiddenKeyWhenGettingHiddenValue() {
             final Vertex v = g.addVertex("name", "marko", Graph.Key.hide("acl"), "rw", Graph.Key.hide("other"), "rw");
             tryCommit(g);
             final Vertex v1 = g.v(v.id());
             v1.hiddenKeys().stream().forEach(hiddenKey -> assertTrue(v1.hiddenValues(hiddenKey).hasNext()));
-            assertFalse(v1.hiddenValues(Graph.Key.hide("other")).hasNext());
-            assertTrue(v1.hiddenValues("other").hasNext());
+            assertTrue(v1.hiddenValues(Graph.Key.hide("other")).hasNext());
+            assertFalse(v1.hiddenValues("other").hasNext());
 
             final Vertex u = g.addVertex();
             Edge e = v1.addEdge("knows", u, Graph.Key.hide("acl"), "private", "acl", "public");
             tryCommit(g);
             final Edge e1 = g.e(e.id());
             e1.hiddenKeys().stream().forEach(hiddenKey -> assertTrue(e1.hiddenValues(hiddenKey).hasNext()));
-            assertFalse(e1.hiddenValues(Graph.Key.hide("acl")).hasNext());
-            assertTrue(e1.hiddenValues("acl").hasNext());
-            assertEquals("private", e1.iterators().hiddenPropertyIterator("acl").next().value());
+            assertTrue(e1.hiddenValues(Graph.Key.hide("acl")).hasNext());
+            assertFalse(e1.hiddenValues("acl").hasNext());
+            assertEquals("private", e1.iterators().hiddenPropertyIterator(Graph.Key.hide("acl")).next().value());
             assertEquals("public", e1.iterators().propertyIterator("acl").next().value());
         }
     }
@@ -311,31 +311,31 @@ public class PropertyTest {
             tests.add(Pair.with("e.value(\"age\").equals(16)", (Graph g, Edge e) -> e.value("age").equals(16)));
             tests.add(Pair.with("e.properties(\"age\").count().next().intValue() == 1", (Graph g, Edge e) -> e.properties("age").count().next().intValue() == 1));
             tests.add(Pair.with("e.properties(\"age\").value().next().equals(16)", (Graph g, Edge e) -> e.properties("age").value().next().equals(16)));
-            tests.add(Pair.with("e.hiddens(\"age\").count().next().intValue() == 1", (Graph g, Edge e) -> e.hiddens("age").count().next().intValue() == 1));
-            tests.add(Pair.with("e.hiddens(Graph.Key.hide(\"age\")).count().next().intValue() == 0", (Graph g, Edge e) -> e.hiddens(Graph.Key.hide("age")).count().next().intValue() == 0));
+            tests.add(Pair.with("e.hiddens(Graph.Key.hide(\"age\")).count().next().intValue() == 1", (Graph g, Edge e) -> e.hiddens(Graph.Key.hide("age")).count().next().intValue() == 1));
+            tests.add(Pair.with("e.hiddens(\"age\").count().next().intValue() == 0", (Graph g, Edge e) -> e.hiddens("age").count().next().intValue() == 0));
             tests.add(Pair.with("e.properties(Graph.Key.hide(\"age\")).count().next() == 0", (Graph g, Edge e) -> e.properties(Graph.Key.hide("age")).count().next().intValue() == 0));
             tests.add(Pair.with("e.propertyMap(Graph.Key.hide(\"age\")).next().size() == 0", (Graph g, Edge e) -> e.propertyMap(Graph.Key.hide("age")).next().size() == 0));
             tests.add(Pair.with("e.valueMap(Graph.Key.hide(\"age\")).next().size() == 0", (Graph g, Edge e) -> e.valueMap(Graph.Key.hide("age")).next().size() == 0));
             tests.add(Pair.with("e.propertyMap(\"age\").next().size() == 1", (Graph g, Edge e) -> e.propertyMap("age").next().size() == 1));
             tests.add(Pair.with("e.valueMap(\"age\").next().size() == 1", (Graph g, Edge e) -> e.valueMap("age").next().size() == 1));
-            tests.add(Pair.with("e.hiddenMap(Graph.Key.hide(\"age\")).next().size() == 0", (Graph g, Edge e) -> e.hiddenMap(Graph.Key.hide("age")).next().size() == 0));
-            tests.add(Pair.with("e.hiddenMap(\"age\").next().size() == 1", (Graph g, Edge e) -> e.hiddenMap("age").next().size() == 1));
-            tests.add(Pair.with("e.hiddenValueMap(Graph.Key.hide(\"age\")).next().size() == 0", (Graph g, Edge e) -> e.hiddenValueMap(Graph.Key.hide("age")).next().size() == 0));
-            tests.add(Pair.with("e.hiddenValueMap(\"age\").next().size() == 1", (Graph g, Edge e) -> e.hiddenValueMap("age").next().size() == 1));
-            tests.add(Pair.with("e.hiddens(\"age\").value().toList().contains(29)", (Graph g, Edge e) -> e.hiddens("age").value().toList().contains(29)));
+            tests.add(Pair.with("e.hiddenMap(Graph.Key.hide(\"age\")).next().size() == 1", (Graph g, Edge e) -> e.hiddenMap(Graph.Key.hide("age")).next().size() == 1));
+            tests.add(Pair.with("e.hiddenMap(\"age\").next().size() == 0", (Graph g, Edge e) -> e.hiddenMap("age").next().size() == 0));
+            tests.add(Pair.with("e.hiddenValueMap(Graph.Key.hide(\"age\")).next().size() == 1", (Graph g, Edge e) -> e.hiddenValueMap(Graph.Key.hide("age")).next().size() == 1));
+            tests.add(Pair.with("e.hiddenValueMap(\"age\").next().size() == 0", (Graph g, Edge e) -> e.hiddenValueMap("age").next().size() == 0));
+            tests.add(Pair.with("e.hiddens(Graph.Key.hide(\"age\")).value().toList().contains(29)", (Graph g, Edge e) -> e.hiddens(Graph.Key.hide("age")).value().toList().contains(29)));
             tests.add(Pair.with("e.hiddenKeys().size() == 2", (Graph g, Edge e) -> e.hiddenKeys().size() == 2));
             tests.add(Pair.with("e.keys().size() == 3", (Graph g, Edge e) -> e.keys().size() == 3));
             tests.add(Pair.with("e.keys().contains(\"age\")", (Graph g, Edge e) -> e.keys().contains("age")));
             tests.add(Pair.with("e.keys().contains(\"name\")", (Graph g, Edge e) -> e.keys().contains("name")));
-            tests.add(Pair.with("e.hiddenKeys().contains(\"age\")", (Graph g, Edge e) -> e.hiddenKeys().contains("age")));
-            tests.add(Pair.with("e.property(Graph.Key.hide(\"color\")).key().equals(\"color\")", (Graph g, Edge e) -> e.property(Graph.Key.hide("color")).key().equals("color")));
+            tests.add(Pair.with("e.hiddenKeys().contains(Graph.Key.hide(\"age\"))", (Graph g, Edge e) -> e.hiddenKeys().contains(Graph.Key.hide("age"))));
+            tests.add(Pair.with("e.property(Graph.Key.hide(\"color\")).key().equals(Graph.Key.hide(\"color\"))", (Graph g, Edge e) -> e.property(Graph.Key.hide("color")).key().equals(Graph.Key.hide("color"))));
             tests.add(Pair.with("StreamFactory.stream(v.iterators().propertyIterator(Graph.Key.hide(\"color\"))).count() == 0", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().propertyIterator(Graph.Key.hide("color"))).count() == 0));
             tests.add(Pair.with("StreamFactory.stream(v.iterators().propertyIterator(Graph.Key.hide(\"age\"))).count() == 0", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().propertyIterator(Graph.Key.hide("age"))).count() == 0));
             tests.add(Pair.with("StreamFactory.stream(v.iterators().propertyIterator(\"age\")).count() == 1", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().propertyIterator("age")).count() == 1));
-            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide(\"color\"))).count() == 0", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().hiddenPropertyIterator(Graph.Key.hide("color"))).count() == 0));
-            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide(\"age\"))).count() == 0", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().hiddenPropertyIterator(Graph.Key.hide("age"))).count() == 0));
-            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(\"color\")).count() == 1", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().hiddenPropertyIterator("color")).count() == 1));
-            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(\"age\")).count() == 1", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().hiddenPropertyIterator("age")).count() == 1));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide(\"color\"))).count() == 1", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().hiddenPropertyIterator(Graph.Key.hide("color"))).count() == 1));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide(\"age\"))).count() == 1", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().hiddenPropertyIterator(Graph.Key.hide("age"))).count() == 1));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(\"color\")).count() == 0", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().hiddenPropertyIterator("color")).count() == 0));
+            tests.add(Pair.with("StreamFactory.stream(v.iterators().hiddenPropertyIterator(\"age\")).count() == 0", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().hiddenPropertyIterator("age")).count() == 0));
 
             return tests.stream().map(d -> {
                 final Object[] o = new Object[2];

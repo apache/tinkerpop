@@ -47,7 +47,7 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
 
     @Override
     public String key() {
-        return Graph.Key.unHide(this.key);
+        return this.key;
     }
 
     @Override
@@ -58,11 +58,6 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
     @Override
     public boolean isPresent() {
         return true;
-    }
-
-    @Override
-    public boolean isHidden() {
-        return Graph.Key.isHidden(this.key);
     }
 
     @Override

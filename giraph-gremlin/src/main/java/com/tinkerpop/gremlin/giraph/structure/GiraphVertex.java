@@ -61,23 +61,23 @@ public class GiraphVertex extends GiraphElement implements Vertex, Vertex.Iterat
 
     @Override
     public Iterator<Vertex> vertexIterator(final Direction direction, final String... labels) {
-        return StreamFactory.stream(getBaseVertex().iterators().vertexIterator(direction, labels)).map(v -> graph.v(v.id())).iterator();
+        return StreamFactory.stream(getBaseVertex().iterators().vertexIterator(direction, labels)).map(v -> this.graph.v(v.id())).iterator();
     }
 
     @Override
     public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
-        return StreamFactory.stream(getBaseVertex().iterators().edgeIterator(direction, edgeLabels)).map(e -> graph.e(e.id())).iterator();
+        return StreamFactory.stream(getBaseVertex().iterators().edgeIterator(direction, edgeLabels)).map(e -> this.graph.e(e.id())).iterator();
     }
 
     @Override
     public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
         return (Iterator) StreamFactory.stream(getBaseVertex().iterators().propertyIterator(propertyKeys))
-                .map(property -> new GiraphVertexProperty<>((TinkerVertexProperty<V>) property, GiraphVertex.this)).iterator();
+                .map(property -> new GiraphVertexProperty<>((TinkerVertexProperty<V>) property, this)).iterator();
     }
 
     @Override
     public <V> Iterator<VertexProperty<V>> hiddenPropertyIterator(final String... propertyKeys) {
         return (Iterator) StreamFactory.stream(getBaseVertex().iterators().hiddenPropertyIterator(propertyKeys))
-                .map(property -> new GiraphVertexProperty<>((TinkerVertexProperty<V>) property, GiraphVertex.this)).iterator();
+                .map(property -> new GiraphVertexProperty<>((TinkerVertexProperty<V>) property, this)).iterator();
     }
 }

@@ -254,7 +254,7 @@ public class StrategyWrappedGraphTest  {
             tests.add(Pair.with("e.iterators().properties()", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().propertyIterator())));
             tests.add(Pair.with("e.iterators().properties(\"any\")", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().propertyIterator("any"))));
             tests.add(Pair.with("e.iterators().hiddens()", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().hiddenPropertyIterator())));
-            tests.add(Pair.with("e.iterators().hiddens(\"hideme\")", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().hiddenPropertyIterator("hideme"))));
+            tests.add(Pair.with("e.iterators().hiddens(Graph.Key.hide(\"hideme\"))", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().hiddenPropertyIterator(Graph.Key.hide("hideme")))));
             tests.add(Pair.with("e.properties()", (Graph g, Edge e) -> StreamFactory.stream(e.properties())));
             tests.add(Pair.with("e.property(\"extra\",\"more\")", (Graph g, Edge e) -> Stream.<Property<Object>>of(e.property("extra", "more"))));
             //tests.add(Pair.with("g.E().properties(\"all\")", (Graph g, Edge e) -> g.E().properties("all").toList().stream()));
@@ -304,7 +304,7 @@ public class StrategyWrappedGraphTest  {
             tests.add(Pair.with("vp.property(Graph.Key.hide(\"extra\",\"this\"))", (Graph g, VertexProperty vp) -> Stream.of(vp.property(Graph.Key.hide("extra"), "this"))));
             tests.add(Pair.with("vp.iterators().properties()", (Graph g, VertexProperty vp) -> StreamFactory.stream(vp.iterators().propertyIterator())));
             tests.add(Pair.with("vp.iterators().properties(\"food\")", (Graph g, VertexProperty vp) -> StreamFactory.stream(vp.iterators().propertyIterator("food"))));
-            tests.add(Pair.with("vp.iterators().hiddens(\"more\")", (Graph g, VertexProperty vp) -> StreamFactory.stream(vp.iterators().hiddenPropertyIterator("more"))));
+            tests.add(Pair.with("vp.iterators().hiddens(Graph.Key.hide(\"more\"))", (Graph g, VertexProperty vp) -> StreamFactory.stream(vp.iterators().hiddenPropertyIterator(Graph.Key.hide("more")))));
             tests.add(Pair.with("vp.propertyMap().next().values()", (Graph g, VertexProperty vp) -> StreamFactory.stream(vp.propertyMap().next().values())));
 
             return tests.stream().map(d -> {
@@ -350,7 +350,7 @@ public class StrategyWrappedGraphTest  {
             tests.add(Pair.with("v.iterators().properties()", (Graph g, Vertex v) -> StreamFactory.stream(v.iterators().propertyIterator())));
             tests.add(Pair.with("v.iterators().properties(\"any\")", (Graph g, Vertex v) -> StreamFactory.stream(v.iterators().propertyIterator("any"))));
             tests.add(Pair.with("v.iterators().hiddens()", (Graph g, Vertex v) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator())));
-            tests.add(Pair.with("v.iterators().hiddens(\"hideme\")", (Graph g, Vertex v) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator("hideme"))));
+            tests.add(Pair.with("v.iterators().hiddens(Graph.Key.hide(\"hideme\"))", (Graph g, Vertex v) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide("hideme")))));
             tests.add(Pair.with("v.properties()", (Graph g, Vertex v) -> StreamFactory.stream(v.properties())));
             tests.add(Pair.with("v.property(\"extra\",\"more\")", (Graph g, Vertex v) -> Stream.<VertexProperty<Object>>of(v.property("extra", "more"))));
 
@@ -395,7 +395,7 @@ public class StrategyWrappedGraphTest  {
             tests.add(Pair.with("v.iterators().properties()", (Graph g, Vertex v) -> StreamFactory.stream(v.iterators().propertyIterator())));
             tests.add(Pair.with("v.iterators().properties(\"any\")", (Graph g, Vertex v) -> StreamFactory.stream(v.iterators().propertyIterator("any"))));
             tests.add(Pair.with("v.iterators().hiddens()", (Graph g, Vertex v) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator())));
-            tests.add(Pair.with("v.iterators().hiddens(\"hideme\")", (Graph g, Vertex v) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator("hideme"))));
+            tests.add(Pair.with("v.iterators().hiddens(Graph.Key.hide(\"hideme\"))", (Graph g, Vertex v) -> StreamFactory.stream(v.iterators().hiddenPropertyIterator(Graph.Key.hide("hideme")))));
             tests.add(Pair.with("v.properties()", (Graph g, Vertex v) -> StreamFactory.stream(v.properties())));
             tests.add(Pair.with("v.property(\"extra\",\"more\")", (Graph g, Vertex v) -> Stream.<VertexProperty<Object>>of(v.property("extra", "more"))));
 

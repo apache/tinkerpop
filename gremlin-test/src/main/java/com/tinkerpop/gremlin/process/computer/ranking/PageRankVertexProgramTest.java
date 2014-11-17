@@ -26,7 +26,7 @@ public class PageRankVertexProgramTest extends AbstractGremlinProcessTest {
         final ComputerResult result = g.compute().program(PageRankVertexProgram.build().create()).submit().get();
         result.graph().V().forEachRemaining(v -> {
             assertTrue(v.keys().contains("name"));
-            assertTrue(v.hiddenKeys().contains(Graph.Key.unHide(PageRankVertexProgram.PAGE_RANK)));
+            assertTrue(v.hiddenKeys().contains(PageRankVertexProgram.PAGE_RANK));
             final String name = v.value("name");
             final Double pageRank = v.value(PageRankVertexProgram.PAGE_RANK);
             if (name.equals("marko"))

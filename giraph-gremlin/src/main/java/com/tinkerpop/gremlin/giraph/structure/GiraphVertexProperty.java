@@ -105,12 +105,12 @@ public class GiraphVertexProperty<V> implements VertexProperty<V>, VertexPropert
     @Override
     public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
         return (Iterator) StreamFactory.stream(getBaseVertexProperty().iterators().propertyIterator(propertyKeys))
-                .map(property -> new GiraphProperty<>((TinkerProperty<V>) property, GiraphVertexProperty.this)).iterator();
+                .map(property -> new GiraphProperty<>((TinkerProperty<V>) property, this)).iterator();
     }
 
     @Override
     public <U> Iterator<Property<U>> hiddenPropertyIterator(final String... propertyKeys) {
         return (Iterator) StreamFactory.stream(getBaseVertexProperty().iterators().hiddenPropertyIterator(propertyKeys))
-                .map(property -> new GiraphProperty<>((TinkerProperty<V>) property, GiraphVertexProperty.this)).iterator();
+                .map(property -> new GiraphProperty<>((TinkerProperty<V>) property, this)).iterator();
     }
 }

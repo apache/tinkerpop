@@ -77,7 +77,7 @@ public class Neo4jEdge extends Neo4jElement implements Edge, Edge.Iterators, Wra
 
     @Override
     public Iterator<Vertex> vertexIterator(final Direction direction) {
-        graph.tx().readWrite();
-        return (Iterator) Neo4jHelper.getVertices(Neo4jEdge.this, direction);
+        this.graph.tx().readWrite();
+        return (Iterator) Neo4jHelper.getVertices(this, direction);
     }
 }

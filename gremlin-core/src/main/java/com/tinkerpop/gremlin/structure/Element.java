@@ -58,7 +58,7 @@ public abstract interface Element {
      */
     public default Set<String> hiddenKeys() {
         final Set<String> hiddenKeys = new HashSet<>();
-        this.iterators().hiddenPropertyIterator().forEachRemaining(property -> hiddenKeys.add(Graph.Key.unHide(property.key())));
+        this.iterators().hiddenPropertyIterator().forEachRemaining(property -> hiddenKeys.add(property.key()));
         return hiddenKeys;
     }
 
@@ -68,7 +68,7 @@ public abstract interface Element {
      */
     public default <V> Property<V> property(final String key) {
         final Iterator<? extends Property<V>> iterator = Graph.Key.isHidden(key) ?
-                this.iterators().hiddenPropertyIterator(Graph.Key.unHide(key)) :
+                this.iterators().hiddenPropertyIterator(key) :
                 this.iterators().propertyIterator(key);
         return iterator.hasNext() ? iterator.next() : Property.<V>empty();
     }

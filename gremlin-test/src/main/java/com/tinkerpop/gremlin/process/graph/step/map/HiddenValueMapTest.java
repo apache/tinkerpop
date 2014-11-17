@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -32,8 +33,8 @@ public abstract class HiddenValueMapTest extends AbstractGremlinProcessTest {
             final Map<String, List> hiddenValues = traversal.next();
             // System.out.println(hiddenValues + "!!!!!");
             // assertEquals(1, hiddenValues.size());  TODO
-            assertEquals(1, hiddenValues.get("visible").size());
-            if ((Boolean) hiddenValues.get("visible").get(0))
+            assertEquals(1, hiddenValues.get(Graph.Key.hide("visible")).size());
+            if ((Boolean) hiddenValues.get(Graph.Key.hide("visible")).get(0))
                 visibleTrue++;
             else
                 visibleFalse++;

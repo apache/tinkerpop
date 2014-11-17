@@ -67,18 +67,18 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
                 final String prefixedKey = Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat(key);
                 if (this.getBaseVertex().hasProperty(key)) {
                     if (this.getBaseVertex().getProperty(key).equals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN)) {
-                        final Node node = this.graph.getBaseGraph().createNode(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL, DynamicLabel.label(Graph.Key.unHide(key)));
+                        final Node node = this.graph.getBaseGraph().createNode(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL, DynamicLabel.label(key));
                         node.setProperty(T.key.getAccessor(), key);
                         node.setProperty(T.value.getAccessor(), value);
                         this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
                         return new Neo4jVertexProperty<>(this, node);
                     } else {
-                        Node node = this.graph.getBaseGraph().createNode(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL, DynamicLabel.label(Graph.Key.unHide(key)));
+                        Node node = this.graph.getBaseGraph().createNode(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL, DynamicLabel.label(key));
                         node.setProperty(T.key.getAccessor(), key);
                         node.setProperty(T.value.getAccessor(), this.getBaseVertex().removeProperty(key));
                         this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
                         this.getBaseVertex().setProperty(key, Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN);
-                        node = this.graph.getBaseGraph().createNode(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL, DynamicLabel.label(Graph.Key.unHide(key)));
+                        node = this.graph.getBaseGraph().createNode(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL, DynamicLabel.label(key));
                         node.setProperty(T.key.getAccessor(), key);
                         node.setProperty(T.value.getAccessor(), value);
                         this.getBaseVertex().createRelationshipTo(node, DynamicRelationshipType.withName(prefixedKey));
@@ -192,22 +192,22 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
 
     @Override
     public Iterator<Vertex> vertexIterator(final Direction direction, final String... labels) {
-        graph.tx().readWrite();
-        return (Iterator) Neo4jHelper.getVertices(Neo4jVertex.this, direction, labels).iterator();
+        this.graph.tx().readWrite();
+        return (Iterator) Neo4jHelper.getVertices(this, direction, labels).iterator();
     }
 
     @Override
     public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
-        graph.tx().readWrite();
-        return (Iterator) Neo4jHelper.getEdges(Neo4jVertex.this, direction, edgeLabels).iterator();
+        this.graph.tx().readWrite();
+        return (Iterator) Neo4jHelper.getEdges(this, direction, edgeLabels).iterator();
     }
 
     @Override
     public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
-        graph.tx().readWrite();
+        this.graph.tx().readWrite();
         return (Iterator) StreamFactory.stream(getBaseVertex().getPropertyKeys())
-                .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(k -> k.equals(key)).findAny().isPresent())
                 .filter(key -> !Graph.Key.isHidden(key))
+                .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(k -> k.equals(key)).findAny().isPresent())
                 .flatMap(key -> {
                     if (getBaseVertex().getProperty(key).equals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN))
                         return StreamFactory.stream(getBaseVertex().getRelationships(org.neo4j.graphdb.Direction.OUTGOING, DynamicRelationshipType.withName(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat(key))))
@@ -219,10 +219,10 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
 
     @Override
     public <V> Iterator<VertexProperty<V>> hiddenPropertyIterator(final String... propertyKeys) {
-        graph.tx().readWrite();
+        this.graph.tx().readWrite();
         return (Iterator) StreamFactory.stream(getBaseVertex().getPropertyKeys())
                 .filter(Graph.Key::isHidden)
-                .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(k -> k.equals(Graph.Key.unHide(key))).findAny().isPresent())
+                .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(k -> k.equals(key)).findAny().isPresent())
                 .flatMap(key -> {
                     if (getBaseVertex().getProperty(key).equals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN))
                         return StreamFactory.stream(getBaseVertex().getRelationships(org.neo4j.graphdb.Direction.OUTGOING, DynamicRelationshipType.withName(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat(key))))

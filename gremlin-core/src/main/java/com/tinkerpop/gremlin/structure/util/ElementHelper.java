@@ -363,8 +363,8 @@ public class ElementHelper {
             (getHiddens ? element.iterators().hiddenPropertyIterator() : element.iterators().propertyIterator()).forEachRemaining(property -> values.put(property.key(), property.value()));
         } else {
             for (final String key : propertyKeys) {
-                if (!Graph.Key.isHidden(key)) {
-                    element.property(getHiddens ? Graph.Key.hide(key) : key).ifPresent(v -> values.put(key, v));
+                if ((!getHiddens && !Graph.Key.isHidden(key)) || (getHiddens && Graph.Key.isHidden(key))) {
+                    element.property(key).ifPresent(v -> values.put(key, v));
                 }
             }
         }
@@ -377,8 +377,8 @@ public class ElementHelper {
             (getHiddens ? element.iterators().hiddenPropertyIterator() : element.iterators().propertyIterator()).forEachRemaining(property -> propertyMap.put(property.key(), property));
         } else {
             for (final String key : propertyKeys) {
-                if (!Graph.Key.isHidden(key)) {
-                    final Property property = element.property(getHiddens ? Graph.Key.hide(key) : key);
+                if ((!getHiddens && !Graph.Key.isHidden(key)) || (getHiddens && Graph.Key.isHidden(key))) {
+                    final Property property = element.property(key);
                     if (property.isPresent()) propertyMap.put(key, property);
                 }
             }
@@ -400,7 +400,7 @@ public class ElementHelper {
             });
         } else {
             for (final String key : propertyKeys) {
-                if (!Graph.Key.isHidden(key)) {
+                if ((!getHiddens && !Graph.Key.isHidden(key)) || (getHiddens && Graph.Key.isHidden(key))) {
                     if (valueMap.containsKey(key)) {
                         final List list = valueMap.get(key);
                         (getHiddens ? vertex.iterators().hiddenPropertyIterator(key) : vertex.iterators().propertyIterator(key)).forEachRemaining(property -> list.add(property.value()));
