@@ -53,7 +53,7 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
         final Vertex v = g.addVertex();
         final VertexProperty vp = v.property(Graph.Key.hide("test"), "this");
         final DetachedVertexProperty mp = DetachedVertexProperty.detach(vp);
-        assertEquals("test", mp.key());
+        assertEquals(Graph.Key.hide("test"), mp.key());
         assertEquals("this", mp.value());
         assertTrue(mp.isHidden());
         assertEquals(DetachedVertex.class, mp.element().getClass());

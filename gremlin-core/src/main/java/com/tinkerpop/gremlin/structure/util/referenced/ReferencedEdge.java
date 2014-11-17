@@ -70,10 +70,4 @@ public class ReferencedEdge extends ReferencedElement implements Edge, Edge.Iter
     public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
         return Collections.emptyIterator();
     }
-
-    @Override
-    public <V> Iterator<Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
-        return Collections.emptyIterator();
-    }
-
 }

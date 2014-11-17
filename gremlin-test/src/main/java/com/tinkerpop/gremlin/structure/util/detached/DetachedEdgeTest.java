@@ -15,12 +15,8 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -57,10 +53,9 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         assertEquals(convertToVertexId("vadas"), detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
         assertEquals("person", detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
 
-        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+        assertEquals(2, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
+        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().propertyIterator(Graph.Key.hide("year"))).count());
         assertEquals(0.5d, detachedEdge.iterators().propertyIterator("weight").next().value());
-        assertEquals(1, StreamFactory.stream(detachedEdge.iterators().hiddenPropertyIterator()).count());
-        assertEquals(2002, detachedEdge.iterators().hiddenPropertyIterator("year").next().value());
     }
 
     @Test
@@ -80,7 +75,6 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         assertEquals("person", detachedEdge.iterators().vertexIterator(Direction.IN).next().label());
 
         assertEquals(0, StreamFactory.stream(detachedEdge.iterators().propertyIterator()).count());
-        assertEquals(0, StreamFactory.stream(detachedEdge.iterators().hiddenPropertyIterator()).count());
     }
 
     @Test
@@ -109,13 +103,11 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
 
     @Test
     public void shouldConstructDetachedEdgeFromParts() {
-        final Map<String,Object> properties = new HashMap<>();
+        final Map<String, Object> properties = new HashMap<>();
         properties.put("x", "a");
+        properties.put(Graph.Key.hide("y"), "b");
 
-        final Map<String,Object> hiddens = new HashMap<>();
-        hiddens.put(Graph.Key.hide("y"), "b");
-
-        final DetachedEdge de = new DetachedEdge(10, "bought", properties, hiddens, Pair.with(1, "person"), Pair.with(2, "product"));
+        final DetachedEdge de = new DetachedEdge(10, "bought", properties, Pair.with(1, "person"), Pair.with(2, "product"));
 
         assertEquals(10, de.id());
         assertEquals("bought", de.label());
@@ -127,15 +119,13 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         assertEquals(1, StreamFactory.stream(de.iterators()).count());
         assertEquals("a", de.iterators().propertyIterator("x").next().value());
         assertEquals(1, StreamFactory.stream(de.iterators().propertyIterator("x")).count());
-        assertEquals("b", de.iterators().hiddenPropertyIterator("y").next().value());
-        assertEquals(1, StreamFactory.stream(de.iterators().hiddenPropertyIterator("y")).count());
 
         assertEquals("a", de.property("x").value());
         assertEquals("x", de.property("x").key());
         assertFalse(de.property("x").isHidden());
 
         assertEquals("b", de.property(Graph.Key.hide("y")).value());
-        assertEquals("y", de.property(Graph.Key.hide("y")).key());
+        assertEquals(Graph.Key.hide("y"), de.property(Graph.Key.hide("y")).key());
         assertTrue(de.property(Graph.Key.hide("y")).isHidden());
     }
 

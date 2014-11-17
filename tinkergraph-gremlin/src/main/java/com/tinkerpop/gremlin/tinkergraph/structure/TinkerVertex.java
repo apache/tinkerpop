@@ -126,17 +126,12 @@ public class TinkerVertex extends TinkerElement implements Vertex, Vertex.Iterat
     }
 
     @Override
-    public <V> Iterator<VertexProperty<V>> hiddenPropertyIterator(final String... propertyKeys) {
-        return (Iterator) super.hiddenPropertyIterator(propertyKeys);
-    }
-
-    @Override
     public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
-        return (Iterator) TinkerHelper.getEdges(TinkerVertex.this, direction, edgeLabels);
+        return (Iterator) TinkerHelper.getEdges(this, direction, edgeLabels);
     }
 
     @Override
     public Iterator<Vertex> vertexIterator(final Direction direction, final String... edgeLabels) {
-        return (Iterator) TinkerHelper.getVertices(TinkerVertex.this, direction, edgeLabels);
+        return (Iterator) TinkerHelper.getVertices(this, direction, edgeLabels);
     }
 }

@@ -41,7 +41,6 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
 
     public DetachedEdge(final Object id, final String label,
                         final Map<String, Object> properties,
-                        final Map<String, Object> hiddenProperties,
                         final Pair<Object, String> outV,
                         final Pair<Object, String> inV) {
         super(id, label);
@@ -49,7 +48,6 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
         this.inVertex = new DetachedVertex(inV.getValue0(), inV.getValue1());
 
         if (properties != null) this.properties.putAll(convertToDetachedProperty(properties));
-        if (hiddenProperties != null) this.properties.putAll(convertToDetachedProperty(hiddenProperties));
     }
 
     private DetachedEdge() {
@@ -68,7 +66,6 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
 
         if (!asReference) {
             edge.iterators().propertyIterator().forEachRemaining(p -> this.properties.put(p.key(), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : new DetachedProperty(p, this)))));
-            edge.iterators().hiddenPropertyIterator().forEachRemaining(p -> this.properties.put(Graph.Key.hide(p.key()), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : new DetachedProperty(p, this)))));
         }
     }
 
@@ -119,7 +116,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
             inV = graph.addVertex(T.id, detachedEdge.inVertex.id());
         }
 
-        if (ElementHelper.areEqual(outV,inV)) {
+        if (ElementHelper.areEqual(outV, inV)) {
             final Iterator<Edge> itty = outV.iterators().edgeIterator(Direction.OUT, detachedEdge.label());
             while (itty.hasNext()) {
                 final Edge e = itty.next();
@@ -165,10 +162,5 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
     @Override
     public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
         return (Iterator) super.propertyIterator(propertyKeys);
-    }
-
-    @Override
-    public <V> Iterator<Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
-        return (Iterator) super.hiddenPropertyIterator(propertyKeys);
     }
 }

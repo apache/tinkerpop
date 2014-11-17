@@ -97,17 +97,8 @@ public abstract class Neo4jElement implements Element, Element.Iterators, Wrappe
     public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys) {
         this.graph.tx().readWrite();
         return StreamFactory.stream(this.baseElement.getPropertyKeys())
-                .filter(key -> !Graph.Key.isHidden(key))
-                .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(k -> !Graph.Key.isHidden(k)).filter(k -> k.equals(key)).findAny().isPresent())
+                .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(k -> k.equals(key)).findAny().isPresent())
                 .map(key -> new Neo4jProperty<>(Neo4jElement.this, key, (V) this.baseElement.getProperty(key))).iterator();
     }
 
-    @Override
-    public <V> Iterator<? extends Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
-        this.graph.tx().readWrite();
-        return StreamFactory.stream(this.baseElement.getPropertyKeys())
-                .filter(Graph.Key::isHidden)
-                .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(Graph.Key::isHidden).filter(k -> k.equals(key)).findAny().isPresent())
-                .map(key -> new Neo4jProperty<>(Neo4jElement.this, key, (V) this.baseElement.getProperty(key))).iterator();
-    }
 }

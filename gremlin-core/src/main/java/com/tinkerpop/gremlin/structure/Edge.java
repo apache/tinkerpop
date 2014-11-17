@@ -55,11 +55,6 @@ public interface Edge extends Element, EdgeTraversal {
         @Override
         public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys);
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public <V> Iterator<Property<V>> hiddenPropertyIterator(final String... propertyKeys);
     }
 
     /**

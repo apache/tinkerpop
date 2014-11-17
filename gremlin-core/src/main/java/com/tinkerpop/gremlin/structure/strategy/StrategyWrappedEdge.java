@@ -133,25 +133,10 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
         }
 
         @Override
-        public <V> Iterator<V> hiddenValueIterator(final String... propertyKeys) {
-            return strategyWrappedGraph.getStrategy().compose(
-                    s -> s.<V>getEdgeIteratorsHiddenValuesStrategy(strategyContext),
-                    (String[] pks) -> baseEdge.iterators().hiddenValueIterator(pks)).apply(propertyKeys);
-        }
-
-        @Override
         public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
             return StreamFactory.stream(strategyWrappedGraph.getStrategy().compose(
                     s -> s.<V>getEdgeIteratorsPropertiesStrategy(strategyContext),
                     (String[] pks) -> baseEdge.iterators().propertyIterator(pks)).apply(propertyKeys))
-                    .map(property -> (Property<V>) new StrategyWrappedProperty<>(property, strategyWrappedGraph)).iterator();
-        }
-
-        @Override
-        public <V> Iterator<Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
-            return StreamFactory.stream(strategyWrappedGraph.getStrategy().compose(
-                    s -> s.<V>getEdgeIteratorsHiddensStrategy(strategyContext),
-                    (String[] pks) -> baseEdge.iterators().hiddenPropertyIterator(pks)).apply(propertyKeys))
                     .map(property -> (Property<V>) new StrategyWrappedProperty<>(property, strategyWrappedGraph)).iterator();
         }
     }

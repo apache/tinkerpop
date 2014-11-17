@@ -26,7 +26,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
      * Construct a {@code DetachedVertexProperty} during manual deserialization.
      */
     public DetachedVertexProperty(final Object id, final String label, final String key, final V value,
-                                  final Map<String, Object> properties, final Map<String, Object> hiddenProperties,
+                                  final Map<String, Object> properties,
                                   final DetachedVertex vertex) {
         super(id, label);
         if (null == key) throw Graph.Exceptions.argumentCanNotBeNull("key");
@@ -39,8 +39,6 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
 
         if (properties != null)
             properties.entrySet().iterator().forEachRemaining(kv -> putToList(kv.getKey(), new DetachedProperty(kv.getKey(), kv.getValue(), this)));
-        if (hiddenProperties != null)
-            hiddenProperties.entrySet().iterator().forEachRemaining(kv -> putToList(Graph.Key.hide(kv.getKey()), new DetachedProperty(kv.getKey(), kv.getValue(), this)));
     }
 
     /**
@@ -50,13 +48,12 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
         super(property);
         if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
 
-        this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
+        this.key = property.key();
         this.value = (V) property.value();
         this.vertex = detachedVertex;
 
         if (property.graph().features().vertex().supportsMetaProperties()) {
             property.iterators().propertyIterator().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
-            property.iterators().hiddenPropertyIterator().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
         }
     }
 
@@ -80,7 +77,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
 
     @Override
     public String key() {
-        return Graph.Key.unHide(this.key);
+        return this.key;
     }
 
     @Override
@@ -136,11 +133,6 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
     @Override
     public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
         return (Iterator) super.propertyIterator(propertyKeys);
-    }
-
-    @Override
-    public <U> Iterator<Property<U>> hiddenPropertyIterator(final String... propertyKeys) {
-        return (Iterator) super.hiddenPropertyIterator(propertyKeys);
     }
 
     private void putToList(final String key, final Property p) {

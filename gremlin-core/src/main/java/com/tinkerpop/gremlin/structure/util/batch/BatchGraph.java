@@ -470,11 +470,6 @@ public class BatchGraph<G extends Graph> implements Graph {
         public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
             return getCachedVertex(externalID).iterators().propertyIterator(propertyKeys);
         }
-
-        @Override
-        public <V> Iterator<VertexProperty<V>> hiddenPropertyIterator(final String... propertyKeys) {
-            return getCachedVertex(externalID).iterators().hiddenPropertyIterator(propertyKeys);
-        }
     }
 
     private class BatchEdge implements Edge, Edge.Iterators {
@@ -534,11 +529,6 @@ public class BatchGraph<G extends Graph> implements Graph {
         @Override
         public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
             return getWrappedEdge().iterators().propertyIterator(propertyKeys);
-        }
-
-        @Override
-        public <V> Iterator<Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
-            return getWrappedEdge().iterators().hiddenPropertyIterator(propertyKeys);
         }
 
         @Override

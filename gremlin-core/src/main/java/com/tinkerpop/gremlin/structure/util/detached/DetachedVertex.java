@@ -34,11 +34,10 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
     private DetachedVertex() {
     }
 
-    public DetachedVertex(final Object id, final String label, final Map<String, Object> properties, final Map<String, Object> hiddenProperties) {
+    public DetachedVertex(final Object id, final String label, final Map<String, Object> properties) {
         super(id, label);
 
-        if (null != properties) this.properties.putAll(convertToDetachedVertexProperties(properties, false));
-        if (null != hiddenProperties) this.properties.putAll(convertToDetachedVertexProperties(hiddenProperties, true));
+        if (null != properties) this.properties.putAll(convertToDetachedVertexProperties(properties));
     }
 
     protected DetachedVertex(final Object id, final String label) {
@@ -50,7 +49,6 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
 
         if (!asReference) {
             vertex.iterators().propertyIterator().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedVertexProperty ? p : new DetachedVertexProperty(p, this)));
-            vertex.iterators().hiddenPropertyIterator().forEachRemaining(p -> putToList(Graph.Key.hide(p.key()), p instanceof DetachedVertexProperty ? p : new DetachedVertexProperty(p, this)));
         }
     }
 
@@ -115,10 +113,6 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
                         kv.getValue().forEach(property -> {
                             final VertexProperty vertexProperty = (VertexProperty) property;
                             final List<Object> propsOnProps = new ArrayList<>();
-                            vertexProperty.iterators().hiddenPropertyIterator().forEachRemaining(h -> {
-                                propsOnProps.add(Graph.Key.hide(h.key()));
-                                propsOnProps.add(h.value());
-                            });
 
                             vertexProperty.iterators().propertyIterator().forEachRemaining(h -> {
                                 propsOnProps.add(h.key());
@@ -139,11 +133,11 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
         return this;
     }
 
-    private Map<String, List<Property>> convertToDetachedVertexProperties(final Map<String, Object> properties, final boolean hide) {
+    private Map<String, List<Property>> convertToDetachedVertexProperties(final Map<String, Object> properties) {
         return properties.entrySet().stream()
-                .map(entry -> Pair.with(hide ? Graph.Key.hide(entry.getKey()) : entry.getKey(), ((List<Map<String, Object>>) entry.getValue()).stream()
-                                .map(m -> (Property) new DetachedVertexProperty(m.get("id"), (String) m.get("label"), hide ? Graph.Key.hide(entry.getKey()) : entry.getKey(),
-                                        m.get("value"), (Map<String, Object>) m.get("properties"), (Map<String, Object>) m.get("hidden"), this))
+                .map(entry -> Pair.with(entry.getKey(), ((List<Map<String, Object>>) entry.getValue()).stream()
+                                .map(m -> (Property) new DetachedVertexProperty(m.get("id"), (String) m.get("label"), entry.getKey(),
+                                        m.get("value"), (Map<String, Object>) m.get("properties"), this))
                                 .collect(Collectors.toList()))
                 ).collect(Collectors.toMap(Pair::getValue0, Pair::getValue1));
     }
@@ -151,11 +145,6 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
     @Override
     public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
         return (Iterator) super.propertyIterator(propertyKeys);
-    }
-
-    @Override
-    public <V> Iterator<VertexProperty<V>> hiddenPropertyIterator(final String... propertyKeys) {
-        return (Iterator) super.hiddenPropertyIterator(propertyKeys);
     }
 
     @Override

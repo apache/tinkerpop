@@ -86,12 +86,7 @@ public abstract class DetachedElement<E> implements Element, Element.Iterators, 
 
     @Override
     public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys) {
-        return (Iterator) this.properties.values().stream().flatMap(list -> list.stream()).filter(p -> !p.isHidden()).filter(p -> keyExists(p.key(), propertyKeys)).iterator();
-    }
-
-    @Override
-    public <V> Iterator<? extends Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
-        return (Iterator) this.properties.values().stream().flatMap(list -> list.stream()).filter(Property::isHidden).filter(p -> keyExists(p.key(), propertyKeys)).iterator();
+        return (Iterator) this.properties.values().stream().flatMap(list -> list.stream()).filter(p -> keyExists(p.key(), propertyKeys)).iterator();
     }
 
     private final boolean keyExists(final String key, final String... providedKeys) {

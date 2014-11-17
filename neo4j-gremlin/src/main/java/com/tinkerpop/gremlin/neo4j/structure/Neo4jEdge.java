@@ -71,11 +71,6 @@ public class Neo4jEdge extends Neo4jElement implements Edge, Edge.Iterators, Wra
     }
 
     @Override
-    public <V> Iterator<Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
-        return (Iterator) super.hiddenPropertyIterator(propertyKeys);
-    }
-
-    @Override
     public Iterator<Vertex> vertexIterator(final Direction direction) {
         this.graph.tx().readWrite();
         return (Iterator) Neo4jHelper.getVertices(this, direction);

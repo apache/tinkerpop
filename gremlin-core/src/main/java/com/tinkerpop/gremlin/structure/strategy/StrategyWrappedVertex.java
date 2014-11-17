@@ -147,28 +147,12 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     }
 
     @Override
-    public <V> Iterator<V> hiddenValueIterator(final String... propertyKeys) {
-        return strategyWrappedGraph.getStrategy().compose(
-                s -> s.<V>getVertexIteratorsHiddenValuesStrategy(strategyContext),
-                (String[] pks) -> baseVertex.iterators().hiddenValueIterator(pks)).apply(propertyKeys);
-    }
-
-    @Override
     public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
         return StreamFactory.stream(strategyWrappedGraph.getStrategy().compose(
                 s -> s.<V>getVertexIteratorsPropertiesStrategy(strategyContext),
                 (String[] pks) -> baseVertex.iterators().propertyIterator(pks)).apply(propertyKeys))
                 .map(property -> (VertexProperty<V>) new StrategyWrappedVertexProperty<>(property, strategyWrappedGraph)).iterator();
     }
-
-    @Override
-    public <V> Iterator<VertexProperty<V>> hiddenPropertyIterator(final String... propertyKeys) {
-        return StreamFactory.stream(strategyWrappedGraph.getStrategy().compose(
-                s -> s.<V>getVertexIteratorsHiddensStrategy(strategyContext),
-                (String[] pks) -> baseVertex.iterators().hiddenPropertyIterator(pks)).apply(propertyKeys))
-                .map(property -> (VertexProperty<V>) new StrategyWrappedVertexProperty<>(property, strategyWrappedGraph)).iterator();
-    }
-
 
     public static class StrategyWrappedVertexIterator implements Iterator<Vertex> {
         private final Iterator<Vertex> vertices;

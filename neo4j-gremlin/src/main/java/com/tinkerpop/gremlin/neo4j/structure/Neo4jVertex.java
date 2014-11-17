@@ -113,7 +113,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
                 return new Neo4jVertexProperty<>(this, key, value);
             } else {
                 this.getBaseVertex().setProperty(key, Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN);
-                final Node node = this.graph.getBaseGraph().createNode(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL, DynamicLabel.label(Graph.Key.unHide(key)));
+                final Node node = this.graph.getBaseGraph().createNode(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL, DynamicLabel.label(key));
                 node.setProperty(T.key.getAccessor(), key);
                 node.setProperty(T.value.getAccessor(), value);
                 for (int i = 0; i < keyValues.length; i = i + 2) {
@@ -206,22 +206,6 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
     public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
         this.graph.tx().readWrite();
         return (Iterator) StreamFactory.stream(getBaseVertex().getPropertyKeys())
-                .filter(key -> !Graph.Key.isHidden(key))
-                .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(k -> k.equals(key)).findAny().isPresent())
-                .flatMap(key -> {
-                    if (getBaseVertex().getProperty(key).equals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN))
-                        return StreamFactory.stream(getBaseVertex().getRelationships(org.neo4j.graphdb.Direction.OUTGOING, DynamicRelationshipType.withName(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat(key))))
-                                .map(relationship -> new Neo4jVertexProperty(Neo4jVertex.this, relationship.getEndNode()));
-                    else
-                        return Stream.of(new Neo4jVertexProperty<>(Neo4jVertex.this, key, (V) getBaseVertex().getProperty(key)));
-                }).iterator();
-    }
-
-    @Override
-    public <V> Iterator<VertexProperty<V>> hiddenPropertyIterator(final String... propertyKeys) {
-        this.graph.tx().readWrite();
-        return (Iterator) StreamFactory.stream(getBaseVertex().getPropertyKeys())
-                .filter(Graph.Key::isHidden)
                 .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(k -> k.equals(key)).findAny().isPresent())
                 .flatMap(key -> {
                     if (getBaseVertex().getProperty(key).equals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN))

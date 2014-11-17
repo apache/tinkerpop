@@ -94,7 +94,7 @@ public class GraphSONReader implements GraphReader {
                             final Vertex v = Optional.ofNullable(graph.v(detachedVertex.id())).orElse(
                                     graph.addVertex(T.label, detachedVertex.label(), T.id, detachedVertex.id()));
                             detachedVertex.iterators().propertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, false));
-                            detachedVertex.iterators().hiddenPropertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, true));
+                            //detachedVertex.iterators().hiddenPropertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, true));
                             return v;
                         });
                     }
@@ -107,7 +107,7 @@ public class GraphSONReader implements GraphReader {
                             // batchgraph checks for edge id support and uses it if possible.
                             final Edge e = vOut.addEdge(edgeData.get(GraphSONTokens.LABEL).toString(), vIn, T.id, detachedEdge.id());
                             detachedEdge.iterators().propertyIterator().forEachRemaining(p -> e.<Object>property(p.key(), p.value()));
-                            detachedEdge.iterators().hiddenPropertyIterator().forEachRemaining(p -> e.<Object>property(Graph.Key.hide(p.key()), p.value()));
+                           // detachedEdge.iterators().hiddenPropertyIterator().forEachRemaining(p -> e.<Object>property(Graph.Key.hide(p.key()), p.value()));
                             return e;
                         });
                     }
@@ -162,7 +162,7 @@ public class GraphSONReader implements GraphReader {
         if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
             propertyArgs.addAll(Arrays.asList(T.id, p.id()));
         p.iterators().propertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
-        p.iterators().hiddenPropertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
+       // p.iterators().hiddenPropertyIterator().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(Graph.Key.hide(it.key()), it.value())));
         v.property(hidden ? Graph.Key.hide(p.key()) : p.key(), p.value(), propertyArgs.toArray());
     }
 
@@ -175,11 +175,10 @@ public class GraphSONReader implements GraphReader {
 
     private static Edge readEdgeData(final Map<String, Object> edgeData, final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
         final Map<String, Object> properties = (Map<String, Object>) edgeData.get(GraphSONTokens.PROPERTIES);
-        final Map<String, Object> hiddens = ((Map<String, Object>) edgeData.get(GraphSONTokens.HIDDENS)).entrySet().stream().collect(Collectors.toMap((Map.Entry kv) -> Graph.Key.hide(kv.getKey().toString()), (Map.Entry kv) -> kv.getValue()));
 
         final DetachedEdge edge = new DetachedEdge(edgeData.get(GraphSONTokens.ID),
                 edgeData.get(GraphSONTokens.LABEL).toString(),
-                properties, hiddens,
+                properties,
                 Pair.with(edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString()),
                 Pair.with(edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString()));
 
@@ -188,10 +187,9 @@ public class GraphSONReader implements GraphReader {
 
     private static Vertex readVertexData(final Map<String, Object> vertexData, final Function<DetachedVertex, Vertex> vertexMaker) throws IOException {
         final Map<String, Object> vertexProperties = (Map<String, Object>) vertexData.get(GraphSONTokens.PROPERTIES);
-        final Map<String, Object> hiddenVertexProperties = ((Map<String, Object>) vertexData.get(GraphSONTokens.HIDDENS)).entrySet().stream().collect(Collectors.toMap((Map.Entry kv) -> Graph.Key.hide(kv.getKey().toString()), (Map.Entry kv) -> kv.getValue()));
         final DetachedVertex vertex = new DetachedVertex(vertexData.get(GraphSONTokens.ID),
                 vertexData.get(GraphSONTokens.LABEL).toString(),
-                vertexProperties, hiddenVertexProperties);
+                vertexProperties);
 
         return vertexMaker.apply(vertex);
     }

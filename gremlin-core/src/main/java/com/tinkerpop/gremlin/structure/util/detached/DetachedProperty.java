@@ -52,7 +52,7 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
         if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
         if (element instanceof Vertex) throw new IllegalArgumentException("Element cannot be of type " + Vertex.class.getSimpleName());
 
-        this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
+        this.key = property.key();
         this.value = (V) property.value();
         this.element = element;
     }
@@ -64,7 +64,7 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
     private DetachedProperty(final Property property) {
         if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
 
-        this.key = property.isHidden() ? Graph.Key.hide(property.key()) : property.key();
+        this.key = property.key();
         this.value = (V) property.value();
         final Element element = property.element();
 
@@ -88,7 +88,7 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
 
     @Override
     public String key() {
-        return Graph.Key.unHide(this.key);
+        return this.key;
     }
 
     @Override
@@ -125,7 +125,7 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
     @Override
     public Property<V> attach(final Vertex hostVertex) {
         final Element hostElement = (Element) ((DetachedElement) this.element()).attach(hostVertex);
-        final Property<V> property = hostElement.property(this.isHidden() ? Graph.Key.hide(this.key) : this.key);
+        final Property<V> property = hostElement.property(this.key);
         if (property.isPresent()) // && property.value().equals(this.value))
             return property;
         else
@@ -137,7 +137,7 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
         final Element hostElement = (this.element() instanceof Vertex) ?
                 hostGraph.v(this.element().id()) :
                 hostGraph.e(this.element().id());
-        final Property<V> property = hostElement.property(this.isHidden() ? Graph.Key.hide(this.key) : this.key);
+        final Property<V> property = hostElement.property(this.key);
         if (property.isPresent()) // && property.value().equals(this.value))
             return property;
         else

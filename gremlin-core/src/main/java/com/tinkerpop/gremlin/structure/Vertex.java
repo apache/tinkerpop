@@ -41,9 +41,7 @@ public interface Vertex extends Element, VertexTraversal {
 
     @Override
     public default <V> VertexProperty<V> property(final String key) {
-        final Iterator<VertexProperty<V>> iterator = Graph.Key.isHidden(key) ?
-                this.iterators().hiddenPropertyIterator(Graph.Key.unHide(key)) :
-                this.iterators().propertyIterator(key);
+        final Iterator<VertexProperty<V>> iterator = this.iterators().propertyIterator(key);
         if (iterator.hasNext()) {
             final VertexProperty<V> property = iterator.next();
             if (iterator.hasNext())
@@ -70,10 +68,7 @@ public interface Vertex extends Element, VertexTraversal {
     }
 
     public default <V> VertexProperty<V> singleProperty(final String key, final V value, final Object... keyValues) {
-        if (Graph.Key.isHidden(key))
-            this.iterators().hiddenPropertyIterator(key).forEachRemaining(VertexProperty::remove);
-        else
-            this.iterators().propertyIterator(key).forEachRemaining(VertexProperty::remove);
+        this.iterators().propertyIterator(key).forEachRemaining(VertexProperty::remove);
         return this.property(key, value, keyValues);
     }
 
@@ -114,12 +109,6 @@ public interface Vertex extends Element, VertexTraversal {
          */
         @Override
         public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys);
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public <V> Iterator<VertexProperty<V>> hiddenPropertyIterator(final String... propertyKeys);
     }
 
     /**
@@ -143,9 +132,7 @@ public interface Vertex extends Element, VertexTraversal {
         }
 
         public static IllegalStateException multiplePropertiesExistForProvidedKey(final String propertyKey) {
-            return Graph.Key.isHidden(propertyKey) ?
-                    new IllegalStateException("Multiple properties exist for the provided hidden key, use Vertex.properties(Graph.Key.hide(" + propertyKey + "))") :
-                    new IllegalStateException("Multiple properties exist for the provided key, use Vertex.properties(" + propertyKey + ")");
+            return new IllegalStateException("Multiple properties exist for the provided key, use Vertex.properties(" + propertyKey + ")");
         }
     }
 }

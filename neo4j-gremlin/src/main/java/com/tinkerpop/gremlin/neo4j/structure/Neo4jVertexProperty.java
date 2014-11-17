@@ -224,23 +224,10 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty
         if (!isNode()) return Collections.emptyIterator();
         else {
             vertex.graph.tx().readWrite();
-            return (Iterator) StreamFactory.stream(node.getPropertyKeys())
+            return (Iterator) StreamFactory.stream(this.node.getPropertyKeys())
                     .filter(key -> !key.equals(T.key.getAccessor()) && !key.equals(T.value.getAccessor()))
-                    .filter(key -> !Graph.Key.isHidden(key))
                     .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(k -> k.equals(key)).findAny().isPresent())
-                    .map(key -> new Neo4jProperty<>(Neo4jVertexProperty.this, key, (V) node.getProperty(key))).iterator();
-        }
-    }
-
-    @Override
-    public <U> Iterator<Property<U>> hiddenPropertyIterator(String... propertyKeys) {
-        if (!isNode()) return Collections.emptyIterator();
-        else {
-            vertex.graph.tx().readWrite();
-            return (Iterator) StreamFactory.stream(node.getPropertyKeys())
-                    .filter(key -> Graph.Key.isHidden(key))
-                    .filter(key -> propertyKeys.length == 0 || Stream.of(propertyKeys).filter(k -> k.equals(key)).findAny().isPresent())
-                    .map(key -> new Neo4jProperty<>(Neo4jVertexProperty.this, key, (V) node.getProperty(key))).iterator();
+                    .map(key -> new Neo4jProperty<>(Neo4jVertexProperty.this, key, (V) this.node.getProperty(key))).iterator();
         }
     }
 }

@@ -147,7 +147,7 @@ public class KryoReader implements GraphReader {
 
                     final Vertex v = graph.addVertex(vertexArgs.toArray());
                     current.iterators().propertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, false));
-                    current.iterators().hiddenPropertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, true));
+                    //current.iterators().hiddenPropertyIterator().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p, true));
 
                     // the gio file should have been written with a direction specified
                     final boolean hasDirectionSpecified = input.readBoolean();
@@ -189,7 +189,7 @@ public class KryoReader implements GraphReader {
         if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
             appendToArgList(propertyArgs, T.id, p.id());
         p.iterators().propertyIterator().forEachRemaining(it -> appendToArgList(propertyArgs, it.key(), it.value()));
-        p.iterators().hiddenPropertyIterator().forEachRemaining(it -> appendToArgList(propertyArgs, Graph.Key.hide(it.key()), it.value()));
+        //p.iterators().hiddenPropertyIterator().forEachRemaining(it -> appendToArgList(propertyArgs, Graph.Key.hide(it.key()), it.value()));
         v.property(hidden ? Graph.Key.hide(p.key()) : p.key(), p.value(), propertyArgs.toArray());
     }
 
@@ -298,7 +298,7 @@ public class KryoReader implements GraphReader {
                 final Vertex inV = graphToWriteTo.v(detachedEdge.iterators().vertexIterator(Direction.IN).next().id());
 
                 detachedEdge.iterators().propertyIterator().forEachRemaining(p -> edgeArgs.addAll(Arrays.asList(p.key(), p.value())));
-                detachedEdge.iterators().hiddenPropertyIterator().forEachRemaining(p -> edgeArgs.addAll(Arrays.asList(Graph.Key.hide(p.key()), p.value())));
+                //detachedEdge.iterators().hiddenPropertyIterator().forEachRemaining(p -> edgeArgs.addAll(Arrays.asList(Graph.Key.hide(p.key()), p.value())));
 
                 appendToArgList(edgeArgs, T.id, detachedEdge.id());
 

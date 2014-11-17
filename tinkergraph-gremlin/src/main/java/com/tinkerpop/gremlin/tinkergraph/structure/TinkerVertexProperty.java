@@ -121,10 +121,4 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
     public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
         return (Iterator) super.propertyIterator(propertyKeys);
     }
-
-    @Override
-    public <U> Iterator<Property<U>> hiddenPropertyIterator(final String... propertyKeys) {
-        return (Iterator) super.hiddenPropertyIterator(propertyKeys);
-    }
-
 }

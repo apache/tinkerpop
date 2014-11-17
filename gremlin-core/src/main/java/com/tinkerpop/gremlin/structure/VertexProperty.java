@@ -69,12 +69,6 @@ public interface VertexProperty<V> extends Property<V>, Element, VertexPropertyT
          */
         @Override
         public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys);
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public <U> Iterator<Property<U>> hiddenPropertyIterator(final String... propertyKeys);
     }
 
     /**

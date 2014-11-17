@@ -74,10 +74,4 @@ public class GiraphVertex extends GiraphElement implements Vertex, Vertex.Iterat
         return (Iterator) StreamFactory.stream(getBaseVertex().iterators().propertyIterator(propertyKeys))
                 .map(property -> new GiraphVertexProperty<>((TinkerVertexProperty<V>) property, this)).iterator();
     }
-
-    @Override
-    public <V> Iterator<VertexProperty<V>> hiddenPropertyIterator(final String... propertyKeys) {
-        return (Iterator) StreamFactory.stream(getBaseVertex().iterators().hiddenPropertyIterator(propertyKeys))
-                .map(property -> new GiraphVertexProperty<>((TinkerVertexProperty<V>) property, this)).iterator();
-    }
 }

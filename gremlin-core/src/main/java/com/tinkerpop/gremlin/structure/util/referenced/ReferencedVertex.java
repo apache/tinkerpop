@@ -77,9 +77,4 @@ public class ReferencedVertex extends ReferencedElement implements Vertex, Verte
     public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
         return Collections.emptyIterator();
     }
-
-    @Override
-    public <V> Iterator<VertexProperty<V>> hiddenPropertyIterator(final String... propertyKeys) {
-        return Collections.emptyIterator();
-    }
 }

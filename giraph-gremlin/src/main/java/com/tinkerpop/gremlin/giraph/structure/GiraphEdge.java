@@ -57,11 +57,4 @@ public class GiraphEdge extends GiraphElement implements Edge, Edge.Iterators, W
         return (Iterator) StreamFactory.stream(getBaseEdge().iterators().propertyIterator(propertyKeys))
                 .map(property -> new GiraphProperty<>((TinkerProperty<V>) property, this)).iterator();
     }
-
-    @Override
-    public <V> Iterator<Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
-        return (Iterator) StreamFactory.stream(getBaseEdge().iterators().hiddenPropertyIterator(propertyKeys))
-                .map(property -> new GiraphProperty<>((TinkerProperty<V>) property, this)).iterator();
-    }
-
 }

@@ -96,9 +96,4 @@ public class TinkerEdge extends TinkerElement implements Edge, Edge.Iterators {
     public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
         return (Iterator) super.propertyIterator(propertyKeys);
     }
-
-    @Override
-    public <V> Iterator<Property<V>> hiddenPropertyIterator(final String... propertyKeys) {
-        return (Iterator) super.hiddenPropertyIterator(propertyKeys);
-    }
 }
