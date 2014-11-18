@@ -60,10 +60,7 @@ class GraphSONVertex {
 
             final Object properties = StreamFactory.stream(vertex.iterators().propertyIterator())
                     .collect(Collectors.groupingBy(vp -> vp.key()));
-          //  final Object hiddens = StreamFactory.stream(vertex.iterators().hiddenPropertyIterator())
-           //         .collect(Collectors.groupingBy(vp -> vp.key()));
             m.put(GraphSONTokens.PROPERTIES, properties);
-           // m.put(GraphSONTokens.HIDDENS, hiddens);
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.OUT) {
                 m.put(GraphSONTokens.OUT_E, StreamFactory.stream(vertex.iterators().edgeIterator(Direction.OUT)).collect(Collectors.toList()));
