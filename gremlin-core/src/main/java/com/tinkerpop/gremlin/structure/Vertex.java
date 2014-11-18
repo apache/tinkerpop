@@ -90,7 +90,7 @@ public interface Vertex extends Element, VertexTraversal {
          * Gets an {@link Iterator} of incident edges.
          *
          * @param direction  The incident direction of the edges to retrieve off this vertex
-         * @param edgeLabels The labels of the edges to retrieve
+         * @param edgeLabels The labels of the edges to retrieve. If no labels are provided, then get all edges.
          * @return An iterator of edges meeting the provided specification
          */
         public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels);
@@ -99,7 +99,7 @@ public interface Vertex extends Element, VertexTraversal {
          * Gets an {@link Iterator} of adjacent vertices.
          *
          * @param direction  The adjacency direction of the vertices to retrieve off this vertex
-         * @param edgeLabels The labels of the edges associated with the vertices to retrieve
+         * @param edgeLabels The labels of the edges associated with the vertices to retrieve. If no labels are provided, then get all edges.
          * @return An iterator of vertices meeting the provided specification
          */
         public Iterator<Vertex> vertexIterator(final Direction direction, final String... edgeLabels);
