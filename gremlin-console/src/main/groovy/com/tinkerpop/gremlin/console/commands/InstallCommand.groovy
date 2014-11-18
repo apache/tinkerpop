@@ -111,7 +111,7 @@ class InstallCommand extends CommandSupport {
                 def splitLine = attrLine.split(";")
                 splitLine.each {
                     def kv = it.split("=")
-                    Files.move(extPath.resolve(kv[0] + ".jar"), extPath.resolve(kv[1]).resolve(kv[0] + ".jar"), StandardCopyOption.REPLACE_EXISTING)
+                    Files.move(extPath.resolve(kv[0]), extPath.resolve(kv[1]), StandardCopyOption.REPLACE_EXISTING)
                 }
             }
         } catch (Exception ex) {

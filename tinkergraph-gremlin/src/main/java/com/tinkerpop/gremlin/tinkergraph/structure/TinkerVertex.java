@@ -96,7 +96,7 @@ public class TinkerVertex extends TinkerElement implements Vertex, Vertex.Iterat
             throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id);
         final List<Edge> edges = new ArrayList<>();
         this.iterators().edgeIterator(Direction.BOTH).forEachRemaining(edges::add);
-        edges.stream().filter(edge -> !((TinkerEdge)edge).removed).forEach(Edge::remove);
+        edges.stream().filter(edge -> !((TinkerEdge) edge).removed).forEach(Edge::remove);
         this.properties.clear();
         this.graph.vertexIndex.removeElement(this);
         this.graph.vertices.remove(this.id);

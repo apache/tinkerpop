@@ -8,9 +8,7 @@ import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -54,15 +52,6 @@ public class Neo4jHelper {
 
     public static Iterable<Neo4jEdge> getEdges(final Neo4jVertex vertex, final Direction direction, final String... labels) {
         return new Neo4jVertexEdgeIterable<>(vertex, direction, labels);
-    }
-
-    public static Iterator<Neo4jVertex> getVertices(final Neo4jEdge edge, final Direction direction) {
-        final List<Neo4jVertex> vertices = new ArrayList<>(2);
-        if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
-            vertices.add(new Neo4jVertex(edge.getBaseEdge().getStartNode(), edge.graph));
-        if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH))
-            vertices.add(new Neo4jVertex(edge.getBaseEdge().getEndNode(), edge.graph));
-        return vertices.iterator();
     }
 
     private static class Neo4jVertexVertexIterable<T extends Vertex> implements Iterable<Neo4jVertex> {

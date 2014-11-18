@@ -2,6 +2,8 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.util.DoubleIterator;
+import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -89,7 +91,14 @@ public class TinkerEdge extends TinkerElement implements Edge, Edge.Iterators {
 
     @Override
     public Iterator<Vertex> vertexIterator(final Direction direction) {
-        return (Iterator) TinkerHelper.getVertices(TinkerEdge.this, direction);
+        switch (direction) {
+            case OUT:
+                return new SingleIterator<>(this.outVertex);
+            case IN:
+                return new SingleIterator<>(this.inVertex);
+            default:
+                return new DoubleIterator<>(this.outVertex, this.inVertex);
+        }
     }
 
     @Override

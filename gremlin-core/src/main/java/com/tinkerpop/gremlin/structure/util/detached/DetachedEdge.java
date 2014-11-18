@@ -2,6 +2,8 @@ package com.tinkerpop.gremlin.structure.util.detached;
 
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.util.DoubleIterator;
+import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -149,12 +151,14 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
 
     @Override
     public Iterator<Vertex> vertexIterator(final Direction direction) {
-        final List<Vertex> vertices = new ArrayList<>(2);
-        if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
-            vertices.add(outVertex);
-        if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH))
-            vertices.add(inVertex);
-        return vertices.iterator();
+        switch (direction) {
+            case OUT:
+                return new SingleIterator<>(this.outVertex);
+            case IN:
+                return new SingleIterator<>(this.inVertex);
+            default:
+                return new DoubleIterator<>(this.outVertex, this.inVertex);
+        }
     }
 
     @Override

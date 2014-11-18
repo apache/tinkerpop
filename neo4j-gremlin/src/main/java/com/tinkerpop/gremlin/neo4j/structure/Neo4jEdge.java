@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jEdgeTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.Neo4jTraversal;
 import com.tinkerpop.gremlin.neo4j.process.graph.util.Neo4jGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
+import com.tinkerpop.gremlin.process.util.DoubleIterator;
+import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -38,7 +40,7 @@ public class Neo4jEdge extends Neo4jElement implements Edge, Edge.Iterators, Wra
         this.removed = true;
         this.graph.tx().readWrite();
         try {
-            ((Relationship) baseElement).delete();
+            ((Relationship) this.baseElement).delete();
         } catch (IllegalStateException | NotFoundException ignored) {
             // NotFoundException happens if the edge is committed
             // IllegalStateException happens if the edge is still chilling in the tx
@@ -73,6 +75,13 @@ public class Neo4jEdge extends Neo4jElement implements Edge, Edge.Iterators, Wra
     @Override
     public Iterator<Vertex> vertexIterator(final Direction direction) {
         this.graph.tx().readWrite();
-        return (Iterator) Neo4jHelper.getVertices(this, direction);
+        switch (direction) {
+            case OUT:
+                return new SingleIterator<>(new Neo4jVertex(this.getBaseEdge().getStartNode(), this.graph));
+            case IN:
+                return new SingleIterator<>(new Neo4jVertex(this.getBaseEdge().getEndNode(), this.graph));
+            default:
+                return new DoubleIterator<>(new Neo4jVertex(this.getBaseEdge().getStartNode(), this.graph), new Neo4jVertex(this.getBaseEdge().getEndNode(), this.graph));
+        }
     }
 }

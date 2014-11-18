@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.MultiIterator;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -11,7 +10,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -141,15 +139,6 @@ public class TinkerHelper {
         }
     }
 
-    public static Iterator<TinkerVertex> getVertices(final TinkerEdge edge, final Direction direction) {
-        final List<TinkerVertex> vertices = new ArrayList<>(2);
-        if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
-            vertices.add((TinkerVertex) edge.outVertex);
-        if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH))
-            vertices.add((TinkerVertex) edge.inVertex);
-        return vertices.iterator();
-    }
-
     private static class TinkerVertexIterator implements Iterator<TinkerVertex> {
 
         private final Iterator<TinkerEdge> edges;
@@ -171,32 +160,6 @@ public class TinkerHelper {
                 return (TinkerVertex) this.edges.next().outVertex;
             else
                 return (TinkerVertex) this.edges.next().inVertex;
-        }
-    }
-
-    private static class TinkerEdgeIterator implements Iterator<TinkerEdge> {
-
-        private final Iterator<TinkerEdge> edges;
-        private final int branchFactor;
-        private int currentCount = 0;
-
-        public TinkerEdgeIterator(final Iterator<TinkerEdge> edges, final int branchFactor) {
-            this.edges = edges;
-            this.branchFactor = branchFactor;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return this.currentCount < this.branchFactor && this.edges.hasNext();
-        }
-
-        @Override
-        public TinkerEdge next() {
-            if (this.currentCount++ < this.branchFactor) {
-                return this.edges.next();
-            } else {
-                throw FastNoSuchElementException.instance();
-            }
         }
     }
 }
