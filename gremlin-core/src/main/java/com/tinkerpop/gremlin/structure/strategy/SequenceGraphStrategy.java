@@ -155,21 +155,6 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public <V> UnaryOperator<Function<String[], Iterator<VertexProperty<V>>>> getVertexIteratorsHiddensStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
-        return this.composeStrategyUnaryOperator(s -> s.getVertexIteratorsHiddensStrategy(ctx));
-    }
-
-    @Override
-    public <V> UnaryOperator<Function<String[], Iterator<? extends Property<V>>>> getEdgeIteratorsHiddensStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
-        return this.composeStrategyUnaryOperator(s -> s.getEdgeIteratorsHiddensStrategy(ctx));
-    }
-
-    @Override
-    public <V, U> UnaryOperator<Function<String[], Iterator<? extends Property<V>>>> getVertexPropertyIteratorsHiddensStrategy(Strategy.Context<StrategyWrappedVertexProperty<U>> ctx) {
-        return this.composeStrategyUnaryOperator(s -> s.getVertexPropertyIteratorsHiddensStrategy(ctx));
-    }
-
-    @Override
     public UnaryOperator<Supplier<Set<String>>> getVertexKeysStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getVertexKeysStrategy(ctx));
     }
@@ -212,21 +197,6 @@ public class SequenceGraphStrategy implements GraphStrategy {
     @Override
     public <V, U> UnaryOperator<Function<String[], Iterator<V>>> getVertexPropertyIteratorsValuesStrategy(final Strategy.Context<StrategyWrappedVertexProperty<U>> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getVertexPropertyIteratorsValuesStrategy(ctx));
-    }
-
-    @Override
-    public <V> UnaryOperator<Function<String[], Iterator<V>>> getVertexIteratorsHiddenValuesStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
-        return this.composeStrategyUnaryOperator(s -> s.getVertexIteratorsHiddenValuesStrategy(ctx));
-    }
-
-    @Override
-    public <V> UnaryOperator<Function<String[], Iterator<V>>> getEdgeIteratorsHiddenValuesStrategy(final Strategy.Context<StrategyWrappedEdge> ctx) {
-        return this.composeStrategyUnaryOperator(s -> s.getEdgeIteratorsHiddenValuesStrategy(ctx));
-    }
-
-    @Override
-    public <V, U> UnaryOperator<Function<String[], Iterator<V>>> getVertexPropertyIteratorsHiddenValuesStrategy(final Strategy.Context<StrategyWrappedVertexProperty<U>> ctx) {
-        return this.composeStrategyUnaryOperator(s -> s.getVertexPropertyIteratorsHiddenValuesStrategy(ctx));
     }
 
     @Override
