@@ -178,6 +178,18 @@
                     </arguments>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Gremlin-Plugin>neo4j-lucene-index-${neo4j.version}.jar=a-neo4j-lucene-index-${neo4j.version}.jar</Gremlin-Plugin>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <profiles>

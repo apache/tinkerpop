@@ -1,7 +1,9 @@
-package com.tinkerpop.gremlin.console.plugin;
+package com.tinkerpop.gremlin.tinkergraph.groovy.plugin;
 
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
+import com.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
 import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
+import com.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
@@ -27,7 +29,7 @@ public class TinkerGraphGremlinPlugin implements GremlinPlugin {
     }
 
     @Override
-    public void pluginTo(final PluginAcceptor pluginAcceptor) {
+    public void pluginTo(final PluginAcceptor pluginAcceptor) throws PluginInitializationException, IllegalEnvironmentException {
         pluginAcceptor.addImports(IMPORTS);
     }
 }

@@ -15,7 +15,7 @@ class ConsolePluginAcceptor implements PluginAcceptor {
     public static final String ENVIRONMENT_IO = "ConsolePluginAcceptor.io"
 
     private final Groovysh shell
-    private final IO io;
+    private final IO io
 
     public ConsolePluginAcceptor(final Groovysh shell, final IO io) {
         this.shell = shell

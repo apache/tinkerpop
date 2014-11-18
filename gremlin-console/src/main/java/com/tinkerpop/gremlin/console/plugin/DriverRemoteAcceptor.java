@@ -6,7 +6,9 @@ import com.tinkerpop.gremlin.driver.Result;
 import com.tinkerpop.gremlin.driver.exception.ResponseException;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
+import com.tinkerpop.gremlin.groovy.plugin.RemoteException;
 import org.codehaus.groovy.tools.shell.Groovysh;
+import org.codehaus.groovy.tools.shell.IO;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -35,38 +37,39 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
     }
 
     @Override
-    public Object connect(final List<String> args) {
-        if (args.size() != 1) return "Expects the location of a configuration file as an argument";
+    public Object connect(final List<String> args) throws RemoteException {
+        if (args.size() != 1) throw new RemoteException("Expects the location of a configuration file as an argument");
+
         try {
             this.currentCluster = Cluster.open(args.get(0));
             this.currentClient = this.currentCluster.connect();
             this.currentClient.init();
-            return String.format("connected - " + this.currentCluster);
+            return String.format("Connected - " + this.currentCluster);
         } catch (final FileNotFoundException ignored) {
-            return "The 'connect' option must be accompanied by a valid configuration file";
+            throw new RemoteException("The 'connect' option must be accompanied by a valid configuration file");
         } catch (final Exception ex) {
-            return "Error during 'connect' - " + ex.getMessage();
+            throw new RemoteException("Error during 'connect' - " + ex.getMessage(), ex);
         }
     }
 
     @Override
-    public Object configure(final List<String> args) {
+    public Object configure(final List<String> args) throws RemoteException {
         final String option = args.size() == 0 ? "" : args.get(0);
         if (!POSSIBLE_TOKENS.contains(option))
-            return String.format("The 'config' option expects one of ['%s'] as an argument", String.join(",", POSSIBLE_TOKENS));
+            throw new RemoteException(String.format("The 'config' option expects one of ['%s'] as an argument", String.join(",", POSSIBLE_TOKENS)));
 
         final List<String> arguments = args.subList(1, args.size());
 
         if (option.equals(TOKEN_TIMEOUT)) {
             final String errorMessage = "The timeout option expects a positive integer representing milliseconds or 'max' as an argument";
-            if (arguments.size() != 1) return errorMessage;
+            if (arguments.size() != 1) throw new RemoteException(errorMessage);
             try {
                 final int to = arguments.get(0).equals("max") ? Integer.MAX_VALUE : Integer.parseInt(arguments.get(0));
-                if (to <= 0) return errorMessage;
+                if (to <= 0) throw new RemoteException(errorMessage);
                 this.timeout = to;
                 return "Set remote timeout to " + to + "ms";
             } catch (Exception ignored) {
-                return errorMessage;
+                throw new RemoteException(errorMessage);
             }
         }
 
@@ -74,7 +77,7 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
     }
 
     @Override
-    public Object submit(final List<String> args) {
+    public Object submit(final List<String> args) throws RemoteException {
         final String line = RemoteAcceptor.getScript(String.join(" ", args), this.shell);
 
         try {
@@ -86,20 +89,20 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
             if (inner.isPresent()) {
                 final ResponseException responseException = inner.get();
                 if (responseException.getResponseStatusCode() == ResponseStatusCode.SERVER_ERROR_SERIALIZATION)
-                    return String.format("Server could not serialize the result requested. Server error - %s. Note that the class must be serializable by the client and server for proper operation.", responseException.getMessage());
+                    throw new RemoteException(String.format("Server could not serialize the result requested. Server error - %s. Note that the class must be serializable by the client and server for proper operation.", responseException.getMessage()));
                 else
-                    return responseException.getMessage();
+                    throw new RemoteException(responseException.getMessage());
             } else if (ex.getCause() != null)
-                return ex.getCause().getMessage();
+                throw new RemoteException(ex.getCause().getMessage());
             else
-                return ex.getMessage();
+                throw new RemoteException(ex.getMessage());
         }
     }
 
     @Override
     public void close() throws IOException {
-        this.currentClient.close();
-        this.currentCluster.close();
+        if (this.currentClient != null) this.currentClient.close();
+        if (this.currentCluster != null) this.currentCluster.close();
     }
 
     private List<Result> send(final String gremlin) {
@@ -114,7 +117,7 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
 
     @Override
     public String toString() {
-        return "gremlin server - [" + this.currentCluster + "]";
+        return "Gremlin Server - [" + this.currentCluster + "]";
     }
 
     private Optional<ResponseException> findResponseException(final Throwable ex) {

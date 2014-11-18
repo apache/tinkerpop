@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.groovy.jsr223;
 
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
+import com.tinkerpop.gremlin.groovy.plugin.GremlinPluginException;
 
 import java.util.List;
 import java.util.Map;
@@ -33,8 +34,10 @@ public interface DependencyManager {
     /**
      * Load a list of {@link GremlinPlugin} instances.  These plugins are typically returned from calls to
      * {@link #use(String, String, String)}.
+     *
+     * @throws GremlinPluginException if there is a problem loading the plugin itself.
      */
-    void loadPlugins(final List<GremlinPlugin> plugins);
+    void loadPlugins(final List<GremlinPlugin> plugins) throws GremlinPluginException;
 
     /**
      * Perform class imports for the ScriptEngine.

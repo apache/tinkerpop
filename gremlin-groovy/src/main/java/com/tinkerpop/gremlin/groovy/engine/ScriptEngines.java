@@ -6,6 +6,9 @@ import com.tinkerpop.gremlin.groovy.jsr223.DependencyManager;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineFactory;
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
+import com.tinkerpop.gremlin.groovy.plugin.GremlinPluginException;
+import com.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
+import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +38,7 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ScriptEngines implements AutoCloseable {
-    private static final Logger logger = LoggerFactory.getLogger(GremlinExecutor.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScriptEngines.class);
 
     /**
      * {@code ScriptEngine} objects configured for the server keyed on the language name.
@@ -151,6 +154,10 @@ public class ScriptEngines implements AutoCloseable {
         getDependencyManagers().forEach(dm -> {
             try {
                 dm.loadPlugins(plugins);
+            } catch (IllegalEnvironmentException iee) {
+                 logger.warn("Some plugins may not have been loaded to {} - {}", dm.getClass().getSimpleName(), iee.getMessage());
+            } catch (Exception ex) {
+                 logger.error(String.format("Some plugins may not have been loaded to %s", dm.getClass().getSimpleName()), ex);
             } finally {
                 controlOperationExecuting = false;
             }

@@ -6,9 +6,11 @@ scriptEvaluationTimeout: 30000
 serializedResponseTimeout: 30000
 graphs: {
   g: conf/tinkergraph-empty.properties}
+plugins:
+  - tinkerpop.tinkergraph
 scriptEngines: {
   gremlin-groovy: {
-    imports: [com.tinkerpop.gremlin.tinkergraph.structure.*, com.tinkerpop.gremlin.tinkergraph.process.computer.*]}}
+    imports: []}}
 serializers:
   - { className: com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerGremlinV1d0 }
   - { className: com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0 }

@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.giraph.groovy.plugin;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.groovy.engine.GroovyTraversalScript;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
+import com.tinkerpop.gremlin.groovy.plugin.RemoteException;
 import com.tinkerpop.gremlin.process.computer.ComputerResult;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
@@ -12,6 +13,7 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.FileConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.codehaus.groovy.tools.shell.Groovysh;
+import org.codehaus.groovy.tools.shell.IO;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,13 +33,12 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     private boolean useSugarPlugin = false;
     private String graphVariable = "g";
 
-
     public GiraphRemoteAcceptor(final Groovysh shell) {
         this.shell = shell;
     }
 
     @Override
-    public Object connect(final List<String> args) {
+    public Object connect(final List<String> args) throws RemoteException {
         if (args.size() == 0) {
             this.giraphGraph = GiraphGraph.open(new BaseConfiguration());
             this.shell.getInterp().getContext().setProperty("g", this.giraphGraph);
@@ -49,7 +50,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
                 this.giraphGraph = GiraphGraph.open(configuration);
                 this.shell.getInterp().getContext().setProperty("g", this.giraphGraph);
             } catch (final Exception e) {
-                throw new RuntimeException(e.getMessage(), e);
+                throw new RemoteException(e.getMessage(), e);
             }
         } else if (args.size() == 2) {
             try {
@@ -59,7 +60,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
                 this.graphVariable = args.get(1);
                 this.shell.getInterp().getContext().setProperty(args.get(1), this.giraphGraph);
             } catch (final Exception e) {
-                throw new RuntimeException(e.getMessage(), e);
+                throw new RemoteException(e.getMessage(), e);
             }
         }
 
@@ -67,7 +68,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     }
 
     @Override
-    public Object configure(final List<String> args) {
+    public Object configure(final List<String> args) throws RemoteException {
         for (int i = 0; i < args.size(); i = i + 2) {
             if (args.get(i).equals(USE_SUGAR))
                 this.useSugarPlugin = Boolean.valueOf(args.get(i + 1));
@@ -79,7 +80,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     }
 
     @Override
-    public Object submit(final List<String> args) {
+    public Object submit(final List<String> args) throws RemoteException {
         try {
             final GroovyTraversalScript<?, ?> traversal = GroovyTraversalScript.of(RemoteAcceptor.getScript(String.join(SPACE, args), this.shell)).over(this.giraphGraph).using(this.giraphGraph.compute());
             if (this.useSugarPlugin)
@@ -93,7 +94,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
             traversal2.range(0, 19);
             return traversal2;
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RemoteException(e);
         }
     }
 

@@ -42,6 +42,26 @@
             <outputDirectory>/lib</outputDirectory>
             <unpack>false</unpack>
             <scope>compile</scope>
+            <excludes>
+                <exclude>com.tinkerpop:gremlin-groovy</exclude>
+                <exclude>com.tinkerpop:tinkergraph-gremlin</exclude>
+            </excludes>
+        </dependencySet>
+        <dependencySet>
+            <outputDirectory>/ext/tinkergraph-gremlin</outputDirectory>
+            <unpack>false</unpack>
+            <scope>compile</scope>
+            <includes>
+                <include>com.tinkerpop:tinkergraph-gremlin</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <outputDirectory>/ext/gremlin-groovy</outputDirectory>
+            <unpack>false</unpack>
+            <scope>compile</scope>
+            <includes>
+                <include>com.tinkerpop:gremlin-groovy</include>
+            </includes>
         </dependencySet>
         <dependencySet>
             <outputDirectory>/lib</outputDirectory>

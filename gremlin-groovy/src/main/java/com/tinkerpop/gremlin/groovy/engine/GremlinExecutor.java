@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -65,12 +66,14 @@ public class GremlinExecutor implements AutoCloseable {
     private final Consumer<Bindings> afterSuccess;
     private final Consumer<Bindings> afterTimeout;
     private final BiConsumer<Bindings, Exception> afterFailure;
+    private final Set<String> enabledPlugins;
 
     private GremlinExecutor(final Map<String, EngineSettings> settings, final List<List<String>> use,
                             final long scriptEvaluationTimeout, final Bindings globalBindings,
                             final ExecutorService executorService, final ScheduledExecutorService scheduledExecutorService,
                             final Consumer<Bindings> beforeEval, final Consumer<Bindings> afterSuccess,
-                            final Consumer<Bindings> afterTimeout, final BiConsumer<Bindings, Exception> afterFailure) {
+                            final Consumer<Bindings> afterTimeout, final BiConsumer<Bindings, Exception> afterFailure,
+                            final Set<String> enabledPlugins) {
         this.executorService = executorService;
         this.scheduledExecutorService = scheduledExecutorService;
         this.beforeEval = beforeEval;
@@ -81,6 +84,7 @@ public class GremlinExecutor implements AutoCloseable {
         this.settings = settings;
         this.scriptEvaluationTimeout = scriptEvaluationTimeout;
         this.globalBindings = globalBindings;
+        this.enabledPlugins = enabledPlugins;
         this.scriptEngines = createScriptEngines();
     }
 
@@ -202,8 +206,9 @@ public class GremlinExecutor implements AutoCloseable {
             });
 
             // now that all dependencies are in place, the imports can't get messed up if a plugin tries to execute
-            // a script (as the script engine appends the import list to the top of all scripts passed to the engine)
-            se.loadPlugins(pluginsToLoad);
+            // a script (as the script engine appends the import list to the top of all scripts passed to the engine).
+            // only enable those plugins that are configured to be enabled.
+            se.loadPlugins(pluginsToLoad.stream().filter(plugin -> enabledPlugins.contains(plugin.getName())).collect(Collectors.toList()));
 
             // initialization script eval can now be performed now that dependencies are present with "use"
             for (Map.Entry<String, EngineSettings> config : settings.entrySet()) {
@@ -275,6 +280,7 @@ public class GremlinExecutor implements AutoCloseable {
         private Map<String, EngineSettings> settings = new HashMap<>();
         private ExecutorService executorService;
         private ScheduledExecutorService scheduledExecutorService;
+        private Set<String> enabledPlugins = new HashSet();
         private Consumer<Bindings> beforeEval = (b) -> {
         };
         private Consumer<Bindings> afterSuccess = (b) -> {
@@ -395,9 +401,14 @@ public class GremlinExecutor implements AutoCloseable {
             return this;
         }
 
+        public Builder enabledPlugins(final Set<String> enabledPlugins) {
+            this.enabledPlugins = enabledPlugins;
+            return this;
+        }
+
         public GremlinExecutor create() {
             return new GremlinExecutor(settings, use, scriptEvaluationTimeout, globalBindings, executorService,
-                    scheduledExecutorService, beforeEval, afterSuccess, afterTimeout, afterFailure);
+                    scheduledExecutorService, beforeEval, afterSuccess, afterTimeout, afterFailure, enabledPlugins);
         }
     }
 

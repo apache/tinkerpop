@@ -258,7 +258,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
         // the IteratorHandler should return a collection so keep it as such
         final Object o = msg.getResult().getData();
         if (o instanceof Collection) {
-            return ((Collection) o).stream().map(Object::toString).collect(Collectors.toList());
+            return ((Collection) o).stream().map(d -> null == d ? "null" : d.toString()).collect(Collectors.toList());
         } else {
             return o.toString();
         }

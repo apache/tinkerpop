@@ -28,7 +28,7 @@ class PluginCommand extends ComplexCommandSupport {
 
     def Object do_use = { List<String> arguments ->
         final pluginName = arguments.size() == 1 ? arguments[0] : null
-        if (pluginName == null || pluginName.isEmpty()) return "specify the name of the plugin to use"
+        if (pluginName == null || pluginName.isEmpty()) return "Specify the name of the plugin to use"
 
         if (!mediator.availablePlugins.values().any{it.plugin.name==pluginName})
             return "$pluginName could not be found - use ':plugin list' to see available plugins"
@@ -43,7 +43,7 @@ class PluginCommand extends ComplexCommandSupport {
 
     def Object do_deactivate = { List<String> arguments ->
         final pluginName = arguments.size() == 1 ? arguments[0] : null
-        if (pluginName == null || pluginName.isEmpty()) return "specify the name of the plugin to deactivate"
+        if (pluginName == null || pluginName.isEmpty()) return "Specify the name of the plugin to deactivate"
 
         if (!mediator.availablePlugins.values().any{it.plugin.name==pluginName})
             return "$pluginName could not be found - use ':plugin list' to see available plugins"

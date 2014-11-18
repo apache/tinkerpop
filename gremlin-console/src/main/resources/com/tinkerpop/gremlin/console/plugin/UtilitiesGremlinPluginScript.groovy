@@ -10,7 +10,7 @@ clock = { int loops = 100, Closure closure ->
         t = System.nanoTime()
         closure.call()
         ((System.nanoTime() - t) * 0.000001)
-    }.mean()
+    }.sum() / loops
 }
 
 describeGraph = { Class<? extends com.tinkerpop.gremlin.structure.Graph> c ->

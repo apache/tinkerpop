@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.console.plugin
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
+import com.tinkerpop.gremlin.groovy.plugin.RemoteException
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.structure.Edge
 import com.tinkerpop.gremlin.structure.Graph
@@ -41,7 +42,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     }
 
     @Override
-    Object connect(final List<String> args) {
+    connect(final List<String> args) throws RemoteException {
         if (args.size() >= 1)
             workspace = args[0]
 
@@ -52,37 +53,37 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
             try {
                 port = Integer.parseInt(args[2])
             } catch (Exception ex) {
-                return "port must be an integer value"
+                throw new RemoteException("Port must be an integer value")
             }
         }
 
         String vizConfig = " with stepDelay:$vizStepDelay, startRGBColor:$vizStartRGBColor, " +
                 "colorToFade:$vizColorToFade, colorFadeRate:$vizColorFadeRate"
-        if (args.size() >= 4)
+        if (args.size() >= 4) {
             if (args.size() > 7) {
                 vizConfig = configVizOptions(args.subList(3, 6))
-            }
-            else {
+            } else {
                 vizConfig = configVizOptions(args.subList(3, args.size()))
             }
+        }
 
-        return "connection to Gephi - http://$host:$port/$workspace" + vizConfig
+        return "Connection to Gephi - http://$host:$port/$workspace" + vizConfig
     }
 
     @Override
-    Object configure(final List<String> args) {
+    Object configure(final List<String> args) throws RemoteException {
         if (args.size() != 2)
-            return "expects [host <hostname>|port <port number>|workspace <name>|" +
+            throw new RemoteException("Expects [host <hostname>|port <port number>|workspace <name>|" +
                     "stepDelay <milliseconds>|startRGBColor <RGB array of floats>|" +
-                    "colorToFade: <char r|g|b>]|colorFadeRate: <float>"
+                    "colorToFade: <char r|g|b>]|colorFadeRate: <float>")
 
         if (args[0] == "host")
             host = args[1]
         else if (args[0] == "port") {
             try {
                 port = Integer.parseInt(args[1])
-            } catch (Exception ex) {
-                return "port must be an integer value"
+            } catch (Exception ignored) {
+                throw new RemoteException("Port must be an integer value")
             }
         }
         else if (args[0] == "workspace")
@@ -96,11 +97,11 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         else if (args[0] == "colorFadeRate")
             parseVizColorFadeRate(args[1])
         else
-            return "expects [host <hostname>|port <port number>|workspace <name>|" +
+            throw new RemoteException("Expects [host <hostname>|port <port number>|workspace <name>|" +
                     "stepDelay <milliseconds>|startRGBColor <RGB array of floats>|" +
-                    "colorToFade: <char r|g|b>]|colorFadeRate: <float>"
+                    "colorToFade: <char r|g|b>]|colorFadeRate: <float>")
 
-        return "connection to Gephi - http://$host:$port/$workspace" +
+        return "Connection to Gephi - http://$host:$port/$workspace" +
                 " with stepDelay:$vizStepDelay, startRGBColor:$vizStartRGBColor, " +
                 "colorToFade:$vizColorToFade, colorFadeRate:$vizColorFadeRate"
     }
@@ -127,9 +128,8 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     private void parseVizStepDelay(String arg) {
         try {
             vizStepDelay = Long.parseLong(arg)
-        } catch (Exception ex) {
-            System.err.println("stepDelay must be a long value")
-            throw new IllegalArgumentException(ex);
+        } catch (Exception ignored) {
+            throw new RemoteException("The stepDelay must be a long value")
         }
     }
 
@@ -137,9 +137,8 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         try {
             vizStartRGBColor = arg[1..-2].tokenize(',')*.toFloat()
             assert (vizStartRGBColor.length == 3)
-        } catch (Exception ex) {
-            System.err.println("vizStartRGBColor must be an array of 3 float values, e.g. [0.0,1.0,0.5]")
-            throw new IllegalArgumentException(ex)
+        } catch (Exception ignored) {
+            throw new RemoteException("The vizStartRGBColor must be an array of 3 float values, e.g. [0.0,1.0,0.5]")
         }
     }
 
@@ -147,31 +146,28 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         try {
             vizColorToFade = arg.charAt(0).toLowerCase();
             assert (vizColorToFade == 'r' || vizColorToFade == 'g' || vizColorToFade == 'b')
-        } catch (Exception ex) {
-            System.err.println("vizColorToFade must be one character value among: r, g, b, R, G, B")
-            throw new IllegalArgumentException(ex)
+        } catch (Exception ignored) {
+            throw new RemoteException("The vizColorToFade must be one character value among: r, g, b, R, G, B")
         }
     }
 
     private void parseVizColorFadeRate(String arg) {
         try {
             vizColorFadeRate = Float.parseFloat(arg)
-        } catch (Exception ex) {
-            System.err.println("colorFadeRate must be a float value")
-            throw new IllegalArgumentException(ex);
+        } catch (Exception ignored) {
+            throw new RemoteException("The colorFadeRate must be a float value")
         }
     }
 
     @Override
-    Object submit(final List<String> args) {
+    Object submit(final List<String> args) throws RemoteException {
         final String line = String.join(" ", args)
         final Object o = shell.execute(line)
         if (o instanceof Graph) {
             clearGraph()
             def g = (Graph) o
             g.V().sideEffect { addVertexToGephi(it.get()) }.iterate()
-        }
-        else if (o instanceof Traversal) {
+        } else if (o instanceof Traversal) {
             fadingVertexColors = [:]
             def traversal = (Traversal) o
             def memKeys = traversal.sideEffects().keys()
@@ -180,7 +176,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
             for (int i = 1; i <= memSize; i++) {
                 def stepKey = Integer.toString(i)
                 if(memKeys.contains(stepKey)) {
-                    print("Visualizing vertices at step: $stepKey... ")
+                    io.out.print("Visualizing vertices at step: $stepKey... ")
                     updateVisitedVertices()
                     int visitedCount = 0
 
@@ -190,7 +186,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
                             visitedCount++
                         }
                     }
-                    println("visited: $visitedCount")
+                    io.out.println("Visited: $visitedCount")
                 }
                 sleep(vizStepDelay)
             }
@@ -226,13 +222,12 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     }
 
     def fadeColorIndex() {
-        if (vizColorToFade == 'r') {
+        if (vizColorToFade == 'r')
             return 0
-        } else if (vizColorToFade == 'g') {
+        else if (vizColorToFade == 'g')
             return 1
-        } else if (vizColorToFade == 'b') {
+        else if (vizColorToFade == 'b')
             return 2
-        }
     }
 
     def addVertexToGephi(def Vertex v, def boolean ignoreEdges = false) {

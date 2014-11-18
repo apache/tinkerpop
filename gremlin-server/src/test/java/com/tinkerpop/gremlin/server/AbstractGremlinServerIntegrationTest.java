@@ -50,7 +50,7 @@ public abstract class AbstractGremlinServerIntegrationTest {
 
         // make sure gremlin server gets off the ground - longer than 30 seconds means that this didn't work somehow
         try {
-            serverReadyFuture.get(30000, TimeUnit.SECONDS);
+            serverReadyFuture.get(30000, TimeUnit.MILLISECONDS);
         } catch (Exception ex) {
             logger.error("Server did not start in the expected time or was otherwise interrupted.", ex);
             return;

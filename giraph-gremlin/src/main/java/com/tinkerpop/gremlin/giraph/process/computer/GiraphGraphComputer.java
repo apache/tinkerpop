@@ -33,11 +33,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -166,23 +166,26 @@ public final class GiraphGraphComputer extends Configured implements GraphComput
             if (null == giraphGremlinLibsLocal)
                 LOGGER.warn(Constants.GIRAPH_GREMLIN_LIBS + " is not set -- proceeding regardless");
             else {
-                final File file = new File(giraphGremlinLibsLocal);
-                if (file.exists()) {
-                    Arrays.asList(file.listFiles()).stream().filter(f -> f.getName().endsWith(Constants.DOT_JAR)).forEach(f -> {
-                        try {
-                            final Path jarFile = new Path(fs.getHomeDirectory() + "/" + giraphGremlinLibsRemote + "/" + f.getName());
-                            fs.copyFromLocalFile(new Path(f.getPath()), jarFile);
+                final String[] paths = giraphGremlinLibsLocal.split(":");
+                for (final String path : paths) {
+                    final File file = new File(path);
+                    if (file.exists()) {
+                        Stream.of(file.listFiles()).filter(f -> f.getName().endsWith(Constants.DOT_JAR)).forEach(f -> {
                             try {
-                                DistributedCache.addArchiveToClassPath(jarFile, this.giraphConfiguration, fs);
-                            } catch (final Exception e) {
-                                throw new RuntimeException(e.getMessage(), e);
+                                final Path jarFile = new Path(fs.getHomeDirectory() + "/" + giraphGremlinLibsRemote + "/" + f.getName());
+                                fs.copyFromLocalFile(new Path(f.getPath()), jarFile);
+                                try {
+                                    DistributedCache.addArchiveToClassPath(jarFile, this.giraphConfiguration, fs);
+                                } catch (final Exception e) {
+                                    throw new RuntimeException(e.getMessage(), e);
+                                }
+                            } catch (Exception e) {
+                                throw new IllegalStateException(e.getMessage(), e);
                             }
-                        } catch (Exception e) {
-                            throw new IllegalStateException(e.getMessage(), e);
-                        }
-                    });
-                } else {
-                    LOGGER.warn(Constants.GIRAPH_GREMLIN_LIBS + " does not reference a valid directory -- proceeding regardless: " + giraphGremlinLibsLocal);
+                        });
+                    } else {
+                        LOGGER.warn(path + " does not reference a valid directory -- proceeding regardless");
+                    }
                 }
             }
         }

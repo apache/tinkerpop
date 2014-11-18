@@ -1,7 +1,9 @@
 package com.tinkerpop.gremlin.console.plugin;
 
 import com.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
+import com.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
 import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
+import com.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
 import groovyx.gbench.Benchmark;
 import groovyx.gbench.BenchmarkStaticExtension;
 import groovyx.gprof.ProfileStaticExtension;
@@ -31,9 +33,7 @@ public class UtilitiesGremlinPlugin extends AbstractGremlinPlugin {
     }
 
     @Override
-    public void pluginTo(final PluginAcceptor pluginAcceptor) {
-        super.pluginTo(pluginAcceptor);
-
+    public void afterPluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException {
         pluginAcceptor.addImports(IMPORTS);
 
         String line;
@@ -44,8 +44,10 @@ public class UtilitiesGremlinPlugin extends AbstractGremlinPlugin {
             }
             reader.close();
         } catch (Exception ex) {
-            final IO io = (IO) pluginAcceptor.environment().get(ConsolePluginAcceptor.ENVIRONMENT_IO);
-            io.out.println("Error loading the 'utilities' plugin - " + ex.getMessage());
+            if (io != null)
+                io.out.println("Error loading the 'utilities' plugin - " + ex.getMessage());
+            else
+                throw new PluginInitializationException("Error loading the 'utilities' plugin - " + ex.getMessage());
         }
     }
 }

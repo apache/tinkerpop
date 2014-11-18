@@ -9,6 +9,21 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M6 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Introduced method to control the location of dependencies dynamically loaded to the Gremlin Console as part of the `:install` command.
+* Fixed problem with the Neo4j Gremlin Plugin not loading properly after Gremlin Console restart.
+* Removed the "use" configuration from Gremlin Server.
+* Moved `SugarGremlinPlugin` from `gremlin-console` to `gremlin-groovy` so that it could be shared with Gremlin Server.
+* Fixed bug in serialization of `null` results returned to the Gremlin Console when serializing to strings.
+* Moved the `GremlinPlugin` for `TinkerGraph` to `tinkergraph-gremlin` module (it is no longer in `gremlin-console`).
+* Added a `plugin-info.txt` file to Gremlin Console `/ext/{module}` subdirectories to identify the module that was originally requested.
+* Gremlin Server now allows for the explicit configuration of plugin activation.
+* Refactored `GremlinPlugin` and `AbstractGremlinPlugin` to better account for plugins that run on the server and those that run in the console.
+* Added a `plugins` configuration to Gremlin Server to control the plugins that are enabled on initialization.
+* Added a builder option to `GremlinExecutor` to control the plugins that are enabled on initialization.
+* Added `RemoteException` for usage with `RemoteAcceptor` implementations for the Gremlin Console so as to better standardize their development.
+* Standardized all text being written to the Gremlin Console using starting upper case letter.
+* Prevented error in the Console when `:submit` is called but no remotes were configured.
+* Provided a way to clean the `grapes` directory as part of a standard build with `mvn clean install`.
 
 TinkerPop 3.0.0.M5 (Release Date: November 7, 2014)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

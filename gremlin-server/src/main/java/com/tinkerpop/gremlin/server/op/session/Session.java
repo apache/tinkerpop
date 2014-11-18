@@ -111,7 +111,6 @@ public class Session {
                     this.bindings.clear();
                     this.bindings.putAll(b);
                 })
-                .use(settings.use)
                 .globalBindings(graphs.getGraphsAsBindings())
                 .executorService(executor)
                 .scheduledExecutorService(scheduledExecutorService);

@@ -46,15 +46,6 @@ import java.util.function.UnaryOperator;
  */
 public interface GraphStrategy {
     /**
-     * For all methods that return a {@link GraphTraversal} add a {@link com.tinkerpop.gremlin.process.TraversalStrategy}.
-     * The {@link StrategyWrapped} classes will automatically add steps that will ensure that all items that come
-     * out of the traversal are wrapped appropriately.
-     */
-    public default GraphTraversal applyStrategyToTraversal(final GraphTraversal traversal) {
-        return traversal;
-    }
-
-    /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Variables#keys()}.
      *
      * @param ctx the context within which this strategy function is called
