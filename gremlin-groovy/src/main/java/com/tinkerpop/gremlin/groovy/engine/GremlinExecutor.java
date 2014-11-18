@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -186,7 +187,11 @@ public class GremlinExecutor implements AutoCloseable {
     }
 
     private ScriptEngines createScriptEngines() {
-        final ScriptEngines scriptEngines = new ScriptEngines(se -> {
+        // plugins already on the path - ones static to the classpath
+        final List<GremlinPlugin> globalPlugins = new ArrayList<>();
+        ServiceLoader.load(GremlinPlugin.class).forEach(globalPlugins::add);
+
+        return new ScriptEngines(se -> {
             // this first part initializes the scriptengines Map
             for (Map.Entry<String, EngineSettings> config : settings.entrySet()) {
                 final String language = config.getKey();
@@ -195,7 +200,7 @@ public class GremlinExecutor implements AutoCloseable {
             }
 
             // use grabs dependencies and returns plugins to load
-            final List<GremlinPlugin> pluginsToLoad = new ArrayList<>();
+            final List<GremlinPlugin> pluginsToLoad = new ArrayList<>(globalPlugins);
             use.forEach(u -> {
                 if (u.size() != 3)
                     logger.warn("Could not resolve dependencies for [{}].  Each entry for the 'use' configuration must include [groupId, artifactId, version]", u);
@@ -255,8 +260,6 @@ public class GremlinExecutor implements AutoCloseable {
                 });
             }
         });
-
-        return scriptEngines;
     }
 
     /**
