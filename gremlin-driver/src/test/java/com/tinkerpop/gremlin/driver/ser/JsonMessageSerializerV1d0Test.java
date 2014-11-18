@@ -156,14 +156,9 @@ public class JsonMessageSerializerV1d0Test {
         final JSONObject properties = vertexAsJson.optJSONObject(GraphSONTokens.PROPERTIES);
         assertNotNull(properties);
 
+        assertEquals(2, properties.length());
         assertEquals(123, properties.getJSONArray("abc").getJSONObject(0).getInt(GraphSONTokens.VALUE));
-        assertEquals(1, properties.length());
-
-        final JSONObject hiddens = vertexAsJson.optJSONObject(GraphSONTokens.HIDDENS);
-        assertNotNull(hiddens);
-
-        assertEquals("stephen", hiddens.getJSONArray("hidden").getJSONObject(0).getString(GraphSONTokens.VALUE));
-        assertEquals(1, hiddens.length());
+        assertEquals("stephen", properties.getJSONArray(Graph.Key.hide("hidden")).getJSONObject(0).getString(GraphSONTokens.VALUE));
     }
 
     @Test
