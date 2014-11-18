@@ -98,7 +98,7 @@ public abstract class Neo4jElement implements Element, Element.Iterators, Wrappe
         this.graph.tx().readWrite();
         return StreamFactory.stream(this.baseElement.getPropertyKeys())
                 .filter(key -> ElementHelper.keyExists(key, propertyKeys))
-                .map(key -> new Neo4jProperty<>(Neo4jElement.this, key, (V) this.baseElement.getProperty(key))).iterator();
+                .map(key -> new Neo4jProperty<>(this, key, (V) this.baseElement.getProperty(key))).iterator();
     }
 
 }
