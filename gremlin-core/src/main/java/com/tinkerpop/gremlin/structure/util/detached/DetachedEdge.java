@@ -46,7 +46,6 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
         super(id, label);
         this.outVertex = new DetachedVertex(outV.getValue0(), outV.getValue1());
         this.inVertex = new DetachedVertex(inV.getValue0(), inV.getValue1());
-
         if (properties != null) this.properties.putAll(convertToDetachedProperty(properties));
     }
 
@@ -55,7 +54,6 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
 
     private DetachedEdge(final Edge edge, final boolean asReference) {
         super(edge);
-
         final Vertex outV = edge.iterators().vertexIterator(Direction.OUT).next();
         final Vertex inV = edge.iterators().vertexIterator(Direction.IN).next();
 

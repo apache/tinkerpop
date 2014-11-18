@@ -457,4 +457,16 @@ public class ElementHelper {
         }
         return propertyMap;
     }
+
+    public static boolean keyExists(final String key, final String... providedKeys) {
+        if (0 == providedKeys.length) return true;
+        if (1 == providedKeys.length) return key.equals(providedKeys[0]);
+        else {
+            for (final String temp : providedKeys) {
+                if (temp.equals(key))
+                    return true;
+            }
+            return false;
+        }
+    }
 }

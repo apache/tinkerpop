@@ -142,7 +142,6 @@ public class IoTest extends AbstractGremlinTest {
      * Only need to execute this test with TinkerGraph or other graphs that support user supplied identifiers.
      */
     @Test
-    @Ignore // TODO!!!!!!!!!!!!!!!
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)

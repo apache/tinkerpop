@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -29,7 +28,6 @@ public abstract class DetachedElement<E> implements Element, Element.Iterators, 
     protected DetachedElement(final Object id, final String label) {
         if (null == id) throw Graph.Exceptions.argumentCanNotBeNull("id");
         if (null == label) throw Graph.Exceptions.argumentCanNotBeNull("label");
-
         this.id = id;
         this.label = label;
     }
@@ -86,18 +84,6 @@ public abstract class DetachedElement<E> implements Element, Element.Iterators, 
 
     @Override
     public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys) {
-        return (Iterator) this.properties.values().stream().flatMap(list -> list.stream()).filter(p -> keyExists(p.key(), propertyKeys)).iterator();
-    }
-
-    private final boolean keyExists(final String key, final String... providedKeys) {
-        if (0 == providedKeys.length) return true;
-        if (1 == providedKeys.length) return key.equals(providedKeys[0]);
-        else {
-            for (final String temp : providedKeys) {
-                if (temp.equals(key))
-                    return true;
-            }
-            return false;
-        }
+        return (Iterator) this.properties.values().stream().flatMap(list -> list.stream()).filter(p -> ElementHelper.keyExists(p.key(), propertyKeys)).iterator();
     }
 }

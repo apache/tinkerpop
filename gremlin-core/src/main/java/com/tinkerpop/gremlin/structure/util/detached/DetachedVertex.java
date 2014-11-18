@@ -36,7 +36,6 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
 
     public DetachedVertex(final Object id, final String label, final Map<String, Object> properties) {
         super(id, label);
-
         if (null != properties) this.properties.putAll(convertToDetachedVertexProperties(properties));
     }
 
@@ -46,7 +45,6 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
 
     private DetachedVertex(final Vertex vertex, final boolean asReference) {
         super(vertex);
-
         if (!asReference) {
             vertex.iterators().propertyIterator().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedVertexProperty ? p : new DetachedVertexProperty(p, this)));
         }
@@ -82,15 +80,15 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
     @Override
     public GraphTraversal<Vertex, Vertex> start() {
         throw new UnsupportedOperationException("Detached vertices cannot be traversed: " + this);
+        // TODO: how do you get Vertex.properties() ?
     }
 
     @Override
     public Vertex attach(final Vertex hostVertex) {
-        if (!hostVertex.equals(this))
-            throw new IllegalStateException("The host vertex must be the vertex trying to be attached: " +
-                    hostVertex.id() + "!=" + this.id() + " or " +
-                    hostVertex.id().getClass() + "!=" + this.id().getClass());
-        return hostVertex;
+        if (hostVertex.equals(this))
+            return hostVertex;
+        else
+            throw new IllegalStateException("The host vertex must be the detached vertex to attach: " + this);
     }
 
     @Override
@@ -113,12 +111,10 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
                         kv.getValue().forEach(property -> {
                             final VertexProperty vertexProperty = (VertexProperty) property;
                             final List<Object> propsOnProps = new ArrayList<>();
-
                             vertexProperty.iterators().propertyIterator().forEachRemaining(h -> {
                                 propsOnProps.add(h.key());
                                 propsOnProps.add(h.value());
                             });
-
                             propsOnProps.add(T.id);
                             propsOnProps.add(vertexProperty.id());
                             vertex.property(kv.getKey(), property.value(), propsOnProps.toArray());
@@ -157,10 +153,9 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
         throw new UnsupportedOperationException();
     }
 
-    private void putToList(final String key, final Property p) {
+    private final void putToList(final String key, final Property property) {
         if (!this.properties.containsKey(key))
             this.properties.put(key, new ArrayList<>());
-
-        ((List) this.properties.get(key)).add(p);
+        ((List) this.properties.get(key)).add(property);
     }
 }
