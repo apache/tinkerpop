@@ -149,12 +149,6 @@ public class Settings {
     public SslSettings ssl = null;
 
     /**
-     * {@link List} of maven coordinates stored as a {@link List} of {@link String} objects to be used with the
-     * {@code ScriptEngine} instances.
-     */
-    public List<List<String>> use;
-
-    /**
      * The list of plugins to enable for the server.  Plugins may be available on the classpath, but with this
      * configuration it is possible to explicitly include or omit them.
      */
@@ -204,7 +198,6 @@ public class Settings {
         settingsDescription.putMapPropertyType("graphs", String.class, String.class);
         settingsDescription.putMapPropertyType("scriptEngines", String.class, ScriptEngineSettings.class);
         settingsDescription.putListPropertyType("serializers", SerializerSettings.class);
-        settingsDescription.putListPropertyType("use", List.class);
         settingsDescription.putListPropertyType("plugins", String.class);
         settingsDescription.putListPropertyType("processors", ProcessorSettings.class);
         constructor.addTypeDescription(settingsDescription);

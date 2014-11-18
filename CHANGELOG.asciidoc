@@ -11,6 +11,7 @@ TinkerPop 3.0.0.M6 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Introduced method to control the location of dependencies dynamically loaded to the Gremlin Console as part of the `:install` command.
 * Fixed problem with the Neo4j Gremlin Plugin not loading properly after Gremlin Console restart.
+* Removed the "use" configuration from Gremlin Server.
 * Moved `SugarGremlinPlugin` from `gremlin-console` to `gremlin-groovy` so that it could be shared with Gremlin Server.
 * Fixed bug in serialization of `null` results returned to the Gremlin Console when serializing to strings.
 * Moved the `GremlinPlugin` for `TinkerGraph` to `tinkergraph-gremlin` module (it is no longer in `gremlin-console`).

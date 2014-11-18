@@ -128,7 +128,6 @@ public class GremlinServer {
                 .afterSuccess(b -> graphs.get().commitAll())
                 .beforeEval(b -> graphs.get().rollbackAll())
                 .afterTimeout(b -> graphs.get().rollbackAll())
-                .use(settings.use)
                 .enabledPlugins(new HashSet<>(settings.plugins))
                 .globalBindings(graphs.get().getGraphsAsBindings())
                 .executorService(gremlinGroup)
