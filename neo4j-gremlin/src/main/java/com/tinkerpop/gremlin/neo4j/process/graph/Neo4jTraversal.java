@@ -550,16 +550,16 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.where(arg0, arg1, arg2);
 	}
 
-	public default Neo4jTraversal<S, E> withPaths() {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.withPaths();
+	public default Neo4jTraversal<S, E> withPath() {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.withPath();
 	}
 
-	public default <A> Neo4jTraversal<S, E> withSacks(A arg0, java.util.function.BinaryOperator<A> arg1) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.withSacks(arg0, arg1);
+	public default <A> Neo4jTraversal<S, E> withSack(A arg0, java.util.function.BinaryOperator<A> arg1) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.withSack(arg0, arg1);
 	}
 
-	public default Neo4jTraversal<S, E> withSideEffects(java.lang.String arg0, java.util.function.Supplier arg1) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.withSideEffects(arg0, arg1);
+	public default Neo4jTraversal<S, E> withSideEffect(java.lang.String arg0, java.util.function.Supplier arg1) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.withSideEffect(arg0, arg1);
 	}
 
 }

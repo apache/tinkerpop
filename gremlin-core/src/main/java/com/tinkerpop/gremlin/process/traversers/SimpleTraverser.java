@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.traversers;
 
 
 import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
@@ -33,7 +34,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     public SimpleTraverser(final T t, final Traversal.SideEffects sideEffects) {
         this.t = t;
         this.sideEffects = sideEffects;
-        this.sack = this.sideEffects.getInitialSackValue();
+        this.sack = this.sideEffects.getSackInitialValue().orElse(Step.NO_OBJECT);
     }
 
     @Override

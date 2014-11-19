@@ -72,12 +72,12 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, Graph> get_g_v1_outE_subgraphXknowsX_name_capXsgX(final Object v1Id, final Graph subgraph) {
-            return g.v(v1Id).with("sg", () -> subgraph).outE().subgraph("sg", e -> e.label().equals("knows")).values("name").cap("sg");
+            return g.v(v1Id).withSideEffect("sg", () -> subgraph).outE().subgraph("sg", e -> e.label().equals("knows")).values("name").cap("sg");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_inE_subgraphXcreatedX_name(final Graph subgraph) {
-            return g.V().withSideEffects("sg", () -> subgraph).inE().subgraph("sg", e -> e.label().equals("created")).values("name");
+            return g.V().withSideEffect("sg", () -> subgraph).inE().subgraph("sg", e -> e.label().equals("created")).values("name");
         }
     }
 }

@@ -12,7 +12,7 @@ public abstract class GroovySideEffectTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_sideEffectXstore_aX_name(final Object v1Id) {
-            g.v(v1Id).with('a') { [] }.sideEffect {
+            g.v(v1Id).withSideEffect('a') { [] }.sideEffect {
                 it.a.clear();
                 it.a.add(it.get());
             }.name;
@@ -20,7 +20,7 @@ public abstract class GroovySideEffectTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_out_sideEffectXincr_cX_name(final Object v1Id) {
-            g.v(v1Id).with('c') { [0] }.out.sideEffect {
+            g.v(v1Id).withSideEffect('c') { [0] }.out.sideEffect {
                 def temp = it.c[0];
                 it.c.clear();
                 it.c.add(temp + 1);

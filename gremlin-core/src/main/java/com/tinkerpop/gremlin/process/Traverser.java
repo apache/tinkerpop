@@ -27,7 +27,10 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
     public <S> void sack(final S object);
 
     public default void mergeSack(final Traverser<?> other) {
-        this.sack(this.sideEffects().getSackMergeOperator().apply(this.sack(), other.sack()));
+        if (Step.NO_OBJECT.equals(this.sack()))
+            this.sack(other.sack());
+        else if (!Step.NO_OBJECT.equals(other.sack()))
+            this.sack(this.sideEffects().getSackMergeOperator().get().apply(this.sack(), other.sack()));
     }
 
     /**

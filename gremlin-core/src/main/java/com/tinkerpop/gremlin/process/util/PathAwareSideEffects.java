@@ -47,17 +47,17 @@ public class PathAwareSideEffects implements Traversal.SideEffects {
     }
 
     @Override
-    public <S> void setSacks(final S initialValue, final BinaryOperator<S> mergeOperator) {
-        this.sideEffects.setSacks(initialValue,mergeOperator);
+    public <S> void setSack(final S initialValue, final BinaryOperator<S> mergeOperator) {
+        this.sideEffects.setSack(initialValue, mergeOperator);
     }
 
     @Override
-    public <S> S getInitialSackValue() {
-        return this.sideEffects.getInitialSackValue();
+    public <S> Optional<S> getSackInitialValue() {
+        return this.sideEffects.getSackInitialValue();
     }
 
     @Override
-    public <S> BinaryOperator<S> getSackMergeOperator() {
+    public <S> Optional<BinaryOperator<S>> getSackMergeOperator() {
         return this.sideEffects.getSackMergeOperator();
     }
 

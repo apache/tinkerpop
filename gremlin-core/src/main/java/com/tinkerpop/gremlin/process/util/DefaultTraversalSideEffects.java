@@ -20,8 +20,8 @@ public class DefaultTraversalSideEffects implements Traversal.SideEffects {
 
     private Map<String, Object> objectMap = new HashMap<>();
     private Map<String, Supplier> supplierMap = new HashMap<>();
-    private BinaryOperator sackMergeOperator;
-    private Object sackValue;
+    private Optional<BinaryOperator> sackMergeOperator = Optional.empty();
+    private Optional<Object> sackInitialValue = Optional.empty();
 
     public DefaultTraversalSideEffects() {
 
@@ -56,19 +56,19 @@ public class DefaultTraversalSideEffects implements Traversal.SideEffects {
     }
 
     @Override
-    public <S> void setSacks(S initialValue, BinaryOperator<S> mergeOperator) {
-        this.sackValue = initialValue;
-        this.sackMergeOperator = mergeOperator;
+    public <S> void setSack(final S initialValue, final BinaryOperator<S> mergeOperator) {
+        this.sackInitialValue = Optional.ofNullable(initialValue);
+        this.sackMergeOperator = Optional.ofNullable(mergeOperator);
     }
 
     @Override
-    public <S> S getInitialSackValue() {
-        return (S) this.sackValue;
+    public <S> Optional<S> getSackInitialValue() {
+        return (Optional<S>) this.sackInitialValue;
     }
 
     @Override
-    public <S> BinaryOperator<S> getSackMergeOperator() {
-        return this.sackMergeOperator;
+    public <S> Optional<BinaryOperator<S>> getSackMergeOperator() {
+        return (Optional) this.sackMergeOperator;
     }
 
     /**

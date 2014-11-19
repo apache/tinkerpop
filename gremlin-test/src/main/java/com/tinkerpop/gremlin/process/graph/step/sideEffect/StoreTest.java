@@ -24,7 +24,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_asXaX_out_storeXaX();
 
-    public abstract Traversal<Vertex, Set<String>> get_g_V_withXa_setX_both_name_storeXaX();
+    public abstract Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -74,7 +74,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_withXa_setX_both_name_storeXaX() {
-        final Traversal<Vertex, Set<String>> traversal = get_g_V_withXa_setX_both_name_storeXaX();
+        final Traversal<Vertex, Set<String>> traversal = get_g_V_withSideEffectXa_setX_both_name_storeXaX();
         printTraversalForm(traversal);
         final Set<String> names = traversal.next();
         assertFalse(traversal.hasNext());
@@ -110,8 +110,8 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Set<String>> get_g_V_withXa_setX_both_name_storeXaX() {
-            return (Traversal) g.V().withSideEffects("a", HashSet::new).both().<String>values("name").store("a");
+        public Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX() {
+            return (Traversal) g.V().withSideEffect("a", HashSet::new).both().<String>values("name").store("a");
         }
     }
 
@@ -136,8 +136,8 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Set<String>> get_g_V_withXa_setX_both_name_storeXaX() {
-            return (Traversal) g.V().withSideEffects("a", HashSet::new).both().<String>values("name").store("a").submit(g.compute());
+        public Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX() {
+            return (Traversal) g.V().withSideEffect("a", HashSet::new).both().<String>values("name").store("a").submit(g.compute());
         }
     }
 

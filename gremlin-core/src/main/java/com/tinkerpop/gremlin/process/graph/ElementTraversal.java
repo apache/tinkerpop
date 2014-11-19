@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -40,7 +41,7 @@ public abstract interface ElementTraversal<A extends Element> {
     //////////////////////////////////////////////////////////////////////
 
     public default GraphTraversal<A, A> trackPaths() {
-        return this.start().withPaths();
+        return this.start().withPath();
     }
 
     public default GraphTraversal<A, Long> count() {
@@ -171,6 +172,10 @@ public abstract interface ElementTraversal<A extends Element> {
 
     public default <E2> GraphTraversal<A, Map<String, E2>> match(final String startLabel, final Traversal... traversals) {
         return this.start().match(startLabel, traversals);
+    }
+
+    public default <E2> GraphTraversal<A, E2> sack() {
+        return this.start().sack();
     }
 
     public default <E2> GraphTraversal<A, Map<String, E2>> select(final List<String> labels, Function... stepFunctions) {
@@ -435,6 +440,14 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().tree(null, branchFunctions);
     }
 
+    public default <V> GraphTraversal<A, A> sack(final BiFunction<V, A, V> sackFunction) {
+        return this.start().sack(sackFunction);
+    }
+
+    public default <V> GraphTraversal<A, A> sack(final BinaryOperator<V> sackOperator, final String elementPropertyKey) {
+        return this.start().sack(sackOperator, elementPropertyKey);
+    }
+
     public default GraphTraversal<A, A> store(final String sideEffectKey, final Function<Traverser<A>, ?> preStoreFunction) {
         return this.start().store(sideEffectKey, preStoreFunction);
     }
@@ -511,7 +524,15 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().profile();
     }
 
-    public default GraphTraversal<A, A> with(final String key, final Supplier supplier) {
-        return this.start().withSideEffects(key, supplier);
+    public default GraphTraversal<A, A> withSideEffect(final String key, final Supplier supplier) {
+        return this.start().withSideEffect(key, supplier);
+    }
+
+    public default <B> GraphTraversal<A, A> withSack(final B initialValue, final BinaryOperator<B> mergeOperator) {
+        return this.start().withSack(initialValue, mergeOperator);
+    }
+
+    public default <B> GraphTraversal<A, A> withPath() {
+        return this.start().withPath();
     }
 }

@@ -345,11 +345,11 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
                 this.registerSupplier(key, supplier);
         }
 
-        public <S> void setSacks(final S initialValue, final BinaryOperator<S> mergeOperator);
+        public <S> void setSack(final S initialValue, final BinaryOperator<S> mergeOperator);
 
-        public <S> S getInitialSackValue();
+        public <S> Optional<S> getSackInitialValue();
 
-        public <S> BinaryOperator<S> getSackMergeOperator();
+        public <S> Optional<BinaryOperator<S>> getSackMergeOperator();
 
         /**
          * If the sideEffect contains an object associated with the key, return it.

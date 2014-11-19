@@ -552,12 +552,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
         return this.tree(null, branchFunctions);
     }
 
-    public default <V> GraphTraversal<S, E> sack(final BiFunction<V, E, V> sackUpdateFunction) {
-        return this.addStep(new SackObjectStep<>(this, sackUpdateFunction));
+    public default <V> GraphTraversal<S, E> sack(final BiFunction<V, E, V> sackFunction) {
+        return this.addStep(new SackObjectStep<>(this, sackFunction));
     }
 
-    public default <E2 extends Element, V> GraphTraversal<S, E2> sack(final BinaryOperator<V> sackUpdateFunction, final String elementPropertyKey) {
-        return this.addStep(new SackElementValueStep<>(this, sackUpdateFunction, elementPropertyKey));
+    public default <E2 extends Element, V> GraphTraversal<S, E2> sack(final BinaryOperator<V> sackOperator, final String elementPropertyKey) {
+        return this.addStep(new SackElementValueStep<>(this, sackOperator, elementPropertyKey));
     }
 
     public default GraphTraversal<S, E> store(final String sideEffectKey, final Function<Traverser<E>, ?> preStoreFunction) {
@@ -634,17 +634,17 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
 
     ///////////////////// UTILITY STEPS /////////////////////
 
-    public default GraphTraversal<S, E> withSideEffects(final String key, final Supplier supplier) {
+    public default GraphTraversal<S, E> withSideEffect(final String key, final Supplier supplier) {
         this.sideEffects().registerSupplier(key, supplier);
         return this;
     }
 
-    public default <A> GraphTraversal<S, E> withSacks(final A initialValue, final BinaryOperator<A> mergeOperator) {
-        this.sideEffects().setSacks(initialValue, mergeOperator);
+    public default <A> GraphTraversal<S, E> withSack(final A initialValue, final BinaryOperator<A> mergeOperator) {
+        this.sideEffects().setSack(initialValue, mergeOperator);
         return this;
     }
 
-    public default GraphTraversal<S, E> withPaths() {
+    public default GraphTraversal<S, E> withPath() {
         return this.addStep(new PathIdentityStep<>(this));
     }
 

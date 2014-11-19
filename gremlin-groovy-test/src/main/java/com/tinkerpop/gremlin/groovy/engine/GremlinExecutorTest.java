@@ -284,7 +284,7 @@ public class GremlinExecutorTest {
                         Collections.emptyMap())
                 .create();
 
-        assertEquals(2, gremlinExecutor.eval("sum(1,1)").get());
+        assertEquals(2, gremlinExecutor.eval("add(1,1)").get());
     }
 
     @Test
@@ -348,11 +348,11 @@ public class GremlinExecutorTest {
                         Collections.emptyMap())
                 .create();
 
-        assertEquals(2, gremlinExecutor.eval("sum(1,1)").get());
+        assertEquals(2, gremlinExecutor.eval("add(1,1)").get());
 
         gremlinExecutor.getScriptEngines().reset();
 
-        assertEquals(2, gremlinExecutor.eval("sum(1,1)").get());
+        assertEquals(2, gremlinExecutor.eval("add(1,1)").get());
     }
 
     public static String generateTempFile(final Class resourceClass, final String fileName) throws IOException {
