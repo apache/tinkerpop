@@ -20,6 +20,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     private static final String PATH_ERROR_MESSAGE = "Path tracking is not supported by this Traverser: " + SimpleTraverser.class;
 
     protected T t;
+    protected Object sack;
     protected String future = HALT;
     protected short loops = 0;
     protected transient Traversal.SideEffects sideEffects;
@@ -32,11 +33,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     public SimpleTraverser(final T t, final Traversal.SideEffects sideEffects) {
         this.t = t;
         this.sideEffects = sideEffects;
-    }
-
-    @Override
-    public boolean hasPath() {
-        return false;
+        this.sack = this.sideEffects.getInitialSackValue();
     }
 
     @Override
@@ -45,14 +42,25 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     }
 
     @Override
+    public void set(final T t) {
+        this.t = t;
+    }
+
+    @Override
+    public <S> S sack() {
+        return (S) this.sack;
+    }
+
+    @Override
+    public <S> void sack(final S object) {
+        this.sack = object;
+    }
+
+    @Override
     public Traversal.SideEffects sideEffects() {
         return this.sideEffects;
     }
 
-    @Override
-    public void set(final T t) {
-        this.t = t;
-    }
 
     @Override
     public String getFuture() {
@@ -62,6 +70,11 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     @Override
     public void setFuture(final String label) {
         this.future = label;
+    }
+
+    @Override
+    public boolean hasPath() {
+        return false;
     }
 
     @Override
@@ -99,19 +112,25 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
 
     @Override
     public <R> SimpleTraverser<R> makeChild(final String label, final R r) {
-        final SimpleTraverser<R> traverser = new SimpleTraverser<>(r, this.sideEffects);
+        final SimpleTraverser<R> traverser = new SimpleTraverser<>();
+        traverser.t = r;
+        traverser.sideEffects = this.sideEffects;
         traverser.future = this.future;
         traverser.loops = this.loops;
         traverser.bulk = this.bulk;
+        traverser.sack = this.sack;
         return traverser;
     }
 
     @Override
     public SimpleTraverser<T> makeSibling() {
-        final SimpleTraverser<T> traverser = new SimpleTraverser<>(this.t, this.sideEffects);
+        final SimpleTraverser<T> traverser = new SimpleTraverser<>();
+        traverser.t = t;
+        traverser.sideEffects = this.sideEffects;
         traverser.future = this.future;
         traverser.loops = this.loops;
         traverser.bulk = this.bulk;
+        traverser.sack = this.sack;
         return traverser;
     }
 

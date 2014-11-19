@@ -21,13 +21,17 @@ import java.util.stream.Collectors;
  */
 public class TraversalSourceGenerator {
 
-    private static final Set<String> methodsWithE2AsElement = new HashSet<String>() {{
+    private static final Set<String> methodsWithE2AsElementSingle = new HashSet<String>() {{
         add("has");
         add("hasNot");
         add("interval");
         add("orderBy");
         add("localRange");
         add("localLimit");
+    }};
+
+    private static final Set<String> methodsWithE2AsElementMulti = new HashSet<String>() {{
+        add("sack");
     }};
 
     public static void main(final String[] args) throws Exception {
@@ -58,8 +62,11 @@ public class TraversalSourceGenerator {
                 String methodName = sharedToGenericString(method);
                 methodName = methodName.replace(traversalToCloneClass.getCanonicalName(), resultTraversalClassName);
                 methodName = methodName.replace(resultTraversalClassName + ".", "");
-                if (methodsWithE2AsElement.contains(method.getName())) {
+                if (methodsWithE2AsElementSingle.contains(method.getName())) {
                     methodName = methodName.replace("<E2>", "<E2 extends Element>");
+                }
+                if (methodsWithE2AsElementMulti.contains(method.getName())) {
+                    methodName = methodName.replace("<E2,", "<E2 extends Element,");
                 }
                 final String parameters = Arrays.asList(method.getParameters()).stream().map(p -> p.getName()).collect(Collectors.toList()).toString().replace("[", "").replace("]", "");
                 methodName = "\t" + methodName + " {\n\t\treturn (" + resultTraversalClassName + ") " + traversalToCloneClass.getCanonicalName() + ".super." + method.getName() + "(" + parameters + ");\n\t}\n\n";

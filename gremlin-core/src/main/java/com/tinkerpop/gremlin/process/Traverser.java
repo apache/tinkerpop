@@ -22,6 +22,14 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
      */
     public T get();
 
+    public <S> S sack();
+
+    public <S> void sack(final S object);
+
+    public default void mergeSack(final Traverser<?> other) {
+        this.sack(this.sideEffects().getSackMergeOperator().apply(this.sack(), other.sack()));
+    }
+
     /**
      * Get the current path of the traverser.
      *

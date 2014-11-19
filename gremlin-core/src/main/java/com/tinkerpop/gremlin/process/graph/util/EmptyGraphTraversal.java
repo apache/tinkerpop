@@ -26,7 +26,7 @@ public class EmptyGraphTraversal<S, E> extends EmptyTraversal<S, E> implements G
     }
 
     @Override
-    public GraphTraversal<S, E> trackPaths() {
+    public GraphTraversal<S, E> withPaths() {
         return instance();
     }
 

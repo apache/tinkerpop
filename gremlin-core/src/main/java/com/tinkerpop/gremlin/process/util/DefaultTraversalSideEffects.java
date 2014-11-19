@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 
 /**
@@ -19,6 +20,8 @@ public class DefaultTraversalSideEffects implements Traversal.SideEffects {
 
     private Map<String, Object> objectMap = new HashMap<>();
     private Map<String, Supplier> supplierMap = new HashMap<>();
+    private BinaryOperator sackMergeOperator;
+    private Object sackValue;
 
     public DefaultTraversalSideEffects() {
 
@@ -50,6 +53,22 @@ public class DefaultTraversalSideEffects implements Traversal.SideEffects {
     public void registerSupplierIfAbsent(final String key, final Supplier supplier) {
         if (!this.supplierMap.containsKey(key))
             this.supplierMap.put(key, supplier);
+    }
+
+    @Override
+    public <S> void setSacks(S initialValue, BinaryOperator<S> mergeOperator) {
+        this.sackValue = initialValue;
+        this.sackMergeOperator = mergeOperator;
+    }
+
+    @Override
+    public <S> S getInitialSackValue() {
+        return (S) this.sackValue;
+    }
+
+    @Override
+    public <S> BinaryOperator<S> getSackMergeOperator() {
+        return this.sackMergeOperator;
     }
 
     /**

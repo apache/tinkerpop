@@ -50,6 +50,7 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
             return true;
         } else {
             existing.setBulk(existing.bulk() + traverser.bulk());
+            existing.mergeSack(traverser);
             return false;
         }
     }

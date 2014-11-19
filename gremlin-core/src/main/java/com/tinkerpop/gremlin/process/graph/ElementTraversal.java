@@ -9,7 +9,6 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Order;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 
@@ -41,7 +40,7 @@ public abstract interface ElementTraversal<A extends Element> {
     //////////////////////////////////////////////////////////////////////
 
     public default GraphTraversal<A, A> trackPaths() {
-        return this.start().trackPaths();
+        return this.start().withPaths();
     }
 
     public default GraphTraversal<A, Long> count() {
@@ -513,6 +512,6 @@ public abstract interface ElementTraversal<A extends Element> {
     }
 
     public default GraphTraversal<A, A> with(final String key, final Supplier supplier) {
-        return this.start().with(key, supplier);
+        return this.start().withSideEffects(key, supplier);
     }
 }

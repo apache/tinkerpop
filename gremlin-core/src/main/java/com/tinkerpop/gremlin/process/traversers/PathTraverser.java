@@ -19,11 +19,6 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
         super();
     }
 
-    public PathTraverser(final T t, final Traversal.SideEffects sideEffects) {
-        super(t, sideEffects);
-        this.path = new ImmutablePath(Collections.emptySet(), t);
-    }
-
     public PathTraverser(final String label, final T t, final Traversal.SideEffects sideEffects) {
         super(t, sideEffects);
         this.path = new ImmutablePath(label, t);
@@ -60,6 +55,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
         traverser.path = this.path.clone().extend(label, r);
         traverser.future = this.future;
         traverser.bulk = this.bulk;
+        traverser.sack = this.sack;
         return traverser;
     }
 
@@ -72,6 +68,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
         traverser.path = this.path.clone();
         traverser.future = this.future;
         traverser.bulk = this.bulk;
+        traverser.sack = this.sack;
         return traverser;
     }
 

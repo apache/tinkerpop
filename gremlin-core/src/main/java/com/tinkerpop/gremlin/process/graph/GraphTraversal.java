@@ -40,6 +40,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.PathStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertiesStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertyMapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertyValueStep;
+import com.tinkerpop.gremlin.process.graph.step.map.SackStep;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectOneStep;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ShuffleStep;
@@ -54,6 +55,8 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SackElementValueStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SackObjectStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
@@ -86,6 +89,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -272,6 +276,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
 
     public default <E2> GraphTraversal<S, Map<String, E2>> match(final String startLabel, final Traversal... traversals) {
         return (GraphTraversal) this.addStep(new MatchStep<S, Map<String, E2>>(this, startLabel, traversals));
+    }
+
+    public default <E2> GraphTraversal<S, E2> sack() {
+        return this.addStep(new SackStep<>(this));
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final List<String> labels, Function... stepFunctions) {
@@ -544,6 +552,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
         return this.tree(null, branchFunctions);
     }
 
+    public default <V> GraphTraversal<S, E> sack(final BiFunction<V, E, V> sackUpdateFunction) {
+        return this.addStep(new SackObjectStep<>(this, sackUpdateFunction));
+    }
+
+    public default <E2 extends Element, V> GraphTraversal<S, E2> sack(final BinaryOperator<V> sackUpdateFunction, final String elementPropertyKey) {
+        return this.addStep(new SackElementValueStep<>(this, sackUpdateFunction, elementPropertyKey));
+    }
+
     public default GraphTraversal<S, E> store(final String sideEffectKey, final Function<Traverser<E>, ?> preStoreFunction) {
         return this.addStep(new StoreStep<>(this, sideEffectKey, preStoreFunction));
     }
@@ -618,12 +634,17 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
 
     ///////////////////// UTILITY STEPS /////////////////////
 
-    public default GraphTraversal<S, E> with(final String key, final Supplier supplier) {
+    public default GraphTraversal<S, E> withSideEffects(final String key, final Supplier supplier) {
         this.sideEffects().registerSupplier(key, supplier);
         return this;
     }
 
-    public default GraphTraversal<S, E> trackPaths() {
+    public default <A> GraphTraversal<S, E> withSacks(final A initialValue, final BinaryOperator<A> mergeOperator) {
+        this.sideEffects().setSacks(initialValue, mergeOperator);
+        return this;
+    }
+
+    public default GraphTraversal<S, E> withPaths() {
         return this.addStep(new PathIdentityStep<>(this));
     }
 

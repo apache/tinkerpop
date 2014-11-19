@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 
 /**
@@ -43,6 +44,21 @@ public class PathAwareSideEffects implements Traversal.SideEffects {
     @Override
     public <V> Optional<Supplier<V>> getRegisteredSupplier(final String key) {
         return this.sideEffects.getRegisteredSupplier(key);
+    }
+
+    @Override
+    public <S> void setSacks(final S initialValue, final BinaryOperator<S> mergeOperator) {
+        this.sideEffects.setSacks(initialValue,mergeOperator);
+    }
+
+    @Override
+    public <S> S getInitialSackValue() {
+        return this.sideEffects.getInitialSackValue();
+    }
+
+    @Override
+    public <S> BinaryOperator<S> getSackMergeOperator() {
+        return this.sideEffects.getSackMergeOperator();
     }
 
     @Override

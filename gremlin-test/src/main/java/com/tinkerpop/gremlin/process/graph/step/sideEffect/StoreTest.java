@@ -111,7 +111,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Set<String>> get_g_V_withXa_setX_both_name_storeXaX() {
-            return (Traversal) g.V().with("a", HashSet::new).both().<String>values("name").store("a");
+            return (Traversal) g.V().withSideEffects("a", HashSet::new).both().<String>values("name").store("a");
         }
     }
 
@@ -137,7 +137,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Set<String>> get_g_V_withXa_setX_both_name_storeXaX() {
-            return (Traversal) g.V().with("a", HashSet::new).both().<String>values("name").store("a").submit(g.compute());
+            return (Traversal) g.V().withSideEffects("a", HashSet::new).both().<String>values("name").store("a").submit(g.compute());
         }
     }
 

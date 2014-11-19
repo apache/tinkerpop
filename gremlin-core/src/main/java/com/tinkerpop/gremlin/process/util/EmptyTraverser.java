@@ -86,6 +86,16 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
+    public <S> S sack() {
+        return null;
+    }
+
+    @Override
+    public <S> void sack(S object) {
+
+    }
+
+    @Override
     public Path path() {
         return EmptyPath.instance();
     }

@@ -9,8 +9,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
-import java.util.function.Supplier;
-
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES;
 import static org.junit.Assert.assertEquals;
@@ -79,7 +77,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_inE_subgraphXcreatedX_name(final Graph subgraph) {
-            return g.V().with("sg", () -> subgraph).inE().subgraph("sg", e -> e.label().equals("created")).values("name");
+            return g.V().withSideEffects("sg", () -> subgraph).inE().subgraph("sg", e -> e.label().equals("created")).values("name");
         }
     }
 }
