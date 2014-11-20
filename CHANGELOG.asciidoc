@@ -9,6 +9,11 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M6 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Reduced object creation in `TraversalVertexProgram` around vertex-local traversal sideEffects.
+* Added `Traverser.Admin.merge(Traverser)` method so that the merging algorithm is with the `Traverser`.
+* Added `Operator` enum that contains sack-helpful `BinaryOperators`: sum, minus, mult, div, max, min, etc.
+* Added `GraphTraversal.withSack()` and renamed `trackPaths()` and `with()` to `withPath()` and `withSideEffect()`, respectively.
+* Added the "Gremlin Sacks" feature to allow a `Traverser` to carry local information along its walk.
 * GraphSON format no longer makes use of `hiddens` JSON key. Its all just `properties`.
 * Added `DoubleIterator` to make vendor implementations of `Edge.iterators().vertexIterator()` efficient.
 * `PropertiesStep` is smart about hiddens vs. properties.
