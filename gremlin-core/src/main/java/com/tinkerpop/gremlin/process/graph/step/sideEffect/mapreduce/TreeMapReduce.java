@@ -51,10 +51,7 @@ public final class TreeMapReduce implements MapReduce<Object, Tree, Object, Tree
     @Override
     public void map(final Vertex vertex, final MapEmitter<Object, Tree> emitter) {
         this.traversal.sideEffects().setLocalVertex(vertex);
-        this.traversal.sideEffects().<Tree<?>>ifPresent(this.sideEffectKey, tree -> tree.splitParents().forEach(t -> emitter.emit(t.keySet().iterator().next(), t)));
-        /*if (sideEffects.exists(this.sideEffectKey)) {
-            sideEffects.<Tree<?>>get(this.sideEffectKey).splitParents().forEach(t -> emitter.emit(t.keySet().iterator().next(), t));
-        }*/
+        this.traversal.sideEffects().<Tree<?>>ifPresent(this.sideEffectKey, tree -> tree.splitParents().forEach(branches -> emitter.emit(branches.keySet().iterator().next(), branches)));
     }
 
     @Override
