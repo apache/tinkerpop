@@ -95,7 +95,7 @@ public class TinkerGraphComputer implements GraphComputer {
             for (final MapReduce mapReduce : this.mapReduces) {
                 if (mapReduce.doStage(MapReduce.Stage.MAP)) {
                     final TinkerMapEmitter<?, ?> mapEmitter = new TinkerMapEmitter<>(mapReduce.doStage(MapReduce.Stage.REDUCE));
-                    TinkerHelper.getVertices(this.graph).parallelStream().forEach(vertex -> mapReduce.map(vertex, mapEmitter));
+                    TinkerHelper.getVertices(this.graph).stream().forEach(vertex -> mapReduce.map(vertex, mapEmitter));
                     mapEmitter.complete(mapReduce); // sort results if a map output sort is defined
                     // no need to run combiners as this is single machine
                     if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {

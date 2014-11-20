@@ -2,10 +2,8 @@ package com.tinkerpop.gremlin.process.traversers;
 
 
 import com.tinkerpop.gremlin.process.Path;
-import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -34,7 +32,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     public SimpleTraverser(final T t, final Traversal.SideEffects sideEffects) {
         this.t = t;
         this.sideEffects = sideEffects;
-        this.sack = this.sideEffects.getSackInitialValue().orElse(Step.NO_OBJECT);
+        this.sack = this.sideEffects.getSackInitialValue().orElse(null);
     }
 
     @Override
@@ -47,31 +45,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
         this.t = t;
     }
 
-    @Override
-    public <S> S sack() {
-        return (S) this.sack;
-    }
-
-    @Override
-    public <S> void sack(final S object) {
-        this.sack = object;
-    }
-
-    @Override
-    public Traversal.SideEffects sideEffects() {
-        return this.sideEffects;
-    }
-
-
-    @Override
-    public String getFuture() {
-        return this.future;
-    }
-
-    @Override
-    public void setFuture(final String label) {
-        this.future = label;
-    }
+    ////////
 
     @Override
     public boolean hasPath() {
@@ -88,6 +62,40 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
         throw new IllegalStateException(PATH_ERROR_MESSAGE);
     }
 
+    ////////
+
+    @Override
+    public boolean hasSack() {
+        return null != this.sack;
+    }
+
+    @Override
+    public <S> S sack() {
+        return (S) this.sack;
+    }
+
+    @Override
+    public <S> void sack(final S object) {
+        this.sack = object;
+    }
+
+    ////////
+
+    public void setBulk(final long count) {
+        this.bulk = count;
+    }
+
+    public long bulk() {
+        return this.bulk;
+    }
+
+    @Override
+    public Traversal.SideEffects sideEffects() {
+        return this.sideEffects;
+    }
+
+    ////////
+
     @Override
     public short loops() {
         return this.loops;
@@ -103,13 +111,19 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
         this.loops = 0;
     }
 
-    public void setBulk(final long count) {
-        this.bulk = count;
+    ////////
+
+    @Override
+    public String getFuture() {
+        return this.future;
     }
 
-    public long bulk() {
-        return this.bulk;
+    @Override
+    public void setFuture(final String label) {
+        this.future = label;
     }
+
+    ////////
 
     @Override
     public <R> SimpleTraverser<R> makeChild(final String label, final R r) {
@@ -178,7 +192,6 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
             this.t = (T) ReferencedFactory.attach((ReferencedProperty) this.t, vertex);
         }
         // you do not want to attach a path because it will reference graph objects not at the current vertex
-        this.sideEffects = TraversalVertexProgram.getLocalSideEffects(vertex);
         return this;
     }
 

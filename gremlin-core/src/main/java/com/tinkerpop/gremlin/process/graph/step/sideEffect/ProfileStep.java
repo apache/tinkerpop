@@ -33,6 +33,6 @@ public final class ProfileStep<S> extends SideEffectStep<S> implements SideEffec
 
     @Override
     public MapReduce<MapReduce.NullObject, TraversalMetrics, MapReduce.NullObject, TraversalMetrics, TraversalMetrics> getMapReduce() {
-        return new ProfileMapReduce();
+        return new ProfileMapReduce(this);
     }
 }

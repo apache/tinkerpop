@@ -49,8 +49,7 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
             this.map.put(traverser, traverser);
             return true;
         } else {
-            existing.setBulk(existing.bulk() + traverser.bulk());
-            existing.mergeSack(traverser);
+            existing.merge(traverser);
             return false;
         }
     }

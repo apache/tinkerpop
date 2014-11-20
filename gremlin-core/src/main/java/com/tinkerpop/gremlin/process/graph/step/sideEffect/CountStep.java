@@ -49,6 +49,6 @@ public final class CountStep<S> extends AbstractStep<S, Long> implements SideEff
 
     @Override
     public MapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> getMapReduce() {
-        return new CountMapReduce();
+        return new CountMapReduce(this);
     }
 }

@@ -22,16 +22,11 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
      */
     public T get();
 
+    public boolean hasSack();
+
     public <S> S sack();
 
     public <S> void sack(final S object);
-
-    public default void mergeSack(final Traverser<?> other) {
-        if (Step.NO_OBJECT.equals(this.sack()))
-            this.sack(other.sack());
-        else if (!Step.NO_OBJECT.equals(other.sack()))
-            this.sack(this.sideEffects().getSackMergeOperator().get().apply(this.sack(), other.sack()));
-    }
 
     /**
      * Get the current path of the traverser.
@@ -112,6 +107,14 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
     public interface Admin<T> extends Traverser<T>, Attachable<Admin<T>> {
 
         public static final String HALT = Graph.System.system("halt");
+
+        public default void merge(final Traverser<?> other) {
+            if (!this.hasSack())
+                this.sack(other.sack());
+            else if (other.hasSack())
+                this.sack(this.sideEffects().getSackMergeOperator().get().apply(this.sack(), other.sack()));
+            this.asAdmin().setBulk(this.bulk() + other.bulk());
+        }
 
         /**
          * Set the current object location of the traverser.
@@ -228,10 +231,11 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
 
         /**
          * Set the sideEffects of the {@link Traversal}. Given that traversers can move between machines,
-         * it may be important to re-set this when the traverser cross machine boundaries and typically during inflate().
+         * it may be important to re-set this when the traverser crosses machine boundaries.
          *
          * @param sideEffects the sideEffects of the traversal.
          */
         public void setSideEffects(final Traversal.SideEffects sideEffects);
+
     }
 }

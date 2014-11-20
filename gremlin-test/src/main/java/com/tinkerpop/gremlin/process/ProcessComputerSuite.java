@@ -36,6 +36,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SackTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeTest;
@@ -124,6 +125,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             GroupCountTest.ComputerTest.class,
             // TODO: InjectTest.ComputerTest.class,
             ProfileTest.ComputerTest.class,
+            SackTest.ComputerTest.class,
             SideEffectCapTest.ComputerTest.class,
             // TODO: REMOVE? SideEffectTest.ComputerTest.class,
             StoreTest.ComputerTest.class,
@@ -190,6 +192,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             GroupCountTest.class,
             InjectTest.class,
             ProfileTest.class,
+            SackTest.class,
             SideEffectCapTest.class,
             // SideEffectTest.class,
             StoreTest.class,

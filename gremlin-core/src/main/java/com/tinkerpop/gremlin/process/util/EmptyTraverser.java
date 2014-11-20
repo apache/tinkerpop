@@ -71,7 +71,7 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-       public Admin<T> attach(final Vertex hostVertex) {
+    public Admin<T> attach(final Vertex hostVertex) {
         return this;
     }
 
@@ -93,6 +93,11 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     @Override
     public <S> void sack(S object) {
 
+    }
+
+    @Override
+    public boolean hasSack() {
+        return false;
     }
 
     @Override

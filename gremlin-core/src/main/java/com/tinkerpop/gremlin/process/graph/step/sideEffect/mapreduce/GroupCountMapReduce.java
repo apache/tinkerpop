@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
@@ -23,6 +24,7 @@ public final class GroupCountMapReduce implements MapReduce<Object, Long, Object
     public static final String GROUP_COUNT_STEP_SIDE_EFFECT_KEY = "gremlin.groupCountStep.sideEffectKey";
 
     private String sideEffectKey;
+    private Traversal traversal;
     private Supplier<Map<Object, Long>> mapSupplier;
 
     private GroupCountMapReduce() {
@@ -31,7 +33,8 @@ public final class GroupCountMapReduce implements MapReduce<Object, Long, Object
 
     public GroupCountMapReduce(final GroupCountStep step) {
         this.sideEffectKey = step.getSideEffectKey();
-        this.mapSupplier = step.getTraversal().sideEffects().<Map<Object, Long>>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
+        this.traversal = step.getTraversal();
+        this.mapSupplier = this.traversal.sideEffects().<Map<Object, Long>>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
     }
 
     @Override
@@ -42,7 +45,8 @@ public final class GroupCountMapReduce implements MapReduce<Object, Long, Object
     @Override
     public void loadState(final Configuration configuration) {
         this.sideEffectKey = configuration.getString(GROUP_COUNT_STEP_SIDE_EFFECT_KEY);
-        this.mapSupplier = TraversalVertexProgram.getTraversalSupplier(configuration).get().sideEffects().<Map<Object, Long>>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
+        this.traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
+        this.mapSupplier = this.traversal.sideEffects().<Map<Object, Long>>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
 
     }
 
@@ -53,7 +57,8 @@ public final class GroupCountMapReduce implements MapReduce<Object, Long, Object
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<Object, Long> emitter) {
-        TraversalVertexProgram.getLocalSideEffects(vertex).<Map<Object, Number>>orElse(this.sideEffectKey, Collections.emptyMap()).forEach((k, v) -> emitter.emit(k, v.longValue()));
+        this.traversal.sideEffects().setLocalVertex(vertex);
+        this.traversal.sideEffects().<Map<Object, Number>>orElse(this.sideEffectKey, Collections.emptyMap()).forEach((k, v) -> emitter.emit(k, v.longValue()));
     }
 
     @Override

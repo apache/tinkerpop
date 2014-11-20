@@ -56,6 +56,7 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
 
     private LambdaHolder<Supplier<Traversal>> traversalSupplier;
     private Traversal traversal;
+
     private final Set<MapReduce> mapReducers = new HashSet<>();
     private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<String>() {{
         add(VOTE_TO_HALT);
@@ -82,16 +83,6 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
 
         if (!(TraversalHelper.getEnd(traversal) instanceof SideEffectCapStep))
             this.mapReducers.add(new TraverserMapReduce(TraversalHelper.getEnd(traversal)));
-    }
-
-    /**
-     * A helper method that yields a {@link com.tinkerpop.gremlin.process.Traversal.SideEffects} view of the distributed sideEffects within the currently processed {@link com.tinkerpop.gremlin.structure.Vertex}.
-     *
-     * @param localVertex the currently executing vertex
-     * @return a sideEffect API to get and put sideEffect data onto the vertex
-     */
-    public static Traversal.SideEffects getLocalSideEffects(final Vertex localVertex) {
-        return new DefaultTraversalSideEffects(localVertex);    // TODO: use a worker static object
     }
 
     /**

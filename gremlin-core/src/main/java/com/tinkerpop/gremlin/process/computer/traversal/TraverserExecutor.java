@@ -30,6 +30,7 @@ public final class TraverserExecutor {
         // gather incoming traversers into a traverser set and gain the 'weighted-set' optimization
         messenger.receiveMessages(MessageType.Global.of()).forEach(traverser -> {
             traverser.attach(vertex);
+            traverser.setSideEffects(traversal.sideEffects());
             aliveTraversers.add((Traverser.Admin) traverser);
         });
 

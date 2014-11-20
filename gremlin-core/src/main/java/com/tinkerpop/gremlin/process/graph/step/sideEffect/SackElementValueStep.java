@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 
 import java.util.function.BinaryOperator;
@@ -22,5 +23,10 @@ public final class SackElementValueStep<S extends Element, V> extends SideEffect
                 traverser.sack(this.operator.apply(traverser.sack(), (V) value));
             });
         });
+    }
+
+    @Override
+    public String toString() {
+        return TraversalHelper.makeStepString(this, this.operator, this.propertyKey);
     }
 }

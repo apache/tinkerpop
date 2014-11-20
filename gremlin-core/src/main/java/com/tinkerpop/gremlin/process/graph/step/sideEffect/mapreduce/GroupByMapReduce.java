@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
-import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -30,6 +29,7 @@ public final class GroupByMapReduce implements MapReduce<Object, Collection, Obj
     public static final String GROUP_BY_STEP_STEP_LABEL = "gremlin.groupByStep.stepLabel";
 
     private String sideEffectKey;
+    private Traversal<?, ?> traversal;
     private String groupByStepKey;
     private Function reduceFunction;
     private Supplier<Map> mapSupplier;
@@ -42,7 +42,8 @@ public final class GroupByMapReduce implements MapReduce<Object, Collection, Obj
         this.groupByStepKey = step.getLabel();
         this.sideEffectKey = step.getSideEffectKey();
         this.reduceFunction = step.getReduceFunction();
-        this.mapSupplier = step.getTraversal().sideEffects().<Map>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
+        this.traversal = step.getTraversal();
+        this.mapSupplier = this.traversal.sideEffects().<Map>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
     }
 
     @Override
@@ -55,7 +56,7 @@ public final class GroupByMapReduce implements MapReduce<Object, Collection, Obj
     public void loadState(final Configuration configuration) {
         this.sideEffectKey = configuration.getString(GROUP_BY_STEP_SIDE_EFFECT_KEY);
         this.groupByStepKey = configuration.getString(GROUP_BY_STEP_STEP_LABEL);
-        final Traversal<?, ?> traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
+        this.traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
         final GroupByStep groupByStep = (GroupByStep) traversal.getSteps().stream()
                 .filter(step -> step.getLabel().equals(this.groupByStepKey))
                 .findAny().get();
@@ -70,7 +71,8 @@ public final class GroupByMapReduce implements MapReduce<Object, Collection, Obj
 
     @Override
     public void map(Vertex vertex, MapEmitter<Object, Collection> emitter) {
-        TraversalVertexProgram.getLocalSideEffects(vertex).<Map<Object, Collection>>orElse(this.sideEffectKey, Collections.emptyMap()).forEach(emitter::emit);
+        this.traversal.sideEffects().setLocalVertex(vertex);
+        this.traversal.sideEffects().<Map<Object, Collection>>orElse(this.sideEffectKey, Collections.emptyMap()).forEach(emitter::emit);
     }
 
     @Override

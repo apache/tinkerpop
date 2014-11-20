@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
@@ -23,6 +24,7 @@ public final class StoreMapReduce implements MapReduce<MapReduce.NullObject, Obj
     public static final String STORE_STEP_SIDE_EFFECT_KEY = "gremlin.storeStep.sideEffectKey";
 
     private String sideEffectKey;
+    private Traversal traversal;
     private Supplier<Collection> collectionSupplier;
 
     private StoreMapReduce() {
@@ -31,7 +33,8 @@ public final class StoreMapReduce implements MapReduce<MapReduce.NullObject, Obj
 
     public StoreMapReduce(final StoreStep step) {
         this.sideEffectKey = step.getSideEffectKey();
-        this.collectionSupplier = step.getTraversal().sideEffects().<Collection>getRegisteredSupplier(this.sideEffectKey).orElse(BulkSet::new);
+        this.traversal = step.getTraversal();
+        this.collectionSupplier = this.traversal.sideEffects().<Collection>getRegisteredSupplier(this.sideEffectKey).orElse(BulkSet::new);
     }
 
     @Override
@@ -42,7 +45,8 @@ public final class StoreMapReduce implements MapReduce<MapReduce.NullObject, Obj
     @Override
     public void loadState(final Configuration configuration) {
         this.sideEffectKey = configuration.getString(STORE_STEP_SIDE_EFFECT_KEY);
-        this.collectionSupplier = TraversalVertexProgram.getTraversalSupplier(configuration).get().sideEffects().<Collection>getRegisteredSupplier(this.sideEffectKey).orElse(BulkSet::new);
+        this.traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
+        this.collectionSupplier = this.traversal.sideEffects().<Collection>getRegisteredSupplier(this.sideEffectKey).orElse(BulkSet::new);
     }
 
     @Override
@@ -52,7 +56,8 @@ public final class StoreMapReduce implements MapReduce<MapReduce.NullObject, Obj
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<NullObject, Object> emitter) {
-        TraversalVertexProgram.getLocalSideEffects(vertex).<Collection<?>>orElse(this.sideEffectKey, Collections.emptyList()).forEach(emitter::emit);
+        this.traversal.sideEffects().setLocalVertex(vertex);
+        this.traversal.sideEffects().<Collection<?>>orElse(this.sideEffectKey, Collections.emptyList()).forEach(emitter::emit);
     }
 
     @Override

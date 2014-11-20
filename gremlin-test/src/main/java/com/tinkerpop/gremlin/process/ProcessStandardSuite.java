@@ -39,6 +39,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SackTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreTest;
@@ -127,6 +128,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             GroupCountTest.StandardTest.class,
             InjectTest.StandardTest.class,
             ProfileTest.StandardTest.class,
+            SackTest.StandardTest.class,
             SideEffectCapTest.StandardTest.class,
             SideEffectTest.StandardTest.class,
             StoreTest.StandardTest.class,
@@ -192,6 +194,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             GroupCountTest.class,
             InjectTest.class,
             ProfileTest.class,
+            SackTest.class,
             SideEffectCapTest.class,
             SideEffectTest.class,
             StoreTest.class,

@@ -21,6 +21,7 @@ public final class TreeMapReduce implements MapReduce<Object, Tree, Object, Tree
     public static final String TREE_STEP_SIDE_EFFECT_KEY = "gremlin.treeStep.sideEffectKey";
 
     private String sideEffectKey;
+    private Traversal traversal;
 
     private TreeMapReduce() {
 
@@ -28,6 +29,7 @@ public final class TreeMapReduce implements MapReduce<Object, Tree, Object, Tree
 
     public TreeMapReduce(final TreeStep step) {
         this.sideEffectKey = step.getSideEffectKey();
+        this.traversal = step.getTraversal();
     }
 
     @Override
@@ -38,6 +40,7 @@ public final class TreeMapReduce implements MapReduce<Object, Tree, Object, Tree
     @Override
     public void loadState(final Configuration configuration) {
         this.sideEffectKey = configuration.getString(TREE_STEP_SIDE_EFFECT_KEY);
+        this.traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
     }
 
     @Override
@@ -47,10 +50,11 @@ public final class TreeMapReduce implements MapReduce<Object, Tree, Object, Tree
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<Object, Tree> emitter) {
-        final Traversal.SideEffects sideEffects = TraversalVertexProgram.getLocalSideEffects(vertex);
-        if (sideEffects.exists(this.sideEffectKey)) {
+        this.traversal.sideEffects().setLocalVertex(vertex);
+        this.traversal.sideEffects().<Tree<?>>ifPresent(this.sideEffectKey, tree -> tree.splitParents().forEach(t -> emitter.emit(t.keySet().iterator().next(), t)));
+        /*if (sideEffects.exists(this.sideEffectKey)) {
             sideEffects.<Tree<?>>get(this.sideEffectKey).splitParents().forEach(t -> emitter.emit(t.keySet().iterator().next(), t));
-        }
+        }*/
     }
 
     @Override

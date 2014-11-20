@@ -1,18 +1,28 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileStep;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
 import java.util.Iterator;
 
 public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, TraversalMetrics, MapReduce.NullObject, TraversalMetrics, TraversalMetrics> {
 
-    public ProfileMapReduce() {
+    private Traversal traversal;
+
+    public ProfileMapReduce(final ProfileStep step) {
+        this.traversal = step.getTraversal();
+    }
+
+    @Override
+    public void loadState(final Configuration configuration) {
+        this.traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
     }
 
     @Override
@@ -27,7 +37,8 @@ public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, T
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<NullObject, TraversalMetrics> emitter) {
-        TraversalVertexProgram.getLocalSideEffects(vertex).<TraversalMetrics>ifPresent(ProfileStep.METRICS_KEY, emitter::emit);
+        this.traversal.sideEffects().setLocalVertex(vertex);
+        this.traversal.sideEffects().<TraversalMetrics>ifPresent(ProfileStep.METRICS_KEY, emitter::emit);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -18,12 +19,23 @@ import java.util.function.Supplier;
  */
 public class DefaultTraversalSideEffects implements Traversal.SideEffects {
 
-    private Map<String, Object> objectMap = new HashMap<>();
-    private Map<String, Supplier> supplierMap = new HashMap<>();
-    private Optional<BinaryOperator> sackMergeOperator = Optional.empty();
-    private Optional<Object> sackInitialValue = Optional.empty();
+    protected Map<String, Object> objectMap = new HashMap<>();
+    protected Map<String, Supplier> supplierMap = new HashMap<>();
+    protected Optional<BinaryOperator> sackMergeOperator = Optional.empty();
+    protected Optional<Object> sackInitialValue = Optional.empty();
 
     public DefaultTraversalSideEffects() {
+
+    }
+
+    public DefaultTraversalSideEffects(final Traversal.SideEffects sideEffects) {
+        this.sackMergeOperator = (Optional) sideEffects.getSackMergeOperator();
+        this.sackInitialValue = sideEffects.getSackInitialValue();
+        sideEffects.keys().forEach(k -> {
+            final Optional<Supplier<Object>> optional = sideEffects.getRegisteredSupplier(k);
+            if(optional.isPresent())
+                this.supplierMap.put(k,optional.get());
+        });
 
     }
 
