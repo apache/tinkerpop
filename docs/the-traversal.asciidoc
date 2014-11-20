@@ -908,7 +908,7 @@ gremlin> g.v(1).as('x').out('created').in('created').values('name').retain(['mar
 Sack Step
 ~~~~~~~~~
 
-A traverser can contain a traverser-local sideEffect data structure called a "sack". The `sack()`-step is used to manipulate traverser sacks (*sideEffect* or *map*). Each sack of each traverser is created when the traverser is generated using `withSack(initialValueSupplier,splitOperator?,mergeOperator?)`.
+image:gremlin-sacks-running.png[width=175,float=right] A traverser can contain a traverser-local sideEffect data structure called a "sack". The `sack()`-step is used to manipulate traverser sacks (*sideEffect* or *map*). Each sack of each traverser is created when the traverser is generated using `withSack(initialValueSupplier,splitOperator?,mergeOperator?)`.
 
 * *Initial value supplier*: A `Supplier` providing the initial value of each traverser's sack.
 * *Split operator*: a `UnaryOperator` that clones the traversers sack when the traverser splits. If no split operator is provided, then it assumes `UnaryOperator.identity()`.
@@ -961,7 +961,7 @@ gremlin> g.V().withSack({1.0f},sum).as('x').outE().sack(mult,'weight').inV().jum
 ==>[v[1], 1.0, v[4], 1.0, v[5]]   // 1.0 * 1.0 * 1.0 = 1.0
 ==>[v[1], 1.0, v[4], 0.4, v[3]]   // 1.0 * 1.0 * 0.4 = 0.4
 
-CAUTION: If no merge operator is provided, then traversers with sacks will not be able to be merged. The drawback of this is readily seen in OLAP computations where traversers must be enumerated instead of counted (see <<distributed-gremlin-gotchas,Distributed Gremlin Gotchas>>). Note that various OLTP situations make use of the traverser merge optimization.
+CAUTION: image:gremlin-sacks-standing.png[width=100,float=left] If no merge operator is provided, then traversers with sacks will not be able to be merged. The drawback of this is readily seen in OLAP computations where traversers must be enumerated instead of counted (see <<distributed-gremlin-gotchas,Distributed Gremlin Gotchas>>). Note that various OLTP situations make use of the traverser merge optimization.
 
 [[select-step]]
 Select Step
