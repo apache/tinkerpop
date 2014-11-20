@@ -24,7 +24,7 @@ public class Constants {
     public static final String SYSTEM_RUNTIME = Graph.System.system("gremlin.giraph.runtime");
     public static final String SYSTEM_ITERATION = Graph.System.system("gremlin.giraph.iteration");
     public static final String GREMLIN_GIRAPH_MEMORY_KEYS = "gremlin.giraph.memoryKeys";
-    public static final String GRELMIN_GIRAPH_MAP_REDUCE_CLASS = "gremlin.giraph.mapReduceClass";
+    public static final String GREMLIN_GIRAPH_MAP_REDUCE_CLASS = "gremlin.giraph.mapReduceClass";
     public static final String GREMLIN_GIRAPH_HALT = "gremlin.giraph.halt";
     public static final String MEMORY_MAP = Graph.Key.hide("gremlin.giraph.memoryMap");
 

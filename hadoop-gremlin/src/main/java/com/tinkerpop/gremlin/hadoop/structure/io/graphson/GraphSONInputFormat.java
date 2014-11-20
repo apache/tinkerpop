@@ -1,11 +1,9 @@
-package com.tinkerpop.gremlin.giraph.structure.io.kryo;
+package com.tinkerpop.gremlin.hadoop.structure.io.graphson;
 
-import com.tinkerpop.gremlin.giraph.process.computer.GiraphComputeVertex;
+import com.tinkerpop.gremlin.hadoop.structure.hdfs.VertexWritable;
+import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.BlockLocation;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
@@ -14,24 +12,19 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.FileSplit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * @author Joshua Shinavier (http://fortytwo.net)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class KryoInputFormat extends FileInputFormat<NullWritable, GiraphComputeVertex> implements Configurable {
+public class GraphSONInputFormat extends FileInputFormat<NullWritable, VertexWritable> implements Configurable {
 
     private Configuration config;
 
     @Override
-    public RecordReader<NullWritable, GiraphComputeVertex> createRecordReader(final InputSplit split, final TaskAttemptContext context) throws IOException, InterruptedException {
-        RecordReader<NullWritable, GiraphComputeVertex> reader = new KryoRecordReader();
+    public RecordReader<NullWritable, VertexWritable> createRecordReader(final InputSplit split, final TaskAttemptContext context) throws IOException, InterruptedException {
+        RecordReader<NullWritable, VertexWritable> reader = new GraphSONRecordReader();
         reader.initialize(split, context);
         return reader;
     }

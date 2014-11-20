@@ -57,7 +57,7 @@ public class MapReduceHelper {
             final Optional<Comparator<?>> mapSort = mapReduce.getMapKeySort();
             final Optional<Comparator<?>> reduceSort = mapReduce.getReduceKeySort();
 
-            newConfiguration.setClass(Constants.GRELMIN_GIRAPH_MAP_REDUCE_CLASS, mapReduce.getClass(), MapReduce.class);
+            newConfiguration.setClass(Constants.GREMLIN_GIRAPH_MAP_REDUCE_CLASS, mapReduce.getClass(), MapReduce.class);
             final Job job = new Job(newConfiguration, mapReduce.toString());
             GiraphGraphComputer.LOGGER.info(Constants.GIRAPH_GREMLIN_JOB_PREFIX + mapReduce.toString());
             job.setJarByClass(GiraphGraph.class);
@@ -124,7 +124,7 @@ public class MapReduceHelper {
 
     public static <MK, MV, RK, RV, R> MapReduce<MK, MV, RK, RV, R> getMapReduce(final Configuration configuration) {
         try {
-            final Class<? extends MapReduce> mapReduceClass = configuration.getClass(Constants.GRELMIN_GIRAPH_MAP_REDUCE_CLASS, MapReduce.class, MapReduce.class);
+            final Class<? extends MapReduce> mapReduceClass = configuration.getClass(Constants.GREMLIN_GIRAPH_MAP_REDUCE_CLASS, MapReduce.class, MapReduce.class);
             final Constructor<? extends MapReduce> constructor = mapReduceClass.getDeclaredConstructor();
             constructor.setAccessible(true);
             final MapReduce<MK, MV, RK, RV, R> mapReduce = constructor.newInstance();
