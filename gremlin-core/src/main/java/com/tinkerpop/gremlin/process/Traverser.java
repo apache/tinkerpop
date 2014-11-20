@@ -22,10 +22,27 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
      */
     public T get();
 
+    /**
+     * Determine whether the traverser has a sack.
+     *
+     * @return whether the traverser has a sack
+     */
     public boolean hasSack();
 
+    /**
+     * Get the sack local sack object of this traverser.
+     *
+     * @param <S> the type of the sack object
+     * @return the sack object
+     */
     public <S> S sack();
 
+    /**
+     * Set the traversers sack object to the provided value ("sack the value").
+     *
+     * @param object the new value of the traverser's sack
+     * @param <S>    the type of the object
+     */
     public <S> void sack(final S object);
 
     /**
@@ -108,6 +125,13 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
 
         public static final String HALT = Graph.System.system("halt");
 
+        /**
+         * When two traversers are {@link Traverser#equals} to each other, then they can be merged.
+         * This method is used to merge the traversers into a single traverser.
+         * This is used for optimization where instead of enumerating all traversers, they can be counted.
+         *
+         * @param other the other traverser to merge into this traverser. Once merged, the other can be garbage collected.
+         */
         public void merge(final Admin<?> other);
 
         /**
