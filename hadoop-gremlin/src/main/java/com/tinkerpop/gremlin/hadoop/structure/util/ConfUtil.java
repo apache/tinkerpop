@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.hadoop.structure.util;
 
+import com.tinkerpop.gremlin.hadoop.Constants;
+import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
 
@@ -30,13 +32,16 @@ public class ConfUtil {
         });
     }
 
-    /*public static Class<InputFormat> getInputFormatFromVertexInputFormat(final Class<VertexInputFormat> vertexInputFormatClass) {
-        try {
-            if (GiraphGremlinInputFormat.class.isAssignableFrom(vertexInputFormatClass))
-                return (((GiraphGremlinInputFormat) vertexInputFormatClass.getConstructor().newInstance()).getInputFormatClass());
-        } catch (final Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+    public static HadoopGraph getOutputGraph(final HadoopGraph hadoopGraph) {
+        final BaseConfiguration newConfiguration = new BaseConfiguration();
+        newConfiguration.copy(hadoopGraph.configuration());
+        if (hadoopGraph.configuration().containsKey(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)) {
+            newConfiguration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, hadoopGraph.configuration().getOutputLocation() + "/" + Constants.SYSTEM_G);
+            newConfiguration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, hadoopGraph.configuration().getOutputLocation() + "_");
         }
-        throw new IllegalStateException("The provided VertexInputFormatClass is not a GiraphGremlinInputFormat");
-    }*/
+        if (hadoopGraph.configuration().containsKey(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT)) {
+            newConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, hadoopGraph.configuration().getString(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT).replace("OutputFormat", "InputFormat"));
+        }
+        return HadoopGraph.open(newConfiguration);
+    }
 }

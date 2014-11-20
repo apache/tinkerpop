@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.hadoop.groovy.plugin;
 
 import com.tinkerpop.gremlin.hadoop.Constants;
-import com.tinkerpop.gremlin.hadoop.process.computer.HadoopGraphComputer;
+import com.tinkerpop.gremlin.hadoop.process.computer.mapreduce.MapReduceGraphComputer;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration;
 import com.tinkerpop.gremlin.hadoop.structure.hdfs.HDFSTools;
 import com.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
@@ -60,7 +60,7 @@ public class HadoopGremlinPlugin extends AbstractGremlinPlugin {
         pluginAcceptor.addImports(IMPORTS);
         try {
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", JobClient.class.getName()));
-            pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", HadoopGraphComputer.class.getName()));
+            pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", MapReduceGraphComputer.class.getName()));
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", Job.class.getName()));
             pluginAcceptor.eval(HadoopLoader.class.getCanonicalName() + ".load()");
 
