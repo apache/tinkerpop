@@ -83,7 +83,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
     @Override
     protected Traverser<Map<String, E>> processNextStart() throws NoSuchElementException {
         final Map<String, E> map = new HashMap<>();
-        final Traverser<Map<String, E>> result = this.currentStart.makeChild(this.getLabel(), map);
+        final Traverser<Map<String, E>> result = this.currentStart.split(this.getLabel(), map);
         final BiConsumer<String, S> resultSetter = (name, value) -> map.put(name, (E) value);
 
         while (true) { // break out when the current solution is exhausted and there are no more starts
@@ -433,7 +433,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
                 outputs = 0;
             });
             Iterator<Traverser<A>> starts = new MapIterator<>(seIter,
-                    o -> ((Traverser.Admin<A>) start).makeChild(as, o));
+                    o -> ((Traverser.Admin<A>) start).split(as, o));
 
             w.reset();
 

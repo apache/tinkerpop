@@ -56,12 +56,12 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public <R> Admin<R> makeChild(final String label, final R r) {
+    public <R> Admin<R> split(final String label, final R r) {
         return INSTANCE;
     }
 
     @Override
-    public Admin<T> makeSibling() {
+    public Admin<T> split() {
         return this;
     }
 
@@ -92,6 +92,11 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
 
     @Override
     public <S> void sack(S object) {
+
+    }
+
+    @Override
+    public void merge(final Traverser.Admin<?> other) {
 
     }
 

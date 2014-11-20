@@ -69,7 +69,7 @@ public final class JumpStep<S> extends AbstractStep<S, S> implements EngineDepen
                 traverser.setFuture(this.jumpLabel);
                 this.jumpToStep.addStart(traverser);
                 if (doEmit(traverser)) {
-                    final Traverser.Admin<S> emitTraverser = traverser.makeSibling();
+                    final Traverser.Admin<S> emitTraverser = traverser.split();
                     if (this.jumpBack) emitTraverser.resetLoops();
                     emitTraverser.setFuture(this.getNextStep().getLabel());
                     if (PROFILING_ENABLED) TraversalMetrics.finish(this, traverser);
@@ -104,7 +104,7 @@ public final class JumpStep<S> extends AbstractStep<S, S> implements EngineDepen
                     traverser.setFuture(loopFuture);
                     this.queue.add(traverser);
                     if (doEmit(traverser)) {
-                        final Traverser.Admin<S> emitTraverser = traverser.makeSibling();
+                        final Traverser.Admin<S> emitTraverser = traverser.split();
                         if (this.jumpBack) emitTraverser.resetLoops();
                         emitTraverser.setFuture(this.nextStep.getLabel());
                         this.queue.add(emitTraverser);

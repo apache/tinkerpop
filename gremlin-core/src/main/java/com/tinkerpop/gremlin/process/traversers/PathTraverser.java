@@ -6,8 +6,6 @@ import com.tinkerpop.gremlin.process.util.ImmutablePath;
 import com.tinkerpop.gremlin.process.util.PathAwareSideEffects;
 import com.tinkerpop.gremlin.structure.util.referenced.ReferencedFactory;
 
-import java.util.Collections;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -47,7 +45,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
     }
 
     @Override
-    public <R> PathTraverser<R> makeChild(final String label, final R r) {
+    public <R> PathTraverser<R> split(final String label, final R r) {
         final PathTraverser<R> traverser = new PathTraverser<>();
         traverser.t = r;
         traverser.sideEffects = this.sideEffects;
@@ -55,12 +53,14 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
         traverser.path = this.path.clone().extend(label, r);
         traverser.future = this.future;
         traverser.bulk = this.bulk;
-        traverser.sack = this.sack;
+        traverser.sack = this.sideEffects.getSackSplitOperator().isPresent() ?
+                this.sideEffects.getSackSplitOperator().get().apply(this.sack) :
+                this.sack;
         return traverser;
     }
 
     @Override
-    public PathTraverser<T> makeSibling() {
+    public PathTraverser<T> split() {
         final PathTraverser<T> traverser = new PathTraverser<>();
         traverser.t = this.t;
         traverser.sideEffects = this.sideEffects;
@@ -68,7 +68,9 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
         traverser.path = this.path.clone();
         traverser.future = this.future;
         traverser.bulk = this.bulk;
-        traverser.sack = this.sack;
+        traverser.sack = this.sideEffects.getSackSplitOperator().isPresent() ?
+                this.sideEffects.getSackSplitOperator().get().apply(this.sack) :
+                this.sack;
         return traverser;
     }
 
@@ -87,9 +89,10 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
     @Override
     public boolean equals(final Object object) {
         return (object instanceof PathTraverser)
+                && ((PathTraverser) object).path().equals(this.path)
                 && ((PathTraverser) object).get().equals(this.t)
                 && ((PathTraverser) object).getFuture().equals(this.getFuture())
                 && ((PathTraverser) object).loops() == this.loops()
-                && ((PathTraverser) object).path().equals(this.path);
+                && (null == this.sack) || this.sideEffects.getSackMergeOperator().isPresent();
     }
 }

@@ -25,6 +25,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -528,8 +529,20 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().withSideEffect(key, supplier);
     }
 
-    public default <B> GraphTraversal<A, A> withSack(final B initialValue, final BinaryOperator<B> mergeOperator) {
+    public default <B> GraphTraversal<A, A> withSack(final Supplier<B> initialValue, final UnaryOperator<B> splitOperator, final BinaryOperator<B> mergeOperator) {
+        return this.start().withSack(initialValue, splitOperator, mergeOperator);
+    }
+
+    public default <B> GraphTraversal<A, A> withSack(final Supplier<B> initialValue, final UnaryOperator<B> splitOperator) {
+        return this.start().withSack(initialValue, splitOperator);
+    }
+
+    public default <B> GraphTraversal<A, A> withSack(final Supplier<B> initialValue, final BinaryOperator<B> mergeOperator) {
         return this.start().withSack(initialValue, mergeOperator);
+    }
+
+    public default <B> GraphTraversal<A, A> withSack(final Supplier<B> initialValue) {
+        return this.start().withSack(initialValue);
     }
 
     public default <B> GraphTraversal<A, A> withPath() {

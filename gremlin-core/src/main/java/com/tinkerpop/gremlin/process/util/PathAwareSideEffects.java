@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -47,13 +48,18 @@ public class PathAwareSideEffects implements Traversal.SideEffects {
     }
 
     @Override
-    public <S> void setSack(final S initialValue, final BinaryOperator<S> mergeOperator) {
-        this.sideEffects.setSack(initialValue, mergeOperator);
+    public <S> void setSack(final Supplier<S> initialValue, final Optional<UnaryOperator<S>> splitOperator, final Optional<BinaryOperator<S>> mergeOperator) {
+        this.sideEffects.setSack(initialValue, splitOperator, mergeOperator);
     }
 
     @Override
-    public <S> Optional<S> getSackInitialValue() {
+    public <S> Optional<Supplier<S>> getSackInitialValue() {
         return this.sideEffects.getSackInitialValue();
+    }
+
+    @Override
+    public <S> Optional<UnaryOperator<S>> getSackSplitOperator() {
+        return this.sideEffects.getSackSplitOperator();
     }
 
     @Override

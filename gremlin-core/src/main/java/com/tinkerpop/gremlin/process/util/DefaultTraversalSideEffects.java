@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -22,25 +23,11 @@ public class DefaultTraversalSideEffects implements Traversal.SideEffects {
     protected Map<String, Object> objectMap = new HashMap<>();
     protected Map<String, Supplier> supplierMap = new HashMap<>();
     protected Optional<BinaryOperator> sackMergeOperator = Optional.empty();
-    protected Optional<Object> sackInitialValue = Optional.empty();
+    protected Optional<UnaryOperator> sackSplitOperator = Optional.empty();
+    protected Optional<Supplier> sackInitialValue = Optional.empty();
 
     public DefaultTraversalSideEffects() {
 
-    }
-
-    public DefaultTraversalSideEffects(final Traversal.SideEffects sideEffects) {
-        this.sackMergeOperator = (Optional) sideEffects.getSackMergeOperator();
-        this.sackInitialValue = sideEffects.getSackInitialValue();
-        sideEffects.keys().forEach(k -> {
-            final Optional<Supplier<Object>> optional = sideEffects.getRegisteredSupplier(k);
-            if(optional.isPresent())
-                this.supplierMap.put(k,optional.get());
-        });
-
-    }
-
-    public DefaultTraversalSideEffects(final Vertex localVertex) {
-        this.setLocalVertex(localVertex);
     }
 
     /**
@@ -68,19 +55,32 @@ public class DefaultTraversalSideEffects implements Traversal.SideEffects {
     }
 
     @Override
-    public <S> void setSack(final S initialValue, final BinaryOperator<S> mergeOperator) {
+    public <S> void setSack(final Supplier<S> initialValue, final Optional<UnaryOperator<S>> splitOperator, final Optional<BinaryOperator<S>> mergeOperator) {
         this.sackInitialValue = Optional.ofNullable(initialValue);
-        this.sackMergeOperator = Optional.ofNullable(mergeOperator);
+        this.sackSplitOperator = (Optional) splitOperator;
+        this.sackMergeOperator = (Optional) mergeOperator;
+    }
+
+    public <S> S splitSack(final Traverser<?> traverser) {
+        if (this.sackSplitOperator.isPresent())
+            return (S) this.sackSplitOperator.get().apply(traverser.sack());
+        else
+            return traverser.sack();
     }
 
     @Override
-    public <S> Optional<S> getSackInitialValue() {
-        return (Optional<S>) this.sackInitialValue;
+    public <S> Optional<Supplier<S>> getSackInitialValue() {
+        return (Optional) this.sackInitialValue;
     }
 
     @Override
     public <S> Optional<BinaryOperator<S>> getSackMergeOperator() {
         return (Optional) this.sackMergeOperator;
+    }
+
+    @Override
+    public <S> Optional<UnaryOperator<S>> getSackSplitOperator() {
+        return (Optional) this.sackSplitOperator;
     }
 
     /**

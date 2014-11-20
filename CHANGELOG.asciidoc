@@ -10,6 +10,7 @@ TinkerPop 3.0.0.M6 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Reduced object creation in `TraversalVertexProgram` around vertex-local traversal sideEffects.
+* Renamed `Traverser.Admin.makeChild()` and `Traverser.Admin.makeSibling()` to `Traverser.Admin.split()` to correspond with `merge()`.
 * Added `Traverser.Admin.merge(Traverser)` method so that the merging algorithm is with the `Traverser`.
 * Added `Operator` enum that contains sack-helpful `BinaryOperators`: sum, minus, mult, div, max, min, etc.
 * Added `GraphTraversal.withSack()` and renamed `trackPaths()` and `with()` to `withPath()` and `withSideEffect()`, respectively.

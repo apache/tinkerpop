@@ -108,13 +108,27 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
 
         public static final String HALT = Graph.System.system("halt");
 
-        public default void merge(final Traverser<?> other) {
-            if (!this.hasSack())
-                this.sack(other.sack());
-            else if (other.hasSack())
-                this.sack(this.sideEffects().getSackMergeOperator().get().apply(this.sack(), other.sack()));
-            this.asAdmin().setBulk(this.bulk() + other.bulk());
-        }
+        public void merge(final Admin<?> other);
+
+        /**
+         * Generate a child traverser of the current traverser for current as step and new object location.
+         * The child has the path history, future, and loop information of the parent.
+         * The child extends that path history with the current as and provided R-object.
+         *
+         * @param label The current label of the child
+         * @param r     The current object of the child
+         * @param <R>   The current object type of the child
+         * @return The split traverser
+         */
+        public <R> Admin<R> split(final String label, final R r);
+
+        /**
+         * Generate a sibling traverser of the current traverser with a full copy of all state within the sibling.
+         *
+         * @return The split traverser
+         */
+        public Admin<T> split();
+
 
         /**
          * Set the current object location of the traverser.
@@ -181,25 +195,6 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>> {
         public default void halt() {
             this.setFuture(HALT);
         } */
-
-        /**
-         * Generate a child traverser of the current traverser for current as step and new object location.
-         * The child has the path history, future, and loop information of the parent.
-         * The child extends that path history with the current as and provided R-object.
-         *
-         * @param label The current label of the child
-         * @param r     The current object of the child
-         * @param <R>   The current object type of the child
-         * @return The newly created traverser
-         */
-        public <R> Admin<R> makeChild(final String label, final R r);
-
-        /**
-         * Generate a sibling traverser of the current traverser with a full copy of all state within the sibling.
-         *
-         * @return The sibling traverser
-         */
-        public Admin<T> makeSibling();
 
         /**
          * Prepare the traverser for migration across a JVM boundary.

@@ -86,6 +86,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
@@ -94,6 +95,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -639,8 +641,23 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
         return this;
     }
 
-    public default <A> GraphTraversal<S, E> withSack(final A initialValue, final BinaryOperator<A> mergeOperator) {
-        this.sideEffects().setSack(initialValue, mergeOperator);
+    public default <A> GraphTraversal<S, E> withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
+        this.sideEffects().setSack(initialValue, Optional.of(splitOperator), Optional.of(mergeOperator));
+        return this;
+    }
+
+    public default <A> GraphTraversal<S, E> withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
+        this.sideEffects().setSack(initialValue, Optional.of(splitOperator), Optional.empty());
+        return this;
+    }
+
+    public default <A> GraphTraversal<S, E> withSack(final Supplier<A> initialValue, final BinaryOperator<A> mergeOperator) {
+        this.sideEffects().setSack(initialValue, Optional.empty(), Optional.of(mergeOperator));
+        return this;
+    }
+
+    public default <A> GraphTraversal<S, E> withSack(final Supplier<A> initialValue) {
+        this.sideEffects().setSack(initialValue, Optional.empty(), Optional.empty());
         return this;
     }
 

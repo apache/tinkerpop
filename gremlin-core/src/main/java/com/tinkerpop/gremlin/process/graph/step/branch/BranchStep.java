@@ -50,18 +50,18 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
             while (!this.functionRing.roundComplete()) {
                 final String goTo = this.functionRing.next().apply(traverser);
                 if (THIS_BREAK_LABEL.equals(goTo)) {
-                    final Traverser.Admin<S> sibling = traverser.asAdmin().makeSibling();
+                    final Traverser.Admin<S> sibling = traverser.asAdmin().split();
                     sibling.setFuture(this.getNextStep().getLabel());
                     sibling.resetLoops();
                     this.graphComputerQueue.add(sibling);
                     break;
                 } else if (THIS_LABEL.equals(goTo)) {
-                    final Traverser.Admin<S> sibling = traverser.asAdmin().makeSibling();
+                    final Traverser.Admin<S> sibling = traverser.asAdmin().split();
                     sibling.setFuture(this.getNextStep().getLabel());
                     sibling.resetLoops();
                     this.graphComputerQueue.add(sibling);
                 } else if (!EMPTY_LABEL.equals(goTo)) {
-                    final Traverser.Admin<S> sibling = traverser.asAdmin().makeSibling();
+                    final Traverser.Admin<S> sibling = traverser.asAdmin().split();
                     if (TraversalHelper.relativeLabelDirection(this, goTo) == -1)
                         sibling.incrLoops();
                     sibling.setFuture(goTo);
@@ -79,18 +79,18 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
             // TODO: but you don't know if the label is jump back until you execute the function.
             final String goTo = this.functionRing.next().apply(traverser);
             if (THIS_BREAK_LABEL.equals(goTo)) {
-                final Traverser.Admin<S> sibling = traverser.asAdmin().makeSibling();
+                final Traverser.Admin<S> sibling = traverser.asAdmin().split();
                 sibling.resetLoops();
                 sibling.setFuture(this.getNextStep().getLabel());
                 this.getNextStep().addStart(sibling);
                 break;
             } else if (THIS_LABEL.equals(goTo)) {
-                final Traverser.Admin<S> sibling = traverser.asAdmin().makeSibling();
+                final Traverser.Admin<S> sibling = traverser.asAdmin().split();
                 sibling.resetLoops();
                 sibling.setFuture(this.getNextStep().getLabel());
                 this.getNextStep().addStart(sibling);
             } else if (!EMPTY_LABEL.equals(goTo)) {
-                final Traverser.Admin<S> sibling = traverser.asAdmin().makeSibling();
+                final Traverser.Admin<S> sibling = traverser.asAdmin().split();
                 if (TraversalHelper.relativeLabelDirection(this, goTo) == -1)
                     sibling.incrLoops();
                 sibling.setFuture(goTo);

@@ -1,7 +1,9 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
+import com.tinkerpop.gremlin.groovy.function.GBinaryOperator
 import com.tinkerpop.gremlin.groovy.function.GComparator
 import com.tinkerpop.gremlin.groovy.function.GFunction
+import com.tinkerpop.gremlin.groovy.function.GUnaryOperator
 import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.graph.GraphTraversal
 
@@ -67,6 +69,12 @@ class StepLoader {
 
         GraphTraversal.metaClass.tree = { final String memoryKey, final Closure... branchClosures ->
             return ((GraphTraversal) delegate).tree(memoryKey, GFunction.make(branchClosures));
+        }
+
+        GraphTraversal.metaClass.withSack = { final Closure initialValueSupplier, final Closure unknown ->
+            return (2 == unknown.getMaximumNumberOfParameters()) ?
+                    ((GraphTraversal) delegate).withSack(initialValueSupplier, new GBinaryOperator(unknown)) :
+                    ((GraphTraversal) delegate).withSack(initialValueSupplier, new GUnaryOperator(unknown));
         }
     }
 }

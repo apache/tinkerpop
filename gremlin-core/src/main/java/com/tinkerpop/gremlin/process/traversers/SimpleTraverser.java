@@ -19,20 +19,19 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     private static final String PATH_ERROR_MESSAGE = "Path tracking is not supported by this Traverser: " + SimpleTraverser.class;
 
     protected T t;
-    protected Object sack;
+    protected Object sack = null;
     protected String future = HALT;
     protected short loops = 0;
     protected transient Traversal.SideEffects sideEffects;
     protected long bulk = 1l;
 
     protected SimpleTraverser() {
-
     }
 
     public SimpleTraverser(final T t, final Traversal.SideEffects sideEffects) {
         this.t = t;
         this.sideEffects = sideEffects;
-        this.sack = this.sideEffects.getSackInitialValue().orElse(null);
+        this.sideEffects.getSackInitialValue().ifPresent(supplier -> this.sack = supplier.get());
     }
 
     @Override
@@ -126,26 +125,36 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     ////////
 
     @Override
-    public <R> SimpleTraverser<R> makeChild(final String label, final R r) {
+    public void merge(final Traverser.Admin<?> other) {
+        this.bulk = this.bulk + other.bulk();
+        this.sideEffects.getSackMergeOperator().ifPresent(merger -> merger.apply(this.sack, other.sack()));
+    }
+
+    @Override
+    public <R> SimpleTraverser<R> split(final String label, final R r) {
         final SimpleTraverser<R> traverser = new SimpleTraverser<>();
         traverser.t = r;
         traverser.sideEffects = this.sideEffects;
         traverser.future = this.future;
         traverser.loops = this.loops;
         traverser.bulk = this.bulk;
-        traverser.sack = this.sack;
+        traverser.sack = this.sideEffects.getSackSplitOperator().isPresent() ?
+                this.sideEffects.getSackSplitOperator().get().apply(this.sack) :
+                this.sack;
         return traverser;
     }
 
     @Override
-    public SimpleTraverser<T> makeSibling() {
+    public SimpleTraverser<T> split() {
         final SimpleTraverser<T> traverser = new SimpleTraverser<>();
         traverser.t = t;
         traverser.sideEffects = this.sideEffects;
         traverser.future = this.future;
         traverser.loops = this.loops;
         traverser.bulk = this.bulk;
-        traverser.sack = this.sack;
+        traverser.sack = this.sideEffects.getSackSplitOperator().isPresent() ?
+                this.sideEffects.getSackSplitOperator().get().apply(this.sack) :
+                this.sack;
         return traverser;
     }
 
@@ -169,7 +178,8 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
         return object instanceof SimpleTraverser
                 && ((SimpleTraverser) object).get().equals(this.t)
                 && ((SimpleTraverser) object).getFuture().equals(this.getFuture())
-                && ((SimpleTraverser) object).loops() == this.loops();
+                && ((SimpleTraverser) object).loops() == this.loops()
+                && (null == this.sack) || this.sideEffects.getSackMergeOperator().isPresent();
     }
 
     @Override
