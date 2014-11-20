@@ -908,7 +908,7 @@ gremlin> g.v(1).as('x').out('created').in('created').values('name').retain(['mar
 Sack Step
 ~~~~~~~~~
 
-A traverser can contain a traverser-local sideEffect data structure called a "sack". The `sack()`-step is used to manipulate traverser sacks (*sideEffect* or *map*). Each sack of each traverser is created when the traverser is generated using `withSack(initialValueSupplier,splitOperator?,mergerOperator?)`.
+A traverser can contain a traverser-local sideEffect data structure called a "sack". The `sack()`-step is used to manipulate traverser sacks (*sideEffect* or *map*). Each sack of each traverser is created when the traverser is generated using `withSack(initialValueSupplier,splitOperator?,mergeOperator?)`.
 
 * *Initial value supplier*: A `Supplier` providing the initial value of each traverser's sack.
 * *Split operator*: a `UnaryOperator` that clones the traversers sack when the traverser splits. If no split operator is provided, then it assumes `UnaryOperator.identity()`.
@@ -1123,7 +1123,7 @@ gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> sg = TinkerGraph.open() <1>
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> g.E().with('sg',sg).subgraph('sg', {it.label == 'knows'}) <2>
+gremlin> g.E().withSideEffect('sg',sg).subgraph('sg', {it.label == 'knows'}) <2>
 ==>tinkergraph[vertices:3 edges:2]
 gremlin> sg.E() <3>
 ==>e[7][1-knows->2]
@@ -1412,20 +1412,6 @@ gremlin> g.v(4).inE().outV()
 gremlin> g.v(4).inE().bothV()
 ==>v[1]
 ==>v[4]
-
-[[with-step]]
-With Step
-~~~~~~~~~
-
-Traversal side-effects can be declared using `with()`-step (*sideEffect*). This will ensure that the default data structures used by the various sideEffects are ignored in favor of user supplied structures.
-
-[source,groovy]
-gremlin> g.V.both.name.store('x')
-==>{lop=3, vadas=1, josh=3, marko=3, peter=1, ripple=1}   // the default is a BulkSet which is a weighted set
-gremlin> g.V.with('x'){[] as Set}.both.name.store('x')
-==>[lop, vadas, josh, marko, peter, ripple]
-gremlin> g.V.with('x'){['stephen'] as Set}.both.name.store('x')
-==>[stephen, lop, vadas, josh, marko, peter, ripple]
 
 [[traversalstrategy]]
 TraversalStrategy
