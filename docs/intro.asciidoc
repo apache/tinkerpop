@@ -13,6 +13,7 @@ A link:http://en.wikipedia.org/wiki/Graph_(data_structure)[graph] is a data stru
 
 TIP: The TinkerPop classic graph is available with <<tinkergraph-gremlin,TinkerGraph>> via `TinkerFactory.createClassic()`. TinkerGraph is the reference implementation of TinkerPop3 and is used in nearly all the examples in this documentation.
 
+[[tinkerpop-classic]]
 .TinkerPop Classic
 image::tinkerpop-classic.png[width=500]
 
