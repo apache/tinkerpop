@@ -979,7 +979,7 @@ gremlin> clock(10){g.V().withSack({-999.0f}).as('x').bothE().sack(max,'weight').
 gremlin> clock(10){g.V().withSack({-999.0f},max).as('x').bothE().sack(max,'weight').bothV().jump('x',6).sack().max()}
 ==>173.911300 // time in milliseconds with a merge operator
 
-CAUTION: image:gremlin-sacks-standing.png[width=100,float=left] If no merge operator is provided (the third argument of `withSack()`), then traversers with sacks will not be able to be merged. The drawback of this is readily seen in OLAP computations where traversers are enumerated instead of counted (see <<distributed-gremlin-gotchas,Distributed Gremlin Gotchas>>). Note that there are various OLTP situations that are able to leverage the traverser merge optimization as well -- e.g. recursion (`jump()`) and barriers (`order()`).
+IMPORTANT: image:gremlin-sacks-standing.png[width=100,float=left] If no merge operator is provided (the third argument of `withSack()`), then traversers with sacks will not be able to be merged. The drawback of this is readily seen in OLAP computations where traversers are enumerated instead of counted (see <<distributed-gremlin-gotchas,Distributed Gremlin Gotchas>>). Note that there are various OLTP situations that are able to leverage the traverser merge optimization as well -- e.g. recursion (`jump()`) and barriers (`order()`).
 
 [[select-step]]
 Select Step
