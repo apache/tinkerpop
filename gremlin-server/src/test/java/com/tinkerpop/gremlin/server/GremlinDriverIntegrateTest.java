@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.driver.ser.JsonBuilderKryoSerializer;
 import com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import com.tinkerpop.gremlin.util.TimeUtil;
 import groovy.json.JsonBuilder;
 import org.junit.Rule;
@@ -260,6 +261,17 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         final ResultSet results3 = client.submit("x[1]+2");
         assertEquals(4, results3.all().get().get(0).getInt());
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldExecuteScriptInSessionAssumingDefaultedImports() throws Exception {
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect(name.getMethodName());
+
+        final ResultSet results1 = client.submit("TinkerFactory.class.name");
+        assertEquals(TinkerFactory.class.getName(), results1.all().get().get(0).getString());
 
         cluster.close();
     }
