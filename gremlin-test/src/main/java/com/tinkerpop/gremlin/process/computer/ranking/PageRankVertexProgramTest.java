@@ -29,6 +29,7 @@ public class PageRankVertexProgramTest extends AbstractGremlinProcessTest {
             assertTrue(v.hiddenKeys().contains(PageRankVertexProgram.PAGE_RANK));
             final String name = v.value("name");
             final Double pageRank = v.value(PageRankVertexProgram.PAGE_RANK);
+            //System.out.println(name + "-----" + pageRank);
             if (name.equals("marko"))
                 assertTrue(pageRank > 0.14 && pageRank < 0.16);
             else if (name.equals("vadas"))

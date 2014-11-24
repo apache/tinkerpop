@@ -83,6 +83,6 @@ public final class CountMapReduce implements MapReduce<MapReduce.NullObject, Lon
 
     @Override
     public String toString() {
-        return StringFactory.mapReduceString(this, "");
+        return StringFactory.mapReduceString(this);
     }
 }

@@ -69,11 +69,11 @@ public interface GraphComputer {
             return true;
         }
 
-        public default boolean supportsGlobalMessageTypes() {
+        public default boolean supportsGlobalMessageScopes() {
             return true;
         }
 
-        public default boolean supportsLocalMessageTypes() {
+        public default boolean supportsLocalMessageScopes() {
             return true;
         }
 

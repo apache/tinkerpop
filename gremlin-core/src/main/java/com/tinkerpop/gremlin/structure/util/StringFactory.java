@@ -164,8 +164,16 @@ public class StringFactory {
         return vertexProgram.getClass().getSimpleName() + L_BRACKET + internalString + R_BRACKET;
     }
 
+    public static String vertexProgramString(final VertexProgram vertexProgram) {
+        return vertexProgram.getClass().getSimpleName();
+    }
+
     public static String mapReduceString(final MapReduce mapReduce, final String internalString) {
         return mapReduce.getClass().getSimpleName() + L_BRACKET + internalString + R_BRACKET;
+    }
+
+    public static String mapReduceString(final MapReduce mapReduce) {
+        return mapReduce.getClass().getSimpleName();
     }
 
     private static Function<Method, String> createTransform(final Graph.Features.FeatureSet features) {

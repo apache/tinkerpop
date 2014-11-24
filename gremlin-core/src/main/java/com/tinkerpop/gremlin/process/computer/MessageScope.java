@@ -1,11 +1,6 @@
 package com.tinkerpop.gremlin.process.computer;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
-import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 
@@ -14,20 +9,20 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /**
- * A {@link MessageType} represents the "address" of a message. A message can have multiple receivers and message type
+ * A {@link MessageScope} represents the range of a message. A message can have multiple receivers and message scope
  * allows the underlying {@link GraphComputer} to apply the message passing algorithm in whichever manner is most efficient.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-public abstract class MessageType {
+public abstract class MessageScope {
 
     /**
      * A Global message is directed at an arbitrary vertex in the graph.
      * The recipient vertex need not be adjacent to the sending vertex.
      * This message type should be avoided if a {@link Local} can be used.
      */
-    public final static class Global extends MessageType {
+    public final static class Global extends MessageScope {
 
         private static final Global INSTANCE = Global.of();
 
@@ -64,7 +59,7 @@ public abstract class MessageType {
      *
      * @param <M> The {@link VertexProgram} message class
      */
-    public final static class Local<M> extends MessageType {
+    public final static class Local<M> extends MessageScope {
         public final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal;
         public final BiFunction<M, Edge, M> edgeFunction;
 
@@ -78,32 +73,12 @@ public abstract class MessageType {
             this.edgeFunction = edgeFunction;
         }
 
-        public static Local of(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal) {
+        public static <M> Local<M> of(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal) {
             return new Local(incidentTraversal);
         }
 
-        public static <M> Local of(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal, final BiFunction<M, Edge, M> edgeFunction) {
+        public static <M> Local<M> of(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal, final BiFunction<M, Edge, M> edgeFunction) {
             return new Local<>(incidentTraversal, edgeFunction);
-        }
-
-        public <T extends Traversal<Vertex, Edge>> T edges(final Vertex vertex) {
-            final Traversal<Vertex, Edge> traversal = this.incidentTraversal.get();
-            TraversalHelper.insertStep(new StartStep<>(traversal, vertex), 0, traversal);
-            return (T) traversal;
-        }
-
-        public <T extends Traversal<Vertex, Vertex>> T vertices(final Vertex vertex) {
-            final Traversal traversal = this.incidentTraversal.get();
-            final VertexStep step = TraversalHelper.getLastStep(traversal, VertexStep.class).get();
-            TraversalHelper.insertStep(new EdgeVertexStep(traversal, step.getDirection().opposite()), traversal.getSteps().size(), traversal);
-            TraversalHelper.insertStep(new StartStep<>(traversal, vertex), 0, traversal);
-            return (T) traversal;
-        }
-
-        public Direction getDirection() {
-            final Traversal traversal = this.incidentTraversal.get();
-            final VertexStep step = TraversalHelper.getLastStep(traversal, VertexStep.class).get();
-            return step.getDirection();
         }
 
         public BiFunction<M, Edge, M> getEdgeFunction() {
@@ -112,6 +87,19 @@ public abstract class MessageType {
 
         public Supplier<? extends Traversal<Vertex, Edge>> getIncidentTraversal() {
             return this.incidentTraversal;
+        }
+
+        public static class ReverseTraversalSupplier implements Supplier<Traversal<Vertex, Edge>> {
+
+            private final MessageScope.Local<?> localMessageScope;
+
+            public ReverseTraversalSupplier(final MessageScope.Local<?> localMessageScope) {
+                this.localMessageScope = localMessageScope;
+            }
+
+            public Traversal<Vertex, Edge> get() {
+                return this.localMessageScope.getIncidentTraversal().get().reverse();
+            }
         }
     }
 }

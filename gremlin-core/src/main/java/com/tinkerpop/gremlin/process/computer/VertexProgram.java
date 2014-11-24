@@ -145,6 +145,16 @@ public interface VertexProgram<M> {
     }
 
     /**
+     * This method returns all the {@link MessageScope} possibilities for a particular iteration of the vertex program.
+     * The returned messages scopes are the scopes that will be used to send messages during the stated iteration.
+     * It is not a requirement that all stated messages scopes be used, just that it is possible that they be used during the iteration.
+     *
+     * @param iteration the iteration of the vertex program to check for message scopes
+     * @return all possible message scopes during said vertex program iteration
+     */
+    public Set<MessageScope> getMessageScopes(final int iteration);
+
+    /**
      * The set of {@link MapReduce} jobs that are associated with the {@link VertexProgram}.
      * This is not necessarily the exhaustive list over the life of the {@link GraphComputer}.
      * If MapReduce jobs are declared by GraphComputer.mapReduce(), they are not contained in this set.
@@ -192,11 +202,11 @@ public interface VertexProgram<M> {
     }
 
     public interface Features {
-        public default boolean requiresGlobalMessageTypes() {
+        public default boolean requiresGlobalMessageScopes() {
             return false;
         }
 
-        public default boolean requiresLocalMessageTypes() {
+        public default boolean requiresLocalMessageScopes() {
             return false;
         }
 

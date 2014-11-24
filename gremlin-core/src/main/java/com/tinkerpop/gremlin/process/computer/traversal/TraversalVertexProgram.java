@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.MessageCombiner;
-import com.tinkerpop.gremlin.process.computer.MessageType;
+import com.tinkerpop.gremlin.process.computer.MessageScope;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
@@ -28,6 +28,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
@@ -50,6 +51,7 @@ import java.util.function.Supplier;
 public final class TraversalVertexProgram implements VertexProgram<TraverserSet<?>> {
 
     // TODO: if not an adjacent traversal, use Local message type -- a dual messaging system.
+    private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Arrays.asList(MessageScope.Global.instance()));
 
     public static final String HALTED_TRAVERSERS = Graph.Key.hide("gremlin.traversalVertexProgram.haltedTraversers");
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
@@ -119,6 +121,11 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     }
 
     @Override
+    public Set<MessageScope> getMessageScopes(final int iteration) {
+        return MESSAGE_SCOPES;
+    }
+
+    @Override
     public void execute(final Vertex vertex, final Messenger<TraverserSet<?>> messenger, Memory memory) {
         this.traversal.sideEffects().setLocalVertex(vertex);
         if (memory.isInitialIteration()) {
@@ -141,7 +148,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                     haltedTraversers.add((Traverser.Admin) traverser);
                 else {
                     voteToHalt.set(false);
-                    messenger.sendMessage(MessageType.Global.of(vertex), new TraverserSet<>(traverser));
+                    messenger.sendMessage(MessageScope.Global.of(vertex), new TraverserSet<>(traverser));
                 }
             });
             memory.and(VOTE_TO_HALT, voteToHalt.get());
@@ -191,7 +198,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     public Features getFeatures() {
         return new Features() {
             @Override
-            public boolean requiresGlobalMessageTypes() {
+            public boolean requiresGlobalMessageScopes() {
                 return true;
             }
 

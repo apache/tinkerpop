@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.computer.traversal;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.computer.MessageType;
+import com.tinkerpop.gremlin.process.computer.MessageScope;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.process.util.TraverserSet;
@@ -28,7 +28,7 @@ public final class TraverserExecutor {
 
         final TraverserSet<Object> aliveTraversers = new TraverserSet<>();
         // gather incoming traversers into a traverser set and gain the 'weighted-set' optimization
-        messenger.receiveMessages(MessageType.Global.instance()).forEach(traverserSet -> {
+        messenger.receiveMessages(MessageScope.Global.instance()).forEach(traverserSet -> {
             traverserSet.forEach(traverser -> {
                 traverser.attach(vertex);
                 traverser.setSideEffects(traversal.sideEffects());
@@ -47,7 +47,7 @@ public final class TraverserExecutor {
                     if (!vertex.equals(hostingVertex) || traverser.get() instanceof ReferencedElement) {
                         voteToHalt.set(false);
                         traverser.detach();
-                        messenger.sendMessage(MessageType.Global.of(hostingVertex), new TraverserSet<>(traverser));
+                        messenger.sendMessage(MessageScope.Global.of(hostingVertex), new TraverserSet<>(traverser));
                     } else
                         toProcessTraversers.add(traverser);
                 } else                                                                              // STANDARD OBJECT
