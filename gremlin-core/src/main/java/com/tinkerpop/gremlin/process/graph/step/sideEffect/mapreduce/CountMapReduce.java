@@ -19,6 +19,10 @@ public final class CountMapReduce implements MapReduce<MapReduce.NullObject, Lon
 
     private Traversal traversal;
 
+    private CountMapReduce() {
+
+    }
+
     public CountMapReduce(final CountStep step) {
         this.traversal = step.getTraversal();
     }

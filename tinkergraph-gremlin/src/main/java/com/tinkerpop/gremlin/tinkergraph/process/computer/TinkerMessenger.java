@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
+import com.tinkerpop.gremlin.process.computer.MessageCombiner;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -7,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -17,19 +19,19 @@ public class TinkerMessenger<M> implements Messenger<M> {
 
     private final Vertex vertex;
     private final TinkerMessageBoard<M> messageBoard;
-    //private final Optional<MessageCombiner<M>> combiner;
+    private final MessageCombiner<M> combiner;
 
 
-    public TinkerMessenger(final Vertex vertex, final TinkerMessageBoard<M> messageBoard) {
+    public TinkerMessenger(final Vertex vertex, final TinkerMessageBoard<M> messageBoard, final Optional<MessageCombiner<M>> combiner) {
         this.vertex = vertex;
         this.messageBoard = messageBoard;
-        //this.combiner = combiner;
+        this.combiner = combiner.isPresent() ? combiner.get() : null;
     }
 
     @Override
     public Iterable<M> receiveMessages(final MessageType messageType) {
         if (messageType instanceof MessageType.Local) {
-            final MessageType.Local<Object, M> localMessageType = (MessageType.Local) messageType;
+            final MessageType.Local<M> localMessageType = (MessageType.Local) messageType;
             final Edge[] edge = new Edge[1]; // simulates storage side-effects available in Gremlin, but not Java8 streams
             return StreamFactory.iterable(StreamFactory.stream(localMessageType.edges(this.vertex).reverse())
                     .map(e -> {
@@ -55,10 +57,10 @@ public class TinkerMessenger<M> implements Messenger<M> {
         } else {
             ((MessageType.Global) messageType).vertices().forEach(v -> {
                 final Queue<M> queue = getMessageList(v);
-                /*if (this.combiner.isPresent() && !queue.isEmpty()) {
-                    this.combiner.get().combine(queue.remove(), message).forEachRemaining(queue::add);
-                } else*/
-                queue.add(message);
+                if (null != this.combiner && !queue.isEmpty()) {
+                    queue.add(this.combiner.combine(queue.remove(), message));
+                } else
+                    queue.add(message);
             });
         }
     }

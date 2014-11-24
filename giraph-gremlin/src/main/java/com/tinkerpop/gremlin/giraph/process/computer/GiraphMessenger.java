@@ -27,7 +27,7 @@ public final class GiraphMessenger<M> implements Messenger<M> {
     @Override
     public void sendMessage(final MessageType messageType, final M message) {
         if (messageType instanceof MessageType.Local) {
-            final MessageType.Local<?, ?> localMessageType = (MessageType.Local) messageType;
+            final MessageType.Local<M> localMessageType = (MessageType.Local) messageType;
             localMessageType.vertices(this.giraphComputeVertex.getBaseVertex()).forEachRemaining(v ->
                     this.giraphComputeVertex.sendMessage(new LongWritable(Long.valueOf(v.id().toString())), new GremlinWritable<>(message)));
         } else {

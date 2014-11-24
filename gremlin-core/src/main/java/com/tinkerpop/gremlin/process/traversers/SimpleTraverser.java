@@ -127,7 +127,8 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     ////////
     @Override
     public void merge(final Traverser.Admin<?> other) {
-        this.sideEffects.getSackMergeOperator().ifPresent(merge -> this.sack = merge.apply(this.sack, other.sack()));
+        if (null != this.sideEffects)  // hack so detached traversers don't have to be checked on merge
+            this.sideEffects.getSackMergeOperator().ifPresent(merge -> this.sack = merge.apply(this.sack, other.sack()));
         this.bulk = this.bulk + other.bulk();
     }
 
@@ -176,7 +177,8 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
                 && ((SimpleTraverser) object).get().equals(this.t)
                 && ((SimpleTraverser) object).getFuture().equals(this.getFuture())
                 && ((SimpleTraverser) object).loops() == this.loops()
-                && (null == this.sack) || this.sideEffects.getSackMergeOperator().isPresent();
+                && (null == this.sack) || (null != this.sideEffects && this.sideEffects.getSackMergeOperator().isPresent());
+                                            // hack so detached traversers don't have to be checked on merge
     }
 
     @Override

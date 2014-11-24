@@ -21,17 +21,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class TraverserExecutor {
 
-    public static boolean execute(final Vertex vertex, final Messenger<Traverser.Admin<?>> messenger, final Traversal traversal) {
+    public static boolean execute(final Vertex vertex, final Messenger<TraverserSet<?>> messenger, final Traversal traversal) {
 
         final TraverserSet<Object> haltedTraversers = vertex.value(TraversalVertexProgram.HALTED_TRAVERSERS);
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
 
         final TraverserSet<Object> aliveTraversers = new TraverserSet<>();
         // gather incoming traversers into a traverser set and gain the 'weighted-set' optimization
-        messenger.receiveMessages(MessageType.Global.of()).forEach(traverser -> {
-            traverser.attach(vertex);
-            traverser.setSideEffects(traversal.sideEffects());
-            aliveTraversers.add((Traverser.Admin) traverser);
+        messenger.receiveMessages(MessageType.Global.instance()).forEach(traverserSet -> {
+            traverserSet.forEach(traverser -> {
+                traverser.attach(vertex);
+                traverser.setSideEffects(traversal.sideEffects());
+                aliveTraversers.add((Traverser.Admin) traverser);
+            });
         });
 
         // while there are still local traversers, process them until they leave the vertex or halt (i.e. isHalted()).
@@ -45,7 +47,7 @@ public final class TraverserExecutor {
                     if (!vertex.equals(hostingVertex) || traverser.get() instanceof ReferencedElement) {
                         voteToHalt.set(false);
                         traverser.detach();
-                        messenger.sendMessage(MessageType.Global.of(hostingVertex), traverser);
+                        messenger.sendMessage(MessageType.Global.of(hostingVertex), new TraverserSet<>(traverser));
                     } else
                         toProcessTraversers.add(traverser);
                 } else                                                                              // STANDARD OBJECT

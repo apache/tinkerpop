@@ -93,6 +93,6 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
                 && ((PathTraverser) object).get().equals(this.t)
                 && ((PathTraverser) object).getFuture().equals(this.getFuture())
                 && ((PathTraverser) object).loops() == this.loops()
-                && (null == this.sack) || this.sideEffects.getSackMergeOperator().isPresent();
+                && (null == this.sack) || (null != this.sideEffects && this.sideEffects.getSackMergeOperator().isPresent());
     }
 }

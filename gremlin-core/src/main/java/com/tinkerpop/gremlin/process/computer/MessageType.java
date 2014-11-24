@@ -10,7 +10,6 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -30,6 +29,8 @@ public abstract class MessageType {
      */
     public final static class Global extends MessageType {
 
+        private static final Global INSTANCE = Global.of();
+
         private final Iterable<Vertex> vertices;
 
         private Global(final Iterable<Vertex> vertices) {
@@ -47,6 +48,10 @@ public abstract class MessageType {
         public Iterable<Vertex> vertices() {
             return this.vertices;
         }
+
+        public static Global instance() {
+            return INSTANCE;
+        }
     }
 
     /**
@@ -57,19 +62,18 @@ public abstract class MessageType {
      * Instead, allow the recipients to read a single message object stored at the "sending" vertex.
      * This is possible via `Traversal.reverse()`. This optimizations greatly reduces the amount of data created in the computation.
      *
-     * @param <M1> The message type
-     * @param <M2> The message type once modulated by the incident/propagating edge.
+     * @param <M> The {@link VertexProgram} message class
      */
-    public final static class Local<M1, M2> extends MessageType {
+    public final static class Local<M> extends MessageType {
         public final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal;
-        public final BiFunction<M1, Edge, M2> edgeFunction;
+        public final BiFunction<M, Edge, M> edgeFunction;
 
         private Local(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal) {
             this.incidentTraversal = incidentTraversal;
-            this.edgeFunction = (final M1 m, final Edge e) -> (M2) m; // the default is an identity function
+            this.edgeFunction = (final M m, final Edge e) -> m; // the default is an identity function
         }
 
-        private Local(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal, final BiFunction<M1, Edge, M2> edgeFunction) {
+        private Local(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal, final BiFunction<M, Edge, M> edgeFunction) {
             this.incidentTraversal = incidentTraversal;
             this.edgeFunction = edgeFunction;
         }
@@ -78,7 +82,7 @@ public abstract class MessageType {
             return new Local(incidentTraversal);
         }
 
-        public static <M1, M2> Local of(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal, final BiFunction<M1, Edge, M2> edgeFunction) {
+        public static <M> Local of(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal, final BiFunction<M, Edge, M> edgeFunction) {
             return new Local<>(incidentTraversal, edgeFunction);
         }
 
@@ -102,7 +106,7 @@ public abstract class MessageType {
             return step.getDirection();
         }
 
-        public BiFunction<M1, Edge, M2> getEdgeFunction() {
+        public BiFunction<M, Edge, M> getEdgeFunction() {
             return this.edgeFunction;
         }
 

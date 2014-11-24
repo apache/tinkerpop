@@ -31,7 +31,7 @@ import java.util.function.Supplier;
  */
 public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializable, Double>> {
 
-    private MessageType.Local<?, ?> messageType = MessageType.Local.of(() -> GraphTraversal.<Vertex>of().outE());
+    private MessageType.Local<?> messageType = MessageType.Local.of(() -> GraphTraversal.<Vertex>of().outE());
 
     public static final String CLUSTER = Graph.Key.hide("gremlin.peerPressureVertexProgram.cluster");
     public static final String VOTE_STRENGTH = Graph.Key.hide("gremlin.peerPressureVertexProgram.voteStrength");

@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.computer.ranking.pagerank;
 
 import com.tinkerpop.gremlin.process.computer.Memory;
+import com.tinkerpop.gremlin.process.computer.MessageCombiner;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
@@ -18,6 +19,7 @@ import org.apache.commons.configuration.Configuration;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -26,7 +28,7 @@ import java.util.function.Supplier;
  */
 public class PageRankVertexProgram implements VertexProgram<Double> {
 
-    private MessageType.Local<?, ?> messageType = MessageType.Local.of(new OutETraversalSupplier());
+    private MessageType.Local<?> messageType = MessageType.Local.of(new OutETraversalSupplier());
 
     public static final String PAGE_RANK = Graph.Key.hide("gremlin.pageRankVertexProgram.pageRank");
     public static final String EDGE_COUNT = Graph.Key.hide("gremlin.pageRankVertexProgram.edgeCount");
@@ -73,6 +75,11 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     @Override
     public Set<String> getElementComputeKeys() {
         return COMPUTE_KEYS;
+    }
+
+    @Override
+    public Optional<MessageCombiner<Double>> getMessageCombiner() {
+        return (Optional) PageRankMessageCombiner.instance();
     }
 
     @Override
