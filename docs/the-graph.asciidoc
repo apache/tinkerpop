@@ -295,7 +295,6 @@ image:gremlin-io.png[width=250,float=right] The task of getting data in and out 
 
 In all cases, these methods operate in the currency of `InputStream` and `OutputStream` objects, allowing graphs and their related elements to be written to and read from files, byte arrays, etc.
 
-
 GraphML Reader/Writer
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -722,7 +721,7 @@ gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
 gremlin> swg = new StrategyWrappedGraph(g)
 ==>defaultgraphstrategy[neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]]
-gremlin> swg.strategy().setGraphStrategy(IdGraphStrategy.build("idKey").create())
+gremlin> swg.getStrategy().setGraphStrategy(IdGraphStrategy.build("idKey").create())
 ==>null
 gremlin> swg.addVertex(id,"42a").id()
 ==>42a
@@ -746,7 +745,7 @@ gremlin> strategy = new PartitionGraphStrategy(Graph.Key.hide("partition"), "A")
 ==>PartitionGraphStrategy
 gremlin> sg = new StrategyWrappedGraph(g)
 ==>strategywrappedgraph[tinkergraph[vertices:0 edges:0]]
-gremlin> sg.strategy().setGraphStrategy(strategy)
+gremlin> sg.getStrategy().setGraphStrategy(strategy)
 ==>null
 ----
 
@@ -839,7 +838,7 @@ Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() 
 
 GraphStrategy strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion);
 StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
-sg.strategy().setGraphStrategy(strategy);
+sg.getStrategy().setGraphStrategy(strategy);
 
 // all vertices are here
 System.out.println("" + sg.V().count() + " of " + g.V().count() + " vertices");
