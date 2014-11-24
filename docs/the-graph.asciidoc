@@ -7,11 +7,42 @@ image::gremlin-standing.png[width=125]
 Features
 --------
 
-Features are the means by which vendors can expose nuanced difference between their data stores. 
+A `Feature` implementation describes the capabilities of a `Graph` instance. This interface is implemented by vendors for two purposes:
 
- . *Graph Features*
- . *Vertex Features*
- . *Edge Features*
+  . It tells users the capabilities of their `Graph` instance.
+  . It allows the features they do comply with to be tested against the Gremlin Test Suite (tests they don't comply with are "ignored").
+
+The following example in the Gremlin Console shows how to print all the features of a `Graph`:
+
+[source,groovy]
+----
+gremlin> g = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> g.features()
+==>FEATURES
+> GraphFeatures
+>-- Persistence: false
+>-- ThreadedTransactions: false
+>-- Computer: true
+>-- Transactions: false
+> VariableFeatures
+>-- Variables: true
+>-- IntegerArrayValues: true
+>-- BooleanValues: true
+...
+----
+
+A common pattern for using features is to check their support prior to performing an operation:
+
+[source,groovy]
+gremlin> g.features().graph().supportsTransactions()
+==>false
+gremlin> g.features().graph().supportsTransactions() ? g.tx().commit() : "no tx"
+==>no tx
+
+TIP: To ensure vendor agnostic code, always check feature support prior to usage of a particular function.  In that way, the application can behave gracefully in case a particular implementation is provided at runtime that does not support a function being accessed.
+
+WARN: Assignments of a `GraphStrategy` can alter the base features of a `Graph` in dynamic ways, such that checks against a `Feature` may not always reflect the behavior exhibited when the `GraphStrategy` is in use.
 
 [[vertex-properties]]
 Vertex Properties
