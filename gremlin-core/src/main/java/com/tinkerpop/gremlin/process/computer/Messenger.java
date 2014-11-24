@@ -14,7 +14,7 @@ public interface Messenger<M> {
     /**
      * The currently executing vertex can receive the messages of the provided {@link MessageScope}.
      *
-     * @param messageScope the message type of the messages to receive
+     * @param messageScope the message scope of the messages to receive
      * @return the messages for that vertex
      */
     public Iterable<M> receiveMessages(final MessageScope messageScope);
@@ -22,7 +22,7 @@ public interface Messenger<M> {
     /**
      * The currently executing vertex can send a message with provided {@link MessageScope}.
      *
-     * @param messageScope the message type of the message being sent
+     * @param messageScope the message scope of the message being sent
      * @param message     the message to send
      */
     public void sendMessage(final MessageScope messageScope, final M message);

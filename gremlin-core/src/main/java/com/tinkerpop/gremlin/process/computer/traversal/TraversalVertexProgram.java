@@ -50,7 +50,7 @@ import java.util.function.Supplier;
  */
 public final class TraversalVertexProgram implements VertexProgram<TraverserSet<?>> {
 
-    // TODO: if not an adjacent traversal, use Local message type -- a dual messaging system.
+    // TODO: if not an adjacent traversal, use Local message scope -- a dual messaging system.
     private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Arrays.asList(MessageScope.Global.instance()));
 
     public static final String HALTED_TRAVERSERS = Graph.Key.hide("gremlin.traversalVertexProgram.haltedTraversers");
@@ -61,13 +61,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     private Traversal traversal;
 
     private final Set<MapReduce> mapReducers = new HashSet<>();
-    private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<String>() {{
-        add(VOTE_TO_HALT);
-    }};
-    private final Set<String> elementComputeKeys = new HashSet<String>() {{
-        add(HALTED_TRAVERSERS);
-        add(Traversal.SideEffects.SIDE_EFFECTS);
-    }};
+    private final Set<String> elementComputeKeys = new HashSet<>(Arrays.asList(HALTED_TRAVERSERS, Traversal.SideEffects.SIDE_EFFECTS));
+    private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<>(Arrays.asList(VOTE_TO_HALT));
 
     private TraversalVertexProgram() {
     }
@@ -126,7 +121,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     }
 
     @Override
-    public void execute(final Vertex vertex, final Messenger<TraverserSet<?>> messenger, Memory memory) {
+    public void execute(final Vertex vertex, final Messenger<TraverserSet<?>> messenger, final Memory memory) {
         this.traversal.sideEffects().setLocalVertex(vertex);
         if (memory.isInitialIteration()) {
             final TraverserSet<Object> haltedTraversers = new TraverserSet<>();

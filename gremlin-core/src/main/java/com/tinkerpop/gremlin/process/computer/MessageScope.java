@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 /**
  * A {@link MessageScope} represents the range of a message. A message can have multiple receivers and message scope
  * allows the underlying {@link GraphComputer} to apply the message passing algorithm in whichever manner is most efficient.
+ * It is best to use {@link MessageScope.Local} if possible as that provides more room for optimization by vendors than {@link MessageScope.Global}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
@@ -20,7 +21,7 @@ public abstract class MessageScope {
     /**
      * A Global message is directed at an arbitrary vertex in the graph.
      * The recipient vertex need not be adjacent to the sending vertex.
-     * This message type should be avoided if a {@link Local} can be used.
+     * This message scope should be avoided if a {@link Local} can be used.
      */
     public final static class Global extends MessageScope {
 
@@ -52,7 +53,7 @@ public abstract class MessageScope {
     /**
      * A Local message is directed to an adjacent (or "memory adjacent") vertex.
      * The adjacent vertex set is defined by the provided {@link Traversal} that dictates how to go from the sending vertex to the receiving vertex.
-     * This is the preferred message type as it can potentially be optimized by the underlying {@link Messenger} implementation.
+     * This is the preferred message scope as it can potentially be optimized by the underlying {@link Messenger} implementation.
      * The preferred optimization is to not distribute a message object to all adjacent vertices.
      * Instead, allow the recipients to read a single message object stored at the "sending" vertex.
      * This is possible via `Traversal.reverse()`. This optimizations greatly reduces the amount of data created in the computation.
@@ -89,6 +90,9 @@ public abstract class MessageScope {
             return this.incidentTraversal;
         }
 
+        /**
+         * A helper class that can be used to generate the reverse traversal of the traversal within a {@link MessageScope.Local}.
+         */
         public static class ReverseTraversalSupplier implements Supplier<Traversal<Vertex, Edge>> {
 
             private final MessageScope.Local<?> localMessageScope;
