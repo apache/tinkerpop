@@ -231,9 +231,5 @@ public interface VertexProgram<M> {
         public default boolean requiresEdgePropertyRemoval() {
             return false;
         }
-
-        public default boolean requiresAdjacentVertexDeepReference() {
-            return false;
-        }
     }
 }
