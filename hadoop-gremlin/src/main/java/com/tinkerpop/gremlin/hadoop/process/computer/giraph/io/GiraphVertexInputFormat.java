@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.hadoop.process.computer.giraph.io;
 
 import com.tinkerpop.gremlin.hadoop.Constants;
-import com.tinkerpop.gremlin.hadoop.structure.hdfs.VertexWritable;
+import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.giraph.io.VertexReader;
 import org.apache.hadoop.conf.Configuration;

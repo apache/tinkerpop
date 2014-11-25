@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.hadoop.groovy.plugin
 
-import com.tinkerpop.gremlin.hadoop.process.computer.util.GremlinWritable
-import com.tinkerpop.gremlin.hadoop.structure.hdfs.GremlinWritableIterator
+import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable
+import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableIterator
 import com.tinkerpop.gremlin.hadoop.structure.hdfs.HDFSTools
 import com.tinkerpop.gremlin.hadoop.structure.hdfs.HiddenFileFilter
 import com.tinkerpop.gremlin.hadoop.structure.hdfs.TextIterator
@@ -99,8 +99,8 @@ class HadoopLoader {
                 // if(writableClass.equals(org.apache.giraph.graph.Vertex.class)) {
                 /// return StreamFactory.stream(new GiraphVertexIterator(((FileSystem) delegate).getConf(), new Path(path))).limit(totalKeyValues).iterator();
                 // } else
-                if (writableClass.equals(GremlinWritable.class)) {
-                    return StreamFactory.stream(new GremlinWritableIterator(((FileSystem) delegate).getConf(), new Path(path))).limit(totalKeyValues).iterator();
+                if (writableClass.equals(ObjectWritable.class)) {
+                    return StreamFactory.stream(new ObjectWritableIterator(((FileSystem) delegate).getConf(), new Path(path))).limit(totalKeyValues).iterator();
                 } else {
                     return StreamFactory.stream(new TextIterator(((FileSystem) delegate).getConf(), new Path(path))).limit(totalKeyValues).iterator();
                 }

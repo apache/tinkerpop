@@ -85,16 +85,7 @@ public final class GroupByMapReduce implements MapReduce<Object, Collection, Obj
     @Override
     public Map generateFinalResult(Iterator<Pair<Object, Object>> keyValues) {
         final Map map = this.mapSupplier.get();
-        keyValues.forEachRemaining(pair -> {
-            if (!map.containsKey(pair.getValue0())) {
-                map.put(pair.getValue0(), pair.getValue1());
-            } else {
-                final Object values = pair.getValue1();
-                if (values instanceof Collection) {
-                    ((Collection) map.get(pair.getValue0())).addAll((Collection) values);
-                }
-            }
-        });
+        keyValues.forEachRemaining(pair -> map.put(pair.getValue0(), pair.getValue1()));
         return map;
     }
 

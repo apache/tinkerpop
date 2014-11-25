@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.hadoop.structure.io.graphson;
 
-import com.tinkerpop.gremlin.hadoop.structure.hdfs.VertexWritable;
-import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;

@@ -6,21 +6,20 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class HadoopElement implements Element {
 
-    protected TinkerElement tinkerElement;
+    protected Element baseElement;
     protected HadoopGraph graph;
 
     protected HadoopElement() {
     }
 
-    protected HadoopElement(final TinkerElement tinkerElement, final HadoopGraph graph) {
-        this.tinkerElement = tinkerElement;
+    protected HadoopElement(final Element baseElement, final HadoopGraph graph) {
+        this.baseElement = baseElement;
         this.graph = graph;
     }
 
@@ -31,17 +30,17 @@ public abstract class HadoopElement implements Element {
 
     @Override
     public Object id() {
-        return this.tinkerElement.id();
+        return this.baseElement.id();
     }
 
     @Override
     public String label() {
-        return this.tinkerElement.label();
+        return this.baseElement.label();
     }
 
     @Override
     public void remove() {
-        if (this.tinkerElement instanceof Vertex)
+        if (this.baseElement instanceof Vertex)
             throw Vertex.Exceptions.vertexRemovalNotSupported();
         else
             throw Edge.Exceptions.edgeRemovalNotSupported();
@@ -50,7 +49,7 @@ public abstract class HadoopElement implements Element {
 
     @Override
     public <V> Property<V> property(final String key) {
-        return this.tinkerElement.property(key);
+        return this.baseElement.property(key);
     }
 
     @Override
@@ -65,11 +64,11 @@ public abstract class HadoopElement implements Element {
 
     @Override
     public int hashCode() {
-        return this.tinkerElement.hashCode();
+        return this.baseElement.hashCode();
     }
 
     @Override
     public String toString() {
-        return this.tinkerElement.toString();
+        return this.baseElement.toString();
     }
 }

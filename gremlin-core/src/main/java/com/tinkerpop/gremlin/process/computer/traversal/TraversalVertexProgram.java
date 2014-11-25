@@ -116,7 +116,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     }
 
     @Override
-    public Set<MessageScope> getMessageScopes(final int iteration) {
+    public Set<MessageScope> getMessageScopes(final Memory memory) {
         return MESSAGE_SCOPES;
     }
 

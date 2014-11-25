@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
-import com.tinkerpop.gremlin.hadoop.process.computer.util.GremlinWritable;
+import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MessageScope;
 import com.tinkerpop.gremlin.process.computer.Messenger;
@@ -19,9 +19,9 @@ import org.apache.hadoop.io.LongWritable;
 public class GiraphMessenger<M> implements Messenger<M> {
 
     private GiraphComputeVertex giraphComputeVertex;
-    private Iterable<GremlinWritable> messages;
+    private Iterable<ObjectWritable> messages;
 
-    public void setCurrentVertex(final GiraphComputeVertex giraphComputeVertex, final Iterable<GremlinWritable> messages) {
+    public void setCurrentVertex(final GiraphComputeVertex giraphComputeVertex, final Iterable<ObjectWritable> messages) {
         this.giraphComputeVertex = giraphComputeVertex;
         this.messages = messages;
     }
@@ -40,11 +40,11 @@ public class GiraphMessenger<M> implements Messenger<M> {
             incidentTraversal.forEachRemaining(edge ->
                     this.giraphComputeVertex.sendMessage(
                             new LongWritable(Long.valueOf(edge.iterators().vertexIterator(direction).next().id().toString())),
-                            new GremlinWritable<>(localMessageScope.getEdgeFunction().apply(message, edge))));
+                            new ObjectWritable<>(localMessageScope.getEdgeFunction().apply(message, edge))));
         } else {
             final MessageScope.Global globalMessageScope = (MessageScope.Global) messageScope;
             globalMessageScope.vertices().forEach(vertex ->
-                    this.giraphComputeVertex.sendMessage(new LongWritable(Long.valueOf(vertex.id().toString())), new GremlinWritable<>(message)));
+                    this.giraphComputeVertex.sendMessage(new LongWritable(Long.valueOf(vertex.id().toString())), new ObjectWritable<>(message)));
         }
     }
 

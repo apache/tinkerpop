@@ -4,49 +4,48 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedProperty;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopProperty<V> implements Property<V>, WrappedProperty<TinkerProperty<V>> {
+public class HadoopProperty<V> implements Property<V>, WrappedProperty<Property<V>> {
 
-    private final TinkerProperty<V> tinkerProperty;
+    private final Property<V> baseProperty;
     private final Element hadoopElement;
 
-    protected HadoopProperty(final TinkerProperty<V> tinkerProperty, final Element hadoopElement) {
-        this.tinkerProperty = tinkerProperty;
+    protected HadoopProperty(final Property<V> baseProperty, final Element hadoopElement) {
+        this.baseProperty = baseProperty;
         this.hadoopElement = hadoopElement;
     }
 
     @Override
     public boolean isPresent() {
-        return this.tinkerProperty.isPresent();
+        return this.baseProperty.isPresent();
     }
 
     @Override
     public V value() {
-        return this.tinkerProperty.value();
+        return this.baseProperty.value();
     }
 
     @Override
     public boolean isHidden() {
-        return this.tinkerProperty.isHidden();
+        return this.baseProperty.isHidden();
     }
 
     @Override
-    public TinkerProperty<V> getBaseProperty() {
-        return this.tinkerProperty;
+    public Property<V> getBaseProperty() {
+        return this.baseProperty;
     }
 
     @Override
     public String key() {
-        return this.tinkerProperty.key();
+        return this.baseProperty.key();
     }
 
     @Override
     public void remove() {
-        this.tinkerProperty.remove();
+        this.baseProperty.remove();
     }
 
     @Override
@@ -61,11 +60,11 @@ public class HadoopProperty<V> implements Property<V>, WrappedProperty<TinkerPro
 
     @Override
     public int hashCode() {
-        return this.tinkerProperty.hashCode();
+        return this.baseProperty.hashCode();
     }
 
     @Override
     public String toString() {
-        return this.tinkerProperty.toString();
+        return this.baseProperty.toString();
     }
 }

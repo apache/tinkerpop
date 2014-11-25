@@ -25,7 +25,6 @@ public class TinkerMemory implements Memory.Admin {
     public Map<String, Object> currentMap;
     private final AtomicInteger iteration = new AtomicInteger(0);
     private final AtomicLong runtime = new AtomicLong(0l);
-    private boolean complete = false;
 
     public TinkerMemory(final VertexProgram<?> vertexProgram, final Set<MapReduce> mapReducers) {
         this.currentMap = new ConcurrentHashMap<>();
@@ -58,7 +57,6 @@ public class TinkerMemory implements Memory.Admin {
 
     @Override
     public void setRuntime(final long runTime) {
-        if (this.complete) throw Memory.Exceptions.memoryIsCurrentlyImmutable();
         this.runtime.set(runTime);
     }
 
@@ -69,7 +67,6 @@ public class TinkerMemory implements Memory.Admin {
 
     protected void complete() {
         this.iteration.decrementAndGet();
-        this.complete = true;
         this.previousMap = this.currentMap;
     }
 
@@ -134,7 +131,6 @@ public class TinkerMemory implements Memory.Admin {
     }
 
     private void checkKeyValue(final String key, final Object value) {
-        if (this.complete) throw Memory.Exceptions.memoryIsCurrentlyImmutable();
         if (!this.memoryKeys.contains(key))
             throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
         MemoryHelper.validateValue(value);

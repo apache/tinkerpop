@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.computer;
 
+import com.tinkerpop.gremlin.process.computer.util.ImmutableMemory;
 import org.javatuples.Pair;
 
 import java.util.Collections;
@@ -124,6 +125,10 @@ public interface Memory {
         public void incrIteration();
 
         public void setRuntime(final long runtime);
+
+        public default Memory asImmutable() {
+            return new ImmutableMemory(this);
+        }
     }
 
 

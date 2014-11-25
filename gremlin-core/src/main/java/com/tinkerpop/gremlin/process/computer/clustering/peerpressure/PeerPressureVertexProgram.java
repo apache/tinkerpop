@@ -92,8 +92,8 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
     }
 
     @Override
-    public Set<MessageScope> getMessageScopes(final int iteration) {
-        return this.distributeVote && 0 == iteration ? COUNT_SCOPE : VOTE_SCOPE;
+    public Set<MessageScope> getMessageScopes(final Memory memory) {
+        return this.distributeVote && memory.isInitialIteration() ? COUNT_SCOPE : VOTE_SCOPE;
     }
 
     @Override

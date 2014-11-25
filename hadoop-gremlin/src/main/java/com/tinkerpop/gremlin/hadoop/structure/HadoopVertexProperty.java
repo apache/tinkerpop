@@ -8,8 +8,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertexProperty;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Iterator;
@@ -17,13 +15,13 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopVertexProperty <V> implements VertexProperty<V>, VertexProperty.Iterators, WrappedVertexProperty<TinkerVertexProperty<V>> {
+public class HadoopVertexProperty<V> implements VertexProperty<V>, VertexProperty.Iterators, WrappedVertexProperty<VertexProperty<V>> {
 
-    private final TinkerVertexProperty<V> tinkerVertexProperty;
+    private final VertexProperty<V> baseVertexProperty;
     private final HadoopVertex hadoopVertex;
 
-    public HadoopVertexProperty(final TinkerVertexProperty<V> tinkerVertexProperty, final HadoopVertex hadoopVertex) {
-        this.tinkerVertexProperty = tinkerVertexProperty;
+    public HadoopVertexProperty(final VertexProperty<V> baseVertexProperty, final HadoopVertex hadoopVertex) {
+        this.baseVertexProperty = baseVertexProperty;
         this.hadoopVertex = hadoopVertex;
     }
 
@@ -34,37 +32,37 @@ public class HadoopVertexProperty <V> implements VertexProperty<V>, VertexProper
 
     @Override
     public Object id() {
-        return this.tinkerVertexProperty.id();
+        return this.baseVertexProperty.id();
     }
 
     @Override
     public V value() {
-        return this.tinkerVertexProperty.value();
+        return this.baseVertexProperty.value();
     }
 
     @Override
     public String key() {
-        return this.tinkerVertexProperty.key();
+        return this.baseVertexProperty.key();
     }
 
     @Override
     public void remove() {
-        this.tinkerVertexProperty.remove();
+        this.baseVertexProperty.remove();
     }
 
     @Override
     public boolean isHidden() {
-        return this.tinkerVertexProperty.isHidden();
+        return this.baseVertexProperty.isHidden();
     }
 
     @Override
     public boolean isPresent() {
-        return this.tinkerVertexProperty.isPresent();
+        return this.baseVertexProperty.isPresent();
     }
 
     @Override
     public <U> Property<U> property(final String key) {
-        return this.tinkerVertexProperty.property(key);
+        return this.baseVertexProperty.property(key);
     }
 
     @Override
@@ -79,12 +77,12 @@ public class HadoopVertexProperty <V> implements VertexProperty<V>, VertexProper
 
     @Override
     public int hashCode() {
-        return this.tinkerVertexProperty.hashCode();
+        return this.baseVertexProperty.hashCode();
     }
 
     @Override
     public String toString() {
-        return this.tinkerVertexProperty.toString();
+        return this.baseVertexProperty.toString();
     }
 
     @Override
@@ -93,8 +91,8 @@ public class HadoopVertexProperty <V> implements VertexProperty<V>, VertexProper
     }
 
     @Override
-    public TinkerVertexProperty<V> getBaseVertexProperty() {
-        return this.tinkerVertexProperty;
+    public VertexProperty<V> getBaseVertexProperty() {
+        return this.baseVertexProperty;
     }
 
     @Override
@@ -105,6 +103,6 @@ public class HadoopVertexProperty <V> implements VertexProperty<V>, VertexProper
     @Override
     public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
         return (Iterator) StreamFactory.stream(getBaseVertexProperty().iterators().propertyIterator(propertyKeys))
-                .map(property -> new HadoopProperty<>((TinkerProperty<V>) property, this)).iterator();
+                .map(property -> new HadoopProperty<>((Property<V>) property, this)).iterator();
     }
 }

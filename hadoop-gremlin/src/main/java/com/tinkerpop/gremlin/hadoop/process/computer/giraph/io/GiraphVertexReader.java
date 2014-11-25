@@ -1,8 +1,7 @@
 package com.tinkerpop.gremlin.hadoop.process.computer.giraph.io;
 
 import com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphComputeVertex;
-import com.tinkerpop.gremlin.hadoop.structure.hdfs.VertexWritable;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
+import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
 import org.apache.hadoop.io.NullWritable;
@@ -35,7 +34,7 @@ public class GiraphVertexReader extends VertexReader {
 
     @Override
     public Vertex getCurrentVertex() throws IOException, InterruptedException {
-        return new GiraphComputeVertex((TinkerVertex) this.recordReader.getCurrentValue().getBaseVertex());
+        return new GiraphComputeVertex(this.recordReader.getCurrentValue().getBaseVertex());
     }
 
     @Override

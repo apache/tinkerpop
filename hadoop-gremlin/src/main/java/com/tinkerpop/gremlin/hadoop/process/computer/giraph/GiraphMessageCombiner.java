@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
-import com.tinkerpop.gremlin.hadoop.process.computer.util.GremlinWritable;
+import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import com.tinkerpop.gremlin.process.computer.MessageCombiner;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
@@ -12,21 +12,21 @@ import org.apache.hadoop.io.LongWritable;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphMessageCombiner extends Combiner<LongWritable, GremlinWritable> implements ImmutableClassesGiraphConfigurable {
+public class GiraphMessageCombiner extends Combiner<LongWritable, ObjectWritable> implements ImmutableClassesGiraphConfigurable {
 
     private MessageCombiner messageCombiner;
     private ImmutableClassesGiraphConfiguration configuration;
 
     @Override
-    public void combine(final LongWritable vertexIndex, final GremlinWritable originalMessage, final GremlinWritable messageToCombine) {
+    public void combine(final LongWritable vertexIndex, final ObjectWritable originalMessage, final ObjectWritable messageToCombine) {
         originalMessage.set(originalMessage.isEmpty() ?
                 messageToCombine.get() :
                 this.messageCombiner.combine(originalMessage.get(), messageToCombine.get()));
     }
 
     @Override
-    public GremlinWritable createInitialMessage() {
-        return GremlinWritable.empty();
+    public ObjectWritable createInitialMessage() {
+        return ObjectWritable.empty();
     }
 
     @Override

@@ -32,7 +32,7 @@ public class ConfUtil {
         });
     }
 
-    public static HadoopGraph getOutputGraph(final HadoopGraph hadoopGraph) {
+    /*public static HadoopGraph getOutputGraph(final HadoopGraph hadoopGraph) {
         final BaseConfiguration newConfiguration = new BaseConfiguration();
         newConfiguration.copy(hadoopGraph.configuration());
         if (hadoopGraph.configuration().containsKey(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)) {
@@ -43,5 +43,5 @@ public class ConfUtil {
             newConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, hadoopGraph.configuration().getString(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT).replace("OutputFormat", "InputFormat"));
         }
         return HadoopGraph.open(newConfiguration);
-    }
+    }*/
 }

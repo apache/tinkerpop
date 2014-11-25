@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin.hadoop.structure.io;
 
-import com.tinkerpop.gremlin.hadoop.structure.hdfs.VertexWritable;
-import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -18,7 +16,7 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class CommonOutputFormat extends FileOutputFormat<NullWritable, VertexWritable> {
+public abstract class CommonFileOutputFormat extends FileOutputFormat<NullWritable, VertexWritable> {
 
     // copied from FaunusFileOutputFormat
     protected DataOutputStream getDataOuputStream(final TaskAttemptContext job) throws IOException, InterruptedException {

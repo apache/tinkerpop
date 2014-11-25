@@ -8,8 +8,6 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Iterator;
@@ -17,12 +15,12 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopVertex extends HadoopElement implements Vertex, Vertex.Iterators, WrappedVertex<TinkerVertex> {
+public class HadoopVertex extends HadoopElement implements Vertex, Vertex.Iterators, WrappedVertex<Vertex> {
 
     protected HadoopVertex() {
     }
 
-    public HadoopVertex(final TinkerVertex vertex, final HadoopGraph graph) {
+    public HadoopVertex(final Vertex vertex, final HadoopGraph graph) {
         super(vertex, graph);
     }
 
@@ -30,7 +28,7 @@ public class HadoopVertex extends HadoopElement implements Vertex, Vertex.Iterat
     public <V> VertexProperty<V> property(final String key) {
         final VertexProperty<V> vertexProperty = getBaseVertex().<V>property(key);
         return vertexProperty.isPresent() ?
-                new HadoopVertexProperty<>((TinkerVertexProperty<V>) ((Vertex) this.tinkerElement).property(key), this) :
+                new HadoopVertexProperty<>((VertexProperty<V>) ((Vertex) this.baseElement).property(key), this) :
                 VertexProperty.<V>empty();
     }
 
@@ -50,8 +48,8 @@ public class HadoopVertex extends HadoopElement implements Vertex, Vertex.Iterat
     }
 
     @Override
-    public TinkerVertex getBaseVertex() {
-        return (TinkerVertex) this.tinkerElement;
+    public Vertex getBaseVertex() {
+        return (Vertex) this.baseElement;
     }
 
     @Override
@@ -72,6 +70,6 @@ public class HadoopVertex extends HadoopElement implements Vertex, Vertex.Iterat
     @Override
     public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
         return (Iterator) StreamFactory.stream(getBaseVertex().iterators().propertyIterator(propertyKeys))
-                .map(property -> new HadoopVertexProperty<>((TinkerVertexProperty<V>) property, this)).iterator();
+                .map(property -> new HadoopVertexProperty<>((VertexProperty<V>) property, this)).iterator();
     }
 }

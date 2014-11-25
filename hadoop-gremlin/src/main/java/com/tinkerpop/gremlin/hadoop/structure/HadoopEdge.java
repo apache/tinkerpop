@@ -9,8 +9,6 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Iterator;
@@ -18,12 +16,12 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopEdge extends HadoopElement implements Edge, Edge.Iterators, WrappedEdge<TinkerEdge> {
+public class HadoopEdge extends HadoopElement implements Edge, Edge.Iterators, WrappedEdge<Edge> {
 
     protected HadoopEdge() {
     }
 
-    public HadoopEdge(final TinkerEdge edge, final HadoopGraph graph) {
+    public HadoopEdge(final Edge edge, final HadoopGraph graph) {
         super(edge, graph);
     }
 
@@ -33,8 +31,8 @@ public class HadoopEdge extends HadoopElement implements Edge, Edge.Iterators, W
     }
 
     @Override
-    public TinkerEdge getBaseEdge() {
-        return (TinkerEdge) this.tinkerElement;
+    public Edge getBaseEdge() {
+        return (Edge) this.baseElement;
     }
 
     @Override
@@ -57,6 +55,6 @@ public class HadoopEdge extends HadoopElement implements Edge, Edge.Iterators, W
     @Override
     public <V> Iterator<Property<V>> propertyIterator(final String... propertyKeys) {
         return (Iterator) StreamFactory.stream(getBaseEdge().iterators().propertyIterator(propertyKeys))
-                .map(property -> new HadoopProperty<>((TinkerProperty<V>) property, this)).iterator();
+                .map(property -> new HadoopProperty<>((Property<V>) property, this)).iterator();
     }
 }

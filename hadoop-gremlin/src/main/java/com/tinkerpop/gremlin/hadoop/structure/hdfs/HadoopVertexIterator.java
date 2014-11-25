@@ -2,9 +2,9 @@ package com.tinkerpop.gremlin.hadoop.structure.hdfs;
 
 import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
+import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -36,7 +36,7 @@ public class HadoopVertexIterator extends HadoopElementIterator<Vertex> {
             } else {
                 while (!this.readers.isEmpty()) {
                     if (this.readers.peek().nextKeyValue())
-                        return new HadoopVertex((TinkerVertex) this.readers.peek().getCurrentValue().get(), this.graph);
+                        return new HadoopVertex(this.readers.peek().getCurrentValue().get(), this.graph);
                     else
                         this.readers.remove();
                 }
@@ -54,7 +54,7 @@ public class HadoopVertexIterator extends HadoopElementIterator<Vertex> {
             else {
                 while (!this.readers.isEmpty()) {
                     if (this.readers.peek().nextKeyValue()) {
-                        this.nextVertex = new HadoopVertex((TinkerVertex) this.readers.peek().getCurrentValue().get(), this.graph);
+                        this.nextVertex = new HadoopVertex(this.readers.peek().getCurrentValue().get(), this.graph);
                         return true;
                     } else
                         this.readers.remove();

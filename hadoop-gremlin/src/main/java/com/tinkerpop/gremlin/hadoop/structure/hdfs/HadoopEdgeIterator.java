@@ -3,10 +3,10 @@ package com.tinkerpop.gremlin.hadoop.structure.hdfs;
 import com.google.common.collect.Iterators;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopEdge;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -34,7 +34,7 @@ public class HadoopEdgeIterator extends HadoopElementIterator<Edge> {
         try {
             while (true) {
                 if (this.edgeIterator.hasNext())
-                    return new HadoopEdge((TinkerEdge) this.edgeIterator.next(), this.graph);
+                    return new HadoopEdge(this.edgeIterator.next(), this.graph);
                 if (this.readers.isEmpty())
                     throw FastNoSuchElementException.instance();
                 if (this.readers.peek().nextKeyValue()) {

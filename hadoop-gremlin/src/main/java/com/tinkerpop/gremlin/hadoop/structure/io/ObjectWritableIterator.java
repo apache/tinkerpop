@@ -1,6 +1,7 @@
-package com.tinkerpop.gremlin.hadoop.structure.hdfs;
+package com.tinkerpop.gremlin.hadoop.structure.io;
 
-import com.tinkerpop.gremlin.hadoop.process.computer.util.GremlinWritable;
+import com.tinkerpop.gremlin.hadoop.structure.hdfs.HiddenFileFilter;
+import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -17,14 +18,14 @@ import java.util.Queue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GremlinWritableIterator implements Iterator<Pair> {
+public class ObjectWritableIterator implements Iterator<Pair> {
 
-    private final GremlinWritable key = new GremlinWritable();
-    private final GremlinWritable value = new GremlinWritable();
+    private final ObjectWritable key = new ObjectWritable();
+    private final ObjectWritable value = new ObjectWritable();
     private boolean available = false;
     private final Queue<SequenceFile.Reader> readers = new LinkedList<>();
 
-    public GremlinWritableIterator(final Configuration configuration, final Path path) throws IOException {
+    public ObjectWritableIterator(final Configuration configuration, final Path path) throws IOException {
         final FileSystem fs = FileSystem.get(configuration);
         for (final FileStatus status : fs.listStatus(path, HiddenFileFilter.instance())) {
             this.readers.add(new SequenceFile.Reader(fs, status.getPath(), configuration));

@@ -5,7 +5,9 @@ import com.tinkerpop.gremlin.hadoop.process.computer.HadoopCombine;
 import com.tinkerpop.gremlin.hadoop.process.computer.HadoopMap;
 import com.tinkerpop.gremlin.hadoop.process.computer.HadoopReduce;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import com.tinkerpop.gremlin.hadoop.structure.hdfs.GremlinWritableIterator;
+import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableIterator;
+import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
+import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableComparator;
 import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.Memory;
@@ -46,7 +48,7 @@ public class MapReduceHelper {
         if (!mapReduce.doStage(MapReduce.Stage.MAP)) {
             final Path memoryPath = new Path(configuration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + mapReduce.getMemoryKey());
             if (newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
-                mapReduce.addResultToMemory(memory, new GremlinWritableIterator(configuration, memoryPath));
+                mapReduce.addResultToMemory(memory, new ObjectWritableIterator(configuration, memoryPath));
             else
                 HadoopGraph.LOGGER.warn(SEQUENCE_WARNING);
         } else {
@@ -58,7 +60,7 @@ public class MapReduceHelper {
             HadoopGraph.LOGGER.info(Constants.GREMLIN_HADOOP_JOB_PREFIX + mapReduce.toString());
             job.setJarByClass(HadoopGraph.class);
             if (mapSort.isPresent())
-                job.setSortComparatorClass(GremlinWritableComparator.GremlinWritableMapComparator.class);
+                job.setSortComparatorClass(ObjectWritableComparator.ObjectWritableMapComparator.class);
             job.setMapperClass(HadoopMap.class);
             if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
                 if (mapReduce.doStage(MapReduce.Stage.COMBINE))
@@ -71,10 +73,10 @@ public class MapReduceHelper {
                     job.setNumReduceTasks(0);
                 }
             }
-            job.setMapOutputKeyClass(GremlinWritable.class);
-            job.setMapOutputValueClass(GremlinWritable.class);
-            job.setOutputKeyClass(GremlinWritable.class);
-            job.setOutputValueClass(GremlinWritable.class);
+            job.setMapOutputKeyClass(ObjectWritable.class);
+            job.setMapOutputValueClass(ObjectWritable.class);
+            job.setOutputKeyClass(ObjectWritable.class);
+            job.setOutputValueClass(ObjectWritable.class);
             job.setInputFormatClass((Class) newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class));
             job.setOutputFormatClass(newConfiguration.getClass(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class)); // TODO: Make this configurable
             // if there is no vertex program, then grab the graph from the input location
@@ -93,13 +95,13 @@ public class MapReduceHelper {
             // if there is a reduce sort, we need to run another identity MapReduce job
             if (reduceSort.isPresent()) {
                 final Job reduceSortJob = new Job(newConfiguration, "ReduceKeySort");
-                reduceSortJob.setSortComparatorClass(GremlinWritableComparator.GremlinWritableReduceComparator.class);
+                reduceSortJob.setSortComparatorClass(ObjectWritableComparator.ObjectWritableReduceComparator.class);
                 reduceSortJob.setMapperClass(Mapper.class);
                 reduceSortJob.setReducerClass(Reducer.class);
-                reduceSortJob.setMapOutputKeyClass(GremlinWritable.class);
-                reduceSortJob.setMapOutputValueClass(GremlinWritable.class);
-                reduceSortJob.setOutputKeyClass(GremlinWritable.class);
-                reduceSortJob.setOutputValueClass(GremlinWritable.class);
+                reduceSortJob.setMapOutputKeyClass(ObjectWritable.class);
+                reduceSortJob.setMapOutputValueClass(ObjectWritable.class);
+                reduceSortJob.setOutputKeyClass(ObjectWritable.class);
+                reduceSortJob.setOutputValueClass(ObjectWritable.class);
                 reduceSortJob.setInputFormatClass(SequenceFileInputFormat.class); // TODO: require this hard coded? If so, ERROR messages needed.
                 reduceSortJob.setOutputFormatClass(newConfiguration.getClass(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class));
                 FileInputFormat.setInputPaths(reduceSortJob, memoryPath);
@@ -113,7 +115,7 @@ public class MapReduceHelper {
             // if its not a SequenceFile there is no certain way to convert to necessary Java objects.
             // to get results you have to look through HDFS directory structure. Oh the horror.
             if (newConfiguration.getClass(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
-                mapReduce.addResultToMemory(memory, new GremlinWritableIterator(configuration, memoryPath));
+                mapReduce.addResultToMemory(memory, new ObjectWritableIterator(configuration, memoryPath));
             else
                 HadoopGraph.LOGGER.warn(SEQUENCE_WARNING);
         }

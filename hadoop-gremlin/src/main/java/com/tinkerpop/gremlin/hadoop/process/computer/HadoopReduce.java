@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.hadoop.process.computer;
 
-import com.tinkerpop.gremlin.hadoop.process.computer.util.GremlinWritable;
+import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import com.tinkerpop.gremlin.hadoop.process.computer.util.MapReduceHelper;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -13,24 +13,24 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopReduce extends Reducer<GremlinWritable, GremlinWritable, GremlinWritable, GremlinWritable> {
+public class HadoopReduce extends Reducer<ObjectWritable, ObjectWritable, ObjectWritable, ObjectWritable> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HadoopReduce.class);
     private MapReduce mapReduce;
-    private final HadoopReduceEmitter<GremlinWritable, GremlinWritable> reduceEmitter = new HadoopReduceEmitter<>();
+    private final HadoopReduceEmitter<ObjectWritable, ObjectWritable> reduceEmitter = new HadoopReduceEmitter<>();
 
     private HadoopReduce() {
 
     }
 
     @Override
-    public void setup(final Reducer<GremlinWritable, GremlinWritable, GremlinWritable, GremlinWritable>.Context context) {
+    public void setup(final Reducer<ObjectWritable, ObjectWritable, ObjectWritable, ObjectWritable>.Context context) {
         this.mapReduce = MapReduceHelper.getMapReduce(context.getConfiguration());
     }
 
     @Override
-    public void reduce(final GremlinWritable key, final Iterable<GremlinWritable> values, final Reducer<GremlinWritable, GremlinWritable, GremlinWritable, GremlinWritable>.Context context) throws IOException, InterruptedException {
-        final Iterator<GremlinWritable> itty = values.iterator();
+    public void reduce(final ObjectWritable key, final Iterable<ObjectWritable> values, final Reducer<ObjectWritable, ObjectWritable, ObjectWritable, ObjectWritable>.Context context) throws IOException, InterruptedException {
+        final Iterator<ObjectWritable> itty = values.iterator();
         this.reduceEmitter.setContext(context);
         this.mapReduce.reduce(key.get(), new Iterator() {
             @Override
@@ -48,11 +48,11 @@ public class HadoopReduce extends Reducer<GremlinWritable, GremlinWritable, Grem
 
     public class HadoopReduceEmitter<OK, OV> implements MapReduce.ReduceEmitter<OK, OV> {
 
-        private Reducer<GremlinWritable, GremlinWritable, GremlinWritable, GremlinWritable>.Context context;
-        private final GremlinWritable<OK> keyWritable = new GremlinWritable<>();
-        private final GremlinWritable<OV> valueWritable = new GremlinWritable<>();
+        private Reducer<ObjectWritable, ObjectWritable, ObjectWritable, ObjectWritable>.Context context;
+        private final ObjectWritable<OK> keyWritable = new ObjectWritable<>();
+        private final ObjectWritable<OV> valueWritable = new ObjectWritable<>();
 
-        public void setContext(final Reducer<GremlinWritable, GremlinWritable, GremlinWritable, GremlinWritable>.Context context) {
+        public void setContext(final Reducer<ObjectWritable, ObjectWritable, ObjectWritable, ObjectWritable>.Context context) {
             this.context = context;
         }
 

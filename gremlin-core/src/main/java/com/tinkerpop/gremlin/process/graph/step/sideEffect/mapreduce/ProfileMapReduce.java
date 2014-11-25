@@ -53,17 +53,7 @@ public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, T
 
     @Override
     public TraversalMetrics generateFinalResult(final Iterator<Pair<NullObject, TraversalMetrics>> keyValues) {
-        return TraversalMetrics.merge(new Iterator<TraversalMetrics>() {
-            @Override
-            public boolean hasNext() {
-                return keyValues.hasNext();
-            }
-
-            @Override
-            public TraversalMetrics next() {
-                return keyValues.next().getValue1();
-            }
-        });
+        return keyValues.next().getValue1();
     }
 
     @Override
