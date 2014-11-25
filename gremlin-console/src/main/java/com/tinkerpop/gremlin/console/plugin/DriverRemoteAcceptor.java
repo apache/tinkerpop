@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.driver.exception.ResponseException;
 import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteException;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 
@@ -92,9 +93,13 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
                     throw new RemoteException(String.format("Server could not serialize the result requested. Server error - %s. Note that the class must be serializable by the client and server for proper operation.", responseException.getMessage()));
                 else
                     throw new RemoteException(responseException.getMessage());
-            } else if (ex.getCause() != null)
-                throw new RemoteException(ex.getCause().getMessage());
-            else
+            } else if (ex.getCause() != null) {
+                final Throwable rootCause = ExceptionUtils.getRootCause(ex);
+                if (rootCause instanceof TimeoutException)
+                    throw new RemoteException("Host did not respond in a timely fashion - check the server status and submit again.");
+                else
+                    throw new RemoteException(rootCause.getMessage());
+            } else
                 throw new RemoteException(ex.getMessage());
         }
     }

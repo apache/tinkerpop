@@ -66,7 +66,7 @@ class Connection {
             channelizer.connected();
 
             logger.info("Created new connection for {}", uri);
-        } catch (InterruptedException ie) {
+        } catch (Exception ie) {
             logger.debug("Error opening connection on {}", uri);
             throw new ConnectionException(uri, "Could not open connection", ie);
         }
