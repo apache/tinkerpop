@@ -9,8 +9,7 @@ import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import com.tinkerpop.gremlin.hadoop.Constants;
 import com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
 import com.tinkerpop.gremlin.hadoop.process.computer.mapreduce.MapReduceGraphComputer;
-import com.tinkerpop.gremlin.hadoop.process.computer.util.GremlinWritable;
-import com.tinkerpop.gremlin.hadoop.process.computer.util.MapReduceHelper;
+import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import com.tinkerpop.gremlin.hadoop.structure.hdfs.HDFSTools;
@@ -18,7 +17,6 @@ import com.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
 import com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat;
 import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupCountMapReduce;
-import org.apache.giraph.job.GiraphJob;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.mapred.JobClient;
@@ -51,7 +49,7 @@ public class HadoopGremlinPlugin extends AbstractGremlinPlugin {
         add(IMPORT_SPACE + HDFSTools.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + GroupCountMapReduce.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + ConfUtil.class.getPackage().getName() + DOT_STAR);
-        add(IMPORT_SPACE + GremlinWritable.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + ObjectWritable.class.getPackage().getName() + DOT_STAR);
     }};
 
     @Override

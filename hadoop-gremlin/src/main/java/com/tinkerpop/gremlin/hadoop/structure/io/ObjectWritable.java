@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.hadoop.process.computer.util;
+package com.tinkerpop.gremlin.hadoop.structure.io;
 
 import com.tinkerpop.gremlin.util.Serializer;
 import org.apache.hadoop.io.WritableComparable;
@@ -11,14 +11,14 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GremlinWritable<T> implements WritableComparable<GremlinWritable> {
+public final class ObjectWritable<T> implements WritableComparable<ObjectWritable> {
 
     T t;
 
-    public GremlinWritable() {
+    public ObjectWritable() {
     }
 
-    public GremlinWritable(final T t) {
+    public ObjectWritable(final T t) {
         this();
         this.t = t;
     }
@@ -58,15 +58,30 @@ public final class GremlinWritable<T> implements WritableComparable<GremlinWrita
     }
 
     @Override
-    public int compareTo(final GremlinWritable gremlinWritable) {
-        return this.t instanceof Comparable ? ((Comparable) this.t).compareTo(gremlinWritable.get()) : 1;
+    public int compareTo(final ObjectWritable objectWritable) {
+        return this.t instanceof Comparable ? ((Comparable) this.t).compareTo(objectWritable.get()) : 1;
     }
 
     public boolean isEmpty() {
         return null == this.t;
     }
 
-    public static GremlinWritable empty() {
-        return new GremlinWritable(null);
+    public static ObjectWritable empty() {
+        return new ObjectWritable(null);
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof ObjectWritable))
+            return false;
+        else if (this.isEmpty())
+            return ((ObjectWritable) other).isEmpty();
+        else
+            return this.t.equals(((ObjectWritable) other).get());
+    }
+
+    @Override
+    public int hashCode() {
+        return this.isEmpty() ? 0 : this.t.hashCode();
     }
 }

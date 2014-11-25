@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.hadoop.process.computer;
 
-import com.tinkerpop.gremlin.hadoop.process.computer.util.GremlinWritable;
+import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import com.tinkerpop.gremlin.hadoop.process.computer.util.MapReduceHelper;
-import com.tinkerpop.gremlin.hadoop.structure.hdfs.VertexWritable;
+import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -14,34 +14,34 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopMap extends Mapper<NullWritable, VertexWritable, GremlinWritable, GremlinWritable> {
+public class HadoopMap extends Mapper<NullWritable, VertexWritable, ObjectWritable, ObjectWritable> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HadoopMap.class);
     private MapReduce mapReduce;
-    private final HadoopMapEmitter<GremlinWritable, GremlinWritable> mapEmitter = new HadoopMapEmitter<>();
+    private final HadoopMapEmitter<ObjectWritable, ObjectWritable> mapEmitter = new HadoopMapEmitter<>();
 
     private HadoopMap() {
 
     }
 
     @Override
-    public void setup(final Mapper<NullWritable, VertexWritable, GremlinWritable, GremlinWritable>.Context context) {
+    public void setup(final Mapper<NullWritable, VertexWritable, ObjectWritable, ObjectWritable>.Context context) {
         this.mapReduce = MapReduceHelper.getMapReduce(context.getConfiguration());
     }
 
     @Override
-    public void map(final NullWritable key, final VertexWritable value, final Mapper<NullWritable, VertexWritable, GremlinWritable, GremlinWritable>.Context context) throws IOException, InterruptedException {
+    public void map(final NullWritable key, final VertexWritable value, final Mapper<NullWritable, VertexWritable, ObjectWritable, ObjectWritable>.Context context) throws IOException, InterruptedException {
         this.mapEmitter.setContext(context);
         this.mapReduce.map(value.get(), this.mapEmitter);
     }
 
     public class HadoopMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {
 
-        private Mapper<NullWritable, VertexWritable, GremlinWritable, GremlinWritable>.Context context;
-        private final GremlinWritable<K> keyWritable = new GremlinWritable<>();
-        private final GremlinWritable<V> valueWritable = new GremlinWritable<>();
+        private Mapper<NullWritable, VertexWritable, ObjectWritable, ObjectWritable>.Context context;
+        private final ObjectWritable<K> keyWritable = new ObjectWritable<>();
+        private final ObjectWritable<V> valueWritable = new ObjectWritable<>();
 
-        public void setContext(final Mapper<NullWritable, VertexWritable, GremlinWritable, GremlinWritable>.Context context) {
+        public void setContext(final Mapper<NullWritable, VertexWritable, ObjectWritable, ObjectWritable>.Context context) {
             this.context = context;
         }
 

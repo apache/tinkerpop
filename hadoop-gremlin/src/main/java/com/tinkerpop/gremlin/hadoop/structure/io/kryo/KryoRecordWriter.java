@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.hadoop.structure.io.kryo;
 
-import com.tinkerpop.gremlin.hadoop.structure.hdfs.VertexWritable;
+import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import org.apache.hadoop.io.NullWritable;

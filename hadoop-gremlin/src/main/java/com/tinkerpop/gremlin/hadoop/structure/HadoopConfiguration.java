@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.hadoop.structure;
 
 import com.tinkerpop.gremlin.hadoop.Constants;
-import com.tinkerpop.gremlin.hadoop.structure.hdfs.VertexWritable;
+import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;

@@ -635,10 +635,6 @@ gremlin> :plugin use tinkerpop.hadoop
 gremlin> 
 ----
 
-IMPORTANT: Be sure that the link:http://www.slf4j.org/[SLF4J] of Hadoop matches that of Giraph or else there will be conflicts. Simply copy the following jars to the `lib/` of the machines in the Hadoop cluster: `slf4j-api-a.b.c.jar` and `slf4j-log4j12-a.b.c.jar`.
-
-WARNING: Giraph uses a large number of Hadoop counters. The default for Hadoop is 120. In `mapred-site.xml` it is possible to increase the limit it via the `mapreduce.job.counters.limit` property. A good value to use is 1000. This is a cluster-wide property so be sure to restart the cluster after updating.
-
 Properties Files
 ~~~~~~~~~~~~~~~~
 
@@ -726,6 +722,10 @@ GiraphGraphComputer
 
 image:giraph-logo.png[width=100,float=left] link:http://giraph.apache.org[Giraph] is an Apache Foundation project focused on OLAP-based graph processing. Giraph makes use of the distributed graph computing paradigm made popular by Google's Pregel. In Giraph, developers write "vertex programs" that get executed at each vertex in parallel. These programs communicate with one another in a bulk synchronous parallel (BSP) manner. This model aligns with TinkerPop3's `GraphComputer` API. TinkerPop3 provides an implementation of `GraphComputer` that works for Giraph called `GiraphGraphComputer`. Moreover, with TinkerPop3's <<mapreduce,MapReduce>>-framework, the standard Giraph/Pregel model is extended to support an arbitrary number of MapReduce phases to aggregate and yield results from the graph. Below are examples using `GiraphGraphComputer` from the <<gremlin-console,Gremlin-Console>>.
 
+IMPORTANT: Be sure that the link:http://www.slf4j.org/[SLF4J] of Hadoop matches that of Giraph or else there will be conflicts. Simply copy the following jars to the `lib/` of the machines in the Hadoop cluster: `slf4j-api-a.b.c.jar` and `slf4j-log4j12-a.b.c.jar`.
+
+WARNING: Giraph uses a large number of Hadoop counters. The default for Hadoop is 120. In `mapred-site.xml` it is possible to increase the limit it via the `mapreduce.job.counters.limit` property. A good value to use is 1000. This is a cluster-wide property so be sure to restart the cluster after updating.
+
 [source,text]
 gremlin> :remote connect tinkerpop.hadoop ../../../hadoop-gremlin/conf/hadoop-kryo.properties
 ==>hadoopgraph[kryoinputformat->kryooutputformat]
@@ -789,13 +789,11 @@ gremlin> hdfs.ls('output/a')
 ==>rw-r--r-- marko supergroup 0 _SUCCESS
 ==>rwxr-xr-x marko supergroup 0 (D) _logs
 ==>rw-r--r-- marko supergroup 332 part-r-00000
-gremlin> hdfs.head('output/a',GremlinWritable.class)
-==>[a, {marko=1}]
-==>[i, {ripple=1}]
-==>[o, {lop=1}]
-==>[a, {vadas=1}]
+gremlin> hdfs.head('output/a',ObjectWritable.class)
+==>[a, {marko=1, vadas=1}]
 ==>[e, {peter=1}]
-==>[o, {josh=1}]
+==>[i, {ripple=1}]
+==>[o, {lop=1, josh=1}]
 
 A list of the HDFS methods available are itemized below. Note that these methods are also available for the 'local' variable:
 

@@ -9,9 +9,9 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M6 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Removed Giraph-Gremlin in favor of new Hadoop-Gremlin with `GiraphGraphComputer` support. Future support for `MapReduceGraphComputer`.
 * Fixed host selection in `gremlin-driver` by properly accounting for all hosts being marked unavailable at the instantiation of a `Client`.
-* Greatly simplified the `InputFormat` and `OutputFormat` model for working with Giraph.
+* Removed Giraph-Gremlin in favor of new Hadoop-Gremlin with `GiraphGraphComputer` support. Future support for `MapReduceGraphComputer`.
+* Greatly simplified the `InputFormat` and `OutputFormat` model for working with Giraph (and Hadoop).
 * Added a serializer for `Property` for GraphSON correcting format of serialization of a single `Property` on an `Edge`.
 * Fixed bug in Gremlin Console that prevented assignments to empty `List` objects.
 * Added `VertexProgram.getMessageScopes()` to allow vendors to know which `MessageScopes` are possible at a particular iteration.

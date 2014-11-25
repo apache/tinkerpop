@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
-import com.tinkerpop.gremlin.hadoop.process.computer.util.GremlinWritable;
+import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.giraph.worker.WorkerContext;
@@ -44,7 +44,7 @@ public class GiraphWorkerContext extends WorkerContext {
         return this.memory;
     }
 
-    public final GiraphMessenger getMessenger(final GiraphComputeVertex giraphComputeVertex, final Iterable<GremlinWritable> messages) {
+    public final GiraphMessenger getMessenger(final GiraphComputeVertex giraphComputeVertex, final Iterable<ObjectWritable> messages) {
         this.messenger.setCurrentVertex(giraphComputeVertex, messages);
         return this.messenger;
     }

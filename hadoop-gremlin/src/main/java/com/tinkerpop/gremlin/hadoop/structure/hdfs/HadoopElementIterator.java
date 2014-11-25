@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.hadoop.structure.hdfs;
 
 import com.tinkerpop.gremlin.hadoop.Constants;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import com.tinkerpop.gremlin.structure.Element;
 import org.apache.hadoop.conf.Configuration;
@@ -25,6 +26,8 @@ import java.util.Queue;
  */
 public abstract class HadoopElementIterator<E extends Element> implements Iterator<E> {
 
+    // TODO: Generalize so it works for more than just FileFormats.
+
     protected final HadoopGraph graph;
     protected final Queue<RecordReader<NullWritable, VertexWritable>> readers = new LinkedList<>();
 
@@ -41,7 +44,7 @@ public abstract class HadoopElementIterator<E extends Element> implements Iterat
             this.graph = graph;
             if (this.graph.configuration().containsKey(Constants.GREMLIN_HADOOP_INPUT_LOCATION)) {
                 final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.configuration());
-                final InputFormat<NullWritable,VertexWritable> inputFormat = this.graph.configuration().getGraphInputFormat().getConstructor().newInstance();
+                final InputFormat<NullWritable, VertexWritable> inputFormat = this.graph.configuration().getGraphInputFormat().getConstructor().newInstance();
                 for (final FileStatus status : FileSystem.get(configuration).listStatus(new Path(graph.configuration().getInputLocation()), HiddenFileFilter.instance())) {
                     this.readers.add(inputFormat.createRecordReader(new FileSplit(status.getPath(), 0, Integer.MAX_VALUE, new String[]{}), new TaskAttemptContext(configuration, new TaskAttemptID())));
                 }

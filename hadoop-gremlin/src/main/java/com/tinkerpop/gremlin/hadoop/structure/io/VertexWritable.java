@@ -1,10 +1,11 @@
-package com.tinkerpop.gremlin.hadoop.structure.hdfs;
+package com.tinkerpop.gremlin.hadoop.structure.io;
 
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
@@ -21,7 +22,7 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VertexWritable<V extends Vertex> implements Writable, WrappedVertex<V> {
+public final class VertexWritable<V extends Vertex> implements Writable, WrappedVertex<V> {
 
     private Vertex vertex;
     private static final KryoWriter KRYO_WRITER = KryoWriter.build().create();
@@ -61,5 +62,15 @@ public class VertexWritable<V extends Vertex> implements Writable, WrappedVertex
         WritableUtils.writeVInt(output, outputStream.size());
         output.write(outputStream.toByteArray());
         outputStream.close();
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return other instanceof VertexWritable && ElementHelper.areEqual(this.vertex, ((VertexWritable) other).get());
+    }
+
+    @Override
+    public int hashCode() {
+        return this.vertex.hashCode();
     }
 }
