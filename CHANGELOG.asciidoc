@@ -10,6 +10,7 @@ TinkerPop 3.0.0.M6 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Added a serializer for `Property` for GraphSON correcting format of serialization of a single `Property` on an `Edge`.
+* Fixed bug in Gremlin Console that prevented assignments to empty `List` objects.
 * Added `VertexProgram.getMessageScopes()` to allow vendors to know which `MessageScopes` are possible at a particular iteration.
 * Reduced the number of methods in `MessageScope.Local` as its up to vendors to inspect provided incident `Traversal` accordingly.
 * Renamed `MessagesType` to `MessageScope` to make it less ambiguous regarding the class of the messages being sent.
