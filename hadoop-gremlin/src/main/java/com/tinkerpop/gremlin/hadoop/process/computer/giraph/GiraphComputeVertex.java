@@ -94,7 +94,7 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWr
         }
     }
 
-    private static TinkerVertex generateTinkerVertexForm(final com.tinkerpop.gremlin.structure.Vertex otherVertex) {
+    private static final TinkerVertex generateTinkerVertexForm(final com.tinkerpop.gremlin.structure.Vertex otherVertex) {
         if (otherVertex instanceof TinkerVertex)
             return (TinkerVertex) otherVertex;
         else {

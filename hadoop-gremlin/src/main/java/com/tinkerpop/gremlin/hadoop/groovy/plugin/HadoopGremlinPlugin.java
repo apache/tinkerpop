@@ -9,10 +9,10 @@ import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import com.tinkerpop.gremlin.hadoop.Constants;
 import com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
 import com.tinkerpop.gremlin.hadoop.process.computer.mapreduce.MapReduceGraphComputer;
-import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import com.tinkerpop.gremlin.hadoop.structure.hdfs.HDFSTools;
+import com.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import com.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
 import com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat;
 import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
@@ -42,14 +42,17 @@ public class HadoopGremlinPlugin extends AbstractGremlinPlugin {
         add("import org.apache.hadoop.mapreduce.lib.input.*");
         add("import org.apache.hadoop.mapreduce.lib.output.*");
         add("import org.apache.log4j.*");
+        add(IMPORT_SPACE + Constants.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + HadoopConfiguration.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + ConfUtil.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + VertexWritable.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + KryoInputFormat.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + GraphSONInputFormat.class.getPackage().getName() + DOT_STAR);
-        add(IMPORT_SPACE + Constants.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + HDFSTools.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + GroupCountMapReduce.class.getPackage().getName() + DOT_STAR);
-        add(IMPORT_SPACE + ConfUtil.class.getPackage().getName() + DOT_STAR);
-        add(IMPORT_SPACE + ObjectWritable.class.getPackage().getName() + DOT_STAR);
+        ////
+        add(IMPORT_SPACE + GiraphGraphComputer.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + MapReduceGraphComputer.class.getPackage().getName() + DOT_STAR);
     }};
 
     @Override
