@@ -42,7 +42,7 @@ gremlin> g.features().graph().supportsTransactions() ? g.tx().commit() : "no tx"
 
 TIP: To ensure vendor agnostic code, always check feature support prior to usage of a particular function.  In that way, the application can behave gracefully in case a particular implementation is provided at runtime that does not support a function being accessed.
 
-WARN: Assignments of a `GraphStrategy` can alter the base features of a `Graph` in dynamic ways, such that checks against a `Feature` may not always reflect the behavior exhibited when the `GraphStrategy` is in use.
+WARNING: Assignments of a `GraphStrategy` can alter the base features of a `Graph` in dynamic ways, such that checks against a `Feature` may not always reflect the behavior exhibited when the `GraphStrategy` is in use.
 
 [[vertex-properties]]
 Vertex Properties
