@@ -534,16 +534,8 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().withSideEffect(key, supplier);
     }
 
-    public default <B> Neo4jTraversal<A, A> withSack(final Supplier<B> initialValue, final UnaryOperator<B> splitOperator, final BinaryOperator<B> mergeOperator) {
-        return this.start().withSack(initialValue, splitOperator, mergeOperator);
-    }
-
     public default <B> Neo4jTraversal<A, A> withSack(final Supplier<B> initialValue, final UnaryOperator<B> splitOperator) {
         return this.start().withSack(initialValue, splitOperator);
-    }
-
-    public default <B> Neo4jTraversal<A, A> withSack(final Supplier<B> initialValue, final BinaryOperator<B> mergeOperator) {
-        return this.start().withSack(initialValue, mergeOperator);
     }
 
     public default <B> Neo4jTraversal<A, A> withSack(final Supplier<B> initialValue) {

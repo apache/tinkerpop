@@ -646,23 +646,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
         return this;
     }
 
-    public default <A> GraphTraversal<S, E> withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
-        this.sideEffects().setSack(initialValue, Optional.of(splitOperator), Optional.of(mergeOperator));
-        return this;
-    }
-
     public default <A> GraphTraversal<S, E> withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
-        this.sideEffects().setSack(initialValue, Optional.of(splitOperator), Optional.empty());
-        return this;
-    }
-
-    public default <A> GraphTraversal<S, E> withSack(final Supplier<A> initialValue, final BinaryOperator<A> mergeOperator) {
-        this.sideEffects().setSack(initialValue, Optional.empty(), Optional.of(mergeOperator));
+        this.sideEffects().setSack(initialValue, Optional.of(splitOperator));
         return this;
     }
 
     public default <A> GraphTraversal<S, E> withSack(final Supplier<A> initialValue) {
-        this.sideEffects().setSack(initialValue, Optional.empty(), Optional.empty());
+        this.sideEffects().setSack(initialValue, Optional.empty());
         return this;
     }
 

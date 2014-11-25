@@ -28,7 +28,8 @@ public final class SumStep extends AbstractStep<Number, Double> implements SideE
         double sum = this.getTraversal().sideEffects().getOrCreate(SUM_KEY, () -> 0.0d);
         try {
             while (true) {
-                sum = sum + this.starts.next().get().doubleValue();
+                final Traverser<Number> start = this.starts.next();
+                sum = sum + (start.get().doubleValue() * start.bulk());
             }
         } catch (final NoSuchElementException e) {
             this.getTraversal().sideEffects().set(SUM_KEY, sum);

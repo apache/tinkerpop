@@ -48,8 +48,8 @@ public class PathAwareSideEffects implements Traversal.SideEffects {
     }
 
     @Override
-    public <S> void setSack(final Supplier<S> initialValue, final Optional<UnaryOperator<S>> splitOperator, final Optional<BinaryOperator<S>> mergeOperator) {
-        this.sideEffects.setSack(initialValue, splitOperator, mergeOperator);
+    public <S> void setSack(final Supplier<S> initialValue, final Optional<UnaryOperator<S>> splitOperator) {
+        this.sideEffects.setSack(initialValue, splitOperator);
     }
 
     @Override
@@ -60,11 +60,6 @@ public class PathAwareSideEffects implements Traversal.SideEffects {
     @Override
     public <S> Optional<UnaryOperator<S>> getSackSplitOperator() {
         return this.sideEffects.getSackSplitOperator();
-    }
-
-    @Override
-    public <S> Optional<BinaryOperator<S>> getSackMergeOperator() {
-        return this.sideEffects.getSackMergeOperator();
     }
 
     @Override

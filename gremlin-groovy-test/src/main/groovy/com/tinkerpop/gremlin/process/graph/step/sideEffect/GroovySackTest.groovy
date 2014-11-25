@@ -14,8 +14,8 @@ public abstract class GroovySackTest {
     public static class StandardTest extends SackTest {
 
         @Override
-        public Traversal<Vertex, Double> get_g_V_withSackX0_sumX_outE_sackXsum_weightX_inV_sack_sum() {
-            g.V().withSack({ 0.0f }, sum).outE.sack(sum, 'weight').inV.sack.sum()
+        public Traversal<Vertex, Double> get_g_V_withSackX0X_outE_sackXsum_weightX_inV_sack_sum() {
+            g.V().withSack{ 0.0f }.outE.sack(sum, 'weight').inV.sack.sum()
         }
 
         @Override
@@ -32,8 +32,8 @@ public abstract class GroovySackTest {
     public static class ComputerTest extends SackTest {
 
         @Override
-        public Traversal<Vertex, Double> get_g_V_withSackX0_sumX_outE_sackXsum_weightX_inV_sack_sum() {
-            ComputerTestHelper.compute("g.V().withSack({0.0f}, sum).outE.sack(sum, 'weight').inV.sack.sum()", g);
+        public Traversal<Vertex, Double> get_g_V_withSackX0X_outE_sackXsum_weightX_inV_sack_sum() {
+            ComputerTestHelper.compute("g.V().withSack{0.0f}.outE.sack(sum, 'weight').inV.sack.sum()", g);
         }
 
         @Override

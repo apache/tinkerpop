@@ -127,8 +127,6 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     ////////
     @Override
     public void merge(final Traverser.Admin<?> other) {
-        if (null != this.sideEffects)  // hack so detached traversers don't have to be checked on merge
-            this.sideEffects.getSackMergeOperator().ifPresent(merge -> this.sack = merge.apply(this.sack, other.sack()));
         this.bulk = this.bulk + other.bulk();
     }
 
@@ -140,7 +138,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
         traverser.future = this.future;
         traverser.loops = this.loops;
         traverser.bulk = this.bulk;
-        traverser.sack = this.sideEffects.getSackSplitOperator().orElse(UnaryOperator.identity()).apply(this.sack);
+        traverser.sack = null == this.sack ? null : this.sideEffects.getSackSplitOperator().orElse(UnaryOperator.identity()).apply(this.sack);
         return traverser;
     }
 
@@ -152,7 +150,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
         traverser.future = this.future;
         traverser.loops = this.loops;
         traverser.bulk = this.bulk;
-        traverser.sack = this.sideEffects.getSackSplitOperator().orElse(UnaryOperator.identity()).apply(this.sack);
+        traverser.sack = null == this.sack ? null : this.sideEffects.getSackSplitOperator().orElse(UnaryOperator.identity()).apply(this.sack);
         return traverser;
     }
 
@@ -177,8 +175,7 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
                 && ((SimpleTraverser) object).get().equals(this.t)
                 && ((SimpleTraverser) object).getFuture().equals(this.getFuture())
                 && ((SimpleTraverser) object).loops() == this.loops()
-                && (null == this.sack) || (null != this.sideEffects && this.sideEffects.getSackMergeOperator().isPresent());
-                                            // hack so detached traversers don't have to be checked on merge
+                && (null == this.sack);
     }
 
     @Override
