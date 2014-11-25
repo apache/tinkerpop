@@ -1,11 +1,13 @@
-package com.tinkerpop.gremlin.process.computer;
+package com.tinkerpop.gremlin.process.computer.util;
+
+import com.tinkerpop.gremlin.process.computer.Memory;
 
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ImmutableMemory implements Memory {
+public final class ImmutableMemory implements Memory.Admin {
 
     private final Memory baseMemory;
 
@@ -50,6 +52,16 @@ public final class ImmutableMemory implements Memory {
 
     @Override
     public boolean or(final String key, final boolean bool) {
+        throw Memory.Exceptions.memoryIsCurrentlyImmutable();
+    }
+
+    @Override
+    public void incrIteration() {
+        throw Memory.Exceptions.memoryIsCurrentlyImmutable();
+    }
+
+    @Override
+    public void setRuntime(final long runtime) {
         throw Memory.Exceptions.memoryIsCurrentlyImmutable();
     }
 }

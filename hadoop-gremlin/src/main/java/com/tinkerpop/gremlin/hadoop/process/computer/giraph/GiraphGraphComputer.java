@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
+import com.tinkerpop.gremlin.process.computer.util.MapMemory;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -53,7 +54,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
 
     private final Set<MapReduce> mapReduces = new HashSet<>();
     private VertexProgram vertexProgram;
-    final GiraphImmutableMemory memory = new GiraphImmutableMemory();
+    private MapMemory memory;
 
     public GiraphGraphComputer(final HadoopGraph hadoopGraph) {
         this.hadoopGraph = hadoopGraph;
@@ -79,6 +80,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
     @Override
     public GraphComputer program(final VertexProgram vertexProgram) {
         this.vertexProgram = vertexProgram;
+        this.memory = new MapMemory(this.vertexProgram);
         final BaseConfiguration apacheConfiguration = new BaseConfiguration();
         vertexProgram.storeState(apacheConfiguration);
         ConfUtil.mergeApacheIntoHadoopConfiguration(apacheConfiguration, this.giraphConfiguration);
@@ -122,8 +124,8 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
                 e.printStackTrace();
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            this.memory.complete(System.currentTimeMillis() - startTime);
-            return new ComputerResult(HadoopHelper.getOutputGraph(this.hadoopGraph), this.memory);
+            this.memory.setRuntime(System.currentTimeMillis() - startTime);
+            return new ComputerResult(HadoopHelper.getOutputGraph(this.hadoopGraph), this.memory.asImmutable());
         });
     }
 

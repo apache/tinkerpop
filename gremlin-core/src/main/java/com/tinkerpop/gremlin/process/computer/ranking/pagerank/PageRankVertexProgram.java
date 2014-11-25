@@ -28,100 +28,100 @@ import java.util.function.Supplier;
  */
 public class PageRankVertexProgram implements VertexProgram<Double> {
 
-        private MessageScope.Local<Double> incidentMessageScope = MessageScope.Local.of(new OutETraversalSupplier());
-        private MessageScope.Local<Double> countMessageScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.incidentMessageScope));
+    private MessageScope.Local<Double> incidentMessageScope = MessageScope.Local.of(new OutETraversalSupplier());
+    private MessageScope.Local<Double> countMessageScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.incidentMessageScope));
 
-        public static final String PAGE_RANK = Graph.Key.hide("gremlin.pageRankVertexProgram.pageRank");
-        public static final String EDGE_COUNT = Graph.Key.hide("gremlin.pageRankVertexProgram.edgeCount");
+    public static final String PAGE_RANK = Graph.Key.hide("gremlin.pageRankVertexProgram.pageRank");
+    public static final String EDGE_COUNT = Graph.Key.hide("gremlin.pageRankVertexProgram.edgeCount");
 
-        private static final String VERTEX_COUNT = "gremlin.pageRankVertexProgram.vertexCount";
-        private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";
-        private static final String TOTAL_ITERATIONS = "gremlin.pageRankVertexProgram.totalIterations";
-        private static final String INCIDENT_TRAVERSAL_SUPPLIER = "gremlin.pageRankVertexProgram.incidentTraversalSupplier";
+    private static final String VERTEX_COUNT = "gremlin.pageRankVertexProgram.vertexCount";
+    private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";
+    private static final String TOTAL_ITERATIONS = "gremlin.pageRankVertexProgram.totalIterations";
+    private static final String INCIDENT_TRAVERSAL_SUPPLIER = "gremlin.pageRankVertexProgram.incidentTraversalSupplier";
 
-        private LambdaHolder<Supplier<Traversal<Vertex, Edge>>> traversalSupplier;
-        private double vertexCountAsDouble = 1.0d;
-        private double alpha = 0.85d;
-        private int totalIterations = 30;
+    private LambdaHolder<Supplier<Traversal<Vertex, Edge>>> traversalSupplier;
+    private double vertexCountAsDouble = 1.0d;
+    private double alpha = 0.85d;
+    private int totalIterations = 30;
 
-        private static final Set<String> COMPUTE_KEYS = new HashSet<>(Arrays.asList(PAGE_RANK, EDGE_COUNT));
+    private static final Set<String> COMPUTE_KEYS = new HashSet<>(Arrays.asList(PAGE_RANK, EDGE_COUNT));
 
-        private PageRankVertexProgram() {
+    private PageRankVertexProgram() {
 
+    }
+
+    @Override
+    public void loadState(final Configuration configuration) {
+        this.traversalSupplier = LambdaHolder.loadState(configuration, INCIDENT_TRAVERSAL_SUPPLIER);
+        if (null != this.traversalSupplier) {
+            VertexProgramHelper.verifyReversibility(this.traversalSupplier.get().get());
+            this.incidentMessageScope = MessageScope.Local.of(this.traversalSupplier.get());
         }
+        this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
+        this.alpha = configuration.getDouble(ALPHA, 0.85d);
+        this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
+    }
 
-        @Override
-        public void loadState(final Configuration configuration) {
-            this.traversalSupplier = LambdaHolder.loadState(configuration, INCIDENT_TRAVERSAL_SUPPLIER);
-            if (null != this.traversalSupplier) {
-                VertexProgramHelper.verifyReversibility(this.traversalSupplier.get().get());
-                this.incidentMessageScope = MessageScope.Local.of(this.traversalSupplier.get());
-            }
-            this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
-            this.alpha = configuration.getDouble(ALPHA, 0.85d);
-            this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
+    @Override
+    public void storeState(final Configuration configuration) {
+        configuration.setProperty(VERTEX_PROGRAM, PageRankVertexProgram.class.getName());
+        configuration.setProperty(VERTEX_COUNT, this.vertexCountAsDouble);
+        configuration.setProperty(ALPHA, this.alpha);
+        configuration.setProperty(TOTAL_ITERATIONS, this.totalIterations);
+        if (null != this.traversalSupplier) {
+            this.traversalSupplier.storeState(configuration);
         }
+    }
 
-        @Override
-        public void storeState(final Configuration configuration) {
-            configuration.setProperty(VERTEX_PROGRAM, PageRankVertexProgram.class.getName());
-            configuration.setProperty(VERTEX_COUNT, this.vertexCountAsDouble);
-            configuration.setProperty(ALPHA, this.alpha);
-            configuration.setProperty(TOTAL_ITERATIONS, this.totalIterations);
-            if (null != this.traversalSupplier) {
-                this.traversalSupplier.storeState(configuration);
-            }
+    @Override
+    public Set<String> getElementComputeKeys() {
+        return COMPUTE_KEYS;
+    }
+
+    @Override
+    public Optional<MessageCombiner<Double>> getMessageCombiner() {
+        return (Optional) PageRankMessageCombiner.instance();
+    }
+
+    @Override
+    public Set<MessageScope> getMessageScopes(final Memory memory) {
+        final Set<MessageScope> set = new HashSet<>();
+        set.add(memory.isInitialIteration() ? this.countMessageScope : this.incidentMessageScope);
+        return set;
+    }
+
+    @Override
+    public void setup(final Memory memory) {
+
+    }
+
+    @Override
+    public void execute(final Vertex vertex, Messenger<Double> messenger, final Memory memory) {
+        if (memory.isInitialIteration()) {
+            messenger.sendMessage(this.countMessageScope, 1.0d);
+        } else if (1 == memory.getIteration()) {
+            double initialPageRank = 1.0d / this.vertexCountAsDouble;
+            double edgeCount = StreamFactory.stream(messenger.receiveMessages(this.countMessageScope)).reduce(0.0d, (a, b) -> a + b);
+            vertex.singleProperty(PAGE_RANK, initialPageRank);
+            vertex.singleProperty(EDGE_COUNT, edgeCount);
+            messenger.sendMessage(this.incidentMessageScope, initialPageRank / edgeCount);
+        } else {
+            double newPageRank = StreamFactory.stream(messenger.receiveMessages(this.incidentMessageScope)).reduce(0.0d, (a, b) -> a + b);
+            newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
+            vertex.singleProperty(PAGE_RANK, newPageRank);
+            messenger.sendMessage(this.incidentMessageScope, newPageRank / vertex.<Double>value(EDGE_COUNT));
         }
+    }
 
-        @Override
-        public Set<String> getElementComputeKeys() {
-            return COMPUTE_KEYS;
-        }
+    @Override
+    public boolean terminate(final Memory memory) {
+        return memory.getIteration() >= this.totalIterations;
+    }
 
-        @Override
-        public Optional<MessageCombiner<Double>> getMessageCombiner() {
-            return (Optional) PageRankMessageCombiner.instance();
-        }
-
-        @Override
-        public Set<MessageScope> getMessageScopes(final int iteration) {
-            final Set<MessageScope> set = new HashSet<>();
-            set.add(0 == iteration ? this.countMessageScope : this.incidentMessageScope);
-            return set;
-        }
-
-        @Override
-        public void setup(final Memory memory) {
-
-        }
-
-        @Override
-        public void execute(final Vertex vertex, Messenger<Double> messenger, final Memory memory) {
-            if (memory.isInitialIteration()) {
-                messenger.sendMessage(this.countMessageScope, 1.0d);
-            } else if (1 == memory.getIteration()) {
-                double initialPageRank = 1.0d / this.vertexCountAsDouble;
-                double edgeCount = StreamFactory.stream(messenger.receiveMessages(this.countMessageScope)).reduce(0.0d, (a, b) -> a + b);
-                vertex.singleProperty(PAGE_RANK, initialPageRank);
-                vertex.singleProperty(EDGE_COUNT, edgeCount);
-                messenger.sendMessage(this.incidentMessageScope, initialPageRank / edgeCount);
-            } else {
-                double newPageRank = StreamFactory.stream(messenger.receiveMessages(this.incidentMessageScope)).reduce(0.0d, (a, b) -> a + b);
-                newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
-                vertex.singleProperty(PAGE_RANK, newPageRank);
-                messenger.sendMessage(this.incidentMessageScope, newPageRank / vertex.<Double>value(EDGE_COUNT));
-            }
-        }
-
-        @Override
-        public boolean terminate(final Memory memory) {
-            return memory.getIteration() >= this.totalIterations;
-        }
-
-        @Override
-        public String toString() {
-            return StringFactory.vertexProgramString(this, "alpha=" + this.alpha + ",iterations=" + this.totalIterations);
-        }
+    @Override
+    public String toString() {
+        return StringFactory.vertexProgramString(this, "alpha=" + this.alpha + ",iterations=" + this.totalIterations);
+    }
 
     //////////////////////////////
 

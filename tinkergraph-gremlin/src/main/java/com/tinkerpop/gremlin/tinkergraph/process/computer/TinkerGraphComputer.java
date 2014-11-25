@@ -74,10 +74,10 @@ public class TinkerGraphComputer implements GraphComputer {
                 this.vertexProgram.setup(this.memory);
                 this.memory.completeSubRound();
                 while (true) {
-                    this.vertexProgram.workerIterationStart(this.memory);
+                    this.vertexProgram.workerIterationStart(this.memory.asImmutable());
                     TinkerHelper.getVertices(this.graph).stream().forEach(vertex ->
                             this.vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard, this.vertexProgram.getMessageCombiner()), this.memory));
-                    this.vertexProgram.workerIterationEnd(this.memory);
+                    this.vertexProgram.workerIterationEnd(this.memory.asImmutable());
                     this.messageBoard.completeIteration();
                     this.memory.completeSubRound();
                     if (this.vertexProgram.terminate(this.memory)) {
@@ -111,7 +111,7 @@ public class TinkerGraphComputer implements GraphComputer {
             // update runtime and return the newly computed graph
             this.memory.setRuntime(System.currentTimeMillis() - time);
             this.memory.complete();
-            return new ComputerResult(this.graph, this.memory);
+            return new ComputerResult(this.graph, this.memory.asImmutable());
         });
     }
 
@@ -119,5 +119,4 @@ public class TinkerGraphComputer implements GraphComputer {
     public String toString() {
         return StringFactory.graphComputerString(this);
     }
-
 }

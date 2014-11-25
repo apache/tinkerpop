@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
 import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
+import com.tinkerpop.gremlin.process.computer.util.ImmutableMemory;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.giraph.worker.WorkerContext;
 
@@ -29,11 +30,11 @@ public class GiraphWorkerContext extends WorkerContext {
     }
 
     public void preSuperstep() {
-        this.vertexProgram.workerIterationStart(this.memory);
+        this.vertexProgram.workerIterationStart(new ImmutableMemory(this.memory));
     }
 
     public void postSuperstep() {
-        this.vertexProgram.workerIterationEnd(this.memory);
+        this.vertexProgram.workerIterationEnd(new ImmutableMemory(this.memory));
     }
 
     public final VertexProgram getVertexProgram() {

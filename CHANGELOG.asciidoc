@@ -9,12 +9,13 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M6 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `Memory.Admin.asImmutable()` yields an immutable representation of the GraphComputer `Memory`.
 * Fixed host selection in `gremlin-driver` by properly accounting for all hosts being marked unavailable at the instantiation of a `Client`.
 * Removed Giraph-Gremlin in favor of new Hadoop-Gremlin with `GiraphGraphComputer` support. Future support for `MapReduceGraphComputer`.
 * Greatly simplified the `InputFormat` and `OutputFormat` model for working with Giraph (and Hadoop).
 * Added a serializer for `Property` for GraphSON correcting format of serialization of a single `Property` on an `Edge`.
 * Fixed bug in Gremlin Console that prevented assignments to empty `List` objects.
-* Added `VertexProgram.getMessageScopes()` to allow vendors to know which `MessageScopes` are possible at a particular iteration.
+* Added `VertexProgram.getMessageScopes()` to allow vendors to know which `MessageScopes` at a particular `Memory` state.
 * Reduced the number of methods in `MessageScope.Local` as its up to vendors to inspect provided incident `Traversal` accordingly.
 * Renamed `MessagesType` to `MessageScope` to make it less ambiguous regarding the class of the messages being sent.
 * Changed the message type of `TraversalVertexProgram` to `TraverserSet` to support message combining.

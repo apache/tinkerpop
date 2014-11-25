@@ -149,10 +149,10 @@ public interface VertexProgram<M> {
      * The returned messages scopes are the scopes that will be used to send messages during the stated iteration.
      * It is not a requirement that all stated messages scopes be used, just that it is possible that they be used during the iteration.
      *
-     * @param iteration the iteration of the vertex program to check for message scopes
+     * @param memory an immutable form of the {@link Memory}
      * @return all possible message scopes during said vertex program iteration
      */
-    public Set<MessageScope> getMessageScopes(final int iteration);
+    public Set<MessageScope> getMessageScopes(final Memory memory);
 
     /**
      * The set of {@link MapReduce} jobs that are associated with the {@link VertexProgram}.
