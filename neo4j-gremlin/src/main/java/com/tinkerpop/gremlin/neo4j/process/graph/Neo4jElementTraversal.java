@@ -50,6 +50,10 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().count();
     }
 
+    public default Neo4jTraversal<A, Double> sum() {
+        return this.start().sum();
+    }
+
     public default Neo4jTraversal<A, A> submit(final GraphComputer graphComputer) {
         return this.start().submit(graphComputer);
     }

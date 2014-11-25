@@ -478,6 +478,10 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.submit(arg0);
 	}
 
+	public default Neo4jTraversal<S, java.lang.Double> sum() {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.sum();
+	}
+
 	public default Neo4jTraversal<S, E> timeLimit(long arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.timeLimit(arg0);
 	}

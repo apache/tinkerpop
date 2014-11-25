@@ -12,9 +12,15 @@ import static com.tinkerpop.gremlin.structure.Operator.sum
 public abstract class GroovySackTest {
 
     public static class StandardTest extends SackTest {
+
         @Override
-        public Traversal<Vertex, Float> get_g_V_withSackX0_sumX_asXaX_outE_sackXsum_weightX_inV_jumpXa_2X_sack() {
-            g.V.withSack({ 0.0f }, sum).as('a').outE.sack(sum, 'weight').inV.jump('a', 2).sack
+        public Traversal<Vertex, Double> get_g_V_withSackX0_sumX_outE_sackXsum_weightX_inV_sack_sum() {
+            g.V().withSack({ 0.0f }, sum).outE.sack(sum, 'weight').inV.sack.sum()
+        }
+
+        @Override
+        public Traversal<Vertex, Float> get_g_V_withSackX0X_asXaX_outE_sackXsum_weightX_inV_jumpXa_2X_sack() {
+            g.V.withSack{ 0.0f }.as('a').outE.sack(sum, 'weight').inV.jump('a', 2).sack
         }
 
         @Override
@@ -24,9 +30,15 @@ public abstract class GroovySackTest {
     }
 
     public static class ComputerTest extends SackTest {
+
         @Override
-        public Traversal<Vertex, Float> get_g_V_withSackX0_sumX_asXaX_outE_sackXsum_weightX_inV_jumpXa_2X_sack() {
-            ComputerTestHelper.compute("g.V.withSack({0.0f},sum).as('a').outE.sack(sum, 'weight').inV.jump('a', 2).sack", g)
+        public Traversal<Vertex, Double> get_g_V_withSackX0_sumX_outE_sackXsum_weightX_inV_sack_sum() {
+            ComputerTestHelper.compute("g.V().withSack({0.0f}, sum).outE.sack(sum, 'weight').inV.sack.sum()", g);
+        }
+
+        @Override
+        public Traversal<Vertex, Float> get_g_V_withSackX0X_asXaX_outE_sackXsum_weightX_inV_jumpXa_2X_sack() {
+            ComputerTestHelper.compute("g.V.withSack{0.0f}.as('a').outE.sack(sum, 'weight').inV.jump('a', 2).sack", g)
         }
 
         @Override
