@@ -143,6 +143,8 @@ class ConnectionPool {
         if (connection.isDead()) {
             logger.debug("Marking {} as dead", this.host);
             considerUnavailable();
+
+            // todo: should we actuall close here?  it kills the pool forevers
             closeAsync();
         } else {
             if (bin.contains(connection) && inFlight == 0) {
