@@ -51,7 +51,7 @@ public abstract class Client {
     protected abstract Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException;
 
     /**
-     * Asyncronous close of the {@code Client}.
+     * Asynchronous close of the {@code Client}.
      */
     public abstract CompletableFuture<Void> closeAsync();
 
@@ -152,7 +152,7 @@ public abstract class Client {
                     this.cluster.loadBalancingStrategy().onNew(host);
                 } catch (Exception ex) {
                     // catch connection errors and prevent them from failing the creation
-                    logger.warn("Could not initialize connection pool for {}", host);
+                    logger.warn("Could not initialize connection pool for {} - will try later", host);
                 }
             });
         }
