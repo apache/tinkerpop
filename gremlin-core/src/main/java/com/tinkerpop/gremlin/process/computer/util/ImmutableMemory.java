@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.computer.util;
 
 import com.tinkerpop.gremlin.process.computer.Memory;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Set;
 
@@ -63,5 +64,10 @@ public final class ImmutableMemory implements Memory.Admin {
     @Override
     public void setRuntime(final long runtime) {
         throw Memory.Exceptions.memoryIsCurrentlyImmutable();
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.memoryString(this);
     }
 }
