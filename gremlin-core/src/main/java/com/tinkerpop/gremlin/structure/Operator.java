@@ -104,6 +104,4 @@ public enum Operator implements BinaryOperator<Number> {
             }
         }
     }
-
 }
-

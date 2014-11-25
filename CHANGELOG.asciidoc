@@ -9,6 +9,12 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M6 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added a serializer for `Property` for GraphSON correcting format of serialization of a single `Property` on an `Edge`.
+* Added `VertexProgram.getMessageScopes()` to allow vendors to know which `MessageScopes` are possible at a particular iteration.
+* Reduced the number of methods in `MessageScope.Local` as its up to vendors to inspect provided incident `Traversal` accordingly.
+* Renamed `MessagesType` to `MessageScope` to make it less ambiguous regarding the class of the messages being sent.
+* Changed the message type of `TraversalVertexProgram` to `TraverserSet` to support message combining.
+* Added `VertexProgram.getMessageCombiner()` to support the combining of messages in route to a vertex.
 * Reduced object creation in `TraversalVertexProgram` around vertex-local traversal sideEffects.
 * Renamed `Traverser.Admin.makeChild()` and `Traverser.Admin.makeSibling()` to `Traverser.Admin.split()` to correspond with `merge()`.
 * Added `Traverser.Admin.merge(Traverser)` method so that the merging algorithm is with the `Traverser`.

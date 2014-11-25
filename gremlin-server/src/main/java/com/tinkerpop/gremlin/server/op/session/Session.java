@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -111,6 +112,7 @@ public class Session {
                     this.bindings.clear();
                     this.bindings.putAll(b);
                 })
+                .enabledPlugins(new HashSet<>(settings.plugins))
                 .globalBindings(graphs.getGraphsAsBindings())
                 .executorService(executor)
                 .scheduledExecutorService(scheduledExecutorService);

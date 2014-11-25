@@ -49,6 +49,10 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().count();
     }
 
+    public default GraphTraversal<A,Double> sum() {
+        return this.start().sum();
+    }
+
     public default GraphTraversal<A, A> submit(final GraphComputer graphComputer) {
         return this.start().submit(graphComputer);
     }
@@ -529,16 +533,8 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().withSideEffect(key, supplier);
     }
 
-    public default <B> GraphTraversal<A, A> withSack(final Supplier<B> initialValue, final UnaryOperator<B> splitOperator, final BinaryOperator<B> mergeOperator) {
-        return this.start().withSack(initialValue, splitOperator, mergeOperator);
-    }
-
     public default <B> GraphTraversal<A, A> withSack(final Supplier<B> initialValue, final UnaryOperator<B> splitOperator) {
         return this.start().withSack(initialValue, splitOperator);
-    }
-
-    public default <B> GraphTraversal<A, A> withSack(final Supplier<B> initialValue, final BinaryOperator<B> mergeOperator) {
-        return this.start().withSack(initialValue, mergeOperator);
     }
 
     public default <B> GraphTraversal<A, A> withSack(final Supplier<B> initialValue) {

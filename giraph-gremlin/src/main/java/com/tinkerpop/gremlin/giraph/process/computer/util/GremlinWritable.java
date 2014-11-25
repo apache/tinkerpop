@@ -61,4 +61,12 @@ public final class GremlinWritable<T> implements WritableComparable<GremlinWrita
     public int compareTo(final GremlinWritable gremlinWritable) {
         return this.t instanceof Comparable ? ((Comparable) this.t).compareTo(gremlinWritable.get()) : 1;
     }
+
+    public boolean isEmpty() {
+        return null == this.t;
+    }
+
+    public static GremlinWritable empty() {
+        return new GremlinWritable(null);
+    }
 }

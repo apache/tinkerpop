@@ -61,6 +61,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SumStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
@@ -454,6 +455,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
         return this.addStep(new CountStep<>(this));
     }
 
+    public default GraphTraversal<S, Double> sum() {
+        return this.addStep(new SumStep(this));
+    }
+
     public default GraphTraversal<S, E> subgraph(final String sideEffectKey, final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final Predicate<Edge> includeEdge) {
         return this.addStep(new SubgraphStep<>(this, sideEffectKey, edgeIdHolder, vertexMap, includeEdge));
     }
@@ -641,23 +646,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
         return this;
     }
 
-    public default <A> GraphTraversal<S, E> withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
-        this.sideEffects().setSack(initialValue, Optional.of(splitOperator), Optional.of(mergeOperator));
-        return this;
-    }
-
     public default <A> GraphTraversal<S, E> withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
-        this.sideEffects().setSack(initialValue, Optional.of(splitOperator), Optional.empty());
-        return this;
-    }
-
-    public default <A> GraphTraversal<S, E> withSack(final Supplier<A> initialValue, final BinaryOperator<A> mergeOperator) {
-        this.sideEffects().setSack(initialValue, Optional.empty(), Optional.of(mergeOperator));
+        this.sideEffects().setSack(initialValue, Optional.of(splitOperator));
         return this;
     }
 
     public default <A> GraphTraversal<S, E> withSack(final Supplier<A> initialValue) {
-        this.sideEffects().setSack(initialValue, Optional.empty(), Optional.empty());
+        this.sideEffects().setSack(initialValue, Optional.empty());
         return this;
     }
 

@@ -19,8 +19,11 @@ $ bin/gremlin.sh
 -----oOOo-(3)-oOOo-----
 plugin loaded: tinkerpop.server
 plugin loaded: tinkerpop.utilities
+plugin loaded: tinkerpop.tinkergraph
 gremlin>
 ----
+
+NOTE: If the above plugins are not loaded then they will need to be enabled or else certain examples will not work. If using the standard Gremlin Console distribution, then the plugins should be enabled by default.  See below for more information on the `:plugin use` command to manually enable plugins. These plugins, with the exception of `tinkerpop.tinkergraph`, cannot be removed from the Console as they are a part of the `gremlin-console.jar` itself.  These plugins can only be deactivated.
 
 The Gremlin Console is loaded and ready for commands. Recall that the console hosts the Gremlin-Groovy language.  Please review link:http://groovy.codehaus.org/[Groovy] for help on Groovy-related constructs. In short, Groovy is a superset of Java. What works in Java, works in Groovy. However, Groovy provides many shorthands to make it easier to interact with the Java API.  Moreoever, Gremlin provides many neat shorthands to make it easier to express paths through a property graph.
 
@@ -93,8 +96,9 @@ The following Gremlin Console session demonstrates the basics of these features:
 gremlin> :plugin list  <1>
 ==>tinkerpop.server[active]
 ==>tinkerpop.gephi
-==>tinkerpop.sugar
 ==>tinkerpop.utilities[active]
+==>tinkerpop.sugar
+==>tinkerpop.tinkergraph[active]
 gremlin> :plugin use tinkerpop.sugar  <2>
 ==>tinkerpop.sugar activated
 gremlin> :install com.tinkerpop neo4j-gremlin x.y.z  <3>
@@ -102,8 +106,9 @@ gremlin> :install com.tinkerpop neo4j-gremlin x.y.z  <3>
 gremlin> :plugin list <4>
 ==>tinkerpop.server[active]
 ==>tinkerpop.gephi
-==>tinkerpop.sugar[active]
 ==>tinkerpop.utilities[active]
+==>tinkerpop.sugar
+==>tinkerpop.tinkergraph[active]
 ==>tinkerpop.neo4j
 gremlin> :plugin use tinkerpop.neo4j <5>
 ==>tinkerpop.neo4j activated
@@ -113,6 +118,7 @@ gremlin> :plugin list <6>
 ==>tinkerpop.sugar[active]
 ==>tinkerpop.utilities[active]
 ==>tinkerpop.neo4j[active]
+==>tinkerpop.tinkergraph[active]
 ----
 
 <1> Show a list of "available" plugins.  The list of "available" plugins is determined by the classes available on the Console classpath.  Plugins need to be "active" for their features to be available.
@@ -121,8 +127,6 @@ gremlin> :plugin list <6>
 <4> Note that there is a "tinkerpop.neo4j" plugin available, but it is not yet "active".
 <5> Again, to use the "tinkerpop.neo4j" plugin, it must be made "active" with `:plugin use`.
 <6> Now when the plugin list is displayed, the "tinkerpop.neo4j" plugin is displayed as "active".
-
-NOTE: The Gremlin Console comes configured with a number of plugins configured as "active" by default (such as "tinkerpop.server").  These plugins and other pre-packaged plugins cannot be removed from the Console as they are a part of the `gremlin-console.jar` itself.  These plugins can only be deactivated.
 
 CAUTION: Plugins must be compatible with the version of the Gremlin Console (or Gremlin Server) being used.  Attempts to use incompatible versions cannot be guaranteed to work.  Moreover, be prepared for dependency conflicts in third-party plugins, that may only be resolved via manual jar removal from the `ext/{plugin}` directory.
 
@@ -916,11 +920,13 @@ gremlin> describeGraph(GiraphGraph)
 ==>
 IMPLEMENTATION - com.tinkerpop.gremlin.giraph.structure.GiraphGraph
 TINKERPOP TEST SUITE
-- Compliant with (2 of 4 suites)
+- Compliant with (4 of 8 suites)
 > com.tinkerpop.gremlin.process.ProcessStandardSuite
 > com.tinkerpop.gremlin.process.ProcessComputerSuite
-- Opts out of 4 individual tests
-> com.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest#g_V_matchXa_hasXname_GarciaX__a_inXwrittenByX_b__a_inXsungByX_bX
+> com.tinkerpop.gremlin.process.GroovyProcessStandardSuite
+> com.tinkerpop.gremlin.process.GroovyProcessComputerSuite
+- Opts out of 12 individual tests
+> com.tinkerpop.gremlin.process.graph.step.map.MatchTest$StandardTest#g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX
 	"Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute."
 ...
 > com.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest#g_V_matchXa_inXsungByX_b__a_inXsungByX_c__b_outXwrittenByX_d__c_outXwrittenByX_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX

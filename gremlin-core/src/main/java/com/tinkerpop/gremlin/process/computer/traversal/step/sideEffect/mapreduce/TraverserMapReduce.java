@@ -114,6 +114,6 @@ public final class TraverserMapReduce implements MapReduce<Comparable, Object, C
 
     @Override
     public String toString() {
-        return StringFactory.mapReduceString(this, "");
+        return StringFactory.mapReduceString(this);
     }
 }

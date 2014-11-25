@@ -6,6 +6,8 @@ import com.tinkerpop.gremlin.process.util.ImmutablePath;
 import com.tinkerpop.gremlin.process.util.PathAwareSideEffects;
 import com.tinkerpop.gremlin.structure.util.referenced.ReferencedFactory;
 
+import java.util.function.UnaryOperator;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -53,9 +55,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
         traverser.path = this.path.clone().extend(label, r);
         traverser.future = this.future;
         traverser.bulk = this.bulk;
-        traverser.sack = this.sideEffects.getSackSplitOperator().isPresent() ?
-                this.sideEffects.getSackSplitOperator().get().apply(this.sack) :
-                this.sack;
+        traverser.sack = null == this.sack ? null : this.sideEffects.getSackSplitOperator().orElse(UnaryOperator.identity()).apply(this.sack);
         return traverser;
     }
 
@@ -68,9 +68,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
         traverser.path = this.path.clone();
         traverser.future = this.future;
         traverser.bulk = this.bulk;
-        traverser.sack = this.sideEffects.getSackSplitOperator().isPresent() ?
-                this.sideEffects.getSackSplitOperator().get().apply(this.sack) :
-                this.sack;
+        traverser.sack = null == this.sack ? null : this.sideEffects.getSackSplitOperator().orElse(UnaryOperator.identity()).apply(this.sack);
         return traverser;
     }
 
@@ -93,6 +91,6 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
                 && ((PathTraverser) object).get().equals(this.t)
                 && ((PathTraverser) object).getFuture().equals(this.getFuture())
                 && ((PathTraverser) object).loops() == this.loops()
-                && (null == this.sack) || this.sideEffects.getSackMergeOperator().isPresent();
+                && (null == this.sack);
     }
 }

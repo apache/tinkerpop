@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import com.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest;
+import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyChooseTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyJumpTest;
 import com.tinkerpop.gremlin.process.graph.step.branch.GroovyUnionTest;
@@ -106,7 +107,15 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             // TODO: GroovySideEffectTest.ComputerTest.class,
             GroovyStoreTest.ComputerTest.class,
             // TODO: GroovySubgraphTest.ComputerTest.class,
-            GroovyTreeTest.ComputerTest.class
+            GroovyTreeTest.ComputerTest.class,
+
+            // algorithms
+            PageRankVertexProgramTest.class,
+
+            // compliance
+            TraversalCoverageTest.class
+
+
     };
 
     public GroovyProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {

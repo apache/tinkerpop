@@ -22,6 +22,14 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
 
     private final Map<Traverser.Admin<S>, Traverser.Admin<S>> map = new LinkedHashMap<>();
 
+    public TraverserSet() {
+
+    }
+
+    public TraverserSet(final Traverser.Admin<S> traverser) {
+        this.map.put(traverser, traverser);
+    }
+
     @Override
     public Iterator<Traverser.Admin<S>> iterator() {
         return this.map.keySet().iterator();

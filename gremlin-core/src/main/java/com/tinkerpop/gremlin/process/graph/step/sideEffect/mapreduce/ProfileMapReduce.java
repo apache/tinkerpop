@@ -68,6 +68,6 @@ public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, T
 
     @Override
     public String toString() {
-        return StringFactory.mapReduceString(this, "");
+        return StringFactory.mapReduceString(this);
     }
 }

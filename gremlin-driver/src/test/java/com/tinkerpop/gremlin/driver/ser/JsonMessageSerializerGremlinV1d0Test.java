@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
@@ -13,6 +14,8 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -121,6 +124,23 @@ public class JsonMessageSerializerGremlinV1d0Test {
         assertNotNull(properties);
         assertEquals(123, properties.get("abc"));
 
+    }
+
+    @Test
+    public void serializeEdgeProperty() throws Exception {
+        final Graph g = TinkerGraph.open();
+        final Vertex v1 = g.addVertex();
+        final Vertex v2 = g.addVertex();
+        final Edge e = v1.addEdge("test", v2);
+        e.property("abc", 123);
+
+        final Iterable<Property<Object>> iterable = e.properties("abc").toList();
+        final ResponseMessage response = convert(iterable);
+        assertCommon(response);
+
+        final List<Map<String, Object>> propertyList = (List<Map<String, Object>>) response.getResult().getData();
+        assertEquals(1, propertyList.size());
+        assertEquals(123, propertyList.get(0).get("value"));
     }
 
     @Test

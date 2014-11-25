@@ -1,12 +1,19 @@
 package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
-import com.tinkerpop.gremlin.process.computer.MessageType;
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.computer.MessageCombiner;
+import com.tinkerpop.gremlin.process.computer.MessageScope;
 import com.tinkerpop.gremlin.process.computer.Messenger;
+import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -17,28 +24,30 @@ public class TinkerMessenger<M> implements Messenger<M> {
 
     private final Vertex vertex;
     private final TinkerMessageBoard<M> messageBoard;
-    //private final Optional<MessageCombiner<M>> combiner;
+    private final MessageCombiner<M> combiner;
 
 
-    public TinkerMessenger(final Vertex vertex, final TinkerMessageBoard<M> messageBoard) {
+    public TinkerMessenger(final Vertex vertex, final TinkerMessageBoard<M> messageBoard, final Optional<MessageCombiner<M>> combiner) {
         this.vertex = vertex;
         this.messageBoard = messageBoard;
-        //this.combiner = combiner;
+        this.combiner = combiner.isPresent() ? combiner.get() : null;
     }
 
     @Override
-    public Iterable<M> receiveMessages(final MessageType messageType) {
-        if (messageType instanceof MessageType.Local) {
-            final MessageType.Local<Object, M> localMessageType = (MessageType.Local) messageType;
+    public Iterable<M> receiveMessages(final MessageScope messageScope) {
+        if (messageScope instanceof MessageScope.Local) {
+            final MessageScope.Local<M> localMessageScope = (MessageScope.Local) messageScope;
+            final Traversal<Vertex, Edge> incidentTraversal = TinkerMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get(), this.vertex);
+            final Direction direction = TinkerMessenger.getDirection(incidentTraversal);
             final Edge[] edge = new Edge[1]; // simulates storage side-effects available in Gremlin, but not Java8 streams
-            return StreamFactory.iterable(StreamFactory.stream(localMessageType.edges(this.vertex).reverse())
+            return StreamFactory.iterable(StreamFactory.stream(incidentTraversal.reverse())
                     .map(e -> {
                         edge[0] = e;
-                        return this.messageBoard.receiveMessages.get(e.toV(localMessageType.getDirection()).next());
+                        return this.messageBoard.receiveMessages.get(e.iterators().vertexIterator(direction).next());
                     })
                     .filter(q -> null != q)
                     .flatMap(q -> q.stream())
-                    .map(message -> localMessageType.getEdgeFunction().apply(message, edge[0])));
+                    .map(message -> localMessageScope.getEdgeFunction().apply(message, edge[0])));
 
         } else {
             return StreamFactory.iterable(Arrays.asList(this.vertex).stream()
@@ -49,16 +58,16 @@ public class TinkerMessenger<M> implements Messenger<M> {
     }
 
     @Override
-    public void sendMessage(final MessageType messageType, final M message) {
-        if (messageType instanceof MessageType.Local) {
+    public void sendMessage(final MessageScope messageScope, final M message) {
+        if (messageScope instanceof MessageScope.Local) {
             getMessageList(this.vertex).add(message);
         } else {
-            ((MessageType.Global) messageType).vertices().forEach(v -> {
+            ((MessageScope.Global) messageScope).vertices().forEach(v -> {
                 final Queue<M> queue = getMessageList(v);
-                /*if (this.combiner.isPresent() && !queue.isEmpty()) {
-                    this.combiner.get().combine(queue.remove(), message).forEachRemaining(queue::add);
-                } else*/
-                queue.add(message);
+                if (null != this.combiner && !queue.isEmpty()) {
+                    queue.add(this.combiner.combine(queue.remove(), message));
+                } else
+                    queue.add(message);
             });
         }
     }
@@ -70,5 +79,18 @@ public class TinkerMessenger<M> implements Messenger<M> {
             this.messageBoard.sendMessages.put(vertex, messages);
         }
         return messages;
+    }
+
+    ///////////
+
+    private static <T extends Traversal<Vertex, Edge>> T setVertexStart(final Traversal<Vertex, Edge> incidentTraversal, final Vertex vertex) {
+        final Traversal<Vertex, Edge> traversal = incidentTraversal;
+        TraversalHelper.insertStep(new StartStep<>(traversal, vertex), 0, traversal);
+        return (T) traversal;
+    }
+
+    private static Direction getDirection(final Traversal<Vertex, Edge> incidentTraversal) {
+        final VertexStep step = TraversalHelper.getLastStep(incidentTraversal, VertexStep.class).get();
+        return step.getDirection();
     }
 }

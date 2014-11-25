@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SumStep;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
@@ -15,15 +16,15 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class CountMapReduce implements MapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
+public final class SumMapReduce implements MapReduce<MapReduce.NullObject, Double, MapReduce.NullObject, Double, Double> {
 
     private Traversal traversal;
 
-    private CountMapReduce() {
+    private SumMapReduce() {
 
     }
 
-    public CountMapReduce(final CountStep step) {
+    public SumMapReduce(final SumStep step) {
         this.traversal = step.getTraversal();
     }
 
@@ -38,42 +39,42 @@ public final class CountMapReduce implements MapReduce<MapReduce.NullObject, Lon
     }
 
     @Override
-    public void map(Vertex vertex, MapEmitter<MapReduce.NullObject, Long> emitter) {
+    public void map(Vertex vertex, MapEmitter<MapReduce.NullObject, Double> emitter) {
         this.traversal.sideEffects().setLocalVertex(vertex);
-        emitter.emit(this.traversal.sideEffects().orElse(CountStep.COUNT_KEY, 0l));
+        emitter.emit(this.traversal.sideEffects().orElse(SumStep.SUM_KEY, 0.0d));
     }
 
     @Override
-    public void reduce(final NullObject key, final Iterator<Long> values, final ReduceEmitter<NullObject, Long> emitter) {
-        long count = 0l;
+    public void reduce(final NullObject key, final Iterator<Double> values, final ReduceEmitter<NullObject, Double> emitter) {
+        double sum = 0.0d;
         while (values.hasNext()) {
-            count = values.next() + count;
+            sum = values.next() + sum;
         }
-        emitter.emit(count);
+        emitter.emit(sum);
     }
 
     @Override
-    public void combine(final NullObject key, final Iterator<Long> values, final ReduceEmitter<NullObject, Long> emitter) {
+    public void combine(final NullObject key, final Iterator<Double> values, final ReduceEmitter<NullObject, Double> emitter) {
         this.reduce(key, values, emitter);
     }
 
     @Override
-    public Long generateFinalResult(Iterator<Pair<NullObject, Long>> keyValues) {
-        long count = 0l;
+    public Double generateFinalResult(Iterator<Pair<NullObject, Double>> keyValues) {
+        double sum = 0.0d;
         while (keyValues.hasNext()) {
-            count = count + keyValues.next().getValue1();
+            sum = sum + keyValues.next().getValue1();
         }
-        return count;
+        return sum;
     }
 
     @Override
     public String getMemoryKey() {
-        return CountStep.COUNT_KEY;
+        return SumStep.SUM_KEY;
     }
 
     @Override
     public int hashCode() {
-        return (this.getClass().getCanonicalName() + CountStep.COUNT_KEY).hashCode();
+        return (this.getClass().getCanonicalName() + SumStep.SUM_KEY).hashCode();
     }
 
     @Override

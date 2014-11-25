@@ -7,11 +7,11 @@ image::gremlin-running.png[width=125]
 At the most general level there is `Traversal<S,E>` which implements `Iterator<E>`, where the `S` stands for start and the `E` stands for end. A traversal is composed of four primary components:
   
  . `Step<S,E>`: an individual function applied to `S` to yield `E`.
- . `TraversalStrategy`: interceptor methods to alter the execution of the traversal.
+ . `TraversalStrategy`: interceptor methods to alter the execution of the traversal (i.e. query re-writing typically used only by vendors).
  . `Traversal.SideEffects`: key/value pairs that can be used to store global information about the traversal.
  . `Traverser<T>`: the object propagating through the `Traversal` currently representing an object of type `T`. 
 
-The classic notion of a graph traversal is provided by `GraphTraversal<S,E>` which extends `Traversal<S,E>`.
+The classic notion of a graph traversal is provided by `GraphTraversal<S,E>` which extends `Traversal<S,E>`. GraphTraversal provides an interpretation of the graph data in terms of vertices, edges, etc. and thus, a graph traversal link:http://en.wikipedia.org/wiki/Domain-specific_language[DSL].
 
 [[graph-traversal-steps]]
 Graph Traversal Steps
@@ -908,13 +908,12 @@ gremlin> g.v(1).as('x').out('created').in('created').values('name').retain(['mar
 Sack Step
 ~~~~~~~~~
 
-image:gremlin-sacks-running.png[width=175,float=right] A traverser can contain a traverser-local sideEffect data structure called a "sack". The `sack()`-step is used to manipulate traverser sacks (*sideEffect* or *map*). Each sack of each traverser is created when the traverser is generated using `withSack(initialValueSupplier,splitOperator?,mergeOperator?)`.
+image:gremlin-sacks-running.png[width=175,float=right] A traverser can contain a local data structure called a "sack". The `sack()`-step is used to read and write sacks (*sideEffect* or *map*). Each sack of each traverser is created when using `GraphTraversal.withSack(initialValueSupplier,splitOperator?)`.
 
 * *Initial value supplier*: A `Supplier` providing the initial value of each traverser's sack.
-* *Split operator*: a `UnaryOperator` that clones the traversers sack when the traverser splits. If no split operator is provided, then it assumes `UnaryOperator.identity()`.
-* *Merge operator*: a `BinaryOperator` that merges two traverser sacks when the traversers merge. The merge operator should be link:http://en.wikipedia.org/wiki/Associative_property[associative], link:http://en.wikipedia.org/wiki/Commutative_property[commutative], and link:http://en.wikipedia.org/wiki/Distributive_property[distributive]. If no merge operator is provided, traversers can not be merged.
+* *Split operator*: a `UnaryOperator` that clones the traverser's sack when the traverser splits. If no split operator is provided, then `UnaryOperator.identity()` is assumed.
 
-In the first example below, for each traverser created at each vertex in the graph (`g.V()`), a 1.0 sack is supplier (`withSack({1.0f})`). and then accessed (`sack()`). In the second example, a random float supplier is used to generate sack values.
+Two trivial examples are presented below to demonstrate the *initial value supplier*. In the first example below, a traverser is created at each vertex in the graph (`g.V()`), with a 1.0 sack (`withSack{1.0f}`), and then the sack value is accessed (`sack()`). In the second example, a random float supplier is used to generate sack values.
 
 [source,groovy]
 gremlin> g.V().withSack{1.0f}.sack()
@@ -934,7 +933,20 @@ gremlin> g.V().withSack{rand.nextFloat()}.sack()
 ==>0.8067685
 ==>0.21980786
 
-When complex objects are used (i.e. non-primitives), then a split operator should be defined to ensure that each traverser gets a clone of his parent's sack. The first example does not use a split operator and as such, the same map is propagated to all traversers (a global data structure). For such global data structures, `withSideEffect()` should be used. The second example, demonstrates how `Map.clone()` ensures that each traverser's sack contains a unique, local sack.
+A more complicated initial value supplier example is presented below where the sack values are used in a running computation and then emitted at the end of the traversal. When an edge is traversed, the edge weight is multiplied by the sack value (`sack(mult,'weight')`).
+
+[source,groovy]
+gremlin> g.V().withSack{1.0f}.as('x').outE().sack(mult,'weight').inV().jump('x',2)
+==>v[5]
+==>v[3]
+gremlin> g.V().withSack{1.0f}.as('x').outE().sack(mult,'weight').inV().jump('x',2).sack()
+==>1.0
+==>0.4
+gremlin> g.V().withSack{1.0f}.as('x').outE().sack(mult,'weight').inV().jump('x',2).path{it}{it.value('weight')}
+==>[v[1], 1.0, v[4], 1.0, v[5]]   // 1.0 * 1.0 * 1.0 = 1.0
+==>[v[1], 1.0, v[4], 0.4, v[3]]   // 1.0 * 1.0 * 0.4 = 0.4
+
+image:gremlin-sacks-standing.png[width=100,float=left] When complex objects are used (i.e. non-primitives), then a *split operator* should be defined to ensure that each traverser gets a clone of its parent's sack. The first example does not use a split operator and as such, the same map is propagated to all traversers (a global data structure). The second example, demonstrates how `Map.clone()` ensures that each traverser's sack contains a unique, local sack.
 
 [source,groovy]
 gremlin> g.V().withSack { [:] }.
@@ -948,20 +960,7 @@ gremlin> g.V().withSack { [:] } { m -> m.clone() }.
 ==>[ripple:java]
 ==>[lop:java]
 
-Finally, the merge operator is important in situations when two traversers are merged. When merging, their bulk count is summed and their sacks are merged. Assuming an associative, distributive, and commutative merge operator, the semantics of the traversal are respected.
-
-[source,groovy]
-gremlin> g.V().withSack({1.0f},sum).as('x').outE().sack(mult,'weight').inV().jump('x',2)
-==>v[5]
-==>v[3]
-gremlin> g.V().withSack({1.0f},sum).as('x').outE().sack(mult,'weight').inV().jump('x',2).sack()
-==>1.0
-==>0.4
-gremlin> g.V().withSack({1.0f},sum).as('x').outE().sack(mult,'weight').inV().jump('x',2).path{it}{it.value('weight')}
-==>[v[1], 1.0, v[4], 1.0, v[5]]   // 1.0 * 1.0 * 1.0 = 1.0
-==>[v[1], 1.0, v[4], 0.4, v[3]]   // 1.0 * 1.0 * 0.4 = 0.4
-
-CAUTION: image:gremlin-sacks-standing.png[width=100,float=left] If no merge operator is provided, then traversers with sacks will not be able to be merged. The drawback of this is readily seen in OLAP computations where traversers must be enumerated instead of counted (see <<distributed-gremlin-gotchas,Distributed Gremlin Gotchas>>). Note that various OLTP situations make use of the traverser merge optimization.
+NOTE: For primitives (i.e. integers, longs, floats, etc.), a split operator is not required as a primitives are encoded in the memory address and of the sack, not as a reference to an object.
 
 [[select-step]]
 Select Step

@@ -478,6 +478,10 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.submit(arg0);
 	}
 
+	public default Neo4jTraversal<S, java.lang.Double> sum() {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.sum();
+	}
+
 	public default Neo4jTraversal<S, E> timeLimit(long arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.timeLimit(arg0);
 	}
@@ -558,16 +562,8 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.withSack(arg0);
 	}
 
-	public default <A> Neo4jTraversal<S, E> withSack(java.util.function.Supplier<A> arg0, java.util.function.BinaryOperator<A> arg1) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.withSack(arg0, arg1);
-	}
-
 	public default <A> Neo4jTraversal<S, E> withSack(java.util.function.Supplier<A> arg0, java.util.function.UnaryOperator<A> arg1) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.withSack(arg0, arg1);
-	}
-
-	public default <A> Neo4jTraversal<S, E> withSack(java.util.function.Supplier<A> arg0, java.util.function.UnaryOperator<A> arg1, java.util.function.BinaryOperator<A> arg2) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.withSack(arg0, arg1, arg2);
 	}
 
 	public default Neo4jTraversal<S, E> withSideEffect(java.lang.String arg0, java.util.function.Supplier arg1) {

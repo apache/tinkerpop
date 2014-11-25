@@ -79,6 +79,7 @@ public final class GiraphGraphComputer extends Configured implements GraphComput
         final BaseConfiguration apacheConfiguration = new BaseConfiguration();
         vertexProgram.storeState(apacheConfiguration);
         ConfUtil.mergeApacheIntoHadoopConfiguration(apacheConfiguration, this.giraphConfiguration);
+        this.vertexProgram.getMessageCombiner().ifPresent(combiner -> this.giraphConfiguration.setCombinerClass(GiraphMessageCombiner.class));
         return this;
     }
 

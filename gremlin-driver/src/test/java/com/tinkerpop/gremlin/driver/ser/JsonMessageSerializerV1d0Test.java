@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
@@ -131,7 +132,7 @@ public class JsonMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeHiddenProperties() throws Exception {
+    public void serializeHiddenVertexProperties() throws Exception {
         final Graph g = TinkerGraph.open();
         final Vertex v = g.addVertex("abc", 123);
         v.property(Graph.Key.hide("hidden"), "stephen");
@@ -193,7 +194,32 @@ public class JsonMessageSerializerV1d0Test {
         final JSONObject properties = edgeAsJson.optJSONObject(GraphSONTokens.PROPERTIES);
         assertNotNull(properties);
         assertEquals(123, properties.getInt("abc"));
+    }
 
+    @Test
+    public void serializeEdgeProperty() throws Exception {
+        final Graph g = TinkerGraph.open();
+        final Vertex v1 = g.addVertex();
+        final Vertex v2 = g.addVertex();
+        final Edge e = v1.addEdge("test", v2);
+        e.property("abc", 123);
+
+        final Iterable<Property<Object>> iterable = e.properties("abc").toList();
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(iterable).create());
+
+        final JSONObject json = new JSONObject(results);
+
+        assertNotNull(json);
+        assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
+        final JSONArray converted = json.getJSONObject(SerTokens.TOKEN_RESULT).getJSONArray(SerTokens.TOKEN_DATA);
+
+        assertNotNull(converted);
+        assertEquals(1, converted.length());
+
+        final JSONObject propertyAsJson = converted.optJSONObject(0);
+        assertNotNull(propertyAsJson);
+
+        assertEquals(123, propertyAsJson.getInt("value"));
     }
 
     @Test

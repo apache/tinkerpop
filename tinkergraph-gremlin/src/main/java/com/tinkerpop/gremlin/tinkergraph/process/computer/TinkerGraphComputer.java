@@ -76,7 +76,7 @@ public class TinkerGraphComputer implements GraphComputer {
                 while (true) {
                     this.vertexProgram.workerIterationStart(this.memory);
                     TinkerHelper.getVertices(this.graph).stream().forEach(vertex ->
-                            this.vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard), this.memory));
+                            this.vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard, this.vertexProgram.getMessageCombiner()), this.memory));
                     this.vertexProgram.workerIterationEnd(this.memory);
                     this.messageBoard.completeIteration();
                     this.memory.completeSubRound();

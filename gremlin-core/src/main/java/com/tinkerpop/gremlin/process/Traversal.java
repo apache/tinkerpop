@@ -346,11 +346,9 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
                 this.registerSupplier(key, supplier);
         }
 
-        public <S> void setSack(final Supplier<S> initialValue, final Optional<UnaryOperator<S>> splitOperator, final Optional<BinaryOperator<S>> mergeOperator);
+        public <S> void setSack(final Supplier<S> initialValue, final Optional<UnaryOperator<S>> splitOperator);
 
         public <S> Optional<Supplier<S>> getSackInitialValue();
-
-        public <S> Optional<BinaryOperator<S>> getSackMergeOperator();
 
         public <S> Optional<UnaryOperator<S>> getSackSplitOperator();
 

@@ -7,7 +7,8 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.Memory;
-import com.tinkerpop.gremlin.process.computer.MessageType;
+import com.tinkerpop.gremlin.process.computer.MessageCombiner;
+import com.tinkerpop.gremlin.process.computer.MessageScope;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
@@ -16,7 +17,6 @@ import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
-import com.tinkerpop.gremlin.process.util.DefaultTraversalSideEffects;
 import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -28,8 +28,10 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -46,9 +48,10 @@ import java.util.function.Supplier;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalVertexProgram implements VertexProgram<Traverser.Admin<?>> {
+public final class TraversalVertexProgram implements VertexProgram<TraverserSet<?>> {
 
-    // TODO: if not an adjacent traversal, use Local message type -- a dual messaging system.
+    // TODO: if not an adjacent traversal, use Local message scope -- a dual messaging system.
+    private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Arrays.asList(MessageScope.Global.instance()));
 
     public static final String HALTED_TRAVERSERS = Graph.Key.hide("gremlin.traversalVertexProgram.haltedTraversers");
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
@@ -58,13 +61,8 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
     private Traversal traversal;
 
     private final Set<MapReduce> mapReducers = new HashSet<>();
-    private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<String>() {{
-        add(VOTE_TO_HALT);
-    }};
-    private final Set<String> elementComputeKeys = new HashSet<String>() {{
-        add(HALTED_TRAVERSERS);
-        add(Traversal.SideEffects.SIDE_EFFECTS);
-    }};
+    private final Set<String> elementComputeKeys = new HashSet<>(Arrays.asList(HALTED_TRAVERSERS, Traversal.SideEffects.SIDE_EFFECTS));
+    private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<>(Arrays.asList(VOTE_TO_HALT));
 
     private TraversalVertexProgram() {
     }
@@ -118,7 +116,12 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
     }
 
     @Override
-    public void execute(final Vertex vertex, final Messenger<Traverser.Admin<?>> messenger, Memory memory) {
+    public Set<MessageScope> getMessageScopes(final int iteration) {
+        return MESSAGE_SCOPES;
+    }
+
+    @Override
+    public void execute(final Vertex vertex, final Messenger<TraverserSet<?>> messenger, final Memory memory) {
         this.traversal.sideEffects().setLocalVertex(vertex);
         if (memory.isInitialIteration()) {
             final TraverserSet<Object> haltedTraversers = new TraverserSet<>();
@@ -140,7 +143,7 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
                     haltedTraversers.add((Traverser.Admin) traverser);
                 else {
                     voteToHalt.set(false);
-                    messenger.sendMessage(MessageType.Global.of(vertex), traverser);
+                    messenger.sendMessage(MessageScope.Global.of(vertex), new TraverserSet<>(traverser));
                 }
             });
             memory.and(VOTE_TO_HALT, voteToHalt.get());
@@ -176,6 +179,11 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
     }
 
     @Override
+    public Optional<MessageCombiner<TraverserSet<?>>> getMessageCombiner() {
+        return (Optional) TraversalVertexProgramMessageCombiner.instance();
+    }
+
+    @Override
     public String toString() {
         final String traversalString = this.traversal.toString().substring(1);
         return StringFactory.vertexProgramString(this, traversalString.substring(0, traversalString.length() - 1));
@@ -185,7 +193,7 @@ public final class TraversalVertexProgram implements VertexProgram<Traverser.Adm
     public Features getFeatures() {
         return new Features() {
             @Override
-            public boolean requiresGlobalMessageTypes() {
+            public boolean requiresGlobalMessageScopes() {
                 return true;
             }
 

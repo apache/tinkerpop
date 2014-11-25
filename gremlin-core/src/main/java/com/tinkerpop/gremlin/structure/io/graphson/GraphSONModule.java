@@ -33,6 +33,7 @@ public class GraphSONModule extends SimpleModule {
         addSerializer(GraphSONVertex.class, new GraphSONVertex.VertexJacksonSerializer());
         addSerializer(GraphSONGraph.class, new GraphSONGraph.GraphJacksonSerializer(normalize));
         addSerializer(VertexProperty.class, new VertexPropertyJacksonSerializer());
+        addSerializer(Property.class, new PropertyJacksonSerializer());
     }
 
     static class VertexPropertyJacksonSerializer extends StdSerializer<VertexProperty> {
@@ -76,6 +77,31 @@ public class GraphSONModule extends SimpleModule {
             }
         }
     }
+
+    static class PropertyJacksonSerializer extends StdSerializer<Property> {
+        public PropertyJacksonSerializer() {
+            super(Property.class);
+        }
+
+        @Override
+        public void serialize(final Property property, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException {
+            ser(property, jsonGenerator);
+        }
+
+        @Override
+        public void serializeWithType(final Property property, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
+            ser(property, jsonGenerator);
+        }
+
+        private void ser(final Property property, final JsonGenerator jsonGenerator) throws IOException {
+            final Map<String, Object> m = new HashMap<>();
+            m.put(GraphSONTokens.VALUE, property.value());
+            jsonGenerator.writeObject(m);
+        }
+    }
+
 
     static class EdgeJacksonSerializer extends StdSerializer<Edge> {
         public EdgeJacksonSerializer() {
