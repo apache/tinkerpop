@@ -13,7 +13,7 @@ image:tinkerpop-enabled.png[width=140,float=left] At the core of TinkerPop3 is a
 Implementing Gremlin-Core
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The classes that a vendor should focus on implemented are itemized below. Please feel free to study the TinkerGraph (in-memory OLTP and OLAP in `tinkergraph-gremlin`), Neo4jGraph (OTLP w/ transactions in `neo4j-gremlin`) and/or GiraphGraph (OLAP in `giraph-gremlin`) implementations for ideas and patterns.
+The classes that a vendor should focus on implemented are itemized below. Please feel free to study the TinkerGraph (in-memory OLTP and OLAP in `tinkergraph-gremlin`), Neo4jGraph (OTLP w/ transactions in `neo4j-gremlin`) and/or HadoopGraph (OLAP in `hadoop-gremlin`) implementations for ideas and patterns.
 
 . Online Transactional Processing Graph Systems (*OLTP*)
  .. Structure API: `Graph`, `Element`, `Vertex`, `Edge`, `Property` and `Transaction` (if transactions are supported).
@@ -24,7 +24,7 @@ The classes that a vendor should focus on implemented are itemized below. Please
 
 A collection of implementation notes:
 
-* Be sure your `Graph` implementation is named as `XXXGraph` (e.g. TinkerGraph, Neo4jGraph, GiraphGraph, etc.).
+* Be sure your `Graph` implementation is named as `XXXGraph` (e.g. TinkerGraph, Neo4jGraph, HadoopGraph, etc.).
 * Use `StringHelper` to ensuring that the `toString()` representation of classes are consistent with other implementations.
 * Ensure that your implementation's `Features` (Graph, Vertex, etc.) are correct so that test cases handle particulars accordingly.
 * Use the numerous static method helper classes such as `ElementHelper`, `GraphComputerHelper`, `VertexProgramHelper`, etc.
@@ -111,7 +111,7 @@ image:furnace-character-1.png[width=110,float=right] Implementing the OLAP inter
 
 NOTE: The interfaces VertexProgram and MapReduce in the `process/computer/` package are not required by the vendor to implement. Instead, these are interfaces to be implemented by application developers writing VertexPrograms and MapReduce jobs.
 
-IMPORTANT: TinkerPop3 provides two OLAP implementations: <<tinkergraph-gremlin,TinkerGraphComputer>> and <<giraph-gremlin,GiraphGraphComputer>>. It is a good idea to study these implementations to understand the nuances of the implementation requirements.
+IMPORTANT: TinkerPop3 provides two OLAP implementations: <<tinkergraph-gremlin,TinkerGraphComputer>> and <<hadoop-gremlin,HadoopGraphComputer>>. It is a good idea to study these implementations to understand the nuances of the implementation requirements.
 
 Implementing GraphComputer
 ++++++++++++++++++++++++++
@@ -224,7 +224,7 @@ Validating with Gremlin-Test
   <version>x.y.z</version>
 </dependency>
 
-The operational semantics of any OLTP or OLAP implementation are validated by `gremlin-test`. Please provide the following test cases with your implementation, where `XXX` below denotes the name of your graph implementation (e.g. TinkerGraph, Neo4jGraph, GiraphGraph, etc.).
+The operational semantics of any OLTP or OLAP implementation are validated by `gremlin-test`. Please provide the following test cases with your implementation, where `XXX` below denotes the name of your graph implementation (e.g. TinkerGraph, Neo4jGraph, HadoopGraph, etc.).
 
 NOTE: It is as important to look at "ignored" tests as it is to look at ones that fail.  The `gremlin-test` suite utilizes the `Feature` implementation exposed by the `Graph` to determine which tests to execute.  If a test utilizes features that are not supported by the graph, it will ignore them.  While that may be fine, implementers should validate that the ignored tests are appropriately bypassed and that there are no mistakes in their feature definitions.
 
@@ -292,7 +292,7 @@ public class TinkerGraph implements Graph {
 
 Only include annotations for the suites the implementation will support.  Note that implementing the suite, but not specifying the appropriate annotation will prevent the suite from running (an obvious error message will appear in this case when running the mis-configured suite).
 
-There are times when there may be a specific test in the suite that the implementation cannot support (despite the features it implements) or should not otherwise be executed.  It is possible for implementers to "opt-out" of a test by using the `@Graph.OptOut` annotation.  The following is an example of this annotation usage as taken from `GiraphGraph`: 
+There are times when there may be a specific test in the suite that the implementation cannot support (despite the features it implements) or should not otherwise be executed.  It is possible for implementers to "opt-out" of a test by using the `@Graph.OptOut` annotation.  The following is an example of this annotation usage as taken from `HadoopGraph`:
 
 [source, java]
 ----
@@ -301,20 +301,20 @@ There are times when there may be a specific test in the suite that the implemen
 @Graph.OptOut(
         test = "com.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest",
         method = "g_V_matchXa_hasXname_GarciaX__a_inXwrittenByX_b__a_inXsungByX_bX",
-        reason = "Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
+        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
         test = "com.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest",
         method = "g_V_matchXa_inXsungByX_b__a_inXsungByX_c__b_outXwrittenByX_d__c_outXwrittenByX_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX",
-        reason = "Giraph-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
+        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
         test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
         method = "shouldNotAllowBadMemoryKeys",
-        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+        reason = "Hadoop does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
         test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
         method = "shouldRequireRegisteringMemoryKeys",
-        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
-public class GiraphGraph implements Graph {
+        reason = "Hadoop does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+public class HadoopGraph implements Graph {
 ----
 
 These annotations help provide users a level of transparency into test suite compliance (via the xref:describe-graph[describeGraph()] utility function). It also allows implementers to have a lot of flexibility in terms of how they wish to support TinkerPop.  For example, maybe there is a single test case that prevents an implementer from claiming support of a `Feature`.  The implementer could choose to either not support the `Feature` or support it but "opt-out" of the test with a "reason" as to why so that users understand the limitation.
