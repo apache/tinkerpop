@@ -140,18 +140,40 @@ class Console {
                 return null
             } else {
                 try {
+                    // if the result is an empty iterator then the tempIterator needs to be set to one, as a
+                    // future assignment to the list that produced the iterator will maintain that reference
+                    // and try to iterate it above.  in other words, this:
+                    //
+                    // x =[]
+                    // x << "test"
+                    //
+                    // would throw a ConcurrentModificationException because the assignment of x to the tempIterator
+                    // on the first line would maintain a reference on the next result iteration call and would
+                    // drop into the other part of this if statement and throw.
                     if (result instanceof Iterator) {
                         this.tempIterator = (Iterator) result
-                        if (!this.tempIterator.hasNext()) return null
+                        if (!this.tempIterator.hasNext()) {
+                            this.tempIterator = Collections.emptyIterator();
+                            return null
+                        }
                     } else if (result instanceof Iterable) {
                         this.tempIterator = ((Iterable) result).iterator()
-                        if (!this.tempIterator.hasNext()) return null
+                        if (!this.tempIterator.hasNext()) {
+                            this.tempIterator = Collections.emptyIterator();
+                            return null
+                        }
                     } else if (result instanceof Object[]) {
                         this.tempIterator = new ArrayIterator((Object[]) result)
-                        if (!this.tempIterator.hasNext()) return null
+                        if (!this.tempIterator.hasNext()) {
+                            this.tempIterator = Collections.emptyIterator();
+                            return null
+                        }
                     } else if (result instanceof Map) {
                         this.tempIterator = ((Map) result).entrySet().iterator()
-                        if (!this.tempIterator.hasNext()) return null
+                        if (!this.tempIterator.hasNext()) {
+                            this.tempIterator = Collections.emptyIterator();
+                            return null
+                        }
                     } else {
                         io.out.println(buildResultPrompt() + ((null == result) ? NULL : result.toString()))
                         return null
