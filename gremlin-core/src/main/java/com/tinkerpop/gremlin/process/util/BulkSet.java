@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.Spliterator;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 /**
@@ -54,6 +55,10 @@ public class BulkSet<S> extends AbstractSet<S> implements Set<S>, Serializable {
             collection.iterator().forEachRemaining(this::add);
         }
         return true;
+    }
+
+    public void forEach(final BiConsumer<S,Long> consumer) {
+        this.map.forEach(consumer);
     }
 
     public boolean add(final S s, final long bulk) {

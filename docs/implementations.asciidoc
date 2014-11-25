@@ -595,9 +595,9 @@ Hadoop-Gremlin
 </dependency>
 ----
 
-image:giraph-logo.png[width=100,float=left] link:http://giraph.apache.org[Giraph] is an Apache Foundation project focused on OLAP-based graph processing. Giraph makes use of the distributed graph computing paradigm made popular by Google's Pregel. In Giraph, developers write "vertex programs" that get executed at each vertex in parallel. These programs communicate with one another in a bulk synchronous parallel (BSP) manner. This model aligns with TinkerPop3's `GraphComputer` API. TinkerPop3 provides an implementation of `GraphComputer` that works for Giraph called `GiraphGraphComputer`. Moreover, with TinkerPop3's <<mapreduce,MapReduce>>-framework, the standard Giraph/Pregel model is extended to support an arbitrary number of MapReduce phases to aggregate and yield results from the graph. Finally, note that `GiraphGraph` also supports read-only OLTP operations (though via linear scans of HDFS serializations).
+image:hadoop-logo-notext.png[width=100,float=left] link:http://hadoop.apache.org/[Hadoop] is a distributed computing framework that can be used to process files so large they are represented across a distributed file system known as HDFS. When those files represent TinkerPop3 graphs, then Hadoop-Gremlin can be used to process such graphs -- both in OLTP and OLAP form.
 
-IMPORTANT: image:hadoop-logo-notext.png[width=100,float=left] This section assumes that the user has a Hadoop 1.x cluster functioning. For more information on getting started with Hadoop, please see their link:http://hadoop.apache.org/docs/r1.2.1/single_node_setup.html[Single Node Setup] tutorial. Moreover, if using `GiraphGraphComputer` it is advisable that the reader also familiarize themselves with Giraph as well via their link:http://giraph.apache.org/quick_start.html[Getting Started] page.
+IMPORTANT: This section assumes that the user has a Hadoop 1.x cluster functioning. For more information on getting started with Hadoop, please see their link:http://hadoop.apache.org/docs/r1.2.1/single_node_setup.html[Single Node Setup] tutorial. Moreover, if using `GiraphGraphComputer` it is advisable that the reader also familiarize themselves with Giraph as well via their link:http://giraph.apache.org/quick_start.html[Getting Started] page.
 
 Installing Hadoop-Gremlin
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -695,18 +695,18 @@ gremlin> hdfs.copyFromLocal('data/tinkerpop-classic-vertices.gio', 'tinkerpop-cl
 ==>null
 gremlin> hdfs.ls()
 ==>rw-r--r-- marko supergroup 891 tinkerpop-classic-vertices.gio
-gremlin> g = GraphFactory.open('../../../hadoop-gremlin/conf/hadoop-kryo.properties')  // be conscious of where hadoop-kryo.properties is
-==>hadoophgraph[kryoxinputformat->kryooutputformat]
+gremlin> g = GraphFactory.open('../../../hadoop-gremlin/conf/hadoop-kryo.properties')
+==>hadoopgraph[kryoinputformat->kryooutputformat]
 gremlin> g.V().count()
 ==>6
 gremlin> g.V().out().out().values('name')
 ==>ripple
 ==>lop
 gremlin> g.V().groupBy{it.get().value('name')[1]}{it.get().value('name')}.next()
-==>a=[marko, vadas]
-==>e=[peter]
-==>i=[ripple]
-==>o=[lop, josh]
+==>a={marko=1, vadas=1}
+==>e={peter=1}
+==>i={ripple=1}
+==>o={lop=1, josh=1}
 
 OLAP Hadoop-Gremlin
 ~~~~~~~~~~~~~~~~~~~
@@ -724,53 +724,53 @@ IMPORTANT: As of TinkerPop3 x.y.z, when using Hadoop-Gremlin OLAP from the Greml
 GiraphGraphComputer
 ^^^^^^^^^^^^^^^^^^^
 
-image:giraph-logo.png[width=70,float=right] Below are examples using `GiraphGraphComputer` from the <<gremlin-console,Gremlin-Console>>.
+image:giraph-logo.png[width=100,float=left] link:http://giraph.apache.org[Giraph] is an Apache Foundation project focused on OLAP-based graph processing. Giraph makes use of the distributed graph computing paradigm made popular by Google's Pregel. In Giraph, developers write "vertex programs" that get executed at each vertex in parallel. These programs communicate with one another in a bulk synchronous parallel (BSP) manner. This model aligns with TinkerPop3's `GraphComputer` API. TinkerPop3 provides an implementation of `GraphComputer` that works for Giraph called `GiraphGraphComputer`. Moreover, with TinkerPop3's <<mapreduce,MapReduce>>-framework, the standard Giraph/Pregel model is extended to support an arbitrary number of MapReduce phases to aggregate and yield results from the graph. Below are examples using `GiraphGraphComputer` from the <<gremlin-console,Gremlin-Console>>.
 
 [source,text]
 gremlin> :remote connect tinkerpop.hadoop ../../../hadoop-gremlin/conf/hadoop-kryo.properties
-==>hadoopgraph[kryovertexinputformat->kryovertexoutputformat]
+==>hadoopgraph[kryoinputformat->kryooutputformat]
 gremlin> :> g.V().count()
-INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, CountStep]
+INFO  com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer  - HadoopGremlin(Giraph): TraversalVertexProgram[HadoopGraphStep(vertex), CountStep, SideEffectCapStep]
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0037
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
-INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: CountCapMapReduce
+INFO  com.tinkerpop.gremlin.hadoop.structure.HadoopGraph  - HadoopGremlin: CountMapReduce
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0038
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
 ==>6
 gremlin> :> g.V().out().out().values('name')
-INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, VertexStep(OUT), VertexStep(OUT), ElementValueStep(name)]
+INFO  com.tinkerpop.gremlin.giraph.process.computer.giraph.GiraphGraphComputer  - HadoopGremlin(Giraph): TraversalVertexProgram[HadoopGraphStep(vertex), VertexStep(OUT), VertexStep(OUT), ElementValueStep(name)]
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0031
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
-INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: TraversalResultMapReduce
+INFO  com.tinkerpop.gremlin.hadoop.structure.HadoopGraph  - HadoopGremlin: TraversalResultMapReduce
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0032
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
 ==>ripple
 ==>lop
 gremlin> :> g.V().groupBy('a'){it.get().value('name')[1]}{it.get().value('name')}
-INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, GroupByStep@a]
+INFO  com.tinkerpop.gremlin.giraph.process.computer.giraph.GiraphGraphComputer  - HadoopGremlin(Giraph): TraversalVertexProgram[HadoopGraphStep(vertex), GroupByStep@a, SideEffectCapStep(a)]
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0039
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
-INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: GroupByMapReduce
+INFO  com.tinkerpop.gremlin.hadoop.structure.HadoopGraph  - HadoopGremlin: GroupByMapReduce[a]
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0040
 INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ...
 ==>[a:[marko, vadas], e:[peter], i:[ripple], o:[lop, josh]]
 gremlin> result
-==>result[giraphgraph[kryovertexinputformat->kryovertexoutputformat],memory[size:1]]
+==>result[hadoopgraph[kryoinputformat->kryooutputformat],memory[size:1]]
 gremlin> result.memory().runtime
 ==>20356
 gremlin> result.memory().keys()
 ==>a
 gremlin> result.memory().a
-==>a=[marko, vadas]
-==>e=[peter]
-==>i=[ripple]
-==>o=[lop, josh]
+==>a={marko=1, vadas=1}
+==>e={peter=1}
+==>i={ripple=1}
+==>o={lop=1, josh=1}
 
 NOTE: Distributed graph computations on cluster-sized graphs can yield an enormous number of results. To be safe, Hadoop-Gremlin only returns up to 20 results to the console (with, of course, all the results being available in HDFS). If more traversal results are desired, access `result.memory().get(Graph.System.system('traversers'))`.
 
@@ -790,10 +790,12 @@ gremlin> hdfs.ls('output/a')
 ==>rwxr-xr-x marko supergroup 0 (D) _logs
 ==>rw-r--r-- marko supergroup 332 part-r-00000
 gremlin> hdfs.head('output/a',GremlinWritable.class)
-==>[a, [marko, vadas]]
-==>[e, [peter]]
-==>[i, [ripple]]
-==>[o, [lop, josh]]
+==>[a, {marko=1}]
+==>[i, {ripple=1}]
+==>[o, {lop=1}]
+==>[a, {vadas=1}]
+==>[e, {peter=1}]
+==>[o, {josh=1}]
 
 A list of the HDFS methods available are itemized below. Note that these methods are also available for the 'local' variable:
 
@@ -812,7 +814,6 @@ A list of the HDFS methods available are itemized below. Note that these methods
 |hdfs.head(String path, long lineCount)| Text display only the first `totalKeyValues` in the path.
 |hdfs.head(String path, long totalKeyValues, Class<Writable> writableClass)| Display the path interpreting the key values as respective writable.
 |=========================================================
-
 
 The `TraversalSupplier1` class mentioned in the `hadoop-kryo.properties` file is distributed with Hadoop-Gremlin. It declares what Gremlin-Java traversal to execute on the loaded `HadoopGraph`. This is the means by which traversals can be programmatically executed in Hadoop-Gremlin.
 
@@ -833,7 +834,7 @@ A Command Line Example
 
 image::pagerank-logo.png[width=300]
 
-The classic link:http://en.wikipedia.org/wiki/PageRank[PageRank] centrality algorithm can be executed over TinkerPop classic from the command line.
+The classic link:http://en.wikipedia.org/wiki/PageRank[PageRank] centrality algorithm can be executed over TinkerPop classic from the command line using `GiraphGraphComputer`.
 
 NOTE: The extension `ldjson` in `hadoop-graphson.properties` refers to link:http://en.wikipedia.org/wiki/Line_Delimited_JSON[line-delimitated JSON] which is the file format used by `GraphSONWriter` when writing an link:http://en.wikipedia.org/wiki/Adjacency_list[adjacency list] representation of a graph.
 
@@ -915,36 +916,34 @@ $ hadoop jar target/hadoop-gremlin-x.y.z-job.jar com.tinkerpop.gremlin.hadoop.pr
 14/07/29 12:08:54 INFO mapred.JobClient:   File Output Format Counters
 14/07/29 12:08:54 INFO mapred.JobClient:     Bytes Written=0
 $ hadoop fs -cat output/^g/*
-{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.5}},{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}],"id":1,"label":"vertex","type":"vertex","hiddens":{"gremlin.pageRank":0.15000000000000002,"gremlin.edgeCount":3.0},"properties":{"name":"marko","age":29}}
-{"inE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}}],"outE":[],"id":5,"label":"vertex","type":"vertex","hiddens":{"gremlin.pageRank":0.23181250000000003,"gremlin.edgeCount":0.0},"properties":{"name":"ripple","lang":"java"}}
-{"inE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}],"outE":[],"id":3,"label":"vertex","type":"vertex","hiddens":{"gremlin.pageRank":0.4018125,"gremlin.edgeCount":0.0},"properties":{"name":"lop","lang":"java"}}
-{"inE":[{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}],"outE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}}],"id":4,"label":"vertex","type":"vertex","hiddens":{"gremlin.pageRank":0.19250000000000003,"gremlin.edgeCount":2.0},"properties":{"name":"josh","age":32}}
-{"inE":[{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.5}}],"outE":[],"id":2,"label":"vertex","type":"vertex","hiddens":{"gremlin.pageRank":0.19250000000000003,"gremlin.edgeCount":0.0},"properties":{"name":"vadas","age":27}}
-{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}],"id":6,"label":"vertex","type":"vertex","hiddens":{"gremlin.pageRank":0.15000000000000002,"gremlin.edgeCount":1.0},"properties":{"name":"peter","age":35}}
+{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"properties":{"weight":0.4}},{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"properties":{"weight":0.5}},{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"properties":{"weight":1.0}}],"id":1,"label":"vertex","type":"vertex","properties":{"~gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"~gremlin.pageRankVertexProgram.edgeCount","value":3.0,"properties":{}}],"~gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"~gremlin.pageRankVertexProgram.pageRank","value":0.15000000000000002,"properties":{}}],"name":[{"id":0,"label":"name","value":"marko","properties":{}}],"age":[{"id":1,"label":"age","value":29,"properties":{}}]}}
+{"inE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"properties":{"weight":1.0}}],"outE":[],"id":5,"label":"vertex","type":"vertex","properties":{"~gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"~gremlin.pageRankVertexProgram.edgeCount","value":0.0,"properties":{}}],"~gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"~gremlin.pageRankVertexProgram.pageRank","value":0.23181250000000003,"properties":{}}],"name":[{"id":8,"label":"name","value":"ripple","properties":{}}],"lang":[{"id":9,"label":"lang","value":"java","properties":{}}]}}
+{"inE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"properties":{"weight":0.2}}],"outE":[],"id":3,"label":"vertex","type":"vertex","properties":{"~gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"~gremlin.pageRankVertexProgram.edgeCount","value":0.0,"properties":{}}],"~gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"~gremlin.pageRankVertexProgram.pageRank","value":0.4018125,"properties":{}}],"name":[{"id":4,"label":"name","value":"lop","properties":{}}],"lang":[{"id":5,"label":"lang","value":"java","properties":{}}]}}
+{"inE":[{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"properties":{"weight":1.0}}],"outE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"properties":{"weight":1.0}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"properties":{"weight":0.4}}],"id":4,"label":"vertex","type":"vertex","properties":{"~gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"~gremlin.pageRankVertexProgram.edgeCount","value":2.0,"properties":{}}],"~gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"~gremlin.pageRankVertexProgram.pageRank","value":0.19250000000000003,"properties":{}}],"name":[{"id":6,"label":"name","value":"josh","properties":{}}],"age":[{"id":7,"label":"age","value":32,"properties":{}}]}}
+{"inE":[{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"properties":{"weight":0.5}}],"outE":[],"id":2,"label":"vertex","type":"vertex","properties":{"~gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"~gremlin.pageRankVertexProgram.edgeCount","value":0.0,"properties":{}}],"~gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"~gremlin.pageRankVertexProgram.pageRank","value":0.19250000000000003,"properties":{}}],"name":[{"id":2,"label":"name","value":"vadas","properties":{}}],"age":[{"id":3,"label":"age","value":27,"properties":{}}]}}
+{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"properties":{"weight":0.2}}],"id":6,"label":"vertex","type":"vertex","properties":{"~gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"~gremlin.pageRankVertexProgram.edgeCount","value":1.0,"properties":{}}],"~gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"~gremlin.pageRankVertexProgram.pageRank","value":0.15000000000000002,"properties":{}}],"name":[{"id":10,"label":"name","value":"peter","properties":{}}],"age":[{"id":11,"label":"age","value":35,"properties":{}}]}}
 
 Vertex 4 ("josh") is isolated below:
 
 [source,js]
 {
- "inE":[
-  {"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,
-    "label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}
- ],
- "outE":[
-  {"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,
-    "label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}},
-  {"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,
-    "label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}}
- ],
- "id":4,
- "label":"vertex",
- "type":"vertex",
- "hiddens":{
-  "gremlin.pageRank":0.19250000000000003,
-  "gremlin.edgeCount":2.0
- },
- "properties":{
-  "name":"josh",
-  "age":32
- }
+  "inE":[
+    {"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"properties":{"weight":1.0}}
+  ],
+  "outE":[
+    {"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"properties":{"weight":1.0}},
+    {"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"properties":{"weight":0.4}}
+  ],
+  "id":4,
+  "label":"vertex",
+  "type":"vertex",
+  "properties":
+    {
+     "~gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"~gremlin.pageRankVertexProgram.edgeCount","value":2.0,"properties":{}}],
+     "~gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"~gremlin.pageRankVertexProgram.pageRank","value":0.19250000000000003,"properties":{}}],
+     "name":[{"id":6,"label":"name","value":"josh","properties":{}}],
+     "age":[{"id":7,"label":"age","value":32,"properties":{}}]
+    }
+  }
 }
+

@@ -9,6 +9,8 @@ import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import com.tinkerpop.gremlin.hadoop.Constants;
 import com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
 import com.tinkerpop.gremlin.hadoop.process.computer.mapreduce.MapReduceGraphComputer;
+import com.tinkerpop.gremlin.hadoop.process.computer.util.GremlinWritable;
+import com.tinkerpop.gremlin.hadoop.process.computer.util.MapReduceHelper;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import com.tinkerpop.gremlin.hadoop.structure.hdfs.HDFSTools;
@@ -43,13 +45,13 @@ public class HadoopGremlinPlugin extends AbstractGremlinPlugin {
         add("import org.apache.hadoop.mapreduce.lib.output.*");
         add("import org.apache.log4j.*");
         add(IMPORT_SPACE + HadoopConfiguration.class.getPackage().getName() + DOT_STAR);
-        //add(IMPORT_SPACE + GiraphMessenger.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + KryoInputFormat.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + GraphSONInputFormat.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + Constants.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + HDFSTools.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + GroupCountMapReduce.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + ConfUtil.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + GremlinWritable.class.getPackage().getName() + DOT_STAR);
     }};
 
     @Override
@@ -63,7 +65,6 @@ public class HadoopGremlinPlugin extends AbstractGremlinPlugin {
         try {
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", JobClient.class.getName()));
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", Job.class.getName()));
-            pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", GiraphJob.class.getName()));
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", GiraphGraphComputer.class.getName()));
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", MapReduceGraphComputer.class.getName()));
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", HadoopGraph.class.getName()));

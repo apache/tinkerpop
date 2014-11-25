@@ -23,8 +23,6 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -35,8 +33,6 @@ import java.util.Optional;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class MapReduceHelper {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MapReduceHelper.class);
 
     private static final String SEQUENCE_WARNING = "The " + Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT
             + " is not " + SequenceFileOutputFormat.class.getCanonicalName()
@@ -52,14 +48,14 @@ public class MapReduceHelper {
             if (newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
                 mapReduce.addResultToMemory(memory, new GremlinWritableIterator(configuration, memoryPath));
             else
-                LOGGER.warn(SEQUENCE_WARNING);
+                HadoopGraph.LOGGER.warn(SEQUENCE_WARNING);
         } else {
             final Optional<Comparator<?>> mapSort = mapReduce.getMapKeySort();
             final Optional<Comparator<?>> reduceSort = mapReduce.getReduceKeySort();
 
             newConfiguration.setClass(Constants.GREMLIN_HADOOP_MAP_REDUCE_CLASS, mapReduce.getClass(), MapReduce.class);
             final Job job = new Job(newConfiguration, mapReduce.toString());
-            LOGGER.info(Constants.GREMLIN_HADOOP_JOB_PREFIX + mapReduce.toString());
+            HadoopGraph.LOGGER.info(Constants.GREMLIN_HADOOP_JOB_PREFIX + mapReduce.toString());
             job.setJarByClass(HadoopGraph.class);
             if (mapSort.isPresent())
                 job.setSortComparatorClass(GremlinWritableComparator.GremlinWritableMapComparator.class);
@@ -119,7 +115,7 @@ public class MapReduceHelper {
             if (newConfiguration.getClass(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
                 mapReduce.addResultToMemory(memory, new GremlinWritableIterator(configuration, memoryPath));
             else
-                LOGGER.warn(SEQUENCE_WARNING);
+                HadoopGraph.LOGGER.warn(SEQUENCE_WARNING);
         }
     }
 
@@ -132,7 +128,7 @@ public class MapReduceHelper {
             mapReduce.loadState(ConfUtil.makeApacheConfiguration(configuration));
             return mapReduce;
         } catch (Exception e) {
-            LOGGER.error(e.getMessage());
+            HadoopGraph.LOGGER.error(e.getMessage());
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
