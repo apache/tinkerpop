@@ -582,32 +582,32 @@ Thus, like <<match-step,`match()`>> in Gremlin, it is possible to do a declarati
 
 IMPORTANT: For those developers using <<gremlin-server,Gremlin Server>> against Neo4j, it is possible to do Cypher queries by simply placing the Cypher string in `g.cypher(...)` before submission to the server.
 
-[[giraph-gremlin]]
-Giraph-Gremlin
+[[hadoop-gremlin]]
+Hadoop-Gremlin
 --------------
 
 [source,xml]
 ----
 <dependency>
    <groupId>com.tinkerpop</groupId>
-   <artifactId>giraph-gremlin</artifactId>
+   <artifactId>hadoop-gremlin</artifactId>
    <version>x.y.z</version>
 </dependency>
 ----
 
 image:giraph-logo.png[width=100,float=left] link:http://giraph.apache.org[Giraph] is an Apache Foundation project focused on OLAP-based graph processing. Giraph makes use of the distributed graph computing paradigm made popular by Google's Pregel. In Giraph, developers write "vertex programs" that get executed at each vertex in parallel. These programs communicate with one another in a bulk synchronous parallel (BSP) manner. This model aligns with TinkerPop3's `GraphComputer` API. TinkerPop3 provides an implementation of `GraphComputer` that works for Giraph called `GiraphGraphComputer`. Moreover, with TinkerPop3's <<mapreduce,MapReduce>>-framework, the standard Giraph/Pregel model is extended to support an arbitrary number of MapReduce phases to aggregate and yield results from the graph. Finally, note that `GiraphGraph` also supports read-only OLTP operations (though via linear scans of HDFS serializations).
 
-IMPORTANT: image:hadoop-logo-notext.png[width=100,float=left] This section assumes that the user has a Hadoop 1.x cluster functioning. For more information on getting started with Hadoop, please see their link:http://hadoop.apache.org/docs/r1.2.1/single_node_setup.html[Single Node Setup] tutorial. Moreover, it is advisable that the reader also familiarize themselves with Giraph as well via their link:http://giraph.apache.org/quick_start.html[Getting Started] page.
+IMPORTANT: image:hadoop-logo-notext.png[width=100,float=left] This section assumes that the user has a Hadoop 1.x cluster functioning. For more information on getting started with Hadoop, please see their link:http://hadoop.apache.org/docs/r1.2.1/single_node_setup.html[Single Node Setup] tutorial. Moreover, if using `GiraphGraphComputer` it is advisable that the reader also familiarize themselves with Giraph as well via their link:http://giraph.apache.org/quick_start.html[Getting Started] page.
 
-Installing Giraph-Gremlin
+Installing Hadoop-Gremlin
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To the `.bash_profile` file, add the following environmental variable (of course, be sure the directories are respective of the local machine locations). The `GIRAPH_GREMLIN_LIBS` is the location of all the Giraph-Gremlin jars. It is possible to place developer jars into this directory for loading into the Hadoop job's classpath. Note that `GIRAPH_GREMLIN_LIBS` can be a colon-separated (`:`) list of locations.
+To the `.bash_profile` file, add the following environmental variable (of course, be sure the directories are respective of the local machine locations). The `HADOOP_GREMLIN_LIBS` is the location of all the Hadoop-Gremlin jars. It is possible to place developer jars into this directory for loading into the Hadoop job's classpath. Note that `HADOOP_GREMLIN_LIBS` can be a colon-separated (`:`) list of locations.
 
 [source,shell]
-export GIRAPH_GREMLIN_LIBS=/usr/local/gremlin-console/ext/giraph-gremlin/
+export HADOOP_GREMLIN_LIBS=/usr/local/gremlin-console/ext/hadoop-gremlin/
 
-If using the <<gremlin-console,Gremlin Console>>, it is important to install the Giraph-Gremlin plugin.
+If using the <<gremlin-console,Gremlin Console>>, it is important to install the Hadoop-Gremlin plugin.
 
 [source,text]
 ----
@@ -619,8 +619,8 @@ $ bin/gremlin.sh
 plugin activated: tinkerpop.server
 plugin activated: tinkerpop.utilities
 plugin activated: tinkerpop.tinkergraph
-gremlin> :install com.tinkerpop giraph-gremlin x.y.z
-==>loaded: [com.tinkerpop, giraph-gremlin, x.y.z] - restart the console to use [giraph]
+gremlin> :install com.tinkerpop hadoop-gremlin x.y.z
+==>loaded: [com.tinkerpop, hadoop-gremlin, x.y.z] - restart the console to use [tinkerpop.hadoop]
 gremlin> :q
 $ bin/gremlin.sh
 
@@ -630,8 +630,8 @@ $ bin/gremlin.sh
 plugin activated: tinkerpop.server
 plugin activated: tinkerpop.utilities
 plugin activated: tinkerpop.tinkergraph
-gremlin> :plugin use tinkerpop.giraph
-==>tinkerpop.giraph activated
+gremlin> :plugin use tinkerpop.hadoop
+==>tinkerpop.hadoop activated
 gremlin> 
 ----
 
@@ -645,17 +645,17 @@ Properties Files
 The `GiraphGraphComputer` makes use of a properties file much like any other `GraphComputer`. However, given the relationship to Hadoop which is property heavy, it is important to look at a particular properties file. The properties file below is located at `conf/giraph-kryo.properties'.
 
 [source,text]
-gremlin.graph=com.tinkerpop.gremlin.giraph.structure.GiraphGraph
-gremlin.giraph.inputLocation=tinkerpop-classic-vertices.gio
-giraph.vertexInputFormatClass=com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexInputFormat
-gremlin.giraph.outputLocation=output
-giraph.vertexOutputFormatClass=com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexOutputFormat
-gremlin.giraph.memoryOutputFormatClass=org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat
+gremlin.graph=com.tinkerpop.gremlin.hadoop.structure.HadoopGraph
+gremlin.hadoop.inputLocation=tinkerpop-classic-vertices.gio
+gremlin.hadoop.graphInputFormat=com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat
+gremlin.hadoop.outputLocation=output
+gremlin.hadoop.graphOutputFormat=com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoOutputFormat
+gremlin.hadoop.memoryOutputFormat=org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat
 gremlin.vertexProgram=com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
 gremlin.traversalVertexProgram.traversalSupplier.type=CLASS
-gremlin.traversalVertexProgram.traversalSupplier.object=com.tinkerpop.gremlin.giraph.process.graph.example.TraversalSupplier1
-gremlin.giraph.jarsInDistributedCache=true
-gremlin.giraph.deriveMemory=false
+gremlin.traversalVertexProgram.traversalSupplier.object=com.tinkerpop.gremlin.hadoop.process.computer.example.TraversalSupplier1
+gremlin.hadoop.jarsInDistributedCache=true
+gremlin.hadoop.deriveMemory=false
 giraph.minWorkers=2
 giraph.maxWorkers=2
 
@@ -665,38 +665,38 @@ A review of the properties above are presented in the table below.
 |=========================================================
 |Property |Description
 |gremlin.graph |The class of the graph to construct using GraphFactory
-|gremlin.giraph.inputLocation |The location of the input file(s) for Giraph to read the graph from.
-|giraph.vertexInputFormatClass |The format that the graph input file(s) are represented in.
-|gremlin.giraph.outputLocation |The location to write the computed Giraph graph to.
-|giraph.vertexOutputFormatClass |The format that the output file(s) should be represented in.
-|gremlin.giraph.memoryOutputFormatClass |The format of any resultant GraphComputer Memory.
-|gremlin.vertexProgram |The `VertexProgram` to distribute to all vertices in the `GiraphGraph`
+|gremlin.hadoop.inputLocation |The location of the input file(s) for Hadoop-Gremlin to read the graph from.
+|gremlin.hadoop.graphInputFormat |The format that the graph input file(s) are represented in.
+|gremlin.hadoop.outputLocation |The location to write the computed HadoopGraph to.
+|gremlin.hadoop.graphOutputFormat |The format that the output file(s) should be represented in.
+|gremlin.hadoop.memoryOutputFormat |The format of any resultant GraphComputer Memory.
+|gremlin.vertexProgram |The `VertexProgram` to distribute to all vertices in the `HadoopGraph`
 |gremlin.traversalVertexProgram.traversalSupplier.object |For `TraversalVertexProgram`, the location of the Gremlin traversal to use (if not using Gremlin Console).
 |gremlin.traversalVertexProgram.traversalSupplier.type | Whether the traversal supplier is a CLASS, SCRIPT, or OBJECT.
-|gremlin.giraph.jarsInDistributedCache |Whether to upload the Giraph-Gremlin jars to Hadoop's distributed cache (necessary if jars are not on machines' classpaths).
-|gremlin.giraph.deriveMemory |Whether or not `Memory` is yielded (requires an extra MapReduce job if true).
-|giraph.minWorkers |The minimum number of parallel workers to execute the vertices of the graph.
-|giraph.maxWorkers |The maximum number of parallel workers to execute the vertices of the graph.
+|gremlin.hadoop.jarsInDistributedCache |Whether to upload the Hadoop-Gremlin jars to Hadoop's distributed cache (necessary if jars are not on machines' classpaths).
+|gremlin.hadoop.deriveMemory |Whether or not `Memory` is yielded (requires an extra MapReduce job if true).
+|giraph.minWorkers |The minimum number of parallel workers to execute the vertices of the graph (`GiraphGraphComputer`).
+|giraph.maxWorkers |The maximum number of parallel workers to execute the vertices of the graph (`GiraphGraphComputer`).
 |=========================================================
 
 IMPORTANT: The maximum number of workers can be no larger than the number of map-slots in the Hadoop cluster minus 1. For example, if the Hadoop cluster has 4 map slots, then `giraph.maxWorkers` can not be larger than 3. One map-slot is reserved for the master compute node and all other slots can be allocated as workers to execute the VertexPrograms on the vertices of the graph.
 
-Along with the properties above, the numerous link:http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/core-default.xml[Hadoop specific properties] can be added as needed to tune and parameterize the executed Giraph-Gremlin job on the respective Hadoop cluster.
+Along with the properties above, the numerous link:http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/core-default.xml[Hadoop specific properties] can be added as needed to tune and parameterize the executed Hadoop-Gremlin job on the respective Hadoop cluster.
 
-OLTP Giraph-Gremlin
+OLTP Hadoop-Gremlin
 ~~~~~~~~~~~~~~~~~~~
 
-image:giraph-pipes.png[width=110,float=left] It is possible to execute OLTP operations over Giraph-Gremlin. However, realize that the underlying HDFS files are typically not random access and thus, to retrieve a vertex, a linear scan is required. It is possible to create input formats that leverage Hadoop Map files.
+image:hadoop-pipes.png[width=180,float=left] It is possible to execute OLTP operations over Hadoop-Gremlin. However, realize that the underlying HDFS files are typically not random access and thus, to retrieve a vertex, a linear scan is required. It is possible to create input formats that leverage Hadoop Map files.
 
-CAUTION: OLTP operations on `GiraphGraph` are not efficient. They require linear scans to execute and are unreasonable for large graphs. In such large graph situations, make use of <<traversalvertexprogram,TraversalVertexProgram>> which is the OLAP implementation of the Gremlin language.
+CAUTION: OLTP operations on `HadoopGraph` are not efficient. They require linear scans to execute and are unreasonable for large graphs. In such large graph situations, make use of <<traversalvertexprogram,TraversalVertexProgram>> which is the OLAP implementation of the Gremlin language.
 
 [source,text]
 gremlin> hdfs.copyFromLocal('data/tinkerpop-classic-vertices.gio', 'tinkerpop-classic-vertices.gio')
 ==>null
 gremlin> hdfs.ls()
 ==>rw-r--r-- marko supergroup 891 tinkerpop-classic-vertices.gio
-gremlin> g = GraphFactory.open('../../../giraph-gremlin/conf/giraph-kryo.properties')  // be conscious of where giraph-kryo.properties is
-==>giraphgraph[kryovertexinputformat->kryovertexoutputformat]
+gremlin> g = GraphFactory.open('../../../hadoop-gremlin/conf/hadoop-kryo.properties')  // be conscious of where hadoop-kryo.properties is
+==>hadoophgraph[kryoxinputformat->kryooutputformat]
 gremlin> g.V().count()
 ==>6
 gremlin> g.V().out().out().values('name')
@@ -708,16 +708,27 @@ gremlin> g.V().groupBy{it.get().value('name')[1]}{it.get().value('name')}.next()
 ==>i=[ripple]
 ==>o=[lop, josh]
 
-OLAP Giraph-Gremlin
+OLAP Hadoop-Gremlin
 ~~~~~~~~~~~~~~~~~~~
 
-image:giraph-furnace.png[width=110,float=left] Giraph-Gremlin was designed to execute OLAP operations via `GraphComputer`. The OLTP examples presented above are reproduced below, but using `TraversalVertexProgram` for the execution of the Gremlin traversal.
+image:hadoop-furnace.png[width=180,float=left] Hadoop-Gremlin was designed to execute OLAP operations via `GraphComputer`. The OLTP examples presented above are reproduced below, but using `TraversalVertexProgram` for the execution of the Gremlin traversal.
 
-IMPORTANT: As of TinkerPop3 x.y.z, when using Giraph-Gremlin OLAP from the Gremlin Console, the only Gremlin language subset supported is Gremlin-Groovy. Future versions will support other Gremlin language dialects.
+IMPORTANT: As of TinkerPop3 x.y.z, when using Hadoop-Gremlin OLAP from the Gremlin Console, the only Gremlin language subset supported is Gremlin-Groovy. Future versions will support other Gremlin language dialects.
+
+`HadoopGraph` supports two `GraphComputer` implementations.
+
+* `GiraphGraphComputer`: Leverages Giraph to execute TinkerPop3 OLAP computations.
+* `MapReduceGraphComputer`: Leverages Hadoop's MapReduce to execute TinkerPop3 OLAP computations. (*coming soon*)
+
+
+GiraphGraphComputer
+^^^^^^^^^^^^^^^^^^^
+
+image:giraph-logo.png[width=70,float=right] Below are examples using `GiraphGraphComputer` from the <<gremlin-console,Gremlin-Console>>.
 
 [source,text]
-gremlin> :remote connect tinkerpop.giraph ../../../giraph-gremlin/conf/giraph-kryo.properties
-==>giraphgraph[kryovertexinputformat->kryovertexoutputformat]
+gremlin> :remote connect tinkerpop.hadoop ../../../hadoop-gremlin/conf/hadoop-kryo.properties
+==>hadoopgraph[kryovertexinputformat->kryovertexoutputformat]
 gremlin> :> g.V().count()
 INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer  - GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, CountStep]
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0037
@@ -761,7 +772,7 @@ gremlin> result.memory().a
 ==>i=[ripple]
 ==>o=[lop, josh]
 
-NOTE: Distributed graph computations on cluster-sized graphs can yield an enormous number of results. To be safe, Giraph-Gremlin only returns up to 20 results to the console (with, of course, all the results being available in HDFS). If more traversal results are desired, access `result.memory().get(Graph.System.system('traversers'))`.
+NOTE: Distributed graph computations on cluster-sized graphs can yield an enormous number of results. To be safe, Hadoop-Gremlin only returns up to 20 results to the console (with, of course, all the results being available in HDFS). If more traversal results are desired, access `result.memory().get(Graph.System.system('traversers'))`.
 
 TIP: image:gremlin-sugar.png[width=50,float=left] For those wanting to use the <<sugar-plugin,SugarPlugin>> with their submitted traversal, do `:remote config useSugar true` as well as `:plugin use tinkerpop.sugar` at the start of the Gremlin Console session if it is not already activated.
 
@@ -803,16 +814,16 @@ A list of the HDFS methods available are itemized below. Note that these methods
 |=========================================================
 
 
-The `TraversalSupplier1` class mentioned in the `giraph-kryo.properties` file is distributed with Giraph-Gremlin. It declares what Gremlin-Java traversal to execute on the loaded `GiraphGraph`. This is the means by which traversals can be programmatically executed in Giraph-Gremlin.
+The `TraversalSupplier1` class mentioned in the `hadoop-kryo.properties` file is distributed with Hadoop-Gremlin. It declares what Gremlin-Java traversal to execute on the loaded `HadoopGraph`. This is the means by which traversals can be programmatically executed in Hadoop-Gremlin.
 
 [source,java]
 ----
 // gremlin.traversalVertexProgram.traversalSupplier.type=CLASS
-// gremlin.traversalVertexProgram.traversalSupplier.object=com.tinkerpop.gremlin.giraph.process.graph.example.TraversalSupplier1
+// gremlin.traversalVertexProgram.traversalSupplier.object=com.tinkerpop.gremlin.hadoop.process.computer.example.TraversalSupplier1
 
 public class TraversalSupplier1 implements SSupplier<Traversal> {
     public Traversal get() {
-        return GiraphGraph.open().V().out().out().values("name");
+        return HadoopGraph.open().V().out().out().values("name");
     }
 }
 ----
@@ -824,15 +835,15 @@ image::pagerank-logo.png[width=300]
 
 The classic link:http://en.wikipedia.org/wiki/PageRank[PageRank] centrality algorithm can be executed over TinkerPop classic from the command line.
 
-NOTE: The extension `ldjson` in `giraph-graphson.properties` refers to link:http://en.wikipedia.org/wiki/Line_Delimited_JSON[line-delimitated JSON] which is the file format used by `GraphSONWriter` when writing an link:http://en.wikipedia.org/wiki/Adjacency_list[adjacency list] representation of a graph.
+NOTE: The extension `ldjson` in `hadoop-graphson.properties` refers to link:http://en.wikipedia.org/wiki/Line_Delimited_JSON[line-delimitated JSON] which is the file format used by `GraphSONWriter` when writing an link:http://en.wikipedia.org/wiki/Adjacency_list[adjacency list] representation of a graph.
 
 [source,text]
 $ hadoop fs -copyFromLocal data/tinkerpop-classic-vertices.ldjson tinkerpop-classic-vertices.ldjson
 $ hadoop fs -ls
 Found 2 items
 -rw-r--r--   1 marko supergroup       2356 2014-07-28 13:00 /user/marko/tinkerpop-classic-vertices.ldjson
-$ hadoop jar target/giraph-gremlin-x.y.z-job.jar com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer conf/giraph-graphson.properties
-14/07/29 12:08:27 INFO computer.GiraphGraphComputer: GiraphGremlin: PageRankVertexProgram[alpha=0.85,iterations=30]
+$ hadoop jar target/hadoop-gremlin-x.y.z-job.jar com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer conf/hadoop-graphson.properties
+14/07/29 12:08:27 INFO giraph.GiraphGraphComputer: HadoopGremlin(Giraph): PageRankVertexProgram[alpha=0.85,iterations=30]
 14/07/29 12:08:28 INFO mapred.JobClient: Running job: job_201407281259_0041
 14/07/29 12:08:29 INFO mapred.JobClient:  map 0% reduce 0%
 14/07/29 12:08:51 INFO mapred.JobClient:  map 66% reduce 0%
