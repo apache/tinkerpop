@@ -595,19 +595,19 @@ Hadoop-Gremlin
 </dependency>
 ----
 
-image:hadoop-logo-notext.png[width=100,float=left] link:http://hadoop.apache.org/[Hadoop] is a distributed computing framework that can be used to process files so large they are represented across a distributed file system known as HDFS. When those files represent TinkerPop3 graphs, then Hadoop-Gremlin can be used to process such graphs -- both in OLTP and OLAP form.
+image:hadoop-logo-notext.png[width=100,float=left] link:http://hadoop.apache.org/[Hadoop] is a distributed computing framework that is used to process data represented across a multi-machine compute cluster. When the data in the Hadoop cluster represents a TinkerPop3 graph, then Hadoop-Gremlin can be used to process the graph using TinkerPop3's OLTP and OLAP models of graph computing.
 
-IMPORTANT: This section assumes that the user has a Hadoop 1.x cluster functioning. For more information on getting started with Hadoop, please see their link:http://hadoop.apache.org/docs/r1.2.1/single_node_setup.html[Single Node Setup] tutorial. Moreover, if using `GiraphGraphComputer` it is advisable that the reader also familiarize themselves with Giraph as well via their link:http://giraph.apache.org/quick_start.html[Getting Started] page.
+IMPORTANT: This section assumes that the user has a Hadoop 1.x cluster functioning. For more information on getting started with Hadoop, please see the link:http://hadoop.apache.org/docs/r1.2.1/single_node_setup.html[Single Node Setup] tutorial. Moreover, if using `GiraphGraphComputer` it is advisable that the reader also familiarize their self with Giraph as well via the link:http://giraph.apache.org/quick_start.html[Getting Started] page.
 
 Installing Hadoop-Gremlin
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To the `.bash_profile` file, add the following environmental variable (of course, be sure the directories are respective of the local machine locations). The `HADOOP_GREMLIN_LIBS` is the location of all the Hadoop-Gremlin jars. It is possible to place developer jars into this directory for loading into the Hadoop job's classpath. Note that `HADOOP_GREMLIN_LIBS` can be a colon-separated (`:`) list of locations.
+To the `.bash_profile` file, add the following environmental variable (of course, be sure the directories are respective of the local machine locations). The `HADOOP_GREMLIN_LIBS` is the location of all the Hadoop-Gremlin jars. It is possible to place developer jars into this directory for loading into the Hadoop job's classpath. Or, better yet, note that `HADOOP_GREMLIN_LIBS` can be a colon-separated (`:`) list of locations and thus will load all jars into the cluster at all provided locations.
 
 [source,shell]
 export HADOOP_GREMLIN_LIBS=/usr/local/gremlin-console/ext/hadoop-gremlin/
 
-If using the <<gremlin-console,Gremlin Console>>, it is important to install the Hadoop-Gremlin plugin.
+If using <<gremlin-console,Gremlin Console>>, it is important to install the Hadoop-Gremlin plugin. Note that Hadoop-Gremlin requires a Gremlin Console restart after installing,
 
 [source,text]
 ----
@@ -638,7 +638,7 @@ gremlin>
 Properties Files
 ~~~~~~~~~~~~~~~~
 
-The `GiraphGraphComputer` makes use of a properties file much like any other `GraphComputer`. However, given the relationship to Hadoop which is property heavy, it is important to look at a particular properties file. The properties file below is located at `conf/giraph-kryo.properties'.
+`HadoopGraph` makes heavy use of properties files which ultimately get turned into Apache Configurations and Hadoop configurations. The properties file presented below is located at `conf/hadoop-kryo.properties'.
 
 [source,text]
 gremlin.graph=com.tinkerpop.gremlin.hadoop.structure.HadoopGraph
@@ -667,7 +667,7 @@ A review of the properties above are presented in the table below.
 |gremlin.hadoop.graphOutputFormat |The format that the output file(s) should be represented in.
 |gremlin.hadoop.memoryOutputFormat |The format of any resultant GraphComputer Memory.
 |gremlin.vertexProgram |The `VertexProgram` to distribute to all vertices in the `HadoopGraph`
-|gremlin.traversalVertexProgram.traversalSupplier.object |For `TraversalVertexProgram`, the location of the Gremlin traversal to use (if not using Gremlin Console).
+|gremlin.traversalVertexProgram.traversalSupplier.object |For TraversalVertexProgram, the location of the Gremlin traversal to use (if not using Gremlin Console).
 |gremlin.traversalVertexProgram.traversalSupplier.type | Whether the traversal supplier is a CLASS, SCRIPT, or OBJECT.
 |gremlin.hadoop.jarsInDistributedCache |Whether to upload the Hadoop-Gremlin jars to Hadoop's distributed cache (necessary if jars are not on machines' classpaths).
 |gremlin.hadoop.deriveMemory |Whether or not `Memory` is yielded (requires an extra MapReduce job if true).
@@ -675,16 +675,14 @@ A review of the properties above are presented in the table below.
 |giraph.maxWorkers |The maximum number of parallel workers to execute the vertices of the graph (`GiraphGraphComputer`).
 |=========================================================
 
-IMPORTANT: The maximum number of workers can be no larger than the number of map-slots in the Hadoop cluster minus 1. For example, if the Hadoop cluster has 4 map slots, then `giraph.maxWorkers` can not be larger than 3. One map-slot is reserved for the master compute node and all other slots can be allocated as workers to execute the VertexPrograms on the vertices of the graph.
-
 Along with the properties above, the numerous link:http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/core-default.xml[Hadoop specific properties] can be added as needed to tune and parameterize the executed Hadoop-Gremlin job on the respective Hadoop cluster.
 
 OLTP Hadoop-Gremlin
 ~~~~~~~~~~~~~~~~~~~
 
-image:hadoop-pipes.png[width=180,float=left] It is possible to execute OLTP operations over Hadoop-Gremlin. However, realize that the underlying HDFS files are typically not random access and thus, to retrieve a vertex, a linear scan is required. It is possible to create input formats that leverage Hadoop Map files.
+image:hadoop-pipes.png[width=180,float=left] It is possible to execute OLTP operations over a `HadoopGraph`. However, realize that the underlying HDFS files are typically not random access and thus, to retrieve a vertex, a linear scan is required. OLTP operations are useful for peeking at the graph prior to executing a long running OLAP job -- e.g. `g.V().valueMap().limit(10)`.
 
-CAUTION: OLTP operations on `HadoopGraph` are not efficient. They require linear scans to execute and are unreasonable for large graphs. In such large graph situations, make use of <<traversalvertexprogram,TraversalVertexProgram>> which is the OLAP implementation of the Gremlin language.
+CAUTION: OLTP operations on `HadoopGraph` are not efficient. They require linear scans to execute and are unreasonable for large graphs. In such large graph situations, make use of <<traversalvertexprogram,TraversalVertexProgram>> which is the OLAP implementation of the Gremlin language. Hadoop-Gremlin provides various `GraphComputer` implementations to execute OLAP computations over a `HadoopGraph`.
 
 [source,text]
 gremlin> hdfs.copyFromLocal('data/tinkerpop-classic-vertices.gio', 'tinkerpop-classic-vertices.gio')
@@ -707,15 +705,16 @@ gremlin> g.V().groupBy{it.get().value('name')[1]}{it.get().value('name')}.next()
 OLAP Hadoop-Gremlin
 ~~~~~~~~~~~~~~~~~~~
 
-image:hadoop-furnace.png[width=180,float=left] Hadoop-Gremlin was designed to execute OLAP operations via `GraphComputer`. The OLTP examples presented above are reproduced below, but using `TraversalVertexProgram` for the execution of the Gremlin traversal.
+image:hadoop-furnace.png[width=180,float=left] Hadoop-Gremlin was designed to execute OLAP operations via `GraphComputer`. The OLTP examples presented previously are reproduced below, but using `TraversalVertexProgram` for the execution of the Gremlin traversal.
 
 IMPORTANT: As of TinkerPop3 x.y.z, when using Hadoop-Gremlin OLAP from the Gremlin Console, the only Gremlin language subset supported is Gremlin-Groovy. Future versions will support other Gremlin language dialects.
 
-`HadoopGraph` supports two `GraphComputer` implementations.
+A `Graph` in TinkerPop3 can support any number of `GraphComputer` implementations. HadoopGraph supports two GraphComputer implementations.
 
 * `GiraphGraphComputer`: Leverages Giraph to execute TinkerPop3 OLAP computations.
+** The graph must fit within the total RAM of the Hadoop cluster (graph size restriction). Messages passing is coordinated via ZooKeeper for the in-memory graph (speedy traversals).
 * `MapReduceGraphComputer`: Leverages Hadoop's MapReduce to execute TinkerPop3 OLAP computations. (*coming soon*)
-
+** The graph must fit within the total disk space of the Hadoop cluster (supports massive graphs). Message passing is coordinates via MapReduce jobs on the on-dks graph (slow traversals).
 
 GiraphGraphComputer
 ^^^^^^^^^^^^^^^^^^^
@@ -725,6 +724,8 @@ image:giraph-logo.png[width=100,float=left] link:http://giraph.apache.org[Giraph
 IMPORTANT: Be sure that the link:http://www.slf4j.org/[SLF4J] of Hadoop matches that of Giraph or else there will be conflicts. Simply copy the following jars to the `lib/` of the machines in the Hadoop cluster: `slf4j-api-a.b.c.jar` and `slf4j-log4j12-a.b.c.jar`.
 
 WARNING: Giraph uses a large number of Hadoop counters. The default for Hadoop is 120. In `mapred-site.xml` it is possible to increase the limit it via the `mapreduce.job.counters.limit` property. A good value to use is 1000. This is a cluster-wide property so be sure to restart the cluster after updating.
+
+WARNING: The maximum number of workers can be no larger than the number of map-slots in the Hadoop cluster minus 1. For example, if the Hadoop cluster has 4 map slots, then `giraph.maxWorkers` can not be larger than 3. One map-slot is reserved for the master compute node and all other slots can be allocated as workers to execute the VertexPrograms on the vertices of the graph.
 
 [source,text]
 gremlin> :remote connect tinkerpop.hadoop ../../../hadoop-gremlin/conf/hadoop-kryo.properties
@@ -776,7 +777,29 @@ NOTE: Distributed graph computations on cluster-sized graphs can yield an enormo
 
 TIP: image:gremlin-sugar.png[width=50,float=left] For those wanting to use the <<sugar-plugin,SugarPlugin>> with their submitted traversal, do `:remote config useSugar true` as well as `:plugin use tinkerpop.sugar` at the start of the Gremlin Console session if it is not already activated.
 
-The results of the graph traversal are stored in HDFS accessible via `hdfs`.
+The `TraversalSupplier1` class mentioned in the `hadoop-kryo.properties` file is distributed with Hadoop-Gremlin. It declares what Gremlin-Java traversal to execute on the loaded `HadoopGraph`. This is the means by which traversals can be programmatically executed in Hadoop-Gremlin.
+
+[source,java]
+----
+// gremlin.traversalVertexProgram.traversalSupplier.type=CLASS
+// gremlin.traversalVertexProgram.traversalSupplier.object=com.tinkerpop.gremlin.hadoop.process.computer.example.TraversalSupplier1
+
+public class TraversalSupplier1 implements SSupplier<Traversal> {
+    public Traversal get() {
+        return HadoopGraph.open().V().out().out().values("name");
+    }
+}
+----
+
+MapReduceGraphComputer
+^^^^^^^^^^^^^^^^^^^^^^
+
+*COMING SOON*
+
+Interacting with HDFS
+~~~~~~~~~~~~~~~~~~~~~
+
+The distributed file system of Hadoop is called link:http://en.wikipedia.org/wiki/Apache_Hadoop#Hadoop_distributed_file_system[HDFS]. The results of any OLAP operation are stored in HDFS accessible via `hdfs`.
 
 [source,text]
 gremlin> hdfs.ls()
@@ -812,20 +835,6 @@ A list of the HDFS methods available are itemized below. Note that these methods
 |hdfs.head(String path, long lineCount)| Text display only the first `totalKeyValues` in the path.
 |hdfs.head(String path, long totalKeyValues, Class<Writable> writableClass)| Display the path interpreting the key values as respective writable.
 |=========================================================
-
-The `TraversalSupplier1` class mentioned in the `hadoop-kryo.properties` file is distributed with Hadoop-Gremlin. It declares what Gremlin-Java traversal to execute on the loaded `HadoopGraph`. This is the means by which traversals can be programmatically executed in Hadoop-Gremlin.
-
-[source,java]
-----
-// gremlin.traversalVertexProgram.traversalSupplier.type=CLASS
-// gremlin.traversalVertexProgram.traversalSupplier.object=com.tinkerpop.gremlin.hadoop.process.computer.example.TraversalSupplier1
-
-public class TraversalSupplier1 implements SSupplier<Traversal> {
-    public Traversal get() {
-        return HadoopGraph.open().V().out().out().values("name");
-    }
-}
-----
 
 A Command Line Example
 ~~~~~~~~~~~~~~~~~~~~~~
