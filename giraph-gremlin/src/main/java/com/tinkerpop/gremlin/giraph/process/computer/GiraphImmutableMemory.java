@@ -34,7 +34,7 @@ public final class GiraphImmutableMemory implements Memory {
 
     @Override
     public void set(final String key, Object value) {
-        if (this.complete) throw Memory.Exceptions.memoryCompleteAndImmutable();
+        if (this.complete) throw Memory.Exceptions.memoryIsCurrentlyImmutable();
         this.memoryMap.put(key, value);
     }
 
@@ -57,17 +57,17 @@ public final class GiraphImmutableMemory implements Memory {
 
     @Override
     public long incr(final String key, final long delta) {
-        throw Memory.Exceptions.memoryCompleteAndImmutable();
+        throw Memory.Exceptions.memoryIsCurrentlyImmutable();
     }
 
     @Override
     public boolean and(final String key, final boolean bool) {
-        throw Memory.Exceptions.memoryCompleteAndImmutable();
+        throw Memory.Exceptions.memoryIsCurrentlyImmutable();
     }
 
     @Override
     public boolean or(final String key, final boolean bool) {
-        throw Memory.Exceptions.memoryCompleteAndImmutable();
+        throw Memory.Exceptions.memoryIsCurrentlyImmutable();
     }
 
     public String toString() {

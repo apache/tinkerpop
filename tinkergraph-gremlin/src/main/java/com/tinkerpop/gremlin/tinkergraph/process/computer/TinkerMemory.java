@@ -58,7 +58,7 @@ public class TinkerMemory implements Memory.Admin {
 
     @Override
     public void setRuntime(final long runTime) {
-        if (this.complete) throw Memory.Exceptions.memoryCompleteAndImmutable();
+        if (this.complete) throw Memory.Exceptions.memoryIsCurrentlyImmutable();
         this.runtime.set(runTime);
     }
 
@@ -134,7 +134,7 @@ public class TinkerMemory implements Memory.Admin {
     }
 
     private void checkKeyValue(final String key, final Object value) {
-        if (this.complete) throw Memory.Exceptions.memoryCompleteAndImmutable();
+        if (this.complete) throw Memory.Exceptions.memoryIsCurrentlyImmutable();
         if (!this.memoryKeys.contains(key))
             throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
         MemoryHelper.validateValue(value);

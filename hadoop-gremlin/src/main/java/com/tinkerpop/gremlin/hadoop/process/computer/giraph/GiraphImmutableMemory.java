@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.hadoop.process.computer.mapreduce;
+package com.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
 import com.tinkerpop.gremlin.hadoop.Constants;
 import com.tinkerpop.gremlin.process.computer.Memory;
@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopImmutableMemory implements Memory {
+public class GiraphImmutableMemory implements Memory {
 
     private long runtime = 0l;
     private int iteration = -1;
@@ -34,7 +34,7 @@ public class HadoopImmutableMemory implements Memory {
 
     @Override
     public void set(final String key, Object value) {
-        if (this.complete) throw Memory.Exceptions.memoryCompleteAndImmutable();
+        if (this.complete) throw Memory.Exceptions.memoryIsCurrentlyImmutable();
         this.memoryMap.put(key, value);
     }
 
@@ -57,17 +57,17 @@ public class HadoopImmutableMemory implements Memory {
 
     @Override
     public long incr(final String key, final long delta) {
-        throw Memory.Exceptions.memoryCompleteAndImmutable();
+        throw Memory.Exceptions.memoryIsCurrentlyImmutable();
     }
 
     @Override
     public boolean and(final String key, final boolean bool) {
-        throw Memory.Exceptions.memoryCompleteAndImmutable();
+        throw Memory.Exceptions.memoryIsCurrentlyImmutable();
     }
 
     @Override
     public boolean or(final String key, final boolean bool) {
-        throw Memory.Exceptions.memoryCompleteAndImmutable();
+        throw Memory.Exceptions.memoryIsCurrentlyImmutable();
     }
 
     public String toString() {

@@ -1,20 +1,22 @@
 package com.tinkerpop.gremlin.hadoop.groovy.plugin;
 
-import com.tinkerpop.gremlin.hadoop.Constants;
-import com.tinkerpop.gremlin.hadoop.process.computer.mapreduce.MapReduceGraphComputer;
-import com.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration;
-import com.tinkerpop.gremlin.hadoop.structure.hdfs.HDFSTools;
-import com.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
-import com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat;
-import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import com.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
 import com.tinkerpop.gremlin.groovy.plugin.Artifact;
 import com.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
 import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
 import com.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
-import com.tinkerpop.gremlin.hadoop.groovy.plugin.HadoopLoader;
+import com.tinkerpop.gremlin.hadoop.Constants;
+import com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
+import com.tinkerpop.gremlin.hadoop.process.computer.mapreduce.MapReduceGraphComputer;
+import com.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration;
+import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import com.tinkerpop.gremlin.hadoop.structure.hdfs.HDFSTools;
+import com.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
+import com.tinkerpop.gremlin.hadoop.structure.io.kryo.KryoInputFormat;
+import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce.GroupCountMapReduce;
+import org.apache.giraph.job.GiraphJob;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.mapred.JobClient;
@@ -60,16 +62,19 @@ public class HadoopGremlinPlugin extends AbstractGremlinPlugin {
         pluginAcceptor.addImports(IMPORTS);
         try {
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", JobClient.class.getName()));
-            pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", MapReduceGraphComputer.class.getName()));
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", Job.class.getName()));
+            pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", GiraphJob.class.getName()));
+            pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", GiraphGraphComputer.class.getName()));
+            pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", MapReduceGraphComputer.class.getName()));
+            pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", HadoopGraph.class.getName()));
             pluginAcceptor.eval(HadoopLoader.class.getCanonicalName() + ".load()");
 
             pluginAcceptor.addBinding("hdfs", FileSystem.get(new Configuration()));
             pluginAcceptor.addBinding("local", FileSystem.getLocal(new Configuration()));
-            /*if (null == System.getenv(Constants.HADOOP_GREMLIN_LIBS))
-                HadoopGraphComputer.LOGGER.warn("Be sure to set the environmental variable: " + Constants.GIRAPH_GREMLIN_LIBS);
+            if (null == System.getenv(Constants.HADOOP_GREMLIN_LIBS))
+                HadoopGraph.LOGGER.warn("Be sure to set the environmental variable: " + Constants.HADOOP_GREMLIN_LIBS);
             else
-                HadoopGraphComputer.LOGGER.info(Constants.GIRAPH_GREMLIN_LIBS + " is set to: " + System.getenv(Constants.GIRAPH_GREMLIN_LIBS));*/
+                HadoopGraph.LOGGER.info(Constants.HADOOP_GREMLIN_LIBS + " is set to: " + System.getenv(Constants.HADOOP_GREMLIN_LIBS));
         } catch (final Exception e) {
             throw new PluginInitializationException(e.getMessage(), e);
         }

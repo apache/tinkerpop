@@ -11,7 +11,7 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GremlinWritable <T> implements WritableComparable<GremlinWritable> {
+public final class GremlinWritable<T> implements WritableComparable<GremlinWritable> {
 
     T t;
 
@@ -60,5 +60,13 @@ public final class GremlinWritable <T> implements WritableComparable<GremlinWrit
     @Override
     public int compareTo(final GremlinWritable gremlinWritable) {
         return this.t instanceof Comparable ? ((Comparable) this.t).compareTo(gremlinWritable.get()) : 1;
+    }
+
+    public boolean isEmpty() {
+        return null == this.t;
+    }
+
+    public static GremlinWritable empty() {
+        return new GremlinWritable(null);
     }
 }

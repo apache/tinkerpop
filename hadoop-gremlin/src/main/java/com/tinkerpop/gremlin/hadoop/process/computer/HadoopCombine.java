@@ -19,7 +19,7 @@ public class HadoopCombine extends Reducer<GremlinWritable, GremlinWritable, Gre
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HadoopCombine.class);
     private MapReduce mapReduce;
-    private final GiraphCombineEmitter<GremlinWritable, GremlinWritable> combineEmitter = new GiraphCombineEmitter<>();
+    private final HadoopCombineEmitter<GremlinWritable, GremlinWritable> combineEmitter = new HadoopCombineEmitter<>();
 
     private HadoopCombine() {
 
@@ -48,7 +48,7 @@ public class HadoopCombine extends Reducer<GremlinWritable, GremlinWritable, Gre
     }
 
 
-    public class GiraphCombineEmitter<OK, OV> implements MapReduce.ReduceEmitter<OK, OV> {
+    public class HadoopCombineEmitter<OK, OV> implements MapReduce.ReduceEmitter<OK, OV> {
 
         private Reducer<GremlinWritable, GremlinWritable, GremlinWritable, GremlinWritable>.Context context;
         private final GremlinWritable<OK> keyWritable = new GremlinWritable<>();

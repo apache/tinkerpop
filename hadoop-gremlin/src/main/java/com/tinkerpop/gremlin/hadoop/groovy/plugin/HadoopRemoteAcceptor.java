@@ -106,6 +106,6 @@ public class HadoopRemoteAcceptor implements RemoteAcceptor {
     }
 
     public String toString() {
-        return "GiraphRemoteAcceptor[" + this.hadoopGraph + "]";
+        return "HadoopRemoteAcceptor[" + this.hadoopGraph + "]";
     }
 }

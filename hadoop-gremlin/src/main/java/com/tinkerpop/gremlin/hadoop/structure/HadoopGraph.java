@@ -1,9 +1,11 @@
 package com.tinkerpop.gremlin.hadoop.structure;
 
 import com.tinkerpop.gremlin.hadoop.Constants;
+import com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
 import com.tinkerpop.gremlin.hadoop.process.graph.step.sideEffect.HadoopGraphStep;
 import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
@@ -16,13 +18,69 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapreduce.InputFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
+@Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_STANDARD)
+@Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_COMPUTER)
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.graph.step.map.MatchTest$StandardTest",
+        method = "g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX",
+        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.graph.step.map.MatchTest$StandardTest",
+        method = "g_V_matchXa_0sungBy_b__a_0sungBy_c__b_writtenBy_d__c_writtenBy_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX",
+        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.graph.step.map.MatchTest$StandardTest",
+        method = "g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_d__c_sungBy_d__d_hasXname_GarciaXX",
+        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.graph.step.map.GroovyMatchTest$StandardTest",
+        method = "g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX",
+        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.graph.step.map.GroovyMatchTest$StandardTest",
+        method = "g_V_matchXa_0sungBy_b__a_0sungBy_c__b_writtenBy_d__c_writtenBy_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX",
+        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.graph.step.map.GroovyMatchTest$StandardTest",
+        method = "g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_d__c_sungBy_d__d_hasXname_GarciaXX",
+        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest$StandardTest",
+        method = "g_V_both_both_count",
+        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest$StandardTest",
+        method = "g_V_asXaX_out_jumpXa_loops_lt_3X_count",
+        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyCountTest$StandardTest",
+        method = "g_V_both_both_count",
+        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyCountTest$StandardTest",
+        method = "g_V_asXaX_out_jumpXa_loops_lt_3X_count",
+        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
+        method = "shouldNotAllowNullMemoryKeys",
+        reason = "Hadoop does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
+        method = "shouldNotAllowSettingUndeclaredMemoryKeys",
+        reason = "Hadoop does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 public class HadoopGraph implements Graph {
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(HadoopGraph.class);
 
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
         this.setProperty(Graph.GRAPH, HadoopGraph.class.getName());
@@ -69,12 +127,11 @@ public class HadoopGraph implements Graph {
 
     @Override
     public GraphComputer compute(final Class... graphComputerClass) {
-        /*GraphComputerHelper.validateComputeArguments(graphComputerClass);
-        if (graphComputerClass.length == 0 || graphComputerClass[0].equals(HadoopGraphComputer.class))
-            return new HadoopGraphComputer(this);
+        GraphComputerHelper.validateComputeArguments(graphComputerClass);
+        if (graphComputerClass.length == 0 || graphComputerClass[0].equals(GiraphGraphComputer.class))
+            return new GiraphGraphComputer(this);
         else
-            throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass[0]);*/
-        throw new UnsupportedOperationException("This isn't implemented yet");
+            throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass[0]);
     }
 
 

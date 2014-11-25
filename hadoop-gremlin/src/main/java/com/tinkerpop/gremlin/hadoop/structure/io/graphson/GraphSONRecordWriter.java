@@ -37,13 +37,13 @@ public class GraphSONRecordWriter extends RecordWriter<NullWritable, VertexWrita
     @Override
     public void write(final NullWritable key, final VertexWritable vertex) throws IOException {
         if (null != vertex) {
-            graphSONWriter.writeVertex(out, vertex.get(), Direction.BOTH);
-            out.write(NEWLINE);
+            this.graphSONWriter.writeVertex(out, vertex.get(), Direction.BOTH);
+            this.out.write(NEWLINE);
         }
     }
 
     @Override
     public synchronized void close(TaskAttemptContext context) throws IOException {
-        out.close();
+        this.out.close();
     }
 }

@@ -32,6 +32,43 @@
             <version>1.2.1</version>
             <!--<scope>provided</scope>-->
         </dependency>
+        <dependency>
+            <groupId>org.apache.giraph</groupId>
+            <artifactId>giraph-core</artifactId>
+            <version>1.0.0</version>
+            <exclusions>
+                <!-- self-conflict -->
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <!-- conflicts with gremlin-core -->
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <!-- gremlin-groovy conflicts -->
+                <exclusion>
+                    <groupId>jline</groupId>
+                    <artifactId>jline</artifactId>
+                </exclusion>
+                <!-- gremlin-test conflicts -->
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- excluded guava from giraph because of gremlin-test conflicts - add back the version required by gremlin-test -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
         <!-- consistent dependencies chosen for hadoop-core -->
         <dependency>
             <groupId>commons-httpclient</groupId>
@@ -50,6 +87,12 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <repositories>
+        <repository>
+            <id>hyracks-releases</id>
+            <url>http://obelix.ics.uci.edu/nexus/content/groups/hyracks-public-releases/</url>
+        </repository>
+    </repositories>
     <build>
         <directory>${basedir}/target</directory>
         <finalName>${project.artifactId}-${project.version}</finalName>

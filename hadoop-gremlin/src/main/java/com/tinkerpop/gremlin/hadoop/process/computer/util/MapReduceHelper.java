@@ -59,7 +59,7 @@ public class MapReduceHelper {
 
             newConfiguration.setClass(Constants.GREMLIN_HADOOP_MAP_REDUCE_CLASS, mapReduce.getClass(), MapReduce.class);
             final Job job = new Job(newConfiguration, mapReduce.toString());
-            LOGGER.info(Constants.GIRAPH_HADOOP_JOB_PREFIX + mapReduce.toString());
+            LOGGER.info(Constants.GREMLIN_HADOOP_JOB_PREFIX + mapReduce.toString());
             job.setJarByClass(HadoopGraph.class);
             if (mapSort.isPresent())
                 job.setSortComparatorClass(GremlinWritableComparator.GremlinWritableMapComparator.class);
@@ -80,7 +80,7 @@ public class MapReduceHelper {
             job.setOutputKeyClass(GremlinWritable.class);
             job.setOutputValueClass(GremlinWritable.class);
             job.setInputFormatClass((Class) newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class));
-            job.setOutputFormatClass(newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class)); // TODO: Make this configurable
+            job.setOutputFormatClass(newConfiguration.getClass(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class)); // TODO: Make this configurable
             // if there is no vertex program, then grab the graph from the input location
             final Path graphPath = configuration.get(VertexProgram.VERTEX_PROGRAM, null) != null ?
                     new Path(newConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + Constants.SYSTEM_G) :

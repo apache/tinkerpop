@@ -45,10 +45,8 @@ public class GraphSONRecordReader extends RecordReader<NullWritable, VertexWrita
             return false;
 
         final TinkerGraph g = TinkerGraph.open();
-
         final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(g, detachedVertex);
         final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(g, detachedEdge);
-
         final TinkerVertex v;
         try (InputStream in = new ByteArrayInputStream(this.lineRecordReader.getCurrentValue().getBytes())) {
             v = (TinkerVertex) this.graphSONReader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);

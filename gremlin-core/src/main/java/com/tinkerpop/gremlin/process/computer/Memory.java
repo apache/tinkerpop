@@ -141,8 +141,8 @@ public interface Memory {
             return new IllegalArgumentException("Graph computer memory value can not be null");
         }
 
-        public static IllegalStateException memoryCompleteAndImmutable() {
-            return new IllegalStateException("Graph computer memory is complete and immutable");
+        public static IllegalStateException memoryIsCurrentlyImmutable() {
+            return new IllegalStateException("Graph computer memory is currently immutable");
         }
 
         public static IllegalArgumentException memoryDoesNotExist(final String key) {

@@ -119,25 +119,25 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
         try {
             results.memory().set("set", "test");
         } catch (Exception ex) {
-            validateException(Memory.Exceptions.memoryCompleteAndImmutable(), ex);
+            validateException(Memory.Exceptions.memoryIsCurrentlyImmutable(), ex);
         }
 
         try {
             results.memory().incr("incr", 1);
         } catch (Exception ex) {
-            validateException(Memory.Exceptions.memoryCompleteAndImmutable(), ex);
+            validateException(Memory.Exceptions.memoryIsCurrentlyImmutable(), ex);
         }
 
         try {
             results.memory().and("and", true);
         } catch (Exception ex) {
-            validateException(Memory.Exceptions.memoryCompleteAndImmutable(), ex);
+            validateException(Memory.Exceptions.memoryIsCurrentlyImmutable(), ex);
         }
 
         try {
             results.memory().or("or", false);
         } catch (Exception ex) {
-            validateException(Memory.Exceptions.memoryCompleteAndImmutable(), ex);
+            validateException(Memory.Exceptions.memoryIsCurrentlyImmutable(), ex);
         }
     }
 
