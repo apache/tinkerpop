@@ -78,7 +78,7 @@ public class TinkerGraphTest {
         v7.addEdge("link", v9, "weight", 1f);
         v8.addEdge("link", v9, "weight", 7f);
 
-        v1.withSack(() -> Float.MIN_VALUE, Operator.max).as("x").outE().sack(Operator.max, "weight").inV().jump("x", 5).sack().submit(g.compute()).forEachRemaining(System.out::println);
+        v1.withSack(() -> Float.MIN_VALUE).as("x").outE().sack(Operator.max, "weight").inV().jump("x", 5).sack().submit(g.compute()).forEachRemaining(System.out::println);
     }
 
     @Test

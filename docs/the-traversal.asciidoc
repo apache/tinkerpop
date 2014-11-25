@@ -908,11 +908,10 @@ gremlin> g.v(1).as('x').out('created').in('created').values('name').retain(['mar
 Sack Step
 ~~~~~~~~~
 
-image:gremlin-sacks-running.png[width=175,float=right] A traverser can contain a local data structure called a "sack". The `sack()`-step is used to read and write sacks (*sideEffect* or *map*). Each sack of each traverser is created when using `GraphTraversal.withSack(initialValueSupplier,splitOperator?,mergeOperator?)`.
+image:gremlin-sacks-running.png[width=175,float=right] A traverser can contain a local data structure called a "sack". The `sack()`-step is used to read and write sacks (*sideEffect* or *map*). Each sack of each traverser is created when using `GraphTraversal.withSack(initialValueSupplier,splitOperator?)`.
 
 * *Initial value supplier*: A `Supplier` providing the initial value of each traverser's sack.
 * *Split operator*: a `UnaryOperator` that clones the traverser's sack when the traverser splits. If no split operator is provided, then `UnaryOperator.identity()` is assumed.
-* *Merge operator*: a `BinaryOperator` that merges two traverser sacks. The merge operator should be link:http://en.wikipedia.org/wiki/Associative_property[associative], link:http://en.wikipedia.org/wiki/Commutative_property[commutative], and link:http://en.wikipedia.org/wiki/Distributive_property[distributive]. If no merge operator is provided, then traversers can not be merged.
 
 Two trivial examples are presented below to demonstrate the *initial value supplier*. In the first example below, a traverser is created at each vertex in the graph (`g.V()`), with a 1.0 sack (`withSack{1.0f}`), and then the sack value is accessed (`sack()`). In the second example, a random float supplier is used to generate sack values.
 
@@ -947,7 +946,7 @@ gremlin> g.V().withSack{1.0f}.as('x').outE().sack(mult,'weight').inV().jump('x',
 ==>[v[1], 1.0, v[4], 1.0, v[5]]   // 1.0 * 1.0 * 1.0 = 1.0
 ==>[v[1], 1.0, v[4], 0.4, v[3]]   // 1.0 * 1.0 * 0.4 = 0.4
 
-When complex objects are used (i.e. non-primitives), then a *split operator* should be defined to ensure that each traverser gets a clone of its parent's sack. The first example does not use a split operator and as such, the same map is propagated to all traversers (a global data structure). The second example, demonstrates how `Map.clone()` ensures that each traverser's sack contains a unique, local sack.
+image:gremlin-sacks-standing.png[width=100,float=left] When complex objects are used (i.e. non-primitives), then a *split operator* should be defined to ensure that each traverser gets a clone of its parent's sack. The first example does not use a split operator and as such, the same map is propagated to all traversers (a global data structure). The second example, demonstrates how `Map.clone()` ensures that each traverser's sack contains a unique, local sack.
 
 [source,groovy]
 gremlin> g.V().withSack { [:] }.
@@ -962,26 +961,6 @@ gremlin> g.V().withSack { [:] } { m -> m.clone() }.
 ==>[lop:java]
 
 NOTE: For primitives (i.e. integers, longs, floats, etc.), a split operator is not required as a primitives are encoded in the memory address and of the sack, not as a reference to an object.
-
-Finally, the *merge operator* is important for specifying how the sacks of two "equal" traversers should be merged into a single traverser. This is primarily useful in OLAP <<graphcomputer,GraphComputer>> traversals and recursive/aggregating OLTP traversals. The merge operator is a means of continually discarding redundant information for the purpose optimization (both time and space). For example, if the maximum (or minimum) edge weight all length 6 paths in the graph is desired, then a `max` (or `min`) binary merge operator should be used.
-
-[source,groovy]
-gremlin> g.V().withSack({-999.0f},max).as('x').bothE().sack(max,'weight').bothV().jump('x',6).sack().max()
-==>1.0
-gremlin> g.V().withSack({999.0f},min).as('x').bothE().sack(min,'weight').bothV().jump('x',6).sack().min()
-==>0.2
-
-NOTE: The `max` (and `min`) merge operator is a `BinaryOperator` and the split operator is a `UnaryOperator`. As such, they can be distinguished by Gremlin and hence the step description of: `withSack(initialValueSupplier,splitOperator?,mergeOperator?)`.
-
-While the above is a contrived example over the <<tinkerpop-classic,toy graph>>, it demonstrates not only finding the max and min edge weights, but also how merging with `max` and `min` increases the speed of execution. The runtimes of the traversals above with and without a merge operator is presented below demonstrating how discarding unneeded information increases performance.
-
-[source,groovy]
-gremlin> clock(10){g.V().withSack({-999.0f}).as('x').bothE().sack(max,'weight').bothV().jump('x',6).sack().max()}
-==>764.371100 // time in milliseconds without a merge operator
-gremlin> clock(10){g.V().withSack({-999.0f},max).as('x').bothE().sack(max,'weight').bothV().jump('x',6).sack().max()}
-==>173.911300 // time in milliseconds with a merge operator
-
-IMPORTANT: image:gremlin-sacks-standing.png[width=100,float=left] If no merge operator is provided, then traversers with sacks will not be able to be merged. The drawback of this is readily seen in OLAP computations where traversers are enumerated instead of counted (see <<distributed-gremlin-gotchas,Distributed Gremlin Gotchas>>). Note that there are various OLTP situations that are able to leverage the traverser merge optimization as well -- e.g. recursion (`jump()`) and barriers (`order()`).
 
 [[select-step]]
 Select Step

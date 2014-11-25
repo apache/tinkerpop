@@ -180,7 +180,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     @Override
     public Optional<MessageCombiner<TraverserSet<?>>> getMessageCombiner() {
-        return Optional.of(new TraversalVertexProgramMessageCombiner(this.traversal));
+        return (Optional) TraversalVertexProgramMessageCombiner.instance();
     }
 
     @Override
