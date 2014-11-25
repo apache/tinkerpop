@@ -314,6 +314,103 @@ gremlin> g.tx().submit{it.addVertex("name","daniel")}.exponentialBackoff(10)
 
 As shown above, the `submit` method takes a `Function<Graph, R>` which is the unit of work to execute and possibly retry on failure.  The method returns a `Transaction.Workload` object which has a number of default methods for common retry strategies.  It is also possible to supply a custom retry function if a default one does not suit the required purpose.
 
+BatchGraph
+----------
+
+`BatchGraph` wraps any `Graph` to enable batch loading of a large number of edges and vertices by chunking the entire load into smaller batches and maintaining a memory-efficient vertex cache so that intermediate transactional states can be flushed after each chunk is loaded to release memory.
+
+`BatchGraph` is *only* meant for loading data and does not support any retrieval or removal operations. That is, `BatchGraph` only supports the following methods:
+
+* `Graph.addVertex()` for adding vertices
+* `Vertex.addEdge()` for adding edges
+* `Graph.v()` to be used when adding edges
+* Property getter, setter and removal methods for vertices and edges as well as `Element.id()`
+
+An important limitation of `BatchGraph` is that edge properties can only be set immediately after the edge has been added. If other vertices or edges have been created in the meantime, setting, getting or removing properties will throw exceptions. This is done to avoid caching of edges which would require memory.
+
+`BatchGraph` can also automatically set the provided element identifiers as properties on the respective element. Use `vertexIdKey()` and `edgeIdKey()` on the `BatchGraph.Builder` to set the keys for the vertex and edge properties, respectively. This is useful when the graph implementation ignores supplied identifiers (as is the case with most implementations).
+
+As an example, consider loading a large number of edges defined by a `String` array with four entries called _quads_:
+
+. The out vertex id
+. The in vertex id
+. The label of the edge
+. A string annotation for the edge, i.e. an edge property
+
+Assuming this array is very large, loading all these edges in a single transaction is likely to exhaust main memory. Furthermore, one would have to rely on the database indexes to retrieve previously created vertices for a given identifier. `BatchGraph` addresses both of these issues.
+
+[source,java]
+----
+BatchGraph bgraph = BatchGraph.build(graph).vertexIdType(VertexIDType.STRING).bufferSize(1000).create();
+for (String[] quad : quads) {
+    Vertex[] vertices = new Vertex[2];
+    for (int i=0;i<2;i++) {
+        vertices[i] = bgraph.getVertex(quad[i]);
+        if (vertices[i]==null) vertices[i]=bgraph.addVertex(quad[i]);
+    }
+    Edge edge = bgraph.addEdge(null,vertices[0],vertices[1],quad[2]);
+    edge.setProperty("annotation",quad[3]);
+}
+----
+
+First, a `BatchGraph` `bgraph` is created wrapping an existing `graph` and setting the identifier type to `VertexIDType.STRING` and the batch size to 1000. `BatchGraph` maintains a mapping from the external vertex identifiers (in the example the first two entries in the `String` array describing the edge) to the internal vertex identifiers assigned by the wrapped graph database. Since this mapping is maintained in memory, it is potentially much faster than the database index. By specifying the `VertexIDType`, `BatchGraph` chooses the most memory-efficient mapping data structure and applies compression algorithms if possible. There are four different `VertexIDType`:
+
+* `OBJECT` : For arbitrary object vertex identifiers. This is the most generic and least space efficient type.
+* `STRING` : For string vertex identifiers. Attempts to apply string compression and prefixing strategies to reduce the memory footprint.
+* `URL` : For string vertex identifiers that parse as URLs. Applies URL specific compression schemes that are more efficient than generic string compression.
+* `NUMBER` : For numeric vertex identifiers. Uses primitive data structures that requires significantly less memory.
+
+The `bufferSize` represents the number of vertices and edges to load before committing a transaction and starting a new one.
+
+The `for` loop then iterates over all the quad `String` arrays and creates an edge for each by first retrieving or creating the vertex end points and then creating the edge. Note, that the edge property is set immediately after creating the edge. This property assignment is required because edges are only kept in memory until the next edge is created for efficiency reasons.
+
+Presorting Data
+~~~~~~~~~~~~~~~
+
+In the previous example, there is a big speed advantage if the next edge loaded has the same out vertex as the previous edge.  Loading all of the out going edges for a particular vertex at once before moving on to the next out vertex makes optimal use of the cache, whereas loading edges in a random order causes many more writes to and flushes of the cache.
+
+To take advantage of this, the data can be presorted quickly and efficiently using the linux built-in link:http://en.wikipedia.org/wiki/Sort_(Unix)[sort] command.  Assume that edges are read from a text file `edges.txt` with one edge per line:
+
+[source,text]
+----
+4   created   5   weight=1.0
+1   knows     4   weight=1.0
+1   knows     2   weight=0.5
+4   created   3   weight=0.4
+6   created   3   weight=0.2
+1   created   3   weight=0.4
+----
+
+This file can be sorted before loading with
+
+[source,text]
+$ sort -S4G -o edges_sorted.txt edges.txt
+
+The `-S4G` flag gives sort 4Gb of memory to work with.  If the file fits into memory the sort will be very fast; otherwise `sort` will use scratch space on disk to perform the operation.  Although this is not as fast, the linux `sort` command is highly optimized and is not limited in the size of files it can process.  If the input data contain unwanted duplicate lines, using the `-u` flag will cause `sort` to remove these duplicate lines during processing.
+
+The sorted file `edges_sorted.txt` now has the edges ordered by out vertex:
+
+[source,text]
+----
+1   created   3   weight=0.4
+1   knows     2   weight=0.5
+1   knows     4   weight=1.0
+4   created   3   weight=0.4
+4   created   5   weight=1.0
+6   created   3   weight=0.2
+----
+
+This way, any given out vertex is kept in the cache for all of its out going edges.  The time needed to sort the data is nearly always much less than the loading time saved by maximizing use of the cache, especially for large input data.
+
+Incremental Loading
+~~~~~~~~~~~~~~~~~~~
+
+The above describes how `BatchGraph` can be used to load data into a graph under the assumption that the wrapped graph is initially empty. `BatchGraph` can also be used to incrementally batch load edges and vertices into a graph with existing data. In this case, vertices may already exist for given identifiers.
+
+If the wrapped graph does not ignore identifiers, then enabling incremental batch loading is as simple as calling `incrementalLoading(false)` on the `Builder`, i.e. to disable the assumption that data is loaded into an empty graph. If the wrapped graph does ignore identifiers, then one has to tell `BatchGraph` how to find existing vertices for a given identifier by specifying the vertex identifier key using `vertexIdKey(key)` where `key` is some `String` for the property key. The `key` selected should be indexed by the underlying store for lookups to be efficient.
+
+NOTE: Incremental batch loading is more expensive than loading from scratch because `BatchGraph` has to call on the wrapped graph to determine whether a vertex exists for a given identifier.
+
 Gremlin I/O
 -----------
 
