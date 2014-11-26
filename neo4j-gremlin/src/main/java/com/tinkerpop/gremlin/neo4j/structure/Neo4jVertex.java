@@ -37,6 +37,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
 
     @Override
     public <V> VertexProperty<V> property(final String key) {
+        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.getBaseVertex().getId());
         this.graph.tx().readWrite();
         if (!this.graph.supportsMultiProperties) {
             return existsInNeo4j(key) ? new Neo4jVertexProperty<V>(this, key, (V) this.getBaseVertex().getProperty(key)) : VertexProperty.<V>empty();
@@ -57,6 +58,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
 
     @Override
     public <V> VertexProperty<V> property(final String key, final V value) {
+        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.getBaseVertex().getId());
         ElementHelper.validateProperty(key, value);
         this.graph.tx().readWrite();
         try {
@@ -96,6 +98,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
 
     @Override
     public <V> VertexProperty<V> singleProperty(final String key, final V value, final Object... keyValues) {
+        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.getBaseVertex().getId());
         if (!this.graph.supportsMultiProperties) {
             this.getBaseVertex().setProperty(key, value);
             return new Neo4jVertexProperty<>(this, key, value);

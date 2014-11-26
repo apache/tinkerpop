@@ -342,6 +342,13 @@ public class VertexPropertyTest extends AbstractGremlinTest {
     })
     public static class ExceptionConsistencyWhenVertexPropertyRemovedTest extends AbstractGremlinTest {
 
+        // todo: need to cover actual meta property assignment here as VertexTest doesn't check for that features
+        /*
+        {"v.property(k,v)", FunctionUtils.wrapConsumer((Vertex v) -> {
+            v.property("k", "v");
+        })},
+        */
+
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
