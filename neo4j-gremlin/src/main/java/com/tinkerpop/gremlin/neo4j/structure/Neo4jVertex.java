@@ -150,7 +150,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, Vertex.Iterator
 
     @Override
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
-        if (null == inVertex) Graph.Exceptions.argumentCanNotBeNull("vertex");
+        if (null == inVertex) throw Graph.Exceptions.argumentCanNotBeNull("vertex");
         if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.getBaseVertex().getId());
         ElementHelper.validateLabel(label);
         ElementHelper.legalPropertyKeyValueArray(keyValues);

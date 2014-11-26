@@ -32,7 +32,7 @@ public class EdgeTest {
             "labelCanNotBeEmpty",
             "labelCanNotBeASystemKey"
     })
-    public static class BasicVertexTest extends AbstractGremlinTest {
+    public static class BasicEdgeTest extends AbstractGremlinTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
@@ -54,6 +54,19 @@ public class EdgeTest {
                 fail("Call to Vertex.addEdge() should throw an exception when label is null");
             } catch (Exception ex) {
                 validateException(Element.Exceptions.labelCanNotBeNull(), ex);
+            }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        public void shouldHaveExceptionConsistencyWhenUsingNullVertex() {
+            final Vertex v = g.addVertex();
+            try {
+                v.addEdge("to-nothing", null);
+                fail("Call to Vertex.addEdge() should throw an exception when vertex is null");
+            } catch (Exception ex) {
+                validateException(Graph.Exceptions.argumentCanNotBeNull("vertex"), ex);
             }
         }
 
