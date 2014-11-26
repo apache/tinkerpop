@@ -407,16 +407,16 @@ public class VertexTest {
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
-                    {"v.property(k)", FunctionUtils.wrapConsumer((Vertex v) -> v.property("name"))},
-                    {"v.remove()", FunctionUtils.wrapConsumer(Vertex::remove)},
-                    {"v.addEdge()", FunctionUtils.wrapConsumer((Vertex v) -> v.addEdge("self", v))},
-                    {"v.property(k,v)", FunctionUtils.wrapConsumer((Vertex v) -> {
+                    {"property(k)", FunctionUtils.wrapConsumer((Vertex v) -> v.property("name"))},
+                    {"remove()", FunctionUtils.wrapConsumer(Vertex::remove)},
+                    {"addEdge()", FunctionUtils.wrapConsumer((Vertex v) -> v.addEdge("self", v))},
+                    {"property(k,v)", FunctionUtils.wrapConsumer((Vertex v) -> {
                         v.property("k", "v");
                     })},
-                    {"v.singleProperty(k,v)", FunctionUtils.wrapConsumer((Vertex v) -> {
+                    {"singleProperty(k,v)", FunctionUtils.wrapConsumer((Vertex v) -> {
                         v.singleProperty("k", "v");
                     })},
-                    {"v.value(k)", FunctionUtils.wrapConsumer((Vertex v) -> v.value("name"))}});
+                    {"value(k)", FunctionUtils.wrapConsumer((Vertex v) -> v.value("name"))}});
         }
 
         @Parameterized.Parameter(value = 0)

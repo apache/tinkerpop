@@ -252,7 +252,7 @@ public class EdgeTest {
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
                     {"property(k)", FunctionUtils.wrapConsumer((Edge e) -> e.property("x"))},
-                    {"e.remove()", FunctionUtils.wrapConsumer(Edge::remove)}});
+                    {"remove()", FunctionUtils.wrapConsumer(Edge::remove)}});
         }
 
         @Parameterized.Parameter(value = 0)
