@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
-import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.IteratorUtils;
 
 import java.util.Iterator;
 
@@ -58,18 +58,17 @@ public class HadoopVertex extends HadoopElement implements Vertex, Vertex.Iterat
     }
 
     @Override
-    public Iterator<Vertex> vertexIterator(final Direction direction, final String... labels) {
-        return StreamFactory.stream(getBaseVertex().iterators().vertexIterator(direction, labels)).map(v -> this.graph.v(v.id())).iterator();
+    public Iterator<Vertex> vertexIterator(final Direction direction, final String... edgeLabels) {
+        return IteratorUtils.map(this.getBaseVertex().iterators().vertexIterator(direction, edgeLabels), vertex -> HadoopVertex.this.graph.v(vertex.id()));
     }
 
     @Override
     public Iterator<Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
-        return StreamFactory.stream(getBaseVertex().iterators().edgeIterator(direction, edgeLabels)).map(e -> this.graph.e(e.id())).iterator();
+        return IteratorUtils.map(this.getBaseVertex().iterators().edgeIterator(direction, edgeLabels), edge -> HadoopVertex.this.graph.e(edge.id()));
     }
 
     @Override
     public <V> Iterator<VertexProperty<V>> propertyIterator(final String... propertyKeys) {
-        return (Iterator) StreamFactory.stream(getBaseVertex().iterators().propertyIterator(propertyKeys))
-                .map(property -> new HadoopVertexProperty<>((VertexProperty<V>) property, this)).iterator();
+        return IteratorUtils.<VertexProperty<V>, VertexProperty<V>>map(this.getBaseVertex().iterators().propertyIterator(propertyKeys), property -> new HadoopVertexProperty<>(property, HadoopVertex.this));
     }
 }

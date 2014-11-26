@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertexProperty;
-import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.IteratorUtils;
 
 import java.util.Iterator;
 
@@ -102,7 +102,6 @@ public class HadoopVertexProperty<V> implements VertexProperty<V>, VertexPropert
 
     @Override
     public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
-        return (Iterator) StreamFactory.stream(getBaseVertexProperty().iterators().propertyIterator(propertyKeys))
-                .map(property -> new HadoopProperty<>((Property<V>) property, this)).iterator();
+        return IteratorUtils.<Property<U>,Property<U>>map(this.getBaseVertexProperty().iterators().propertyIterator(propertyKeys), property -> new HadoopProperty<>(property, HadoopVertexProperty.this));
     }
 }

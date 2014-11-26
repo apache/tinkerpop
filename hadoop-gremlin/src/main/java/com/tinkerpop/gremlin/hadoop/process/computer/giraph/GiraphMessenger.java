@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.IteratorUtils;
 import org.apache.hadoop.io.LongWritable;
 
 /**
@@ -19,16 +19,16 @@ import org.apache.hadoop.io.LongWritable;
 public class GiraphMessenger<M> implements Messenger<M> {
 
     private GiraphComputeVertex giraphComputeVertex;
-    private Iterable<ObjectWritable> messages;
+    private Iterable<ObjectWritable<M>> messages;
 
-    public void setCurrentVertex(final GiraphComputeVertex giraphComputeVertex, final Iterable<ObjectWritable> messages) {
+    public void setCurrentVertex(final GiraphComputeVertex giraphComputeVertex, final Iterable<ObjectWritable<M>> messages) {
         this.giraphComputeVertex = giraphComputeVertex;
         this.messages = messages;
     }
 
     @Override
     public Iterable<M> receiveMessages(final MessageScope messageScope) {
-        return (Iterable) StreamFactory.iterable(StreamFactory.stream(this.messages).map(m -> m.get()));
+        return IteratorUtils.map(this.messages, ObjectWritable::get);
     }
 
     @Override
