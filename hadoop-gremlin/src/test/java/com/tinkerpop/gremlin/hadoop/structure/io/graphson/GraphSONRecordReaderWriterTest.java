@@ -61,7 +61,7 @@ public class GraphSONRecordReaderWriterTest {
                 VertexWritable v = (VertexWritable) reader.getCurrentValue();
                 writer.write(NullWritable.get(), v);
 
-                Vertex vertex = v.getBaseVertex();
+                Vertex vertex = v.get();
                 assertEquals(Integer.class, vertex.id().getClass());
 
                 Object value = vertex.property("name");

@@ -34,7 +34,7 @@ public class GiraphVertexReader extends VertexReader {
 
     @Override
     public Vertex getCurrentVertex() throws IOException, InterruptedException {
-        return new GiraphComputeVertex(this.recordReader.getCurrentValue().getBaseVertex());
+        return new GiraphComputeVertex(this.recordReader.getCurrentValue().get());
     }
 
     @Override

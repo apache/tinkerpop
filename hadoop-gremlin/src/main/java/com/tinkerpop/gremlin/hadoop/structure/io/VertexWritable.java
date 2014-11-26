@@ -8,7 +8,6 @@ import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
-import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
@@ -22,7 +21,7 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class VertexWritable<V extends Vertex> implements Writable, WrappedVertex<V> {
+public final class VertexWritable<V extends Vertex> implements Writable {
 
     private Vertex vertex;
     private static final KryoWriter KRYO_WRITER = KryoWriter.build().create();
@@ -38,11 +37,6 @@ public final class VertexWritable<V extends Vertex> implements Writable, Wrapped
 
     public Vertex get() {
         return this.vertex;
-    }
-
-    @Override
-    public V getBaseVertex() {
-        return (V) this.vertex;
     }
 
     @Override
@@ -72,5 +66,10 @@ public final class VertexWritable<V extends Vertex> implements Writable, Wrapped
     @Override
     public int hashCode() {
         return this.vertex.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return this.vertex.toString();
     }
 }

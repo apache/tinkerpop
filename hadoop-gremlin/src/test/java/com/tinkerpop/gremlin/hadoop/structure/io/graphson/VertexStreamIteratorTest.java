@@ -37,7 +37,7 @@ public class VertexStreamIteratorTest {
 
             boolean found = false;
             while (vsi.hasNext()) {
-                Vertex v = vsi.next().getBaseVertex();
+                Vertex v = vsi.next().get();
 
                 //System.out.println("v = " + v);
                 //System.out.println("\tin edges: " + count(v.in().toList()));
