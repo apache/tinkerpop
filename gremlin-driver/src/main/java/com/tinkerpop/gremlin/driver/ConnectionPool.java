@@ -143,9 +143,6 @@ class ConnectionPool {
         if (connection.isDead()) {
             logger.debug("Marking {} as dead", this.host);
             considerUnavailable();
-
-            // todo: should we actuall close here?  it kills the pool forevers
-            closeAsync();
         } else {
             if (bin.contains(connection) && inFlight == 0) {
                 logger.debug("{} is already in the bin and it has no inflight requests so it is safe to close", connection);
@@ -176,6 +173,9 @@ class ConnectionPool {
         return closeFuture.get() != null;
     }
 
+    /**
+     * Permanently kills the pool.
+     */
     public CompletableFuture<Void> closeAsync() {
         logger.info("Signalled closing of connection pool on {} with core size of {}", host, minPoolSize);
 
@@ -378,7 +378,7 @@ class ConnectionPool {
         Connection leastBusy = null;
         for (Connection connection : connections) {
             int inFlight = connection.inFlight.get();
-            if (inFlight < minInFlight) {
+            if (!connection.isDead() && inFlight < minInFlight) {
                 minInFlight = inFlight;
                 leastBusy = connection;
             }

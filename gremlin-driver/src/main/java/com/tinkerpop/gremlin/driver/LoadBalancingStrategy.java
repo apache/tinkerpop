@@ -43,7 +43,7 @@ public interface LoadBalancingStrategy extends Host.Listener {
 
                 @Override
                 public boolean hasNext() {
-                    return remainingHosts >= 0;
+                    return remainingHosts > 0;
                 }
 
                 @Override
