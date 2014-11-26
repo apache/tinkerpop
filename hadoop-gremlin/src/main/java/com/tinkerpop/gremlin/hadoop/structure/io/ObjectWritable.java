@@ -19,7 +19,6 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
     }
 
     public ObjectWritable(final T t) {
-        this();
         this.t = t;
     }
 
