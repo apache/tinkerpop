@@ -408,7 +408,9 @@ public class VertexTest {
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
                     {"property(k)", FunctionUtils.wrapConsumer((Vertex v) -> v.property("name"))},
-                    {"v.remove()", FunctionUtils.wrapConsumer(Vertex::remove)}});
+                    {"v.remove()", FunctionUtils.wrapConsumer(Vertex::remove)},
+                    {"v.addEdge()", FunctionUtils.wrapConsumer((Vertex v) -> v.addEdge("self", v))},
+                    {"v.value(k)", FunctionUtils.wrapConsumer((Vertex v) -> v.value("name"))}});
         }
 
         @Parameterized.Parameter(value = 0)

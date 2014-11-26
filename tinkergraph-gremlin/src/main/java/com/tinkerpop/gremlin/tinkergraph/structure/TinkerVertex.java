@@ -87,6 +87,7 @@ public class TinkerVertex extends TinkerElement implements Vertex, Vertex.Iterat
     @Override
     public Edge addEdge(final String label, final Vertex vertex, final Object... keyValues) {
         if (null == vertex) Graph.Exceptions.argumentCanNotBeNull("vertex");
+        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id);
         return TinkerHelper.addEdge(this.graph, this, (TinkerVertex) vertex, label, keyValues);
     }
 
