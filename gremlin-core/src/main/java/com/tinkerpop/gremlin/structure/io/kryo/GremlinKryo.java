@@ -8,6 +8,7 @@ import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.util.DefaultStreamFactory;
 import com.esotericsoftware.kryo.util.MapReferenceResolver;
 import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.process.computer.util.MapMemory;
 import com.tinkerpop.gremlin.process.traversers.PathTraverser;
 import com.tinkerpop.gremlin.process.traversers.SimpleTraverser;
 import com.tinkerpop.gremlin.process.T;
@@ -257,7 +258,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TreeMap.class, null, 45));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TreeSet.class, null, 50));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(UUID.class, kryo -> new UUIDSerializer(), 17));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(URI.class, kryo -> new URISerializer(), 72));     // ***LAST ID***
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(URI.class, kryo -> new URISerializer(), 72));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(VertexTerminator.class, null, 13));
 
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Edge.class, kryo -> new ElementSerializer.EdgeSerializer(), 65));
@@ -277,6 +278,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StepTimer.class, null, 69));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TraversalMetrics.class, null, 70));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedHashSet.class, null, 71));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MapMemory.class, null, 73));  // ***LAST ID***
         }};
 
         private static final byte major = 1;

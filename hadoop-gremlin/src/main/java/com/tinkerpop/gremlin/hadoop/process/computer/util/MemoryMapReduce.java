@@ -1,15 +1,17 @@
 package com.tinkerpop.gremlin.hadoop.process.computer.util;
 
 import com.tinkerpop.gremlin.hadoop.Constants;
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
+import com.tinkerpop.gremlin.process.computer.util.MapMemory;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
+import org.apache.hadoop.io.NullWritable;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -20,7 +22,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MemoryMapReduce implements MapReduce<String, Object, String, Object, Map<String, Object>> {
+public class MemoryMapReduce implements MapReduce<MapReduce.NullObject, MapMemory, MapReduce.NullObject, MapMemory, MapMemory> {
 
     public Set<String> memoryKeys = new HashSet<>();
 
@@ -53,41 +55,32 @@ public class MemoryMapReduce implements MapReduce<String, Object, String, Object
     }
 
     @Override
-    public void map(final Vertex vertex, final MapEmitter<String, Object> emitter) {
-        final Map<String, Object> memoryMap = vertex.<Map<String, Object>>property(Constants.MEMORY_MAP).orElse(Collections.emptyMap());
-        for (final String memoryKey : this.memoryKeys) {
-            if (memoryMap.containsKey(memoryKey)) {
-                emitter.emit(memoryKey, memoryMap.get(memoryKey));
-            }
-        }
+    public void map(final Vertex vertex, final MapEmitter<NullObject, MapMemory> emitter) {
+        final MapMemory mapMemory = vertex.<MapMemory>property(Constants.MAP_MEMORY).orElse(new MapMemory());
+        emitter.emit(mapMemory);
     }
 
     @Override
-    public void combine(final String key, final Iterator<Object> values, final ReduceEmitter<String, Object> emitter) {
+    public void combine(final NullObject key, final Iterator<MapMemory> values, final ReduceEmitter<NullObject, MapMemory> emitter) {
         this.reduce(key, values, emitter);
     }
 
     @Override
-    public void reduce(final String key, final Iterator<Object> values, final ReduceEmitter<String, Object> emitter) {
+    public void reduce(final NullObject key, final Iterator<MapMemory> values, final ReduceEmitter<NullObject, MapMemory> emitter) {
         emitter.emit(key, values.next());
     }
 
     @Override
-    public Map<String, Object> generateFinalResult(final Iterator<Pair<String, Object>> keyValues) {
-        final Map<String, Object> map = new HashMap<>();
-        while (keyValues.hasNext()) {
-            final Pair<String, Object> pair = keyValues.next();
-            map.put(pair.getValue0(), pair.getValue1());
-        }
-        return map;
+    public MapMemory generateFinalResult(final Iterator<Pair<NullObject, MapMemory>> keyValues) {
+        return keyValues.next().getValue1();
     }
 
     @Override
-    public void addResultToMemory(final Memory memory, final Iterator<Pair<String, Object>> keyValues) {
-        while (keyValues.hasNext()) {
-            final Pair<String, Object> keyValue = keyValues.next();
-            memory.set(keyValue.getValue0(), keyValue.getValue1());
-        }
+    public void addResultToMemory(final Memory.Admin memory, final Iterator<Pair<NullObject, MapMemory>> keyValues) {
+        final MapMemory temp = keyValues.next().getValue1();
+        temp.asMap().forEach(memory::set);
+        memory.setIteration(temp.getIteration());
+        memory.setRuntime(temp.getRuntime());
     }
 
     @Override

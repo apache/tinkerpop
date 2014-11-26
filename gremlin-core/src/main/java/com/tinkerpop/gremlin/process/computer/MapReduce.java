@@ -142,7 +142,7 @@ public interface MapReduce<MK, MV, RK, RV, R> {
      * @param memory    the memory of the {@link GraphComputer}
      * @param keyValues the key/value pairs emitted from reduce() (or map() in a map only job).
      */
-    public default void addResultToMemory(final Memory memory, final Iterator<Pair<RK, RV>> keyValues) {
+    public default void addResultToMemory(final Memory.Admin memory, final Iterator<Pair<RK, RV>> keyValues) {
         memory.set(this.getMemoryKey(), this.generateFinalResult(keyValues));
     }
 

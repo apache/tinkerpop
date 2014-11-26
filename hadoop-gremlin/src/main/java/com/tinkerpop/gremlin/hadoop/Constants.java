@@ -27,5 +27,5 @@ public class Constants {
     public static final String GREMLIN_HADOOP_MEMORY_KEYS = "gremlin.hadoop.memoryKeys";
     public static final String GREMLIN_HADOOP_MAP_REDUCE_CLASS = "gremlin.hadoop.mapReduceClass";
     public static final String GREMLIN_HADOOP_HALT = "gremlin.hadoop.halt";
-    public static final String MEMORY_MAP = Graph.Key.hide("gremlin.hadoop.memoryMap");
+    public static final String MAP_MEMORY = Graph.Key.hide("gremlin.hadoop.mapMemory");
 }

@@ -78,6 +78,10 @@ import java.util.Optional;
         test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
         method = "shouldNotAllowSettingUndeclaredMemoryKeys",
         reason = "Hadoop does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+@Graph.OptOut(
+        test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
+        method = "shouldHaveConsistentMemoryVertexPropertiesAndExceptions",
+        reason = "Hadoop does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 public class HadoopGraph implements Graph {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(HadoopGraph.class);
