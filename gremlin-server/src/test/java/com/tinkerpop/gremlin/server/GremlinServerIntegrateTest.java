@@ -207,11 +207,22 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldLoadInitScript() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+        try {
+            assertEquals(2, client.submit("addItUp(1,1)").all().join().get(0).getInt());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
     public void shouldGarbageCollectPhantomButNotHard() throws Exception {
         final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
 
-        assertEquals(2, client.submit("sum(1,1)").all().join().get(0).getInt());
+        assertEquals(2, client.submit("addItUp(1,1)").all().join().get(0).getInt());
         assertEquals(0, client.submit("def subtract(x,y){x-y};subtract(1,1)").all().join().get(0).getInt());
         assertEquals(0, client.submit("subtract(1,1)").all().join().get(0).getInt());
 
