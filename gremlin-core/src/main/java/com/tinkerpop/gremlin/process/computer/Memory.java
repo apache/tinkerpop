@@ -122,7 +122,11 @@ public interface Memory {
      */
     public interface Admin extends Memory {
 
-        public void incrIteration();
+        public default void incrIteration() {
+            this.setIteration(this.getIteration() + 1);
+        }
+
+        public void setIteration(final int iteration);
 
         public void setRuntime(final long runtime);
 

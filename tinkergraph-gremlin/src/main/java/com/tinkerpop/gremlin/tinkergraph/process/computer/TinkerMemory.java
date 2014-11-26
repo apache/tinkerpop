@@ -51,6 +51,11 @@ public class TinkerMemory implements Memory.Admin {
     }
 
     @Override
+    public void setIteration(final int iteration) {
+        this.iteration.set(iteration);
+    }
+
+    @Override
     public int getIteration() {
         return this.iteration.get();
     }

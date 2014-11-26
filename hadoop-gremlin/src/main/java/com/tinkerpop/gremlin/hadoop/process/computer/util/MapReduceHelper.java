@@ -40,7 +40,7 @@ public class MapReduceHelper {
             + " is not " + SequenceFileOutputFormat.class.getCanonicalName()
             + " and thus, graph computer memory can not be converted to Java objects";
 
-    public static void executeMapReduceJob(final MapReduce mapReduce, final Memory memory, final Configuration configuration) throws IOException, ClassNotFoundException, InterruptedException {
+    public static void executeMapReduceJob(final MapReduce mapReduce, final Memory.Admin memory, final Configuration configuration) throws IOException, ClassNotFoundException, InterruptedException {
         final Configuration newConfiguration = new Configuration(configuration);
         final BaseConfiguration apacheConfiguration = new BaseConfiguration();
         mapReduce.storeState(apacheConfiguration);

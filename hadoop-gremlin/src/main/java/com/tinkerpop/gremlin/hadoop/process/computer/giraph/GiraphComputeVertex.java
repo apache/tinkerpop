@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.hadoop.process.computer.giraph;
 import com.tinkerpop.gremlin.hadoop.Constants;
 import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.MapMemory;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -22,8 +23,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -62,9 +61,10 @@ public final class GiraphComputeVertex extends Vertex<LongWritable, Text, NullWr
         if (!(Boolean) ((RuleWritable) this.getAggregatedValue(Constants.GREMLIN_HADOOP_HALT)).getObject())
             vertexProgram.execute(this.tinkerVertex, messenger, memory);  // TODO provide a wrapper around TinkerVertex for Edge and non-ComputeKeys manipulation
         else if (this.getConf().getBoolean(Constants.GREMLIN_HADOOP_DERIVE_MEMORY, false)) {
-            final Map<String, Object> memoryMap = new HashMap<>(memory.asMap());
-            memoryMap.put(Constants.SYSTEM_ITERATION, memory.getIteration() - 1);
-            this.tinkerVertex.singleProperty(Constants.MEMORY_MAP, memoryMap);
+            final MapMemory mapMemory = new MapMemory();
+            memory.asMap().forEach(mapMemory::set);
+            mapMemory.setIteration(memory.getIteration() - 1);
+            this.tinkerVertex.singleProperty(Constants.MAP_MEMORY, mapMemory);
         }
     }
 

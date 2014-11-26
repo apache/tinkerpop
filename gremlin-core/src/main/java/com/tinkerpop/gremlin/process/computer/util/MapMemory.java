@@ -1,26 +1,33 @@
 package com.tinkerpop.gremlin.process.computer.util;
 
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MapMemory implements Memory.Admin {
+public final class MapMemory implements Memory.Admin, Serializable {
 
     private long runtime = 0l;
     private int iteration = -1;
     private final Map<String, Object> memoryMap = new HashMap<>();
-    private final Set<String> memoryComputeKeys;
+    private final Set<String> memoryComputeKeys = new HashSet<>();
 
-    public MapMemory(final VertexProgram<?> program) {
-        this.memoryComputeKeys = program.getMemoryComputeKeys();
+    public void addVertexProgramMemoryComputeKeys(final VertexProgram<?> vertexProgram) {
+        this.memoryComputeKeys.addAll(vertexProgram.getMemoryComputeKeys());
+    }
+
+    public void addMapReduceMemoryKey(final MapReduce mapReduce) {
+        this.memoryComputeKeys.add(mapReduce.getMemoryKey());
     }
 
     @Override
@@ -99,6 +106,11 @@ public final class MapMemory implements Memory.Admin {
     @Override
     public void incrIteration() {
         this.iteration = this.iteration + 1;
+    }
+
+    @Override
+    public void setIteration(final int iteration) {
+        this.iteration = iteration;
     }
 
     @Override

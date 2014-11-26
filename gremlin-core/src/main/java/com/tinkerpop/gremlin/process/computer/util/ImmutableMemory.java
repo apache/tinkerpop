@@ -62,6 +62,11 @@ public final class ImmutableMemory implements Memory.Admin {
     }
 
     @Override
+    public void setIteration(final int iteration) {
+        throw Memory.Exceptions.memoryIsCurrentlyImmutable();
+    }
+
+    @Override
     public void setRuntime(final long runtime) {
         throw Memory.Exceptions.memoryIsCurrentlyImmutable();
     }

@@ -54,7 +54,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
 
     private final Set<MapReduce> mapReduces = new HashSet<>();
     private VertexProgram vertexProgram;
-    private MapMemory memory;
+    private MapMemory memory = new MapMemory();
 
     public GiraphGraphComputer(final HadoopGraph hadoopGraph) {
         this.hadoopGraph = hadoopGraph;
@@ -80,7 +80,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
     @Override
     public GraphComputer program(final VertexProgram vertexProgram) {
         this.vertexProgram = vertexProgram;
-        this.memory = new MapMemory(this.vertexProgram);
+        this.memory.addVertexProgramMemoryComputeKeys(this.vertexProgram);
         final BaseConfiguration apacheConfiguration = new BaseConfiguration();
         vertexProgram.storeState(apacheConfiguration);
         ConfUtil.mergeApacheIntoHadoopConfiguration(apacheConfiguration, this.giraphConfiguration);
@@ -156,10 +156,10 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
             }
             // do map reduce jobs
             for (final MapReduce mapReduce : this.mapReduces) {
+                this.memory.addMapReduceMemoryKey(mapReduce);
                 MapReduceHelper.executeMapReduceJob(mapReduce, this.memory, this.giraphConfiguration);
             }
         } catch (final Exception e) {
-            // e.printStackTrace();
             throw new IllegalStateException(e.getMessage(), e);
         }
         return 0;
