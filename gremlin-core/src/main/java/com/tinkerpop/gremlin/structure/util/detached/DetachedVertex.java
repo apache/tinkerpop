@@ -80,7 +80,6 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
     @Override
     public GraphTraversal<Vertex, Vertex> start() {
         throw new UnsupportedOperationException("Detached vertices cannot be traversed: " + this);
-        // TODO: how do you get Vertex.properties() ?
     }
 
     @Override
