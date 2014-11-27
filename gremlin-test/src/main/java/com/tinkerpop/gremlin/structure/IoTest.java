@@ -284,7 +284,6 @@ public class IoTest extends AbstractGremlinTest {
         graphProvider.clear(g1, configuration);
     }
 
-    @org.junit.Ignore
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
@@ -294,7 +293,11 @@ public class IoTest extends AbstractGremlinTest {
         graphProvider.clear(configuration);
         final Graph g1 = graphProvider.openTestGraph(configuration);
 
-        GraphMigrator.migrateGraph(g, g1);
+        final GremlinKryo kryo = graphProvider.createConfiguredGremlinKryo();
+        final KryoReader reader = KryoReader.build().custom(kryo).create();
+        final KryoWriter writer = KryoWriter.build().custom(kryo).create();
+
+        GraphMigrator.migrateGraph(g, g1, reader, writer);
 
         assertClassicGraph(g1, false, false);
 
@@ -302,9 +305,6 @@ public class IoTest extends AbstractGremlinTest {
         graphProvider.clear(g1, configuration);
     }
 
-    // todo: graph migrator causing problem because it doesn't allow custom serialization
-
-    @org.junit.Ignore
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
@@ -314,7 +314,11 @@ public class IoTest extends AbstractGremlinTest {
         graphProvider.clear(configuration);
         final Graph g1 = graphProvider.openTestGraph(configuration);
 
-        GraphMigrator.migrateGraph(g, g1);
+        final GremlinKryo kryo = graphProvider.createConfiguredGremlinKryo();
+        final KryoReader reader = KryoReader.build().custom(kryo).create();
+        final KryoWriter writer = KryoWriter.build().custom(kryo).create();
+
+        GraphMigrator.migrateGraph(g, g1, reader, writer);
 
         // by making this lossy for float it will assert floats for doubles
         assertModernGraph(g1, true, false);
