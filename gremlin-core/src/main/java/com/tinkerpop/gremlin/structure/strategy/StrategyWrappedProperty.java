@@ -33,7 +33,8 @@ public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped 
 
     @Override
     public V value() throws NoSuchElementException {
-        return this.baseProperty.value();
+        return this.strategyWrappedGraph.getStrategy().compose(
+                s -> s.getPropertyValueStrategy(strategyContext), this.baseProperty::value).get();
     }
 
     @Override

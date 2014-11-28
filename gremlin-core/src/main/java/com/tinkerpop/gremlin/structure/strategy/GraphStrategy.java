@@ -467,6 +467,18 @@ public interface GraphStrategy {
     }
 
     /**
+     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.VertexProperty#value()}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Supplier} that accepts a {@link java.util.function.Supplier} with
+     * {@link com.tinkerpop.gremlin.structure.VertexProperty#value()} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     */
+    public default <V> UnaryOperator<Supplier<V>> getVertexPropertyValueStrategy(final Strategy.Context<StrategyWrappedVertexProperty<V>> ctx) {
+        return UnaryOperator.identity();
+    }
+
+    /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.VertexProperty.Iterators#propertyIterator}.
      *
      * @param ctx the context within which this strategy function is called
@@ -633,6 +645,18 @@ public interface GraphStrategy {
      * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
     public default UnaryOperator<Supplier<GraphTraversal>> getGraphOfStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return UnaryOperator.identity();
+    }
+
+    /**
+     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Property#value()}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Supplier} that accepts a {@link java.util.function.Supplier} with
+     * {@link com.tinkerpop.gremlin.structure.Property#value()} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     */
+    public default <V> UnaryOperator<Supplier<V>> getPropertyValueStrategy(final Strategy.Context<StrategyWrappedProperty<V>> ctx) {
         return UnaryOperator.identity();
     }
 
