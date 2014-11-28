@@ -627,5 +627,15 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         public <V> UnaryOperator<Supplier<V>> getPropertyValueStrategy(final Strategy.Context<StrategyWrappedProperty<V>> ctx) {
             return spy();
         }
+
+        @Override
+        public <V> UnaryOperator<Supplier<String>> getVertexPropertyKeyStrategy(final Strategy.Context<StrategyWrappedVertexProperty<V>> ctx) {
+            return spy();
+        }
+
+        @Override
+        public <V> UnaryOperator<Supplier<String>> getPropertyKeyStrategy(final Strategy.Context<StrategyWrappedProperty<V>> ctx) {
+            return spy();
+        }
     }
 }

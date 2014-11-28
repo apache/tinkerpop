@@ -290,6 +290,16 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
+    public <V> UnaryOperator<Supplier<String>> getVertexPropertyKeyStrategy(final Strategy.Context<StrategyWrappedVertexProperty<V>> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getVertexPropertyKeyStrategy(ctx));
+    }
+
+    @Override
+    public <V> UnaryOperator<Supplier<String>> getPropertyKeyStrategy(final Strategy.Context<StrategyWrappedProperty<V>> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getPropertyKeyStrategy(ctx));
+    }
+
+    @Override
     public String toString() {
         return String.join("->", graphStrategySequence.stream().map(Object::toString)
                 .map(String::toLowerCase).collect(Collectors.<String>toList()));

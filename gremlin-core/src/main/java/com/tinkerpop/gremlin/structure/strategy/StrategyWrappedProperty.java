@@ -28,7 +28,8 @@ public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped 
 
     @Override
     public String key() {
-        return this.baseProperty.key();
+        return this.strategyWrappedGraph.getStrategy().compose(
+                s -> s.getPropertyKeyStrategy(strategyContext), this.baseProperty::key).get();
     }
 
     @Override
