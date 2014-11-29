@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class TinkerReduceEmitter<OK, OV> implements MapReduce.ReduceEmitter<OK, OV> {
+public class TinkerReduceEmitter<OK, OV> implements MapReduce.ReduceEmitter<OK, OV> {
 
     protected Queue<Pair<OK, OV>> reduceQueue = new ConcurrentLinkedQueue<>();
 

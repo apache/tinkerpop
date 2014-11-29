@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class TinkerMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {
+public class TinkerMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {
 
     public Map<K, Queue<V>> reduceMap;
     public Queue<Pair<K, V>> mapQueue;
