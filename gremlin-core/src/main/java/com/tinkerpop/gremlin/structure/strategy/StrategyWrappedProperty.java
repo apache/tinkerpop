@@ -28,12 +28,14 @@ public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped 
 
     @Override
     public String key() {
-        return this.baseProperty.key();
+        return this.strategyWrappedGraph.getStrategy().compose(
+                s -> s.getPropertyKeyStrategy(strategyContext), this.baseProperty::key).get();
     }
 
     @Override
     public V value() throws NoSuchElementException {
-        return this.baseProperty.value();
+        return this.strategyWrappedGraph.getStrategy().compose(
+                s -> s.getPropertyValueStrategy(strategyContext), this.baseProperty::value).get();
     }
 
     @Override

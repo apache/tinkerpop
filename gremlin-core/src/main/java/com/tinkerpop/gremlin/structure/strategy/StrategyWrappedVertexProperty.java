@@ -88,12 +88,14 @@ public class StrategyWrappedVertexProperty<V> extends StrategyWrappedElement imp
 
     @Override
     public String key() {
-        return this.baseVertexProperty.key();
+        return this.strategyWrappedGraph.getStrategy().compose(
+                s -> s.getVertexPropertyKeyStrategy(strategyContext), this.baseVertexProperty::key).get();
     }
 
     @Override
     public V value() throws NoSuchElementException {
-        return this.baseVertexProperty.value();
+        return this.strategyWrappedGraph.getStrategy().compose(
+                s -> s.getVertexPropertyValueStrategy(strategyContext), this.baseVertexProperty::value).get();
     }
 
     @Override
