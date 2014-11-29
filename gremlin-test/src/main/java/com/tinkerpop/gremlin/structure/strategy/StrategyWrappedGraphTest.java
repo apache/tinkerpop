@@ -274,7 +274,7 @@ public class StrategyWrappedGraphTest  {
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldWrap() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.strategy.setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
+            swg.getStrategy().setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
             final Vertex v = swg.addVertex();
             final Edge e = v.addEdge("to", v, "all", "a", "any", "something", Graph.Key.hide("hideme"), "hidden");
 
@@ -321,7 +321,7 @@ public class StrategyWrappedGraphTest  {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
         public void shouldWrap() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.strategy.setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
+            swg.getStrategy().setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
             final Vertex v = swg.addVertex();
             final VertexProperty vp = v.property("property", "on-property", "food", "taco", Graph.Key.hide("food"), "burger", "more", "properties", Graph.Key.hide("more"), "hidden");
 
@@ -365,7 +365,7 @@ public class StrategyWrappedGraphTest  {
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         public void shouldWrap() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.strategy.setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
+            swg.getStrategy().setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
             final Vertex v = swg.addVertex("all", "a", "any", "something", Graph.Key.hide("hideme"), "hidden");
 
             final AtomicBoolean atLeastOne = new AtomicBoolean(false);
@@ -409,7 +409,7 @@ public class StrategyWrappedGraphTest  {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
         public void shouldWrap() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.strategy.setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
+            swg.getStrategy().setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
             final Vertex v = swg.addVertex("all", "a", "any", "something", "any", "something-else", Graph.Key.hide("hideme"), "hidden", Graph.Key.hide("hideme"), "hidden-too");
 
             final AtomicBoolean atLeastOne = new AtomicBoolean(false);
@@ -455,7 +455,7 @@ public class StrategyWrappedGraphTest  {
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldWrap() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.strategy.setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
+            swg.getStrategy().setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
 
             final AtomicBoolean atLeastOne = new AtomicBoolean(false);
             assertTrue(streamGetter.apply(swg, this).allMatch(e -> {
@@ -507,7 +507,7 @@ public class StrategyWrappedGraphTest  {
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldWrap() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.strategy.setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
+            swg.getStrategy().setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
 
             final AtomicBoolean atLeastOne = new AtomicBoolean(false);
             assertTrue(streamGetter.apply(swg, this).allMatch(v -> {
@@ -546,7 +546,7 @@ public class StrategyWrappedGraphTest  {
         @LoadGraphWith(LoadGraphWith.GraphData.CREW)
         public void shouldWrap() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-            swg.strategy.setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
+            swg.getStrategy().setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
 
             final AtomicBoolean atLeastOne = new AtomicBoolean(false);
             assertTrue(streamGetter.apply(swg, this).allMatch(v -> {

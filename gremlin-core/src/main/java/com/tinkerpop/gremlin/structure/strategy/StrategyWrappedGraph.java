@@ -27,13 +27,19 @@ import java.util.Optional;
  */
 public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGraph<Graph> {
     private final Graph baseGraph;
-    protected Strategy strategy = new Strategy.Simple();
+    private Strategy strategy;
     private Strategy.Context<StrategyWrappedGraph> graphContext;
 
     public StrategyWrappedGraph(final Graph baseGraph) {
+        this(baseGraph, new Strategy.Simple());
+    }
+
+    public StrategyWrappedGraph(final Graph baseGraph, final Strategy strategy) {
         if (baseGraph instanceof StrategyWrapped) throw new IllegalArgumentException(
                 String.format("The graph %s is already StrategyWrapped and must be a base Graph", baseGraph));
+        if (null == strategy) throw new IllegalArgumentException("strategy cannot be null");
 
+        this.strategy = strategy;
         this.baseGraph = baseGraph;
         this.graphContext = new Strategy.Context<>(baseGraph, this);
     }
