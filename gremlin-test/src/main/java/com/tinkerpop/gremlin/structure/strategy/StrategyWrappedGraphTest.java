@@ -250,13 +250,11 @@ public class StrategyWrappedGraphTest  {
         @Parameterized.Parameters(name = "{index}: {0}")
         public static Iterable<Object[]> data() {
             final List<Pair<String, BiFunction<Graph, Edge, Stream<Property<Object>>>>> tests = new ArrayList<>();
-            tests.add(Pair.with("e.property(\"all\")", (Graph g, Edge e) -> Stream.of(e.property("all"))));
+            tests.add(Pair.with("e.property(all)", (Graph g, Edge e) -> Stream.of(e.property("all"))));
             tests.add(Pair.with("e.iterators().properties()", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().propertyIterator())));
-            tests.add(Pair.with("e.iterators().properties(\"any\")", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().propertyIterator("any"))));
+            tests.add(Pair.with("e.iterators().properties(any)", (Graph g, Edge e) -> StreamFactory.stream(e.iterators().propertyIterator("any"))));
             tests.add(Pair.with("e.properties()", (Graph g, Edge e) -> StreamFactory.stream(e.properties())));
-            tests.add(Pair.with("e.property(\"extra\",\"more\")", (Graph g, Edge e) -> Stream.<Property<Object>>of(e.property("extra", "more"))));
-            //tests.add(Pair.with("g.E().properties(\"all\")", (Graph g, Edge e) -> g.E().properties("all").toList().stream()));
-            //tests.add(Pair.with("g.E().properties()", (Graph g, Edge e) -> g.E().properties().toList().stream()));
+            tests.add(Pair.with("e.property(extra,more)", (Graph g, Edge e) -> Stream.<Property<Object>>of(e.property("extra", "more"))));
 
             return tests.stream().map(d -> {
                 final Object[] o = new Object[2];
@@ -296,12 +294,12 @@ public class StrategyWrappedGraphTest  {
         @Parameterized.Parameters(name = "{index}: {0}")
         public static Iterable<Object[]> data() {
             final List<Pair<String, BiFunction<Graph, VertexProperty, Stream<Property<Object>>>>> tests = new ArrayList<>();
-            tests.add(Pair.with("vp.property(\"food\")", (Graph g, VertexProperty vp) -> Stream.of(vp.property("food"))));
-            tests.add(Pair.with("vp.property(\"moreFood\",\"sandwhich\")", (Graph g, VertexProperty vp) -> Stream.of(vp.property("moreFood","sandwhich"))));
-            tests.add(Pair.with("vp.property(Graph.Key.hide(\"more\"))", (Graph g, VertexProperty vp) -> Stream.of(vp.property(Graph.Key.hide("more")))));
-            tests.add(Pair.with("vp.property(Graph.Key.hide(\"extra\",\"this\"))", (Graph g, VertexProperty vp) -> Stream.of(vp.property(Graph.Key.hide("extra"), "this"))));
+            tests.add(Pair.with("vp.property(food)", (Graph g, VertexProperty vp) -> Stream.of(vp.property("food"))));
+            tests.add(Pair.with("vp.property(moreFood,sandwhich)", (Graph g, VertexProperty vp) -> Stream.of(vp.property("moreFood","sandwhich"))));
+            tests.add(Pair.with("vp.property(Graph.Key.hide(more))", (Graph g, VertexProperty vp) -> Stream.of(vp.property(Graph.Key.hide("more")))));
+            tests.add(Pair.with("vp.property(Graph.Key.hide(extra,this))", (Graph g, VertexProperty vp) -> Stream.of(vp.property(Graph.Key.hide("extra"), "this"))));
             tests.add(Pair.with("vp.iterators().properties()", (Graph g, VertexProperty vp) -> StreamFactory.stream(vp.iterators().propertyIterator())));
-            tests.add(Pair.with("vp.iterators().properties(\"food\")", (Graph g, VertexProperty vp) -> StreamFactory.stream(vp.iterators().propertyIterator("food"))));
+            tests.add(Pair.with("vp.iterators().properties(food)", (Graph g, VertexProperty vp) -> StreamFactory.stream(vp.iterators().propertyIterator("food"))));
             tests.add(Pair.with("vp.propertyMap().next().values()", (Graph g, VertexProperty vp) -> StreamFactory.stream(vp.propertyMap().next().values())));
 
             return tests.stream().map(d -> {
@@ -342,12 +340,12 @@ public class StrategyWrappedGraphTest  {
         @Parameterized.Parameters(name = "{index}: {0}")
         public static Iterable<Object[]> data() {
             final List<Pair<String, BiFunction<Graph, Vertex, Stream<VertexProperty<Object>>>>> tests = new ArrayList<>();
-            tests.add(Pair.with("v.property(\"all\")", (Graph g, Vertex v) -> Stream.of(v.property("all"))));
-            tests.add(Pair.with("v.property(\"extra\", \"data\")", (Graph g, Vertex v) -> Stream.of(v.<Object>property("extra", "data"))));
+            tests.add(Pair.with("v.property(all)", (Graph g, Vertex v) -> Stream.of(v.property("all"))));
+            tests.add(Pair.with("v.property(extra, data)", (Graph g, Vertex v) -> Stream.of(v.<Object>property("extra", "data"))));
             tests.add(Pair.with("v.iterators().properties()", (Graph g, Vertex v) -> StreamFactory.stream(v.iterators().propertyIterator())));
-            tests.add(Pair.with("v.iterators().properties(\"any\")", (Graph g, Vertex v) -> StreamFactory.stream(v.iterators().propertyIterator("any"))));
+            tests.add(Pair.with("v.iterators().properties(any)", (Graph g, Vertex v) -> StreamFactory.stream(v.iterators().propertyIterator("any"))));
             tests.add(Pair.with("v.properties()", (Graph g, Vertex v) -> StreamFactory.stream(v.properties())));
-            tests.add(Pair.with("v.property(\"extra\",\"more\")", (Graph g, Vertex v) -> Stream.<VertexProperty<Object>>of(v.property("extra", "more"))));
+            tests.add(Pair.with("v.property(extra,more)", (Graph g, Vertex v) -> Stream.<VertexProperty<Object>>of(v.property("extra", "more"))));
 
             return tests.stream().map(d -> {
                 final Object[] o = new Object[2];
@@ -365,7 +363,7 @@ public class StrategyWrappedGraphTest  {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-        public void shouldWrapProperty() {
+        public void shouldWrap() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
             swg.strategy.setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
             final Vertex v = swg.addVertex("all", "a", "any", "something", Graph.Key.hide("hideme"), "hidden");
@@ -385,12 +383,12 @@ public class StrategyWrappedGraphTest  {
         @Parameterized.Parameters(name = "{index}: {0}")
         public static Iterable<Object[]> data() {
             final List<Pair<String, BiFunction<Graph, Vertex, Stream<VertexProperty<Object>>>>> tests = new ArrayList<>();
-            tests.add(Pair.with("v.property(\"all\")", (Graph g, Vertex v) -> Stream.of(v.property("all"))));
-            tests.add(Pair.with("v.property(\"extra\", \"data\")", (Graph g, Vertex v) -> Stream.of(v.<Object>property("extra", "data"))));
+            tests.add(Pair.with("v.property(all)", (Graph g, Vertex v) -> Stream.of(v.property("all"))));
+            tests.add(Pair.with("v.property(extra, data)", (Graph g, Vertex v) -> Stream.of(v.<Object>property("extra", "data"))));
             tests.add(Pair.with("v.iterators().properties()", (Graph g, Vertex v) -> StreamFactory.stream(v.iterators().propertyIterator())));
-            tests.add(Pair.with("v.iterators().properties(\"any\")", (Graph g, Vertex v) -> StreamFactory.stream(v.iterators().propertyIterator("any"))));
+            tests.add(Pair.with("v.iterators().properties(any)", (Graph g, Vertex v) -> StreamFactory.stream(v.iterators().propertyIterator("any"))));
             tests.add(Pair.with("v.properties()", (Graph g, Vertex v) -> StreamFactory.stream(v.properties())));
-            tests.add(Pair.with("v.property(\"extra\",\"more\")", (Graph g, Vertex v) -> Stream.<VertexProperty<Object>>of(v.property("extra", "more"))));
+            tests.add(Pair.with("v.property(extra,more)", (Graph g, Vertex v) -> Stream.<VertexProperty<Object>>of(v.property("extra", "more"))));
 
             return tests.stream().map(d -> {
                 final Object[] o = new Object[2];
@@ -409,7 +407,7 @@ public class StrategyWrappedGraphTest  {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
-        public void shouldWrapProperty() {
+        public void shouldWrap() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
             swg.strategy.setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
             final Vertex v = swg.addVertex("all", "a", "any", "something", "any", "something-else", Graph.Key.hide("hideme"), "hidden", Graph.Key.hide("hideme"), "hidden-too");
@@ -434,7 +432,7 @@ public class StrategyWrappedGraphTest  {
             tests.add(Pair.with("g.v(1).outE()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).outE())));
             tests.add(Pair.with("g.v(4).bothE()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).bothE())));
             tests.add(Pair.with("g.v(4).inE()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).inE())));
-            tests.add(Pair.with("g.v(11).property(\"weight\").element()", (Graph g, AbstractGremlinTest instance) -> Stream.of((Edge) g.e(instance.convertToEdgeId("josh", "created", "lop")).property("weight").element())));
+            tests.add(Pair.with("g.v(11).property(weight).element()", (Graph g, AbstractGremlinTest instance) -> Stream.of((Edge) g.e(instance.convertToEdgeId("josh", "created", "lop")).property("weight").element())));
             tests.add(Pair.with("g.v(4).iterators().edge(Direction.BOTH)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).iterators().edgeIterator(Direction.BOTH))));
             tests.add(Pair.with("g.v(1).iterators().edge(Direction.OUT)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).iterators().edgeIterator(Direction.OUT))));
             tests.add(Pair.with("g.v(4).iterators().edge(Direction.IN)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).iterators().edgeIterator(Direction.IN))));
@@ -487,7 +485,7 @@ public class StrategyWrappedGraphTest  {
             tests.add(Pair.with("g.e(11).iterators().vertices(Direction.IN)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.e(instance.convertToEdgeId("josh", "created", "lop")).iterators().vertexIterator(Direction.IN))));
             tests.add(Pair.with("g.e(11).iterators().vertices(Direction.OUT)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.e(instance.convertToEdgeId("josh", "created", "lop")).iterators().vertexIterator(Direction.OUT))));
             tests.add(Pair.with("g.e(11).iterators().vertices(Direction.BOTH)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.e(instance.convertToEdgeId("josh", "created", "lop")).iterators().vertexIterator(Direction.BOTH))));
-            tests.add(Pair.with("g.v(1).iterators().properties(\"name\").next().element()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).iterators().propertyIterator("name").next().element())));
+            tests.add(Pair.with("g.v(1).iterators().properties(name).next().element()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).iterators().propertyIterator("name").next().element())));
             tests.add(Pair.with("g.v(1).outE().otherV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).outE().otherV())));
             tests.add(Pair.with("g.v(4).inE().otherV()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("josh")).inE().otherV())));
 
@@ -507,7 +505,7 @@ public class StrategyWrappedGraphTest  {
 
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-        public void shouldWrapSingleProperty() {
+        public void shouldWrap() {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
             swg.strategy.setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
 
