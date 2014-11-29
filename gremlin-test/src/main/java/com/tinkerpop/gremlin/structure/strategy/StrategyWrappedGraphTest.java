@@ -518,4 +518,43 @@ public class StrategyWrappedGraphTest  {
             assertTrue(atLeastOne.get());
         }
     }
+
+    @RunWith(Parameterized.class)
+    public static class GraphShouldBeWrappedTest extends AbstractGremlinTest {
+        @Parameterized.Parameters(name = "{index}: {0}")
+        public static Iterable<Object[]> data() {
+            final List<Pair<String, BiFunction<Graph, AbstractGremlinTest, Stream<Graph>>>> tests = new ArrayList<>();
+            tests.add(Pair.with("g.v(1).graph()", (Graph g, AbstractGremlinTest instance) -> Stream.of(g.v(instance.convertToVertexId("marko")).graph())));
+            tests.add(Pair.with("g.v(1).iterators().edgeIterator(BOTH).map(Edge::graph)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).iterators().edgeIterator(Direction.BOTH)).map(Edge::graph)));
+            tests.add(Pair.with("g.v(1).iterators().propertyIterator().map(Edge::graph)", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.v(instance.convertToVertexId("marko")).iterators().propertyIterator()).map(VertexProperty::graph)));
+
+            return tests.stream().map(d -> {
+                final Object[] o = new Object[2];
+                o[0] = d.getValue0();
+                o[1] = d.getValue1();
+                return o;
+            }).collect(Collectors.toList());
+        }
+
+        @Parameterized.Parameter(value = 0)
+        public String name;
+
+        @Parameterized.Parameter(value = 1)
+        public BiFunction<Graph, AbstractGremlinTest, Stream<Graph>> streamGetter;
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.CREW)
+        public void shouldWrap() {
+            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+            swg.strategy.setGraphStrategy(GraphStrategy.DefaultGraphStrategy.INSTANCE);
+
+            final AtomicBoolean atLeastOne = new AtomicBoolean(false);
+            assertTrue(streamGetter.apply(swg, this).allMatch(v -> {
+                atLeastOne.set(true);
+                return v instanceof StrategyWrappedGraph;
+            }));
+
+            assertTrue(atLeastOne.get());
+        }
+    }
 }
