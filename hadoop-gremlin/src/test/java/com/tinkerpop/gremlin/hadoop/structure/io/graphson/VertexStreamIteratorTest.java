@@ -33,7 +33,7 @@ public class VertexStreamIteratorTest {
             final KryoReader reader = KryoReader.build()
                     .workingDirectory(File.separator + "tmp").create();
 
-            VertexStreamIterator vsi = new VertexStreamIterator(new ByteArrayInputStream(os.toByteArray()), reader);
+            VertexStreamIterator vsi = new VertexStreamIterator(new ByteArrayInputStream(os.toByteArray()), Long.MAX_VALUE);
 
             boolean found = false;
             while (vsi.hasNext()) {
