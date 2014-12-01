@@ -136,7 +136,6 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
 
             // algorithms
             PageRankVertexProgramTest.class,
-            //SaveGraphVertexProgramTest.class,
 
             // compliance
             TraversalCoverageTest.class
