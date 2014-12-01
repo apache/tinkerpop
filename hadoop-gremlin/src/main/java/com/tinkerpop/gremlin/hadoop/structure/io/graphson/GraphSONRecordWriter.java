@@ -18,7 +18,7 @@ public class GraphSONRecordWriter extends RecordWriter<NullWritable, VertexWrita
     private static final String UTF8 = "UTF-8";
     private static final byte[] NEWLINE;
     private final DataOutputStream out;
-    private final GraphSONWriter graphSONWriter;
+    private static final GraphSONWriter GRAPHSON_WRITER = GraphSONWriter.build().create();
 
     static {
         try {
@@ -30,13 +30,12 @@ public class GraphSONRecordWriter extends RecordWriter<NullWritable, VertexWrita
 
     public GraphSONRecordWriter(final DataOutputStream out) {
         this.out = out;
-        this.graphSONWriter = GraphSONWriter.build().create();
     }
 
     @Override
     public void write(final NullWritable key, final VertexWritable vertex) throws IOException {
         if (null != vertex) {
-            this.graphSONWriter.writeVertex(out, vertex.get(), Direction.BOTH);
+            GRAPHSON_WRITER.writeVertex(out, vertex.get(), Direction.BOTH);
             this.out.write(NEWLINE);
         }
     }

@@ -28,7 +28,7 @@ public class VertexStreamIterator implements Iterator<VertexWritable> {
     private static int BUFLEN = TERMINATOR.length;
 
     private final InputStream inputStream;
-    private final KryoReader reader;
+    private static final KryoReader KRYO_READER = KryoReader.build().create();
     private final ByteArrayOutputStream output = new ByteArrayOutputStream();
     private final int[] buffer = new int[BUFLEN];
 
@@ -38,13 +38,8 @@ public class VertexStreamIterator implements Iterator<VertexWritable> {
     private final long maxLength;
     private long currentLength = 0;
 
-    public VertexStreamIterator(final InputStream inputStream, final KryoReader reader) {
-        this(inputStream, Long.MAX_VALUE, reader);
-    }
-
-    public VertexStreamIterator(final InputStream inputStream, final long maxLength, final KryoReader reader) {
+    public VertexStreamIterator(final InputStream inputStream, final long maxLength) {
         this.inputStream = inputStream;
-        this.reader = reader;
         this.maxLength = maxLength;
     }
 
@@ -125,7 +120,7 @@ public class VertexStreamIterator implements Iterator<VertexWritable> {
                     final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> DetachedVertex.addTo(gLocal, detachedVertex);
                     final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(gLocal, detachedEdge);
                     try (InputStream in = new ByteArrayInputStream(this.output.toByteArray())) {
-                        return this.reader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
+                        return KRYO_READER.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
                     }
                 }
             }

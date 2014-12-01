@@ -18,7 +18,6 @@ import java.io.IOException;
  */
 public abstract class CommonFileOutputFormat extends FileOutputFormat<NullWritable, VertexWritable> {
 
-    // copied from FaunusFileOutputFormat
     protected DataOutputStream getDataOuputStream(final TaskAttemptContext job) throws IOException, InterruptedException {
         final Configuration conf = job.getConfiguration();
         boolean isCompressed = getCompressOutput(job);

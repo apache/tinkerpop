@@ -26,12 +26,11 @@ import java.util.function.Function;
 public class GraphSONRecordReader extends RecordReader<NullWritable, VertexWritable> {
 
     private final LineRecordReader lineRecordReader;
-    private final GraphSONReader graphSONReader;
+    private static final GraphSONReader GRAPHSON_READER = GraphSONReader.build().create();
     private VertexWritable vertex = null;
 
     public GraphSONRecordReader() {
         this.lineRecordReader = new LineRecordReader();
-        this.graphSONReader = GraphSONReader.build().create();
     }
 
     @Override
@@ -49,7 +48,7 @@ public class GraphSONRecordReader extends RecordReader<NullWritable, VertexWrita
         final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> DetachedEdge.addTo(g, detachedEdge);
         final TinkerVertex v;
         try (InputStream in = new ByteArrayInputStream(this.lineRecordReader.getCurrentValue().getBytes())) {
-            v = (TinkerVertex) this.graphSONReader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
+            v = (TinkerVertex) GRAPHSON_READER.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
         }
 
         this.vertex = new VertexWritable(v);

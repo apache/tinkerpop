@@ -16,17 +16,16 @@ import java.io.IOException;
 public class KryoRecordWriter extends RecordWriter<NullWritable, VertexWritable> {
 
     private final DataOutputStream out;
-    private final KryoWriter kryoWriter;
+    private static final KryoWriter KRYO_WRITER = KryoWriter.build().create();
 
     public KryoRecordWriter(final DataOutputStream out) {
         this.out = out;
-        this.kryoWriter = KryoWriter.build().create();
     }
 
     @Override
     public void write(final NullWritable key, final VertexWritable vertex) throws IOException {
         if (null != vertex) {
-            this.kryoWriter.writeVertex(out, vertex.get(), Direction.BOTH);
+            KRYO_WRITER.writeVertex(out, vertex.get(), Direction.BOTH);
         }
     }
 
