@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.referenced.ReferencedElement;
+import com.tinkerpop.gremlin.structure.util.referenced.ReferencedFactory;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

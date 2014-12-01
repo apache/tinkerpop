@@ -1,17 +1,17 @@
 package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.structure.util.referenced.ReferencedFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -24,6 +24,8 @@ public class DefaultTraversalSideEffects implements Traversal.SideEffects {
     protected Map<String, Supplier> supplierMap = new HashMap<>();
     protected Optional<UnaryOperator> sackSplitOperator = Optional.empty();
     protected Optional<Supplier> sackInitialValue = Optional.empty();
+
+    private boolean vertexLocal = false;
 
     public DefaultTraversalSideEffects() {
 
@@ -83,7 +85,7 @@ public class DefaultTraversalSideEffects implements Traversal.SideEffects {
     @Override
     public void set(final String key, final Object value) {
         SideEffectHelper.validateSideEffect(key, value);
-        this.objectMap.put(key, value);
+        this.objectMap.put(key, (this.vertexLocal && value instanceof Element) ? ReferencedFactory.detach((Element) value) : value);
     }
 
     /**
@@ -148,6 +150,7 @@ public class DefaultTraversalSideEffects implements Traversal.SideEffects {
      */
     @Override
     public void setLocalVertex(final Vertex vertex) {
+        this.vertexLocal = true;
         final Property<Map<String, Object>> property = vertex.property(SIDE_EFFECTS);
         if (property.isPresent()) {
             this.objectMap = property.value();
