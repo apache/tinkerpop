@@ -121,7 +121,7 @@ public class GiraphGraphComputer extends Configured implements GraphComputer, To
                 ToolRunner.run(this, new String[]{});
                 // memory.keys().forEach(k -> LOGGER.error(k + "---" + memory.get(k)));
             } catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
                 throw new IllegalStateException(e.getMessage(), e);
             }
             this.memory.setRuntime(System.currentTimeMillis() - startTime);

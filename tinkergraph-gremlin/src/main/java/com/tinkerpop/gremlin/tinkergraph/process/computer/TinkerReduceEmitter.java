@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
+import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,18 +15,18 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class TinkerReduceEmitter<OK, OV> implements MapReduce.ReduceEmitter<OK, OV> {
 
-    protected Queue<Pair<OK, OV>> reduceQueue = new ConcurrentLinkedQueue<>();
+    protected Queue<KeyValue<OK, OV>> reduceQueue = new ConcurrentLinkedQueue<>();
 
     @Override
     public void emit(final OK key, final OV value) {
-        this.reduceQueue.add(new Pair<>(key, value));
+        this.reduceQueue.add(new KeyValue<>(key, value));
     }
 
     protected void complete(final MapReduce<?, ?, OK, OV, ?> mapReduce) {
         if (mapReduce.getReduceKeySort().isPresent()) {
             final Comparator<OK> comparator = mapReduce.getReduceKeySort().get();
-            final List<Pair<OK, OV>> list = new ArrayList<>(this.reduceQueue);
-            Collections.sort(list, Comparator.comparing(Pair::getValue0, comparator));
+            final List<KeyValue<OK, OV>> list = new ArrayList<>(this.reduceQueue);
+            Collections.sort(list, Comparator.comparing(KeyValue::getKey, comparator));
             this.reduceQueue.clear();
             this.reduceQueue.addAll(list);
         }

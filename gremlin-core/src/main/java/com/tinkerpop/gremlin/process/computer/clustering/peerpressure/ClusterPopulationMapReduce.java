@@ -1,11 +1,11 @@
 package com.tinkerpop.gremlin.process.computer.clustering.peerpressure;
 
+import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
-import org.javatuples.Pair;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -67,9 +67,9 @@ public class ClusterPopulationMapReduce implements MapReduce<Serializable, Long,
     }
 
     @Override
-    public Map<Serializable, Long> generateFinalResult(final Iterator<Pair<Serializable, Long>> keyValues) {
+    public Map<Serializable, Long> generateFinalResult(final Iterator<KeyValue<Serializable, Long>> keyValues) {
         final Map<Serializable, Long> clusterPopulation = new HashMap<>();
-        keyValues.forEachRemaining(pair -> clusterPopulation.put(pair.getValue0(), pair.getValue1()));
+        keyValues.forEachRemaining(pair -> clusterPopulation.put(pair.getKey(), pair.getValue()));
         return clusterPopulation;
     }
 

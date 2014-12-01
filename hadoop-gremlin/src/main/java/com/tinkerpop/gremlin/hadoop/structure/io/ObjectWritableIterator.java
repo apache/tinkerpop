@@ -1,14 +1,13 @@
 package com.tinkerpop.gremlin.hadoop.structure.io;
 
 import com.tinkerpop.gremlin.hadoop.structure.hdfs.HiddenFileFilter;
-import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
+import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.SequenceFile;
-import org.javatuples.Pair;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -18,7 +17,7 @@ import java.util.Queue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ObjectWritableIterator implements Iterator<Pair> {
+public class ObjectWritableIterator implements Iterator<KeyValue> {
 
     private final ObjectWritable key = new ObjectWritable();
     private final ObjectWritable value = new ObjectWritable();
@@ -54,17 +53,17 @@ public class ObjectWritableIterator implements Iterator<Pair> {
     }
 
     @Override
-    public Pair next() {
+    public KeyValue next() {
         try {
             if (this.available) {
                 this.available = false;
-                return new Pair(this.key.get(), this.value.get());
+                return new KeyValue<>(this.key.get(), this.value.get());
             } else {
                 while (true) {
                     if (this.readers.isEmpty())
                         throw FastNoSuchElementException.instance();
                     if (this.readers.peek().next(this.key, this.value)) {
-                        return new Pair(this.key.get(), this.value.get());
+                        return new KeyValue<>(this.key.get(), this.value.get());
                     } else
                         this.readers.remove();
                 }

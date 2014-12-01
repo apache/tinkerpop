@@ -85,6 +85,7 @@ public class DefaultTraversalSideEffects implements Traversal.SideEffects {
     @Override
     public void set(final String key, final Object value) {
         SideEffectHelper.validateSideEffect(key, value);
+        // TODO: Remove this as this is made obsolete by GremlinKryo serializer
         this.objectMap.put(key, (this.vertexLocal && value instanceof Element) ? ReferencedFactory.detach((Element) value) : value);
     }
 

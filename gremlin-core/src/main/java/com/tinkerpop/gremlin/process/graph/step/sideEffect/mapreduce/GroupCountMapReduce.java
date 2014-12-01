@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
@@ -8,7 +9,6 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
-import org.javatuples.Pair;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -76,9 +76,9 @@ public final class GroupCountMapReduce implements MapReduce<Object, Long, Object
     }
 
     @Override
-    public Map<Object, Long> generateFinalResult(final Iterator<Pair<Object, Long>> keyValues) {
+    public Map<Object, Long> generateFinalResult(final Iterator<KeyValue<Object, Long>> keyValues) {
         final Map<Object, Long> map = this.mapSupplier.get();
-        keyValues.forEachRemaining(pair -> map.put(pair.getValue0(), pair.getValue1()));
+        keyValues.forEachRemaining(keyValue -> map.put(keyValue.getKey(), keyValue.getValue()));
         return map;
     }
 

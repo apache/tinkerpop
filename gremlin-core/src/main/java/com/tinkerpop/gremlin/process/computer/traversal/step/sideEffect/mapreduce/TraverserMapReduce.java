@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapredu
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
@@ -83,7 +84,7 @@ public final class TraverserMapReduce implements MapReduce<Comparable, Object, C
     }
 
     @Override
-    public Iterator<Object> generateFinalResult(final Iterator<Pair<Comparable, Object>> keyValues) {
+    public Iterator<Object> generateFinalResult(final Iterator<KeyValue<Comparable, Object>> keyValues) {
         return new Iterator<Object>() {
             @Override
             public boolean hasNext() {
@@ -92,7 +93,7 @@ public final class TraverserMapReduce implements MapReduce<Comparable, Object, C
 
             @Override
             public Object next() {
-                return keyValues.next().getValue1();
+                return keyValues.next().getValue();
             }
         };
     }

@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
@@ -9,7 +10,6 @@ import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
-import org.javatuples.Pair;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -61,9 +61,9 @@ public final class StoreMapReduce implements MapReduce<MapReduce.NullObject, Obj
     }
 
     @Override
-    public Collection generateFinalResult(final Iterator<Pair<NullObject, Object>> keyValues) {
+    public Collection generateFinalResult(final Iterator<KeyValue<NullObject, Object>> keyValues) {
         final Collection collection = this.collectionSupplier.get();
-        keyValues.forEachRemaining(pair -> collection.add(pair.getValue1()));
+        keyValues.forEachRemaining(pair -> collection.add(pair.getValue()));
         return collection;
     }
 

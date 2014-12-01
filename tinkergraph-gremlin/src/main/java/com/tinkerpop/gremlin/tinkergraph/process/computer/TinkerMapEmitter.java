@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
+import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.util.MapHelper;
-import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class TinkerMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {
 
     public Map<K, Queue<V>> reduceMap;
-    public Queue<Pair<K, V>> mapQueue;
+    public Queue<KeyValue<K, V>> mapQueue;
     private final boolean doReduce;
 
     public TinkerMapEmitter(final boolean doReduce) {
@@ -36,14 +36,14 @@ public class TinkerMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {
         if (this.doReduce)
             MapHelper.concurrentIncr(this.reduceMap, key, value);
         else
-            this.mapQueue.add(new Pair<>(key, value));
+            this.mapQueue.add(new KeyValue<>(key, value));
     }
 
     protected void complete(final MapReduce<K, V, ?, ?, ?> mapReduce) {
         if (!this.doReduce && mapReduce.getMapKeySort().isPresent()) {
             final Comparator<K> comparator = mapReduce.getMapKeySort().get();
-            final List<Pair<K, V>> list = new ArrayList<>(this.mapQueue);
-            Collections.sort(list, Comparator.comparing(Pair::getValue0, comparator));
+            final List<KeyValue<K, V>> list = new ArrayList<>(this.mapQueue);
+            Collections.sort(list, Comparator.comparing(KeyValue::getKey, comparator));
             this.mapQueue.clear();
             this.mapQueue.addAll(list);
         } else if (mapReduce.getMapKeySort().isPresent()) {

@@ -415,8 +415,8 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
         public GraphComputer get_g_compute_mapXageX_reduceXsumX_memoryXnextX_memoryKeyXageSumX() {
             return g.compute().mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()
                     .map((v, e) -> v.<Integer>property("age").ifPresent(age -> e.emit(MapReduce.NullObject.instance(), age)))
-                    .reduce((k, vv, e) -> e.emit(MapReduce.NullObject.instance(), StreamFactory.stream(vv).mapToInt(i -> i).sum()))
-                    .memory(i -> i.next().getValue1())
+                    .reduce((k, vv, e) -> e.emit(StreamFactory.stream(vv).mapToInt(i -> i).sum()))
+                    .memory(i -> i.next().getValue())
                     .memoryKey("ageSum").create());
         }
 
@@ -429,7 +429,7 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
                     .terminate(memory -> memory.getIteration() > 8)
                     .elementComputeKeys(new HashSet<>(Arrays.asList("counter"))).create())
                     .mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()
-                            .map((v, e) -> e.emit(MapReduce.NullObject.instance(), v.value("counter")))
+                            .map((v, e) -> e.emit(v.value("counter")))
                             .reduce((k, vv, e) -> {
                                 int counter = 0;
                                 while (vv.hasNext()) {
@@ -438,13 +438,13 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
                                 e.emit(MapReduce.NullObject.instance(), counter);
 
                             })
-                            .memory(i -> i.next().getValue1())
+                            .memory(i -> i.next().getValue())
                             .memoryKey("a").create())
                     .mapReduce(LambdaMapReduce.<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer>build()
                             .map((v, e) -> e.emit(MapReduce.NullObject.instance(), v.value("counter")))
-                            .combine((k, vv, e) -> e.emit(MapReduce.NullObject.instance(), 1))
-                            .reduce((k, vv, e) -> e.emit(MapReduce.NullObject.instance(), 1))
-                            .memory(i -> i.next().getValue1())
+                            .combine((k, vv, e) -> e.emit(1))
+                            .reduce((k, vv, e) -> e.emit(1))
+                            .memory(i -> i.next().getValue())
                             .memoryKey("b").create());
 
         }
@@ -458,7 +458,7 @@ public abstract class GraphComputerTest extends AbstractGremlinProcessTest {
                     .reduceKeySort(Comparator::reverseOrder)
                     .memory(itty -> {
                         final List<Long> list = new ArrayList<>();
-                        itty.forEachRemaining(id -> list.add(id.getValue0()));
+                        itty.forEachRemaining(id -> list.add(id.getKey()));
                         return list;
                     })
                     .create());

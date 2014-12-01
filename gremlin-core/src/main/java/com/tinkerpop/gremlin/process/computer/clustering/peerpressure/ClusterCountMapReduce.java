@@ -1,11 +1,11 @@
 package com.tinkerpop.gremlin.process.computer.clustering.peerpressure;
 
+import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
-import org.javatuples.Pair;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -68,8 +68,8 @@ public class ClusterCountMapReduce implements MapReduce<MapReduce.NullObject, Se
     }
 
     @Override
-    public Integer generateFinalResult(final Iterator<Pair<NullObject, Integer>> keyValues) {
-        return keyValues.next().getValue1();
+    public Integer generateFinalResult(final Iterator<KeyValue<NullObject, Integer>> keyValues) {
+        return keyValues.next().getValue();
     }
 
     @Override

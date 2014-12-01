@@ -2,8 +2,10 @@ package com.tinkerpop.gremlin.process.computer;
 
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
-import org.javatuples.Pair;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -126,7 +128,7 @@ public interface MapReduce<MK, MV, RK, RV, R> {
      * @param keyValues the key/value pairs that were emitted from reduce() (or map() in a map-only job)
      * @return the resultant object formed from the emitted key/values.
      */
-    public R generateFinalResult(final Iterator<Pair<RK, RV>> keyValues);
+    public R generateFinalResult(final Iterator<KeyValue<RK, RV>> keyValues);
 
     /**
      * The results of the MapReduce job are associated with a memory-key to ultimately be stored in {@link Memory}.
@@ -142,7 +144,7 @@ public interface MapReduce<MK, MV, RK, RV, R> {
      * @param memory    the memory of the {@link GraphComputer}
      * @param keyValues the key/value pairs emitted from reduce() (or map() in a map only job).
      */
-    public default void addResultToMemory(final Memory.Admin memory, final Iterator<Pair<RK, RV>> keyValues) {
+    public default void addResultToMemory(final Memory.Admin memory, final Iterator<KeyValue<RK, RV>> keyValues) {
         memory.set(this.getMemoryKey(), this.generateFinalResult(keyValues));
     }
 
@@ -195,7 +197,7 @@ public interface MapReduce<MK, MV, RK, RV, R> {
      */
     public static class NullObject implements Comparable<NullObject>, Serializable {
         private static final NullObject INSTANCE = new NullObject();
-        private static final String NULL_OBJECT = "MapReduce$NullObject";
+        private static final String NULL_OBJECT = new String();
 
         public static NullObject instance() {
             return INSTANCE;
@@ -219,6 +221,14 @@ public interface MapReduce<MK, MV, RK, RV, R> {
         @Override
         public String toString() {
             return NULL_OBJECT;
+        }
+
+        private void readObject(final ObjectInputStream inputStream) throws ClassNotFoundException, IOException {
+
+        }
+
+        private void writeObject(final ObjectOutputStream outputStream) throws IOException {
+
         }
     }
 }

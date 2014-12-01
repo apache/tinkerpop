@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.hadoop.process.computer.util;
 
 import com.tinkerpop.gremlin.hadoop.Constants;
+import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
@@ -8,7 +9,6 @@ import com.tinkerpop.gremlin.process.computer.util.MapMemory;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
-import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -68,13 +68,13 @@ public class MemoryMapReduce implements MapReduce<MapReduce.NullObject, MapMemor
     }
 
     @Override
-    public MapMemory generateFinalResult(final Iterator<Pair<NullObject, MapMemory>> keyValues) {
-        return keyValues.next().getValue1();
+    public MapMemory generateFinalResult(final Iterator<KeyValue<NullObject, MapMemory>> keyValues) {
+        return keyValues.next().getValue();
     }
 
     @Override
-    public void addResultToMemory(final Memory.Admin memory, final Iterator<Pair<NullObject, MapMemory>> keyValues) {
-        final MapMemory temp = keyValues.next().getValue1();
+    public void addResultToMemory(final Memory.Admin memory, final Iterator<KeyValue<NullObject, MapMemory>> keyValues) {
+        final MapMemory temp = keyValues.next().getValue();
         temp.asMap().forEach(memory::set);
         memory.setIteration(temp.getIteration());
         memory.setRuntime(temp.getRuntime());

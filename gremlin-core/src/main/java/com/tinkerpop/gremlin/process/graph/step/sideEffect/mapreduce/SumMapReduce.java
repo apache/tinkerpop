@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect.mapreduce;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
@@ -8,7 +9,6 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SumStep;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
-import org.javatuples.Pair;
 
 import java.util.Iterator;
 
@@ -58,8 +58,8 @@ public final class SumMapReduce implements MapReduce<MapReduce.NullObject, Doubl
     }
 
     @Override
-    public Double generateFinalResult(Iterator<Pair<NullObject, Double>> keyValues) {
-        return keyValues.next().getValue1();
+    public Double generateFinalResult(final Iterator<KeyValue<NullObject, Double>> keyValues) {
+        return keyValues.next().getValue();
     }
 
     @Override
