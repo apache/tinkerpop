@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.hadoop.process.computer;
 
 import com.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
-import com.tinkerpop.gremlin.hadoop.process.computer.util.MapReduceHelper;
+import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.slf4j.Logger;
@@ -25,7 +25,7 @@ public class HadoopReduce extends Reducer<ObjectWritable, ObjectWritable, Object
 
     @Override
     public void setup(final Reducer<ObjectWritable, ObjectWritable, ObjectWritable, ObjectWritable>.Context context) {
-        this.mapReduce = MapReduceHelper.getMapReduce(context.getConfiguration());
+        this.mapReduce = MapReduce.createMapReduce(ConfUtil.makeApacheConfiguration(context.getConfiguration()));
     }
 
     @Override

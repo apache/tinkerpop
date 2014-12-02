@@ -39,6 +39,7 @@ public final class StoreMapReduce implements MapReduce<MapReduce.NullObject, Obj
 
     @Override
     public void storeState(final Configuration configuration) {
+        MapReduce.super.storeState(configuration);
         configuration.setProperty(STORE_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
     }
 

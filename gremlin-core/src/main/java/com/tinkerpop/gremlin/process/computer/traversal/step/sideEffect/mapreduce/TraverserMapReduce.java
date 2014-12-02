@@ -44,11 +44,6 @@ public final class TraverserMapReduce implements MapReduce<Comparable, Object, C
     }
 
     @Override
-    public void storeState(final Configuration configuration) {
-
-    }
-
-    @Override
     public void loadState(final Configuration configuration) {
         final Step step = TraversalHelper.getEnd(TraversalVertexProgram.getTraversalSupplier(configuration).get());
         this.comparator = Optional.ofNullable(step instanceof Comparing ? GraphComputerHelper.chainComparators(((Comparing) step).getComparators()) : null);

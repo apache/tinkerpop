@@ -17,9 +17,9 @@ public final class ExceptStep<S> extends FilterStep<S> implements Reversible {
         super(traversal);
         this.collectionSideEffectKey = collectionSideEffectKey;
         this.setPredicate(traverser -> {
-            if (!this.traversal.sideEffects().exists(this.collectionSideEffectKey)) return true;
+            if (!traverser.sideEffects().exists(this.collectionSideEffectKey)) return true;
             else {
-                final Object except = this.traversal.sideEffects().get(this.collectionSideEffectKey);
+                final Object except = traverser.sideEffects().get(this.collectionSideEffectKey);
                 return except instanceof Collection ?
                         !((Collection) except).contains(traverser.get()) :
                         !except.equals(traverser.get());

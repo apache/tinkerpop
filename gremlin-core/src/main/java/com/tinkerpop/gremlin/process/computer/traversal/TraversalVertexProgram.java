@@ -102,6 +102,15 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     public void loadState(final Configuration configuration) {
         this.traversalSupplier = LambdaHolder.loadState(configuration, TRAVERSAL_SUPPLIER);
         this.traversal = this.traversalSupplier.get().get();
+        final Traversal<?, ?> traversal = this.traversalSupplier.get().get();
+        this.mapReducers.clear();
+        traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
+            final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
+            this.mapReducers.add(mapReduce);
+        });
+
+        if (!(TraversalHelper.getEnd(traversal) instanceof SideEffectCapStep))
+            this.mapReducers.add(new TraverserMapReduce(TraversalHelper.getEnd(traversal)));
     }
 
     @Override

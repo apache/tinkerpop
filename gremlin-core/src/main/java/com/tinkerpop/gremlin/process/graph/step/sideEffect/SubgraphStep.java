@@ -49,7 +49,7 @@ public final class SubgraphStep<S> extends SideEffectStep<S> implements SideEffe
         this.traversal.sideEffects().registerSupplierIfAbsent(this.sideEffectKey, () -> GraphFactory.open(DEFAULT_CONFIGURATION));
         this.setConsumer(traverser -> {
             if (null == this.subgraph) {
-                this.subgraph = this.getTraversal().sideEffects().get(this.sideEffectKey);
+                this.subgraph = traverser.sideEffects().get(this.sideEffectKey);
                 this.subgraphSupportsUserIds = this.subgraph.features().vertex().supportsUserSuppliedIds();
             }
             traverser.path().stream().map(Pair::getValue1)

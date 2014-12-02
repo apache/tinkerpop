@@ -40,12 +40,12 @@ public final class GroupByStep<S, K, V, R> extends SideEffectStep<S> implements 
         this.reduceFunction = reduceFunction;
         this.traversal.sideEffects().registerSupplierIfAbsent(this.sideEffectKey, HashMap<K, Collection<V>>::new);
         this.setConsumer(traverser -> {
-            final Map<K, Collection<V>> groupByMap = this.getTraversal().sideEffects().get(this.sideEffectKey);
+            final Map<K, Collection<V>> groupByMap = traverser.sideEffects().get(this.sideEffectKey);
             doGroup(traverser, groupByMap, this.keyFunction, this.valueFunction);
             if (!this.vertexCentric) {
                 if (null != reduceFunction && !this.starts.hasNext()) {
                     doReduce(groupByMap, this.reduceMap, this.reduceFunction);
-                    this.traversal.sideEffects().set(this.sideEffectKey, this.reduceMap);
+                    traverser.sideEffects().set(this.sideEffectKey, this.reduceMap);
                 }
             }
         });

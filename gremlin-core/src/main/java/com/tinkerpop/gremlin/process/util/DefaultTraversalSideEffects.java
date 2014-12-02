@@ -1,11 +1,9 @@
 package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.structure.util.referenced.ReferencedFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -160,5 +158,20 @@ public class DefaultTraversalSideEffects implements Traversal.SideEffects {
     @Override
     public String toString() {
         return StringFactory.traversalSideEffectsString(this);
+    }
+
+    @Override
+    public DefaultTraversalSideEffects clone() {
+        try {
+            final DefaultTraversalSideEffects sideEffects = (DefaultTraversalSideEffects) super.clone();
+            sideEffects.sackInitialValue = this.sackInitialValue;
+            sideEffects.sackSplitOperator = this.sackSplitOperator;
+            sideEffects.objectMap = new HashMap<>(this.objectMap);
+            sideEffects.supplierMap = new HashMap<>(this.supplierMap);
+            return sideEffects;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

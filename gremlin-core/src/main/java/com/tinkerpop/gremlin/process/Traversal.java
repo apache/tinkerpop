@@ -20,7 +20,6 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -238,7 +237,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         }
     }
 
-    public interface SideEffects {
+    public interface SideEffects extends Cloneable {
 
         public static final String SIDE_EFFECTS = Graph.Key.hide("gremlin.sideEffects");
         public static final String GRAPH_KEY = Graph.System.system("g");
@@ -413,6 +412,13 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          * @param vertex the vertex where the traversal is currently executing.
          */
         public void setLocalVertex(final Vertex vertex);
+
+        /**
+         * Cloning is used to duplicate the sideEffects typically in OLAP environments.
+         *
+         * @return The cloned sideEffects
+         */
+        public SideEffects clone();
 
         public static class Exceptions {
 

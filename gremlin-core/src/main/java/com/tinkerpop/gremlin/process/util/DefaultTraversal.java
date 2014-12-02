@@ -22,7 +22,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     protected boolean locked = false;
 
     protected List<Step> steps = new ArrayList<>();
-    protected final DefaultTraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
+    protected DefaultTraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
 
     static {
         final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
@@ -108,6 +108,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
         try {
             final DefaultTraversal<S, E> clone = (DefaultTraversal<S, E>) super.clone();
             clone.steps = new ArrayList<>();
+            clone.sideEffects = this.sideEffects.clone();
             for (int i = this.steps.size() - 1; i >= 0; i--) {
                 final Step<?, ?> clonedStep = this.steps.get(i).clone();
                 clonedStep.setTraversal(clone);

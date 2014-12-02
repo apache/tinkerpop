@@ -34,6 +34,7 @@ public final class TreeMapReduce implements MapReduce<Object, Tree, Object, Tree
 
     @Override
     public void storeState(final Configuration configuration) {
+        MapReduce.super.storeState(configuration);
         configuration.setProperty(TREE_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
     }
 

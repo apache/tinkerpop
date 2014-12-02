@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Optional;
@@ -21,6 +22,8 @@ import java.util.Optional;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface MapReduce<MK, MV, RK, RV, R> {
+
+    public static final String MAP_REDUCE = "gremlin.mapReduce";
 
     /**
      * MapReduce is composed of three stages: map, combine, and reduce.
@@ -37,7 +40,7 @@ public interface MapReduce<MK, MV, RK, RV, R> {
      * @param configuration the configuration to store the state of the MapReduce job in.
      */
     public default void storeState(final Configuration configuration) {
-
+        configuration.setProperty(MAP_REDUCE, this.getClass().getName());
     }
 
     /**
@@ -146,6 +149,27 @@ public interface MapReduce<MK, MV, RK, RV, R> {
      */
     public default void addResultToMemory(final Memory.Admin memory, final Iterator<KeyValue<RK, RV>> keyValues) {
         memory.set(this.getMemoryKey(), this.generateFinalResult(keyValues));
+    }
+
+    /**
+     * A helper method to construct a {@link MapReduce} given the content of the supplied configuration.
+     * The class of the MapReduce is read from the {@link MapReduce#MAP_REDUCE} static configuration key.
+     * Once the MapReduce is constructed, {@link MapReduce#loadState} method is called with the provided configuration.
+     *
+     * @param configuration A configuration with requisite information to build a MapReduce
+     * @return the newly constructed MapReduce
+     */
+    public static <M extends MapReduce<MK, MV, RK, RV, R>, MK, MV, RK, RV, R> M createMapReduce(final Configuration configuration) {
+        try {
+            final Class<M> mapReduceClass = (Class) Class.forName(configuration.getString(MAP_REDUCE));
+            final Constructor<M> constructor = mapReduceClass.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            final M mapReduce = constructor.newInstance();
+            mapReduce.loadState(configuration);
+            return mapReduce;
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     //////////////////

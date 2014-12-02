@@ -39,6 +39,7 @@ public final class GroupCountMapReduce implements MapReduce<Object, Long, Object
 
     @Override
     public void storeState(final Configuration configuration) {
+        MapReduce.super.storeState(configuration);
         configuration.setProperty(GROUP_COUNT_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
     }
 

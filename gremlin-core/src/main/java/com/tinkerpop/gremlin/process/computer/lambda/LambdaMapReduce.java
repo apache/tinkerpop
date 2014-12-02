@@ -55,6 +55,7 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
 
     @Override
     public void storeState(final Configuration configuration) {
+        MapReduce.super.storeState(configuration);
         if (null != this.mapLambdaHolder)
             this.mapLambdaHolder.storeState(configuration);
         if (null != this.mapKeySortLambdaHolder)

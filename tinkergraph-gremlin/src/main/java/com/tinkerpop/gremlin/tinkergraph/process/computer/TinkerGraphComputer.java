@@ -8,6 +8,8 @@ import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -26,6 +28,7 @@ public class TinkerGraphComputer implements GraphComputer {
     private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
     private final Set<MapReduce> mapReduces = new HashSet<>();
+    private Configuration configuration = new BaseConfiguration();
 
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;
@@ -40,6 +43,7 @@ public class TinkerGraphComputer implements GraphComputer {
     @Override
     public GraphComputer program(final VertexProgram vertexProgram) {
         this.vertexProgram = vertexProgram;
+        this.vertexProgram.storeState(this.configuration);
         return this;
     }
 
@@ -93,14 +97,16 @@ public class TinkerGraphComputer implements GraphComputer {
 
             // execute mapreduce jobs
             for (final MapReduce mapReduce : this.mapReduces) {
+                mapReduce.storeState(this.configuration);
+                final TinkerWorkerPool workerPool = new TinkerWorkerPool(this.configuration, 3);
                 if (mapReduce.doStage(MapReduce.Stage.MAP)) {
                     final TinkerMapEmitter<?, ?> mapEmitter = new TinkerMapEmitter<>(mapReduce.doStage(MapReduce.Stage.REDUCE));
-                    TinkerHelper.getVertices(this.graph).stream().forEach(vertex -> mapReduce.map(vertex, mapEmitter));
+                    TinkerHelper.getVertices(this.graph).parallelStream().forEach(vertex -> workerPool.map(vertex, mapEmitter));
                     mapEmitter.complete(mapReduce); // sort results if a map output sort is defined
                     // no need to run combiners as this is single machine
                     if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
                         final TinkerReduceEmitter<?, ?> reduceEmitter = new TinkerReduceEmitter<>();
-                        mapEmitter.reduceMap.entrySet().parallelStream().forEach(entry -> mapReduce.reduce(entry.getKey(), entry.getValue().iterator(), reduceEmitter));
+                        mapEmitter.reduceMap.entrySet().parallelStream().forEach(entry -> workerPool.reduce(entry.getKey(), entry.getValue().iterator(), reduceEmitter));
                         reduceEmitter.complete(mapReduce); // sort results if a reduce output sort is defined
                         mapReduce.addResultToMemory(this.memory, reduceEmitter.reduceQueue.iterator());
                     } else {
@@ -119,4 +125,5 @@ public class TinkerGraphComputer implements GraphComputer {
     public String toString() {
         return StringFactory.graphComputerString(this);
     }
+
 }

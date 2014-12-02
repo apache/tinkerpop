@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.hadoop.structure.io;
 
-import com.tinkerpop.gremlin.hadoop.process.computer.util.MapReduceHelper;
+import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
+import com.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.RawComparator;
@@ -50,7 +51,7 @@ public abstract class ObjectWritableComparator implements RawComparator<ObjectWr
         @Override
         public void setConf(final Configuration configuration) {
             this.configuration = configuration;
-            this.comparator = MapReduceHelper.getMapReduce(configuration).getMapKeySort().get();
+            this.comparator = MapReduce.createMapReduce(ConfUtil.makeApacheConfiguration(configuration)).getMapKeySort().get();
         }
     }
 
@@ -58,7 +59,7 @@ public abstract class ObjectWritableComparator implements RawComparator<ObjectWr
         @Override
         public void setConf(final Configuration configuration) {
             this.configuration = configuration;
-            this.comparator = MapReduceHelper.getMapReduce(configuration).getReduceKeySort().get();
+            this.comparator = MapReduce.createMapReduce(ConfUtil.makeApacheConfiguration(configuration)).getReduceKeySort().get();
         }
     }
 }

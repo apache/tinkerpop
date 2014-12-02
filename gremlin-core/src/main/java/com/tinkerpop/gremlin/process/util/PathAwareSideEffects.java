@@ -76,4 +76,9 @@ public class PathAwareSideEffects implements Traversal.SideEffects {
     public void setLocalVertex(final Vertex vertex) {
         this.sideEffects.setLocalVertex(vertex);
     }
+
+    @Override
+    public PathAwareSideEffects clone() {
+        return this;
+    }
 }

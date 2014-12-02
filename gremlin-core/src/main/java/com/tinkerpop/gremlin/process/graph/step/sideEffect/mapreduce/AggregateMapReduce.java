@@ -39,6 +39,7 @@ public final class AggregateMapReduce implements MapReduce<MapReduce.NullObject,
 
     @Override
     public void storeState(final Configuration configuration) {
+        MapReduce.super.storeState(configuration);
         configuration.setProperty(AGGREGATE_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
     }
 

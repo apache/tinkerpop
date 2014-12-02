@@ -48,6 +48,7 @@ public final class GroupByMapReduce implements MapReduce<Object, Collection, Obj
 
     @Override
     public void storeState(final Configuration configuration) {
+        MapReduce.super.storeState(configuration);
         configuration.setProperty(GROUP_BY_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
         configuration.setProperty(GROUP_BY_STEP_STEP_LABEL, this.groupByStepKey);
     }

@@ -168,8 +168,8 @@ public interface VertexProgram<M> {
 
     /**
      * A helper method to construct a {@link VertexProgram} given the content of the supplied configuration.
-     * The class of the VertexProgram is read from the GraphComputer.VERTEX_PROGRAM static configuration key.
-     * Once the VertexProgram is constructed, VertexProgram.loadState() method is called with the provided configuration.
+     * The class of the VertexProgram is read from the {@link VertexProgram#VERTEX_PROGRAM} static configuration key.
+     * Once the VertexProgram is constructed, {@link VertexProgram#loadState} method is called with the provided configuration.
      *
      * @param configuration A configuration with requisite information to build a vertex program
      * @param <V>           The vertex program type

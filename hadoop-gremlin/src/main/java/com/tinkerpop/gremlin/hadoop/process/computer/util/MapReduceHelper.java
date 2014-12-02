@@ -120,18 +120,4 @@ public class MapReduceHelper {
                 HadoopGraph.LOGGER.warn(SEQUENCE_WARNING);
         }
     }
-
-    public static <MK, MV, RK, RV, R> MapReduce<MK, MV, RK, RV, R> getMapReduce(final Configuration configuration) {
-        try {
-            final Class<? extends MapReduce> mapReduceClass = configuration.getClass(Constants.GREMLIN_HADOOP_MAP_REDUCE_CLASS, MapReduce.class, MapReduce.class);
-            final Constructor<? extends MapReduce> constructor = mapReduceClass.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            final MapReduce<MK, MV, RK, RV, R> mapReduce = constructor.newInstance();
-            mapReduce.loadState(ConfUtil.makeApacheConfiguration(configuration));
-            return mapReduce;
-        } catch (Exception e) {
-            HadoopGraph.LOGGER.error(e.getMessage());
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-    }
 }
