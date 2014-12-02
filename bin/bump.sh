@@ -20,10 +20,6 @@ for pom in $(find . -name pom.xml); do
              | grep '<version>' | cut -f1 -d '-' | xargs -n1 -I{} sed -i.bak "{}s@>.*<@>${VERSION}<@" "$pom" && rm -f "${pom}.bak"
 done
 
-# YAML configuration
-INPUT="gremlin-server/conf/gremlin-server-neo4j.yaml"
-sed -i.bak 's/\[com.tinkerpop, neo4j-gremlin, ".*"\]/\[com.tinkerpop, neo4j-gremlin, "'"${VERSION}"'"\]/' "${INPUT}" && rm -f "${INPUT}.bak"
-
 # README
 INPUT="README.asciidoc"
 sed -i.bak 's/\(http:\/\/tinkerpop.com\/.*docs\/\)[A-Za-z0-9.-]*\/\(.*\)/\1'"${VERSION}"'\/\2/' "${INPUT}" && rm -f "${INPUT}.bak"
