@@ -41,7 +41,7 @@ public class KryoRecordReader extends RecordReader<NullWritable, VertexWritable>
         this.inputStream = file.getFileSystem(job).open(split.getPath());
         this.inputStream.seek(start);
         final long newStart = seekToHeader(this.inputStream, start);
-        this.vertexStreamIterator = new VertexStreamIterator(this.inputStream, split.getLength() - (newStart - start), KryoReader.build().create());
+        this.vertexStreamIterator = new VertexStreamIterator(this.inputStream, split.getLength() - (newStart - start));
     }
 
     private static long seekToHeader(final FSDataInputStream inputStream, final long start) throws IOException {

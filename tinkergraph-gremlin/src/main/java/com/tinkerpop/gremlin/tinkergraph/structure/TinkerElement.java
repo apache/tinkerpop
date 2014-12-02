@@ -86,7 +86,7 @@ public abstract class TinkerElement implements Element, Element.Iterators {
     public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys) {
         return (Iterator) (TinkerHelper.inComputerMode(this.graph) ?
                 this.graph.graphView.getProperties(TinkerElement.this).stream().filter(p -> ElementHelper.keyExists(p.key(), propertyKeys)).iterator() :
-                this.properties.values().stream().flatMap(list -> list.stream()).filter(p -> ElementHelper.keyExists(p.key(), propertyKeys)).collect(Collectors.toList()).iterator());
+                this.properties.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(),propertyKeys)).flatMap(entry -> entry.getValue().stream()).collect(Collectors.toList()).iterator());
     }
 
 

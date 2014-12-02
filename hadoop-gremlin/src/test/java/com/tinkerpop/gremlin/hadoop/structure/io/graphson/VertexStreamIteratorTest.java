@@ -28,12 +28,8 @@ public class VertexStreamIteratorTest {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final KryoWriter writer = KryoWriter.build().create();
             writer.writeVertices(os, g.V(), Direction.BOTH);
-
             final AtomicInteger called = new AtomicInteger(0);
-            final KryoReader reader = KryoReader.build()
-                    .workingDirectory(File.separator + "tmp").create();
-
-            VertexStreamIterator vsi = new VertexStreamIterator(new ByteArrayInputStream(os.toByteArray()), reader);
+            VertexStreamIterator vsi = new VertexStreamIterator(new ByteArrayInputStream(os.toByteArray()), Long.MAX_VALUE);
 
             boolean found = false;
             while (vsi.hasNext()) {
