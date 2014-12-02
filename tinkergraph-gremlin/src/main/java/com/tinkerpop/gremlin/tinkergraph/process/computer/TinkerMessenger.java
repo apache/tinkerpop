@@ -12,10 +12,10 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -41,16 +41,13 @@ public class TinkerMessenger<M> implements Messenger<M> {
             final Direction direction = TinkerMessenger.getDirection(incidentTraversal);
             final Edge[] edge = new Edge[1]; // simulates storage side-effects available in Gremlin, but not Java8 streams
             return StreamFactory.iterable(StreamFactory.stream(incidentTraversal.reverse())
-                    .map(e -> {
-                        edge[0] = e;
-                        return this.messageBoard.receiveMessages.get(e.iterators().vertexIterator(direction).next());
-                    })
+                    .map(e -> this.messageBoard.receiveMessages.get((edge[0] = e).iterators().vertexIterator(direction).next()))
                     .filter(q -> null != q)
                     .flatMap(q -> q.stream())
                     .map(message -> localMessageScope.getEdgeFunction().apply(message, edge[0])));
 
         } else {
-            return StreamFactory.iterable(Arrays.asList(this.vertex).stream()
+            return StreamFactory.iterable(Stream.of(this.vertex)
                     .map(this.messageBoard.receiveMessages::get)
                     .filter(q -> null != q)
                     .flatMap(q -> q.stream()));
@@ -64,15 +61,12 @@ public class TinkerMessenger<M> implements Messenger<M> {
         } else {
             ((MessageScope.Global) messageScope).vertices().forEach(v -> {
                 final Queue<M> queue = getMessageList(v);
-                if (null != this.combiner && !queue.isEmpty()) {
-                    queue.add(this.combiner.combine(queue.remove(), message));
-                } else
-                    queue.add(message);
+                queue.add(null != this.combiner && !queue.isEmpty() ? this.combiner.combine(queue.remove(), message) : message);
             });
         }
     }
 
-    private Queue<M> getMessageList(final Vertex vertex) {
+    private final Queue<M> getMessageList(final Vertex vertex) {
         Queue<M> messages = this.messageBoard.sendMessages.get(vertex);
         if (null == messages) {
             messages = new ConcurrentLinkedQueue<>();
