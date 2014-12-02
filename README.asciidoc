@@ -55,7 +55,7 @@ Release Process
 .. `mvn verify -DskipPerformanceTests=false`
 . Update `CHANGELOG.asciidoc` with release date.
 . `bin/bump.sh "version"` to update project files to reference the non-SNAPSHOT version.
-. `git diff` and review the updated files (expect all `pom.xml` files, `yaml` configuration file in Gremlin Server, and this README)
+. `git diff` and review the updated files (expect all `pom.xml` files and this README)
 . `git commit -a -m "TinkerPop x.y.z release"` and `git push`
 . `git tag -a -m "TinkerPop x.y.z release" x.y.z` and `git push --tags`
 . `bin/publish-docs.sh`
