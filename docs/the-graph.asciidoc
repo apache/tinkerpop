@@ -317,7 +317,7 @@ As shown above, the `submit` method takes a `Function<Graph, R>` which is the un
 BatchGraph
 ----------
 
-image:batch-graph.png[width=175,float=left] `BatchGraph` wraps any `Graph` to enable batch loading of a large number of edges and vertices by chunking the entire load into smaller batches and maintaining a memory-efficient vertex cache so that intermediate transactional states can be flushed after each chunk is loaded to release memory.
+image:batch-graph.png[width=280,float=left] `BatchGraph` wraps any `Graph` to enable batch loading of a large number of edges and vertices by chunking the entire load into smaller batches and maintaining a memory-efficient vertex cache so that intermediate transactional states can be flushed after each chunk is loaded to release memory.
 
 `BatchGraph` is *only* meant for loading data and does not support any retrieval or removal operations. That is, `BatchGraph` only supports the following methods:
 
