@@ -38,7 +38,6 @@ class DependencyGrabber {
 
         new File(extClassPath + fileSep + "plugin-info.txt").withWriter { out -> out << [artifact.group, artifact.artifact, artifact.version].join(":") }
 
-        final def dependencyLocations = Grape.resolve([classLoader: this.classLoaderToUse], null, dep)
         def fs = FileSystems.default
         def target = fs.getPath(extClassPath)
 
@@ -54,21 +53,28 @@ class DependencyGrabber {
                     "structure can lead to unexpected behavior.");
         }
 
+        final def dependencyLocations = [] as Set<URI>
+        dependencyLocations.addAll(Grape.resolve([classLoader: this.classLoaderToUse], null, dep))
         dependencyLocations.collect{fs.getPath(it.path)}
                 .findAll{!(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/)}
                 .findAll{!filesAlreadyInPath.collect{it.getFileName().toString()}.contains(it.fileName.toFile().name)}
                 .each { Files.copy(it, target.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
 
-        getAdditionalsDependencies(target, artifact)
+        getAdditionalDependencies(target, artifact).collect{fs.getPath(it.path)}
+                .findAll{!(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/)}
+                .findAll{!filesAlreadyInPath.collect{it.getFileName().toString()}.contains(it.fileName.toFile().name)}
+                .each { Files.copy(it, target.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
+
         alterPaths(target, artifact)
     }
 
-    private getAdditionalsDependencies(final Path extPath, final Artifact artifact) {
+    private Set<URI> getAdditionalDependencies(final Path extPath, final Artifact artifact) {
         try {
             def pathToInstalled = extPath.resolve(artifact.artifact + "-" + artifact.version + ".jar")
-            final JarFile jar = new JarFile(pathToInstalled.toFile());
+            final JarFile jar = new JarFile(pathToInstalled.toFile())
             final Manifest manifest = jar.getManifest()
             def attrLine = manifest.mainAttributes.getValue("Gremlin-Plugin-Dependencies")
+            def additionalDependencies = [] as Set<URI>
             if (attrLine != null) {
                 def splitLine = attrLine.split(";")
                 splitLine.each {
@@ -76,29 +82,11 @@ class DependencyGrabber {
                     def additional = new Artifact(artifactBits[0], artifactBits[1], artifactBits[2])
 
                     final def additionalDep = makeDepsMap(additional)
-                    final def dependencyLocations = Grape.resolve([classLoader: this.classLoaderToUse], null, additionalDep)
-
-                    def fs = FileSystems.default
-                    def target = extPath
-
-                    def filesAlreadyInPath = []
-                    def libClassPath
-                    try {
-                        libClassPath = fs.getPath(System.getProperty("user.dir") + fileSep + "lib")
-                        getFileNames(filesAlreadyInPath, libClassPath)
-                    } catch (Exception ignored) {
-                        println("Detected a non-standard Gremlin directory structure during install.  Expecting a 'lib' " +
-                                "directory sibling to 'ext'. This message does not necessarily imply failure, however " +
-                                "the console requires a certain directory structure for proper execution. Altering that " +
-                                "structure can lead to unexpected behavior.");
-                    }
-
-                    dependencyLocations.collect{fs.getPath(it.path)}
-                            .findAll{!(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/)}
-                            .findAll{!filesAlreadyInPath.collect{it.getFileName().toString()}.contains(it.fileName.toFile().name)}
-                            .each { Files.copy(it, target.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
+                    additionalDependencies.addAll(Grape.resolve([classLoader: this.classLoaderToUse], null, additionalDep))
                 }
             }
+
+            return additionalDependencies
         } catch (Exception ex) {
             throw new RuntimeException(ex)
         }

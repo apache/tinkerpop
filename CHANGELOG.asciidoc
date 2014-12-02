@@ -10,6 +10,8 @@ TinkerPop 3.0.0.M6 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * `javatuples.Pair` avoided on `MapReduce` API in favor of a new `KeyValue` class.
+* Renamed `Gremlin-Plugin` manifest entry for plugins to `Gremlin-Plugin-Paths`.
+* Added `Gremlin-Plugin-Dependencies` manifest entry to list other dependencies that should be retrieved with a plugin jar.
 * `Memory.Admin.asImmutable()` yields an immutable representation of the GraphComputer `Memory`.
 * Fixed host selection in `gremlin-driver` by properly accounting for all hosts being marked unavailable at the instantiation of a `Client`.
 * Removed Giraph-Gremlin in favor of new Hadoop-Gremlin with `GiraphGraphComputer` support. Future support for `MapReduceGraphComputer`.
