@@ -30,10 +30,8 @@ import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATU
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_THREADED_TRANSACTIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
@@ -105,7 +103,7 @@ public class FeatureSupportTest {
             try {
                 g.tx();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphFeatures.class.getSimpleName(), FEATURE_TRANSACTIONS));
-            } catch (UnsupportedOperationException e) {
+            } catch (Exception e) {
                 validateException(Graph.Exceptions.transactionsNotSupported(), e);
             }
         }
@@ -120,7 +118,7 @@ public class FeatureSupportTest {
             try {
                 g.variables();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, Graph.Features.VariableFeatures.class.getSimpleName(), FEATURE_VARIABLES));
-            } catch (UnsupportedOperationException e) {
+            } catch (Exception e) {
                 validateException(Graph.Exceptions.variablesNotSupported(), e);
             }
         }
@@ -530,7 +528,7 @@ public class FeatureSupportTest {
                 final Edge edge = createEdgeForPropertyFeatureTests();
                 edge.property("aKey", value);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgePropertyFeatures.class.getSimpleName(), featureName));
-            } catch (UnsupportedOperationException e) {
+            } catch (Exception e) {
                 validateException(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value), e);
             }
         }
@@ -542,7 +540,7 @@ public class FeatureSupportTest {
             try {
                 g.addVertex("aKey", value);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), featureName));
-            } catch (UnsupportedOperationException e) {
+            } catch (Exception e) {
                 validateException(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value), e);
             }
         }
@@ -588,7 +586,7 @@ public class FeatureSupportTest {
                 final Graph.Variables variables = g.variables();
                 variables.set("aKey", value);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, Graph.Features.VariableFeatures.class.getSimpleName(), featureName));
-            } catch (UnsupportedOperationException e) {
+            } catch (Exception e) {
                 validateException(Graph.Variables.Exceptions.dataTypeOfVariableValueNotSupported(value), e);
             }
         }

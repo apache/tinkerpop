@@ -144,8 +144,8 @@ public interface Property<V> {
                     new IllegalStateException("The property does not exist as the key has no associated value: " + key);
         }
 
-        public static UnsupportedOperationException dataTypeOfPropertyValueNotSupported(final Object val) {
-            return new UnsupportedOperationException(String.format("Property value [%s] is of type %s is not supported", val, val.getClass()));
+        public static IllegalArgumentException dataTypeOfPropertyValueNotSupported(final Object val) {
+            return new IllegalArgumentException(String.format("Property value [%s] is of type %s is not supported", val, val.getClass()));
         }
     }
 

@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Enable SessionOps to be extended. Add eval handler hook.
+* Setting a property with an unsupported data type throw `IllegalArgumentException` instead of `UnsupportedOperationException` as the operation is supported, but the argument is not.
 
 TinkerPop 3.0.0.M6 (Release Date: December 2, 2014)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
