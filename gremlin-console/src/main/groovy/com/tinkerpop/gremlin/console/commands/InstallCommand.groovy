@@ -106,7 +106,7 @@ class InstallCommand extends CommandSupport {
             final Manifest manifest = jar.getManifest()
 
             // containsKey doesn't seem to want to work - so just check for null - dah
-            def attrLine = manifest.mainAttributes.getValue("Gremlin-Plugin")
+            def attrLine = manifest.mainAttributes.getValue("Gremlin-Plugin-Paths")
             if (attrLine != null) {
                 def splitLine = attrLine.split(";")
                 splitLine.each {

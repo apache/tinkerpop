@@ -59,15 +59,58 @@ class DependencyGrabber {
                 .findAll{!filesAlreadyInPath.collect{it.getFileName().toString()}.contains(it.fileName.toFile().name)}
                 .each { Files.copy(it, target.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
 
+        getAdditionalsDependencies(target, artifact)
         alterPaths(target, artifact)
     }
+
+    private getAdditionalsDependencies(final Path extPath, final Artifact artifact) {
+        try {
+            def pathToInstalled = extPath.resolve(artifact.artifact + "-" + artifact.version + ".jar")
+            final JarFile jar = new JarFile(pathToInstalled.toFile());
+            final Manifest manifest = jar.getManifest()
+            def attrLine = manifest.mainAttributes.getValue("Gremlin-Plugin-Dependencies")
+            if (attrLine != null) {
+                def splitLine = attrLine.split(";")
+                splitLine.each {
+                    def artifactBits = it.split(":")
+                    def additional = new Artifact(artifactBits[0], artifactBits[1], artifactBits[2])
+
+                    final def additionalDep = makeDepsMap(additional)
+                    final def dependencyLocations = Grape.resolve([classLoader: this.classLoaderToUse], null, additionalDep)
+
+                    def fs = FileSystems.default
+                    def target = extPath
+
+                    def filesAlreadyInPath = []
+                    def libClassPath
+                    try {
+                        libClassPath = fs.getPath(System.getProperty("user.dir") + fileSep + "lib")
+                        getFileNames(filesAlreadyInPath, libClassPath)
+                    } catch (Exception ignored) {
+                        println("Detected a non-standard Gremlin directory structure during install.  Expecting a 'lib' " +
+                                "directory sibling to 'ext'. This message does not necessarily imply failure, however " +
+                                "the console requires a certain directory structure for proper execution. Altering that " +
+                                "structure can lead to unexpected behavior.");
+                    }
+
+                    dependencyLocations.collect{fs.getPath(it.path)}
+                            .findAll{!(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/)}
+                            .findAll{!filesAlreadyInPath.collect{it.getFileName().toString()}.contains(it.fileName.toFile().name)}
+                            .each { Files.copy(it, target.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
+                }
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException(ex)
+        }
+    }
+
 
     private static alterPaths(final Path extPath, final Artifact artifact) {
         try {
             def pathToInstalled = extPath.resolve(artifact.artifact + "-" + artifact.version + ".jar")
             final JarFile jar = new JarFile(pathToInstalled.toFile());
             final Manifest manifest = jar.getManifest()
-            def attrLine = manifest.mainAttributes.getValue("Gremlin-Plugin")
+            def attrLine = manifest.mainAttributes.getValue("Gremlin-Plugin-Paths")
             if (attrLine != null) {
                 def splitLine = attrLine.split(";")
                 splitLine.each {
