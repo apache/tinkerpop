@@ -25,8 +25,6 @@ public class DefaultTraversalSideEffects implements Traversal.SideEffects {
     protected Optional<UnaryOperator> sackSplitOperator = Optional.empty();
     protected Optional<Supplier> sackInitialValue = Optional.empty();
 
-    private boolean vertexLocal = false;
-
     public DefaultTraversalSideEffects() {
 
     }
@@ -85,8 +83,7 @@ public class DefaultTraversalSideEffects implements Traversal.SideEffects {
     @Override
     public void set(final String key, final Object value) {
         SideEffectHelper.validateSideEffect(key, value);
-        // TODO: Remove this as this is made obsolete by GremlinKryo serializer
-        this.objectMap.put(key, (this.vertexLocal && value instanceof Element) ? ReferencedFactory.detach((Element) value) : value);
+        this.objectMap.put(key, value);
     }
 
     /**
@@ -151,7 +148,6 @@ public class DefaultTraversalSideEffects implements Traversal.SideEffects {
      */
     @Override
     public void setLocalVertex(final Vertex vertex) {
-        this.vertexLocal = true;
         final Property<Map<String, Object>> property = vertex.property(SIDE_EFFECTS);
         if (property.isPresent()) {
             this.objectMap = property.value();
