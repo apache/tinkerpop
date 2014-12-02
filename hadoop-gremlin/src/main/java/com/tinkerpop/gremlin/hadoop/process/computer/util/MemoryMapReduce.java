@@ -28,7 +28,7 @@ public class MemoryMapReduce implements MapReduce<MapReduce.NullObject, MapMemor
         return Constants.SYSTEM_MEMORY;
     }
 
-    public MemoryMapReduce() {
+    private MemoryMapReduce() {
 
     }
 
