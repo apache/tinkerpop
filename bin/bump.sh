@@ -6,9 +6,9 @@
 # bin/bump.sh "version"
 
 VERSION="$1"
-SCRIPT_PATH=`readlink -e "$0"`
+SCRIPT_PATH="$0"
 SCRIPT_DIR=`dirname "${SCRIPT_PATH}"`
-PROJECT_DIR=`readlink -e "${SCRIPT_DIR}/.."`
+PROJECT_DIR="${SCRIPT_DIR}/.."
 
 # switch to project directory (allows us to call bump.sh from everywhere and still use relative paths within the script)
 pushd "$PROJECT_DIR" > /dev/null
@@ -17,7 +17,7 @@ pushd "$PROJECT_DIR" > /dev/null
 for pom in $(find . -name pom.xml); do
   cat "$pom" | grep -n -A2 -B2 '<groupId>com.tinkerpop</groupId>' \
              | grep -A2 -B2 '<artifactId>tinkerpop</artifactId>'  \
-             | grep '<version>' | cut -f1 -d '-' | xargs -n1 -I{} sed -i -e "{}s@>.*<@>${VERSION}<@" "$pom"
+             | grep '<version>' | cut -f1 -d '-' | xargs -n1 -I{} sed -i.bak "{}s@>.*<@>${VERSION}<@" "$pom" && rm -f "${pom}.bak"
 done
 
 # YAML configuration
