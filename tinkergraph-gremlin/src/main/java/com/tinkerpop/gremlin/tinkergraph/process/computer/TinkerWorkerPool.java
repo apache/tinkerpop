@@ -13,19 +13,17 @@ import java.util.function.Consumer;
  */
 public class TinkerWorkerPool {
 
-    private final int numberOfWorkers;
     private final List<MapReduce> mapReducers;
 
     public TinkerWorkerPool(final int numberOfWorkers, final Configuration configuration) {
-        this.numberOfWorkers = numberOfWorkers;
-        this.mapReducers = new ArrayList<>(this.numberOfWorkers);
-        for (int i = 0; i < this.numberOfWorkers; i++) {
+        this.mapReducers = new ArrayList<>(numberOfWorkers);
+        for (int i = 0; i < numberOfWorkers; i++) {
             this.mapReducers.add(MapReduce.createMapReduce(configuration));
         }
     }
 
     public void executeMapReduce(final Consumer<MapReduce> worker) {
-        final CountDownLatch activeWorkers = new CountDownLatch(this.numberOfWorkers);
+        final CountDownLatch activeWorkers = new CountDownLatch(this.mapReducers.size());
         for (final MapReduce mapReduce : this.mapReducers) {
             final Thread thread = new Thread(() -> {
                 worker.accept(mapReduce);
