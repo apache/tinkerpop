@@ -18,9 +18,11 @@ public class TinkerWorkerPool {
 
     private List<MapReduce> mapReducers;
     private List<VertexProgram> vertexPrograms;
+    private State state;
 
     public TinkerWorkerPool(final int numberOfWorkers, final State state, final Configuration configuration) {
-        if (state.equals(State.VERTEX_PROGRAM)) {
+        this.state = state;
+        if (this.state.equals(State.VERTEX_PROGRAM)) {
             this.vertexPrograms = new ArrayList<>(numberOfWorkers);
             for (int i = 0; i < numberOfWorkers; i++) {
                 this.vertexPrograms.add(VertexProgram.createVertexProgram(configuration));
@@ -34,6 +36,8 @@ public class TinkerWorkerPool {
     }
 
     public void executeVertexProgram(final Consumer<VertexProgram> worker) {
+        if (!this.state.equals(State.VERTEX_PROGRAM))
+            throw new IllegalStateException("The provided TinkerWorkerPool is not setup for VertexProgram: " + this.state);
         final CountDownLatch activeWorkers = new CountDownLatch(this.vertexPrograms.size());
         for (final VertexProgram vertexProgram : this.vertexPrograms) {
             new Thread(() -> {
@@ -49,6 +53,8 @@ public class TinkerWorkerPool {
     }
 
     public void executeMapReduce(final Consumer<MapReduce> worker) {
+        if (!this.state.equals(State.MAP_REDUCE))
+            throw new IllegalStateException("The provided TinkerWorkerPool is not setup for MapReduce: " + this.state);
         final CountDownLatch activeWorkers = new CountDownLatch(this.mapReducers.size());
         for (final MapReduce mapReduce : this.mapReducers) {
             new Thread(() -> {
