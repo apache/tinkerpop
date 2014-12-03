@@ -151,7 +151,7 @@ public class TinkerGraphComputer implements GraphComputer {
         return StringFactory.graphComputerString(this);
     }
 
-    private class SynchronizedIterator<V> {
+    private static class SynchronizedIterator<V> {
 
         private final Iterator<V> iterator;
 
