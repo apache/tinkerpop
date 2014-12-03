@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
+import com.google.common.collect.Iterators;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.util.MultiIterator;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -9,14 +9,15 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
+import com.tinkerpop.gremlin.util.IteratorUtils;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -101,65 +102,22 @@ public class TinkerHelper {
         return element.properties;
     }
 
-    public static Iterator<TinkerEdge> getEdges(final TinkerVertex vertex, final Direction direction, final String... labels) {
-        final MultiIterator<Edge> edges = new MultiIterator<>();
-        if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH)) {
-            if (labels.length > 0) {
-                for (final String label : labels) {
-                    edges.addIterator(vertex.outEdges.getOrDefault(label, Collections.emptySet()).iterator());
-                }
-            } else {
-                for (final Set<Edge> set : vertex.outEdges.values()) {
-                    edges.addIterator(set.iterator());
-                }
-            }
-        }
-        if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH)) {
-            if (labels.length > 0) {
-                for (final String label : labels) {
-                    edges.addIterator(vertex.inEdges.getOrDefault(label, Collections.emptySet()).iterator());
-                }
-            } else {
-                for (final Set<Edge> set : vertex.inEdges.values()) {
-                    edges.addIterator(set.iterator());
-                }
-            }
-        }
-        return (Iterator) edges;
+    public static Iterator<TinkerEdge> getEdges(final TinkerVertex vertex, final Direction direction, final String... edgeLabels) {
+        Stream<Edge> edgeStream = null;
+        if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
+            edgeStream = vertex.outEdges.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(), edgeLabels)).flatMap(entry -> entry.getValue().stream());
+        if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH))
+            edgeStream = Stream.concat(null == edgeStream ? Stream.empty() : edgeStream, vertex.inEdges.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(), edgeLabels)).flatMap(entry -> entry.getValue().stream()));
+        return (Iterator) edgeStream.collect(Collectors.toList()).iterator();
     }
 
-    public static Iterator<TinkerVertex> getVertices(final TinkerVertex vertex, final Direction direction, final String... labels) {
+    public static Iterator<TinkerVertex> getVertices(final TinkerVertex vertex, final Direction direction, final String... edgeLabels) {
         if (direction != Direction.BOTH) {
-            return new TinkerVertexIterator(TinkerHelper.getEdges(vertex, direction, labels), direction);
+            return IteratorUtils.map(TinkerHelper.getEdges(vertex, direction, edgeLabels), edge -> (TinkerVertex) (direction.equals(Direction.IN) ? edge.outVertex : edge.inVertex));
         } else {
-            final MultiIterator<TinkerVertex> vertices = new MultiIterator<>();
-            vertices.addIterator(new TinkerVertexIterator(TinkerHelper.getEdges(vertex, Direction.OUT, labels), Direction.OUT));
-            vertices.addIterator(new TinkerVertexIterator(TinkerHelper.getEdges(vertex, Direction.IN, labels), Direction.IN));
-            return vertices;
-        }
-    }
-
-    private static class TinkerVertexIterator implements Iterator<TinkerVertex> {
-
-        private final Iterator<TinkerEdge> edges;
-        private final Direction direction;
-
-        public TinkerVertexIterator(final Iterator<TinkerEdge> edges, final Direction direction) {
-            this.edges = edges;
-            this.direction = direction;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return this.edges.hasNext();
-        }
-
-        @Override
-        public TinkerVertex next() {
-            if (this.direction.equals(Direction.IN))
-                return (TinkerVertex) this.edges.next().outVertex;
-            else
-                return (TinkerVertex) this.edges.next().inVertex;
+            return Iterators.concat(
+                    IteratorUtils.map(TinkerHelper.getEdges(vertex, Direction.OUT, edgeLabels), edge -> (TinkerVertex) edge.inVertex),
+                    IteratorUtils.map(TinkerHelper.getEdges(vertex, Direction.IN, edgeLabels), edge -> (TinkerVertex) edge.outVertex));
         }
     }
 }

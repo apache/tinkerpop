@@ -233,6 +233,32 @@ public class EdgeTest {
         }
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_REMOVE_EDGES)
+        public void shouldNotHaveAConcurrentModificationExceptionWhenIteratingAndRemovingAddingEdges() {
+            final Vertex v1 = g.addVertex("name", "marko");
+            final Vertex v2 = g.addVertex("name", "puppy");
+            v1.addEdge("knows", v2, "since", 2010);
+            v1.addEdge("pets", v2);
+            v1.addEdge("walks", v2, "location", "arroyo");
+            v2.addEdge("knows", v1, "since", 2010);
+            assertEquals(4, v1.bothE().count().next().intValue());
+            assertEquals(4, v2.bothE().count().next().intValue());
+            v1.iterators().edgeIterator(Direction.BOTH).forEachRemaining(edge -> {
+                v1.addEdge("livesWith", v2);
+                v1.addEdge("walks", v2, "location", "river");
+                edge.remove();
+            });
+            //assertEquals(8, v1.outE().count().next().intValue());  TODO: Neo4j is not happy
+            //assertEquals(8, v2.outE().count().next().intValue());
+            v1.iterators().edgeIterator(Direction.BOTH).forEachRemaining(Edge::remove);
+            assertEquals(0, v1.bothE().count().next().intValue());
+            assertEquals(0, v2.bothE().count().next().intValue());
+        }
+
+        @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldReturnEmptyIteratorIfNoProperties() {
