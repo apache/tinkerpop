@@ -92,7 +92,6 @@ class DependencyGrabber {
         }
     }
 
-
     private static alterPaths(final Path extPath, final Artifact artifact) {
         try {
             def pathToInstalled = extPath.resolve(artifact.artifact + "-" + artifact.version + ".jar")

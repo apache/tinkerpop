@@ -88,11 +88,6 @@ public class HadoopGremlinPlugin extends AbstractGremlinPlugin {
     }
 
     @Override
-    public Optional<Set<Artifact>> additionalDependencies() {
-        return Optional.of(new HashSet<>(Arrays.asList(new Artifact("org.apache.hadoop", "hadoop-core", "1.2.1"))));
-    }
-
-    @Override
     public Optional<RemoteAcceptor> remoteAcceptor() {
         return Optional.of(new HadoopRemoteAcceptor(this.shell));
     }

@@ -76,6 +76,14 @@ class InstallCommand extends CommandSupport {
                 .findAll{!filesAlreadyInPath.collect{it.getFileName().toString()}.contains(it.fileName.toFile().name)}
                 .each { Files.copy(it, target.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
 
+        // additional dependencies are outside those pulled by grape and are defined in the manifest of the plugin jar.
+        // if a plugin uses that setting, it should force "restart" when the plugin is activated.  right now,
+        // it is up to the plugin developer to enforce that setting.
+        getAdditionalDependencies(target, artifact).collect{fs.getPath(it.path)}
+                .findAll{!(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/)}
+                .findAll{!filesAlreadyInPath.collect{it.getFileName().toString()}.contains(it.fileName.toFile().name)}
+                .each { Files.copy(it, target.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
+
         // the ordering of jars seems to matter in some cases (e.g. neo4j).  the plugin system allows the plugin
         // to place a Gremlin-Plugin entry in the jar manifest file to define where specific jar files should
         // go in the path which provides enough flexibility to control when jars should load.  unfortunately,
@@ -122,11 +130,34 @@ class InstallCommand extends CommandSupport {
         }
     }
 
+    private Set<URI> getAdditionalDependencies(final Path extPath, final Artifact artifact) {
+        try {
+            def pathToInstalled = extPath.resolve(artifact.artifact + "-" + artifact.version + ".jar")
+            final JarFile jar = new JarFile(pathToInstalled.toFile())
+            final Manifest manifest = jar.getManifest()
+            def attrLine = manifest.mainAttributes.getValue("Gremlin-Plugin-Dependencies")
+            def additionalDependencies = [] as Set<URI>
+            if (attrLine != null) {
+                def splitLine = attrLine.split(";")
+                splitLine.each {
+                    def artifactBits = it.split(":")
+                    def additional = new Artifact(artifactBits[0], artifactBits[1], artifactBits[2])
+
+                    final def additionalDep = makeDepsMap(additional)
+                    additionalDependencies.addAll(Grape.resolve([classLoader: shell.getInterp().getClassLoader()], null, additionalDep))
+                }
+            }
+
+            return additionalDependencies
+        } catch (Exception ex) {
+            throw new RuntimeException(ex)
+        }
+    }
+
     private def grabDeps(final Map<String, Object> map) {
         Grape.grab(map)
 
         def pluginsThatNeedRestart = [] as Set
-        def additionalDeps = [] as Set
 
         // note that the service loader utilized the classloader from the groovy shell as shell class are available
         // from within there given loading through Grape.
@@ -135,13 +166,8 @@ class InstallCommand extends CommandSupport {
                 mediator.availablePlugins.put(plugin.class.name, new PluggedIn(plugin, shell, io, false))
                 if (plugin.requireRestart())
                     pluginsThatNeedRestart << plugin.name
-
-                if (plugin.additionalDependencies().isPresent())
-                    additionalDeps.addAll(plugin.additionalDependencies().get().flatten())
             }
         }
-
-        additionalDeps.each { Grape.grab(makeDepsMap((Artifact) it)) }
 
         return pluginsThatNeedRestart
     }

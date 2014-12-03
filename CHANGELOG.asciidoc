@@ -10,6 +10,7 @@ TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Fixed a general bug in all sideEffect using steps where the sideEffect should be accessed via the `Traverser` not `Traversal`.
+* `GremlinPlugin` interface no longer has the `additionalDependencies` method - those dependencies are now defined by an entry in the manifest file for the jar called `Gremlin-Plugin-Dependencies`.
 * Added `TinkerWorkerPool` which is used for threading `TinkerGraphComputer`.
 * `MapReduce.createMapReduce(Configuration)` now exists and serves the same purpose as `VertexProgram.createVertexProgram(Configuration)`.
 * Enable SessionOps to be extended. Add eval handler hook.

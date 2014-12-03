@@ -42,15 +42,6 @@ public interface GremlinPlugin {
     }
 
     /**
-     * Dependency managers in a plugin host will derive dependency information from the pom.xml.  If the scope for
-     * dependencies in the pom.xml are {@code provided} then such dependencies will not be pulled in.  These provided
-     * dependencies should be specified here so that the plugin host can grab them too.
-     */
-    public default Optional<Set<Artifact>> additionalDependencies() {
-        return Optional.empty();
-    }
-
-    /**
      * Allows a plugin to utilize features of the {@code :remote} and {@code :submit} commands of the Gremlin Console.
      * This method does not need to be implemented if the plugin is not meant for the Console for some reason or
      * if it does not intend to take advantage of those commands.
