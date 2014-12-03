@@ -3,12 +3,11 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Traversal;
 
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalRing<S, E> {
+public class TraversalRing<S, E> implements Cloneable {
 
     private Traversal<S, E>[] traversals;
     private int currentTraversal = -1;
@@ -30,7 +29,7 @@ public class TraversalRing<S, E> {
         return this.traversals.length;
     }
 
-    public Traversal<S,E>[] getTraversals() {
+    public Traversal<S, E>[] getTraversals() {
         return this.traversals;
     }
 
@@ -38,6 +37,15 @@ public class TraversalRing<S, E> {
         for (int i = 0; i < this.traversals.length; i++) {
             consumer.accept(this.traversals[i]);
         }
+    }
+
+    @Override
+    public TraversalRing<S, E> clone() throws CloneNotSupportedException {
+        final Traversal<S, E>[] clonedRing = new Traversal[this.getTraversals().length];
+        for (int i = 0; i < this.getTraversals().length; i++) {
+            clonedRing[i] = this.getTraversals()[i].clone();
+        }
+        return new TraversalRing(clonedRing);
     }
 
 }

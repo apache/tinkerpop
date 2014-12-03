@@ -2,11 +2,11 @@ package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Barrier;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
-import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
@@ -20,7 +20,7 @@ import java.util.function.Function;
  */
 public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements PathConsumer, EngineDependent {
 
-    private final FunctionRing functionRing;
+    private FunctionRing functionRing;
     private final List<String> selectLabels;
     private final boolean wasEmpty;
     private boolean requiresPaths = false;
@@ -92,9 +92,18 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
                         .findAny().isPresent();
     }
 
+    @Override
     public String toString() {
         return this.selectLabels.size() > 0 ?
                 TraversalHelper.makeStepString(this, this.selectLabels) :
                 TraversalHelper.makeStepString(this);
     }
+
+    @Override
+    public SelectStep<S, E> clone() throws CloneNotSupportedException {
+        final SelectStep<S, E> clone = (SelectStep<S, E>) super.clone();
+        clone.functionRing = this.functionRing.clone();
+        return clone;
+    }
+
 }

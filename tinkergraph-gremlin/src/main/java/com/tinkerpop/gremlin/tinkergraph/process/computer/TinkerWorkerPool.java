@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.commons.configuration.Configuration;
 
 import java.util.ArrayList;
@@ -13,12 +14,37 @@ import java.util.function.Consumer;
  */
 public class TinkerWorkerPool {
 
-    private final List<MapReduce> mapReducers;
+    public static enum State {VERTEX_PROGRAM, MAP_REDUCE}
 
-    public TinkerWorkerPool(final int numberOfWorkers, final Configuration configuration) {
-        this.mapReducers = new ArrayList<>(numberOfWorkers);
-        for (int i = 0; i < numberOfWorkers; i++) {
-            this.mapReducers.add(MapReduce.createMapReduce(configuration));
+    private List<MapReduce> mapReducers;
+    private List<VertexProgram> vertexPrograms;
+
+    public TinkerWorkerPool(final int numberOfWorkers, final State state, final Configuration configuration) {
+        if (state.equals(State.VERTEX_PROGRAM)) {
+            this.vertexPrograms = new ArrayList<>(numberOfWorkers);
+            for (int i = 0; i < numberOfWorkers; i++) {
+                this.vertexPrograms.add(VertexProgram.createVertexProgram(configuration));
+            }
+        } else {
+            this.mapReducers = new ArrayList<>(numberOfWorkers);
+            for (int i = 0; i < numberOfWorkers; i++) {
+                this.mapReducers.add(MapReduce.createMapReduce(configuration));
+            }
+        }
+    }
+
+    public void executeVertexProgram(final Consumer<VertexProgram> worker) {
+        final CountDownLatch activeWorkers = new CountDownLatch(this.vertexPrograms.size());
+        for (final VertexProgram vertexProgram : this.vertexPrograms) {
+            new Thread(() -> {
+                worker.accept(vertexProgram);
+                activeWorkers.countDown();
+            }).start();
+        }
+        try {
+            activeWorkers.await();
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 

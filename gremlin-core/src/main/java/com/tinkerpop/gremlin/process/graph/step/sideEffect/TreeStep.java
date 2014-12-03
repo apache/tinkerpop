@@ -20,7 +20,7 @@ import java.util.function.Function;
  */
 public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, PathConsumer, SideEffectCapable, MapReducer<Object, Tree, Object, Tree, Tree> {
 
-    private final FunctionRing functionRing;
+    private FunctionRing functionRing;
     private final String sideEffectKey;
 
     public TreeStep(final Traversal traversal, final String sideEffectKey, final Function... branchFunctions) {
@@ -61,5 +61,12 @@ public final class TreeStep<S> extends SideEffectStep<S> implements Reversible, 
     @Override
     public String toString() {
         return Graph.System.isSystem(this.sideEffectKey) ? super.toString() : TraversalHelper.makeStepString(this, this.sideEffectKey);
+    }
+
+    @Override
+    public TreeStep<S> clone() throws CloneNotSupportedException {
+        final TreeStep<S> clone = (TreeStep<S>) super.clone();
+        clone.functionRing = this.functionRing.clone();
+        return clone;
     }
 }

@@ -1,9 +1,9 @@
 package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.EngineDependent;
-import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.EmptyTraverser;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
@@ -112,6 +112,15 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
             this.onGraphComputer = false;
             this.graphComputerQueue = null;
         }
+    }
+
+    @Override
+    public BranchStep<S> clone() throws CloneNotSupportedException {
+        final BranchStep<S> clone = (BranchStep<S>) super.clone();
+        // TODO: if(this.onGraphComputer) { }
+        clone.graphComputerQueue = new TraverserSet<S>();
+        clone.functionRing = this.functionRing.clone();
+        return clone;
     }
 
     /*@Override

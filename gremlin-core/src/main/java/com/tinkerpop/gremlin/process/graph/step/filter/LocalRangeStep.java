@@ -20,11 +20,11 @@ import java.util.Set;
  */
 public final class LocalRangeStep<S extends Element> extends FilterStep<S> implements PathConsumer, Ranging {
 
-    private final long low;
-    private final long high;
+    private long low;
+    private long high;
     private Direction direction = null;
-    private final BulkSet<Element> bulkSet = new BulkSet<>();
-    private final Set<Element> doneElements = new HashSet<>();
+    private BulkSet<Element> bulkSet = new BulkSet<>();
+    private Set<Element> doneElements = new HashSet<>();
 
     public LocalRangeStep(final Traversal traversal, final long low, final long high) {
         super(traversal);
@@ -89,7 +89,6 @@ public final class LocalRangeStep<S extends Element> extends FilterStep<S> imple
             long toEmit = avail - toSkip - toTrim;
             this.bulkSet.add(previousElement, toEmit);
             traverser.asAdmin().setBulk(toEmit);
-
             return true;
         });
     }
@@ -106,10 +105,21 @@ public final class LocalRangeStep<S extends Element> extends FilterStep<S> imple
         return TraversalHelper.makeStepString(this, this.low, this.high);
     }
 
+    @Override
+    public LocalRangeStep<S> clone() throws CloneNotSupportedException {
+        final LocalRangeStep<S> clone = (LocalRangeStep<S>)super.clone();
+        clone.bulkSet = new BulkSet<>();
+        clone.doneElements = new HashSet<>();
+        clone.direction = Direction.valueOf(this.direction.name());
+        return clone;
+    }
+
+    @Override
     public long getLowRange() {
         return this.low;
     }
 
+    @Override
     public long getHighRange() {
         return this.high;
     }

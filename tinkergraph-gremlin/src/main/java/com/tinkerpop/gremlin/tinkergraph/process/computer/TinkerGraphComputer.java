@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 public class TinkerGraphComputer implements GraphComputer {
 
     private Isolation isolation = Isolation.BSP;
-    private VertexProgram vertexProgram;
+    private VertexProgram<?> vertexProgram;
     private final TinkerGraph graph;
     private TinkerMemory memory;
     private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
@@ -47,7 +47,6 @@ public class TinkerGraphComputer implements GraphComputer {
     @Override
     public GraphComputer program(final VertexProgram vertexProgram) {
         this.vertexProgram = vertexProgram;
-        this.vertexProgram.storeState(this.configuration);
         return this;
     }
 
@@ -77,15 +76,23 @@ public class TinkerGraphComputer implements GraphComputer {
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
             if (null != this.vertexProgram) {
+                this.vertexProgram.storeState(this.configuration);
                 TinkerHelper.createGraphView(this.graph, this.isolation, this.vertexProgram.getElementComputeKeys());
                 // execute the vertex program
                 this.vertexProgram.setup(this.memory);
                 this.memory.completeSubRound();
+                final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors(), TinkerWorkerPool.State.VERTEX_PROGRAM, this.configuration);
                 while (true) {
-                    this.vertexProgram.workerIterationStart(this.memory.asImmutable());
-                    TinkerHelper.getVertices(this.graph).stream().forEach(vertex ->
-                            this.vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard, this.vertexProgram.getMessageCombiner()), this.memory));
-                    this.vertexProgram.workerIterationEnd(this.memory.asImmutable());
+                    workers.executeVertexProgram(vertexProgram -> vertexProgram.workerIterationStart(this.memory.asImmutable()));
+                    final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(TinkerHelper.getVertices(this.graph).iterator());
+                    workers.executeVertexProgram(vertexProgram -> {
+                        while (true) {
+                            final Vertex vertex = vertices.next();
+                            if (null == vertex) return;
+                            vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard, vertexProgram.getMessageCombiner()), this.memory);
+                        }
+                    });
+                    workers.executeVertexProgram(vertexProgram -> vertexProgram.workerIterationEnd(this.memory.asImmutable()));
                     this.messageBoard.completeIteration();
                     this.memory.completeSubRound();
                     if (this.vertexProgram.terminate(this.memory)) {
@@ -102,7 +109,7 @@ public class TinkerGraphComputer implements GraphComputer {
             // execute mapreduce jobs
             for (final MapReduce mapReduce : this.mapReduces) {
                 mapReduce.storeState(this.configuration);
-                final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors(), this.configuration);
+                final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors(), TinkerWorkerPool.State.MAP_REDUCE, this.configuration);
                 if (mapReduce.doStage(MapReduce.Stage.MAP)) {
                     final TinkerMapEmitter<?, ?> mapEmitter = new TinkerMapEmitter<>(mapReduce.doStage(MapReduce.Stage.REDUCE));
                     final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(TinkerHelper.getVertices(this.graph).iterator());

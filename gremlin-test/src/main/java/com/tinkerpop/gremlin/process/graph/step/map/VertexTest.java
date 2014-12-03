@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -168,6 +169,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @Ignore
     @LoadGraphWith(MODERN)
     public void g_v1_outEXknowsX_localLimitX1X_inV_name() {
         final Traversal<Vertex, String> traversal = get_g_v1_outEXknowsX_localLimitX1X_inV_name(convertToVertexId("marko"));
@@ -178,6 +180,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @Ignore
     @LoadGraphWith(MODERN)
     public void g_V_bothEXcreatedX_localLimitX1X_otherV_name() {
         final Traversal<Vertex, String> traversal = get_g_V_bothEXcreatedX_localLimitX1X_otherV_name();
@@ -274,6 +277,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @Ignore
     @LoadGraphWith(MODERN)
     public void g_v4_bothEX1_createdX_localLimitX1X() {
         final Traversal<Vertex, Edge> traversal = get_g_v4_bothEX1_createdX_localLimitX1X(convertToVertexId("josh"));
@@ -285,6 +289,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @Ignore
     @LoadGraphWith(MODERN)
     public void g_v4_bothEXknows_createdX_localLimitX1X() {
         final Traversal<Vertex, Edge> traversal = get_g_v4_bothEXknows_createdX_localLimitX1X(convertToVertexId("josh"));
@@ -296,6 +301,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @Ignore
     @LoadGraphWith(MODERN)
     public void g_v4_bothE_localLimitX1X_otherV_name() {
         final Traversal<Vertex, String> traversal = get_g_v4_bothE_localLimitX1X_otherV_name(convertToVertexId("josh"));
@@ -312,6 +318,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @Ignore
     @LoadGraphWith(MODERN)
     public void g_v4_bothE_localLimitX2X_otherV_name() {
         final Traversal<Vertex, String> traversal = get_g_v4_bothE_localLimitX2X_otherV_name(convertToVertexId("josh"));
@@ -328,6 +335,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
 
     @Test
+    @Ignore
     @LoadGraphWith(MODERN)
     public void g_V_inEXknowsX_localLimitX2X_outV_name() {
         final Traversal<Vertex, String> traversal = get_g_V_inEXknowsX_localLimitX2X_outV_name();

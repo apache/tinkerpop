@@ -155,6 +155,14 @@ public final class JumpStep<S> extends AbstractStep<S, S> implements EngineDepen
                 TraversalHelper.makeStepString(this, this.jumpLabel);
     }
 
+    @Override
+    public JumpStep<S> clone() throws CloneNotSupportedException {
+        final JumpStep<S> clone = (JumpStep<S>) super.clone();
+        // TODO: if(this.onGraphComputer) { }
+        clone.queue = new TraverserSet<S>();
+        return clone;
+    }
+
     public static <S> Builder<S> build(final Traversal traversal) {
         return new Builder<>(traversal);
     }

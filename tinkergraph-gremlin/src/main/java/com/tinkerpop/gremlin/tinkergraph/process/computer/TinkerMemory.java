@@ -97,31 +97,22 @@ public class TinkerMemory implements Memory.Admin {
     @Override
     public long incr(final String key, final long delta) {
         checkKeyValue(key, delta);
-        final Long currentValue = (Long) this.currentMap.getOrDefault(key, 0l);
-        this.currentMap.put(key, delta + currentValue);
-
-        final Long previousValue = (Long) this.previousMap.getOrDefault(key, 0l);
-        return previousValue + delta;
+        this.currentMap.compute(key, (k, v) -> null == v ? delta : delta + (Long) v);
+        return (Long) this.previousMap.getOrDefault(key, 0l) + delta;
     }
 
     @Override
     public boolean and(final String key, final boolean bool) {
         checkKeyValue(key, bool);
-        final Boolean currentValue = (Boolean) this.currentMap.getOrDefault(key, true);
-        this.currentMap.put(key, bool && currentValue);
-
-        final Boolean previousValue = (Boolean) this.previousMap.getOrDefault(key, true);
-        return previousValue && bool;
+        this.currentMap.compute(key, (k, v) -> null == v ? bool : bool && (Boolean) v);
+        return (Boolean) this.previousMap.getOrDefault(key, true) && bool;
     }
 
     @Override
     public boolean or(final String key, final boolean bool) {
         checkKeyValue(key, bool);
-        final Boolean currentValue = (Boolean) this.currentMap.getOrDefault(key, true);
-        this.currentMap.put(key, bool || currentValue);
-
-        final Boolean previousValue = (Boolean) this.previousMap.getOrDefault(key, true);
-        return previousValue || bool;
+        this.currentMap.compute(key, (k, v) -> null == v ? bool : bool || (Boolean) v);
+        return (Boolean) this.previousMap.getOrDefault(key, true) || bool;
     }
 
     @Override

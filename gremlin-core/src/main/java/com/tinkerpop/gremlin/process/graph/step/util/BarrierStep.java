@@ -13,7 +13,7 @@ import java.util.function.Consumer;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class BarrierStep<S> extends AbstractStep<S, S> implements Barrier {
-    private final TraverserSet<S> traverserSet = new TraverserSet<>();
+    private TraverserSet<S> traverserSet = new TraverserSet<>();
     private Consumer<TraverserSet<S>> barrierConsumer;
 
     public BarrierStep(final Traversal traversal) {
@@ -38,6 +38,13 @@ public abstract class BarrierStep<S> extends AbstractStep<S, S> implements Barri
         if (PROFILING_ENABLED) TraversalMetrics.finish(this, traverser);
         return traverser;
 
+    }
+
+    @Override
+    public BarrierStep<S> clone() throws CloneNotSupportedException {
+        final BarrierStep<S> clone = (BarrierStep<S>)super.clone();
+        clone.traverserSet = new TraverserSet<>();
+        return clone;
     }
 
     @Override

@@ -133,13 +133,16 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     @Override
     public AbstractStep<S, E> clone() throws CloneNotSupportedException {
-        final AbstractStep step = (AbstractStep) super.clone();
-        step.starts = new ExpandableStepIterator<S>(step);
-        step.previousStep = EmptyStep.instance();
-        step.nextStep = EmptyStep.instance();
-        step.available = false;
-        step.nextEnd = null;
-        return step;
+        final AbstractStep clone = (AbstractStep) super.clone();
+        clone.starts = new ExpandableStepIterator<S>(clone);
+        clone.previousStep = EmptyStep.instance();
+        clone.nextStep = EmptyStep.instance();
+        clone.available = false;
+        clone.nextEnd = null;
+        clone.traversal = null;
+        clone.label = this.label;
+        clone.futureSetByChild = this.futureSetByChild;
+        return clone;
     }
 
     private void prepareTraversalForNextStep(final Traverser<E> traverser) {

@@ -109,6 +109,8 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
             final DefaultTraversal<S, E> clone = (DefaultTraversal<S, E>) super.clone();
             clone.steps = new ArrayList<>();
             clone.sideEffects = this.sideEffects.clone();
+            clone.lastEnd = null;
+            clone.lastEndCount = 0l;
             for (int i = this.steps.size() - 1; i >= 0; i--) {
                 final Step<?, ?> clonedStep = this.steps.get(i).clone();
                 clonedStep.setTraversal(clone);

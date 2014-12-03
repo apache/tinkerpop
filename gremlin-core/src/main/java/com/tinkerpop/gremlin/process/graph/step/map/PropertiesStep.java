@@ -7,6 +7,8 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.PropertyType;
+import com.tinkerpop.gremlin.util.IteratorUtils;
+import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -18,14 +20,14 @@ public class PropertiesStep<E> extends FlatMapStep<Element, E> implements Revers
 
     protected final String[] propertyKeys;
     protected final PropertyType returnType;
-    private final ChainIterator chainIterator = new ChainIterator();
-
 
     public PropertiesStep(final Traversal traversal, final PropertyType propertyType, final String... propertyKeys) {
         super(traversal);
         this.returnType = propertyType;
         this.propertyKeys = propertyKeys;
-        this.setFunction(traverser -> this.chainIterator.set(traverser.get().iterators().propertyIterator(this.propertyKeys)));
+        this.setFunction(traverser -> StreamFactory.stream(traverser.get().iterators().propertyIterator(propertyKeys))
+                .filter(p -> (propertyType.forHiddens() && p.isHidden()) || (!propertyType.forHiddens() && !p.isHidden()))
+                .map(p -> (E) (propertyType.forValues() ? p.value() : p)).iterator());
     }
 
     public PropertyType getReturnType() {
@@ -48,45 +50,4 @@ public class PropertiesStep<E> extends FlatMapStep<Element, E> implements Revers
                 TraversalHelper.makeStepString(this, this.returnType.name().toLowerCase()) :
                 TraversalHelper.makeStepString(this, this.returnType.name().toLowerCase(), Arrays.toString(this.propertyKeys));
     }
-
-    private class ChainIterator implements Iterator<E> {
-
-        private Iterator<? extends Property> propertyIterator;
-        private Property nextUp = null;
-
-        public boolean hasNext() {
-            return (null != this.nextUp || advance());
-        }
-
-        public E next() {
-            try {
-                while (true) {
-                    if (null != this.nextUp) {
-                        return (E) (returnType.forValues() ? this.nextUp.value() : this.nextUp);
-                    } else if (!this.advance()) {
-                        throw FastNoSuchElementException.instance();
-                    }
-                }
-            } finally {
-                this.nextUp = null;
-            }
-        }
-
-        private boolean advance() {
-            while (this.propertyIterator.hasNext()) {
-                this.nextUp = this.propertyIterator.next();
-                if ((!this.nextUp.isHidden() && !returnType.forHiddens()) || (this.nextUp.isHidden() && returnType.forHiddens()))
-                    return true;
-            }
-            this.nextUp = null;
-            return false;
-        }
-
-        public Iterator<E> set(final Iterator<? extends Property> propertyIterator) {
-            this.propertyIterator = propertyIterator;
-            return this;
-        }
-
-    }
-
 }

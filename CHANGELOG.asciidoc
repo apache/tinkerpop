@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Ensured that all the steps of a `Traversal` that is cloned are cloned properly.
 * Greatly increased the speed of `ScriptEngineLambda` by making use of static `ScriptEngine` cache.
 * Fixed a general bug in all sideEffect using steps where the sideEffect should be accessed via the `Traverser` not `Traversal`.
 * `GremlinPlugin` interface no longer has the `additionalDependencies` method - those dependencies are now defined by an entry in the manifest file for the jar called `Gremlin-Plugin-Dependencies`.

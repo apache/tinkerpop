@@ -5,7 +5,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class FunctionRing<A, B> {
+public class FunctionRing<A, B> implements Cloneable {
 
     public Function<A, B>[] functions;
     private int currentFunction = -1;
@@ -32,6 +32,10 @@ public class FunctionRing<A, B> {
     }
 
     public boolean roundComplete() {
-        return this.currentFunction == this.functions.length -1;
+        return this.currentFunction == this.functions.length - 1;
+    }
+
+    public FunctionRing<A, B> clone() throws CloneNotSupportedException {
+        return new FunctionRing<>(this.functions);
     }
 }

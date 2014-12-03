@@ -20,7 +20,7 @@ import java.util.function.Predicate;
 public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> {
 
     private final Function<Traverser<S>, M> mapFunction;
-    private final Map<M, Traversal<S, E>> choices;
+    private Map<M, Traversal<S, E>> choices;
 
     public ChooseStep(final Traversal traversal, final Predicate<Traverser<S>> predicate, final Traversal<S, E> trueChoice, final Traversal<S, E> falseChoice) {
         this(traversal,
@@ -55,8 +55,15 @@ public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> {
     }
 
     @Override
+    public ChooseStep<S,E,M> clone() throws CloneNotSupportedException {
+        final ChooseStep<S,E,M> clone = (ChooseStep<S,E,M>)super.clone();
+        clone.choices = new HashMap<>();
+        this.choices.forEach((k,v) -> clone.choices.put(k,v.clone()));
+        return clone;
+    }
+
+    @Override
     public String toString() {
         return TraversalHelper.makeStepString(this, this.choices.toString());
     }
-
 }

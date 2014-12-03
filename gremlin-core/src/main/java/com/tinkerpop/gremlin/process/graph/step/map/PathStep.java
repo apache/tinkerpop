@@ -13,7 +13,7 @@ import java.util.function.Function;
  */
 public final class PathStep<S> extends MapStep<S, Path> implements PathConsumer {
 
-    private final FunctionRing functionRing;
+    private FunctionRing functionRing;
 
     public PathStep(final Traversal traversal, final Function... pathFunctions) {
         super(traversal);
@@ -28,6 +28,13 @@ public final class PathStep<S> extends MapStep<S, Path> implements PathConsumer 
                 return path;
             }
         });
+    }
+
+    @Override
+    public PathStep<S> clone() throws CloneNotSupportedException {
+        final PathStep<S> clone = (PathStep<S>) super.clone();
+        if (null != this.functionRing) clone.functionRing = this.functionRing.clone();
+        return clone;
     }
 
     @Override

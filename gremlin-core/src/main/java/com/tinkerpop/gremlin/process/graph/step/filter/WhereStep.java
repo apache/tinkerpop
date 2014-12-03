@@ -17,7 +17,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> {
     private final String firstKey;
     private final String secondKey;
     private final BiPredicate biPredicate;
-    private final Traversal constraint;
+    private Traversal constraint;
 
 
     public WhereStep(final Traversal traversal, final String firstKey, final String secondKey, final BiPredicate<E, E> biPredicate) {
@@ -87,6 +87,14 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> {
 
     public Traversal getConstraint() {
         return this.constraint;
+    }
+
+    @Override
+    public WhereStep<E> clone() throws CloneNotSupportedException {
+        final WhereStep<E> clone = (WhereStep<E>) super.clone();
+        if (null != this.constraint)
+            clone.constraint = this.constraint.clone();
+        return clone;
     }
 
 

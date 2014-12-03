@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 public final class OrderStep<S> extends BarrierStep<S> implements Reversible, Comparing<S> {
 
     private final Comparator<Traverser<S>>[] comparators;
-    private final Comparator<Traverser<S>> chainedComparator;
+    private Comparator<Traverser<S>> chainedComparator;
 
     public OrderStep(final Traversal traversal, final Comparator<Traverser<S>>... comparators) {
         super(traversal);

@@ -26,12 +26,4 @@ public class MapHelper {
             return v;
         });
     }
-
-    public static <T, U> void concurrentIncr(final Map<T, Queue<U>> map, final T key, final U value) {
-        map.compute(key, (k, v) -> {
-            if (null == v) v = new ConcurrentLinkedQueue<>();
-            v.add(value);
-            return v;
-        });
-    }
 }

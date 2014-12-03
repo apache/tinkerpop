@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.process.util.MapHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,7 +33,7 @@ public class TinkerMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {
     @Override
     public void emit(K key, V value) {
         if (this.doReduce)
-            MapHelper.concurrentIncr(this.reduceMap, key, value);
+            this.reduceMap.computeIfAbsent(key, k -> new ConcurrentLinkedQueue<>()).add(value);
         else
             this.mapQueue.add(new KeyValue<>(key, value));
     }

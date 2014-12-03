@@ -50,19 +50,20 @@ import java.util.function.Supplier;
  */
 public final class TraversalVertexProgram implements VertexProgram<TraverserSet<?>> {
 
-    // TODO: if not an adjacent traversal, use Local message scope -- a dual messaging system.
-    private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Arrays.asList(MessageScope.Global.instance()));
-
     public static final String HALTED_TRAVERSERS = Graph.Key.hide("gremlin.traversalVertexProgram.haltedTraversers");
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
     public static final String TRAVERSAL_SUPPLIER = "gremlin.traversalVertexProgram.traversalSupplier";
+
+    // TODO: if not an adjacent traversal, use Local message scope -- a dual messaging system.
+    private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Arrays.asList(MessageScope.Global.instance()));
+    private static final Set<String> ELEMENT_COMPUTE_KEYS = new HashSet<>(Arrays.asList(HALTED_TRAVERSERS, Traversal.SideEffects.SIDE_EFFECTS));
+    private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<>(Arrays.asList(VOTE_TO_HALT));
 
     private LambdaHolder<Supplier<Traversal>> traversalSupplier;
     private Traversal traversal;
 
     private final Set<MapReduce> mapReducers = new HashSet<>();
-    private final Set<String> elementComputeKeys = new HashSet<>(Arrays.asList(HALTED_TRAVERSERS, Traversal.SideEffects.SIDE_EFFECTS));
-    private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<>(Arrays.asList(VOTE_TO_HALT));
+
 
     private TraversalVertexProgram() {
     }
@@ -174,7 +175,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     @Override
     public Set<String> getElementComputeKeys() {
-        return this.elementComputeKeys;
+        return ELEMENT_COMPUTE_KEYS;
     }
 
     @Override

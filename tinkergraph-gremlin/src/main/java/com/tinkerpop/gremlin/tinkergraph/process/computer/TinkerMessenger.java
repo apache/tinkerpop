@@ -57,22 +57,17 @@ public class TinkerMessenger<M> implements Messenger<M> {
     @Override
     public void sendMessage(final MessageScope messageScope, final M message) {
         if (messageScope instanceof MessageScope.Local) {
-            getMessageList(this.vertex).add(message);
+            addMessage(this.vertex, message);
         } else {
-            ((MessageScope.Global) messageScope).vertices().forEach(v -> {
-                final Queue<M> queue = getMessageList(v);
-                queue.add(null != this.combiner && !queue.isEmpty() ? this.combiner.combine(queue.remove(), message) : message);
-            });
+            ((MessageScope.Global) messageScope).vertices().forEach(v -> addMessage(v, message));
         }
     }
 
-    private final Queue<M> getMessageList(final Vertex vertex) {
-        Queue<M> messages = this.messageBoard.sendMessages.get(vertex);
-        if (null == messages) {
-            messages = new ConcurrentLinkedQueue<>();
-            this.messageBoard.sendMessages.put(vertex, messages);
+    private final void addMessage(final Vertex vertex, final M message) {
+        final Queue<M> queue = this.messageBoard.sendMessages.computeIfAbsent(vertex, v -> new ConcurrentLinkedQueue<>());
+        synchronized (queue) {
+            queue.add(null != this.combiner && !queue.isEmpty() ? this.combiner.combine(queue.remove(), message) : message);
         }
-        return messages;
     }
 
     ///////////

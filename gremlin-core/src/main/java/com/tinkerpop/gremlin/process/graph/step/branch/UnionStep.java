@@ -13,7 +13,7 @@ import java.util.Arrays;
  */
 public final class UnionStep<S, E> extends AbstractStep<S, E> {
 
-    private final TraversalRing<S, E> traversalRing;
+    private TraversalRing<S, E> traversalRing;
 
     @SafeVarargs
     public UnionStep(final Traversal traversal, final Traversal<S, E>... branchTraversals) {
@@ -41,6 +41,13 @@ public final class UnionStep<S, E> extends AbstractStep<S, E> {
     @Override
     public String toString() {
         return TraversalHelper.makeStepString(this, Arrays.asList(this.traversalRing.getTraversals()));
+    }
+
+    @Override
+    public UnionStep<S, E> clone() throws CloneNotSupportedException {
+        final UnionStep<S, E> clone = (UnionStep<S, E>) super.clone();
+        clone.traversalRing = this.traversalRing.clone();
+        return clone;
     }
 
     @Override
