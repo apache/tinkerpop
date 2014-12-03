@@ -25,11 +25,10 @@ public class TinkerWorkerPool {
     public void executeMapReduce(final Consumer<MapReduce> worker) {
         final CountDownLatch activeWorkers = new CountDownLatch(this.mapReducers.size());
         for (final MapReduce mapReduce : this.mapReducers) {
-            final Thread thread = new Thread(() -> {
+            new Thread(() -> {
                 worker.accept(mapReduce);
                 activeWorkers.countDown();
-            });
-            thread.start();
+            }).start();
         }
         try {
             activeWorkers.await();
