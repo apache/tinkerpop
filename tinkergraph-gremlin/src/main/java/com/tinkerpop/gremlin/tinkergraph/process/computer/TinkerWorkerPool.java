@@ -1,42 +1,40 @@
 package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
-import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 
-import java.util.Iterator;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class TinkerWorkerPool {
 
-    private BlockingQueue<MapReduce> mapReduces = new LinkedBlockingQueue<>();
+    private final int numberOfWorkers;
+    private final List<MapReduce> mapReducers;
 
-    public TinkerWorkerPool(final Configuration configuration, final int numberOfWorkers) {
-        for (int i = 0; i < numberOfWorkers; i++) {
-            this.mapReduces.add(MapReduce.createMapReduce(configuration));
+    public TinkerWorkerPool(final int numberOfWorkers, final Configuration configuration) {
+        this.numberOfWorkers = numberOfWorkers;
+        this.mapReducers = new ArrayList<>(this.numberOfWorkers);
+        for (int i = 0; i < this.numberOfWorkers; i++) {
+            this.mapReducers.add(MapReduce.createMapReduce(configuration));
         }
     }
 
-    public void map(final Vertex vertex, final MapReduce.MapEmitter emitter) {
-        try {
-            final MapReduce mapReduce = this.mapReduces.poll(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-            mapReduce.map(vertex, emitter);
-            this.mapReduces.put(mapReduce);
-        } catch (final Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
+    public void executeMapReduce(final Consumer<MapReduce> worker) {
+        final CountDownLatch activeWorkers = new CountDownLatch(this.numberOfWorkers);
+        for (final MapReduce mapReduce : this.mapReducers) {
+            final Thread thread = new Thread(() -> {
+                worker.accept(mapReduce);
+                activeWorkers.countDown();
+            });
+            thread.start();
         }
-    }
-
-    public void reduce(final Object key, final Iterator<?> values, final MapReduce.ReduceEmitter emitter) {
         try {
-            final MapReduce mapReduce = this.mapReduces.poll(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-            mapReduce.reduce(key, values, emitter);
-            this.mapReduces.put(mapReduce);
+            activeWorkers.await();
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
