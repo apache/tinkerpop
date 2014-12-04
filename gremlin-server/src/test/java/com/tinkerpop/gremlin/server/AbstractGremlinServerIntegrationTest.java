@@ -19,8 +19,8 @@ public abstract class AbstractGremlinServerIntegrationTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractGremlinServerIntegrationTest.class);
 
     private Thread thread;
-    private String host;
-    private String port;
+
+    private GremlinServer server;
 
     public Settings overrideSettings(final Settings settings) {
         return settings;
@@ -36,10 +36,13 @@ public abstract class AbstractGremlinServerIntegrationTest {
         final Settings settings = Settings.read(stream);
         final CompletableFuture<Void> serverReadyFuture = new CompletableFuture<>();
 
+        final Settings overridenSettings = overrideSettings(settings);
+        final GremlinServer server = new GremlinServer(overridenSettings, serverReadyFuture);
+        this.server = server;
+
         thread = new Thread(() -> {
             try {
-                final Settings overridenSettings = overrideSettings(settings);
-                new GremlinServer(overridenSettings, serverReadyFuture).run();
+                server.run();
             } catch (InterruptedException ie) {
                 logger.info("Shutting down Gremlin Server");
             } catch (Exception ex) {
@@ -55,9 +58,6 @@ public abstract class AbstractGremlinServerIntegrationTest {
             logger.error("Server did not start in the expected time or was otherwise interrupted.", ex);
             return;
         }
-
-        host = System.getProperty("host", "localhost");
-        port = System.getProperty("port", "8182");
     }
 
     @After
@@ -66,20 +66,14 @@ public abstract class AbstractGremlinServerIntegrationTest {
     }
 
     public void stopServer() throws Exception {
+        server.stop();
+
         if (!thread.isInterrupted())
             thread.interrupt();
 
         while (thread.isAlive()) {
             Thread.sleep(250);
         }
-    }
-
-    protected String getHostPort() {
-        return host + ":" + port;
-    }
-
-    protected String getWebSocketBaseUri() {
-        return "ws://" + getHostPort() + "/gremlin";
     }
 
     public static boolean deleteDirectory(final File directory) {

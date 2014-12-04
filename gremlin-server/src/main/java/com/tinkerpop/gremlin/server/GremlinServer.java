@@ -12,6 +12,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.FutureListener;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.Slf4JLoggerFactory;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -22,6 +24,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
@@ -42,6 +45,9 @@ public class GremlinServer {
     private Channel ch;
 
     private final Optional<CompletableFuture<Void>> serverReady;
+    private final EventLoopGroup bossGroup;
+    private final EventLoopGroup workerGroup;
+    private final EventExecutorGroup gremlinGroup;
 
     public GremlinServer(final Settings settings) {
         this(settings, null);
@@ -50,22 +56,24 @@ public class GremlinServer {
     public GremlinServer(final Settings settings, final CompletableFuture<Void> serverReady) {
         this.serverReady = Optional.ofNullable(serverReady);
         this.settings = settings;
+
+        Runtime.getRuntime().addShutdownHook(new Thread(this::stop, "gremlin-shutdown-hook"));
+
+        bossGroup = new NioEventLoopGroup(settings.threadPoolBoss);
+        workerGroup = new NioEventLoopGroup(settings.threadPoolWorker);
+
+        final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-%d").build();
+        gremlinGroup = new DefaultEventExecutorGroup(settings.gremlinPool, threadFactory);
     }
 
     /**
      * Start Gremlin Server with {@link Settings} provided to the constructor.
      */
     public void run() throws Exception {
-        final EventLoopGroup bossGroup = new NioEventLoopGroup(settings.threadPoolBoss);
-        final EventLoopGroup workerGroup = new NioEventLoopGroup(settings.threadPoolWorker);
-
-        final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-%d").build();
-        final EventExecutorGroup gremlinGroup = new DefaultEventExecutorGroup(settings.gremlinPool, threadFactory);
-
         try {
             final ServerBootstrap b = new ServerBootstrap();
 
-            // when high value is reached then the channel becomes non-writeable and stays like that until the
+            // when high value is reached then the channel becomes non-writable and stays like that until the
             // low value is so that there is time to recover
             b.childOption(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, settings.writeBufferLowWaterMark);
             b.childOption(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, settings.writeBufferHighWaterMark);
@@ -78,24 +86,16 @@ public class GremlinServer {
                     .channel(NioServerSocketChannel.class)
                     .childHandler(channelizer);
 
+            // bind to host/port and wait for channel to be ready
             ch = b.bind(settings.host, settings.port).sync().channel();
+
             logger.info("Gremlin Server configured with worker thread pool of {} and boss thread pool of {}",
                     settings.threadPoolWorker, settings.threadPoolBoss);
             logger.info("Channel started at port {}.", settings.port);
 
             serverReady.ifPresent(future -> future.complete(null));
-
-            ch.closeFuture().sync();
         } catch (Exception ex) {
             logger.error("Gremlin Server Error", ex);
-        } finally {
-            logger.info("Shutting down thread pools");
-
-            gremlinGroup.shutdownGracefully();
-            bossGroup.shutdownGracefully();
-            workerGroup.shutdownGracefully();
-
-            logger.info("Gremlin Server - shutdown complete");
         }
     }
 
@@ -148,10 +148,31 @@ public class GremlinServer {
     }
 
     /**
-     * Stop Gremlin Server and free the port.
+     * Stop Gremlin Server and free the port binding.
      */
     public void stop() {
         ch.close();
+
+        logger.info("Shutting down thread pools.");
+
+        try {
+            gremlinGroup.shutdownGracefully();
+        } finally {
+            logger.info("Shutdown Gremlin thread pool.");
+        }
+
+        try {
+            workerGroup.shutdownGracefully();
+        } finally {
+            logger.info("Shutdown Worker thread pool.");
+        }
+        try {
+            bossGroup.shutdownGracefully();
+        } finally {
+            logger.info("Shutdown Boss thread pool.");
+        }
+
+        logger.info("Gremlin Server - shutdown complete");
     }
 
     public static void main(final String[] args) throws Exception {
