@@ -32,38 +32,7 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
         this.functionRing = new FunctionRing(stepFunctions);
         this.wasEmpty = selectLabels.size() == 0;
         this.selectLabels = this.wasEmpty ? TraversalHelper.getLabelsUpTo(this, this.traversal) : selectLabels;
-        this.selectFunction = traverser -> {
-            final S start = traverser.get();
-            final Map<String, E> bindings = new LinkedHashMap<>();
-
-            if (this.requiresPaths && this.onGraphComputer) {   ////// PROCESS STEP BINDINGS
-                final Path path = traverser.path();
-                this.selectLabels.forEach(label -> {
-                    if (path.hasLabel(label))
-                        bindings.put(label, (E) this.functionRing.next().apply(path.get(label)));
-                });
-            } else {
-                this.selectLabels.forEach(label -> { ////// PROCESS SIDE-EFFECTS
-                    if (traverser.sideEffects().exists(label))
-                        bindings.put(label, (E) this.functionRing.next().apply(traverser.get(label)));
-                });
-            }
-
-            if (start instanceof Map) {  ////// PROCESS MAP BINDINGS
-                if (this.wasEmpty)
-                    ((Map) start).forEach((k, v) -> bindings.put((String) k, (E) this.functionRing.next().apply(v)));
-                else
-                    this.selectLabels.forEach(label -> {
-                        if (((Map) start).containsKey(label)) {
-                            bindings.put(label, (E) this.functionRing.next().apply(((Map) start).get(label)));
-                        }
-                    });
-            }
-
-            this.functionRing.reset();
-            return bindings;
-        };
-        this.setFunction(this.selectFunction);
+        SelectStep.generateFunction(this);
     }
 
     @Override
@@ -103,7 +72,45 @@ public class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Path
     public SelectStep<S, E> clone() throws CloneNotSupportedException {
         final SelectStep<S, E> clone = (SelectStep<S, E>) super.clone();
         clone.functionRing = this.functionRing.clone();
+        SelectStep.generateFunction(clone);
         return clone;
+    }
+
+    //////////////////////
+
+    private static final <S, E> void generateFunction(final SelectStep<S, E> selectStep) {
+        selectStep.selectFunction = traverser -> {
+            final S start = traverser.get();
+            final Map<String, E> bindings = new LinkedHashMap<>();
+
+            if (selectStep.requiresPaths && selectStep.onGraphComputer) {   ////// PROCESS STEP BINDINGS
+                final Path path = traverser.path();
+                selectStep.selectLabels.forEach(label -> {
+                    if (path.hasLabel(label))
+                        bindings.put(label, (E) selectStep.functionRing.next().apply(path.get(label)));
+                });
+            } else {
+                selectStep.selectLabels.forEach(label -> { ////// PROCESS SIDE-EFFECTS
+                    if (traverser.sideEffects().exists(label))
+                        bindings.put(label, (E) selectStep.functionRing.next().apply(traverser.get(label)));
+                });
+            }
+
+            if (start instanceof Map) {  ////// PROCESS MAP BINDINGS
+                if (selectStep.wasEmpty)
+                    ((Map) start).forEach((k, v) -> bindings.put((String) k, (E) selectStep.functionRing.next().apply(v)));
+                else
+                    selectStep.selectLabels.forEach(label -> {
+                        if (((Map) start).containsKey(label)) {
+                            bindings.put(label, (E) selectStep.functionRing.next().apply(((Map) start).get(label)));
+                        }
+                    });
+            }
+
+            selectStep.functionRing.reset();
+            return bindings;
+        };
+        selectStep.setFunction(selectStep.selectFunction);
     }
 
 }

@@ -18,22 +18,12 @@ import java.util.function.Supplier;
 public final class DedupStep<S> extends FilterStep<S> implements Reversible, Reducing {
 
     private final Function<Traverser<S>, ?> uniqueFunction;
+    private Set<Object> duplicateSet = new HashSet<>();
 
     public DedupStep(final Traversal traversal, final Function<Traverser<S>, ?> uniqueFunction) {
         super(traversal);
         this.uniqueFunction = uniqueFunction;
-        final Set<Object> set = new HashSet<>();
-        if (null == uniqueFunction) {
-            this.setPredicate(traverser -> {
-                traverser.asAdmin().setBulk(1);
-                return set.add(traverser.get());
-            });
-        } else {
-            this.setPredicate(traverser -> {
-                traverser.asAdmin().setBulk(1);
-                return set.add(this.uniqueFunction.apply(traverser));
-            });
-        }
+        DedupStep.generatePredicate(this);
     }
 
     public DedupStep(final Traversal traversal) {
@@ -52,8 +42,33 @@ public final class DedupStep<S> extends FilterStep<S> implements Reversible, Red
         });
     }
 
-    /*@Override
-    public void reset() { // TODO: reset the hashset? .. but if this becomes a SideEffectStep?
+    @Override
+    public DedupStep<S> clone() throws CloneNotSupportedException {
+        final DedupStep<S> clone = (DedupStep<S>)super.clone();
+        clone.duplicateSet = new HashSet<>();
+        generatePredicate(clone);
+        return clone;
+    }
+
+    @Override
+    public void reset() {
         super.reset();
-    }*/
+        this.duplicateSet.clear();
+    }
+
+    /////////////////////////
+
+    private static final <S> void generatePredicate(final DedupStep<S> dedupStep) {
+        if (null == dedupStep.uniqueFunction) {
+            dedupStep.setPredicate(traverser -> {
+                traverser.asAdmin().setBulk(1);
+                return dedupStep.duplicateSet.add(traverser.get());
+            });
+        } else {
+            dedupStep.setPredicate(traverser -> {
+                traverser.asAdmin().setBulk(1);
+                return dedupStep.duplicateSet.add(dedupStep.uniqueFunction.apply(traverser));
+            });
+        }
+    }
 }

@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed up all cloning operations realizing that Java8 lambdas are always bound to the calling class (no delegates).
 * Provided `local()` to signify the that previous sequence of steps is for a local traversal.
 * Ensured that all the steps of a `Traversal` are cloned properly.
 * Greatly increased the speed of `ScriptEngineLambda` by making use of static `ScriptEngine` cache.
