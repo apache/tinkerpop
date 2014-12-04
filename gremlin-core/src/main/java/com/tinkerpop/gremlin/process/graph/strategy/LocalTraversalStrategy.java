@@ -3,10 +3,11 @@ package com.tinkerpop.gremlin.process.graph.strategy;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.graph.marker.LocalTraversal;
+import com.tinkerpop.gremlin.process.graph.marker.LocallyTraversable;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.graph.step.util.LocalTraversalStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 /**
@@ -26,43 +27,27 @@ public class LocalTraversalStrategy extends AbstractTraversalStrategy {
             try {
                 final Traversal localTraversal = new DefaultGraphTraversal();
                 Step previousStep = localTraversalStep.getPreviousStep();
-                while (!(previousStep instanceof LocalTraversal)) {
+                while (!(previousStep instanceof LocallyTraversable)) {
                     TraversalHelper.insertStep(previousStep.clone(), 0, localTraversal);
                     previousStep = previousStep.getPreviousStep();
+                    if (previousStep instanceof EmptyStep) {
+                        throw new IllegalStateException("The local() step must follow a vertex, edge, or vertex property generating step");
+                    }
                 }
-                TraversalHelper.insertStep(new StartStep<>(localTraversal, null),0,localTraversal);
+                TraversalHelper.insertStep(new StartStep<>(localTraversal, null), 0, localTraversal);
 
                 previousStep = localTraversalStep.getPreviousStep();
-                while (!(previousStep instanceof LocalTraversal)) {
+                while (!(previousStep instanceof LocallyTraversable)) {
                     TraversalHelper.removeStep(previousStep, traversal);
                     previousStep = previousStep.getPreviousStep();
                 }
-                ((LocalTraversal) previousStep).setLocalTraversal(localTraversal);
+                ((LocallyTraversable) previousStep).setLocalTraversal(localTraversal);
                 TraversalHelper.removeStep(localTraversalStep, traversal);
 
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (final Exception e) {
+                throw new IllegalStateException(e.getMessage(), e);
             }
-
-
-            /*while (!previousStep.equals(EmptyStep.instance()) && !(previousStep instanceof PropertiesStep) && !(previousStep instanceof VertexStep)) {
-                previousStep = previousStep.getPreviousStep();
-                // TODO: check for not filtering/sideEffect steps and throw an exception?
-            }
-            if (previousStep instanceof VertexStep) {
-                VertexStep vertexStep = (VertexStep) previousStep;
-                if (vertexStep.getReturnClass().equals(Edge.class)) {
-                    localRangeStep.setDirection(vertexStep.getDirection());
-                } else {
-                    throw new IllegalStateException("LocalRangeStep must follow a VertexStep that produces edges, not vertices");
-                }
-            } else if (previousStep instanceof PropertiesStep) {
-                // do nothing, all is good
-            } else {
-                throw new IllegalStateException("LocalRangeStep must follow a VertexStep or PropertiesStep");
-            }*/
         });
-
     }
 
     public static LocalTraversalStrategy instance() {

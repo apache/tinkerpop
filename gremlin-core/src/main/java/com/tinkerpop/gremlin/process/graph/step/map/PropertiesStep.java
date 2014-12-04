@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.LocalTraversal;
+import com.tinkerpop.gremlin.process.graph.marker.LocallyTraversable;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
@@ -14,7 +14,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PropertiesStep<E> extends FlatMapStep<Element, E> implements Reversible, LocalTraversal<E> {
+public class PropertiesStep<E> extends FlatMapStep<Element, E> implements Reversible, LocallyTraversable<E> {
 
     protected final String[] propertyKeys;
     protected final PropertyType returnType;

@@ -1,11 +1,10 @@
 package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.marker.LocalTraversal;
+import com.tinkerpop.gremlin.process.graph.marker.LocallyTraversable;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 
@@ -15,7 +14,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implements Reversible, LocalTraversal<E> {
+public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implements Reversible, LocallyTraversable<E> {
 
     private final String[] edgeLabels;
     private Direction direction;

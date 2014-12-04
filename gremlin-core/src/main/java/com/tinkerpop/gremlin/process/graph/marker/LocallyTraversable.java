@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface LocalTraversal<E> {
+public interface LocallyTraversable<E> {
 
     public void setLocalTraversal(final Traversal<E, E> localTraversal);
 
