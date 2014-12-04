@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Predicate;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
@@ -24,38 +25,7 @@ public final class RangeStep<S> extends FilterStep<S> implements Ranging {
         }
         this.low = low;
         this.high = high;
-
-
-        this.setPredicate(traverser -> {
-            if (this.high != -1 && this.counter.get() >= this.high) {
-                throw FastNoSuchElementException.instance();
-            }
-
-            long avail = traverser.bulk();
-            if (this.counter.get() + avail <= this.low) {
-                // Will not surpass the low w/ this traverser. Skip and filter the whole thing.
-                this.counter.getAndAdd(avail);
-                return false;
-            }
-
-            // Skip for the low and trim for the high. Both can happen at once.
-
-            long toSkip = 0;
-            if (this.counter.get() < this.low) {
-                toSkip = this.low - this.counter.get();
-            }
-
-            long toTrim = 0;
-            if (this.high != -1 && this.counter.get() + avail >= this.high) {
-                toTrim = this.counter.get() + avail - this.high;
-            }
-
-            long toEmit = avail - toSkip - toTrim;
-            this.counter.getAndAdd(toSkip + toEmit);
-            traverser.asAdmin().setBulk(toEmit);
-
-            return true;
-        });
+        RangeStep.generatePredicate(this);
     }
 
     @Override
@@ -80,7 +50,43 @@ public final class RangeStep<S> extends FilterStep<S> implements Ranging {
     @Override
     public RangeStep<S> clone() throws CloneNotSupportedException {
         final RangeStep<S> clone = (RangeStep<S>) super.clone();
-        //clone.counter = new AtomicLong(0l);
+        clone.counter = new AtomicLong(0l);
+        RangeStep.generatePredicate(clone);
         return clone;
+    }
+
+    /////////////////////////////
+
+    private static final <S> void generatePredicate(final RangeStep<S> rangeStep) {
+        rangeStep.setPredicate(traverser -> {
+            if (rangeStep.high != -1 && rangeStep.counter.get() >= rangeStep.high) {
+                throw FastNoSuchElementException.instance();
+            }
+
+            long avail = traverser.bulk();
+            if (rangeStep.counter.get() + avail <= rangeStep.low) {
+                // Will not surpass the low w/ this traverser. Skip and filter the whole thing.
+                rangeStep.counter.getAndAdd(avail);
+                return false;
+            }
+
+            // Skip for the low and trim for the high. Both can happen at once.
+
+            long toSkip = 0;
+            if (rangeStep.counter.get() < rangeStep.low) {
+                toSkip = rangeStep.low - rangeStep.counter.get();
+            }
+
+            long toTrim = 0;
+            if (rangeStep.high != -1 && rangeStep.counter.get() + avail >= rangeStep.high) {
+                toTrim = rangeStep.counter.get() + avail - rangeStep.high;
+            }
+
+            long toEmit = avail - toSkip - toTrim;
+            rangeStep.counter.getAndAdd(toSkip + toEmit);
+            traverser.asAdmin().setBulk(toEmit);
+
+            return true;
+        });
     }
 }

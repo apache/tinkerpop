@@ -26,18 +26,7 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
         this.direction = direction;
         this.edgeLabels = edgeLabels;
         this.returnClass = returnClass;
-        if (Vertex.class.isAssignableFrom(this.returnClass))
-            this.setFunction(traverser -> (Iterator<E>) traverser.get().iterators().vertexIterator(this.direction, this.edgeLabels));
-        else
-            this.setFunction(traverser -> {
-                if (null != this.localTraversal) {
-                    this.localTraversal.reset();
-                    TraversalHelper.getStart(this.localTraversal).addPlainStarts((Iterator<E>)traverser.get().iterators().edgeIterator(this.direction, this.edgeLabels), traverser.bulk());
-                    return (Iterator<E>) this.localTraversal;
-                } else {
-                    return (Iterator<E>) traverser.get().iterators().edgeIterator(this.direction, this.edgeLabels);
-                }
-            });
+        VertexStep.generateFunction(this);
     }
 
     @Override
@@ -63,7 +52,7 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
     }
 
     @Override
-    public Traversal<E,E> getLocalTraversal() {
+    public Traversal<E, E> getLocalTraversal() {
         return this.localTraversal;
     }
 
@@ -71,6 +60,7 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
     public VertexStep<E> clone() throws CloneNotSupportedException {
         final VertexStep<E> clone = (VertexStep<E>) super.clone();
         if (null != this.localTraversal) clone.localTraversal = this.localTraversal.clone();
+        VertexStep.generateFunction(clone);
         return clone;
     }
 
@@ -79,6 +69,24 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
         return this.edgeLabels.length > 0 ?
                 TraversalHelper.makeStepString(this, this.direction, Arrays.toString(this.edgeLabels), this.returnClass.getSimpleName().toLowerCase(), this.localTraversal) :
                 TraversalHelper.makeStepString(this, this.direction, this.returnClass.getSimpleName().toLowerCase(), this.localTraversal);
+    }
+
+    ///////////////////////////////
+
+    private static <E extends Element> void generateFunction(final VertexStep<E> vertexStep) {
+        if (Vertex.class.isAssignableFrom(vertexStep.returnClass))
+            vertexStep.setFunction(traverser -> (Iterator<E>) traverser.get().iterators().vertexIterator(vertexStep.direction, vertexStep.edgeLabels));
+        else
+            vertexStep.setFunction(traverser -> {
+                final Iterator<E> iterator = (Iterator<E>) traverser.get().iterators().edgeIterator(vertexStep.direction, vertexStep.edgeLabels);
+                if (null == vertexStep.localTraversal)
+                    return iterator;
+                else {
+                    vertexStep.localTraversal.reset();
+                    TraversalHelper.getStart(vertexStep.localTraversal).addPlainStarts(iterator, traverser.bulk());
+                    return (Iterator<E>) vertexStep.localTraversal;
+                }
+            });
     }
 
 }

@@ -10,6 +10,9 @@ import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -22,27 +25,28 @@ public class LocalTraversalStrategy extends AbstractTraversalStrategy {
 
     @Override
     public void apply(final Traversal<?, ?> traversal, final TraversalEngine engine) {
-
         TraversalHelper.getStepsOfClass(LocalTraversalStep.class, traversal).forEach(localTraversalStep -> {
             try {
-                final Traversal localTraversal = new DefaultGraphTraversal();
+
+                TraversalHelper.removeStep(localTraversalStep, traversal);
                 Step previousStep = localTraversalStep.getPreviousStep();
+                final List<Step> stepsToAdd = new ArrayList<>();
                 while (!(previousStep instanceof LocallyTraversable)) {
-                    TraversalHelper.insertStep(previousStep.clone(), 0, localTraversal);
+                    TraversalHelper.removeStep(previousStep,traversal);
+                    stepsToAdd.add(previousStep);
                     previousStep = previousStep.getPreviousStep();
                     if (previousStep instanceof EmptyStep) {
                         throw new IllegalStateException("The local() step must follow a vertex, edge, or vertex property generating step");
                     }
                 }
-                TraversalHelper.insertStep(new StartStep<>(localTraversal, null), 0, localTraversal);
 
-                previousStep = localTraversalStep.getPreviousStep();
-                while (!(previousStep instanceof LocallyTraversable)) {
-                    TraversalHelper.removeStep(previousStep, traversal);
-                    previousStep = previousStep.getPreviousStep();
+                final Traversal localTraversal = new DefaultGraphTraversal();
+                for(final Step step : stepsToAdd) {
+                    TraversalHelper.insertStep(step, 0, localTraversal);
                 }
+                TraversalHelper.insertStep(new StartStep<>(localTraversal, null), 0, localTraversal);
                 ((LocallyTraversable) previousStep).setLocalTraversal(localTraversal);
-                TraversalHelper.removeStep(localTraversalStep, traversal);
+
 
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);

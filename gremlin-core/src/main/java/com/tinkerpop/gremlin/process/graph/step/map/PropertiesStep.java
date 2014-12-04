@@ -24,19 +24,7 @@ public class PropertiesStep<E> extends FlatMapStep<Element, E> implements Revers
         super(traversal);
         this.returnType = propertyType;
         this.propertyKeys = propertyKeys;
-        this.setFunction(traverser -> {
-            final Iterator<E> iterator = StreamFactory.stream(traverser.get().iterators().propertyIterator(propertyKeys))
-                    .filter(p -> (propertyType.forHiddens() && p.isHidden()) || (!propertyType.forHiddens() && !p.isHidden()))
-                    .map(p -> (E) (propertyType.forValues() ? p.value() : p)).iterator();
-            if (null == this.localTraversal)
-                return iterator;
-            else {
-                this.localTraversal.reset();
-                TraversalHelper.getStart(this.localTraversal).addPlainStarts(iterator, traverser.bulk());
-                return (Iterator) this.localTraversal;
-            }
-
-        });
+        PropertiesStep.generateFunction(this);
     }
 
     public PropertyType getReturnType() {
@@ -61,6 +49,7 @@ public class PropertiesStep<E> extends FlatMapStep<Element, E> implements Revers
     public PropertiesStep<E> clone() throws CloneNotSupportedException {
         final PropertiesStep<E> clone = (PropertiesStep<E>) super.clone();
         if (null != this.localTraversal) clone.localTraversal = this.localTraversal.clone();
+        PropertiesStep.generateFunction(clone);
         return clone;
     }
 
@@ -75,5 +64,22 @@ public class PropertiesStep<E> extends FlatMapStep<Element, E> implements Revers
         return this.propertyKeys.length == 0 ?
                 TraversalHelper.makeStepString(this, this.returnType.name().toLowerCase(), this.localTraversal) :
                 TraversalHelper.makeStepString(this, this.returnType.name().toLowerCase(), Arrays.toString(this.propertyKeys), this.localTraversal);
+    }
+
+    ///////////////////
+
+    private static final <E> void generateFunction(final PropertiesStep<E> propertiesStep) {
+        propertiesStep.setFunction(traverser -> {
+            final Iterator<E> iterator = StreamFactory.stream(traverser.get().iterators().propertyIterator(propertiesStep.propertyKeys))
+                    .filter(p -> (propertiesStep.returnType.forHiddens() && p.isHidden()) || (!propertiesStep.returnType.forHiddens() && !p.isHidden()))
+                    .map(p -> (E) (propertiesStep.returnType.forValues() ? p.value() : p)).iterator();
+            if (propertiesStep.returnType.forValues() || null == propertiesStep.localTraversal) {
+                return iterator;
+            } else {
+                propertiesStep.localTraversal.reset();
+                TraversalHelper.getStart(propertiesStep.localTraversal).addPlainStarts(iterator, traverser.bulk());
+                return propertiesStep.localTraversal;
+            }
+        });
     }
 }

@@ -35,15 +35,7 @@ public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> {
         super(traversal);
         this.mapFunction = mapFunction;
         this.choices = choices;
-        this.setFunction(traverser -> {
-            final Traversal<S, E> branch = this.choices.get(this.mapFunction.apply(traverser));
-            if (null == branch) {
-                return Collections.emptyIterator();
-            } else {
-                branch.addStart(traverser);
-                return branch;
-            }
-        });
+        ChooseStep.generateFunction(this);
     }
 
     public Function<Traverser<S>, M> getMapFunction() {
@@ -61,11 +53,26 @@ public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> {
         for (final Map.Entry<M, Traversal<S, E>> entry : this.choices.entrySet()) {
             clone.choices.put(entry.getKey(), entry.getValue());
         }
+        ChooseStep.generateFunction(clone);
         return clone;
     }
 
     @Override
     public String toString() {
         return TraversalHelper.makeStepString(this, this.choices.toString());
+    }
+
+    ////////////////////////
+
+    private static final <S, E, M> void generateFunction(final ChooseStep<S, E, M> chooseStep) {
+        chooseStep.setFunction(traverser -> {
+            final Traversal<S, E> branch = chooseStep.choices.get(chooseStep.mapFunction.apply(traverser));
+            if (null == branch) {
+                return Collections.emptyIterator();
+            } else {
+                branch.addStart(traverser);
+                return branch;
+            }
+        });
     }
 }
