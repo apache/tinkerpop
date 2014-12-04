@@ -158,19 +158,31 @@ public class GremlinServer {
         try {
             gremlinGroup.shutdownGracefully();
         } finally {
-            logger.info("Shutdown Gremlin thread pool.");
+            logger.debug("Shutdown Gremlin thread pool.");
         }
 
         try {
             workerGroup.shutdownGracefully();
         } finally {
-            logger.info("Shutdown Worker thread pool.");
+            logger.debug("Shutdown Worker thread pool.");
         }
         try {
             bossGroup.shutdownGracefully();
         } finally {
-            logger.info("Shutdown Boss thread pool.");
+            logger.debug("Shutdown Boss thread pool.");
         }
+
+        // channel is shutdown as are the thread pools - time to kill graphs as nothing else should be acting on them
+        graphs.ifPresent(gs -> gs.getGraphs().forEach((k,v) -> {
+            logger.debug("Closing Graph instance [{}]", k);
+            try {
+                v.close();
+            } catch (Exception ex) {
+                logger.warn(String.format("Exception while closing Graph instance [%s]", k), ex);
+            } finally {
+                logger.info("Closed Graph instance [{}]", k);
+            }
+        }));
 
         logger.info("Gremlin Server - shutdown complete");
     }
