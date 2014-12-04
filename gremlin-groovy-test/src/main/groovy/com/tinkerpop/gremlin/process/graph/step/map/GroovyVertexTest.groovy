@@ -36,12 +36,12 @@ public abstract class GroovyVertexTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_outEXknowsX_limitX1X_local_inV_name(final Object v1Id) {
-            g.v(v1Id).outE('knows').limit(1).local().inV.name
+            g.v(v1Id).local{g.of().outE('knows').limit(1)}.inV.name
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_bothEXcreatedX_limitX1X_local_otherV_name() {
-            g.V().bothE('created').limit(1).local().otherV.name
+            g.V().local{g.of().bothE('created').limit(1)}.otherV.name
         }
 
         @Override
@@ -71,27 +71,27 @@ public abstract class GroovyVertexTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_v4_bothEX1_createdX_limitX1X_local(final Object v4Id) {
-            g.v(v4Id).bothE('created').limit(1).local()
+            g.v(v4Id).local{g.of().bothE('created').limit(1)}
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_v4_bothEXknows_createdX_limitX1X_local(final Object v4Id) {
-            g.v(v4Id).bothE('knows', 'created').limit(1).local()
+            g.v(v4Id).local{g.of().bothE('knows', 'created').limit(1)}
         }
 
         @Override
         public Traversal<Vertex, String> get_g_v4_bothE_limitX1X_local_otherV_name(final Object v4Id) {
-            g.v(v4Id).bothE.limit(1).local().otherV.name
+            g.v(v4Id).local{g.of().bothE.limit(1)}.otherV.name
         }
 
         @Override
         public Traversal<Vertex, String> get_g_v4_bothE_limitX2X_local_otherV_name(final Object v4Id) {
-            g.v(v4Id).bothE.limit(2).local().otherV.name
+            g.v(v4Id).local{g.of().bothE.limit(2).otherV}.name
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_inEXknowsX_limitX2X_local_outV_name() {
-            g.V().inE('knows').limit(2).local().outV.name
+            g.V().inE('knows').local{g.of().limit(2).outV}.name
         }
 
         @Override
@@ -199,13 +199,12 @@ public abstract class GroovyVertexTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_outEXknowsX_limitX1X_local_inV_name(final Object v1Id) {
-            ComputerTestHelper.compute("g.v(${v1Id}).outE('knows').limit(1).local().inV.name", g);
+            ComputerTestHelper.compute("g.v(${v1Id}).local{g.of().outE('knows').limit(1)}.inV.name", g);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_bothEXcreatedX_limitX1X_local_otherV_name() {
-            // TODO
-            g.V().bothE('created').limit(1).local().otherV.name
+            g.V().local{g.of().bothE('created').limit(1)}.otherV.name
         }
 
         @Override
@@ -235,27 +234,27 @@ public abstract class GroovyVertexTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_v4_bothEX1_createdX_limitX1X_local(final Object v4Id) {
-            ComputerTestHelper.compute("g.v(${v4Id}).bothE('created').limit(1).local()", g);
+            ComputerTestHelper.compute("g.v(${v4Id}).local{g.of().bothE('created').limit(1)}", g);
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_v4_bothEXknows_createdX_limitX1X_local(final Object v4Id) {
-            ComputerTestHelper.compute("g.v(${v4Id}).bothE('knows', 'created').limit(1).local()", g);
+            ComputerTestHelper.compute("g.v(${v4Id}).local{g.of().bothE('knows', 'created').limit(1)}", g);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_v4_bothE_limitX1X_local_otherV_name(final Object v4Id) {
-            ComputerTestHelper.compute("g.v(${v4Id}).bothE.limit(1).local().otherV.name", g);
+            ComputerTestHelper.compute("g.v(${v4Id}).local{g.of().bothE.limit(1)}.otherV.name", g);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_v4_bothE_limitX2X_local_otherV_name(final Object v4Id) {
-            ComputerTestHelper.compute("g.v(${v4Id}).bothE.limit(2).local().otherV.name", g);
+            ComputerTestHelper.compute("g.v(${v4Id}).local{g.of().bothE.limit(2)}.otherV.name", g);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_inEXknowsX_limitX2X_local_outV_name() {
-            ComputerTestHelper.compute("g.V().inE('knows').limit(2).local().outV.name", g);
+            ComputerTestHelper.compute("g.V().local{g.of().inE('knows').limit(2).outV}.name", g);
         }
 
         @Override

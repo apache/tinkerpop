@@ -59,7 +59,7 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_propertiesXlocationX_orderByXvalueX_rangeX0_2X_local_value() {
-            return g.V().properties("location").orderBy(T.value).range(0, 2).local().value();
+            return g.V().local(() -> g.<Vertex>of().properties("location").orderBy(T.value).range(0, 2)).value();
         }
 
     }
@@ -82,7 +82,7 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_propertiesXlocationX_orderByXvalueX_rangeX0_2X_local_value() {
-            return g.V().properties("location").orderBy(T.value).range(0, 2).local().<String>value(); // TODO:
+            return g.V().local(() -> g.<Vertex>of().properties("location").orderBy(T.value).range(0, 2)).value(); // TODO:
         }
 
     }

@@ -213,6 +213,10 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().fold(seed, foldFunction);
     }
 
+    public default <E2> Neo4jTraversal<A, E2> local(final Supplier<Traversal<A,E2>> localTraversal) {
+        return this.start().local(localTraversal);
+    }
+
     ///////////////////// FILTER STEPS /////////////////////
 
     public default Neo4jTraversal<A, A> filter(final Predicate<Traverser<A>> predicate) {
@@ -538,9 +542,4 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
     public default Neo4jTraversal<A, A> withPath() {
         return this.start().withPath();
     }
-
-    public default Neo4jTraversal<A, A> local() {
-        return this.start().local();
-    }
-
 }

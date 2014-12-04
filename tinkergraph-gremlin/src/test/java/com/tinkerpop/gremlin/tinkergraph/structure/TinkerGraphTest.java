@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Operator;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
@@ -86,7 +87,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay2() {
         final Graph g = TinkerFactory.createTheCrew();
-        final Traversal t = g.V().properties("location").orderBy(T.value).limit(2).local().value();
+        final Traversal t = g.V().local(() -> g.<Vertex>of().properties("location").orderBy("startTime").limit(2)).value();
         System.out.println(t);
         t.forEachRemaining(System.out::println);
         System.out.println(t);

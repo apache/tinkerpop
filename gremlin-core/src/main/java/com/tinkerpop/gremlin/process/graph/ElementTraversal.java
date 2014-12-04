@@ -49,7 +49,7 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().count();
     }
 
-    public default GraphTraversal<A,Double> sum() {
+    public default GraphTraversal<A, Double> sum() {
         return this.start().sum();
     }
 
@@ -209,6 +209,10 @@ public abstract interface ElementTraversal<A extends Element> {
 
     public default <E2> GraphTraversal<A, E2> fold(final E2 seed, final BiFunction<E2, Traverser<A>, E2> foldFunction) {
         return this.start().fold(seed, foldFunction);
+    }
+
+    public default <E2> GraphTraversal<A, E2> local(final Supplier<Traversal<A, E2>> localTraversalSupplier) {
+        return this.start().local(localTraversalSupplier);
     }
 
     ///////////////////// FILTER STEPS /////////////////////
@@ -534,9 +538,5 @@ public abstract interface ElementTraversal<A extends Element> {
 
     public default GraphTraversal<A, A> withPath() {
         return this.start().withPath();
-    }
-
-    public default GraphTraversal<A, A> local() {
-        return this.start().local();
     }
 }
