@@ -117,8 +117,7 @@ public class BranchStep<S> extends AbstractStep<S, S> implements EngineDependent
     @Override
     public BranchStep<S> clone() throws CloneNotSupportedException {
         final BranchStep<S> clone = (BranchStep<S>) super.clone();
-        // TODO: if(this.onGraphComputer) { }
-        clone.graphComputerQueue = new TraverserSet<S>();
+        if (this.onGraphComputer) clone.graphComputerQueue = new TraverserSet<S>();
         clone.functionRing = this.functionRing.clone();
         return clone;
     }

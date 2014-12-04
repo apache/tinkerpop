@@ -92,8 +92,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> {
     @Override
     public WhereStep<E> clone() throws CloneNotSupportedException {
         final WhereStep<E> clone = (WhereStep<E>) super.clone();
-        if (null != this.constraint)
-            clone.constraint = this.constraint.clone();
+        if (null != this.constraint) clone.constraint = this.constraint.clone();
         return clone;
     }
 
