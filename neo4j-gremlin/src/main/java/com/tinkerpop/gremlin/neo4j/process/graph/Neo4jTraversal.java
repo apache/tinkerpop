@@ -310,12 +310,8 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.limit(arg0);
 	}
 
-	public default <E2 extends Element> Neo4jTraversal<S, E2> localLimit(int arg0) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.localLimit(arg0);
-	}
-
-	public default <E2 extends Element> Neo4jTraversal<S, E2> localRange(int arg0, int arg1) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.localRange(arg0, arg1);
+	public default Neo4jTraversal<S, E> local() {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.local();
 	}
 
 	public default <E2> Neo4jTraversal<S, E2> map(java.util.function.Function<com.tinkerpop.gremlin.process.Traverser<E>, E2> arg0) {

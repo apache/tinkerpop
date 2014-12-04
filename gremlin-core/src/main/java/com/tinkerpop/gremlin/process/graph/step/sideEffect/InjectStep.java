@@ -23,7 +23,7 @@ public final class InjectStep<S> extends SideEffectStep<S> implements TraverserS
 
     @Override
     public void generateTraversers(final TraverserGenerator traverserGenerator) {
-        this.addStarts((Iterator) traverserGenerator.<S>generateIterator(this.injections.iterator(), this));
+        this.addStarts((Iterator) traverserGenerator.<S>generateIterator(this.injections.iterator(), this, 1l));
     }
 
     @Override

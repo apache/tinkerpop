@@ -1,6 +1,8 @@
 package com.tinkerpop.gremlin.process.graph.util;
 
 import com.tinkerpop.gremlin.process.Step;
+import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.util.EmptyTraversal;
@@ -26,11 +28,21 @@ public class EmptyGraphTraversal<S, E> extends EmptyTraversal<S, E> implements G
     }
 
     @Override
+    public TraverserGenerator getTraverserGenerator(TraversalEngine engine) {
+        return null;
+    }
+
+    @Override
     public GraphTraversal<S, E> withPath() {
         return instance();
     }
 
+    @Override
     public GraphTraversal<S, E> submit(final GraphComputer computer) {
         return instance();
     }
+
+
+
+
 }

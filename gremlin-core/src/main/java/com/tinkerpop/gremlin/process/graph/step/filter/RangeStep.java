@@ -15,7 +15,7 @@ public final class RangeStep<S> extends FilterStep<S> implements Ranging {
 
     private final long low;
     private final long high;
-    private final AtomicLong counter = new AtomicLong(0l);
+    private AtomicLong counter = new AtomicLong(0l);
 
     public RangeStep(final Traversal traversal, final long low, final long high) {
         super(traversal);
@@ -75,5 +75,12 @@ public final class RangeStep<S> extends FilterStep<S> implements Ranging {
 
     public long getHighRange() {
         return this.high;
+    }
+
+    @Override
+    public RangeStep<S> clone() throws CloneNotSupportedException {
+        final RangeStep<S> clone = (RangeStep<S>) super.clone();
+        //clone.counter = new AtomicLong(0l);
+        return clone;
     }
 }

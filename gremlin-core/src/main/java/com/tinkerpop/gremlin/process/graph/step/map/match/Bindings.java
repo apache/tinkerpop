@@ -8,8 +8,8 @@ import java.util.TreeMap;
 import java.util.function.Function;
 
 /**
-* @author Joshua Shinavier (http://fortytwo.net)
-*/
+ * @author Joshua Shinavier (http://fortytwo.net)
+ */
 public class Bindings<T> {
     private final SortedMap<String, T> map = new TreeMap<>();
 

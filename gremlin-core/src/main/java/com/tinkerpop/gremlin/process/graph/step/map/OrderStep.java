@@ -7,9 +7,7 @@ import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.util.BarrierStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 import java.util.stream.Stream;
 
 /**

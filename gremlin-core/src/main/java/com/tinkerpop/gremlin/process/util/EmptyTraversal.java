@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 
 import java.util.Collections;
@@ -80,5 +81,10 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
     @Override
     public EmptyTraversal<S, E> clone() {
         return instance();
+    }
+
+    @Override
+    public TraverserGenerator getTraverserGenerator(TraversalEngine engine) {
+        return null;
     }
 }

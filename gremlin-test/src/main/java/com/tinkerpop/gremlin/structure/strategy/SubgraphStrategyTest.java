@@ -74,12 +74,12 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
 
         // with label and branch factor
 
-        assertEquals(1, g.v(convertToVertexId("josh")).outE("created").localLimit(1).count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).outE("created").localLimit(1).count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).outE("created").localLimit(1).count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).outE("created").localLimit(1).count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).bothE("created").localLimit(1).count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).bothE("created").localLimit(1).count().next().longValue());
+        assertEquals(1, g.v(convertToVertexId("josh")).outE("created").limit(1).local().count().next().longValue());
+        assertEquals(1, sg.v(convertToVertexId("josh")).outE("created").limit(1).local().count().next().longValue());
+        assertEquals(1, g.v(convertToVertexId("josh")).outE("created").limit(1).local().count().next().longValue());
+        assertEquals(1, sg.v(convertToVertexId("josh")).outE("created").limit(1).local().count().next().longValue());
+        assertEquals(1, g.v(convertToVertexId("josh")).bothE("created").limit(1).local().count().next().longValue());
+        assertEquals(1, sg.v(convertToVertexId("josh")).bothE("created").limit(1).local().count().next().longValue());
 
         // from edge
 
@@ -180,14 +180,14 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
 
         // with branch factor
 
-        assertEquals(1, g.v(convertToVertexId("josh")).bothE().localLimit(1).count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).bothE().localLimit(1).count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).bothE().localLimit(1).inV().count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).bothE().localLimit(1).inV().count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).bothE("knows", "created").localLimit(1).count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).bothE("knows", "created").localLimit(1).count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).bothE("knows", "created").localLimit(1).inV().count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).bothE("knows", "created").localLimit(1).inV().count().next().longValue());
+        assertEquals(1, g.v(convertToVertexId("josh")).bothE().limit(1).local().count().next().longValue());
+        assertEquals(1, sg.v(convertToVertexId("josh")).bothE().limit(1).local().count().next().longValue());
+        assertEquals(1, g.v(convertToVertexId("josh")).bothE().limit(1).local().inV().count().next().longValue());
+        assertEquals(1, sg.v(convertToVertexId("josh")).bothE().limit(1).local().inV().count().next().longValue());
+        assertEquals(1, g.v(convertToVertexId("josh")).bothE("knows", "created").limit(1).local().count().next().longValue());
+        assertEquals(1, sg.v(convertToVertexId("josh")).bothE("knows", "created").limit(1).local().count().next().longValue());
+        assertEquals(1, g.v(convertToVertexId("josh")).bothE("knows", "created").limit(1).local().inV().count().next().longValue());
+        assertEquals(1, sg.v(convertToVertexId("josh")).bothE("knows", "created").limit(1).local().inV().count().next().longValue());
 
         // from edge
 
@@ -264,14 +264,14 @@ public class SubgraphStrategyTest extends AbstractGremlinTest {
 
         // with branch factor
 
-        assertEquals(1, g.v(convertToVertexId("josh")).bothE().localLimit(1).count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).bothE().localLimit(1).count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).bothE().localLimit(1).inV().count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).bothE().localLimit(1).inV().count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).bothE("knows", "created").localLimit(1).count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).bothE("knows", "created").localLimit(1).count().next().longValue());
-        assertEquals(1, g.v(convertToVertexId("josh")).bothE("knows", "created").localLimit(1).inV().count().next().longValue());
-        assertEquals(1, sg.v(convertToVertexId("josh")).bothE("knows", "created").localLimit(1).inV().count().next().longValue());
+        assertEquals(1, g.v(convertToVertexId("josh")).bothE().limit(1).local().count().next().longValue());
+        assertEquals(1, sg.v(convertToVertexId("josh")).bothE().limit(1).local().count().next().longValue());
+        assertEquals(1, g.v(convertToVertexId("josh")).bothE().limit(1).local().inV().count().next().longValue());
+        assertEquals(1, sg.v(convertToVertexId("josh")).bothE().limit(1).local().inV().count().next().longValue());
+        assertEquals(1, g.v(convertToVertexId("josh")).bothE("knows", "created").limit(1).local().count().next().longValue());
+        assertEquals(1, sg.v(convertToVertexId("josh")).bothE("knows", "created").limit(1).local().count().next().longValue());
+        assertEquals(1, g.v(convertToVertexId("josh")).bothE("knows", "created").limit(1).local().inV().count().next().longValue());
+        assertEquals(1, sg.v(convertToVertexId("josh")).bothE("knows", "created").limit(1).local().inV().count().next().longValue());
 
         // from edge
 

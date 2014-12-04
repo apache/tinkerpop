@@ -95,7 +95,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             HasNotTest.ComputerTest.class,
             HasTest.ComputerTest.class,
             IntervalTest.ComputerTest.class,
-           // LocalRangeTest.ComputerTest.class, // TODO: Why does TinkerGraph complain?
+            LocalRangeTest.ComputerTest.class, // TODO: Why does TinkerGraph complain?
             RandomTest.ComputerTest.class,
             // TODO: RangeTest.ComputerTest.class,
             RetainTest.ComputerTest.class,

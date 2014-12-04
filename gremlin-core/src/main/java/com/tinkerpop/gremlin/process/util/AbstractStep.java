@@ -1,9 +1,10 @@
 package com.tinkerpop.gremlin.process.util;
 
-import com.tinkerpop.gremlin.process.traversers.PathTraverser;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.traversers.PathTraverser;
 import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Iterator;
@@ -24,7 +25,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     protected Step<?, S> previousStep = EmptyStep.instance();
     protected Step<E, ?> nextStep = EmptyStep.instance();
     protected final static boolean PROFILING_ENABLED = "true".equals(System.getProperty(TraversalMetrics.PROFILING_ENABLED));
-    
+
     public AbstractStep(final Traversal traversal) {
         this.traversal = traversal;
         this.starts = new ExpandableStepIterator<S>((Step) this);
@@ -46,6 +47,16 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     @Override
     public void addStart(final Traverser<S> start) {
         this.starts.add((Traverser.Admin<S>) start);
+    }
+
+    @Override
+    public void addPlainStarts(final Iterator<S> starts, final long bulk) {
+        this.starts.add(this.traversal.getTraverserGenerator(TraversalEngine.STANDARD).generateIterator((Iterator) starts, this, bulk));
+    }
+
+    @Override
+    public void addPlainStart(final S start, final long bulk) {
+        this.starts.add(this.traversal.getTraverserGenerator(TraversalEngine.STANDARD).generate(start, this, bulk));
     }
 
     @Override
@@ -139,7 +150,6 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         clone.nextStep = EmptyStep.instance();
         clone.available = false;
         clone.nextEnd = null;
-        clone.traversal = null;
         clone.label = this.label;
         clone.futureSetByChild = this.futureSetByChild;
         return clone;

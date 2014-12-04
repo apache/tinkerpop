@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -79,6 +80,16 @@ public class TinkerGraphTest {
         v8.addEdge("link", v9, "weight", 7f);
 
         v1.withSack(() -> Float.MIN_VALUE).as("x").outE().sack(Operator.max, "weight").inV().jump("x", 5).sack().submit(g.compute()).forEachRemaining(System.out::println);
+    }
+
+    @Test
+    @Ignore
+    public void testPlay2() {
+        final Graph g = TinkerFactory.createTheCrew();
+        final Traversal t = g.V().properties("location").orderBy(T.value).limit(2).local().value();
+        System.out.println(t);
+        t.forEachRemaining(System.out::println);
+        System.out.println(t);
     }
 
     @Test

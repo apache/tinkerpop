@@ -25,7 +25,7 @@ public class TraverserSourceStrategy extends AbstractTraversalStrategy {
         PRIORS.add(EngineDependentStrategy.class);
         PRIORS.add(IdentityRemovalStrategy.class);
         PRIORS.add(LabeledEndStepStrategy.class);
-        PRIORS.add(LocalRangeStrategy.class);
+        PRIORS.add(LocalTraversalStrategy.class);
         PRIORS.add(MatchWhereStrategy.class);
         PRIORS.add(ReducingStrategy.class);
         PRIORS.add(SideEffectCapStrategy.class);

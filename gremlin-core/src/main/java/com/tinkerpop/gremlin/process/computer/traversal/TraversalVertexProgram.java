@@ -146,7 +146,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             final AtomicBoolean voteToHalt = new AtomicBoolean(true);
             final Iterator<? extends Element> starts = startStep.returnsVertices() ? new SingleIterator<>(vertex) : vertex.iterators().edgeIterator(Direction.OUT);
             starts.forEachRemaining(element -> {
-                final Traverser.Admin<Element> traverser = traverserGenerator.generate(element, startStep);
+                final Traverser.Admin<Element> traverser = traverserGenerator.generate(element, startStep, 1l);
                 traverser.setFuture(future);
                 traverser.detach();
                 if (traverser.isHalted())

@@ -161,17 +161,10 @@ public class DefaultTraversalSideEffects implements Traversal.SideEffects {
     }
 
     @Override
-    public DefaultTraversalSideEffects clone() {
-        try {
-            final DefaultTraversalSideEffects sideEffects = (DefaultTraversalSideEffects) super.clone();
-            sideEffects.sackInitialValue = this.sackInitialValue;
-            sideEffects.sackSplitOperator = this.sackSplitOperator;
-            sideEffects.objectMap = new HashMap<>(this.objectMap);
-            sideEffects.supplierMap = new HashMap<>(this.supplierMap);
-            return sideEffects;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+    public DefaultTraversalSideEffects clone() throws CloneNotSupportedException {
+        final DefaultTraversalSideEffects sideEffects = (DefaultTraversalSideEffects) super.clone();
+        sideEffects.objectMap = new HashMap<>(this.objectMap);
+        sideEffects.supplierMap = new HashMap<>(this.supplierMap);
+        return sideEffects;
     }
 }

@@ -60,7 +60,8 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> {
             } else
                 endObject = null;
 
-            startStep.addStart(TraversalStrategies.GlobalCache.getStrategies(constraint.getClass()).getTraverserGenerator(constraint, TraversalEngine.STANDARD).generate(startObject, startStep));
+            // TODO: FIX!
+            startStep.addStart(TraversalStrategies.GlobalCache.getStrategies(constraint.getClass()).getTraverserGenerator(constraint, TraversalEngine.STANDARD).generate(startObject, startStep, traverser.bulk()));
             if (null == endObject) {
                 if (constraint.hasNext()) {
                     constraint.reset();

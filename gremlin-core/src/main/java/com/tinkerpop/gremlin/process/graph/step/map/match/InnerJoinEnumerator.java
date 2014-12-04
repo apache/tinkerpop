@@ -10,7 +10,7 @@ import java.util.function.BiConsumer;
 
 /**
  * An Enumerator which joins the solutions of a base Enumerator according to repeated variables
- * <p>
+ * <p/>
  * Note: this Enumerator requires random access to its base Enumerator, as it maintains a list of indices at which valid
  * solutions are found, and visits only those indices
  *

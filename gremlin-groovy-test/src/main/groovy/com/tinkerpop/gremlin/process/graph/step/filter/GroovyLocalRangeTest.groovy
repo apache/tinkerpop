@@ -15,12 +15,12 @@ public abstract class GroovyLocalRangeTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_outE_localRangeX0_2X() {
-            g.V.outE.localRange(0, 2)
+            g.V.outE.range(0, 2).local()
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_propertiesXlocationX_orderByXvalueX_localRangeX0_2X_value() {
-            g.V.properties('location').orderBy(T.value).localRange(0, 2).value
+            g.V.properties('location').orderBy(T.value).range(0, 2).local().value
         }
     }
 
@@ -28,12 +28,12 @@ public abstract class GroovyLocalRangeTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_outE_localRangeX0_2X() {
-            ComputerTestHelper.compute("g.V.outE.localRange(0, 2)", g)
+            ComputerTestHelper.compute("g.V.outE.range(0, 2).local()", g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_propertiesXlocationX_orderByXvalueX_localRangeX0_2X_value() {
-            g.V.properties('location').orderBy(T.value).localRange(0, 2).value // todo
+            g.V.properties('location').orderBy(T.value).range(0, 2).local().value // todo
         }
     }
 }

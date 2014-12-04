@@ -301,15 +301,6 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().limit(limit);
     }
 
-    public default <E2 extends Element> GraphTraversal<A, E2> localRange(final int low, final int high) {
-        return this.start().localRange(low, high);
-    }
-
-    public default <E2 extends Element> GraphTraversal<A, E2> localLimit(final int limit) {
-        return this.start().localLimit(limit);
-    }
-
-
     public default GraphTraversal<A, A> retain(final String sideEffectKey) {
         return this.start().retain(sideEffectKey);
     }
@@ -541,7 +532,11 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().withSack(initialValue);
     }
 
-    public default <B> GraphTraversal<A, A> withPath() {
+    public default GraphTraversal<A, A> withPath() {
         return this.start().withPath();
+    }
+
+    public default GraphTraversal<A, A> local() {
+        return this.start().local();
     }
 }

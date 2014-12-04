@@ -91,7 +91,9 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      *
      * @return The cloned traversal
      */
-    public Traversal<S, E> clone();
+    public Traversal<S, E> clone() throws CloneNotSupportedException;
+
+    public TraverserGenerator getTraverserGenerator(final TraversalEngine engine);
 
     /**
      * Submit the traversal to a {@link GraphComputer} for OLAP execution.
@@ -105,7 +107,13 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
     public default Traversal<S, E> submit(final GraphComputer computer) {
         try {
             this.applyStrategies(TraversalEngine.COMPUTER);
-            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(this::clone).create();
+            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> {
+                try {
+                    return this.clone();
+                } catch (final CloneNotSupportedException e) {
+                    throw new IllegalStateException(e.getMessage(), e);
+                }
+            }).create();
             final ComputerResult result = computer.program(vertexProgram).submit().get();
             final GraphTraversal<S, S> traversal = result.graph().of();
             return traversal.addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
@@ -418,7 +426,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          *
          * @return The cloned sideEffects
          */
-        public SideEffects clone();
+        public SideEffects clone() throws CloneNotSupportedException;
 
         public static class Exceptions {
 

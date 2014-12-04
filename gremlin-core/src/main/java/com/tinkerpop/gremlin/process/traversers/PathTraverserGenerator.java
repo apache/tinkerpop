@@ -9,7 +9,9 @@ import com.tinkerpop.gremlin.process.TraverserGenerator;
  */
 public class PathTraverserGenerator implements TraverserGenerator {
 
-    public <S> Traverser.Admin<S> generate(final S start, final Step<?,S> startStep) {
-        return new PathTraverser<>(startStep.getLabel(), start, startStep.getTraversal().sideEffects());
+    public <S> Traverser.Admin<S> generate(final S start, final Step<S,?> startStep, final long initialBulk) {
+        final PathTraverser<S> traverser = new PathTraverser<>(startStep.getLabel(), start, startStep.getTraversal().sideEffects());
+        traverser.setBulk(initialBulk);
+        return traverser;
     }
 }

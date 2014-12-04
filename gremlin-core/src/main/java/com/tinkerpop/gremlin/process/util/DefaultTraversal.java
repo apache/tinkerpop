@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.graph.strategy.GraphTraversalStrategyRegistry;
 import com.tinkerpop.gremlin.structure.Graph;
 
@@ -104,21 +105,22 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     }
 
     @Override
-    public DefaultTraversal<S, E> clone() {
-        try {
-            final DefaultTraversal<S, E> clone = (DefaultTraversal<S, E>) super.clone();
-            clone.steps = new ArrayList<>();
-            clone.sideEffects = this.sideEffects.clone();
-            clone.lastEnd = null;
-            clone.lastEndCount = 0l;
-            for (int i = this.steps.size() - 1; i >= 0; i--) {
-                final Step<?, ?> clonedStep = this.steps.get(i).clone();
-                clonedStep.setTraversal(clone);
-                TraversalHelper.insertStep(clonedStep, 0, clone);
-            }
-            return clone;
-        } catch (final CloneNotSupportedException e) {
-            throw new IllegalStateException(e.getMessage(), e);
+    public DefaultTraversal<S, E> clone() throws CloneNotSupportedException {
+        final DefaultTraversal<S, E> clone = (DefaultTraversal<S, E>) super.clone();
+        clone.steps = new ArrayList<>();
+        clone.sideEffects = this.sideEffects.clone();
+        clone.lastEnd = null;
+        clone.lastEndCount = 0l;
+        for (int i = this.steps.size() - 1; i >= 0; i--) {
+            final Step<?, ?> clonedStep = this.steps.get(i).clone();
+            clonedStep.setTraversal(clone);
+            TraversalHelper.insertStep(clonedStep, 0, clone);
         }
+        return clone;
+    }
+
+    @Override
+    public TraverserGenerator getTraverserGenerator(final TraversalEngine engine) {
+        return TraversalStrategies.GlobalCache.getStrategies(this.getClass()).getTraverserGenerator(this, engine);
     }
 }

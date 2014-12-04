@@ -18,7 +18,6 @@ import com.tinkerpop.gremlin.process.graph.step.filter.ExceptStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.IntervalStep;
-import com.tinkerpop.gremlin.process.graph.step.filter.LocalRangeStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RandomStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RangeStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainStep;
@@ -63,6 +62,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SumStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
+import com.tinkerpop.gremlin.process.graph.step.util.LocalTraversalStep;
 import com.tinkerpop.gremlin.process.graph.step.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.marker.CapTraversal;
@@ -407,14 +407,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
         return this.range(0, limit);
     }
 
-    public default <E2 extends Element> GraphTraversal<S, E2> localRange(final int low, final int high) {
-        return this.addStep(new LocalRangeStep<>(this, low, high));
-    }
-
-    public default <E2 extends Element> GraphTraversal<S, E2> localLimit(final int limit) {
-        return this.localRange(0, limit);
-    }
-
     public default GraphTraversal<S, E> retain(final String variable) {
         return this.addStep(new RetainStep<>(this, variable));
     }
@@ -665,6 +657,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
         TraversalHelper.verifyStepLabelIsNotASideEffectKey(label, this);
         TraversalHelper.getEnd(this).setLabel(label);
         return this;
+    }
+
+    public default GraphTraversal<S, E> local() {
+        return this.addStep(new LocalTraversalStep<>(this));
     }
 
     public default GraphTraversal<S, E> profile() {

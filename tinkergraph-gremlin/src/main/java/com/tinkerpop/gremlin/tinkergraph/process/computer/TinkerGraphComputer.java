@@ -81,7 +81,7 @@ public class TinkerGraphComputer implements GraphComputer {
                 // execute the vertex program
                 this.vertexProgram.setup(this.memory);
                 this.memory.completeSubRound();
-                final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors(), TinkerWorkerPool.State.VERTEX_PROGRAM, this.configuration);
+                final TinkerWorkerPool workers = new TinkerWorkerPool(1, TinkerWorkerPool.State.VERTEX_PROGRAM, this.configuration);
                 while (true) {
                     workers.executeVertexProgram(vertexProgram -> vertexProgram.workerIterationStart(this.memory.asImmutable()));
                     final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(TinkerHelper.getVertices(this.graph).iterator());

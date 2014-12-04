@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -68,12 +69,12 @@ public abstract class LocalRangeTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_outE_localRangeX0_2X() {
-            return g.V().outE().localRange(0, 2);
+            return g.V().outE().range(0, 2).local();
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_propertiesXlocationX_orderByXvalueX_localRangeX0_2X_value() {
-            return g.V().properties("location").orderBy(T.value).localRange(0, 2).value();
+            return g.V().properties("location").orderBy(T.value).range(0, 2).local().value();
         }
     }
 
@@ -84,12 +85,12 @@ public abstract class LocalRangeTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_outE_localRangeX0_2X() {
-            return g.V().outE().<Edge>localRange(0, 2).submit(g.compute());
+            return g.V().outE().<Edge>range(0, 2).local().submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_propertiesXlocationX_orderByXvalueX_localRangeX0_2X_value() {
-            return g.V().properties("location").orderBy(T.value).localRange(0, 2).<String>value(); // TODO:
+            return g.V().properties("location").orderBy(T.value).range(0, 2).local().<String>value(); // TODO:
         }
     }
 }

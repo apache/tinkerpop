@@ -34,6 +34,10 @@ public class StartStep<S> extends SideEffectStep<S> implements TraverserSource, 
         return (T) this.start;
     }
 
+    public void setStart(final Object start) {
+        this.start = start;
+    }
+
     public boolean startAssignableTo(final Class... assignableClasses) {
         return Stream.of(assignableClasses).filter(check -> check.isAssignableFrom(this.start.getClass())).findAny().isPresent();
     }
@@ -46,9 +50,9 @@ public class StartStep<S> extends SideEffectStep<S> implements TraverserSource, 
     public void generateTraversers(final TraverserGenerator traverserGenerator) {
         if (null != this.start) {
             if (this.start instanceof Iterator) {
-                this.starts.add(traverserGenerator.generateIterator((Iterator<S>) this.start, this));
+                this.starts.add(traverserGenerator.generateIterator((Iterator<S>) this.start, this, 1l));
             } else {
-                this.starts.add(traverserGenerator.generate((S) this.start, this));
+                this.starts.add(traverserGenerator.generate((S) this.start, this, 1l));
             }
 
         }

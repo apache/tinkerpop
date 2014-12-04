@@ -169,7 +169,6 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore
     @LoadGraphWith(MODERN)
     public void g_v1_outEXknowsX_localLimitX1X_inV_name() {
         final Traversal<Vertex, String> traversal = get_g_v1_outEXknowsX_localLimitX1X_inV_name(convertToVertexId("marko"));
@@ -180,7 +179,6 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore
     @LoadGraphWith(MODERN)
     public void g_V_bothEXcreatedX_localLimitX1X_otherV_name() {
         final Traversal<Vertex, String> traversal = get_g_V_bothEXcreatedX_localLimitX1X_otherV_name();
@@ -277,7 +275,6 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore
     @LoadGraphWith(MODERN)
     public void g_v4_bothEX1_createdX_localLimitX1X() {
         final Traversal<Vertex, Edge> traversal = get_g_v4_bothEX1_createdX_localLimitX1X(convertToVertexId("josh"));
@@ -289,7 +286,6 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore
     @LoadGraphWith(MODERN)
     public void g_v4_bothEXknows_createdX_localLimitX1X() {
         final Traversal<Vertex, Edge> traversal = get_g_v4_bothEXknows_createdX_localLimitX1X(convertToVertexId("josh"));
@@ -301,7 +297,6 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore
     @LoadGraphWith(MODERN)
     public void g_v4_bothE_localLimitX1X_otherV_name() {
         final Traversal<Vertex, String> traversal = get_g_v4_bothE_localLimitX1X_otherV_name(convertToVertexId("josh"));
@@ -318,7 +313,6 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore
     @LoadGraphWith(MODERN)
     public void g_v4_bothE_localLimitX2X_otherV_name() {
         final Traversal<Vertex, String> traversal = get_g_v4_bothE_localLimitX2X_otherV_name(convertToVertexId("josh"));
@@ -335,7 +329,6 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
 
     @Test
-    @Ignore
     @LoadGraphWith(MODERN)
     public void g_V_inEXknowsX_localLimitX2X_outV_name() {
         final Traversal<Vertex, String> traversal = get_g_V_inEXknowsX_localLimitX2X_outV_name();
@@ -607,12 +600,12 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_outEXknowsX_localLimitX1X_inV_name(final Object v1Id) {
-            return g.v(v1Id).outE("knows").localLimit(1).inV().values("name");
+            return g.v(v1Id).outE("knows").limit(1).local().inV().values("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_bothEXcreatedX_localLimitX1X_otherV_name() {
-            return g.V().bothE("created").localLimit(1).inV().values("name");
+            return g.V().bothE("created").limit(1).local().inV().values("name");
         }
 
         @Override
@@ -642,27 +635,27 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_v4_bothEX1_createdX_localLimitX1X(final Object v4Id) {
-            return g.v(v4Id).bothE("created").localLimit(1);
+            return g.v(v4Id).bothE("created").limit(1).local();
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_v4_bothEXknows_createdX_localLimitX1X(final Object v4Id) {
-            return g.v(v4Id).bothE("knows", "created").localLimit(1);
+            return g.v(v4Id).bothE("knows", "created").limit(1);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_v4_bothE_localLimitX1X_otherV_name(final Object v4Id) {
-            return g.v(v4Id).bothE().localLimit(1).otherV().values("name");
+            return g.v(v4Id).bothE().limit(1).local().otherV().values("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_v4_bothE_localLimitX2X_otherV_name(final Object v4Id) {
-            return g.v(v4Id).bothE().localLimit(2).otherV().values("name");
+            return g.v(v4Id).bothE().limit(2).local().otherV().values("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_inEXknowsX_localLimitX2X_outV_name() {
-            return g.V().inE("knows").localLimit(2).outV().values("name");
+            return g.V().inE("knows").limit(2).local().outV().values("name");
         }
 
         @Override
@@ -773,23 +766,23 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_v1_outEXknowsX_localLimitX1X_inV_name(final Object v1Id) {
-            return g.v(v1Id).outE("knows").localLimit(1).inV().<String>values("name").submit(g.compute());
+            return g.v(v1Id).outE("knows").limit(1).local().inV().<String>values("name").submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_bothEXcreatedX_localLimitX1X_otherV_name() {
             // TODO:
-            return g.V().bothE("created").localLimit(1).otherV().<String>values("name");
+            return g.V().bothE("created").limit(1).local().otherV().<String>values("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_v4_bothE_localLimitX1X_otherV_name(final Object v4Id) {
-            return g.v(v4Id).bothE().localLimit(1).otherV().<String>values("name").submit(g.compute());
+            return g.v(v4Id).bothE().limit(1).local().otherV().<String>values("name").submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, String> get_g_v4_bothE_localLimitX2X_otherV_name(final Object v4Id) {
-            return g.v(v4Id).bothE().localLimit(2).otherV().<String>values("name").submit(g.compute());
+            return g.v(v4Id).bothE().limit(2).local().otherV().<String>values("name").submit(g.compute());
         }
 
         @Override
@@ -819,17 +812,17 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_v4_bothEX1_createdX_localLimitX1X(final Object v4Id) {
-            return g.v(v4Id).bothE("created").<Edge>localLimit(1).submit(g.compute());
+            return g.v(v4Id).bothE("created").<Edge>limit(1).local().submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_v4_bothEXknows_createdX_localLimitX1X(final Object v4Id) {
-            return g.v(v4Id).bothE("knows", "created").<Edge>localLimit(1).submit(g.compute());
+            return g.v(v4Id).bothE("knows", "created").<Edge>limit(1).local().submit(g.compute());
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_inEXknowsX_localLimitX2X_outV_name() {
-            return g.V().inE("knows").localLimit(2).outV().<String>values("name").submit(g.compute());
+            return g.V().inE("knows").limit(2).local().outV().<String>values("name").submit(g.compute());
         }
 
         @Override

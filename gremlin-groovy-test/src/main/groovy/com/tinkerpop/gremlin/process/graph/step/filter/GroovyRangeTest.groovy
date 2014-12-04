@@ -18,7 +18,7 @@ public abstract class GroovyRangeTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_outE_localLimitX1X_inV_limitX3X() {
-            g.V.outE.localLimit(3).inV.limit(3)
+            g.V.outE.limit(3).local().inV.limit(3)
         }
 
         @Override
@@ -56,7 +56,7 @@ public abstract class GroovyRangeTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_outE_localLimitX1X_inV_limitX3X() {
-            ComputerTestHelper.compute("g.V.out(1).limit(3)", g);
+            ComputerTestHelper.compute("g.V.outE.limit(3).local().inV.limit(3)", g);
         }
 
         @Override

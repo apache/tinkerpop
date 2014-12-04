@@ -55,10 +55,12 @@ public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> {
     }
 
     @Override
-    public ChooseStep<S,E,M> clone() throws CloneNotSupportedException {
-        final ChooseStep<S,E,M> clone = (ChooseStep<S,E,M>)super.clone();
+    public ChooseStep<S, E, M> clone() throws CloneNotSupportedException {
+        final ChooseStep<S, E, M> clone = (ChooseStep<S, E, M>) super.clone();
         clone.choices = new HashMap<>();
-        this.choices.forEach((k,v) -> clone.choices.put(k,v.clone()));
+        for (final Map.Entry<M, Traversal<S, E>> entry : this.choices.entrySet()) {
+            clone.choices.put(entry.getKey(), entry.getValue());
+        }
         return clone;
     }
 

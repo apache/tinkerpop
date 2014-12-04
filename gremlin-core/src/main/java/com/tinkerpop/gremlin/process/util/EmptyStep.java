@@ -31,6 +31,16 @@ public final class EmptyStep<S, E> implements Step<S, E> {
     }
 
     @Override
+    public void addPlainStarts(Iterator<S> starts, long initialBulk) {
+
+    }
+
+    @Override
+    public void addPlainStart(S start, long initialBulk) {
+
+    }
+
+    @Override
     public void setPreviousStep(final Step<?, S> step) {
 
     }

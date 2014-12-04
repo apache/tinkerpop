@@ -137,7 +137,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_outE_localLimitX1X_inV_limitX3X() {
-            return g.V().outE().localLimit(1).inV().limit(3);
+            return g.V().outE().limit(1).local().inV().limit(3);
         }
 
         @Override

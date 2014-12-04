@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.function.BiConsumer;
 
 /**
-* @author Joshua Shinavier (http://fortytwo.net)
-*/
+ * @author Joshua Shinavier (http://fortytwo.net)
+ */
 public class IteratorEnumerator<T> implements Enumerator<T> {
     private final String name;
     private Iterator<T> iterator;

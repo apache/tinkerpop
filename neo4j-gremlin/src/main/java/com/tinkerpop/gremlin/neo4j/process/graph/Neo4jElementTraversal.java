@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.ElementTraversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -302,14 +303,6 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().limit(limit);
     }
 
-    public default <E2 extends Element> Neo4jTraversal<A, E2> localRange(final int low, final int high) {
-        return this.start().localRange(low, high);
-    }
-
-    public default <E2 extends Element> Neo4jTraversal<A, E2> localLimit(final int limit) {
-        return this.start().localLimit(limit);
-    }
-
     public default Neo4jTraversal<A, A> retain(final String sideEffectKey) {
         return this.start().retain(sideEffectKey);
     }
@@ -544,6 +537,10 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
 
     public default Neo4jTraversal<A, A> withPath() {
         return this.start().withPath();
+    }
+
+    public default Neo4jTraversal<A, A> local() {
+        return this.start().local();
     }
 
 }
