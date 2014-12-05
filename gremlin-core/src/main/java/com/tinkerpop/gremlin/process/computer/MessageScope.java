@@ -102,7 +102,7 @@ public abstract class MessageScope {
             }
 
             public Traversal<Vertex, Edge> get() {
-                return this.localMessageScope.getIncidentTraversal().get().reverse();
+                return this.localMessageScope.getIncidentTraversal().get().asAdmin().reverse();
             }
         }
     }

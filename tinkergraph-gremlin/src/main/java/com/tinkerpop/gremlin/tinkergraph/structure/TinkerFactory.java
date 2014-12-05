@@ -118,29 +118,29 @@ public class TinkerFactory {
     public interface SocialTraversal<S, E> extends Traversal<S, E> {
 
         public default SocialTraversal<S, Vertex> people() {
-            return (SocialTraversal) this.addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has("age")));
+            return (SocialTraversal) this.asAdmin().addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has("age")));
         }
 
         public default SocialTraversal<S, Vertex> people(String name) {
-            return (SocialTraversal) this.addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has("name", name)));
+            return (SocialTraversal) this.asAdmin().addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has("name", name)));
         }
 
         public default SocialTraversal<S, Vertex> knows() {
             final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
             flatMapStep.setFunction(v -> v.get().out("knows"));
-            return (SocialTraversal) this.addStep(flatMapStep);
+            return (SocialTraversal) this.asAdmin().addStep(flatMapStep);
         }
 
         public default SocialTraversal<S, Vertex> created() {
             final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
             flatMapStep.setFunction(v -> v.get().out("created"));
-            return (SocialTraversal) this.addStep(flatMapStep);
+            return (SocialTraversal) this.asAdmin().addStep(flatMapStep);
         }
 
         public default SocialTraversal<S, String> name() {
             MapStep<Vertex, String> mapStep = new MapStep<>(this);
             mapStep.setFunction(v -> v.get().<String>value("name"));
-            return (SocialTraversal) this.addStep(mapStep);
+            return (SocialTraversal) this.asAdmin().addStep(mapStep);
         }
 
         public static <S> SocialTraversal<S, S> of(final Graph graph) {

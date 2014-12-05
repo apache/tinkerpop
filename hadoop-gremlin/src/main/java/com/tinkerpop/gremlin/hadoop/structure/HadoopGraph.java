@@ -108,13 +108,13 @@ public class HadoopGraph implements Graph {
     @Override
     public GraphTraversal<Vertex, Vertex> V() {
         final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this);
-        return traversal.addStep(new HadoopGraphStep<>(traversal, Vertex.class, this));
+        return traversal.asAdmin().addStep(new HadoopGraphStep<>(traversal, Vertex.class, this));
     }
 
     @Override
     public GraphTraversal<Edge, Edge> E() {
         final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>(this);
-        return traversal.addStep(new HadoopGraphStep<>(traversal, Edge.class, this));
+        return traversal.asAdmin().addStep(new HadoopGraphStep<>(traversal, Edge.class, this));
     }
 
     @Override

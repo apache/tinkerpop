@@ -42,9 +42,9 @@ public class TraversalHelperTest {
     @Test
     public void shouldChainTogetherStepsWithNextPreviousInALinkedListStructure() {
         Traversal traversal = new DefaultTraversal<>();
-        traversal.addStep(new IdentityStep(traversal));
-        traversal.addStep(new HasStep(traversal, null));
-        traversal.addStep(new FilterStep(traversal));
+        traversal.asAdmin().addStep(new IdentityStep(traversal));
+        traversal.asAdmin().addStep(new HasStep(traversal, null));
+        traversal.asAdmin().addStep(new FilterStep(traversal));
         validateToyTraversal(traversal);
     }
 
@@ -66,11 +66,11 @@ public class TraversalHelperTest {
     @Test
     public void shouldRemovesCorrectly() {
         Traversal traversal = new DefaultTraversal<>();
-        traversal.addStep(new IdentityStep(traversal));
-        traversal.addStep(new HasStep(traversal, null));
-        traversal.addStep(new FilterStep(traversal));
+        traversal.asAdmin().addStep(new IdentityStep(traversal));
+        traversal.asAdmin().addStep(new HasStep(traversal, null));
+        traversal.asAdmin().addStep(new FilterStep(traversal));
 
-        traversal.addStep(new PropertiesStep(traversal, PropertyType.VALUE, "marko"));
+        traversal.asAdmin().addStep(new PropertiesStep(traversal, PropertyType.VALUE, "marko"));
         TraversalHelper.removeStep(3, traversal);
         validateToyTraversal(traversal);
 
@@ -91,11 +91,11 @@ public class TraversalHelperTest {
         Step step3 = new RandomStep<>(traversal, 0.5);
         Step step4 = new PropertyMapStep(traversal, PropertyType.PROPERTY, "name");
         Step step5 = new ShuffleStep<>(traversal);
-        traversal.addStep(step1);
-        traversal.addStep(step2);
-        traversal.addStep(step3);
-        traversal.addStep(step4);
-        traversal.addStep(step5);
+        traversal.asAdmin().addStep(step1);
+        traversal.asAdmin().addStep(step2);
+        traversal.asAdmin().addStep(step3);
+        traversal.asAdmin().addStep(step4);
+        traversal.asAdmin().addStep(step5);
 
         List<Step> steps;
 
@@ -131,31 +131,31 @@ public class TraversalHelperTest {
     }
 
     private static void validateToyTraversal(final Traversal traversal) {
-        assertEquals(traversal.getSteps().size(), 3);
+        assertEquals(traversal.asAdmin().getSteps().size(), 3);
 
-        assertEquals(traversal.getSteps().get(0).getClass(), IdentityStep.class);
-        assertEquals(traversal.getSteps().get(1).getClass(), HasStep.class);
-        assertEquals(traversal.getSteps().get(2).getClass(), FilterStep.class);
+        assertEquals(traversal.asAdmin().getSteps().get(0).getClass(), IdentityStep.class);
+        assertEquals(traversal.asAdmin().getSteps().get(1).getClass(), HasStep.class);
+        assertEquals(traversal.asAdmin().getSteps().get(2).getClass(), FilterStep.class);
 
         // IDENTITY STEP
-        assertEquals(((Step) traversal.getSteps().get(0)).getPreviousStep().getClass(), EmptyStep.class);
-        assertEquals(((Step) traversal.getSteps().get(0)).getNextStep().getClass(), HasStep.class);
-        assertEquals(((Step) traversal.getSteps().get(0)).getNextStep().getNextStep().getClass(), FilterStep.class);
-        assertEquals(((Step) traversal.getSteps().get(0)).getNextStep().getNextStep().getNextStep().getClass(), EmptyStep.class);
+        assertEquals(((Step) traversal.asAdmin().getSteps().get(0)).getPreviousStep().getClass(), EmptyStep.class);
+        assertEquals(((Step) traversal.asAdmin().getSteps().get(0)).getNextStep().getClass(), HasStep.class);
+        assertEquals(((Step) traversal.asAdmin().getSteps().get(0)).getNextStep().getNextStep().getClass(), FilterStep.class);
+        assertEquals(((Step) traversal.asAdmin().getSteps().get(0)).getNextStep().getNextStep().getNextStep().getClass(), EmptyStep.class);
 
         // HAS STEP
-        assertEquals(((Step) traversal.getSteps().get(1)).getPreviousStep().getClass(), IdentityStep.class);
-        assertEquals(((Step) traversal.getSteps().get(1)).getPreviousStep().getPreviousStep().getClass(), EmptyStep.class);
-        assertEquals(((Step) traversal.getSteps().get(1)).getNextStep().getClass(), FilterStep.class);
-        assertEquals(((Step) traversal.getSteps().get(1)).getNextStep().getNextStep().getClass(), EmptyStep.class);
+        assertEquals(((Step) traversal.asAdmin().getSteps().get(1)).getPreviousStep().getClass(), IdentityStep.class);
+        assertEquals(((Step) traversal.asAdmin().getSteps().get(1)).getPreviousStep().getPreviousStep().getClass(), EmptyStep.class);
+        assertEquals(((Step) traversal.asAdmin().getSteps().get(1)).getNextStep().getClass(), FilterStep.class);
+        assertEquals(((Step) traversal.asAdmin().getSteps().get(1)).getNextStep().getNextStep().getClass(), EmptyStep.class);
 
         // FILTER STEP
-        assertEquals(((Step) traversal.getSteps().get(2)).getPreviousStep().getClass(), HasStep.class);
-        assertEquals(((Step) traversal.getSteps().get(2)).getPreviousStep().getPreviousStep().getClass(), IdentityStep.class);
-        assertEquals(((Step) traversal.getSteps().get(2)).getPreviousStep().getPreviousStep().getPreviousStep().getClass(), EmptyStep.class);
-        assertEquals(((Step) traversal.getSteps().get(2)).getNextStep().getClass(), EmptyStep.class);
+        assertEquals(((Step) traversal.asAdmin().getSteps().get(2)).getPreviousStep().getClass(), HasStep.class);
+        assertEquals(((Step) traversal.asAdmin().getSteps().get(2)).getPreviousStep().getPreviousStep().getClass(), IdentityStep.class);
+        assertEquals(((Step) traversal.asAdmin().getSteps().get(2)).getPreviousStep().getPreviousStep().getPreviousStep().getClass(), EmptyStep.class);
+        assertEquals(((Step) traversal.asAdmin().getSteps().get(2)).getNextStep().getClass(), EmptyStep.class);
 
-        assertEquals(traversal.getSteps().size(), 3);
+        assertEquals(traversal.asAdmin().getSteps().size(), 3);
     }
 
     @Test

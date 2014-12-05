@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DefaultTraversal<S, E> implements Traversal<S, E> {
+public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     private E lastEnd = null;
     private long lastEndCount = 0l;
@@ -37,6 +37,11 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     public DefaultTraversal(final Graph graph) {
         this();
         this.sideEffects().setGraph(graph);
+    }
+
+    @Override
+    public Traversal.Admin<S,E> asAdmin(){
+        return this;
     }
 
     @Override
@@ -96,10 +101,12 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
         }
     }
 
+    @Override
     public String toString() {
         return TraversalHelper.makeTraversalString(this);
     }
 
+    @Override
     public boolean equals(final Object object) {
         return object instanceof Iterator && TraversalHelper.areEqual(this, (Iterator) object);
     }

@@ -37,7 +37,7 @@ public class UnrollJumpStrategy extends AbstractTraversalStrategy implements Tra
                             for (int j = stepsToClone.size() - 1; j >= 0; j--) {
                                 try {
                                     final Step clonedStep = stepsToClone.get(j).clone();
-                                    TraversalHelper.insertStep(clonedStep, traversal.getSteps().indexOf(fromStep) + 1, traversal);
+                                    TraversalHelper.insertStep(clonedStep, traversal.asAdmin().getSteps().indexOf(fromStep) + 1, traversal);
                                 } catch (final CloneNotSupportedException e) {
                                     throw new IllegalStateException(e.getMessage(), e);
                                 }
@@ -55,7 +55,7 @@ public class UnrollJumpStrategy extends AbstractTraversalStrategy implements Tra
                             for (int j = stepsToClone.size() - 1; j >= 0; j--) {
                                 try {
                                     final Step clonedStep = stepsToClone.get(j).clone();
-                                    TraversalHelper.insertStep(clonedStep, traversal.getSteps().indexOf(fromStep) + 1, traversal);
+                                    TraversalHelper.insertStep(clonedStep, traversal.asAdmin().getSteps().indexOf(fromStep) + 1, traversal);
                                 } catch (final CloneNotSupportedException e) {
                                     throw new IllegalStateException(e.getMessage(), e);
                                 }

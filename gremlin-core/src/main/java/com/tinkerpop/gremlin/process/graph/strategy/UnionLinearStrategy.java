@@ -50,7 +50,7 @@ public class UnionLinearStrategy extends AbstractTraversalStrategy {
             for (int i = 0; i < unionStep.getTraversals().length; i++) {
                 final String unionBranchStart = UNION + unionStepCounter + "." + i;
                 int c = 0;
-                for (final Step branchstep : unionStep.getTraversals()[i].getSteps()) {
+                for (final Step branchstep : unionStep.getTraversals()[i].asAdmin().getSteps()) {
                     TraversalHelper.insertAfterStep(branchstep, currentStep, traversal);
                     currentStep = branchstep;
                     if (c++ == 0) currentStep.setLabel(unionBranchStart);

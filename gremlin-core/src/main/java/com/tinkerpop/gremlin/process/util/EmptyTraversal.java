@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EmptyTraversal<S, E> implements Traversal<S, E> {
+public class EmptyTraversal<S, E> implements Traversal.Admin<S,E> {
 
     private static final EmptyTraversal INSTANCE = new EmptyTraversal();
     private static final SideEffects SIDE_EFFECTS = new DefaultTraversalSideEffects();
@@ -26,6 +26,11 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
 
     protected EmptyTraversal() {
 
+    }
+
+    @Override
+    public Traversal.Admin<S,E> asAdmin() {
+        return this;
     }
 
     @Override
@@ -79,7 +84,7 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
     }
 
     @Override
-    public EmptyTraversal<S, E> clone() {
+    public EmptyTraversal<S, E> clone() throws CloneNotSupportedException {
         return instance();
     }
 

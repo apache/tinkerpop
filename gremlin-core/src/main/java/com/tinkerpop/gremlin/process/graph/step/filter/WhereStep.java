@@ -83,10 +83,10 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> {
                     endObject = null;
 
                 // TODO: Can we add LocalStep here?
-                startStep.addStart(whereStep.getTraversal().getTraverserGenerator(TraversalEngine.STANDARD).generate(startObject, startStep, traverser.bulk()));
+                startStep.addStart(whereStep.getTraversal().asAdmin().getTraverserGenerator(TraversalEngine.STANDARD).generate(startObject, startStep, traverser.bulk()));
                 if (null == endObject) {
                     if (whereStep.constraint.hasNext()) {
-                        whereStep.constraint.reset();
+                        whereStep.constraint.asAdmin().reset();
                         return true;
                     } else {
                         return false;
@@ -95,7 +95,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> {
                 } else {
                     while (whereStep.constraint.hasNext()) {
                         if (whereStep.constraint.next().equals(endObject)) {
-                            whereStep.constraint.reset();
+                            whereStep.constraint.asAdmin().reset();
                             return true;
                         }
                     }

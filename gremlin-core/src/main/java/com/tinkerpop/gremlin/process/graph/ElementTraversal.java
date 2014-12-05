@@ -36,14 +36,10 @@ public abstract interface ElementTraversal<A extends Element> {
 
     public default GraphTraversal<A, A> start() {
         final GraphTraversal<A, A> traversal = GraphTraversal.of();
-        return traversal.addStep(new StartStep<>(traversal, this));
+        return traversal.asAdmin().addStep(new StartStep<>(traversal, this));
     }
 
     //////////////////////////////////////////////////////////////////////
-
-    public default GraphTraversal<A, A> trackPaths() {
-        return this.start().withPath();
-    }
 
     public default GraphTraversal<A, Long> count() {
         return this.start().count();

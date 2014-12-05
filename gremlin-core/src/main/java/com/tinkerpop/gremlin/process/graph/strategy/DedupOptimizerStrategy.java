@@ -39,11 +39,11 @@ public class DedupOptimizerStrategy extends AbstractTraversalStrategy {
         boolean done = false;
         while (!done) {
             done = true;
-            for (int i = 0; i < traversal.getSteps().size(); i++) {
-                final Step step1 = traversal.getSteps().get(i);
+            for (int i = 0; i < traversal.asAdmin().getSteps().size(); i++) {
+                final Step step1 = traversal.asAdmin().getSteps().get(i);
                 if (step1 instanceof DedupStep && !((DedupStep) step1).hasUniqueFunction()) {
                     for (int j = i; j >= 0; j--) {
-                        final Step step2 = traversal.getSteps().get(j);
+                        final Step step2 = traversal.asAdmin().getSteps().get(j);
                         if (BIJECTIVE_PIPES.stream().filter(c -> c.isAssignableFrom(step2.getClass())).findAny().isPresent()) {
                             TraversalHelper.removeStep(step1, traversal);
                             TraversalHelper.insertStep(step1, j, traversal);

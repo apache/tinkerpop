@@ -47,7 +47,7 @@ public class ChooseLinearStrategy extends AbstractTraversalStrategy {
             Step currentStep = branchStep;
             for (final Map.Entry<?, Traversal<?, ?>> entry : (Set<Map.Entry>) chooseStep.getChoices().entrySet()) {
                 int c = 0;
-                for (final Step mapStep : entry.getValue().getSteps()) {
+                for (final Step mapStep : entry.getValue().asAdmin().getSteps()) {
                     TraversalHelper.insertAfterStep(mapStep, currentStep, traversal);
                     currentStep = mapStep;
                     if (c++ == 0) currentStep.setLabel(objectToString(currentStepCounter, entry.getKey()));

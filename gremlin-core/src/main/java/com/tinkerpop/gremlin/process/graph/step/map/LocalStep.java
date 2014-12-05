@@ -47,7 +47,7 @@ public final class LocalStep<S, E> extends FlatMapStep<S, E> implements PathCons
 
     private static final <S, E> void generateFunction(final LocalStep<S, E> localStep) {
         localStep.setFunction(traverser -> {
-            localStep.localTraversal.reset();
+            localStep.localTraversal.asAdmin().reset();
             TraversalHelper.getStart(localStep.localTraversal).addStart(traverser);
             return localStep.localTraversal;
         });

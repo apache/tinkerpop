@@ -35,65 +35,18 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
     public static final String OF = "of";
 
     /**
+     * Get access to administrative methods of the traversal via its accompanying {@link Traversal.Admin}.
+     *
+     * @return the admin of this traversal
+     */
+    public Admin<S, E> asAdmin();
+
+    /**
      * Get the {@link SideEffects} associated with the traversal.
      *
      * @return The traversal sideEffects
      */
     public SideEffects sideEffects();
-
-    /**
-     * Add an iterator of {@link Traverser} objects to the head/start of the traversal.
-     * Users should typically not need to call this method. For dynamic inject of data, they should use {@link com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectStep}.
-     *
-     * @param starts an iterators of traversers
-     */
-    public void addStarts(final Iterator<Traverser<S>> starts);
-
-    /**
-     * Add a single {@link Traverser} object to the head of the traversal.
-     * Users should typically not need to call this method. For dynamic inject of data, they should use {@link com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectStep}.
-     *
-     * @param start a traverser to add to the traversal
-     */
-    public default void addStart(final Traverser<S> start) {
-        this.addStarts(new SingleIterator<>(start));
-    }
-
-    /**
-     * Get the {@link Step} instances associated with this traversal.
-     * The steps are ordered according to their linked list structure as defined by {@link Step#getPreviousStep()} and {@link Step#getNextStep()}.
-     *
-     * @return the ordered steps of the traversal
-     */
-    public List<Step> getSteps();
-
-    public void applyStrategies(final TraversalEngine engine);
-
-    public boolean isLocked();
-
-    /**
-     * Add a {@link Step} to the end of the traversal.
-     * This method should automatically link the step accordingly. For example, see {@link TraversalHelper#insertStep}.
-     * If the {@link TraversalStrategies} have already been applied, then an {@link IllegalStateException} is throw stating the traversal is locked.
-     *
-     * @param step the step to add
-     * @param <E2> the output of the step
-     * @return the updated traversal
-     */
-    public default <E2> Traversal<S, E2> addStep(final Step<?, E2> step) throws IllegalStateException {
-        if (this.isLocked()) throw Exceptions.traversalIsLocked();
-        TraversalHelper.insertStep(step, this);
-        return (Traversal) this;
-    }
-
-    /**
-     * Cloning is used to duplicate the traversal typically in OLAP environments.
-     *
-     * @return The cloned traversal
-     */
-    public Traversal<S, E> clone() throws CloneNotSupportedException;
-
-    public TraverserGenerator getTraverserGenerator(final TraversalEngine engine);
 
     /**
      * Submit the traversal to a {@link GraphComputer} for OLAP execution.
@@ -106,7 +59,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      */
     public default Traversal<S, E> submit(final GraphComputer computer) {
         try {
-            this.applyStrategies(TraversalEngine.COMPUTER);
+            this.asAdmin().applyStrategies(TraversalEngine.COMPUTER);
             final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> {
                 try {
                     return this.clone();
@@ -116,28 +69,10 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
             }).create();
             final ComputerResult result = computer.program(vertexProgram).submit().get();
             final GraphTraversal<S, S> traversal = result.graph().of();
-            return traversal.addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
+            return traversal.asAdmin().addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
-    }
-
-    /**
-     * Call the {@link Step#reset} method on every step in the traversal.
-     */
-    public default void reset() {
-        this.getSteps().forEach(Step::reset);
-    }
-
-    /**
-     * Assume the every {@link Step} implements {@link Reversible} and call {@link Reversible#reverse()} for each.
-     *
-     * @return the traversal with its steps reversed
-     */
-    public default Traversal<S, E> reverse() throws IllegalStateException {
-        if (!TraversalHelper.isReversible(this)) throw Exceptions.traversalIsNotReversible();
-        this.getSteps().stream().forEach(step -> ((Reversible) step).reverse());
-        return this;
     }
 
     /**
@@ -181,7 +116,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      */
     public default <C extends Collection<E>> C fill(final C collection) {
         try {
-            this.applyStrategies(TraversalEngine.STANDARD);
+            this.asAdmin().applyStrategies(TraversalEngine.STANDARD);
             // use the end step so the results are bulked
             final Step<?, E> endStep = TraversalHelper.getEnd(this);
             while (true) {
@@ -202,7 +137,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      */
     public default Traversal iterate() {
         try {
-            this.applyStrategies(TraversalEngine.STANDARD);
+            this.asAdmin().applyStrategies(TraversalEngine.STANDARD);
             // use the end step so the results are bulked
             final Step<?, E> endStep = TraversalHelper.getEnd(this);
             while (true) {
@@ -232,6 +167,13 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
     }
 
     /**
+     * Cloning is used to duplicate the traversal typically in OLAP environments.
+     *
+     * @return The cloned traversal
+     */
+    public Traversal<S, E> clone() throws CloneNotSupportedException;
+
+    /**
      * A collection of {@link Exception} types associated with Traversal execution.
      */
     public static class Exceptions {
@@ -243,6 +185,75 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
         public static IllegalStateException traversalIsNotReversible() {
             return new IllegalStateException("The traversal is not reversible as it contains steps that are not reversible");
         }
+    }
+
+    public interface Admin<S, E> extends Traversal<S, E> {
+
+        /**
+         * Add an iterator of {@link Traverser} objects to the head/start of the traversal.
+         * Users should typically not need to call this method. For dynamic inject of data, they should use {@link com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectStep}.
+         *
+         * @param starts an iterators of traversers
+         */
+        public void addStarts(final Iterator<Traverser<S>> starts);
+
+        /**
+         * Add a single {@link Traverser} object to the head of the traversal.
+         * Users should typically not need to call this method. For dynamic inject of data, they should use {@link com.tinkerpop.gremlin.process.graph.step.sideEffect.InjectStep}.
+         *
+         * @param start a traverser to add to the traversal
+         */
+        public default void addStart(final Traverser<S> start) {
+            this.addStarts(new SingleIterator<>(start));
+        }
+
+        /**
+         * Get the {@link Step} instances associated with this traversal.
+         * The steps are ordered according to their linked list structure as defined by {@link Step#getPreviousStep()} and {@link Step#getNextStep()}.
+         *
+         * @return the ordered steps of the traversal
+         */
+        public List<Step> getSteps();
+
+        /**
+         * Add a {@link Step} to the end of the traversal.
+         * This method should automatically link the step accordingly. For example, see {@link TraversalHelper#insertStep}.
+         * If the {@link TraversalStrategies} have already been applied, then an {@link IllegalStateException} is throw stating the traversal is locked.
+         *
+         * @param step the step to add
+         * @param <E2> the output of the step
+         * @return the updated traversal
+         */
+        public default <E2> Traversal<S, E2> addStep(final Step<?, E2> step) throws IllegalStateException {
+            if (this.isLocked()) throw Exceptions.traversalIsLocked();
+            TraversalHelper.insertStep(step, this);
+            return (Traversal) this;
+        }
+
+        public void applyStrategies(final TraversalEngine engine);
+
+        public boolean isLocked();
+
+        public TraverserGenerator getTraverserGenerator(final TraversalEngine engine);
+
+        /**
+         * Call the {@link Step#reset} method on every step in the traversal.
+         */
+        public default void reset() {
+            this.getSteps().forEach(Step::reset);
+        }
+
+        /**
+         * Assume the every {@link Step} implements {@link Reversible} and call {@link Reversible#reverse()} for each.
+         *
+         * @return the traversal with its steps reversed
+         */
+        public default Traversal<S, E> reverse() throws IllegalStateException {
+            if (!TraversalHelper.isReversible(this)) throw Exceptions.traversalIsNotReversible();
+            this.getSteps().stream().forEach(step -> ((Reversible) step).reverse());
+            return this;
+        }
+
     }
 
     public interface SideEffects extends Cloneable {

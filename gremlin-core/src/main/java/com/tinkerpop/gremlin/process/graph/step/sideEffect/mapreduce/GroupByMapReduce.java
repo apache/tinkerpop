@@ -58,7 +58,7 @@ public final class GroupByMapReduce implements MapReduce<Object, Collection, Obj
         this.sideEffectKey = configuration.getString(GROUP_BY_STEP_SIDE_EFFECT_KEY);
         this.groupByStepKey = configuration.getString(GROUP_BY_STEP_STEP_LABEL);
         this.traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
-        final GroupByStep groupByStep = (GroupByStep) traversal.getSteps().stream()
+        final GroupByStep groupByStep = (GroupByStep) traversal.asAdmin().getSteps().stream()
                 .filter(step -> step.getLabel().equals(this.groupByStepKey))
                 .findAny().get();
         this.reduceFunction = groupByStep.getReduceFunction();

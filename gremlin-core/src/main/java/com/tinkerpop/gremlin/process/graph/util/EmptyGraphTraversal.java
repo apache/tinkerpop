@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.process.util.EmptyTraversal;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EmptyGraphTraversal<S, E> extends EmptyTraversal<S, E> implements GraphTraversal<S, E> {
+public class EmptyGraphTraversal<S, E> extends EmptyTraversal<S, E> implements GraphTraversal.Admin<S, E>, GraphTraversal<S,E> {
 
     private static final EmptyGraphTraversal INSTANCE = new EmptyGraphTraversal<>();
 
@@ -23,6 +23,10 @@ public class EmptyGraphTraversal<S, E> extends EmptyTraversal<S, E> implements G
     }
 
     @Override
+    public GraphTraversal.Admin<S,E> asAdmin() {
+        return this;
+    }
+
     public <E2> GraphTraversal<S, E2> addStep(final Step<?, E2> step) {
         return instance();
     }

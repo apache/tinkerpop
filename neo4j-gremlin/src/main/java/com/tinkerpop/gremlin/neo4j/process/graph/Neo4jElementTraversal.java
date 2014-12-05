@@ -43,10 +43,6 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
 
     //////////////////////////////////////////////////////////////////////
 
-    public default Neo4jTraversal<A, A> trackPaths() {
-        return this.start().withPath();
-    }
-
     public default Neo4jTraversal<A, Long> count() {
         return this.start().count();
     }

@@ -23,7 +23,7 @@ public class EngineDependentStrategy extends AbstractTraversalStrategy implement
     public void apply(final Traversal<?, ?> traversal, final TraversalEngine traversalEngine) {
         if (traversalEngine.equals(TraversalEngine.COMPUTER))
             traversal.sideEffects().removeGraph();
-        traversal.getSteps().stream()
+        traversal.asAdmin().getSteps().stream()
                 .filter(step -> step instanceof EngineDependent)
                 .forEach(step -> ((EngineDependent) step).onEngine(traversalEngine));
     }
@@ -31,8 +31,4 @@ public class EngineDependentStrategy extends AbstractTraversalStrategy implement
     public static EngineDependentStrategy instance() {
         return INSTANCE;
     }
-
-    /*public int compareTo(final TraversalStrategy traversalStrategy) {
-        return traversalStrategy instanceof TraverserSourceStrategy ? -1 : 1;
-    }*/
 }

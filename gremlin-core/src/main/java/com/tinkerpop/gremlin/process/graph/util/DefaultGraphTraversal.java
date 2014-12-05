@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implements GraphTraversal<S, E> {
+public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implements GraphTraversal<S, E>, GraphTraversal.Admin<S, E> {
 
     static {
         final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
@@ -25,5 +25,10 @@ public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implemen
     public DefaultGraphTraversal(final Graph graph) {
         this();
         this.sideEffects().setGraph(graph);
+    }
+
+    @Override
+    public GraphTraversal.Admin<S, E> asAdmin() {
+        return this;
     }
 }

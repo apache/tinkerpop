@@ -402,7 +402,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
         }
 
         public void reset() {
-            this.traversal.reset();
+            this.traversal.asAdmin().reset();
         }
 
         @Override
@@ -438,7 +438,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> {
             w.reset();
 
             // with the traversal "empty" and ready for re-use, add new starts
-            w.traversal.addStarts(starts);
+            w.traversal.asAdmin().addStarts(starts);
         }
 
         // note: may return true after first returning false (inheriting this behavior from e.g. DefaultTraversal)

@@ -70,7 +70,7 @@ public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> {
             if (null == branch) {
                 return Collections.emptyIterator();
             } else {
-                branch.addStart(traverser);
+                branch.asAdmin().addStart(traverser);
                 return branch;
             }
         });

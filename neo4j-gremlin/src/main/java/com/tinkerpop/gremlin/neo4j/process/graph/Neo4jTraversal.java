@@ -21,7 +21,7 @@ import java.util.Map;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
+public interface Neo4jTraversal<S, E> extends GraphTraversal.Admin<S, E>, GraphTraversal<S, E> {
 
     public static <S> Neo4jTraversal<S, S> of(final Graph graph) {
         if (!(graph instanceof Neo4jGraph))
@@ -35,7 +35,7 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal<S, E> {
 
     @Override
     public default <E2> Neo4jTraversal<S, E2> addStep(final Step<?, E2> step) {
-        return (Neo4jTraversal) GraphTraversal.super.addStep((Step) step);
+        return (Neo4jTraversal) GraphTraversal.Admin.super.addStep((Step) step);
     }
 
     public default <E2> Neo4jTraversal<S, Map<String, E2>> cypher(final String query) {

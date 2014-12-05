@@ -75,7 +75,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             throw new IllegalArgumentException("The configuration does not have a traversal supplier");
         }
         final Traversal<?, ?> traversal = this.traversalSupplier.get().get();
-        traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
+        traversal.asAdmin().getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
             final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
             this.mapReducers.add(mapReduce);
         });
@@ -105,7 +105,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         this.traversal = this.traversalSupplier.get().get();
         final Traversal<?, ?> traversal = this.traversalSupplier.get().get();
         this.mapReducers.clear();
-        traversal.getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
+        traversal.asAdmin().getSteps().stream().filter(step -> step instanceof MapReducer).forEach(step -> {
             final MapReduce mapReduce = ((MapReducer) step).getMapReduce();
             this.mapReducers.add(mapReduce);
         });
@@ -137,10 +137,10 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             final TraverserSet<Object> haltedTraversers = new TraverserSet<>();
             vertex.property(HALTED_TRAVERSERS, haltedTraversers);
 
-            if (!(this.traversal.getSteps().get(0) instanceof GraphStep))
+            if (!(this.traversal.asAdmin().getSteps().get(0) instanceof GraphStep))
                 throw new UnsupportedOperationException("TraversalVertexProgram currently only supports GraphStep starts on vertices or edges");
 
-            final GraphStep<Element> startStep = (GraphStep<Element>) this.traversal.getSteps().get(0);   // TODO: make this generic to Traversal
+            final GraphStep<Element> startStep = (GraphStep<Element>) this.traversal.asAdmin().getSteps().get(0);   // TODO: make this generic to Traversal
             final TraverserGenerator traverserGenerator = TraversalStrategies.GlobalCache.getStrategies(this.traversal.getClass()).getTraverserGenerator(this.traversal, TraversalEngine.COMPUTER);
             final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.Admin.HALT : startStep.getNextStep().getLabel();
             final AtomicBoolean voteToHalt = new AtomicBoolean(true);
