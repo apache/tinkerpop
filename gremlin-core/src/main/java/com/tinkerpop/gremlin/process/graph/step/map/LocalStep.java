@@ -35,7 +35,7 @@ public final class LocalStep<S, E> extends FlatMapStep<S, E> implements PathCons
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, localTraversalSupplier.get());
+        return TraversalHelper.makeStepString(this, this.localTraversal);
     }
 
     @Override
