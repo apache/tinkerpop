@@ -9,6 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `Traversal.toBulkSet()` to make getting resultant data more efficiently for traversals with repeated data.
+* Provided a helper `LocalStep.isLocalStarGraph()` so `GraphComputer` implementers know the requisite data boundaries.
 * Created `Traversal.Admin` to hide administrative methods. Added `Traversal.asAdmin()` to get at `Traversal.Admin`.
 * Fixed up all `Step` cloning operations realizing that Java8 lambdas are always bound to the calling class (no delegates).
 * Provided `local(traversal)` to signify that the internal traversal is locally bound to the incoming object.

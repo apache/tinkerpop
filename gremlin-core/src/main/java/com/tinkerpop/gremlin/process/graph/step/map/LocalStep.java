@@ -1,9 +1,11 @@
 package com.tinkerpop.gremlin.process.graph.step.map;
 
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -51,5 +53,20 @@ public final class LocalStep<S, E> extends FlatMapStep<S, E> implements PathCons
             TraversalHelper.getStart(localStep.localTraversal).addStart(traverser);
             return localStep.localTraversal;
         });
+    }
+
+    public boolean isLocalStarGraph() {
+        final List<Step<?, ?>> steps = this.traversal.asAdmin().getSteps();
+        boolean foundOneVertexStep = false;
+        for (final Step step : steps) {
+            if (step instanceof VertexStep) {
+                if (foundOneVertexStep) {
+                    return false;
+                } else {
+                    foundOneVertexStep = true;
+                }
+            }
+        }
+        return true;
     }
 }

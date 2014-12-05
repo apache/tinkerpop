@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.util.BulkSet;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -106,6 +107,16 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
      */
     public default Set<E> toSet() {
         return this.fill(new HashSet<>());
+    }
+
+    /**
+     * Put all the results into a {@link BulkSet}.
+     * This can reduce both time and space when aggregating results by ensuring a weighted set.
+     *
+     * @return the results in a bulk set
+     */
+    public default BulkSet<E> toBulkSet() {
+        return this.fill(new BulkSet<>());
     }
 
     /**
