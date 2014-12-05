@@ -120,8 +120,7 @@ public class HadoopGraph implements Graph {
 
     @Override
     public <S> GraphTraversal<S, S> of() {
-        final GraphTraversal<S, S> traversal = new DefaultGraphTraversal<>(this);
-        return traversal.addStep(new StartStep<>(traversal));
+        return new DefaultGraphTraversal<>(this);
     }
 
     @Override
