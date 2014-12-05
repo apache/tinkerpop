@@ -461,7 +461,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
     @RunWith(Parameterized.class)
     public static class VertexPropertiesShouldHideCorrectlyGivenMultiProperty extends AbstractGremlinTest {
 
-        @Parameterized.Parameters(name = "{index}: {0}")
+        @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
             final List<Pair<String, TriFunction<Graph, Vertex, Boolean, Boolean>>> tests = new ArrayList<>();
             tests.add(Pair.with("v.property(\"age\").isPresent()", (Graph g, Vertex v, Boolean multi) -> v.property("age").isPresent()));

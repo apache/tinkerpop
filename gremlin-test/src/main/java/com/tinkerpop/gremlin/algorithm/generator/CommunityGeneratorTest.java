@@ -27,7 +27,7 @@ public class CommunityGeneratorTest {
     @RunWith(Parameterized.class)
     public static class DifferentDistributionsTest extends AbstractGeneratorTest {
 
-        @Parameterized.Parameters(name = "{index}: {0}.test({1},{2})")
+        @Parameterized.Parameters(name = "test({0},{1},{2})")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
                     {new NormalDistribution(2), new PowerLawDistribution(2.4), 0.1},

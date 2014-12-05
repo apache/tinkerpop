@@ -59,21 +59,24 @@ public class VariablesTest {
             "variableKeyCanNotBeEmpty"
     })
     public static class VariableExceptionConsistencyTest extends AbstractGremlinTest {
-        @Parameterized.Parameters(name = "{index}: expect - {2}")
+        @Parameterized.Parameters(name = "expect({0})")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
-                    {"k", null, Graph.Variables.Exceptions.variableValueCanNotBeNull()},
-                    {null, "v", Graph.Variables.Exceptions.variableKeyCanNotBeNull()},
-                    {"", "v", Graph.Variables.Exceptions.variableKeyCanNotBeEmpty()}});
+                    {"variableValueCanNotBeNull", "k", null, Graph.Variables.Exceptions.variableValueCanNotBeNull()},
+                    {"variableKeyCanNotBeNull", null, "v", Graph.Variables.Exceptions.variableKeyCanNotBeNull()},
+                    {"variableKeyCanNotBeEmpty", "", "v", Graph.Variables.Exceptions.variableKeyCanNotBeEmpty()}});
         }
 
         @Parameterized.Parameter(value = 0)
-        public String key;
+        public String name;
 
         @Parameterized.Parameter(value = 1)
-        public String val;
+        public String key;
 
         @Parameterized.Parameter(value = 2)
+        public String val;
+
+        @Parameterized.Parameter(value = 3)
         public Exception expectedException;
 
         @Test
@@ -206,7 +209,7 @@ public class VariablesTest {
             uniformIntegerList.add(300);
         }
 
-        @Parameterized.Parameters(name = "{index}: supports{0}({1})")
+        @Parameterized.Parameters(name = "supports{0}({1})")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
                     {Graph.Features.VariableFeatures.FEATURE_BOOLEAN_VALUES, true},

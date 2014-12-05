@@ -77,7 +77,7 @@ public class StrategyWrappedGraphTest  {
     @RunWith(Parameterized.class)
     public static class ToStringConsistencyTest extends AbstractGremlinTest {
 
-        @Parameterized.Parameters(name = "{index}: {0}")
+        @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
             return new ArrayList<Object[]>() {{
                 add(new Object[] {GraphStrategy.DefaultGraphStrategy.INSTANCE} );
@@ -247,7 +247,7 @@ public class StrategyWrappedGraphTest  {
     @RunWith(Parameterized.class)
     public static class EdgePropertyShouldBeWrappedTests extends AbstractGremlinTest {
 
-        @Parameterized.Parameters(name = "{index}: {0}")
+        @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
             final List<Pair<String, BiFunction<Graph, Edge, Stream<Property<Object>>>>> tests = new ArrayList<>();
             tests.add(Pair.with("e.property(all)", (Graph g, Edge e) -> Stream.of(e.property("all"))));
@@ -291,7 +291,7 @@ public class StrategyWrappedGraphTest  {
     @RunWith(Parameterized.class)
     public static class VertexPropertyPropertyShouldBeWrappedTests extends AbstractGremlinTest {
 
-        @Parameterized.Parameters(name = "{index}: {0}")
+        @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
             final List<Pair<String, BiFunction<Graph, VertexProperty, Stream<Property<Object>>>>> tests = new ArrayList<>();
             tests.add(Pair.with("vp.property(food)", (Graph g, VertexProperty vp) -> Stream.of(vp.property("food"))));
@@ -337,7 +337,7 @@ public class StrategyWrappedGraphTest  {
 
     @RunWith(Parameterized.class)
     public static class VertexPropertyShouldBeWrappedTest extends AbstractGremlinTest {
-        @Parameterized.Parameters(name = "{index}: {0}")
+        @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
             final List<Pair<String, BiFunction<Graph, Vertex, Stream<VertexProperty<Object>>>>> tests = new ArrayList<>();
             tests.add(Pair.with("v.property(all)", (Graph g, Vertex v) -> Stream.of(v.property("all"))));
@@ -380,7 +380,7 @@ public class StrategyWrappedGraphTest  {
 
     @RunWith(Parameterized.class)
     public static class VertexPropertyWithMultiPropertyShouldBeWrappedTest extends AbstractGremlinTest {
-        @Parameterized.Parameters(name = "{index}: {0}")
+        @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
             final List<Pair<String, BiFunction<Graph, Vertex, Stream<VertexProperty<Object>>>>> tests = new ArrayList<>();
             tests.add(Pair.with("v.property(all)", (Graph g, Vertex v) -> Stream.of(v.property("all"))));
@@ -424,7 +424,7 @@ public class StrategyWrappedGraphTest  {
 
     @RunWith(Parameterized.class)
     public static class EdgeShouldBeWrappedTest extends AbstractGremlinTest {
-        @Parameterized.Parameters(name = "{index}: {0}")
+        @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
             final List<Pair<String, BiFunction<Graph, AbstractGremlinTest, Stream<Edge>>>> tests = new ArrayList<>();
             tests.add(Pair.with("g.E()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.E())));
@@ -469,7 +469,7 @@ public class StrategyWrappedGraphTest  {
 
     @RunWith(Parameterized.class)
     public static class VertexShouldBeWrappedTest extends AbstractGremlinTest {
-        @Parameterized.Parameters(name = "{index}: {0}")
+        @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
             final List<Pair<String, BiFunction<Graph, AbstractGremlinTest, Stream<Vertex>>>> tests = new ArrayList<>();
             tests.add(Pair.with("g.V()", (Graph g, AbstractGremlinTest instance) -> StreamFactory.stream(g.V())));
@@ -521,7 +521,7 @@ public class StrategyWrappedGraphTest  {
 
     @RunWith(Parameterized.class)
     public static class GraphShouldBeWrappedTest extends AbstractGremlinTest {
-        @Parameterized.Parameters(name = "{index}: {0}")
+        @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
             final List<Pair<String, BiFunction<Graph, AbstractGremlinTest, Stream<Graph>>>> tests = new ArrayList<>();
             tests.add(Pair.with("g.v(1).graph()", (Graph g, AbstractGremlinTest instance) -> Stream.of(g.v(instance.convertToVertexId("marko")).graph())));

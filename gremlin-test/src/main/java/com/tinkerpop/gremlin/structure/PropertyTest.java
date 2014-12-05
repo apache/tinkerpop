@@ -153,21 +153,24 @@ public class PropertyTest {
     })
     public static class PropertyValidationOnAddExceptionConsistencyTest extends AbstractGremlinTest {
 
-        @Parameterized.Parameters(name = "{index}: expect - {1}")
+        @Parameterized.Parameters(name = "expect({0})")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
-                    {new Object[]{"odd", "number", "arguments"}, Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
-                    {new Object[]{"odd"}, Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
-                    {new Object[]{"odd", "number", 123, "test"}, Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
-                    {new Object[]{"odd", null}, Property.Exceptions.propertyValueCanNotBeNull()},
-                    {new Object[]{null, "val"}, Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
-                    {new Object[]{"", "val"}, Property.Exceptions.propertyKeyCanNotBeEmpty()}});
+                    {"providedKeyValuesMustBeAMultipleOfTwo", new Object[]{"odd", "number", "arguments"}, Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
+                    {"providedKeyValuesMustBeAMultipleOfTwo", new Object[]{"odd"}, Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
+                    {"providedKeyValuesMustHaveALegalKeyOnEvenIndices", new Object[]{"odd", "number", 123, "test"}, Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
+                    {"propertyValueCanNotBeNull", new Object[]{"odd", null}, Property.Exceptions.propertyValueCanNotBeNull()},
+                    {"providedKeyValuesMustHaveALegalKeyOnEvenIndices", new Object[]{null, "val"}, Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
+                    {"propertyKeyCanNotBeEmpty", new Object[]{"", "val"}, Property.Exceptions.propertyKeyCanNotBeEmpty()}});
         }
 
         @Parameterized.Parameter(value = 0)
-        public Object[] arguments;
+        public String name;
 
         @Parameterized.Parameter(value = 1)
+        public Object[] arguments;
+
+        @Parameterized.Parameter(value = 2)
         public Exception expectedException;
 
         @Test
@@ -249,22 +252,25 @@ public class PropertyTest {
     })
     public static class PropertyValidationOnSetExceptionConsistencyTest extends AbstractGremlinTest {
 
-        @Parameterized.Parameters(name = "{index}: expect - {2}")
+        @Parameterized.Parameters(name = "expect({0})")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
-                    {"k", null, Property.Exceptions.propertyValueCanNotBeNull()},
-                    {null, "v", Property.Exceptions.propertyKeyCanNotBeNull()},
-                    {"", "v", Property.Exceptions.propertyKeyCanNotBeEmpty()},
-                    {Graph.System.system("systemKey"), "value", Property.Exceptions.propertyKeyCanNotBeASystemKey(Graph.System.system("systemKey"))}});
+                    {"propertyValueCanNotBeNull", "k", null, Property.Exceptions.propertyValueCanNotBeNull()},
+                    {"propertyKeyCanNotBeNull", null, "v", Property.Exceptions.propertyKeyCanNotBeNull()},
+                    {"propertyKeyCanNotBeEmpty", "", "v", Property.Exceptions.propertyKeyCanNotBeEmpty()},
+                    {"propertyKeyCanNotBeASystemKey", Graph.System.system("systemKey"), "value", Property.Exceptions.propertyKeyCanNotBeASystemKey(Graph.System.system("systemKey"))}});
         }
 
         @Parameterized.Parameter(value = 0)
-        public String key;
+        public String name;
 
         @Parameterized.Parameter(value = 1)
-        public String val;
+        public String key;
 
         @Parameterized.Parameter(value = 2)
+        public String val;
+
+        @Parameterized.Parameter(value = 3)
         public Exception expectedException;
 
         @Test
@@ -304,7 +310,7 @@ public class PropertyTest {
     @RunWith(Parameterized.class)
     public static class EdgePropertiesShouldHideCorrectly extends AbstractGremlinTest {
 
-        @Parameterized.Parameters(name = "{index}: {0}")
+        @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
             final List<Pair<String, BiFunction<Graph, Edge, Boolean>>> tests = new ArrayList<>();
             tests.add(Pair.with("e.property(\"age\").isPresent()", (Graph g, Edge e) -> e.property("age").isPresent()));
@@ -389,7 +395,7 @@ public class PropertyTest {
             uniformIntegerList.add(300);
         }
 
-        @Parameterized.Parameters(name = "{index}: supports{0}({1})")
+        @Parameterized.Parameters(name = "supports{0}({1})")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
                     {PropertyFeatures.FEATURE_BOOLEAN_VALUES, true},

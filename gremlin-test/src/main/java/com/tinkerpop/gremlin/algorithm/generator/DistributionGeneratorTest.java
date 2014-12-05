@@ -26,7 +26,7 @@ public class DistributionGeneratorTest {
     @RunWith(Parameterized.class)
     public static class DifferentDistributionsTest extends AbstractGeneratorTest {
 
-        @Parameterized.Parameters(name = "{index}: test({0},{1})")
+        @Parameterized.Parameters(name = "test({0},{1})")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
                     {new NormalDistribution(2), new NormalDistribution(2)},
