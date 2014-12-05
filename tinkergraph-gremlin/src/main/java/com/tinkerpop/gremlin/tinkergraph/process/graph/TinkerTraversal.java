@@ -20,6 +20,5 @@ public class TinkerTraversal<S, E> extends DefaultGraphTraversal<S, E> {
 
     public TinkerTraversal(final TinkerGraph graph) {
         super(graph);
-        this.addStep(new StartStep<>(this));
     }
 }

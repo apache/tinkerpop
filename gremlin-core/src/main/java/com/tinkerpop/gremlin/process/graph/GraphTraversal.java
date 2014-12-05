@@ -59,6 +59,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SackElementValueStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SackObjectStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SumStep;
@@ -659,6 +660,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E>, CountTraversal<S,
     public default GraphTraversal<S, E> as(final String label) {
         TraversalHelper.verifyStepLabelIsNotAlreadyAStepLabel(label, this);
         TraversalHelper.verifyStepLabelIsNotASideEffectKey(label, this);
+        if(this.getSteps().size() == 0) this.addStep(new StartStep<>(this));
         TraversalHelper.getEnd(this).setLabel(label);
         return this;
     }
