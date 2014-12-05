@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.MessageScope;
 import com.tinkerpop.gremlin.process.computer.Messenger;
-import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.StatelessVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
@@ -29,7 +29,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PeerPressureVertexProgram extends AbstractVertexProgram<Pair<Serializable, Double>> {
+public class PeerPressureVertexProgram extends StatelessVertexProgram<Pair<Serializable, Double>> {
 
     private MessageScope.Local<?> voteScope = MessageScope.Local.of(() -> GraphTraversal.<Vertex>of().outE());
     private MessageScope.Local<?> countScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.voteScope));

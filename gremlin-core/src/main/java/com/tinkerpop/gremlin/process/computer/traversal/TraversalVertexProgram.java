@@ -11,7 +11,7 @@ import com.tinkerpop.gremlin.process.computer.MessageScope;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
-import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.StatelessVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.graph.marker.MapReducer;
@@ -26,7 +26,6 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.util.Arrays;
@@ -49,7 +48,7 @@ import java.util.function.Supplier;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalVertexProgram extends AbstractVertexProgram<TraverserSet<?>> {
+public final class TraversalVertexProgram implements VertexProgram<TraverserSet<?>> {
 
     public static final String HALTED_TRAVERSERS = Graph.Key.hide("gremlin.traversalVertexProgram.haltedTraversers");
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
@@ -100,7 +99,7 @@ public final class TraversalVertexProgram extends AbstractVertexProgram<Traverse
 
     @Override
     public void storeState(final Configuration configuration) {
-        super.storeState(configuration);
+        VertexProgram.super.storeState(configuration);
         this.traversalSupplier.storeState(configuration);
     }
 

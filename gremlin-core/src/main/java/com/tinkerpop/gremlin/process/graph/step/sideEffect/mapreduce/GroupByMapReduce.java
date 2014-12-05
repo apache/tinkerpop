@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.process.computer.util.AbstractMapReduce;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.process.util.BulkSet;
@@ -24,7 +23,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupByMapReduce extends AbstractMapReduce<Object, Collection, Object, Object, Map> {
+public final class GroupByMapReduce implements MapReduce<Object, Collection, Object, Object, Map> {
 
     public static final String GROUP_BY_STEP_SIDE_EFFECT_KEY = "gremlin.groupByStep.sideEffectKey";
     public static final String GROUP_BY_STEP_STEP_LABEL = "gremlin.groupByStep.stepLabel";
@@ -49,7 +48,7 @@ public final class GroupByMapReduce extends AbstractMapReduce<Object, Collection
 
     @Override
     public void storeState(final Configuration configuration) {
-        super.storeState(configuration);
+        MapReduce.super.storeState(configuration);
         configuration.setProperty(GROUP_BY_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
         configuration.setProperty(GROUP_BY_STEP_STEP_LABEL, this.groupByStepKey);
     }
@@ -113,7 +112,7 @@ public final class GroupByMapReduce extends AbstractMapReduce<Object, Collection
 
     @Override
     public GroupByMapReduce clone() throws CloneNotSupportedException {
-        final GroupByMapReduce clone = (GroupByMapReduce)super.clone();
+        final GroupByMapReduce clone = (GroupByMapReduce) super.clone();
         clone.traversal = this.traversal.clone();
         return clone;
     }

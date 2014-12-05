@@ -6,11 +6,11 @@ import org.apache.commons.configuration.Configuration;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class AbstractVertexProgram<M> implements VertexProgram<M> {
+public abstract class StatelessVertexProgram<M> implements VertexProgram<M> {
 
     @Override
-    public AbstractVertexProgram<M> clone() throws CloneNotSupportedException {
-        return (AbstractVertexProgram<M>) super.clone();
+    public StatelessVertexProgram<M> clone() throws CloneNotSupportedException {
+        return this;
     }
 
     @Override

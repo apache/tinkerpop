@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.process.computer.util.AbstractMapReduce;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.ProfileStep;
 import com.tinkerpop.gremlin.process.util.TraversalMetrics;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -13,7 +12,7 @@ import org.apache.commons.configuration.Configuration;
 
 import java.util.Iterator;
 
-public final class ProfileMapReduce extends AbstractMapReduce<MapReduce.NullObject, TraversalMetrics, MapReduce.NullObject, TraversalMetrics, TraversalMetrics> {
+public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, TraversalMetrics, MapReduce.NullObject, TraversalMetrics, TraversalMetrics> {
 
     private Traversal traversal;
 
@@ -64,7 +63,7 @@ public final class ProfileMapReduce extends AbstractMapReduce<MapReduce.NullObje
 
     @Override
     public ProfileMapReduce clone() throws CloneNotSupportedException {
-        final ProfileMapReduce clone = (ProfileMapReduce)super.clone();
+        final ProfileMapReduce clone = (ProfileMapReduce) super.clone();
         clone.traversal = this.traversal.clone();
         return clone;
     }
