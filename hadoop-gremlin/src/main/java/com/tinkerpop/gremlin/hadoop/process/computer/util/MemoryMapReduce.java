@@ -38,6 +38,7 @@ public class MemoryMapReduce implements MapReduce<MapReduce.NullObject, MapMemor
 
     @Override
     public void storeState(final Configuration configuration) {
+        MapReduce.super.storeState(configuration);
         configuration.setProperty(Constants.GREMLIN_HADOOP_MEMORY_KEYS, new ArrayList<>(this.memoryKeys.size()));
     }
 
