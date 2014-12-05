@@ -50,16 +50,6 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     @Override
-    public void addPlainStarts(final Iterator<S> starts, final long bulk) {
-        this.starts.add(this.traversal.getTraverserGenerator(TraversalEngine.STANDARD).generateIterator((Iterator) starts, this, bulk));
-    }
-
-    @Override
-    public void addPlainStart(final S start, final long bulk) {
-        this.starts.add(this.traversal.getTraverserGenerator(TraversalEngine.STANDARD).generate(start, this, bulk));
-    }
-
-    @Override
     public void setPreviousStep(final Step<?, S> step) {
         this.previousStep = step;
     }

@@ -34,10 +34,6 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Cloneable {
      */
     public void addStart(final Traverser<S> start);
 
-    public void addPlainStarts(final Iterator<S> starts, final long initialBulk);
-
-    public void addPlainStart(final S start, final long initialBulk);
-
     /**
      * Set the step that is previous to the current step.
      * Used for linking steps together to form a function chain.
