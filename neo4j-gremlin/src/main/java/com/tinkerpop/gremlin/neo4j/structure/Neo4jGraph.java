@@ -231,9 +231,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
 
     @Override
     public <S> Neo4jTraversal<S, S> of() {
-        final Neo4jTraversal<S, S> traversal = Neo4jTraversal.of(this);
-        traversal.addStep(new StartStep<>(traversal));
-        return traversal;
+        return Neo4jTraversal.of(this);
     }
 
     @Override
