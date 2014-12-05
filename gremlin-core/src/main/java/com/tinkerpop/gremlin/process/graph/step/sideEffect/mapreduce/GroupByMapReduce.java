@@ -109,4 +109,11 @@ public final class GroupByMapReduce implements MapReduce<Object, Collection, Obj
     public String toString() {
         return StringFactory.mapReduceString(this, this.sideEffectKey);
     }
+
+    @Override
+    public GroupByMapReduce clone() throws CloneNotSupportedException {
+        final GroupByMapReduce clone = (GroupByMapReduce) super.clone();
+        clone.traversal = this.traversal.clone();
+        return clone;
+    }
 }

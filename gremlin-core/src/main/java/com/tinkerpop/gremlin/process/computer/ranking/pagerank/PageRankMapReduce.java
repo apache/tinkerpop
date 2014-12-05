@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.computer.ranking.pagerank;
 
 import com.tinkerpop.gremlin.process.computer.KeyValue;
-import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.util.StatelessMapReduce;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -12,7 +12,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PageRankMapReduce implements MapReduce<Object, Double, Object, Double, Iterator<KeyValue<Object, Double>>> {
+public class PageRankMapReduce extends StatelessMapReduce<Object, Double, Object, Double, Iterator<KeyValue<Object, Double>>> {
 
     public static final String PAGE_RANK_SIDE_EFFECT_KEY = "gremlin.pageRankMapReduce.sideEffectKey";
     public static final String DEFAULT_SIDE_EFFECT_KEY = "pageRank";
@@ -29,6 +29,7 @@ public class PageRankMapReduce implements MapReduce<Object, Double, Object, Doub
 
     @Override
     public void storeState(final Configuration configuration) {
+        super.storeState(configuration);
         configuration.setProperty(PAGE_RANK_SIDE_EFFECT_KEY, this.sideEffectKey);
     }
 

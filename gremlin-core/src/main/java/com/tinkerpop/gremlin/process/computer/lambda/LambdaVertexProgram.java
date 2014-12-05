@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.computer.lambda;
 import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.MessageScope;
 import com.tinkerpop.gremlin.process.computer.Messenger;
-import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.StatelessVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
@@ -23,7 +23,7 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LambdaVertexProgram<M extends Serializable> implements VertexProgram<M> {
+public class LambdaVertexProgram<M extends Serializable> extends StatelessVertexProgram<M> {
 
     private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Arrays.asList(MessageScope.Global.instance()));
 
@@ -68,7 +68,7 @@ public class LambdaVertexProgram<M extends Serializable> implements VertexProgra
 
     @Override
     public void storeState(final Configuration configuration) {
-        configuration.setProperty(VERTEX_PROGRAM, this.getClass().getName());
+        super.storeState(configuration);
         if (null != this.setupLambdaHolder)
             this.setupLambdaHolder.storeState(configuration);
         if (null != this.executeLambdaHolder)

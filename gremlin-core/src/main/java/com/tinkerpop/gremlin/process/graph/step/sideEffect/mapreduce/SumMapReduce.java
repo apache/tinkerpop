@@ -81,4 +81,11 @@ public final class SumMapReduce implements MapReduce<MapReduce.NullObject, Doubl
     public String toString() {
         return StringFactory.mapReduceString(this);
     }
+
+    @Override
+    public SumMapReduce clone() throws CloneNotSupportedException {
+        final SumMapReduce clone = (SumMapReduce) super.clone();
+        clone.traversal = this.traversal.clone();
+        return clone;
+    }
 }

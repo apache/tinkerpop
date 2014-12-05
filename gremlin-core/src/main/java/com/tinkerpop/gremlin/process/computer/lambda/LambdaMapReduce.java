@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.computer.lambda;
 
 import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.util.StatelessMapReduce;
 import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -20,7 +21,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK, RV, R> {
+public class LambdaMapReduce<MK, MV, RK, RV, R> extends StatelessMapReduce<MK, MV, RK, RV, R> {
 
     public static final String MAP_LAMBDA = "gremlin.lambdaMapReduce.mapLambda";
     public static final String MAP_KEY_SORT = "gremlin.lambdaMapReduce.mapKeySort";
@@ -55,7 +56,7 @@ public class LambdaMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK,
 
     @Override
     public void storeState(final Configuration configuration) {
-        MapReduce.super.storeState(configuration);
+        super.storeState(configuration);
         if (null != this.mapLambdaHolder)
             this.mapLambdaHolder.storeState(configuration);
         if (null != this.mapKeySortLambdaHolder)

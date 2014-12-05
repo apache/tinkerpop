@@ -60,4 +60,11 @@ public final class ProfileMapReduce implements MapReduce<MapReduce.NullObject, T
     public String toString() {
         return StringFactory.mapReduceString(this);
     }
+
+    @Override
+    public ProfileMapReduce clone() throws CloneNotSupportedException {
+        final ProfileMapReduce clone = (ProfileMapReduce) super.clone();
+        clone.traversal = this.traversal.clone();
+        return clone;
+    }
 }

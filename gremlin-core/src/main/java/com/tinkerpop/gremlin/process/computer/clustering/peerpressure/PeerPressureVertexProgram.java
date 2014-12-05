@@ -4,8 +4,9 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.MessageScope;
 import com.tinkerpop.gremlin.process.computer.Messenger;
-import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.StatelessVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
+import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.util.MapHelper;
@@ -17,7 +18,6 @@ import com.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,7 +29,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializable, Double>> {
+public class PeerPressureVertexProgram extends StatelessVertexProgram<Pair<Serializable, Double>> {
 
     private MessageScope.Local<?> voteScope = MessageScope.Local.of(() -> GraphTraversal.<Vertex>of().outE());
     private MessageScope.Local<?> countScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.voteScope));
@@ -41,9 +41,10 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
 
     private static final String MAX_ITERATIONS = "gremlin.peerPressureVertexProgram.maxIterations";
     private static final String DISTRIBUTE_VOTE = "gremlin.peerPressureVertexProgram.distributeVote";
-    private static final String INCIDENT_TRAVERSAL = "gremlin.peerPressureVertexProgram.incidentTraversal";
+    private static final String INCIDENT_TRAVERSAL_SUPPLIER = "gremlin.peerPressureVertexProgram.incidentTraversalSupplier";
     private static final String VOTE_TO_HALT = "gremlin.peerPressureVertexProgram.voteToHalt";
 
+    private LambdaHolder<Supplier<Traversal<Vertex, Edge>>> traversalSupplier;
     private int maxIterations = 30;
     private boolean distributeVote = false;
 
@@ -56,29 +57,23 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
 
     @Override
     public void loadState(final Configuration configuration) {
+        this.traversalSupplier = LambdaHolder.loadState(configuration, INCIDENT_TRAVERSAL_SUPPLIER);
+        if (null != this.traversalSupplier) {
+            VertexProgramHelper.verifyReversibility(this.traversalSupplier.get().get());
+            this.voteScope = MessageScope.Local.of(this.traversalSupplier.get());
+            this.countScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.voteScope));
+        }
         this.maxIterations = configuration.getInt(MAX_ITERATIONS, 30);
         this.distributeVote = configuration.getBoolean(DISTRIBUTE_VOTE, false);
-        try {
-            if (configuration.containsKey(INCIDENT_TRAVERSAL)) {
-                final Supplier<Traversal> traversalSupplier = VertexProgramHelper.deserialize(configuration, INCIDENT_TRAVERSAL);
-                VertexProgramHelper.verifyReversibility(traversalSupplier.get());
-                this.voteScope = MessageScope.Local.of((Supplier) traversalSupplier);
-            }
-        } catch (final Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
     }
 
     @Override
     public void storeState(final Configuration configuration) {
-        configuration.setProperty(VERTEX_PROGRAM, PeerPressureVertexProgram.class.getName());
+        super.storeState(configuration);
+        this.traversalSupplier.storeState(configuration);
         configuration.setProperty(MAX_ITERATIONS, this.maxIterations);
         configuration.setProperty(DISTRIBUTE_VOTE, this.distributeVote);
-        try {
-            VertexProgramHelper.serialize(this.voteScope.getIncidentTraversal(), configuration, INCIDENT_TRAVERSAL);
-        } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+
     }
 
     @Override
@@ -187,14 +182,25 @@ public class PeerPressureVertexProgram implements VertexProgram<Pair<Serializabl
             return this;
         }
 
-        public Builder incidentTraversal(final Supplier<Traversal<Vertex, Edge>> incidentTraversal) throws IOException {
-            try {
-                VertexProgramHelper.serialize(incidentTraversal, this.configuration, INCIDENT_TRAVERSAL);
-            } catch (final IOException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
+        public Builder incident(final String scriptEngine, final String traversalScript) {
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SCRIPT, INCIDENT_TRAVERSAL_SUPPLIER, new String[]{scriptEngine, traversalScript});
             return this;
         }
+
+        public Builder incident(final String traversalScript) {
+            return incident(GREMLIN_GROOVY, traversalScript);
+        }
+
+        public Builder incident(final Supplier<Traversal<Vertex, Edge>> traversal) {
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, INCIDENT_TRAVERSAL_SUPPLIER, traversal);
+            return this;
+        }
+
+        public Builder incident(final Class<Supplier<Traversal<Vertex, Edge>>> traversalClass) {
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.CLASS, INCIDENT_TRAVERSAL_SUPPLIER, traversalClass);
+            return this;
+        }
+
     }
 
     ////////////////////////////

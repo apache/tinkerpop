@@ -87,4 +87,11 @@ public final class StoreMapReduce implements MapReduce<MapReduce.NullObject, Obj
     public String toString() {
         return StringFactory.mapReduceString(this, this.sideEffectKey);
     }
+
+    @Override
+    public StoreMapReduce clone() throws CloneNotSupportedException {
+        final StoreMapReduce clone = (StoreMapReduce) super.clone();
+        clone.traversal = this.traversal.clone();
+        return clone;
+    }
 }

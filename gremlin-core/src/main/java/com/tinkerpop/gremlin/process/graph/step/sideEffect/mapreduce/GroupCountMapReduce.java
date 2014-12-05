@@ -102,4 +102,11 @@ public final class GroupCountMapReduce implements MapReduce<Object, Long, Object
     public String toString() {
         return StringFactory.mapReduceString(this, this.sideEffectKey);
     }
+
+    @Override
+    public GroupCountMapReduce clone() throws CloneNotSupportedException {
+        final GroupCountMapReduce clone = (GroupCountMapReduce) super.clone();
+        clone.traversal = this.traversal.clone();
+        return clone;
+    }
 }

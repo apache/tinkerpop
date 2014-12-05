@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import org.apache.commons.configuration.Configuration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,18 +19,27 @@ public class TinkerWorkerPool {
     private List<VertexProgram> vertexPrograms;
     private State state;
 
-    public TinkerWorkerPool(final int numberOfWorkers, final State state, final Configuration configuration) {
-        this.state = state;
-        if (this.state.equals(State.VERTEX_PROGRAM)) {
+    public TinkerWorkerPool(final int numberOfWorkers, final VertexProgram vertexProgram) {
+        try {
+            this.state = State.VERTEX_PROGRAM;
             this.vertexPrograms = new ArrayList<>(numberOfWorkers);
             for (int i = 0; i < numberOfWorkers; i++) {
-                this.vertexPrograms.add(VertexProgram.createVertexProgram(configuration));
+                this.vertexPrograms.add(vertexProgram.clone());
             }
-        } else {
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    public TinkerWorkerPool(final int numberOfWorkers, final MapReduce mapReduce) {
+        try {
+            this.state = State.MAP_REDUCE;
             this.mapReducers = new ArrayList<>(numberOfWorkers);
             for (int i = 0; i < numberOfWorkers; i++) {
-                this.mapReducers.add(MapReduce.createMapReduce(configuration));
+                this.mapReducers.add(mapReduce.clone());
             }
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 

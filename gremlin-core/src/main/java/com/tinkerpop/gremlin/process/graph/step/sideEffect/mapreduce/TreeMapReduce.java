@@ -81,4 +81,11 @@ public final class TreeMapReduce implements MapReduce<Object, Tree, Object, Tree
     public String toString() {
         return StringFactory.mapReduceString(this, this.sideEffectKey);
     }
+
+    @Override
+    public TreeMapReduce clone() throws CloneNotSupportedException {
+        final TreeMapReduce clone = (TreeMapReduce) super.clone();
+        clone.traversal = this.traversal.clone();
+        return clone;
+    }
 }
