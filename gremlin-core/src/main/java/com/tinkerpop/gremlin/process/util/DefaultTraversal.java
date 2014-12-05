@@ -12,18 +12,19 @@ import com.tinkerpop.gremlin.structure.Graph;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DefaultTraversal<S, E> implements Traversal<S,E>, Traversal.Admin<S, E> {
+public class DefaultTraversal<S, E> implements Traversal<S, E>, Traversal.Admin<S, E> {
 
     private E lastEnd = null;
     private long lastEndCount = 0l;
-    protected boolean locked = false;
 
     protected List<Step> steps = new ArrayList<>();
     protected DefaultTraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
+    protected Optional<TraversalEngine> traversalEngine = Optional.empty();
 
     static {
         final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
@@ -40,21 +41,21 @@ public class DefaultTraversal<S, E> implements Traversal<S,E>, Traversal.Admin<S
     }
 
     @Override
-    public Traversal.Admin<S,E> asAdmin(){
+    public Traversal.Admin<S, E> asAdmin() {
         return this;
     }
 
     @Override
     public void applyStrategies(final TraversalEngine engine) {
-        if (!this.locked) {
+        if (!this.traversalEngine.isPresent()) {
             TraversalStrategies.GlobalCache.getStrategies(this.getClass()).apply(this, engine);
-            this.locked = true;
+            this.traversalEngine = Optional.of(engine);
         }
     }
 
     @Override
-    public boolean isLocked() {
-        return this.locked;
+    public Optional<TraversalEngine> getTraversalEngine() {
+        return this.traversalEngine;
     }
 
     @Override
@@ -127,7 +128,7 @@ public class DefaultTraversal<S, E> implements Traversal<S,E>, Traversal.Admin<S
     }
 
     @Override
-    public TraverserGenerator getTraverserGenerator(final TraversalEngine engine) {
-        return TraversalStrategies.GlobalCache.getStrategies(this.getClass()).getTraverserGenerator(this, engine);
+    public TraverserGenerator getTraverserGenerator() {
+        return TraversalStrategies.GlobalCache.getStrategies(this.getClass()).getTraverserGenerator(this);
     }
 }

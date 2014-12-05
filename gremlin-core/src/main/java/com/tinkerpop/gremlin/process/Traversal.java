@@ -236,16 +236,34 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
          * @return the updated traversal
          */
         public default <E2> Traversal<S, E2> addStep(final Step<?, E2> step) throws IllegalStateException {
-            if (this.isLocked()) throw Exceptions.traversalIsLocked();
+            if (this.getTraversalEngine().isPresent()) throw Exceptions.traversalIsLocked();
             TraversalHelper.insertStep(step, this);
             return (Traversal) this;
         }
 
+        /**
+         * Apply the registered {@link TraversalStrategies} to the traversal.
+         * Once the strategies are applied, the traversal is "locked" and can no longer have steps added to it.
+         *
+         * @param engine the engine that will ultimately execute the traversal.
+         */
         public void applyStrategies(final TraversalEngine engine);
 
-        public boolean isLocked();
+        /**
+         * When the {@link TraversalStrategies} have been applied, the destined {@link TraversalEngine} has been declared.
+         * Once a traversal engine has been declared, the traversal can no longer be extended, only executed.
+         *
+         * @return whether the traversal engine has been defined or not.
+         */
+        public Optional<TraversalEngine> getTraversalEngine();
 
-        public TraverserGenerator getTraverserGenerator(final TraversalEngine engine);
+        /**
+         * Get the {@link TraverserGenerator} associated with this traversal.
+         * The traversal generator creates {@link Traverser} instances that are respective of the traversal definition.
+         *
+         * @return the generator of traversers
+         */
+        public TraverserGenerator getTraverserGenerator();
 
         /**
          * Call the {@link Step#reset} method on every step in the traversal.
@@ -264,7 +282,6 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
             this.getSteps().stream().forEach(step -> ((Reversible) step).reverse());
             return this;
         }
-
     }
 
     public interface SideEffects extends Cloneable {

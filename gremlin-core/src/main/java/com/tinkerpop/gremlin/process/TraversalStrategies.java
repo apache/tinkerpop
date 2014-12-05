@@ -34,8 +34,10 @@ public interface TraversalStrategies {
 
     /**
      * Get the {@link TraverserGenerator} to use to generate traversers in the {@link Traversal}.
+     *
+     * @param traversal the traversal that will have traversers generated for it
      */
-    public TraverserGenerator getTraverserGenerator(final Traversal traversal, final TraversalEngine engine);
+    public TraverserGenerator getTraverserGenerator(final Traversal traversal);
 
     public static void sortStrategies(final List<? extends TraversalStrategy> strategies) {
         final SetMultimap<Class<? extends TraversalStrategy>, Class<? extends TraversalStrategy>> dependencyMap = HashMultimap.create();

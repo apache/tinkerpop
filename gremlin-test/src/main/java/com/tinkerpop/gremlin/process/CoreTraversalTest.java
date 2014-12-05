@@ -42,6 +42,8 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         } catch (Exception e) {
             fail("Should throw: " + Traversal.Exceptions.traversalIsLocked() + " not " + e + ":" + e.getMessage());
         }
+        traversal.iterate();
+        assertFalse(traversal.hasNext());
     }
 
     @Test
@@ -49,7 +51,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     public void shouldAddStartsProperly() {
         final Traversal<Object, Vertex> traversal = g.of().out().out();
         assertFalse(traversal.hasNext());
-        traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator(TraversalEngine.STANDARD).generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
+        traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
         assertTrue(traversal.hasNext());
         int counter = 0;
         while (traversal.hasNext()) {
@@ -58,8 +60,8 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         }
         assertEquals(2, counter);
 
-        traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator(TraversalEngine.STANDARD).generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
-        traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator(TraversalEngine.STANDARD).generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
+        traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
+        traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
         counter = 0;
         while (traversal.hasNext()) {
             counter++;
@@ -75,7 +77,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         final Traversal<Object, Vertex> traversal = g.of().as("a").out().out().<Vertex>has("name", Contains.within, Arrays.asList("ripple", "lop")).as("b");
         if (new Random().nextBoolean()) traversal.asAdmin().reset();
         assertFalse(traversal.hasNext());
-        traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator(TraversalEngine.STANDARD).generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
+        traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
         assertTrue(traversal.hasNext());
         int counter = 0;
         while (traversal.hasNext()) {
@@ -85,14 +87,14 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         assertEquals(2, counter);
 
         if (new Random().nextBoolean()) traversal.asAdmin().reset();
-        traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator(TraversalEngine.STANDARD).generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
+        traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
         assertTrue(traversal.hasNext());
         traversal.next();
         assertTrue(traversal.hasNext());
         traversal.asAdmin().reset();
         assertFalse(traversal.hasNext());
 
-        traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator(TraversalEngine.STANDARD).generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
+        traversal.asAdmin().addStarts(traversal.asAdmin().getTraverserGenerator().generateIterator(g.V(), traversal.asAdmin().getSteps().get(0), 1l));
         counter = 0;
         while (traversal.hasNext()) {
             counter++;

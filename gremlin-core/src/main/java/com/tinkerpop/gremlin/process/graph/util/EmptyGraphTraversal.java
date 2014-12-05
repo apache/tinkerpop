@@ -27,13 +27,9 @@ public class EmptyGraphTraversal<S, E> extends EmptyTraversal<S, E> implements G
         return this;
     }
 
+    @Override
     public <E2> GraphTraversal<S, E2> addStep(final Step<?, E2> step) {
         return instance();
-    }
-
-    @Override
-    public TraverserGenerator getTraverserGenerator(TraversalEngine engine) {
-        return null;
     }
 
     @Override

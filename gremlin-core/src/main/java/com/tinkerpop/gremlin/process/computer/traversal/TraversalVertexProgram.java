@@ -141,7 +141,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 throw new UnsupportedOperationException("TraversalVertexProgram currently only supports GraphStep starts on vertices or edges");
 
             final GraphStep<Element> startStep = (GraphStep<Element>) this.traversal.asAdmin().getSteps().get(0);   // TODO: make this generic to Traversal
-            final TraverserGenerator traverserGenerator = TraversalStrategies.GlobalCache.getStrategies(this.traversal.getClass()).getTraverserGenerator(this.traversal, TraversalEngine.COMPUTER);
+            final TraverserGenerator traverserGenerator = TraversalStrategies.GlobalCache.getStrategies(this.traversal.getClass()).getTraverserGenerator(this.traversal);
             final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.Admin.HALT : startStep.getNextStep().getLabel();
             final AtomicBoolean voteToHalt = new AtomicBoolean(true);
             final Iterator<? extends Element> starts = startStep.returnsVertices() ? new SingleIterator<>(vertex) : vertex.iterators().edgeIterator(Direction.OUT);

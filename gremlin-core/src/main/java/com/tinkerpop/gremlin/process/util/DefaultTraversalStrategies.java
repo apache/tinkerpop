@@ -27,10 +27,6 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
         }
     }
 
-    public void setTraverserGeneratorFactory(final TraverserGeneratorFactory traverserGeneratorFactory) {
-        this.traverserGeneratorFactory = traverserGeneratorFactory;
-    }
-
     @Override
     public List<TraversalStrategy> toList() {
         return new ArrayList<>(this.traversalStrategies);
@@ -42,7 +38,7 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     }
 
     @Override
-    public TraverserGenerator getTraverserGenerator(final Traversal traversal, final TraversalEngine engine) {
+    public TraverserGenerator getTraverserGenerator(final Traversal traversal) {
         return this.traverserGeneratorFactory.getTraverserGenerator(traversal);
     }
 

@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.TraverserGenerator;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -11,11 +10,12 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EmptyTraversal<S, E> implements Traversal.Admin<S,E> {
+public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
 
     private static final EmptyTraversal INSTANCE = new EmptyTraversal();
     private static final SideEffects SIDE_EFFECTS = new DefaultTraversalSideEffects();
@@ -29,7 +29,7 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S,E> {
     }
 
     @Override
-    public Traversal.Admin<S,E> asAdmin() {
+    public Traversal.Admin<S, E> asAdmin() {
         return this;
     }
 
@@ -54,8 +54,8 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S,E> {
     }
 
     @Override
-    public boolean isLocked() {
-        return true;
+    public Optional<TraversalEngine> getTraversalEngine() {
+        return Optional.empty();
     }
 
     @Override
@@ -89,7 +89,7 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S,E> {
     }
 
     @Override
-    public TraverserGenerator getTraverserGenerator(TraversalEngine engine) {
+    public TraverserGenerator getTraverserGenerator() {
         return null;
     }
 }
