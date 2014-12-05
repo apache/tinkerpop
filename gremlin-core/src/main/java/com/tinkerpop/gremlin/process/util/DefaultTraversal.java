@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
+public class DefaultTraversal<S, E> implements Traversal<S,E>, Traversal.Admin<S, E> {
 
     private E lastEnd = null;
     private long lastEndCount = 0l;
