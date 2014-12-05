@@ -32,7 +32,7 @@ public class Neo4jGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> imple
 
     @Override
     public <E2> Neo4jTraversal<S, E2> addStep(final Step<?, E2> step) {
-        if (this.locked) throw Exceptions.traversalIsLocked();
+        if (this.getTraversalEngine().isPresent()) throw Exceptions.traversalIsLocked();
         TraversalHelper.insertStep(step, this);
         return (Neo4jTraversal) this;
     }
