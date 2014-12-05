@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LocalStep<S, E> extends FlatMapStep<S, E> implements PathConsumer {
+public final class LocalStep<S, E> extends FlatMapStep<S, E> implements PathConsumer {
 
     private final Supplier<Traversal<S, E>> localTraversalSupplier;
     private Traversal<S, E> localTraversal;
