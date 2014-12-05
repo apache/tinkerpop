@@ -1,20 +1,22 @@
 package com.tinkerpop.gremlin.process.computer.util;
 
-import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.commons.configuration.Configuration;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class StatelessMapReduce<MK, MV, RK, RV, R> implements MapReduce<MK, MV, RK, RV, R> {
+public abstract class StaticVertexProgram<M> implements VertexProgram<M> {
 
     @Override
-    public MapReduce<MK, MV, RK, RV, R> clone() throws CloneNotSupportedException {
+    public StaticVertexProgram<M> clone() throws CloneNotSupportedException {
         return this;
     }
 
     @Override
     public void storeState(final Configuration configuration) {
-        MapReduce.super.storeState(configuration);
+        VertexProgram.super.storeState(configuration);
     }
+
 }
+
