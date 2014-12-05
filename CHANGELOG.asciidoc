@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `TraversalHolder` interface which extends `PathConsumer` to determine recursively if nested traversals require path calculations turned on.
 * Reworked how a `TraverserGenerator` is retrieved and utilized.
 * Added `Traversal.toBulkSet()` to make getting resultant data more efficiently for traversals with repeated data.
 * Provided a helper `LocalStep.isLocalStarGraph()` so `GraphComputer` implementers know the requisite data boundaries.
