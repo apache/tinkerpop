@@ -14,8 +14,9 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Pair;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,36 +39,36 @@ import java.util.stream.Collectors;
  */
 public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.Iterators {
 
-    DetachedVertex outVertex;
-    DetachedVertex inVertex;
+    private DetachedVertex outVertex;
+    private DetachedVertex inVertex;
+
+    private DetachedEdge() {
+
+    }
+
+    public DetachedEdge(final Edge edge, final boolean asReference) {
+        super(edge);
+        this.outVertex = DetachedFactory.detach(edge.iterators().vertexIterator(Direction.OUT).next(), true);
+        this.inVertex = DetachedFactory.detach(edge.iterators().vertexIterator(Direction.IN).next(), true);
+        if (!asReference) {
+            this.properties = new HashMap<>();
+            edge.iterators().propertyIterator().forEachRemaining(property -> this.properties.put(property.key(), DetachedElement.makeSinglePropertyList(DetachedFactory.detach(property))));
+        }
+    }
 
     public DetachedEdge(final Object id, final String label,
                         final Map<String, Object> properties,
                         final Pair<Object, String> outV,
                         final Pair<Object, String> inV) {
         super(id, label);
-        this.outVertex = new DetachedVertex(outV.getValue0(), outV.getValue1());
-        this.inVertex = new DetachedVertex(inV.getValue0(), inV.getValue1());
-        if (properties != null) this.properties.putAll(convertToDetachedProperty(properties));
-    }
-
-    private DetachedEdge() {
-    }
-
-    private DetachedEdge(final Edge edge, final boolean asReference) {
-        super(edge);
-        final Vertex outV = edge.iterators().vertexIterator(Direction.OUT).next();
-        final Vertex inV = edge.iterators().vertexIterator(Direction.IN).next();
-
-        // construct a detached vertex here since we don't need properties for DetachedEdge, just the
-        // reference to the id and label
-        this.outVertex = new DetachedVertex(outV.id(), outV.label());
-        this.inVertex = new DetachedVertex(inV.id(), inV.label());
-
-        if (!asReference) {
-            edge.iterators().propertyIterator().forEachRemaining(p -> this.properties.put(p.key(), new ArrayList(Arrays.asList(p instanceof DetachedProperty ? p : new DetachedProperty(p, this)))));
+        this.outVertex = new DetachedVertex(outV.getValue0(), outV.getValue1(), Collections.emptyMap());
+        this.inVertex = new DetachedVertex(inV.getValue0(), inV.getValue1(), Collections.emptyMap());
+        if (!properties.isEmpty()) {
+            this.properties = new HashMap<>();
+            this.properties.putAll(convertToDetachedProperty(properties));
         }
     }
+
 
     @Override
     public String toString() {
@@ -84,15 +85,6 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
     @Override
     public Edge attach(final Graph hostGraph) {
         return hostGraph.e(this.id);
-    }
-
-    public static DetachedEdge detach(final Edge edge) {
-        return detach(edge, false);
-    }
-
-    public static DetachedEdge detach(final Edge edge, final boolean asReference) {
-        if (null == edge) throw Graph.Exceptions.argumentCanNotBeNull("edge");
-        return (edge instanceof DetachedEdge) ? (DetachedEdge) edge : new DetachedEdge(edge, asReference);
     }
 
     public static Edge addTo(final Graph graph, final DetachedEdge detachedEdge) {
@@ -129,7 +121,6 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
         detachedEdge.properties.entrySet().forEach(kv ->
                         kv.getValue().forEach(p -> e.<Object>property(kv.getKey(), p.value()))
         );
-
         return e;
     }
 

@@ -7,9 +7,9 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.referenced.ReferencedElement;
-import com.tinkerpop.gremlin.structure.util.referenced.ReferencedFactory;
-import com.tinkerpop.gremlin.structure.util.referenced.ReferencedProperty;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedElement;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 
 import java.util.function.UnaryOperator;
 
@@ -181,58 +181,23 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     @Override
     public SimpleTraverser<T> detach() {
         if (this.t instanceof Element) {
-            this.t = (T) ReferencedFactory.detach((Element) this.t);
+            this.t = (T) DetachedFactory.detach((Element) this.t, true);
         } else if (this.t instanceof Property) {
-            this.t = (T) ReferencedFactory.detach((Property) this.t);
+            this.t = (T) DetachedFactory.detach((Property) this.t);
         } else if (this.t instanceof Path) {
-            this.t = (T) ReferencedFactory.detach((Path) this.t);
+            this.t = (T) DetachedFactory.detach((Path) this.t, true);
         }
         return this;
     }
 
     @Override
     public SimpleTraverser<T> attach(final Vertex vertex) {
-        if (this.t instanceof ReferencedElement) {
-            this.t = (T) ReferencedFactory.attach((ReferencedElement) this.t, vertex);
-        } else if (this.t instanceof ReferencedProperty) {
-            this.t = (T) ReferencedFactory.attach((ReferencedProperty) this.t, vertex);
-        }
-        // you do not want to attach a path because it will reference graph objects not at the current vertex
-        return this;
-    }
-
-    /*
-     @Override
-    public SimpleTraverser<T> deflate() {
-        if (this.t instanceof Vertex) {
-            this.t = (T) DetachedVertex.detach((Vertex) this.t);
-        } else if (this.t instanceof Edge) {
-            this.t = (T) DetachedEdge.detach((Edge) this.t);
-        } else if (this.t instanceof VertexProperty) {
-            this.t = (T) DetachedVertexProperty.detach((VertexProperty) this.t);
-        } else if (this.t instanceof Property) {
-            this.t = (T) DetachedProperty.detach((Property) this.t);
-        } else if (this.t instanceof Path) {
-            this.t = (T) DetachedPath.detach((Path) this.t);
-        }
-        this.dropSideEffects();
-        return this;
-    }
-
-    @Override
-    public SimpleTraverser<T> inflate(final Vertex vertex, final Traversal traversal) {
-        if (this.t instanceof DetachedVertex) {
-            this.t = (T) ((DetachedVertex) this.t).attach(vertex);
-        } else if (this.t instanceof DetachedEdge) {
-            this.t = (T) ((DetachedEdge) this.t).attach(vertex);
-        } else if (this.t instanceof DetachedVertexProperty) {
-            this.t = (T) ((DetachedVertexProperty) this.t).attach(vertex);
+        if (this.t instanceof DetachedElement) {
+            this.t = (T) DetachedFactory.attach((DetachedElement) this.t, vertex);
         } else if (this.t instanceof DetachedProperty) {
-            this.t = (T) ((DetachedProperty) this.t).attach(vertex);
+            this.t = (T) DetachedFactory.attach((DetachedProperty) this.t, vertex);
         }
         // you do not want to attach a path because it will reference graph objects not at the current vertex
-        this.sideEffects = traversal.sideEffects();
         return this;
     }
-     */
 }

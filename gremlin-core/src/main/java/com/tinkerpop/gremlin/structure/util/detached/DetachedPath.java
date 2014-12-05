@@ -2,11 +2,10 @@ package com.tinkerpop.gremlin.structure.util.detached;
 
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.util.MutablePath;
-import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.VertexProperty;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -17,50 +16,72 @@ public class DetachedPath extends MutablePath {
 
     }
 
-    private DetachedPath(final Path path) {
-        path.forEach((as, object) -> {
-            if (object instanceof DetachedElement || object instanceof DetachedProperty) {
+    public DetachedPath(final Path path, final boolean asReference) {
+        path.forEach((labels, object) -> {
+            if (object instanceof DetachedElement || object instanceof DetachedProperty || object instanceof DetachedPath) {
+                this.labels.add(labels);
                 this.objects.add(object);
-                this.labels.add(as);
-            } else if (object instanceof Vertex) {
-                this.objects.add(DetachedVertex.detach((Vertex) object));
-                this.labels.add(as);
-            } else if (object instanceof Edge) {
-                this.objects.add(DetachedEdge.detach((Edge) object));
-                this.labels.add(as);
-            } else if (object instanceof VertexProperty) {
-                this.objects.add(DetachedVertexProperty.detach((VertexProperty) object));
-                this.labels.add(as);
+            } else if (object instanceof Element) {
+                this.labels.add(labels);
+                this.objects.add(DetachedFactory.detach((Element) object, asReference));
             } else if (object instanceof Property) {
-                this.objects.add(DetachedProperty.detach((Property) object));
-                this.labels.add(as);
+                this.labels.add(labels);
+                this.objects.add(DetachedFactory.detach((Property) object));
+            } else if (object instanceof Path) {
+                this.labels.add(labels);
+                this.objects.add(DetachedFactory.detach((Path) object, asReference));
             } else {
+                this.labels.add(labels);
                 this.objects.add(object);
-                this.labels.add(as);
             }
         });
     }
 
-    public Path attach(final Graph graph) {
-        final Path path = MutablePath.make();
-        this.forEach((as, object) -> {
-            if (object instanceof DetachedVertex) {
-                path.extend(as, ((DetachedVertex) object).attach(graph));
-            } else if (object instanceof DetachedEdge) {
-                path.extend(as, ((DetachedEdge) object).attach(graph));
-            } else if (object instanceof DetachedVertexProperty) {
-                path.extend(as, ((DetachedVertexProperty) object).attach(graph));
-            } else if (object instanceof DetachedProperty) {
-                path.extend(as, ((DetachedProperty) object).attach(graph));
+    public Path attach(final Graph hostGraph) {
+        /*Path path = EmptyPath.instance();
+        for (int i = 0; i < this.objects.size(); i++) {
+            if (this.objects.get(i) instanceof Attachable) {
+                path.extend(this.labels.get(i), ((Attachable) this.objects.get(i)).attach(hostGraph));
             } else {
-                path.extend(as, object);
+                path.extend(this.labels.get(i), this.objects.get(i));
+            }
+
+            path = path.extend(this.labels.get(i), this.objects.get(i));
+        }
+        return path;*/
+
+        final Path path = MutablePath.make();
+        this.forEach((labels, object) -> {
+            if (object instanceof Attachable) {
+                path.extend(labels, ((Attachable) object).attach(hostGraph));
+            } else {
+                path.extend(labels, object);
             }
         });
         return path;
     }
 
-    public static DetachedPath detach(final Path path) {
-        return new DetachedPath(path);
+    public Path attach(final Vertex hostVertex) {
+        /*Path path = EmptyPath.instance();
+        for (int i = 0; i < this.objects.size(); i++) {
+            if (this.objects.get(i) instanceof Attachable) {
+                path.extend(this.labels.get(i), ((Attachable) this.objects.get(i)).attach(hostVertex));
+            } else {
+                path.extend(this.labels.get(i), this.objects.get(i));
+            }
+
+            path = path.extend(this.labels.get(i), this.objects.get(i));
+        }
+        return path;*/
+        final Path path = MutablePath.make();
+        this.forEach((labels, object) -> {
+            if (object instanceof Attachable) {
+                path.extend(labels, ((Attachable) object).attach(hostVertex));
+            } else {
+                path.extend(labels, object);
+            }
+        });
+        return path;
     }
 
     public String toString() {

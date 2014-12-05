@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.ImmutablePath;
 import com.tinkerpop.gremlin.process.util.PathAwareSideEffects;
-import com.tinkerpop.gremlin.structure.util.referenced.ReferencedFactory;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
 import java.util.function.UnaryOperator;
 
@@ -75,7 +75,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
     @Override
     public PathTraverser<T> detach() {
         super.detach();
-        this.path = ReferencedFactory.detach(this.path.clone());
+        this.path = DetachedFactory.detach(this.path.clone(), true);
         return this;
     }
 

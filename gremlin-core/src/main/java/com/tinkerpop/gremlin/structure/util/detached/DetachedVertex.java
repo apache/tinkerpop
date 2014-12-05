@@ -12,6 +12,8 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -34,25 +36,29 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
     private DetachedVertex() {
     }
 
-    public DetachedVertex(final Object id, final String label, final Map<String, Object> properties) {
-        super(id, label);
-        if (null != properties) this.properties.putAll(convertToDetachedVertexProperties(properties));
-    }
-
-    protected DetachedVertex(final Object id, final String label) {
-        super(id, label);
-    }
-
-    private DetachedVertex(final Vertex vertex, final boolean asReference) {
+    public DetachedVertex(final Vertex vertex, final boolean asReference) {
         super(vertex);
         if (!asReference) {
-            vertex.iterators().propertyIterator().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedVertexProperty ? p : new DetachedVertexProperty(p, this)));
+            this.properties = new HashMap<>();
+            vertex.iterators().propertyIterator().forEachRemaining(property -> {
+                final List<VertexProperty<?>> list = (List<VertexProperty<?>>) this.properties.getOrDefault(property.key(), new ArrayList<>());
+                list.add(DetachedFactory.detach(property, false));
+                this.properties.put(property.key(),list);
+            });
+        }
+    }
+
+    public DetachedVertex(final Object id, final String label, final Map<String, Object> properties) {
+        super(id, label);
+        if (!properties.isEmpty()) {
+            this.properties = new HashMap<>();
+            this.properties.putAll(convertToDetachedVertexProperties(properties));
         }
     }
 
     @Override
     public <V> VertexProperty<V> property(final String key, final V value) {
-        throw new UnsupportedOperationException("Detached elements are readonly: " + this);
+        throw new UnsupportedOperationException("Detached vertices are readonly: " + this);
     }
 
     @Override
@@ -95,15 +101,6 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
         return hostGraph.v(this.id);
     }
 
-    public static DetachedVertex detach(final Vertex vertex) {
-        return detach(vertex, false);
-    }
-
-    public static DetachedVertex detach(final Vertex vertex, final boolean asReference) {
-        if (null == vertex) throw Graph.Exceptions.argumentCanNotBeNull("vertex");
-        return (vertex instanceof DetachedVertex) ? (DetachedVertex) vertex : new DetachedVertex(vertex, asReference);
-    }
-
     public static Vertex addTo(final Graph graph, final DetachedVertex detachedVertex) {
         final Vertex vertex = graph.addVertex(T.id, detachedVertex.id(), T.label, detachedVertex.label());
         detachedVertex.properties.entrySet().forEach(kv ->
@@ -119,7 +116,6 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
                             vertex.property(kv.getKey(), property.value(), propsOnProps.toArray());
                         })
         );
-
         return vertex;
     }
 
@@ -128,11 +124,15 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
         return this;
     }
 
+    private static final String ID = "id";
+    private static final String LABEL = "label";
+    private static final String VALUE = "value";
+    private static final String PROPERTIES = "properties";
+
     private Map<String, List<Property>> convertToDetachedVertexProperties(final Map<String, Object> properties) {
         return properties.entrySet().stream()
                 .map(entry -> Pair.with(entry.getKey(), ((List<Map<String, Object>>) entry.getValue()).stream()
-                                .map(m -> (Property) new DetachedVertexProperty(m.get("id"), (String) m.get("label"), entry.getKey(),
-                                        m.get("value"), (Map<String, Object>) m.get("properties"), this))
+                                .map(m -> (Property) new DetachedVertexProperty<>(m.get(ID), (String) m.get(LABEL), entry.getKey(), m.get(VALUE), (Map<String, Object>) m.getOrDefault(PROPERTIES, new HashMap<>()), this))
                                 .collect(Collectors.toList()))
                 ).collect(Collectors.toMap(Pair::getValue0, Pair::getValue1));
     }
@@ -144,17 +144,11 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
 
     @Override
     public GraphTraversal<Vertex, Edge> edgeIterator(final Direction direction, final String... edgeLabels) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Detached vertices do not have edges");
     }
 
     @Override
     public GraphTraversal<Vertex, Vertex> vertexIterator(final Direction direction, final String... labels) {
-        throw new UnsupportedOperationException();
-    }
-
-    private final void putToList(final String key, final Property property) {
-        if (!this.properties.containsKey(key))
-            this.properties.put(key, new ArrayList<>());
-        ((List) this.properties.get(key)).add(property);
+        throw new UnsupportedOperationException("Detached vertices do not have edges and thus, adjacent vertices can not be accessed");
     }
 }

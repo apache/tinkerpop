@@ -7,9 +7,8 @@ import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,16 +17,28 @@ import java.util.Map;
  */
 public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> implements VertexProperty<V>, VertexProperty.Iterators {
 
-    String key;
-    V value;
-    transient DetachedVertex vertex;
+    protected String key;
+    protected V value;
+    protected transient DetachedVertex vertex;
 
-    /**
-     * Construct a {@code DetachedVertexProperty} during manual deserialization.
-     */
+    private DetachedVertexProperty() {
+    }
+
+    public DetachedVertexProperty(final VertexProperty vertexProperty, final boolean asReference) {
+        super(vertexProperty);
+        this.key = vertexProperty.key();
+        this.value = (V) vertexProperty.value();
+        this.vertex = DetachedFactory.detach(vertexProperty.element(), true);
+
+        if (!asReference & vertexProperty.graph().features().vertex().supportsMetaProperties()) {
+            this.properties = new HashMap<>();
+            vertexProperty.iterators().propertyIterator().forEachRemaining(property -> this.properties.put(property.key(), DetachedElement.makeSinglePropertyList(DetachedFactory.detach(property))));
+        }
+    }
+
     public DetachedVertexProperty(final Object id, final String label, final String key, final V value,
                                   final Map<String, Object> properties,
-                                  final DetachedVertex vertex) {
+                                  final Vertex vertex) {
         super(id, label);
         if (null == key) throw Graph.Exceptions.argumentCanNotBeNull("key");
         if (null == value) throw Graph.Exceptions.argumentCanNotBeNull("value");
@@ -35,34 +46,12 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
 
         this.key = key;
         this.value = value;
-        this.vertex = vertex;
+        this.vertex = DetachedFactory.detach(vertex, true);
 
-        if (properties != null)
-            properties.entrySet().iterator().forEachRemaining(kv -> putToList(kv.getKey(), new DetachedProperty(kv.getKey(), kv.getValue(), this)));
-    }
-
-    /**
-     * Construct a {@code DetachedVertexProperty} internally when a {@link DetachedVertex} is being constructed.
-     */
-    DetachedVertexProperty(final VertexProperty property, final DetachedVertex detachedVertex) {
-        super(property);
-        if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
-
-        this.key = property.key();
-        this.value = (V) property.value();
-        this.vertex = detachedVertex;
-
-        if (property.graph().features().vertex().supportsMetaProperties()) {
-            property.iterators().propertyIterator().forEachRemaining(p -> putToList(p.key(), p instanceof DetachedProperty ? p : new DetachedProperty(p, this)));
+        if (!properties.isEmpty()) {
+            this.properties = new HashMap<>();
+            properties.entrySet().iterator().forEachRemaining(entry -> this.properties.put(entry.getKey(), DetachedElement.makeSinglePropertyList(new DetachedProperty(entry.getKey(), entry.getValue(), this))));
         }
-    }
-
-    private DetachedVertexProperty(final VertexProperty property) {
-        this(property, property.element() instanceof DetachedVertex ? (DetachedVertex) property.element() : DetachedVertex.detach(property.element()));
-    }
-
-    private DetachedVertexProperty() {
-        // no implementation
     }
 
     @Override
@@ -120,10 +109,6 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
         return this.attach(this.vertex.attach(hostGraph));
     }
 
-    public static DetachedVertexProperty detach(final VertexProperty vertexProperty) {
-        if (null == vertexProperty) throw Graph.Exceptions.argumentCanNotBeNull("vertexProperty");
-        return (vertexProperty instanceof DetachedVertexProperty) ? (DetachedVertexProperty) vertexProperty : new DetachedVertexProperty(vertexProperty);
-    }
 
     @Override
     public VertexProperty.Iterators iterators() {
@@ -133,12 +118,5 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
     @Override
     public <U> Iterator<Property<U>> propertyIterator(final String... propertyKeys) {
         return (Iterator) super.propertyIterator(propertyKeys);
-    }
-
-    private void putToList(final String key, final Property p) {
-        if (!this.properties.containsKey(key))
-            this.properties.put(key, new ArrayList<>());
-
-        ((List) this.properties.get(key)).add(p);
     }
 }

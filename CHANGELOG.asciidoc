@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Merged `ReferencedXXX` and `DetachedXXX` so that all migration of graph element data is via `DetachedXXX`.
 * Added `StaticVertexProgram` and `StaticMapReduce` which simply return `this` on `clone()`.
 * `VertexProgram` and `MapReduce` now implement `Cloneable` and is used for fast copying across workers within the same machine.
 * Added `TraversalHolder` interface which extends `PathConsumer` to determine recursively if nested traversals require path calculations turned on.

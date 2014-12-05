@@ -9,9 +9,8 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 
 /**
  * Traverser class for {@link com.tinkerpop.gremlin.structure.Element} serializers.
@@ -27,7 +26,7 @@ class ElementSerializer {
     static class EdgeSerializer extends Serializer<Edge> {
         @Override
         public void write(final Kryo kryo, final Output output, final Edge edge) {
-            kryo.writeClassAndObject(output, DetachedEdge.detach(edge));
+            kryo.writeClassAndObject(output, DetachedFactory.detach(edge, false));
         }
 
         @Override
@@ -48,7 +47,7 @@ class ElementSerializer {
 
         @Override
         public void write(final Kryo kryo, final Output output, final Vertex vertex) {
-            kryo.writeClassAndObject(output, DetachedVertex.detach(vertex));
+            kryo.writeClassAndObject(output, DetachedFactory.detach(vertex, false));
         }
 
         @Override
@@ -63,7 +62,7 @@ class ElementSerializer {
 
         @Override
         public void write(final Kryo kryo, final Output output, final Property property) {
-            kryo.writeClassAndObject(output, DetachedProperty.detach(property));
+            kryo.writeClassAndObject(output, DetachedFactory.detach(property));
         }
 
         @Override
@@ -77,8 +76,8 @@ class ElementSerializer {
         }
 
         @Override
-        public void write(final Kryo kryo, final Output output, final VertexProperty property) {
-            kryo.writeClassAndObject(output, DetachedVertexProperty.detach(property));
+        public void write(final Kryo kryo, final Output output, final VertexProperty vertexProperty) {
+            kryo.writeClassAndObject(output, DetachedFactory.detach(vertexProperty, false));
         }
 
         @Override

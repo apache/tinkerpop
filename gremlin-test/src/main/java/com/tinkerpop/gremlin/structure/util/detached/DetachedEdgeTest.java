@@ -23,18 +23,13 @@ import static org.junit.Assert.*;
  */
 public class DetachedEdgeTest extends AbstractGremlinTest {
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldNotConstructWithNullElement() {
-        DetachedEdge.detach(null);
-    }
-
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotConstructNewWithSomethingAlreadyDetached() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("test", v);
-        final DetachedEdge de = DetachedEdge.detach(e);
-        assertSame(de, DetachedEdge.detach(de));
+        final DetachedEdge de = DetachedFactory.detach(e, false);
+        assertSame(de, DetachedFactory.detach(de, false));
     }
 
     @Test
@@ -43,7 +38,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldConstructDetachedEdge() {
         g.e(convertToEdgeId("marko", "knows", "vadas")).property(Graph.Key.hide("year"), 2002);
-        final DetachedEdge detachedEdge = DetachedEdge.detach(g.e(convertToEdgeId("marko", "knows", "vadas")));
+        final DetachedEdge detachedEdge = DetachedFactory.detach(g.e(convertToEdgeId("marko", "knows", "vadas")), false);
         assertEquals(convertToEdgeId("marko", "knows", "vadas"), detachedEdge.id());
         assertEquals("knows", detachedEdge.label());
         assertEquals(DetachedVertex.class, detachedEdge.iterators().vertexIterator(Direction.OUT).next().getClass());
@@ -64,7 +59,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldConstructDetachedEdgeAsReference() {
         g.e(convertToEdgeId("marko", "knows", "vadas")).property(Graph.Key.hide("year"), 2002);
-        final DetachedEdge detachedEdge = DetachedEdge.detach(g.e(convertToEdgeId("marko", "knows", "vadas")), true);
+        final DetachedEdge detachedEdge = DetachedFactory.detach(g.e(convertToEdgeId("marko", "knows", "vadas")), true);
         assertEquals(convertToEdgeId("marko", "knows", "vadas"), detachedEdge.id());
         assertEquals("knows", detachedEdge.label());
         assertEquals(DetachedVertex.class, detachedEdge.iterators().vertexIterator(Direction.OUT).next().getClass());
@@ -80,13 +75,13 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(GraphData.MODERN)
     public void shouldEvaluateToEqual() {
-        assertTrue(DetachedEdge.detach(g.e(convertToEdgeId("josh", "created", "lop"))).equals(DetachedEdge.detach(g.e(convertToEdgeId("josh", "created", "lop")))));
+        assertTrue(DetachedFactory.detach(g.e(convertToEdgeId("josh", "created", "lop")), false).equals(DetachedFactory.detach(g.e(convertToEdgeId("josh", "created", "lop")), false)));
     }
 
     @Test
     @LoadGraphWith(GraphData.MODERN)
     public void shouldHaveSameHashCode() {
-        assertEquals(DetachedEdge.detach(g.e(convertToEdgeId("josh", "created", "lop"))).hashCode(), DetachedEdge.detach(g.e(convertToEdgeId("josh", "created", "lop"))).hashCode());
+        assertEquals(DetachedFactory.detach(g.e(convertToEdgeId("josh", "created", "lop")), false).hashCode(), DetachedFactory.detach(g.e(convertToEdgeId("josh", "created", "lop")), false).hashCode());
     }
 
     @Test
@@ -98,7 +93,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         final Vertex vOut = g.v(convertToVertexId("josh"));
         final Vertex vIn = g.v(convertToVertexId("lop"));
         final Edge e = vOut.addEdge("created", vIn, "weight", 0.4d);
-        assertFalse(DetachedEdge.detach(g.e(joshCreatedLopEdgeId)).equals(DetachedEdge.detach(e)));
+        assertFalse(DetachedFactory.detach(g.e(joshCreatedLopEdgeId), false).equals(DetachedFactory.detach(e, false)));
     }
 
     @Test
@@ -134,7 +129,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     public void shouldNotAllowSetProperty() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("test", v);
-        final DetachedEdge detachedEdge = DetachedEdge.detach(e);
+        final DetachedEdge detachedEdge = DetachedFactory.detach(e, false);
         detachedEdge.property("test", "test");
     }
 
@@ -143,7 +138,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     public void shouldNotAllowRemove() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("test", v);
-        final DetachedEdge detachedEdge = DetachedEdge.detach(e);
+        final DetachedEdge detachedEdge = DetachedFactory.detach(e, false);
         detachedEdge.remove();
     }
 
@@ -152,7 +147,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     public void shouldNotTraverse() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("test", v);
-        final DetachedEdge detachedEdge = DetachedEdge.detach(e);
+        final DetachedEdge detachedEdge = DetachedFactory.detach(e, false);
         detachedEdge.start();
     }
 }

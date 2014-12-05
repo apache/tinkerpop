@@ -12,8 +12,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.referenced.ReferencedElement;
-import com.tinkerpop.gremlin.structure.util.referenced.ReferencedFactory;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedElement;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -45,7 +44,7 @@ public final class TraverserExecutor {
                 if (traverser.get() instanceof Element || traverser.get() instanceof Property) {      // GRAPH OBJECT
                     // if the element is remote, then message, else store it locally for re-processing
                     final Vertex hostingVertex = TraverserExecutor.getHostingVertex(traverser.get());
-                    if (!vertex.equals(hostingVertex) || traverser.get() instanceof ReferencedElement) {
+                    if (!vertex.equals(hostingVertex) || traverser.get() instanceof DetachedElement) { // TODO: why is the DetachedElement instanceof needed?
                         voteToHalt.set(false);
                         traverser.detach();
                         messenger.sendMessage(MessageScope.Global.of(hostingVertex), new TraverserSet<>(traverser));

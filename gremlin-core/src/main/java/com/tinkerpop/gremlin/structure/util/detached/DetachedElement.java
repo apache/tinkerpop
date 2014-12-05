@@ -6,7 +6,8 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -17,12 +18,16 @@ import java.util.Map;
  */
 public abstract class DetachedElement<E> implements Element, Element.Iterators, Serializable, Attachable<E> {
 
-    Object id;
-    String label;
-    Map<String, List<? extends Property>> properties = new HashMap<>();
+    protected Object id;
+    protected String label;
+    protected Map<String, List<? extends Property>> properties = Collections.emptyMap();
 
     protected DetachedElement() {
 
+    }
+
+    protected DetachedElement(final Element element) {
+        this(element.id(), element.label());
     }
 
     protected DetachedElement(final Object id, final String label) {
@@ -32,13 +37,9 @@ public abstract class DetachedElement<E> implements Element, Element.Iterators, 
         this.label = label;
     }
 
-    protected DetachedElement(final Element element) {
-        this(element.id(), element.label());
-    }
-
     @Override
     public Graph graph() {
-        throw new UnsupportedOperationException("The element is no longer attached to a graph");
+        throw new UnsupportedOperationException("The detached element is no longer attached to a graph");
     }
 
     @Override
@@ -84,6 +85,12 @@ public abstract class DetachedElement<E> implements Element, Element.Iterators, 
 
     @Override
     public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys) {
-        return (Iterator) this.properties.values().stream().flatMap(list -> list.stream()).filter(p -> ElementHelper.keyExists(p.key(), propertyKeys)).iterator();
+        return (Iterator) this.properties.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(), propertyKeys)).flatMap(entry -> entry.getValue().stream()).iterator();
+    }
+
+    protected static final <V> List<Property<V>> makeSinglePropertyList(final Property<V> property) {
+        final ArrayList<Property<V>> list = new ArrayList<>();
+        list.add(property);
+        return list;
     }
 }
