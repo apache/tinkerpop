@@ -16,6 +16,7 @@ TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Created `Traversal.Admin` to hide administrative methods. Added `Traversal.asAdmin()` to get at `Traversal.Admin`.
 * Fixed up all `Step` cloning operations realizing that Java8 lambdas are always bound to the calling class (no delegates).
 * Provided `local(traversal)` to signify that the internal traversal is locally bound to the incoming object.
+* Failed script evaluation in Gremlin Server now triggers the cancel of the process attempting to timeout the script if it were to run too long.
 * Greatly increased the speed of `ScriptEngineLambda` by making use of a static `ScriptEngine` cache.
 * Fixed a general bug in all sideEffect using steps where the sideEffect should be accessed via the `Traverser` not `Traversal`.
 * `GremlinPlugin` interface no longer has the `additionalDependencies` method - those dependencies are now defined by an entry in the manifest file for the jar called `Gremlin-Plugin-Dependencies`.

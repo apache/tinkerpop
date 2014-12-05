@@ -112,7 +112,7 @@ public class GremlinExecutor implements AutoCloseable {
 
         // select the gremlin threadpool to execute the script evaluation in
         final AtomicBoolean abort = new AtomicBoolean(false);
-        final CompletableFuture<Object> future = CompletableFuture.supplyAsync(() -> {
+        final CompletableFuture<Object> evaluationFuture = CompletableFuture.supplyAsync(() -> {
 
             final Bindings bindings = new SimpleBindings();
             bindings.putAll(this.globalBindings);
@@ -136,9 +136,9 @@ public class GremlinExecutor implements AutoCloseable {
             }
         }, executorService);
 
-        scheduleTimeout(future, script, abort);
+        scheduleTimeout(evaluationFuture, script, abort);
 
-        return future;
+        return evaluationFuture;
     }
 
     public ScriptEngines getScriptEngines() {
@@ -181,8 +181,12 @@ public class GremlinExecutor implements AutoCloseable {
                 }
             }, scriptEvaluationTimeout, TimeUnit.MILLISECONDS);
 
-            // Cancel the scheduled timeout if the eval future is complete.
-            evaluationFuture.thenRun(() -> sf.cancel(false));
+            // Cancel the scheduled timeout if the eval future is complete or the script evaluation failed
+            // with exception
+            evaluationFuture.handleAsync((v, t) -> {
+                logger.debug("Killing scheduled timeout on script evaluation as the eval completed (possibly with exception).");
+                return sf.cancel(true);
+            });
         }
     }
 
