@@ -85,6 +85,7 @@ class RemoteCommand extends ComplexCommandSupport {
     }
 
     def Object do_close = {
+        if (mediator.remotes.size() == 0) return "Please add a remote first with [connect]"
         def removed = mediator.removeCurrent()
         removed.close()
         return "Removed - $removed"
