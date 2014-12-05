@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.computer.util.MapMemory;
+import com.tinkerpop.gremlin.process.computer.util.StatelessMapReduce;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
@@ -19,7 +20,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MemoryMapReduce implements MapReduce<MapReduce.NullObject, MapMemory, MapReduce.NullObject, MapMemory, MapMemory> {
+public class MemoryMapReduce extends StatelessMapReduce<MapReduce.NullObject, MapMemory, MapReduce.NullObject, MapMemory, MapMemory> {
 
     public Set<String> memoryKeys = new HashSet<>();
 
@@ -38,7 +39,7 @@ public class MemoryMapReduce implements MapReduce<MapReduce.NullObject, MapMemor
 
     @Override
     public void storeState(final Configuration configuration) {
-        MapReduce.super.storeState(configuration);
+        super.storeState(configuration);
         configuration.setProperty(Constants.GREMLIN_HADOOP_MEMORY_KEYS, new ArrayList<>(this.memoryKeys.size()));
     }
 
