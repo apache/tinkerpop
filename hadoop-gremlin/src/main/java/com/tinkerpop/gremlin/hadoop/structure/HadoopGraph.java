@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -120,7 +119,7 @@ public class HadoopGraph implements Graph {
 
     @Override
     public <S> GraphTraversal<S, S> of() {
-        return new DefaultGraphTraversal<>(this);
+        return GraphTraversal.of();
     }
 
     @Override
