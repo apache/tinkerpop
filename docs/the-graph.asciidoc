@@ -341,15 +341,14 @@ Assuming this array is very large, loading all these edges in a single transacti
 
 [source,java]
 ----
-BatchGraph bgraph = BatchGraph.build(graph).vertexIdType(VertexIDType.STRING).bufferSize(1000).create();
+BatchGraph bgraph = BatchGraph.build(graph).vertexIdType(VertexIdType.STRING).bufferSize(1000).create();
 for (String[] quad : quads) {
     Vertex[] vertices = new Vertex[2];
     for (int i=0;i<2;i++) {
-        vertices[i] = bgraph.getVertex(quad[i]);
-        if (vertices[i]==null) vertices[i]=bgraph.addVertex(quad[i]);
+        vertices[i] = bgraph.v(quad[i]);
+        if (null == vertices[i]) vertices[i]=bgraph.addVertex(T.id, quad[i]);
     }
-    Edge edge = bgraph.addEdge(null,vertices[0],vertices[1],quad[2]);
-    edge.setProperty("annotation",quad[3]);
+    Edge edge = vertices[0].addEdge(quad[2],vertices[1], "annotation",quad[3]);
 }
 ----
 
