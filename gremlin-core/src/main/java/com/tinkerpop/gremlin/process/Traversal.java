@@ -61,13 +61,7 @@ public interface Traversal<S, E> extends Iterator<E>, Cloneable {
     public default Traversal<S, E> submit(final GraphComputer computer) {
         try {
             this.asAdmin().applyStrategies(TraversalEngine.COMPUTER);
-            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> {
-                try {
-                    return this.clone();
-                } catch (final CloneNotSupportedException e) {
-                    throw new IllegalStateException(e.getMessage(), e);
-                }
-            }).create();
+            final TraversalVertexProgram vertexProgram = TraversalVertexProgram.build().traversal(() -> this).create();
             final ComputerResult result = computer.program(vertexProgram).submit().get();
             final GraphTraversal<S, S> traversal = result.graph().of();
             return traversal.asAdmin().addStep(new ComputerResultStep<>(traversal, result, vertexProgram, true));

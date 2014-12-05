@@ -19,11 +19,12 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
     private boolean firstNext = true;
     private Graph resultantGraph;
     public double alpha;
-    public Supplier<Traversal<Vertex, Edge>> incidentTraversal = new PageRankVertexProgram.OutETraversalSupplier();
+    public Supplier<Traversal<Vertex, Edge>> incidentTraversal;
 
     public PageRankStep(final Traversal traversal, final double alpha) {
         super(traversal);
         this.graph = traversal.sideEffects().getGraph();
+        this.incidentTraversal = () -> this.graph.<Vertex>of().outE();
         this.alpha = alpha;
     }
 

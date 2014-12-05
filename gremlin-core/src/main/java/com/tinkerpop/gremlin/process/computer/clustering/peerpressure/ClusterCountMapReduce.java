@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.computer.clustering.peerpressure;
 
 import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
+import com.tinkerpop.gremlin.process.computer.util.AbstractMapReduce;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -15,7 +16,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ClusterCountMapReduce implements MapReduce<MapReduce.NullObject, Serializable, MapReduce.NullObject, Integer, Integer> {
+public class ClusterCountMapReduce extends AbstractMapReduce<MapReduce.NullObject, Serializable, MapReduce.NullObject, Integer, Integer> {
 
     public static final String CLUSTER_COUNT_SIDE_EFFECT_KEY = "gremlin.clusterCountMapReduce.sideEffectKey";
     public static final String DEFAULT_SIDE_EFFECT_KEY = "clusterCount";
@@ -33,6 +34,7 @@ public class ClusterCountMapReduce implements MapReduce<MapReduce.NullObject, Se
 
     @Override
     public void storeState(final Configuration configuration) {
+        super.storeState(configuration);
         configuration.setProperty(CLUSTER_COUNT_SIDE_EFFECT_KEY, this.sideEffectKey);
     }
 

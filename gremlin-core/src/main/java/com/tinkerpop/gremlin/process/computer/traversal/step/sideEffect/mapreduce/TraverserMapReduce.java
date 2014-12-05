@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.AbstractMapReduce;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.marker.Comparing;
 import com.tinkerpop.gremlin.process.graph.marker.Reducing;
@@ -27,7 +28,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraverserMapReduce implements MapReduce<Comparable, Object, Comparable, Object, Iterator<Object>> {
+public final class TraverserMapReduce extends AbstractMapReduce<Comparable, Object, Comparable, Object, Iterator<Object>> {
 
     public static final String TRAVERSERS = Graph.System.system("traversers");
 

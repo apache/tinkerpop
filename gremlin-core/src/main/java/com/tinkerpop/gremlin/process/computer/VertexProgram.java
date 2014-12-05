@@ -22,7 +22,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-public interface VertexProgram<M> {
+public interface VertexProgram<M> extends Cloneable {
 
     public static final String VERTEX_PROGRAM = "gremlin.vertexProgram";
 
@@ -165,6 +165,16 @@ public interface VertexProgram<M> {
     public default Set<MapReduce> getMapReducers() {
         return Collections.emptySet();
     }
+
+    /**
+     * When multiple workers on a single machine need VertexProgram instances, it is possible to use clone.
+     * This will provide a speedier way of generating instances, over the {@link VertexProgram#storeState} and {@link VertexProgram#loadState} model.
+     * The default implementation simply returns the object as it assumes that the VertexProgram instance is a stateless singleton.
+     *
+     * @return A clone of the VertexProgram object
+     * @throws CloneNotSupportedException
+     */
+    public VertexProgram<M> clone() throws CloneNotSupportedException;
 
     /**
      * A helper method to construct a {@link VertexProgram} given the content of the supplied configuration.

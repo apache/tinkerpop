@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.AbstractMapReduce;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SumStep;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -15,7 +16,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SumMapReduce implements MapReduce<MapReduce.NullObject, Double, MapReduce.NullObject, Double, Double> {
+public final class SumMapReduce extends AbstractMapReduce<MapReduce.NullObject, Double, MapReduce.NullObject, Double, Double> {
 
     private Traversal traversal;
 
@@ -80,5 +81,12 @@ public final class SumMapReduce implements MapReduce<MapReduce.NullObject, Doubl
     @Override
     public String toString() {
         return StringFactory.mapReduceString(this);
+    }
+
+    @Override
+    public SumMapReduce clone() throws CloneNotSupportedException {
+        final SumMapReduce clone = (SumMapReduce)super.clone();
+        clone.traversal = this.traversal.clone();
+        return clone;
     }
 }

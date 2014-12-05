@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.computer.Memory;
 import com.tinkerpop.gremlin.process.computer.MessageCombiner;
 import com.tinkerpop.gremlin.process.computer.MessageScope;
 import com.tinkerpop.gremlin.process.computer.Messenger;
-import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import com.tinkerpop.gremlin.process.computer.util.LambdaHolder;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
@@ -26,9 +26,9 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PageRankVertexProgram implements VertexProgram<Double> {
+public class PageRankVertexProgram extends AbstractVertexProgram<Double> {
 
-    private MessageScope.Local<Double> incidentMessageScope = MessageScope.Local.of(new OutETraversalSupplier());
+    private MessageScope.Local<Double> incidentMessageScope = MessageScope.Local.of(() -> GraphTraversal.<Vertex>of().outE());
     private MessageScope.Local<Double> countMessageScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.incidentMessageScope));
 
     public static final String PAGE_RANK = Graph.Key.hide("gremlin.pageRankVertexProgram.pageRank");
@@ -56,6 +56,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         if (null != this.traversalSupplier) {
             VertexProgramHelper.verifyReversibility(this.traversalSupplier.get().get());
             this.incidentMessageScope = MessageScope.Local.of(this.traversalSupplier.get());
+            this.countMessageScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.incidentMessageScope));
         }
         this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
         this.alpha = configuration.getDouble(ALPHA, 0.85d);
@@ -185,13 +186,5 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
                 return true;
             }
         };
-    }
-
-    ////////////////////////////
-
-    public static class OutETraversalSupplier implements Supplier<Traversal<Vertex, Edge>> {
-        public Traversal<Vertex, Edge> get() {
-            return GraphTraversal.<Vertex>of().outE();
-        }
     }
 }

@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.AbstractMapReduce;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
 import com.tinkerpop.gremlin.process.util.BulkSet;
@@ -19,7 +20,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AggregateMapReduce implements MapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
+public final class AggregateMapReduce extends AbstractMapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
 
     public static final String AGGREGATE_STEP_SIDE_EFFECT_KEY = "gremlin.aggregateStep.sideEffectKey";
 
@@ -39,7 +40,7 @@ public final class AggregateMapReduce implements MapReduce<MapReduce.NullObject,
 
     @Override
     public void storeState(final Configuration configuration) {
-        MapReduce.super.storeState(configuration);
+        super.storeState(configuration);
         configuration.setProperty(AGGREGATE_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
     }
 
@@ -86,5 +87,12 @@ public final class AggregateMapReduce implements MapReduce<MapReduce.NullObject,
     @Override
     public String toString() {
         return StringFactory.mapReduceString(this, this.sideEffectKey);
+    }
+
+    @Override
+    public AggregateMapReduce clone() throws CloneNotSupportedException {
+        final AggregateMapReduce clone = (AggregateMapReduce)super.clone();
+        clone.traversal = this.traversal.clone();
+        return clone;
     }
 }

@@ -21,7 +21,7 @@ import java.util.Optional;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface MapReduce<MK, MV, RK, RV, R> {
+public interface MapReduce<MK, MV, RK, RV, R> extends Cloneable {
 
     public static final String MAP_REDUCE = "gremlin.mapReduce";
 
@@ -150,6 +150,16 @@ public interface MapReduce<MK, MV, RK, RV, R> {
     public default void addResultToMemory(final Memory.Admin memory, final Iterator<KeyValue<RK, RV>> keyValues) {
         memory.set(this.getMemoryKey(), this.generateFinalResult(keyValues));
     }
+
+    /**
+     * When multiple workers on a single machine need MapReduce instances, it is possible to use clone.
+     * This will provide a speedier way of generating instances, over the {@link MapReduce#storeState} and {@link MapReduce#loadState} model.
+     * The default implementation simply returns the object as it assumes that the MapReduce instance is a stateless singleton.
+     *
+     * @return A clone of the MapReduce object
+     * @throws CloneNotSupportedException
+     */
+    public MapReduce<MK, MV, RK, RV, R> clone() throws CloneNotSupportedException;
 
     /**
      * A helper method to construct a {@link MapReduce} given the content of the supplied configuration.

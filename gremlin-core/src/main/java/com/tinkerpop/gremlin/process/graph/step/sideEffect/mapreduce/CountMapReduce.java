@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.KeyValue;
 import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.AbstractMapReduce;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -15,7 +16,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class CountMapReduce implements MapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
+public final class CountMapReduce extends AbstractMapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> {
 
     private Traversal traversal;
 
@@ -75,6 +76,13 @@ public final class CountMapReduce implements MapReduce<MapReduce.NullObject, Lon
     @Override
     public boolean equals(final Object object) {
         return GraphComputerHelper.areEqual(this, object);
+    }
+
+    @Override
+    public CountMapReduce clone() throws CloneNotSupportedException {
+        final CountMapReduce clone = (CountMapReduce)super.clone();
+        clone.traversal = this.traversal.clone();
+        return clone;
     }
 
     @Override

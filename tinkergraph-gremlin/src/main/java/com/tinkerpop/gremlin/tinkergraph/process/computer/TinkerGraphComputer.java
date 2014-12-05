@@ -32,7 +32,6 @@ public class TinkerGraphComputer implements GraphComputer {
     private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
     private final Set<MapReduce> mapReduces = new HashSet<>();
-    private Configuration configuration = new BaseConfiguration();
 
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;
@@ -76,12 +75,11 @@ public class TinkerGraphComputer implements GraphComputer {
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
             if (null != this.vertexProgram) {
-                this.vertexProgram.storeState(this.configuration);
                 TinkerHelper.createGraphView(this.graph, this.isolation, this.vertexProgram.getElementComputeKeys());
                 // execute the vertex program
                 this.vertexProgram.setup(this.memory);
                 this.memory.completeSubRound();
-                final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors(), TinkerWorkerPool.State.VERTEX_PROGRAM, this.configuration);
+                final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors(), this.vertexProgram);
                 while (true) {
                     workers.executeVertexProgram(vertexProgram -> vertexProgram.workerIterationStart(this.memory.asImmutable()));
                     final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(TinkerHelper.getVertices(this.graph).iterator());
@@ -108,8 +106,7 @@ public class TinkerGraphComputer implements GraphComputer {
 
             // execute mapreduce jobs
             for (final MapReduce mapReduce : this.mapReduces) {
-                mapReduce.storeState(this.configuration);
-                final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors(), TinkerWorkerPool.State.MAP_REDUCE, this.configuration);
+                final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors(), mapReduce);
                 if (mapReduce.doStage(MapReduce.Stage.MAP)) {
                     final TinkerMapEmitter<?, ?> mapEmitter = new TinkerMapEmitter<>(mapReduce.doStage(MapReduce.Stage.REDUCE));
                     final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(TinkerHelper.getVertices(this.graph).iterator());
