@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
+import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -90,6 +91,43 @@ public @interface LoadGraphWith {
             add(FeatureRequirement.Factory.create(FEATURE_INTEGER_VALUES, VertexPropertyFeatures.class));
         }};
 
+        private static final Schema classicSchema = Schema.build()
+                .addEdgeLabel("knows").addEdgeLabel("created")
+                .addVertexLabel(Vertex.DEFAULT_LABEL)
+                .addEdgePropertyDefinition("weight", Float.class)
+                .addVertexPropertyDefinition("name", String.class)
+                .addVertexPropertyDefinition("age", Integer.class).create();
+
+        private static final Schema modernSchema = Schema.build()
+                .addEdgeLabel("knows").addEdgeLabel("created")
+                .addVertexLabel(Vertex.DEFAULT_LABEL)
+                .addEdgePropertyDefinition("weight", Double.class)
+                .addVertexPropertyDefinition("name", String.class)
+                .addVertexPropertyDefinition("age", Integer.class).create();
+
+        private static final Schema gratefulSchema = Schema.build()
+                .addEdgeLabel("followedBy").addEdgeLabel("sungBy").addEdgeLabel("writtenBy")
+                .addVertexLabel("song").addVertexLabel("artist")
+                .addEdgePropertyDefinition("weight", Double.class)
+                .addVertexPropertyDefinition("name", String.class)
+                .addVertexPropertyDefinition("songType", String.class)
+                .addVertexPropertyDefinition("performances", Integer.class).create();
+
+        private static final Schema crewSchema = Schema.build()
+                .addEdgeLabel("develops").addEdgeLabel("uses").addEdgeLabel("traverses")
+                .addVertexLabel("person").addVertexLabel("software")
+                .addEdgePropertyDefinition("since", Integer.class)
+                .addEdgePropertyDefinition("skill", Integer.class)
+                .addEdgePropertyDefinition(Graph.Key.hide("visible"), Boolean.class)
+                .addVertexPropertyDefinition(Graph.Key.hide("visible"), Boolean.class)
+                .addVertexPropertyDefinition("name", String.class,
+                        new Schema.PropertyDefinition("startTime", Integer.class),
+                        new Schema.PropertyDefinition("endTime", Integer.class))
+                .addVertexPropertyDefinition("location", String.class)
+                .addVariablePropertyDefinition("creator", String.class)
+                .addVariablePropertyDefinition("lastModified", Integer.class)
+                .addVariablePropertyDefinition("comment", String.class).create();
+
         public String location() {
             switch (this) {
                 case CLASSIC:
@@ -118,6 +156,21 @@ public @interface LoadGraphWith {
             }
 
             throw new RuntimeException("No features for this GraphData type");
+        }
+
+        public Schema schema() {
+            switch (this) {
+                case CLASSIC:
+                    return classicSchema;
+                case CREW:
+                    return crewSchema;
+                case MODERN:
+                    return modernSchema;
+                case GRATEFUL:
+                    return gratefulSchema;
+            }
+
+            throw new RuntimeException("No schema for this GraphData type");
         }
     }
 
