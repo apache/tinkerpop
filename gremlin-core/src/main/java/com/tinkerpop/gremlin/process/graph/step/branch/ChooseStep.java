@@ -2,9 +2,11 @@ package com.tinkerpop.gremlin.process.graph.step.branch;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.marker.TraversalHolder;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +19,7 @@ import java.util.function.Predicate;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> {
+public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> implements TraversalHolder<S,E> {
 
     private final Function<Traverser<S>, M> mapFunction;
     private Map<M, Traversal<S, E>> choices;
@@ -44,6 +46,11 @@ public final class ChooseStep<S, E, M> extends FlatMapStep<S, E> {
 
     public Map<M, Traversal<S, E>> getChoices() {
         return this.choices;
+    }
+
+    @Override
+    public Collection<Traversal<S,E>> getTraversals() {
+       return this.choices.values();
     }
 
     @Override

@@ -8,4 +8,5 @@ public interface Ranging {
     public long getLowRange();
 
     public long getHighRange();
+
 }
