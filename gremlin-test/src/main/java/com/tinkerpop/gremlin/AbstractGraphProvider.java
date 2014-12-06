@@ -57,9 +57,11 @@ public abstract class AbstractGraphProvider implements GraphProvider {
     }
 
     @Override
-    public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith) {
+    public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith, final Class testClass, final String testName) {
         try {
-            readIntoGraph(g, loadGraphWith.value().location());
+            // loadGraphWith will be null if an annotation isn't assigned.  it simply means that the graph is
+            // created in an ad-hoc manner for the tests - just don't try to read any data into it.
+            if (loadGraphWith != null) readIntoGraph(g, loadGraphWith.value().location());
         } catch (IOException ioe) {
             throw new RuntimeException("Graph could not be loaded with data for test: " + ioe.getMessage());
         }

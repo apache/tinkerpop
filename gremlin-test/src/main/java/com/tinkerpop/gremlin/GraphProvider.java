@@ -147,12 +147,16 @@ public interface GraphProvider {
      * Tests are annotated with a {@link com.tinkerpop.gremlin.LoadGraphWith} annotation. These annotations tell
      * the test what kind of data to preload into the graph instance.  It is up to the implementation to load the
      * graph with the data specified by that annotation. This method also represents the place where indices should
-     * be configured according the the {@link Graph} implementation's API.
+     * be configured according the the {@link Graph} implementation's API. Implementers can use the {@code testClass}
+     * and {@code testName} arguments to implement test specific configurations to their graphs.
      *
      * @param g             the {@link Graph} instance to load data into constructed by this {@code GraphProvider}
-     * @param loadGraphWith the annotation for the currently running test
+     * @param loadGraphWith the annotation for the currently running test - this value may be null if no graph
+     *                      data is to be loaded in front of the test.
+     * @param testClass     the test class being executed
+     * @param testName      the name of the test method being executed
      */
-    public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith);
+    public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith, final Class testClass, final String testName);
 
 
     /**

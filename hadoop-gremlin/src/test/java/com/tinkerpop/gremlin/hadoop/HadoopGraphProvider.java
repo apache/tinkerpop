@@ -24,6 +24,7 @@ import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class HadoopGraphProvider extends AbstractGraphProvider {
 
@@ -77,11 +78,11 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
     }
 
     @Override
-    public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith) {
-        this.loadGraphData(g, loadGraphWith.value());
+    public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith, final Class testClass, final String testName) {
+        if (loadGraphWith != null) this.loadGraphDataViaHadoopConfig(g, loadGraphWith.value());
     }
 
-    public void loadGraphData(final Graph g, final LoadGraphWith.GraphData graphData) {
+    public void loadGraphDataViaHadoopConfig(final Graph g, final LoadGraphWith.GraphData graphData) {
 
         if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL)) {
             ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("grateful-dead-vertices.gio"));

@@ -31,9 +31,9 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
     }
 
     @Override
-    public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith) {
-        this.createIndices((Neo4jGraph) g, loadGraphWith.value());
-        super.loadGraphData(g, loadGraphWith);
+    public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith, final Class testClass, final String testName) {
+        if (loadGraphWith != null) this.createIndices((Neo4jGraph) g, loadGraphWith.value());
+        super.loadGraphData(g, loadGraphWith, testClass, testName);
     }
 
     private void createIndices(final Neo4jGraph g, final LoadGraphWith.GraphData graphData) {
