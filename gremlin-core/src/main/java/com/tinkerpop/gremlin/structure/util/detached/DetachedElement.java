@@ -89,7 +89,7 @@ public abstract class DetachedElement<E> implements Element, Element.Iterators, 
     }
 
     protected static final <V> List<Property<V>> makeSinglePropertyList(final Property<V> property) {
-        final ArrayList<Property<V>> list = new ArrayList<>(1);
+        final List<Property<V>> list = new ArrayList<>(1);
         list.add(property);
         return list;
     }
