@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DetachedPath extends MutablePath {
+public class DetachedPath extends MutablePath implements Attachable<Path> {
 
     public DetachedPath() {
 
