@@ -22,17 +22,13 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
     private DetachedProperty() {
     }
 
-    public DetachedProperty(final Property property) {
+    protected DetachedProperty(final Property<V> property) {
         this.key = property.key();
-        this.value = (V) property.value();
+        this.value = property.value();
         this.element = DetachedFactory.detach(property.element(), true);
     }
 
     public DetachedProperty(final String key, final V value, final Element element) {
-        if (null == key) throw Graph.Exceptions.argumentCanNotBeNull("key");
-        if (null == value) throw Graph.Exceptions.argumentCanNotBeNull("value");
-        if (null == element) throw Graph.Exceptions.argumentCanNotBeNull("element");
-
         this.key = key;
         this.value = value;
         this.element = DetachedFactory.detach(element, true);

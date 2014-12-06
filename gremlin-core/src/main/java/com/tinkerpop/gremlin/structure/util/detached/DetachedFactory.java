@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.structure.util.detached;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
@@ -40,70 +39,6 @@ public class DetachedFactory {
         else if (element instanceof VertexProperty)
             return detach((VertexProperty) element, asReference);
         else
-            throw new IllegalArgumentException("The provided argument is an unknown element: " + element);
-    }
-
-    /////////////////////////////
-
-    public static Vertex attach(final DetachedVertex vertex, final Vertex hostVertex) {
-        return vertex.attach(hostVertex);
-    }
-
-    public static Edge attach(final DetachedEdge edge, final Vertex hostVertex) {
-        return edge.attach(hostVertex);
-    }
-
-    public static VertexProperty attach(final DetachedVertexProperty vertexProperty, final Vertex hostVertex) {
-        return vertexProperty.attach(hostVertex);
-    }
-
-    public static Property attach(final DetachedProperty property, final Vertex hostVertex) {
-        return property.attach(hostVertex);
-    }
-
-    public static Path attach(final DetachedPath path, final Vertex hostVertex) {
-        return path.attach(hostVertex);
-    }
-
-    public static Element attach(final DetachedElement element, final Vertex hostVertex) {
-        if (element instanceof Vertex)
-            return attach((DetachedVertex) element, hostVertex);
-        else if (element instanceof Edge)
-            return attach((DetachedEdge) element, hostVertex);
-        else if (element instanceof VertexProperty)
-            return attach((DetachedVertexProperty) element, hostVertex);
-        else
-            throw new IllegalArgumentException("The provided argument is an unknown element: " + element);
-    }
-
-    public static Vertex attach(final DetachedVertex vertex, final Graph hostGraph) {
-        return vertex.attach(hostGraph);
-    }
-
-    public static Edge attach(final DetachedEdge edge, final Graph hostGraph) {
-        return edge.attach(hostGraph);
-    }
-
-    public static VertexProperty attach(final DetachedVertexProperty vertexProperty, final Graph hostGraph) {
-        return vertexProperty.attach(hostGraph);
-    }
-
-    public static Property attach(final DetachedProperty property, final Graph hostGraph) {
-        return property.attach(hostGraph);
-    }
-
-    public static Path attach(final DetachedPath path, final Graph hostGraph) {
-        return path.attach(hostGraph);
-    }
-
-    public static Element attach(final DetachedElement element, final Graph hostGraph) {
-        if (element instanceof Vertex)
-            return attach((DetachedVertex) element, hostGraph);
-        else if (element instanceof Edge)
-            return attach((DetachedEdge) element, hostGraph);
-        else if (element instanceof VertexProperty)
-            return attach((DetachedVertexProperty) element, hostGraph);
-        else
-            throw new IllegalArgumentException("The provided argument is an unknown element: " + element);
+            throw new IllegalArgumentException("The provided argument is an unknown element: " + element + ":" + element.getClass());
     }
 }

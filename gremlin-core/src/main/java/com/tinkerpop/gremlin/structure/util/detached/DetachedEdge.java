@@ -14,14 +14,11 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.javatuples.Pair;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 /**
  * Represents an {@link Edge} that is disconnected from a {@link Graph}.  "Disconnection" can mean detachment from
@@ -46,7 +43,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
 
     }
 
-    public DetachedEdge(final Edge edge, final boolean asReference) {
+    protected DetachedEdge(final Edge edge, final boolean asReference) {
         super(edge);
         this.outVertex = DetachedFactory.detach(edge.iterators().vertexIterator(Direction.OUT).next(), true);
         this.inVertex = DetachedFactory.detach(edge.iterators().vertexIterator(Direction.IN).next(), true);
@@ -65,7 +62,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
         this.inVertex = new DetachedVertex(inV.getValue0(), inV.getValue1(), Collections.emptyMap());
         if (!properties.isEmpty()) {
             this.properties = new HashMap<>();
-            this.properties.putAll(convertToDetachedProperty(properties));
+            properties.entrySet().stream().forEach(entry -> this.properties.put(entry.getKey(), makeSinglePropertyList(new DetachedProperty<>(entry.getKey(), entry.getValue(), this))));
         }
     }
 
@@ -118,9 +115,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
         }
 
         final Edge e = outV.addEdge(detachedEdge.label(), inV, T.id, detachedEdge.id());
-        detachedEdge.properties.entrySet().forEach(kv ->
-                        kv.getValue().forEach(p -> e.<Object>property(kv.getKey(), p.value()))
-        );
+        detachedEdge.properties.entrySet().forEach(kv -> kv.getValue().forEach(p -> e.<Object>property(kv.getKey(), p.value())));
         return e;
     }
 
@@ -132,12 +127,6 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
     @Override
     public GraphTraversal<Edge, Edge> start() {
         throw new UnsupportedOperationException("Detached edges cannot be traversed: " + this);
-    }
-
-    private Map<String, List<Property>> convertToDetachedProperty(final Map<String, Object> properties) {
-        return properties.entrySet().stream()
-                .map(entry -> Pair.with(entry.getKey(), (Property) new DetachedProperty(entry.getKey(), entry.getValue(), this)))
-                .collect(Collectors.toMap(p -> p.getValue0(), p -> Arrays.asList(p.getValue1())));
     }
 
     @Override

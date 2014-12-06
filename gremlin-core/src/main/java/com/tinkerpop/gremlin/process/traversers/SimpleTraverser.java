@@ -193,9 +193,9 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     @Override
     public SimpleTraverser<T> attach(final Vertex vertex) {
         if (this.t instanceof DetachedElement) {
-            this.t = (T) DetachedFactory.attach((DetachedElement) this.t, vertex);
+            this.t = (T) ((DetachedElement) this.t).attach(vertex);
         } else if (this.t instanceof DetachedProperty) {
-            this.t = (T) DetachedFactory.attach((DetachedProperty) this.t, vertex);
+            this.t = (T) ((DetachedProperty) this.t).attach(vertex);
         }
         // you do not want to attach a path because it will reference graph objects not at the current vertex
         return this;

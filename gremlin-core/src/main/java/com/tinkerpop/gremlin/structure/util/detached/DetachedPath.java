@@ -16,7 +16,7 @@ public class DetachedPath extends MutablePath {
 
     }
 
-    public DetachedPath(final Path path, final boolean asReference) {
+    protected DetachedPath(final Path path, final boolean asReference) {
         path.forEach((labels, object) -> {
             if (object instanceof DetachedElement || object instanceof DetachedProperty || object instanceof DetachedPath) {
                 this.labels.add(labels);

@@ -9,10 +9,8 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import org.javatuples.Pair;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -33,17 +31,22 @@ import java.util.stream.Collectors;
  */
 public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, Vertex.Iterators {
 
+    private static final String ID = "id";
+    private static final String LABEL = "label";
+    private static final String VALUE = "value";
+    private static final String PROPERTIES = "properties";
+
     private DetachedVertex() {
     }
 
-    public DetachedVertex(final Vertex vertex, final boolean asReference) {
+    protected DetachedVertex(final Vertex vertex, final boolean asReference) {
         super(vertex);
         if (!asReference) {
             this.properties = new HashMap<>();
             vertex.iterators().propertyIterator().forEachRemaining(property -> {
                 final List<VertexProperty<?>> list = (List<VertexProperty<?>>) this.properties.getOrDefault(property.key(), new ArrayList<>());
                 list.add(DetachedFactory.detach(property, false));
-                this.properties.put(property.key(),list);
+                this.properties.put(property.key(), list);
             });
         }
     }
@@ -52,7 +55,9 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
         super(id, label);
         if (!properties.isEmpty()) {
             this.properties = new HashMap<>();
-            this.properties.putAll(convertToDetachedVertexProperties(properties));
+            properties.entrySet().stream().forEach(entry -> this.properties.put(entry.getKey(), ((List<Map<String, Object>>) entry.getValue()).stream()
+                    .map(m -> (Property) new DetachedVertexProperty<>(m.get(ID), (String) m.get(LABEL), entry.getKey(), m.get(VALUE), (Map<String, Object>) m.getOrDefault(PROPERTIES, new HashMap<>()), this))
+                    .collect(Collectors.toList())));
         }
     }
 
@@ -122,19 +127,6 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
     @Override
     public Vertex.Iterators iterators() {
         return this;
-    }
-
-    private static final String ID = "id";
-    private static final String LABEL = "label";
-    private static final String VALUE = "value";
-    private static final String PROPERTIES = "properties";
-
-    private Map<String, List<Property>> convertToDetachedVertexProperties(final Map<String, Object> properties) {
-        return properties.entrySet().stream()
-                .map(entry -> Pair.with(entry.getKey(), ((List<Map<String, Object>>) entry.getValue()).stream()
-                                .map(m -> (Property) new DetachedVertexProperty<>(m.get(ID), (String) m.get(LABEL), entry.getKey(), m.get(VALUE), (Map<String, Object>) m.getOrDefault(PROPERTIES, new HashMap<>()), this))
-                                .collect(Collectors.toList()))
-                ).collect(Collectors.toMap(Pair::getValue0, Pair::getValue1));
     }
 
     @Override

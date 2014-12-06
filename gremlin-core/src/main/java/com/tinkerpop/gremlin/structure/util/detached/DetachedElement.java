@@ -31,8 +31,6 @@ public abstract class DetachedElement<E> implements Element, Element.Iterators, 
     }
 
     protected DetachedElement(final Object id, final String label) {
-        if (null == id) throw Graph.Exceptions.argumentCanNotBeNull("id");
-        if (null == label) throw Graph.Exceptions.argumentCanNotBeNull("label");
         this.id = id;
         this.label = label;
     }
