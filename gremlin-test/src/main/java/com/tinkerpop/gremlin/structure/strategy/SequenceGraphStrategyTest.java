@@ -152,7 +152,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-    public void shouldBypassFirstStrategyInSequence() {
+    public void shouldAllowForALocalGraphStrategyCallInSequence() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
         swg.getStrategy().setGraphStrategy(new SequenceGraphStrategy(
                 new GraphStrategy() {
@@ -167,7 +167,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
                 },
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(Strategy.Context<StrategyWrappedGraph> ctx) {
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
                         return (f) -> (args) -> {
                             final List<Object> o = new ArrayList<>(Arrays.asList(args));
                             o.addAll(Arrays.asList("ts", "timestamped"));
@@ -206,6 +206,81 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         final Vertex vStrat = (Vertex) g.V().has("strategy", "bypassed").next();
         assertEquals(0, vStrat.values("anonymous").toList().size());
         assertTrue(v.values("ts").toList().contains("timestamped"));
+        assertTrue(v.values("timestamp").toList().contains("timestamped"));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldAllowForANeighborhoodGraphStrategyCallInSequence() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        final SequenceGraphStrategy innerSequenceGraphStrategy = new SequenceGraphStrategy();
+
+        innerSequenceGraphStrategy.add(new GraphStrategy() {
+            @Override
+            public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+                return (f) -> (args) -> {
+                    final List<Object> o = new ArrayList<>(Arrays.asList(args));
+                    o.addAll(Arrays.asList("ts1", "timestamped"));
+                    return f.apply(o.toArray());
+                };
+            }
+
+            @Override
+            public <V> UnaryOperator<BiFunction<String, V, VertexProperty<V>>> getVertexPropertyStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+                return (f) -> (k,v) -> {
+                    ctx.getCurrent().getBaseVertex().property("timestamp", "timestamped");
+
+                    // dynamically construct a strategy to force this call to addVertex to stay localized
+                    // to the innerSequenceGraphStrategy. note that this will only call GraphStrategy implementations
+                    // in this sequence
+                    innerSequenceGraphStrategy.getAddVertexStrategy(ctx.getStrategyWrappedGraph().getGraphContext())
+                            .apply(ctx.getBaseGraph()::addVertex)
+                            .apply(Arrays.asList("strategy", "bypassed").toArray());
+
+                    return f.apply(k, v);
+                };
+            }
+        });
+
+        innerSequenceGraphStrategy.add(new GraphStrategy() {
+            @Override
+            public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+                return (f) -> (args) -> {
+                    final List<Object> o = new ArrayList<>(Arrays.asList(args));
+                    o.addAll(Arrays.asList("ts2", "timestamped"));
+                    return f.apply(o.toArray());
+                };
+            }
+        });
+
+        swg.getStrategy().setGraphStrategy(new SequenceGraphStrategy(
+                new GraphStrategy() {
+                    @Override
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
+                        return (f) -> (args) -> {
+                            final List<Object> o = new ArrayList<>(Arrays.asList(args));
+                            o.addAll(Arrays.asList("anonymous", "working"));
+                            return f.apply(o.toArray());
+                        };
+                    }
+                },
+                innerSequenceGraphStrategy
+        ));
+
+        final Vertex v = swg.addVertex("any", "thing");
+        v.property("set", "prop");
+
+        assertNotNull(v);
+        assertEquals("thing", v.property("any").value());
+        assertEquals(1, v.values("anonymous").toList().size());
+        assertTrue(v.values("ts1").toList().contains("timestamped"));
+        assertTrue(v.values("ts2").toList().contains("timestamped"));
+        assertTrue(v.values("set").toList().contains("prop"));
+
+        final Vertex vStrat = (Vertex) g.V().has("strategy", "bypassed").next();
+        assertEquals(0, vStrat.values("anonymous").toList().size());
+        assertTrue(v.values("ts1").toList().contains("timestamped"));
+        assertTrue(v.values("ts2").toList().contains("timestamped"));
         assertTrue(v.values("timestamp").toList().contains("timestamped"));
     }
 

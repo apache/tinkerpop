@@ -34,6 +34,10 @@ public class SequenceGraphStrategy implements GraphStrategy {
         this.graphStrategySequence = new ArrayList<>(Arrays.asList(strategies));
     }
 
+    public void add(final GraphStrategy strategy) {
+        this.graphStrategySequence.add(strategy);
+    }
+
     @Override
     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getAddVertexStrategy(ctx));
