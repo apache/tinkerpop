@@ -49,7 +49,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
         this.inVertex = DetachedFactory.detach(edge.iterators().vertexIterator(Direction.IN).next(), true);
         if (!asReference) {
             this.properties = new HashMap<>();
-            edge.iterators().propertyIterator().forEachRemaining(property -> this.properties.put(property.key(), DetachedElement.makeSinglePropertyList(DetachedFactory.detach(property))));
+            edge.iterators().propertyIterator().forEachRemaining(property -> this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property))));
         }
     }
 
@@ -62,7 +62,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
         this.inVertex = new DetachedVertex(inV.getValue0(), inV.getValue1(), Collections.emptyMap());
         if (!properties.isEmpty()) {
             this.properties = new HashMap<>();
-            properties.entrySet().stream().forEach(entry -> this.properties.put(entry.getKey(), makeSinglePropertyList(new DetachedProperty<>(entry.getKey(), entry.getValue(), this))));
+            properties.entrySet().stream().forEach(entry -> this.properties.put(entry.getKey(), Collections.singletonList(new DetachedProperty<>(entry.getKey(), entry.getValue(), this))));
         }
     }
 

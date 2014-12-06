@@ -48,7 +48,7 @@ public class PageRankVertexProgramTest extends AbstractGremlinProcessTest {
         assertEquals(result.memory().getIteration(), 30);
         assertEquals(result.memory().asMap().size(), 0);
     }
-
+    /*
     @Test
     @LoadGraphWith(MODERN)
     public void shouldExecutePageRankSpecifiedTraversal() throws Exception {
@@ -76,7 +76,7 @@ public class PageRankVertexProgramTest extends AbstractGremlinProcessTest {
         });
         assertEquals(result.memory().getIteration(), 30);
         assertEquals(result.memory().asMap().size(), 0);
-    }
+    }*/
 
 
 }
