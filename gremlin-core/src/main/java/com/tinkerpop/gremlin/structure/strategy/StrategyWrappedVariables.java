@@ -20,7 +20,11 @@ public class StrategyWrappedVariables implements StrategyWrapped, Graph.Variable
                 String.format("The variables %s is already StrategyWrapped and must be a base Variables", variables));
         this.baseVariables = variables;
         this.strategyWrappedGraph = strategyWrappedGraph;
-        this.variableStrategyContext = new Strategy.Context<>(strategyWrappedGraph.getBaseGraph(), this);
+        this.variableStrategyContext = new Strategy.Context<>(strategyWrappedGraph, this);
+    }
+
+    public Strategy.Context<StrategyWrappedVariables> getVariableStrategyContext() {
+        return variableStrategyContext;
     }
 
     @Override

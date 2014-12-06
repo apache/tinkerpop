@@ -41,7 +41,7 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
 
         this.strategy = strategy;
         this.baseGraph = baseGraph;
-        this.graphContext = new Strategy.Context<>(baseGraph, this);
+        this.graphContext = new Strategy.Context<>(this, this);
     }
 
     /**
@@ -57,6 +57,10 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
      */
     public Strategy getStrategy() {
         return this.strategy;
+    }
+
+    public Strategy.Context<StrategyWrappedGraph> getGraphContext() {
+        return graphContext;
     }
 
     @Override

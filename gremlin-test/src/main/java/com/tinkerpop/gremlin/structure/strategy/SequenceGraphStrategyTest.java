@@ -150,6 +150,64 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         assertEquals("anything", v.property("try").value());
     }
 
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldBypassFirstStrategyInSequence() {
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.getStrategy().setGraphStrategy(new SequenceGraphStrategy(
+                new GraphStrategy() {
+                    @Override
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
+                        return (f) -> (args) -> {
+                            final List<Object> o = new ArrayList<>(Arrays.asList(args));
+                            o.addAll(Arrays.asList("anonymous", "working"));
+                            return f.apply(o.toArray());
+                        };
+                    }
+                },
+                new GraphStrategy() {
+                    @Override
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(Strategy.Context<StrategyWrappedGraph> ctx) {
+                        return (f) -> (args) -> {
+                            final List<Object> o = new ArrayList<>(Arrays.asList(args));
+                            o.addAll(Arrays.asList("ts", "timestamped"));
+                            return f.apply(o.toArray());
+                        };
+                    }
+
+                    @Override
+                    public <V> UnaryOperator<BiFunction<String, V, VertexProperty<V>>> getVertexPropertyStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
+                        return (f) -> (k,v) -> {
+                            ctx.getCurrent().getBaseVertex().property("timestamp", "timestamped");
+
+                            // dynamically construct a strategy to force this call to addVertex to stay localized
+                            // to this GraphStrategy (i.e. the first GraphStrategy in the sequence is ignored)
+                            // note that this will not call GraphStrategy implementations after this one in the
+                            // sequence either
+                            this.getAddVertexStrategy(ctx.getStrategyWrappedGraph().getGraphContext())
+                                    .apply(ctx.getBaseGraph()::addVertex)
+                                    .apply(Arrays.asList("strategy", "bypassed").toArray());
+
+                            return f.apply(k, v);
+                        };
+                    }
+                }
+        ));
+
+        final Vertex v = swg.addVertex("any", "thing");
+        v.property("set", "prop");
+
+        assertNotNull(v);
+        assertEquals("thing", v.property("any").value());
+        assertEquals(1, v.values("anonymous").toList().size());
+        assertTrue(v.values("ts").toList().contains("timestamped"));
+        assertTrue(v.values("set").toList().contains("prop"));
+
+        final Vertex vStrat = (Vertex) g.V().has("strategy", "bypassed").next();
+        assertEquals(0, vStrat.values("anonymous").toList().size());
+        assertTrue(v.values("ts").toList().contains("timestamped"));
+        assertTrue(v.values("timestamp").toList().contains("timestamped"));
+    }
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
@@ -345,7 +403,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
                 if (method.getName().equals("applyStrategyToTraversal"))
                     method.invoke(strategy, new DefaultGraphTraversal<>());
                 else
-                    method.invoke(strategy, new Strategy.Context(g, new StrategyWrapped() {
+                    method.invoke(strategy, new Strategy.Context(new StrategyWrappedGraph(g), new StrategyWrapped() {
                     }));
 
             } catch (Exception ex) {
