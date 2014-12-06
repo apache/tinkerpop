@@ -32,7 +32,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 
@@ -59,7 +58,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<>(Arrays.asList(VOTE_TO_HALT));
 
     private LambdaHolder<Supplier<Traversal>> traversalSupplier;
-    private Traversal<?,?> traversal;
+    private Traversal<?, ?> traversal;
 
     private final Set<MapReduce> mapReducers = new HashSet<>();
 
@@ -125,20 +124,20 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             final GraphStep<Element> startStep = (GraphStep<Element>) this.traversal.asAdmin().getSteps().get(0);   // TODO: make this generic to Traversal
             final TraverserGenerator traverserGenerator = TraversalStrategies.GlobalCache.getStrategies(this.traversal.getClass()).getTraverserGenerator(this.traversal);
             final String future = startStep.getNextStep() instanceof EmptyStep ? Traverser.Admin.HALT : startStep.getNextStep().getLabel();
-            final AtomicBoolean voteToHalt = new AtomicBoolean(true);
+            boolean voteToHalt = true;
             final Iterator<? extends Element> starts = startStep.returnsVertices() ? new SingleIterator<>(vertex) : vertex.iterators().edgeIterator(Direction.OUT);
-            while(starts.hasNext()) {
+            while (starts.hasNext()) {
                 final Traverser.Admin<Element> traverser = traverserGenerator.generate(starts.next(), startStep, 1l);
                 traverser.setFuture(future);
                 traverser.detach();
                 if (traverser.isHalted())
                     haltedTraversers.add((Traverser.Admin) traverser);
                 else {
-                    voteToHalt.set(false);
+                    voteToHalt = false;
                     messenger.sendMessage(MessageScope.Global.of(vertex), new TraverserSet<>(traverser));
                 }
             }
-            memory.and(VOTE_TO_HALT, voteToHalt.get());
+            memory.and(VOTE_TO_HALT, voteToHalt);
         } else {
             memory.and(VOTE_TO_HALT, TraverserExecutor.execute(vertex, messenger, this.traversal));
         }
