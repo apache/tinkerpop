@@ -83,7 +83,7 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
 
     @Override
     public Property<V> attach(final Vertex hostVertex) {
-        final Element hostElement = (Element) ((DetachedElement) this.element()).attach(hostVertex);
+        final Element hostElement = (Element) this.element.attach(hostVertex);
         final Property<V> property = hostElement.property(this.key);
         if (property.isPresent()) // && property.value().equals(this.value))
             return property;
@@ -93,9 +93,7 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
 
     @Override
     public Property<V> attach(final Graph hostGraph) {
-        final Element hostElement = (this.element() instanceof Vertex) ?
-                hostGraph.v(this.element().id()) :
-                hostGraph.e(this.element().id());
+        final Element hostElement = (Element) this.element.attach(hostGraph);
         final Property<V> property = hostElement.property(this.key);
         if (property.isPresent()) // && property.value().equals(this.value))
             return property;
