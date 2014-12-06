@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -33,7 +34,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
 
         if (!asReference & vertexProperty.graph().features().vertex().supportsMetaProperties()) {
             this.properties = new HashMap<>();
-            vertexProperty.iterators().propertyIterator().forEachRemaining(property -> this.properties.put(property.key(), DetachedElement.makeSinglePropertyList(DetachedFactory.detach(property))));
+            vertexProperty.iterators().propertyIterator().forEachRemaining(property -> this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property))));
         }
     }
 
@@ -47,7 +48,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
 
         if (!properties.isEmpty()) {
             this.properties = new HashMap<>();
-            properties.entrySet().iterator().forEachRemaining(entry -> this.properties.put(entry.getKey(), DetachedElement.makeSinglePropertyList(new DetachedProperty<>(entry.getKey(), entry.getValue(), this))));
+            properties.entrySet().iterator().forEachRemaining(entry -> this.properties.put(entry.getKey(), Collections.singletonList(new DetachedProperty<>(entry.getKey(), entry.getValue(), this))));
         }
     }
 

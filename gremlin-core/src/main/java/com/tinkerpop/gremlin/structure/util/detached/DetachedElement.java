@@ -85,10 +85,4 @@ public abstract class DetachedElement<E> implements Element, Element.Iterators, 
     public <V> Iterator<? extends Property<V>> propertyIterator(final String... propertyKeys) {
         return (Iterator) this.properties.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(), propertyKeys)).flatMap(entry -> entry.getValue().stream()).iterator();
     }
-
-    protected static final <V> List<Property<V>> makeSinglePropertyList(final Property<V> property) {
-        final List<Property<V>> list = new ArrayList<>(1);
-        list.add(property);
-        return list;
-    }
 }
