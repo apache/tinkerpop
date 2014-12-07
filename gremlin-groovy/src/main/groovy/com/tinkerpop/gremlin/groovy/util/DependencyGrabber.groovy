@@ -47,23 +47,29 @@ class DependencyGrabber {
             libClassPath = fs.getPath(System.getProperty("user.dir") + fileSep + "lib")
             getFileNames(filesAlreadyInPath, libClassPath)
         } catch (Exception ignored) {
-            println("Detected a non-standard Gremlin directory structure during install.  Expecting a 'lib' " +
+            println "Detected a non-standard Gremlin directory structure during install.  Expecting a 'lib' " +
                     "directory sibling to 'ext'. This message does not necessarily imply failure, however " +
                     "the console requires a certain directory structure for proper execution. Altering that " +
-                    "structure can lead to unexpected behavior.");
+                    "structure can lead to unexpected behavior."
         }
 
         final def dependencyLocations = [] as Set<URI>
         dependencyLocations.addAll(Grape.resolve([classLoader: this.classLoaderToUse], null, dep))
         dependencyLocations.collect{fs.getPath(it.path)}
                 .findAll{!(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/)}
-                .findAll{!filesAlreadyInPath.collect{it.getFileName().toString()}.contains(it.fileName.toFile().name)}
-                .each { Files.copy(it, target.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
+                .findAll{!filesAlreadyInPath.collect{it.getFileName().toString()}.contains(it.fileName.toFile().name)}.each {
+            def copying = target.resolve(it.fileName)
+            Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
+            println "Copying - $copying"
+        }
 
         getAdditionalDependencies(target, artifact).collect{fs.getPath(it.path)}
                 .findAll{!(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/)}
-                .findAll{!filesAlreadyInPath.collect{it.getFileName().toString()}.contains(it.fileName.toFile().name)}
-                .each { Files.copy(it, target.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
+                .findAll{!filesAlreadyInPath.collect{it.getFileName().toString()}.contains(it.fileName.toFile().name)}.each {
+            def copying = target.resolve(it.fileName)
+            Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
+            println "Copying - $copying"
+        }
 
         alterPaths(target, artifact)
     }
