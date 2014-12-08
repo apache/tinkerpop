@@ -668,7 +668,7 @@ gremlin> g.V().values('name').order(comparing{it.get()[1]}) // order by the seco
 ==>ripple
 ==>lop
 ==>josh
-gremlin> g.V().values('name').order(comparing{it.get()[1]},comparing{it.get()[12]}) // order by second letter and if a tie, the third letter
+gremlin> g.V().values('name').order(comparing{it.get()[1]},comparing{it.get()[2]}) // order by second letter and if a tie, the third letter
 ==>vadas
 ==>marko
 ==>peter
