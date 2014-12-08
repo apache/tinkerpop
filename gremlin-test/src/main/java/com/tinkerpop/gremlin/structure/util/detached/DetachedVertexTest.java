@@ -28,15 +28,15 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotConstructNewWithSomethingAlreadyDetached() {
         final Vertex v = g.addVertex();
-        final DetachedVertex dv = DetachedFactory.detach(v, false);
-        assertSame(dv, DetachedFactory.detach(dv, false));
+        final DetachedVertex dv = DetachedFactory.detach(v, true);
+        assertSame(dv, DetachedFactory.detach(dv, true));
     }
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldConstructDetachedVertex() {
         final Vertex v = g.addVertex("test", "123", Graph.Key.hide("test"), "321");
-        final DetachedVertex detachedVertex = DetachedFactory.detach(v, false);
+        final DetachedVertex detachedVertex = DetachedFactory.detach(v, true);
 
         assertEquals(v.id(), detachedVertex.id());
         assertEquals(v.label(), detachedVertex.label());
@@ -49,7 +49,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldConstructDetachedVertexAsReference() {
         final Vertex v = g.addVertex("test", "123", Graph.Key.hide("test"), "321");
-        final DetachedVertex detachedVertex = DetachedFactory.detach(v, true);
+        final DetachedVertex detachedVertex = DetachedFactory.detach(v, false);
 
         assertEquals(v.id(), detachedVertex.id());
         assertEquals(v.label(), detachedVertex.label());
@@ -60,7 +60,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CREW)
     public void shouldDetachVertexWithMultiPropertiesAndMetaProperties() {
-        final DetachedVertex v1 = DetachedFactory.detach(convertToVertex(g, "marko"), false);
+        final DetachedVertex v1 = DetachedFactory.detach(convertToVertex(g, "marko"), true);
 
         assertEquals("person", v1.label());
         //  assertEquals(true, v1.iterators().hiddenValueIterator("visible").next());
@@ -92,13 +92,13 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldEvaluateToEqual() {
-        assertTrue(DetachedFactory.detach(g.v(convertToVertexId("marko")), false).equals(DetachedFactory.detach(g.v(convertToVertexId("marko")), false)));
+        assertTrue(DetachedFactory.detach(g.v(convertToVertexId("marko")), true).equals(DetachedFactory.detach(g.v(convertToVertexId("marko")), true)));
     }
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldHaveSameHashCode() {
-        assertEquals(DetachedFactory.detach(g.v(convertToVertexId("marko")), false).hashCode(), DetachedFactory.detach(g.v(convertToVertexId("marko")), false).hashCode());
+        assertEquals(DetachedFactory.detach(g.v(convertToVertexId("marko")), true).hashCode(), DetachedFactory.detach(g.v(convertToVertexId("marko")), true).hashCode());
     }
 
     @Test
@@ -106,9 +106,9 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_INTEGER_VALUES)
     public void shouldNotEvaluateToEqualDifferentId() {
-        final DetachedVertex originalMarko = DetachedFactory.detach(g.v(convertToVertexId("marko")), false);
+        final DetachedVertex originalMarko = DetachedFactory.detach(g.v(convertToVertexId("marko")), true);
         final Vertex secondMarko = g.addVertex("name", "marko", "age", 29);
-        assertFalse(DetachedFactory.detach(secondMarko, false).equals(originalMarko));
+        assertFalse(DetachedFactory.detach(secondMarko, true).equals(originalMarko));
     }
 
     @Test
@@ -200,7 +200,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowAddEdge() {
         final Vertex v = g.addVertex();
-        final DetachedVertex detachedVertex = DetachedFactory.detach(v, false);
+        final DetachedVertex detachedVertex = DetachedFactory.detach(v, true);
         detachedVertex.addEdge("test", null);
     }
 
@@ -208,7 +208,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowSetProperty() {
         final Vertex v = g.addVertex();
-        final DetachedVertex detachedVertex = DetachedFactory.detach(v, false);
+        final DetachedVertex detachedVertex = DetachedFactory.detach(v, true);
         detachedVertex.property("test", "test");
     }
 
@@ -216,7 +216,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotAllowRemove() {
         final Vertex v = g.addVertex();
-        final DetachedVertex detachedVertex = DetachedFactory.detach(v, false);
+        final DetachedVertex detachedVertex = DetachedFactory.detach(v, true);
         detachedVertex.remove();
     }
 
@@ -224,20 +224,20 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotTraverse() {
         final Vertex v = g.addVertex();
-        final DetachedVertex detachedVertex = DetachedFactory.detach(v, false);
+        final DetachedVertex detachedVertex = DetachedFactory.detach(v, true);
         detachedVertex.start();
     }
 
     @Test(expected = IllegalStateException.class)
     @LoadGraphWith(LoadGraphWith.GraphData.CREW)
     public void shouldNotBeAbleToCallPropertyIfThereAreMultipleProperties() {
-        DetachedFactory.detach(g.v(convertToVertexId("marko")), false).property("location");
+        DetachedFactory.detach(g.v(convertToVertexId("marko")), true).property("location");
     }
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldBeAbleToCallPropertyIfThereIsASingleProperty() {
-        final DetachedVertex dv = DetachedFactory.detach(g.v(convertToVertexId("marko")), false);
+        final DetachedVertex dv = DetachedFactory.detach(g.v(convertToVertexId("marko")), true);
         assertEquals("marko", dv.property("name").value());
         assertEquals(29, dv.property("age").value());
     }

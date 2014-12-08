@@ -43,11 +43,11 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge, Edge.It
 
     }
 
-    protected DetachedEdge(final Edge edge, final boolean asReference) {
+    protected DetachedEdge(final Edge edge, final boolean withProperties) {
         super(edge);
-        this.outVertex = DetachedFactory.detach(edge.iterators().vertexIterator(Direction.OUT).next(), true);
-        this.inVertex = DetachedFactory.detach(edge.iterators().vertexIterator(Direction.IN).next(), true);
-        if (!asReference) {
+        this.outVertex = DetachedFactory.detach(edge.iterators().vertexIterator(Direction.OUT).next(), false);
+        this.inVertex = DetachedFactory.detach(edge.iterators().vertexIterator(Direction.IN).next(), false);
+        if (withProperties) {
             this.properties = new HashMap<>();
             edge.iterators().propertyIterator().forEachRemaining(property -> this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property))));
         }

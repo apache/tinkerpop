@@ -26,13 +26,13 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
     private DetachedVertexProperty() {
     }
 
-    protected DetachedVertexProperty(final VertexProperty<V> vertexProperty, final boolean asReference) {
+    protected DetachedVertexProperty(final VertexProperty<V> vertexProperty, final boolean withProperties) {
         super(vertexProperty);
         this.key = vertexProperty.key();
         this.value = vertexProperty.value();
-        this.vertex = DetachedFactory.detach(vertexProperty.element(), true);
+        this.vertex = DetachedFactory.detach(vertexProperty.element(), false);
 
-        if (!asReference & vertexProperty.graph().features().vertex().supportsMetaProperties()) {
+        if (withProperties) { // & vertexProperty.graph().features().vertex().supportsMetaProperties()) {
             this.properties = new HashMap<>();
             vertexProperty.iterators().propertyIterator().forEachRemaining(property -> this.properties.put(property.key(), Collections.singletonList(DetachedFactory.detach(property))));
         }

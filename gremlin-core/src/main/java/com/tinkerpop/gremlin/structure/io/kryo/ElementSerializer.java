@@ -26,7 +26,7 @@ class ElementSerializer {
     static class EdgeSerializer extends Serializer<Edge> {
         @Override
         public void write(final Kryo kryo, final Output output, final Edge edge) {
-            kryo.writeClassAndObject(output, DetachedFactory.detach(edge, false));
+            kryo.writeClassAndObject(output, DetachedFactory.detach(edge, true));
         }
 
         @Override
@@ -47,7 +47,7 @@ class ElementSerializer {
 
         @Override
         public void write(final Kryo kryo, final Output output, final Vertex vertex) {
-            kryo.writeClassAndObject(output, DetachedFactory.detach(vertex, false));
+            kryo.writeClassAndObject(output, DetachedFactory.detach(vertex, true));
         }
 
         @Override
@@ -77,7 +77,7 @@ class ElementSerializer {
 
         @Override
         public void write(final Kryo kryo, final Output output, final VertexProperty vertexProperty) {
-            kryo.writeClassAndObject(output, DetachedFactory.detach(vertexProperty, false));
+            kryo.writeClassAndObject(output, DetachedFactory.detach(vertexProperty, true));
         }
 
         @Override

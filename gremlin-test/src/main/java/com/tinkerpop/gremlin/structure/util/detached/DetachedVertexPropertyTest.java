@@ -26,8 +26,8 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     public void shouldNotConstructNewWithSomethingAlreadyDetached() {
         final Vertex v = g.addVertex();
         final VertexProperty vp = v.property("test", "this");
-        final DetachedVertexProperty dvp = DetachedFactory.detach(vp,false);
-        assertSame(dvp, DetachedFactory.detach(dvp,false));
+        final DetachedVertexProperty dvp = DetachedFactory.detach(vp,true);
+        assertSame(dvp, DetachedFactory.detach(dvp,true));
     }
 
     @Test
@@ -35,7 +35,7 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     public void shouldConstructDetachedPropertyWithPropertyFromVertex() {
         final Vertex v = g.addVertex();
         final VertexProperty vp = v.property("test", "this");
-        final DetachedVertexProperty mp = DetachedFactory.detach(vp,false);
+        final DetachedVertexProperty mp = DetachedFactory.detach(vp,true);
         assertEquals("test", mp.key());
         assertEquals("this", mp.value());
         assertFalse(mp.isHidden());
@@ -47,7 +47,7 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     public void shouldConstructDetachedPropertyWithHiddenFromVertex() {
         final Vertex v = g.addVertex();
         final VertexProperty vp = v.property(Graph.Key.hide("test"), "this");
-        final DetachedVertexProperty mp = DetachedFactory.detach(vp,false);
+        final DetachedVertexProperty mp = DetachedFactory.detach(vp,true);
         assertEquals(Graph.Key.hide("test"), mp.key());
         assertEquals("this", mp.value());
         assertTrue(mp.isHidden());
@@ -59,7 +59,7 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     public void shouldNotSupportRemove() {
         final Vertex v = g.addVertex();
         final VertexProperty vp = v.property("test", "this");
-        DetachedFactory.detach(vp,false).remove();
+        DetachedFactory.detach(vp,true).remove();
     }
 
     @Test
@@ -67,8 +67,8 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     public void shouldBeEqualsPropertiesAsIdIsTheSame() {
         final Vertex v = g.addVertex();
         final VertexProperty vp = v.property("test", "this");
-        final DetachedVertexProperty mp1 = DetachedFactory.detach(vp,false);
-        final DetachedVertexProperty mp2 = DetachedFactory.detach(vp,false);
+        final DetachedVertexProperty mp1 = DetachedFactory.detach(vp,true);
+        final DetachedVertexProperty mp2 = DetachedFactory.detach(vp,true);
         assertTrue(mp1.equals(mp2));
     }
 
@@ -77,9 +77,9 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     public void shouldNotBeEqualsPropertiesAsIdIsDifferent() {
         final Vertex v = g.addVertex();
         final VertexProperty vp1 = v.property("test", "this");
-        final DetachedVertexProperty mp1 = DetachedFactory.detach(vp1,false);
+        final DetachedVertexProperty mp1 = DetachedFactory.detach(vp1,true);
         final VertexProperty vp2 = v.property("testing", "this");
-        final DetachedVertexProperty mp2 = DetachedFactory.detach(vp2,false);
+        final DetachedVertexProperty mp2 = DetachedFactory.detach(vp2,true);
         assertFalse(mp1.equals(mp2));
     }
 
@@ -88,7 +88,7 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     public void shouldDetachMultiPropertiesAndMetaProperties() {
         final Vertex v1 = convertToVertex(g, "marko");
         v1.iterators().propertyIterator("location").forEachRemaining(vp -> {
-            final DetachedVertexProperty detached = DetachedFactory.detach(vp,false);
+            final DetachedVertexProperty detached = DetachedFactory.detach(vp,true);
             if (detached.value().equals("san diego")) {
                 assertEquals(1997, (int) detached.value("startTime"));
                 assertEquals(2001, (int) detached.value("endTime"));

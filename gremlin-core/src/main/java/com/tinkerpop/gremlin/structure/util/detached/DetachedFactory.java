@@ -11,33 +11,33 @@ import com.tinkerpop.gremlin.structure.VertexProperty;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class DetachedFactory {
-    public static DetachedVertex detach(final Vertex vertex, final boolean asReference) {
-        return vertex instanceof DetachedVertex ? (DetachedVertex) vertex : new DetachedVertex(vertex, asReference);
+    public static DetachedVertex detach(final Vertex vertex, final boolean withProperties) {
+        return vertex instanceof DetachedVertex ? (DetachedVertex) vertex : new DetachedVertex(vertex, withProperties);
     }
 
-    public static DetachedEdge detach(final Edge edge, final boolean asReference) {
-        return edge instanceof DetachedEdge ? (DetachedEdge) edge : new DetachedEdge(edge, asReference);
+    public static DetachedEdge detach(final Edge edge, final boolean withProperties) {
+        return edge instanceof DetachedEdge ? (DetachedEdge) edge : new DetachedEdge(edge, withProperties);
     }
 
-    public static <V> DetachedVertexProperty detach(final VertexProperty<V> vertexProperty, final boolean asReference) {
-        return vertexProperty instanceof DetachedVertexProperty ? (DetachedVertexProperty) vertexProperty : new DetachedVertexProperty<>(vertexProperty, asReference);
+    public static <V> DetachedVertexProperty detach(final VertexProperty<V> vertexProperty, final boolean withProperties) {
+        return vertexProperty instanceof DetachedVertexProperty ? (DetachedVertexProperty) vertexProperty : new DetachedVertexProperty<>(vertexProperty, withProperties);
     }
 
     public static <V> DetachedProperty<V> detach(final Property<V> property) {
         return property instanceof DetachedProperty ? (DetachedProperty<V>) property : new DetachedProperty<>(property);
     }
 
-    public static DetachedPath detach(final Path path, final boolean asReference) {
-        return path instanceof DetachedPath ? (DetachedPath) path : new DetachedPath(path, asReference);
+    public static DetachedPath detach(final Path path, final boolean withProperties) {
+        return path instanceof DetachedPath ? (DetachedPath) path : new DetachedPath(path, withProperties);
     }
 
-    public static DetachedElement detach(final Element element, final boolean asReference) {
+    public static DetachedElement detach(final Element element, final boolean withProperties) {
         if (element instanceof Vertex)
-            return detach((Vertex) element, asReference);
+            return detach((Vertex) element, withProperties);
         else if (element instanceof Edge)
-            return detach((Edge) element, asReference);
+            return detach((Edge) element, withProperties);
         else if (element instanceof VertexProperty)
-            return detach((VertexProperty) element, asReference);
+            return detach((VertexProperty) element, withProperties);
         else
             throw new IllegalArgumentException("The provided argument is an unknown element: " + element + ":" + element.getClass());
     }

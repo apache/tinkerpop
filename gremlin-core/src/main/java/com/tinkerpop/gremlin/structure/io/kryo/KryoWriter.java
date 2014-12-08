@@ -83,7 +83,7 @@ public class KryoWriter implements GraphWriter {
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
         final Output output = new Output(outputStream);
         this.headerWriter.write(kryo, output);
-        kryo.writeClassAndObject(output, DetachedFactory.detach(e, false));
+        kryo.writeClassAndObject(output, DetachedFactory.detach(e, true));
         output.flush();
     }
 

@@ -39,13 +39,13 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex, V
     private DetachedVertex() {
     }
 
-    protected DetachedVertex(final Vertex vertex, final boolean asReference) {
+    protected DetachedVertex(final Vertex vertex, final boolean withProperties) {
         super(vertex);
-        if (!asReference) {
+        if (withProperties) {
             this.properties = new HashMap<>();
             vertex.iterators().propertyIterator().forEachRemaining(property -> {
                 final List<VertexProperty<?>> list = (List<VertexProperty<?>>) this.properties.getOrDefault(property.key(), new ArrayList<>());
-                list.add(DetachedFactory.detach(property, false));
+                list.add(DetachedFactory.detach(property, true));
                 this.properties.put(property.key(), list);
             });
         }

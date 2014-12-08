@@ -16,20 +16,20 @@ public class DetachedPath extends MutablePath implements Attachable<Path> {
 
     }
 
-    protected DetachedPath(final Path path, final boolean asReference) {
+    protected DetachedPath(final Path path, final boolean withProperties) {
         path.forEach((labels, object) -> {
             if (object instanceof DetachedElement || object instanceof DetachedProperty || object instanceof DetachedPath) {
                 this.labels.add(labels);
                 this.objects.add(object);
             } else if (object instanceof Element) {
                 this.labels.add(labels);
-                this.objects.add(DetachedFactory.detach((Element) object, asReference));
+                this.objects.add(DetachedFactory.detach((Element) object, withProperties));
             } else if (object instanceof Property) {
                 this.labels.add(labels);
                 this.objects.add(DetachedFactory.detach((Property) object));
             } else if (object instanceof Path) {
                 this.labels.add(labels);
-                this.objects.add(DetachedFactory.detach((Path) object, asReference));
+                this.objects.add(DetachedFactory.detach((Path) object, withProperties));
             } else {
                 this.labels.add(labels);
                 this.objects.add(object);

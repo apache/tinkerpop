@@ -31,7 +31,6 @@ import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.VertexByteArrayInputStream;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -569,7 +568,7 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadWriteDetachedEdgeAsReferenceToKryo() throws Exception {
         final Vertex v1 = g.addVertex(T.label, "person");
         final Vertex v2 = g.addVertex(T.label, "person");
-        final Edge e = DetachedFactory.detach(v1.addEdge("friend", v2, "weight", 0.5d, Graph.Key.hide("acl"), "rw"), true);
+        final Edge e = DetachedFactory.detach(v1.addEdge("friend", v2, "weight", 0.5d, Graph.Key.hide("acl"), "rw"), false);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
@@ -607,7 +606,7 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadWriteDetachedEdgeToKryo() throws Exception {
         final Vertex v1 = g.addVertex(T.label, "person");
         final Vertex v2 = g.addVertex(T.label, "person");
-        final Edge e = DetachedFactory.detach(v1.addEdge("friend", v2, "weight", 0.5d, Graph.Key.hide("acl"), "rw"), false);
+        final Edge e = DetachedFactory.detach(v1.addEdge("friend", v2, "weight", 0.5d, Graph.Key.hide("acl"), "rw"), true);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
@@ -679,7 +678,7 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadWriteDetachedEdgeAsReferenceToGraphSON() throws Exception {
         final Vertex v1 = g.addVertex(T.label, "person");
         final Vertex v2 = g.addVertex(T.label, "person");
-        final Edge e = DetachedFactory.detach(v1.addEdge("friend", v2, "weight", 0.5f, Graph.Key.hide("acl"), "rw"), true);
+        final Edge e = DetachedFactory.detach(v1.addEdge("friend", v2, "weight", 0.5f, Graph.Key.hide("acl"), "rw"), false);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().customModule(graphProvider.createConfiguredGraphSONModule()).create();
@@ -716,7 +715,7 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadWriteDetachedEdgeToGraphSON() throws Exception {
         final Vertex v1 = g.addVertex(T.label, "person");
         final Vertex v2 = g.addVertex(T.label, "person");
-        final Edge e = DetachedFactory.detach(v1.addEdge("friend", v2, "weight", 0.5f, Graph.Key.hide("acl"), "rw"),false);
+        final Edge e = DetachedFactory.detach(v1.addEdge("friend", v2, "weight", 0.5f, Graph.Key.hide("acl"), "rw"), true);
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().customModule(graphProvider.createConfiguredGraphSONModule()).create();
@@ -948,7 +947,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
-            final DetachedVertex dv = DetachedFactory.detach(v1,false);
+            final DetachedVertex dv = DetachedFactory.detach(v1, true);
             writer.writeVertex(os, dv);
 
             final AtomicBoolean called = new AtomicBoolean(false);
@@ -982,7 +981,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final KryoWriter writer = KryoWriter.build().custom(graphProvider.createConfiguredGremlinKryo()).create();
-            final DetachedVertex dv = DetachedFactory.detach(v1, true);
+            final DetachedVertex dv = DetachedFactory.detach(v1, false);
             writer.writeVertex(os, dv);
 
             final AtomicBoolean called = new AtomicBoolean(false);
@@ -1088,7 +1087,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().customModule(graphProvider.createConfiguredGraphSONModule()).create();
-            final DetachedVertex dv = DetachedFactory.detach(v1,false);
+            final DetachedVertex dv = DetachedFactory.detach(v1, true);
             writer.writeVertex(os, dv);
 
             final AtomicBoolean called = new AtomicBoolean(false);
@@ -1122,7 +1121,7 @@ public class IoTest extends AbstractGremlinTest {
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.build().customModule(graphProvider.createConfiguredGraphSONModule()).create();
-            final DetachedVertex dv = DetachedFactory.detach(v1, true);
+            final DetachedVertex dv = DetachedFactory.detach(v1, false);
             writer.writeVertex(os, dv);
 
             final AtomicBoolean called = new AtomicBoolean(false);
