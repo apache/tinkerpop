@@ -114,12 +114,12 @@ public class TinkerGraph implements Graph, Graph.Iterators {
 
     @Override
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        return new TinkerGraphTraversal<>(this, Vertex.class);
+        return new TinkerGraphTraversal<>(this, Vertex.class, vertexIds);
     }
 
     @Override
     public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
-        return new TinkerGraphTraversal<>(this, Edge.class);
+        return new TinkerGraphTraversal<>(this, Edge.class, edgeIds);
     }
 
     @Override
