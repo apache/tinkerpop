@@ -181,11 +181,11 @@ public class SimpleTraverser<T> implements Traverser<T>, Traverser.Admin<T> {
     @Override
     public SimpleTraverser<T> detach() {
         if (this.t instanceof Element) {
-            this.t = (T) DetachedFactory.detach((Element) this.t, true);
+            this.t = (T) DetachedFactory.detach((Element) this.t, false);
         } else if (this.t instanceof Property) {
             this.t = (T) DetachedFactory.detach((Property) this.t);
         } else if (this.t instanceof Path) {
-            this.t = (T) DetachedFactory.detach((Path) this.t, true);
+            this.t = (T) DetachedFactory.detach((Path) this.t, false);
         }
         return this;
     }
