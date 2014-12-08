@@ -9,6 +9,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* 'OrderByStep` allows up to 3 element value comparators (no var args possible, so it can't be arbitrary).
 * Removed `Step.NO_OBJECT` as the problem is solves can be solved with proper use of `flatMap`.
 * `Path` is now part of `GraphSerializer` and thus, not specific to a particular implementation of `Path`.
 * Added messaging to show files being downloaded when using the Gremlin Server "install" command.

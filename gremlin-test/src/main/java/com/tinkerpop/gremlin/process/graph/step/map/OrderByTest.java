@@ -96,8 +96,8 @@ public abstract class OrderByTest extends AbstractGremlinTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_orderByXname_a1_b1__b2_a2X_name() {
-            return g.V().<String>orderBy("name",
-                    (a, b) -> a.substring(1, 2).compareTo(b.substring(1, 2)),
+            return g.V().<String,String>orderBy("name",
+                    (a,b) -> a.substring(1, 2).compareTo(b.substring(1, 2)), "name",
                     (a, b) -> b.substring(2, 3).compareTo(a.substring(2, 3))).values("name");
         }
     }

@@ -28,7 +28,7 @@ public abstract class GroovyOrderByTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_orderByXname_a1_b1__b2_a2X_name() {
-            return g.V.orderBy('name') { a, b -> a.substring(1, 2).compareTo(b.substring(1, 2)) } { a, b -> b.substring(2, 3).compareTo(a.substring(2, 3)) }.name;
+            return g.V.orderBy('name', { a, b -> a[1].compareTo(b[1]) }, 'name', { a, b -> b[2].compareTo(a[2]) }).name;
         }
     }
 }

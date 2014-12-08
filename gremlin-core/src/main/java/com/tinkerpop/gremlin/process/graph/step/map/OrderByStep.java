@@ -10,111 +10,97 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 
+import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class OrderByStep<S extends Element, C> extends BarrierStep<S> implements Reversible, Comparing<S> {
+public final class OrderByStep<S extends Element> extends BarrierStep<S> implements Reversible, Comparing<S> {
 
-    private final Comparator<C>[] propertyValueComparators;
-    private final Comparator<Traverser<S>>[] elementComparators;
-    private final Comparator<Traverser<S>> chainedComparator;
-    private final String propertyKey;
-    private final T elementAccessor;
 
-    public OrderByStep(final Traversal traversal, final String propertyKey, final Comparator<C>... propertyValueComparators) {
+    private final List<Object> keys = new ArrayList<>();
+    private final List<Comparator> valueComparators = new ArrayList<>();
+    private final List<Comparator<Traverser<S>>> elementComparators = new ArrayList<>();
+
+    public OrderByStep(final Traversal traversal, final Object key, final Comparator valueComparator) {
         super(traversal);
-        this.propertyKey = propertyKey;
-        this.elementAccessor = null;
-        this.propertyValueComparators = propertyValueComparators;
-        this.elementComparators = new Comparator[propertyValueComparators.length];
-        for (int i = 0; i < propertyValueComparators.length; i++) {
-            this.elementComparators[i] = new ElementComparator(propertyKey, propertyValueComparators[i]);
-        }
-        this.chainedComparator = Stream.of(this.elementComparators).reduce((a, b) -> a.thenComparing(b)).get();
-        this.setConsumer(traversers -> traversers.sort(this.chainedComparator));
+        this.keys.add(key);
+        this.valueComparators.add(valueComparator);
+        this.prepareComparators();
     }
 
-    public OrderByStep(final Traversal traversal, final T accessor, final Comparator<C>... propertyValueComparators) {
+    public OrderByStep(final Traversal traversal, final Object keyA, final Comparator valueComparatorA, final Object keyB, final Comparator valueComparatorB) {
         super(traversal);
-        this.propertyKey = null;
-        this.elementAccessor = accessor;
-        this.propertyValueComparators = propertyValueComparators;
-        this.elementComparators = new Comparator[propertyValueComparators.length];
-        for (int i = 0; i < propertyValueComparators.length; i++) {
-            this.elementComparators[i] = new ElementComparator(accessor, propertyValueComparators[i]);
+        this.keys.add(keyA);
+        this.keys.add(keyB);
+        this.valueComparators.add(valueComparatorA);
+        this.valueComparators.add(valueComparatorB);
+        this.prepareComparators();
+    }
+
+    public OrderByStep(final Traversal traversal, final Object keyA, final Comparator valueComparatorA, final Object keyB, final Comparator valueComparatorB, final Object keyC, final Comparator valueComparatorC) {
+        super(traversal);
+        this.keys.add(keyA);
+        this.keys.add(keyB);
+        this.keys.add(keyC);
+        this.valueComparators.add(valueComparatorA);
+        this.valueComparators.add(valueComparatorB);
+        this.valueComparators.add(valueComparatorC);
+        this.prepareComparators();
+    }
+
+    private final void prepareComparators() {
+        for (int i = 0; i < this.valueComparators.size(); i++) {
+            this.elementComparators.add(new ElementComparator(this.keys.get(i), this.valueComparators.get(i)));
         }
-        this.chainedComparator = Stream.of(this.elementComparators).reduce((a, b) -> a.thenComparing(b)).get();
-        this.setConsumer(traversers -> traversers.sort(this.chainedComparator));
+        final Comparator<Traverser<S>> chainedComparator = this.elementComparators.stream().reduce((a, b) -> a.thenComparing(b)).get();
+        this.setConsumer(traversers -> traversers.sort(chainedComparator));
     }
 
-    public Optional<String> getPropertyKey() {
-        return Optional.ofNullable(this.propertyKey);
-    }
-
-    public Optional<T> getElementAccessor() {
-        return Optional.ofNullable(this.elementAccessor);
-    }
-
-    public boolean usesPropertyKey() {
-        return null == this.elementAccessor;
+    public List<Object> getKeys() {
+        return this.keys;
     }
 
     @Override
     public Comparator<Traverser<S>>[] getComparators() {
-        return this.elementComparators;
+        return this.elementComparators.toArray(new Comparator[this.elementComparators.size()]);
     }
 
-    public Comparator<C>[] getPropertyValueComparators() {
-        return this.propertyValueComparators;
+    public List<Comparator> getValueComparators() {
+        return this.valueComparators;
     }
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, null == this.propertyKey ? this.elementAccessor : this.propertyKey);
+        return TraversalHelper.makeStepString(this, this.keys);
     }
 
     public class ElementComparator implements Comparator<Traverser<S>> {
 
-        private final String propertyKey;
-        private final T accessor;
-        private final Comparator<C> propertyValueComparator;
-        private final Comparator<Traverser<S>> comparator;
+        private final Object key;
+        private final Comparator valueComparator;
+        private final Comparator<Traverser<S>> finalComparator;
 
-        public ElementComparator(final String propertyKey, final Comparator<C> propertyValueComparator) {
-            this.propertyKey = propertyKey;
-            this.accessor = null;
-            this.propertyValueComparator = propertyValueComparator;
-            this.comparator = (a, b) -> this.propertyValueComparator.compare(a.get().<C>value(this.propertyKey), b.get().<C>value(this.propertyKey));
-        }
-
-        public ElementComparator(final T accessor, final Comparator<C> propertyValueComparator) {
-            this.propertyKey = null;
-            this.accessor = accessor;
-            this.propertyValueComparator = propertyValueComparator;
-            switch (this.accessor) {
-                case id:
-                    this.comparator = (a, b) -> this.propertyValueComparator.compare((C) a.get().id(), (C) b.get().id());
-                    break;
-                case label:
-                    this.comparator = (a, b) -> this.propertyValueComparator.compare((C) a.get().label(), (C) b.get().label());
-                    break;
-                case key:
-                    this.comparator = (a, b) -> this.propertyValueComparator.compare((C) ((VertexProperty) a.get()).key(), (C) ((VertexProperty) b.get()).key());
-                    break;
-                case value:
-                    this.comparator = (a, b) -> this.propertyValueComparator.compare((C) ((VertexProperty) a.get()).value(), (C) ((VertexProperty) b.get()).value());
-                    break;
-                default:
-                    throw new IllegalArgumentException("The provided token is unknown: " + accessor.name());
+        public ElementComparator(final Object key, final Comparator valueComparator) {
+            this.key = key;
+            this.valueComparator = valueComparator;
+            if (T.id.equals(this.key)) {
+                this.finalComparator = (a, b) -> this.valueComparator.compare(a.get().id(), b.get().id());
+            } else if (T.label.equals(this.key)) {
+                this.finalComparator = (a, b) -> this.valueComparator.compare(a.get().label(), b.get().label());
+            } else if (T.key.equals(this.key)) {
+                this.finalComparator = (a, b) -> this.valueComparator.compare(((VertexProperty) a.get()).key(), ((VertexProperty) b.get()).key());
+            } else if (T.value.equals(this.key)) {
+                this.finalComparator = (a, b) -> this.valueComparator.compare(((VertexProperty) a.get()).value(), ((VertexProperty) b.get()).value());
+            } else {
+                this.finalComparator = (a, b) -> this.valueComparator.compare(a.get().value(this.key.toString()), b.get().value(this.key.toString()));
             }
         }
 
         public int compare(final Traverser<S> first, final Traverser<S> second) {
-            return this.comparator.compare(first, second);
+            return this.finalComparator.compare(first, second);
         }
     }
 }

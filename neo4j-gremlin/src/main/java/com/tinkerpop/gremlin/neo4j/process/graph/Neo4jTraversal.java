@@ -330,20 +330,20 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal.Admin<S, E>, GraphT
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.order(arg0);
 	}
 
-	public default Neo4jTraversal<S, E> orderBy(com.tinkerpop.gremlin.process.T arg0) {
+	public default Neo4jTraversal<S, E> orderBy(java.lang.Object arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.orderBy(arg0);
 	}
 
-	public default Neo4jTraversal<S, E> orderBy(java.lang.String arg0) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.orderBy(arg0);
-	}
-
-	public default <C> Neo4jTraversal<S, E> orderBy(com.tinkerpop.gremlin.process.T arg0, java.util.Comparator<C>... arg1) {
+	public default <C> Neo4jTraversal<S, E> orderBy(java.lang.Object arg0, java.util.Comparator<C> arg1) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.orderBy(arg0, arg1);
 	}
 
-	public default <C> Neo4jTraversal<S, E> orderBy(java.lang.String arg0, java.util.Comparator<C>... arg1) {
-		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.orderBy(arg0, arg1);
+	public default <C1,C2> Neo4jTraversal<S, E> orderBy(java.lang.Object arg0, java.util.Comparator<C1> arg1, java.lang.Object arg2, java.util.Comparator<C2> arg3) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.orderBy(arg0, arg1, arg2, arg3);
+	}
+
+	public default <C1,C2,C3> Neo4jTraversal<S, E> orderBy(java.lang.Object arg0, java.util.Comparator<C1> arg1, java.lang.Object arg2, java.util.Comparator<C2> arg3, java.lang.Object arg4, java.util.Comparator<C3> arg5) {
+		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.orderBy(arg0, arg1, arg2, arg3, arg4, arg5);
 	}
 
 	public default Neo4jTraversal<S, com.tinkerpop.gremlin.structure.Vertex> otherV() {

@@ -683,29 +683,41 @@ OrderBy Step
 One of the most traversed objects in a traversal is an `Element`. An element can have properties associated with it (i.e. key/value pairs). In many situations, it is desirable to sort an element traversal stream according to a comparison of their properties. The `orderBy()`-step (*map*) exists to support this.
 
 [source,groovy]
-gremlin> g.V().map{it.get().value('name') + ' is ' + it.get()}
-==>marko is v[1]
-==>vadas is v[2]
-==>lop is v[3]
-==>josh is v[4]
-==>ripple is v[5]
-==>peter is v[6]
-gremlin> g.V().orderBy('name').map{it.get().value('name') + ' is ' + it.get()}
-==>josh is v[4]
-==>lop is v[3]
-==>marko is v[1]
-==>peter is v[6]
-==>ripple is v[5]
-==>vadas is v[2]
-gremlin> g.V().orderBy('name',decr).map{it.get().value('name') + ' is ' + it.get()}
-==>vadas is v[2]
-==>ripple is v[5]
-==>peter is v[6]
-==>marko is v[1]
-==>lop is v[3]
-==>josh is v[4]
+gremlin> g.V().values('name')
+==>marko
+==>vadas
+==>lop
+==>josh
+==>ripple
+==>peter
+gremlin> g.V().orderBy('name').values('name')
+==>josh
+==>lop
+==>marko
+==>peter
+==>ripple
+==>vadas
+gremlin> g.V().orderBy('name',decr).values('name')
+==>vadas
+==>ripple
+==>peter
+==>marko
+==>lop
+==>josh
 
 IMPORTANT: The `orderBy()`-step allows the user to provide an arbitrary number of comparators for primary, secondary, etc. sorting. These comparators can be lambdas or they can be pre-defined enums (e.g. `Order.incr`). It is always best to use a pre-defined enum instead of a generic lambda as the underlying vendor may be able to optimize the execution when the comparator is inspectable.
+
+[source,groovy]
+gremlin> g.V().has('age').orderBy('name',{a,b->a[1] <=> b[1]},'age',incr).values('name')
+==>vadas
+==>marko
+==>peter
+==>josh
+gremlin> g.V().has('age').orderBy('name',{a,b->a[1] <=> b[1]},'age',decr).values('name')
+==>marko
+==>vadas
+==>peter
+==>josh
 
 [[path-step]]
 Path Step

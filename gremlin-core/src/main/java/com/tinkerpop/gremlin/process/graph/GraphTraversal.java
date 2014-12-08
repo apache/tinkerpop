@@ -116,8 +116,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public static <S> GraphTraversal<S, S> of() {
         return new DefaultGraphTraversal<>();
     }
-    
-    public GraphTraversal.Admin<S,E> asAdmin();
+
+    public GraphTraversal.Admin<S, E> asAdmin();
 
     public interface Admin<S, E> extends Traversal.Admin<S, E> {
 
@@ -213,20 +213,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new OrderStep<>(this, comparators));
     }
 
-    public default GraphTraversal<S, E> orderBy(final String key) {
+    public default GraphTraversal<S, E> orderBy(final Object key) {
         return this.orderBy(key, Order.incr);
     }
 
-    public default GraphTraversal<S, E> orderBy(final T accessor) {
-        return this.orderBy(accessor, Order.incr);
+    public default <C> GraphTraversal<S, E> orderBy(final Object key, final Comparator<C> valueComparator) {
+        return this.asAdmin().addStep(new OrderByStep(this, key, valueComparator));
     }
 
-    public default <C> GraphTraversal<S, E> orderBy(final String key, final Comparator<C>... comparators) {
-        return this.asAdmin().addStep(new OrderByStep(this, key, comparators));
+    public default <C1, C2> GraphTraversal<S, E> orderBy(final Object keyA, final Comparator<C1> valueComparatorA, final Object keyB, final Comparator<C2> valueComparatorB) {
+        return this.asAdmin().addStep(new OrderByStep(this, keyA, valueComparatorA, keyB, valueComparatorB));
     }
 
-    public default <C> GraphTraversal<S, E> orderBy(final T accessor, final Comparator<C>... comparators) {
-        return this.asAdmin().addStep(new OrderByStep(this, accessor, comparators));
+    public default <C1, C2, C3> GraphTraversal<S, E> orderBy(final Object keyA, final Comparator<C1> propertyValueComparatorA, final Object keyB, final Comparator<C2> valueComparatorB, final Object keyC, final Comparator<C3> valueComparatorC) {
+        return this.asAdmin().addStep(new OrderByStep(this, keyA, propertyValueComparatorA, keyB, valueComparatorB, keyC, valueComparatorC));
     }
 
     public default GraphTraversal<S, E> shuffle() {
