@@ -104,21 +104,4 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Cloneable {
      * @param label the label for this step
      */
     public void setLabel(final String label);
-
-    /**
-     * A static singleton denoting that the current "spot" in the Step contains no object.
-     */
-    static final class NoObject {
-
-        private NoObject() {
-        }
-
-        public boolean equals(final Object object) {
-            return object instanceof NoObject;
-        }
-
-        public int hashCode() {
-            return 1212121212;
-        }
-    }
 }
