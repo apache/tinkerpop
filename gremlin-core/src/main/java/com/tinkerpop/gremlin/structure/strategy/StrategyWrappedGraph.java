@@ -89,10 +89,9 @@ public class StrategyWrappedGraph implements Graph, Graph.Iterators, StrategyWra
 
     @Override
     public GraphTraversal<Vertex, Vertex> V() {
-        final GraphTraversal<Vertex, Vertex> traversal = new StrategyWrappedGraphTraversal<>(Vertex.class, getStrategy().compose(
+        return new StrategyWrappedGraphTraversal<>(Vertex.class, getStrategy().compose(
                 s -> s.getGraphVStrategy(this.graphContext),
                 this.baseGraph::V).get(), this);
-        return traversal;
     }
 
     @Override
