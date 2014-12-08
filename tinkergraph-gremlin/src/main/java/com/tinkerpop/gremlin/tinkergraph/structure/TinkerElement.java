@@ -31,7 +31,7 @@ public abstract class TinkerElement implements Element, Element.Iterators {
 
     @Override
     public int hashCode() {
-        return this.id.hashCode();
+        return ElementHelper.hashCode(this);
     }
 
     @Override

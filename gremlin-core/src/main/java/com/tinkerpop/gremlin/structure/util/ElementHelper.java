@@ -332,6 +332,27 @@ public class ElementHelper {
     }
 
     /**
+     * If two {@link Element} instances are equal, then they must have the same hash codes. This methods ensures consistent hashCode values.
+     *
+     * @param element the element to get the hashCode for
+     * @return the hash code of the element
+     */
+    public static int hashCode(final Element element) {
+        return element.id().hashCode();
+    }
+
+    /**
+     * If two {@link Property} instances are equal, then they must have the same hash codes. This methods ensures consistent hashCode values.
+     * For {@link VertexProperty} use {@link ElementHelper#hashCode(com.tinkerpop.gremlin.structure.Element)}.
+     *
+     * @param property the property to get the hashCode for
+     * @return the hash code of the property
+     */
+    public static int hashCode(final Property property) {
+        return property.key().hashCode() + property.value().hashCode();
+    }
+
+    /**
      * A standard method for determining if two {@link com.tinkerpop.gremlin.structure.Property} objects are equal. This method should be used by any
      * {@link Object#equals(Object)} implementation to ensure consistent behavior.
      *

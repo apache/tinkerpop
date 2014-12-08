@@ -83,7 +83,7 @@ public class Neo4jVertexProperty<V> implements VertexProperty<V>, VertexProperty
 
     @Override
     public int hashCode() {
-        return this.id().hashCode();
+        return ElementHelper.hashCode((Element) this);
     }
 
     @Override

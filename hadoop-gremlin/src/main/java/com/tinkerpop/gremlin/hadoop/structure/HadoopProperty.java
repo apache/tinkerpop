@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.hadoop.structure;
 
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedProperty;
 
 /**
@@ -55,7 +54,7 @@ public class HadoopProperty<V> implements Property<V>, WrappedProperty<Property<
 
     @Override
     public boolean equals(final Object object) {
-        return ElementHelper.areEqual(this, object);
+        return this.baseProperty.equals(object);
     }
 
     @Override

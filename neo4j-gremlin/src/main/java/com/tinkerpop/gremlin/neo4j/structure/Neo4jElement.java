@@ -85,7 +85,7 @@ public abstract class Neo4jElement implements Element, Element.Iterators, Wrappe
 
     @Override
     public int hashCode() {
-        return this.id().hashCode();
+       return ElementHelper.hashCode(this);
     }
 
     @Override

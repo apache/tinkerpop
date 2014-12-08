@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -59,7 +58,7 @@ public abstract class HadoopElement implements Element {
 
     @Override
     public boolean equals(final Object object) {
-        return ElementHelper.areEqual(this, object);
+        return this.baseElement.equals(object);
     }
 
     @Override

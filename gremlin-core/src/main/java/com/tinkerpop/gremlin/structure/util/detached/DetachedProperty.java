@@ -78,7 +78,7 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
 
     @Override
     public int hashCode() {
-        return this.element.id.hashCode() + this.key.hashCode() + this.value.hashCode();
+        return ElementHelper.hashCode(this);
     }
 
     @Override

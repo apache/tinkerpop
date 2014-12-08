@@ -67,7 +67,7 @@ public abstract class DetachedElement<E> implements Element, Element.Iterators, 
 
     @Override
     public int hashCode() {
-        return this.id.hashCode();
+        return ElementHelper.hashCode(this);
     }
 
     @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")

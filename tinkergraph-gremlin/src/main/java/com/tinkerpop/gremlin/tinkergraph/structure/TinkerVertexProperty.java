@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
@@ -63,11 +62,6 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
     @Override
     public String toString() {
         return StringFactory.propertyString(this);
-    }
-
-    @Override
-    public int hashCode() {
-        return this.key.hashCode() + this.value.hashCode() + this.vertex.hashCode();
     }
 
     @Override
