@@ -16,11 +16,6 @@ import java.util.Iterator;
 public interface Step<S, E> extends Iterator<Traverser<E>>, Cloneable {
 
     /**
-     * A token object that denotes "nothing" and is used to declare an empty "spot" in a {@link Traversal}
-     */
-    public static final NoObject NO_OBJECT = new NoObject();
-
-    /**
      * Add a iterator of {@link Traverser} objects of type S to the step.
      *
      * @param starts The iterator of objects to add

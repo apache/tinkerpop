@@ -67,7 +67,7 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
 
     @Override
     public int hashCode() {
-        return this.key.hashCode() + this.value.hashCode() + this.vertex.hashCode() + this.properties.hashCode();
+        return this.key.hashCode() + this.value.hashCode() + this.vertex.hashCode();
     }
 
     @Override
