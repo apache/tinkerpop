@@ -14,6 +14,7 @@ import com.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.commons.configuration.Configuration;
 
+import java.util.Iterator;
 import java.util.Optional;
 
 /**
@@ -24,8 +25,9 @@ import java.util.Optional;
  * implementation.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGraph<Graph> {
+public class StrategyWrappedGraph implements Graph, Graph.Iterators, StrategyWrapped, WrappedGraph<Graph> {
     private final Graph baseGraph;
     private Strategy strategy;
     private Strategy.Context<StrategyWrappedGraph> graphContext;
@@ -65,8 +67,8 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
 
     @Override
     public Vertex addVertex(final Object... keyValues) {
-        final Optional<Vertex> v = Optional.ofNullable(strategy.compose(
-                s -> s.getAddVertexStrategy(graphContext),
+        final Optional<Vertex> v = Optional.ofNullable(getStrategy().compose(
+                s -> s.getAddVertexStrategy(this.graphContext),
                 this.baseGraph::addVertex).apply(keyValues));
         return v.isPresent() ? new StrategyWrappedVertex(v.get(), this) : null;
     }
@@ -74,21 +76,21 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
     @Override
     public Vertex v(final Object id) {
         return new StrategyWrappedVertex(getStrategy().compose(
-                s -> s.getGraphvStrategy(graphContext),
+                s -> s.getGraphvStrategy(this.graphContext),
                 this.baseGraph::v).apply(id), this);
     }
 
     @Override
     public Edge e(final Object id) {
         return new StrategyWrappedEdge(getStrategy().compose(
-                s -> s.getGrapheStrategy(graphContext),
+                s -> s.getGrapheStrategy(this.graphContext),
                 this.baseGraph::e).apply(id), this);
     }
 
     @Override
     public GraphTraversal<Vertex, Vertex> V() {
         final GraphTraversal<Vertex, Vertex> traversal = new StrategyWrappedGraphTraversal<>(Vertex.class, getStrategy().compose(
-                s -> s.getGraphVStrategy(graphContext),
+                s -> s.getGraphVStrategy(this.graphContext),
                 this.baseGraph::V).get(), this);
         return traversal;
     }
@@ -96,7 +98,7 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
     @Override
     public GraphTraversal<Edge, Edge> E() {
         return new StrategyWrappedGraphTraversal<>(Edge.class, getStrategy().compose(
-                s -> s.getGraphEStrategy(graphContext),
+                s -> s.getGraphEStrategy(this.graphContext),
                 this.baseGraph::E).get(), this);
     }
 
@@ -136,11 +138,26 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGrap
     }
 
     @Override
+    public Iterators iterators() {
+        return this;
+    }
+
+    @Override
+    public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
+        return getStrategy().compose(s -> s.getGraphIteratorsVerticesStrategy(this.graphContext), this.baseGraph.iterators()::vertexIterator).apply(vertexIds);
+    }
+
+    @Override
+    public Iterator<Edge> edgeIterator(final Object... edgeIds) {
+        return getStrategy().compose(s -> s.getGraphIteratorsEdgesStrategy(this.graphContext), this.baseGraph.iterators()::edgeIterator).apply(edgeIds);
+    }
+
+    @Override
     public void close() throws Exception {
         // compose function doesn't seem to want to work here even though it works with other Supplier<Void>
         // strategy functions. maybe the "throws Exception" is hosing it up.......
-        if (strategy.getGraphStrategy().isPresent()) {
-            strategy.getGraphStrategy().get().getGraphCloseStrategy(this.graphContext).apply(FunctionUtils.wrapSupplier(() -> {
+        if (this.strategy.getGraphStrategy().isPresent()) {
+            this.strategy.getGraphStrategy().get().getGraphCloseStrategy(this.graphContext).apply(FunctionUtils.wrapSupplier(() -> {
                 baseGraph.close();
                 return null;
             })).get();

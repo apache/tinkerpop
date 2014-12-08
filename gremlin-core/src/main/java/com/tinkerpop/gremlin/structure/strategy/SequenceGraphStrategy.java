@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class SequenceGraphStrategy implements GraphStrategy {
     private final List<GraphStrategy> graphStrategySequence;
@@ -36,6 +37,16 @@ public class SequenceGraphStrategy implements GraphStrategy {
 
     public void add(final GraphStrategy strategy) {
         this.graphStrategySequence.add(strategy);
+    }
+
+    @Override
+    public UnaryOperator<Function<Object[], Iterator<Vertex>>> getGraphIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getGraphIteratorsVerticesStrategy(ctx));
+    }
+
+    @Override
+    public UnaryOperator<Function<Object[], Iterator<Edge>>> getGraphIteratorsEdgesStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getGraphIteratorsEdgesStrategy(ctx));
     }
 
     @Override

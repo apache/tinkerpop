@@ -2,17 +2,21 @@ package com.tinkerpop.gremlin.hadoop.structure;
 
 import com.tinkerpop.gremlin.hadoop.Constants;
 import com.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
-import com.tinkerpop.gremlin.hadoop.process.graph.step.sideEffect.HadoopGraphStep;
+import com.tinkerpop.gremlin.hadoop.structure.hdfs.HadoopEdgeIterator;
+import com.tinkerpop.gremlin.hadoop.structure.hdfs.HadoopVertexIterator;
 import com.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.util.IteratorUtils;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -20,6 +24,8 @@ import org.apache.hadoop.mapreduce.InputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.Iterator;
 import java.util.Optional;
 
 /**
@@ -81,7 +87,7 @@ import java.util.Optional;
         test = "com.tinkerpop.gremlin.process.computer.GroovyGraphComputerTest$ComputerTest",
         method = "shouldHaveConsistentMemoryVertexPropertiesAndExceptions",
         reason = "Hadoop does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
-public class HadoopGraph implements Graph {
+public class HadoopGraph implements Graph, Graph.Iterators {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(HadoopGraph.class);
 
@@ -108,13 +114,13 @@ public class HadoopGraph implements Graph {
     @Override
     public GraphTraversal<Vertex, Vertex> V() {
         final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this);
-        return traversal.asAdmin().addStep(new HadoopGraphStep<>(traversal, Vertex.class, this));
+        return traversal.asAdmin().addStep(new GraphStep<>(traversal, this, Vertex.class));
     }
 
     @Override
     public GraphTraversal<Edge, Edge> E() {
         final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>(this);
-        return traversal.asAdmin().addStep(new HadoopGraphStep<>(traversal, Edge.class, this));
+        return traversal.asAdmin().addStep(new GraphStep<>(traversal, this, Edge.class));
     }
 
     @Override
@@ -166,6 +172,29 @@ public class HadoopGraph implements Graph {
     @Override
     public Transaction tx() {
         throw Exceptions.transactionsNotSupported();
+    }
+
+    @Override
+    public Iterators iterators() {
+        return this;
+    }
+
+    @Override
+    public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
+        try {
+            return 0 == vertexIds.length ? new HadoopVertexIterator(this) : IteratorUtils.filter(new HadoopVertexIterator(this), vertex -> ElementHelper.idExists(vertex.id(), vertexIds));
+        } catch (final IOException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Iterator<Edge> edgeIterator(final Object... edgeIds) {
+        try {
+            return 0 == edgeIds.length ? new HadoopEdgeIterator(this) : IteratorUtils.filter(new HadoopEdgeIterator(this), edge -> ElementHelper.idExists(edge.id(), edgeIds));
+        } catch (final IOException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     @Override

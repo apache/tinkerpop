@@ -1,14 +1,13 @@
 package com.tinkerpop.gremlin.hadoop.process.graph.strategy;
 
-import com.tinkerpop.gremlin.hadoop.process.graph.step.sideEffect.HadoopGraphStep;
 import com.tinkerpop.gremlin.hadoop.structure.HadoopElement;
-import com.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.graph.strategy.AbstractTraversalStrategy;
@@ -18,6 +17,7 @@ import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.EmptyGraph;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 
 import java.util.Set;
@@ -51,7 +51,7 @@ public class HadoopElementStepStrategy extends AbstractTraversalStrategy {
                 TraversalHelper.insertStep(identityStep, 0, traversal);
             }
             TraversalHelper.insertStep(new HasStep(traversal, new HasContainer(T.id, Compare.eq, element.id())), 0, traversal);
-            TraversalHelper.insertStep(new HadoopGraphStep<>(traversal, element.getClass(), (HadoopGraph) element.graph()), 0, traversal);
+            TraversalHelper.insertStep(new GraphStep<>(traversal, EmptyGraph.instance(), element.getClass()), 0, traversal);
         }
     }
 

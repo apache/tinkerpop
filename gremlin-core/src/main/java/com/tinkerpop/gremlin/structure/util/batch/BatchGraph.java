@@ -223,6 +223,11 @@ public class BatchGraph<G extends Graph> implements Graph {
     }
 
     @Override
+    public Iterators iterators() {
+        throw retrievalNotSupported();
+    }
+
+    @Override
     public <S> GraphTraversal<S, S> of() {
         throw retrievalNotSupported();
     }

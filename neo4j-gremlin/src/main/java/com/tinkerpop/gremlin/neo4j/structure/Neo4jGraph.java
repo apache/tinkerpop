@@ -13,6 +13,8 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
+import com.tinkerpop.gremlin.util.IteratorUtils;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationConverter;
@@ -26,11 +28,14 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.HighlyAvailableGraphDatabaseFactory;
 import org.neo4j.graphdb.schema.Schema;
 import org.neo4j.kernel.GraphDatabaseAPI;
+import org.neo4j.tooling.GlobalGraphOperations;
 
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -42,7 +47,7 @@ import java.util.function.Function;
  */
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
-public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
+public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDatabaseService> {
 
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
         this.setProperty(Graph.GRAPH, Neo4jGraph.class.getName());
@@ -182,7 +187,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     public Neo4jTraversal<Vertex, Vertex> V() {
         this.tx().readWrite();
         final Neo4jTraversal<Vertex, Vertex> traversal = new Neo4jGraphTraversal<>(this);
-        traversal.addStep(new Neo4jGraphStep(traversal, Vertex.class, this));
+        traversal.addStep(new Neo4jGraphStep<>(traversal, this, Vertex.class));
         return traversal;
     }
 
@@ -190,7 +195,7 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     public Neo4jTraversal<Edge, Edge> E() {
         this.tx().readWrite();
         final Neo4jTraversal<Edge, Edge> traversal = new Neo4jGraphTraversal<>(this);
-        traversal.addStep(new Neo4jGraphStep(traversal, Edge.class, this));
+        traversal.addStep(new Neo4jGraphStep<>(traversal, this, Edge.class));
         return traversal;
     }
 
@@ -252,6 +257,28 @@ public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
     @Override
     public Configuration configuration() {
         return this.configuration;
+    }
+
+    @Override
+    public Iterators iterators() {
+        return this;
+    }
+
+    @Override
+    public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
+        return 0 == vertexIds.length ? (Iterator) StreamFactory.stream(GlobalGraphOperations.at(this.getBaseGraph()).getAllNodes())
+                .filter(node -> !Neo4jHelper.isDeleted(node))
+                .filter(node -> !node.hasLabel(Neo4jVertexProperty.VERTEX_PROPERTY_LABEL))
+                .map(node -> new Neo4jVertex(node, this)).iterator() : IteratorUtils.map(Arrays.asList(vertexIds).iterator(), id -> new Neo4jVertex(this.getBaseGraph().getNodeById((long) id), this));
+    }
+
+    @Override
+    public Iterator<Edge> edgeIterator(final Object... edgeIds) {
+        return 0 == edgeIds.length ? (Iterator) StreamFactory.stream(GlobalGraphOperations.at(this.getBaseGraph()).getAllRelationships())
+                .filter(relationship -> !Neo4jHelper.isDeleted(relationship))
+                .filter(relationship -> !relationship.getType().name().startsWith(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX))
+                .map(relationship -> new Neo4jEdge(relationship, this)).iterator() : IteratorUtils.map(Arrays.asList(edgeIds).iterator(), id -> new Neo4jEdge(this.getBaseGraph().getRelationshipById((long) id), this));
+
     }
 
     /**

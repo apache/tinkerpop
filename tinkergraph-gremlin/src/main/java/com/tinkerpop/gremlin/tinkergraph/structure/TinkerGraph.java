@@ -18,8 +18,10 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * An in-sideEffects, reference implementation of the property graph interfaces provided by Gremlin3.
@@ -35,7 +37,7 @@ import java.util.Set;
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_COMPUTER)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_INTEGRATE)
-public class TinkerGraph implements Graph {
+public class TinkerGraph implements Graph, Graph.Iterators {
 
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
         this.setProperty(Graph.GRAPH, TinkerGraph.class.getName());
@@ -112,12 +114,12 @@ public class TinkerGraph implements Graph {
 
     @Override
     public GraphTraversal<Vertex, Vertex> V() {
-        return new TinkerGraphTraversal<>(Vertex.class, this);
+        return new TinkerGraphTraversal<>(this, Vertex.class);
     }
 
     @Override
     public GraphTraversal<Edge, Edge> E() {
-        return new TinkerGraphTraversal<>(Edge.class, this);
+        return new TinkerGraphTraversal<>(this, Edge.class);
     }
 
     @Override
@@ -185,6 +187,21 @@ public class TinkerGraph implements Graph {
     @Override
     public Configuration configuration() {
         return EMPTY_CONFIGURATION;
+    }
+
+    @Override
+    public Iterators iterators() {
+        return this;
+    }
+
+    @Override
+    public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
+        return 0 == vertexIds.length ? this.vertices.values().iterator() : Stream.of(vertexIds).filter(this.vertices::containsKey).map(this.vertices::get).iterator();
+    }
+
+    @Override
+    public Iterator<Edge> edgeIterator(final Object... edgeIds) {
+        return 0 == edgeIds.length ? this.edges.values().iterator() : Stream.of(edgeIds).filter(this.edges::containsKey).map(this.edges::get).iterator();
     }
 
     /**

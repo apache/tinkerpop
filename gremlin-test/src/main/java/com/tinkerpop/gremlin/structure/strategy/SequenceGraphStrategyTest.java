@@ -177,7 +177,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
 
                     @Override
                     public <V> UnaryOperator<BiFunction<String, V, VertexProperty<V>>> getVertexPropertyStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
-                        return (f) -> (k,v) -> {
+                        return (f) -> (k, v) -> {
                             ctx.getCurrent().getBaseVertex().property("timestamp", "timestamped");
 
                             // dynamically construct a strategy to force this call to addVertex to stay localized
@@ -227,7 +227,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
 
             @Override
             public <V> UnaryOperator<BiFunction<String, V, VertexProperty<V>>> getVertexPropertyStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
-                return (f) -> (k,v) -> {
+                return (f) -> (k, v) -> {
                     ctx.getCurrent().getBaseVertex().property("timestamp", "timestamped");
 
                     // dynamically construct a strategy to force this call to addVertex to stay localized
@@ -503,6 +503,16 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         private UnaryOperator spy() {
             count++;
             return UnaryOperator.identity();
+        }
+
+        @Override
+        public UnaryOperator<Function<Object[], Iterator<Vertex>>> getGraphIteratorsVerticesStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+            return spy();
+        }
+
+        @Override
+        public UnaryOperator<Function<Object[], Iterator<Edge>>> getGraphIteratorsEdgesStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+            return spy();
         }
 
         @Override

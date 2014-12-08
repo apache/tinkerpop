@@ -21,6 +21,6 @@ public class StrategyWrappedGraphTraversal<S, E> extends DefaultGraphTraversal<S
 
     public StrategyWrappedGraphTraversal(final Class<E> returnClass, final GraphTraversal<S, E> graphTraversal, final StrategyWrappedGraph strategyWrappedGraph) {
         super(strategyWrappedGraph);
-        this.addStep(new StrategyWrappedGraphStep(this, returnClass, graphTraversal, strategyWrappedGraph));
+        this.addStep(new StrategyWrappedGraphStep(this, strategyWrappedGraph, returnClass, graphTraversal));
     }
 }

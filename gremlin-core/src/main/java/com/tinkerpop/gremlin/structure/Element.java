@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.structure;
 
+import com.tinkerpop.gremlin.util.IteratorUtils;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -115,18 +117,7 @@ public abstract interface Element {
          * Get the values of properties as an {@link Iterator}.
          */
         public default <V> Iterator<V> valueIterator(final String... propertyKeys) {
-            final Iterator<? extends Property<V>> iterator = this.propertyIterator(propertyKeys);
-            return new Iterator<V>() {
-                @Override
-                public boolean hasNext() {
-                    return iterator.hasNext();
-                }
-
-                @Override
-                public V next() {
-                    return iterator.next().value();
-                }
-            };
+            return IteratorUtils.map(this.<V>propertyIterator(propertyKeys), property -> property.value());
         }
 
         /**

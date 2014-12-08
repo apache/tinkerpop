@@ -15,6 +15,7 @@ import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.EmptyGraph;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.sideEffect.TinkerGraphStep;
 
@@ -50,7 +51,7 @@ public class TinkerElementStepStrategy extends AbstractTraversalStrategy {
                 TraversalHelper.insertStep(identityStep, 0, traversal);
             }
             TraversalHelper.insertStep(new HasStep(traversal, new HasContainer(T.id, Compare.eq, element.id())), 0, traversal);
-            TraversalHelper.insertStep(new TinkerGraphStep<>(traversal, element.getClass()), 0, traversal);
+            TraversalHelper.insertStep(new TinkerGraphStep<>(traversal, EmptyGraph.instance(), element.getClass()), 0, traversal);
         }
     }
 

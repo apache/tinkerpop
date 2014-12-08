@@ -490,4 +490,16 @@ public class ElementHelper {
             return false;
         }
     }
+
+    public static boolean idExists(final Object id, final Object... providedIds) {
+        if (0 == providedIds.length) return true;
+        if (1 == providedIds.length) return id.equals(providedIds[0]);
+        else {
+            for (final Object temp : providedIds) {
+                if (temp.equals(id))
+                    return true;
+            }
+            return false;
+        }
+    }
 }

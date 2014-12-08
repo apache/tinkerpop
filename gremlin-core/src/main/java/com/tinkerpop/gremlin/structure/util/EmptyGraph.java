@@ -11,10 +11,13 @@ import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 
+import java.util.Collections;
+import java.util.Iterator;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EmptyGraph implements Graph {
+public class EmptyGraph implements Graph, Graph.Iterators {
 
     private static final String MESSAGE = "The graph is immutable and empty";
     private static final EmptyGraph INSTANCE = new EmptyGraph();
@@ -75,5 +78,20 @@ public class EmptyGraph implements Graph {
     @Override
     public void close() throws Exception {
         throw new IllegalStateException(MESSAGE);
+    }
+
+    @Override
+    public Iterators iterators() {
+        return this;
+    }
+
+    @Override
+    public Iterator<Vertex> vertexIterator(final Object... vertexIds) {
+        return Collections.emptyIterator();
+    }
+
+    @Override
+    public Iterator<Edge> edgeIterator(final Object... edgeIds) {
+        return Collections.emptyIterator();
     }
 }

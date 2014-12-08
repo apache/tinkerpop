@@ -16,6 +16,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -224,6 +225,35 @@ public interface Graph extends AutoCloseable {
      * @return the configuration used during graph construction.
      */
     public Configuration configuration();
+
+    /**
+     * Get the {@link Graph.Iterators} associated with this graph.
+     *
+     * @return the graph iterators of this graph
+     */
+    public Iterators iterators();
+
+    /**
+     * An interface that provides access to iterators over {@link Vertex} objects and {@link Edge} objects of the graph
+     * without constructing a {@link com.tinkerpop.gremlin.process.Traversal} object.
+     */
+    public interface Iterators {
+        /**
+         * Get the {@link Vertex} objects in this graph with the provided vertex ids. If no ids are provided, get all vertices.
+         *
+         * @param vertexIds the ids of the vertices to get
+         * @return an {@link Iterator} of vertices that match the provided vertex ids
+         */
+        public Iterator<Vertex> vertexIterator(final Object... vertexIds);
+
+        /**
+         * Get the {@link Edge} objects in this graph with the provided edge ids. If no ids are provided, get all edges.
+         *
+         * @param edgeIds the ids of the edges to get
+         * @return an {@link Iterator} of edges that match the provided edge ids
+         */
+        public Iterator<Edge> edgeIterator(final Object... edgeIds);
+    }
 
     /**
      * Graph variables are a set of key/value pairs associated with the graph.
