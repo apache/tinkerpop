@@ -9,6 +9,7 @@ import com.esotericsoftware.kryo.util.DefaultStreamFactory;
 import com.esotericsoftware.kryo.util.MapReferenceResolver;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.process.computer.MapReduce;
 import com.tinkerpop.gremlin.process.computer.util.MapMemory;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.process.traversers.PathTraverser;
@@ -249,6 +250,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HashMap.Entry.class, null, 16));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(KryoSerializable.class, null, 36));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedHashMap.class, null, 47));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedHashSet.class, null, 71));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LINKED_HASH_MAP_ENTRY_CLASS, null, 15));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Locale.class, null, 22));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StringBuffer.class, null, 43));
@@ -261,22 +263,22 @@ public final class GremlinKryo {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(URI.class, kryo -> new URISerializer(), 72));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(VertexTerminator.class, null, 13));
 
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Edge.class, kryo -> new ElementSerializer.EdgeSerializer(), 65));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Vertex.class, kryo -> new ElementSerializer.VertexSerializer(), 66));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Property.class, kryo -> new ElementSerializer.PropertySerializer(), 67));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(VertexProperty.class, kryo -> new ElementSerializer.VertexPropertySerializer(), 68));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Edge.class, kryo -> new GraphSerializer.EdgeSerializer(), 65));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Vertex.class, kryo -> new GraphSerializer.VertexSerializer(), 66));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Property.class, kryo -> new GraphSerializer.PropertySerializer(), 67));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(VertexProperty.class, kryo -> new GraphSerializer.VertexPropertySerializer(), 68));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Path.class, kryo -> new GraphSerializer.PathSerializer(), 59));
 
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(SimpleTraverser.class, null, 55));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(PathTraverser.class, null, 56));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TraverserSet.class, null, 58));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Path.class, null, 59));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Tree.class, null, 61));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HashSet.class, null, 62));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(BulkSet.class, null, 64));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StepTimer.class, null, 69));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TraversalMetrics.class, null, 70));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedHashSet.class, null, 71));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MapMemory.class, null, 73));  // ***LAST ID***
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MapMemory.class, null, 73));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MapReduce.NullObject.class, null, 74)); // ***LAST ID***
         }};
 
         private static final byte major = 1;

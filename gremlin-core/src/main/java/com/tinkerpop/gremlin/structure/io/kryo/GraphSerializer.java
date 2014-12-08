@@ -4,6 +4,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -11,15 +12,19 @@ import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 
 /**
- * Traverser class for {@link com.tinkerpop.gremlin.structure.Element} serializers.
+ * Class used to serialize graph-based objects such as vertices, edges, properties, and paths.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class ElementSerializer {
+class GraphSerializer {
     /**
-     * Serializes any Vertex implementation encountered to a {@link DetachedEdge}.
+     * Serializes any {@link Edge} implementation encountered to a {@link DetachedEdge}.
      *
      * @author Stephen Mallette (http://stephen.genoprime.com)
      */
@@ -37,7 +42,7 @@ class ElementSerializer {
     }
 
     /**
-     * Serializes any Vertex implementation encountered to an {@link DetachedVertex}.
+     * Serializes any {@link Vertex} implementation encountered to an {@link DetachedVertex}.
      *
      * @author Stephen Mallette (http://stephen.genoprime.com)
      */
@@ -56,6 +61,11 @@ class ElementSerializer {
         }
     }
 
+    /**
+     * Serializes any {@link Property} implementation encountered to an {@link DetachedProperty}.
+     *
+     * @author Stephen Mallette (http://stephen.genoprime.com)
+     */
     static class PropertySerializer extends Serializer<Property> {
         public PropertySerializer() {
         }
@@ -71,6 +81,11 @@ class ElementSerializer {
         }
     }
 
+    /**
+     * Serializes any {@link VertexProperty} implementation encountered to an {@link DetachedVertexProperty}.
+     *
+     * @author Stephen Mallette (http://stephen.genoprime.com)
+     */
     static class VertexPropertySerializer extends Serializer<VertexProperty> {
         public VertexPropertySerializer() {
         }
@@ -81,8 +96,29 @@ class ElementSerializer {
         }
 
         @Override
-        public VertexProperty read(final Kryo kryo, final Input input, final Class<VertexProperty> propertyClass) {
+        public VertexProperty read(final Kryo kryo, final Input input, final Class<VertexProperty> vertexPropertyClass) {
             return (VertexProperty) kryo.readClassAndObject(input);
         }
+    }
+
+    /**
+     * Serializes any {@link Path} implementation encountered to an {@link DetachedPath}.
+     *
+     * @author Marko A. Rodriguez (http://markorodriguez.com)
+     */
+    static class PathSerializer extends Serializer<Path> {
+        public PathSerializer() {
+        }
+
+        @Override
+        public void write(final Kryo kryo, final Output output, final Path path) {
+            kryo.writeClassAndObject(output, DetachedFactory.detach(path, false));
+        }
+
+        @Override
+        public Path read(final Kryo kryo, final Input input, final Class<Path> pathClass) {
+            return (Path) kryo.readClassAndObject(input);
+        }
+
     }
 }
