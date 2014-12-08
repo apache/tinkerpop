@@ -184,18 +184,18 @@ public class Neo4jGraph implements Graph, Graph.Iterators, WrappedGraph<GraphDat
     }
 
     @Override
-    public Neo4jTraversal<Vertex, Vertex> V() {
+    public Neo4jTraversal<Vertex, Vertex> V(final Object... vertexIds) {
         this.tx().readWrite();
         final Neo4jTraversal<Vertex, Vertex> traversal = new Neo4jGraphTraversal<>(this);
-        traversal.addStep(new Neo4jGraphStep<>(traversal, this, Vertex.class));
+        traversal.addStep(new Neo4jGraphStep<>(traversal, this, Vertex.class, vertexIds));
         return traversal;
     }
 
     @Override
-    public Neo4jTraversal<Edge, Edge> E() {
+    public Neo4jTraversal<Edge, Edge> E(final Object... edgeIds) {
         this.tx().readWrite();
         final Neo4jTraversal<Edge, Edge> traversal = new Neo4jGraphTraversal<>(this);
-        traversal.addStep(new Neo4jGraphStep<>(traversal, this, Edge.class));
+        traversal.addStep(new Neo4jGraphStep<>(traversal, this, Edge.class, edgeIds));
         return traversal;
     }
 

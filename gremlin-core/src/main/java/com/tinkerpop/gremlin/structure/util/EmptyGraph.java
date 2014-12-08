@@ -31,12 +31,12 @@ public class EmptyGraph implements Graph, Graph.Iterators {
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> V() {
+    public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
         return EmptyGraphTraversal.instance();
     }
 
     @Override
-    public GraphTraversal<Edge, Edge> E() {
+    public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
         return EmptyGraphTraversal.instance();
     }
 

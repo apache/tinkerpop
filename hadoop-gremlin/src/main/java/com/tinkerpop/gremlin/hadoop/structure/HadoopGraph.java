@@ -112,15 +112,15 @@ public class HadoopGraph implements Graph, Graph.Iterators {
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> V() {
+    public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
         final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(this);
-        return traversal.asAdmin().addStep(new GraphStep<>(traversal, this, Vertex.class));
+        return traversal.asAdmin().addStep(new GraphStep<>(traversal, this, Vertex.class, vertexIds));
     }
 
     @Override
-    public GraphTraversal<Edge, Edge> E() {
+    public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
         final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>(this);
-        return traversal.asAdmin().addStep(new GraphStep<>(traversal, this, Edge.class));
+        return traversal.asAdmin().addStep(new GraphStep<>(traversal, this, Edge.class, edgeIds));
     }
 
     @Override

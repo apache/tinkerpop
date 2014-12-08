@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.function.Supplier;
 
@@ -19,18 +20,24 @@ import java.util.function.Supplier;
 public class GraphStep<E extends Element> extends StartStep<E> implements TraverserSource {
 
     protected final Class<E> returnClass;
+    protected final Object[] ids;
     protected final Graph graph;
     protected Supplier<Iterator<E>> iteratorSupplier;
 
-    public GraphStep(final Traversal traversal, final Graph graph, final Class<E> returnClass) {
+    public GraphStep(final Traversal traversal, final Graph graph, final Class<E> returnClass, final Object... ids) {
         super(traversal);
         this.graph = graph;
         this.returnClass = returnClass;
-        this.setIteratorSupplier(() -> (Iterator<E>) (Vertex.class.isAssignableFrom(this.returnClass) ? this.graph.iterators().vertexIterator() : this.graph.iterators().edgeIterator()));
+        this.ids = ids;
+        this.setIteratorSupplier(() -> (Iterator<E>) (Vertex.class.isAssignableFrom(this.returnClass) ?
+                this.graph.iterators().vertexIterator(this.ids) :
+                this.graph.iterators().edgeIterator(this.ids)));
     }
 
     public String toString() {
-        return TraversalHelper.makeStepString(this, returnClass.getSimpleName().toLowerCase());
+        return 0 == this.ids.length ?
+                TraversalHelper.makeStepString(this, returnClass.getSimpleName().toLowerCase()) :
+                TraversalHelper.makeStepString(this, returnClass.getSimpleName().toLowerCase(), Arrays.toString(this.ids));
     }
 
     public boolean returnsVertices() {
@@ -43,6 +50,10 @@ public class GraphStep<E extends Element> extends StartStep<E> implements Traver
 
     public void setIteratorSupplier(final Supplier<Iterator<E>> iteratorSupplier) {
         this.iteratorSupplier = iteratorSupplier;
+    }
+
+    public <G extends Graph> G getGraph(final Class<G> graphClass) {
+        return (G) this.graph;
     }
 
     @Override

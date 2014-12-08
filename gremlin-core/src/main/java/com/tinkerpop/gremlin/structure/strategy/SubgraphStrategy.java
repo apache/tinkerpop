@@ -83,13 +83,13 @@ public class SubgraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Supplier<GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return (f) -> () -> f.get().filter(t -> this.testVertex(t.get())); // TODO: we should make sure index hits go first.
+    public UnaryOperator<Function<Object[],GraphTraversal<Vertex, Vertex>>> getGraphVStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return (f) -> ids -> f.apply(ids).filter(t -> this.testVertex(t.get())); // TODO: we should make sure index hits go first.
     }
 
     @Override
-    public UnaryOperator<Supplier<GraphTraversal<Edge, Edge>>> getGraphEStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return (f) -> () -> f.get().filter(t -> this.testEdge(t.get()));  // TODO: we should make sure index hits go first.
+    public UnaryOperator<Function<Object[],GraphTraversal<Edge, Edge>>> getGraphEStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return (f) -> ids -> f.apply(ids).filter(t -> this.testEdge(t.get()));  // TODO: we should make sure index hits go first.
     }
 
     // TODO: make this work for DSL -- we need Element predicate

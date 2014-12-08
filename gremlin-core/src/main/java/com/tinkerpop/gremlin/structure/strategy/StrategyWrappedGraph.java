@@ -88,17 +88,17 @@ public class StrategyWrappedGraph implements Graph, Graph.Iterators, StrategyWra
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> V() {
+    public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
         return new StrategyWrappedGraphTraversal<>(Vertex.class, getStrategy().compose(
                 s -> s.getGraphVStrategy(this.graphContext),
-                this.baseGraph::V).get(), this);
+                this.baseGraph::V).apply(vertexIds), this);
     }
 
     @Override
-    public GraphTraversal<Edge, Edge> E() {
+    public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
         return new StrategyWrappedGraphTraversal<>(Edge.class, getStrategy().compose(
                 s -> s.getGraphEStrategy(this.graphContext),
-                this.baseGraph::E).get(), this);
+                this.baseGraph::E).apply(edgeIds), this);
     }
 
     @Override

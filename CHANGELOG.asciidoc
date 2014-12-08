@@ -9,7 +9,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M7 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Added `Graph.Iterators` to allow access to vertex and edge iterators based on element ids.
+* `Graph.V(Object... ids)` and `Graph.E(Object... ids)` now exist to constrain the traversal start set to elements with the provided ids.
+* Added `Graph.Iterators` to allow access to vertex and edge iterators based on element ids and bypassing `GraphTraversal`.
 * 'OrderByStep` allows up to 3 element value comparators (no var args possible, so it can't be arbitrary).
 * Removed `Step.NO_OBJECT` as the problem is solves can be solved with proper use of `flatMap`.
 * `Path` is now part of `GraphSerializer` and thus, not specific to a particular implementation of `Path`.

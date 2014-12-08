@@ -213,12 +213,12 @@ public class BatchGraph<G extends Graph> implements Graph {
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> V() {
+    public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
         throw retrievalNotSupported();
     }
 
     @Override
-    public GraphTraversal<Edge, Edge> E() {
+    public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
         throw retrievalNotSupported();
     }
 
