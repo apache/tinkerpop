@@ -317,8 +317,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new FoldStep<>(this, () -> (E2) seed, foldFunction)); // TODO: User should provide supplier
     }
 
-    public default <E2> GraphTraversal<S, E2> local(final Supplier<Traversal<E, E2>> localTraversalSupplier) {
-        return this.asAdmin().addStep(new LocalStep<>(this, localTraversalSupplier));
+    public default <E2> GraphTraversal<S, E2> local(final Traversal<E, E2> localTraversal) {
+        return this.asAdmin().addStep(new LocalStep<>(this, localTraversal));
     }
 
     ///////////////////// FILTER STEPS /////////////////////

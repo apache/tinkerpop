@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process.graph.step.filter;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -19,7 +18,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_v1_out_limitX2X(final Object v1Id);
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_outE_localLimitX1X_inV_limitX3X();
+    public abstract Traversal<Vertex, Vertex> get_g_V_localXoutE_limitX1X_inVX_limitX3X();
 
     public abstract Traversal<Vertex, Vertex> get_g_v1_outXknowsX_outEXcreatedX_rangeX0_1X_inV(final Object v1Id);
 
@@ -46,8 +45,8 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_outE_localLimitX1X_inV_limitX3X() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_outE_localLimitX1X_inV_limitX3X();
+    public void g_V_localXoutE_limitX1X_inVX_limitX3X() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_localXoutE_limitX1X_inVX_limitX3X();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -137,8 +136,8 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_outE_localLimitX1X_inV_limitX3X() {
-            return g.V().local(() -> g.<Vertex>of().outE().limit(1)).inV().limit(3);
+        public Traversal<Vertex, Vertex> get_g_V_localXoutE_limitX1X_inVX_limitX3X() {
+            return g.V().local(g.<Vertex>of().outE().limit(1)).inV().limit(3);
         }
 
         @Override

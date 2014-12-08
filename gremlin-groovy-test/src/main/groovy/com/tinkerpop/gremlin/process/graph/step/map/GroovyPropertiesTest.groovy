@@ -23,8 +23,8 @@ public abstract class GroovyPropertiesTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_propertiesXlocationX_orderByXvalueX_rangeX0_2X_local_value() {
-            g.V.local{g.of().properties('location').orderBy(T.value).range(0, 2)}.value
+        public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_orderByXvalueX_rangeX0_2XX_value() {
+            g.V.local(g.of().properties('location').orderBy(T.value).range(0, 2)).value
         }
 
 
@@ -43,9 +43,9 @@ public abstract class GroovyPropertiesTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_propertiesXlocationX_orderByXvalueX_rangeX0_2X_local_value() {
+        public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_orderByXvalueX_rangeX0_2XX_value() {
             // ComputerTestHelper.compute("g.V.properties('location').orderBy(T.value).range(0, 2).local().value", g);
-            g.V.local{g.of().properties('location').orderBy(T.value).range(0, 2)}.value //TODO
+            g.V.local(g.of().properties('location').orderBy(T.value).range(0, 2)).value //TODO
         }
 
     }

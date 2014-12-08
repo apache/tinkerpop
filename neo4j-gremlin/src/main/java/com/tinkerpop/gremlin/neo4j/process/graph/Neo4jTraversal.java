@@ -310,7 +310,7 @@ public interface Neo4jTraversal<S, E> extends GraphTraversal.Admin<S, E>, GraphT
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.limit(arg0);
 	}
 
-	public default <E2> Neo4jTraversal<S, E2> local(java.util.function.Supplier<com.tinkerpop.gremlin.process.Traversal<E, E2>> arg0) {
+	public default <E2> Neo4jTraversal<S, E2> local(com.tinkerpop.gremlin.process.Traversal<E, E2> arg0) {
 		return (Neo4jTraversal) com.tinkerpop.gremlin.process.graph.GraphTraversal.super.local(arg0);
 	}
 

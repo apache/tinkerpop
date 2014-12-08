@@ -209,7 +209,7 @@ public interface Neo4jElementTraversal<A extends Element> extends ElementTravers
         return this.start().fold(seed, foldFunction);
     }
 
-    public default <E2> Neo4jTraversal<A, E2> local(final Supplier<Traversal<A,E2>> localTraversal) {
+    public default <E2> Neo4jTraversal<A, E2> local(final Traversal<A,E2> localTraversal) {
         return this.start().local(localTraversal);
     }
 

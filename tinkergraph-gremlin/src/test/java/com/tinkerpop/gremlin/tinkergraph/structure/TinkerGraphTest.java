@@ -84,16 +84,6 @@ public class TinkerGraphTest {
     }
 
     @Test
-    @Ignore
-    public void testPlay2() {
-        final Graph g = TinkerFactory.createTheCrew();
-        final Traversal t = g.V().local(() -> g.<Vertex>of().properties("location").orderBy("startTime").limit(2)).value();
-        System.out.println(t);
-        t.forEachRemaining(System.out::println);
-        System.out.println(t);
-    }
-
-    @Test
     public void testTraversalDSL() throws Exception {
         Graph g = TinkerFactory.createClassic();
         assertEquals(2, g.of(TinkerFactory.SocialTraversal.class).people("marko").knows().name().toList().size());

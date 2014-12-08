@@ -207,8 +207,8 @@ public abstract interface ElementTraversal<A extends Element> {
         return this.start().fold(seed, foldFunction);
     }
 
-    public default <E2> GraphTraversal<A, E2> local(final Supplier<Traversal<A, E2>> localTraversalSupplier) {
-        return this.start().local(localTraversalSupplier);
+    public default <E2> GraphTraversal<A, E2> local(final Traversal<A, E2> localTraversal) {
+        return this.start().local(localTraversal);
     }
 
     ///////////////////// FILTER STEPS /////////////////////

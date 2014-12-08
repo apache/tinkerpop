@@ -17,9 +17,9 @@ public final class LocalStep<S, E> extends FlatMapStep<S, E> implements Traversa
 
     private Traversal<S, E> localTraversal;
 
-    public LocalStep(final Traversal traversal, final Supplier<Traversal<S, E>> localTraversalSupplier) {
+    public LocalStep(final Traversal traversal, final Traversal<S, E> localTraversal) {
         super(traversal);
-        this.localTraversal = localTraversalSupplier.get();
+        this.localTraversal = localTraversal;
         LocalStep.generateFunction(this);
     }
 
